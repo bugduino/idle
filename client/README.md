@@ -1,3 +1,7 @@
+## Note:
+`.env` is versioned as wrote [here](https://facebook.github.io/create-react-app/docs/adding-custom-environment-variables#adding-development-environment-variables-in-env) so it's public and should be used only as a blueprint.
+Copy `.env` content in a new file `.env.development.local` || `.env.production.local` (not versioned) and fill out all fields accordingly
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
