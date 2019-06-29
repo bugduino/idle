@@ -371,7 +371,6 @@ class RimbleTransaction extends React.Component {
         gasPrice.data.fast,
         "gwei"
       );
-
       contract.methods[contractMethod](...params)
         .send(value ? { from: account, value, gasPrice: gas.toString() } : { from: account })
         .on("transactionHash", hash => {
@@ -402,9 +401,6 @@ class RimbleTransaction extends React.Component {
             // Check the status from result since we are confident in the result
             if (receipt.status) {
               transaction.status = "success";
-              if (callback) {
-                callback();
-              }
             } else if (!receipt.status) {
               transaction.status = "error";
             }
@@ -415,6 +411,9 @@ class RimbleTransaction extends React.Component {
           // Update transaction with receipt details
           transaction.recentEvent = "confirmation";
           this.updateTransaction(transaction);
+          if (transaction.status === 'success' && callback) {
+            callback();
+          }
         })
         .on("receipt", receipt => {
           console.log('onReceipt', receipt);
@@ -433,7 +432,8 @@ class RimbleTransaction extends React.Component {
             secondaryMessage: "Please retry",
             actionHref: "",
             actionText: "",
-            variant: "failure"
+            variant: "failure",
+            icon: 'Block'
           });
         });
     } catch (error) {
@@ -446,7 +446,8 @@ class RimbleTransaction extends React.Component {
         secondaryMessage: "Try refreshing the page :(",
         actionHref: "",
         actionText: "",
-        variant: "failure"
+        variant: "failure",
+        icon: 'Block'
       });
     }
   };

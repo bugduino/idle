@@ -9,133 +9,266 @@ import {
   Box,
   Button,
   PublicAddress,
-  QR
+  QR,
+  Link
 } from "rimble-ui";
-import NetworkOverview from "./NetworkOverview";
-import theme from "../../theme";
+import TransactionFeeModal from "./TransactionFeeModal";
 
 class LowFundsModal extends React.Component {
   state = {
-    showQR: false
+    showSecondary: false,
+    showTxFees: false
   };
 
   toggleQRVisible = () => {
     this.setState({
-      showQR: !this.state.showQR
+      showSecondary: !this.state.showSecondary
     });
   };
 
-  RightColumn = () => {
-    return (
-      <Flex flexDirection={"column"} p={3}>
-        <Flex justifyContent={"center"} my={4}>
-          <Icon name="Warning" color="gold" size="40" />
-        </Flex>
+  toggleShowTxFees = e => {
+    console.log("showTxFees", this.state.showTxFees);
+    e.preventDefault();
 
-        <Heading.h2>Low Funds</Heading.h2>
-
-        <Text mb={4}>
-          To use Pragms features, you'll need to own
-          Ether. Deposit Ether into your account via your MetaMask extension or
-          send Funds from another account.
-        </Text>
-
-        <PublicAddress address={this.props.account} />
-
-        <Box my={3}>
-          <Text.span bold fontWeight={3} mr={3}>
-            Got another account on a mobile wallet?
-          </Text.span>
-          <Text.span>
-            Send funds by scanning your QR code with your wallet app.
-          </Text.span>
-        </Box>
-
-        <Box mb={4}>
-          <Button.Outline onClick={this.toggleQRVisible}>
-            <Flex alignItems={"center"}>
-              <Icon name="FilterCenterFocus" mr={2} />
-              Show account QR code
-            </Flex>
-          </Button.Outline>
-        </Box>
-        <Flex justifyContent={"flex-end"}>
-          <Box>
-            <Button onClick={this.props.closeModal}>
-              Continue to Idle
-            </Button>
-          </Box>
-        </Flex>
-      </Flex>
-    );
+    this.setState({
+      showTxFees: !this.state.showTxFees
+    });
   };
 
   render() {
     return (
       <Modal isOpen={this.props.isOpen}>
-        <Card p={5} maxWidth={"960px"}>
-          <Button.Text
-            icononly
-            icon={"Close"}
-            color={"moon-gray"}
-            position={"absolute"}
-            top={0}
-            right={0}
-            mt={3}
-            mr={3}
-            onClick={this.props.closeModal}
-          />
-
-          <Flex justifyContent={"center"} alignContent={"stretch"}>
-            <Box width={"400px"} flex={"1 1 auto"}>
-              <Flex flexDirection={"column"} alignContent={"center"}>
-                <Box>
-                  <Text color={theme.colors.primary} caps>
-                    Current Network
-                  </Text>
-                  <NetworkOverview network={this.props.currentNetwork} />
-                </Box>
-
-                <Box my={4}>
-                  <Text color={theme.colors.primary} caps>
-                    New to Ether?
-                  </Text>
-                </Box>
-
-                <Text fontWeight={3}>What you'll need Ether for:</Text>
-                <ul>
-                  <li>Submitting your assets to lend</li>
-                  <li>Get your assets and your interest back</li>
-                  <li>Network fees</li>
-                </ul>
-
-                <Text fontWeight={3}>What are network fees?</Text>
-                <Text>
-                  Network fees pay for a person or group to add a record of your
-                  action to the blockchain and let the network know. It doesn't
-                  go to us.
-                </Text>
-              </Flex>
-            </Box>
-
-            <Flex borderRight={1} borderColor={"#999"} mx={3}>
-              <Text />
+        <Card
+          pr={[0, 5]}
+          pl={[0, 5]}
+          pt={["48px", 5]}
+          pb={["97px", 4]}
+          maxWidth={"960px"}
+          overflow={"hidden"}
+          position={"relative"}
+        >
+          <Box position={"relative"}>
+            <Flex
+              justifyContent={"flex-end"}
+              mr={[0, -5]}
+              mt={["-48px", -5]}
+              position={"absolute"}
+              top={"0"}
+              left={"0"}
+              right={"0"}
+              bg={"white"}
+              zIndex={"1"}
+            >
+              <Button.Text
+                icononly
+                icon={"Close"}
+                color={"moon-gray"}
+                onClick={this.props.closeModal}
+              />
             </Flex>
-            {!this.state.showQR ? (
-              this.RightColumn()
-            ) : (
-              <Box>
-                <Flex justifyContent={"center"}>
-                  <QR value={this.props.account} />
-                </Flex>
+          </Box>
 
-                <Text>{this.props.account}</Text>
-                <Button.Outline onClick={this.toggleQRVisible}>
-                  Close QR
-                </Button.Outline>
+          {this.state.showSecondary === false &&
+          this.state.showTxFees === false ? (
+            <Box>
+              <Box
+                style={{ overflow: "auto" }}
+                maxHeight={"calc(100vh - 195px)"}
+              >
+                <Box px={[4, 0]} pt={[0, 0]} pb={[4, 5]}>
+                  {/* Start primary content */}
+
+                  <Box alignContent="center" py={3}>
+                    <Heading.h2>
+                      Not enough Ether for transaction fees
+                    </Heading.h2>
+                  </Box>
+                  <Text mb={4}>
+                    This is a blockchain action so you’ll have to pay a
+                    transaction fee. A few dollars worth of Ether should be
+                    enough but fees do change based on how busy the network is.{" "}
+                    <strong>Fund your account and try again.</strong>{" "}
+                    <Link
+                      title="Learn about Ethereum transaction fees"
+                      as={"a"}
+                      href="#"
+                      onClick={this.toggleShowTxFees}
+                    >
+                      What are transaction fees?
+                    </Link>
+                  </Text>
+
+                  <Heading.h3>How to add funds</Heading.h3>
+
+                  <Flex
+                    alignItems={"stretch"}
+                    mx={0}
+                    mb={[4, 5]}
+                    mt={[3, 4]}
+                    flexWrap={["wrap", "no-wrap"]}
+                  >
+                    <Box p={[1, 2]} width={[1, 1 / 2]}>
+                      <Flex
+                        flexDirection={"column"}
+                        justifyContent={"space-between"}
+                        height={"100%"}
+                      >
+                        <Box>
+                          <Heading.h5>Buy ETH from an exchange</Heading.h5>
+                          <Text fontSize="1">
+                            You can buy ETH from exchanges like Coinbase and
+                            send it to your account. If you don’t already have
+                            a Coinbase account, it can take a while to get set
+                            up.
+                          </Text>
+                        </Box>
+
+                        <Button.Outline my={3}>
+                          <Flex alignItems={"center"}>
+                            <Icon name="OpenInNew" mr={2} />
+                            Go to CoinBase
+                          </Flex>
+                        </Button.Outline>
+                      </Flex>
+                    </Box>
+                    <Box p={[1, 2]} width={[1, 1 / 2]}>
+                      <Flex
+                        flexDirection={"column"}
+                        justifyContent={"space-between"}
+                        height={"100%"}
+                      >
+                        <Box>
+                          <Heading.h5>
+                            Send ETH from another account
+                          </Heading.h5>
+                          <Text fontSize="1">
+                            If you have ETH in another Ethereum account, you
+                            can send it to this account using your public
+                            Ethereum address or QR code.
+                          </Text>
+                        </Box>
+                        <Button.Outline my={3} onClick={this.toggleQRVisible}>
+                          <Flex alignItems={"center"}>
+                            <Icon name="FilterCenterFocus" mr={2} />
+                            Show account QR code
+                          </Flex>
+                        </Button.Outline>
+                      </Flex>
+                    </Box>
+                  </Flex>
+                  {/* End primary content */}
+                </Box>
               </Box>
-            )}
-          </Flex>
+              <Box
+                position={"absolute"}
+                bottom={"0"}
+                left={"0"}
+                right={"0"}
+                px={[4, 5]}
+                pt={0}
+                pb={4}
+                bg={"white"}
+              >
+                {/* Start primary footer */}
+                <Flex borderTop={1} borderColor={"#eee"} />
+                <Flex pt={4} justifyContent={["center", "flex-end"]}>
+                  <Button onClick={this.props.closeModal} width={[1, "auto"]}>
+                    Back to Idle
+                  </Button>
+                </Flex>
+                {/* End primary footer */}
+              </Box>
+            </Box>
+          ) : null}
+
+          {this.state.showSecondary ? (
+            <Box mb={3}>
+              <Box
+                style={{ overflow: "auto" }}
+                maxHeight={"calc(100vh - 195px)"}
+              >
+                <Box px={[4, 0]} pt={[0, 0]} pb={[4, 5]}>
+                  {/* Start secondary content */}
+                  <Flex my={3} justifyContent={"center"}>
+                    <QR
+                      size={130}
+                      value={
+                        this.props.account ? this.props.account : "1234512345"
+                      }
+                    />
+                  </Flex>
+
+                  <PublicAddress my={4} address={this.props.account} />
+                  <Flex mb={3} />
+                  {/* End secondary content */}
+                </Box>
+              </Box>
+
+              <Box
+                position={"absolute"}
+                bottom={"0"}
+                left={"0"}
+                right={"0"}
+                px={[4, 5]}
+                pt={0}
+                pb={4}
+                bg={"white"}
+              >
+                {/* Start secondary footer */}
+                <Flex borderTop={1} borderColor={"#eee"} />
+                <Flex mt={4} justifyContent={["center", "flex-end"]}>
+                  <Button.Outline
+                    width={[1, "auto"]}
+                    onClick={this.toggleQRVisible}
+                  >
+                    Go back
+                  </Button.Outline>
+                </Flex>
+                {/* End secondary footer */}
+              </Box>
+            </Box>
+          ) : null}
+
+          {this.state.showTxFees ? (
+            <Box mb={3}>
+              <Box
+                style={{ overflow: "auto" }}
+                maxHeight={"calc(100vh - 195px)"}
+              >
+                <Box px={[4, 0]} pt={[0, 0]} pb={[4, 5]}>
+                  {/* Start tx fee content */}
+                  <TransactionFeeModal />
+                  {/* End tx fee content */}
+                </Box>
+              </Box>
+              <Box
+                position={"absolute"}
+                bottom={"0"}
+                left={"0"}
+                right={"0"}
+                px={[4, 5]}
+                pt={0}
+                pb={4}
+                bg={"white"}
+              >
+                {/* Start primary footer */}
+                <Flex
+                  pt={4}
+                  justifyContent={["center", "flex-end"]}
+                  borderTop={1}
+                  borderColor={"#eee"}
+                >
+                  <Button.Outline
+                    width={[1, "auto"]}
+                    onClick={this.toggleShowTxFees}
+                  >
+                    Go Back
+                  </Button.Outline>
+                </Flex>
+                {/* End primary footer */}
+              </Box>
+            </Box>
+          ) : null}
         </Card>
       </Modal>
     );

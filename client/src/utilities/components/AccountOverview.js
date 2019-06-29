@@ -25,18 +25,18 @@ class AccountOverview extends React.Component {
               </Flex>
             }
             <Box>
-              <Text.span fontSize={1} color={'mid-gray'}>
+              <Text fontSize={1} color={'white'}>
                 User: &nbsp;
                 <ShortHash
-                  fontSize={1} color={'mid-gray'}
+                  fontSize={1} color={'white'}
                   hash={this.props.account} />
-              </Text.span>
+              </Text>
               <Text
                 fontSize={1}
-                color={this.props.accountBalanceLow ? 'red' : 'mid-gray'}
+                color={this.props.accountBalanceLow ? 'white' : 'white'}
                 >
                 {isNaN(roundedBalance) ? '0' : roundedBalance} ETH
-                {roundedDAIBalance && !isNaN(roundedDAIBalance) && `, ${roundedDAIBalance} DAI`}
+                {roundedDAIBalance && !isNaN(roundedDAIBalance) ? `, ${roundedDAIBalance} DAI` : ', 0 DAI'}
               </Text>
             </Box>
           </Box>

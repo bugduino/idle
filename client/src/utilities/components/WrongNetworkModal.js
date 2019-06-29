@@ -1,54 +1,74 @@
 import React from "react";
 import {
-  Card,
   Heading,
   Text,
   Flex,
-  ToastMessage,
-  Icon,
   Modal,
-  Button
+  Button,
+  Box,
+  Loader
 } from "rimble-ui";
+import ModalCard from './ModalCard';
+import GeneralUtil from "../GeneralUtil";
+import RimbleUtils from "@rimble/utils";
 
 class WrongNetworkModal extends React.Component {
+  renderContent = () => {
+    return (
+      <React.Fragment>
+        <Heading.h2 my={3}>
+          Switch to the {this.props.network.required.name} network in{" "}
+          {GeneralUtil.hasMetaMask() ? `MetaMask` : `Settings`}
+        </Heading.h2>
+
+        <Text my={4}>
+          The Idle App only works on the{" "}
+          <Text.span style={{ textTransform: "capitalize" }}>
+            {this.props.network.required.name}
+          </Text.span>{" "}
+          network. You’re currently on the{" "}
+          <Text.span style={{ textTransform: "capitalize" }}>
+            {" "}
+            {this.props.network.current.name}
+          </Text.span>{" "}
+          network.
+        </Text>
+
+        {GeneralUtil.hasMetaMask() && !RimbleUtils.isMobileDevice() ? (
+          <Box bg={"#f6f6fc"} p={3} display={["none", "block"]}>
+            <Flex alignItems={"center"}>
+              <Box position={"relative"} width={"4em"}>
+                <Box>
+                  <Loader size={"3em"} />
+                </Box>
+              </Box>
+              <Box>
+                <Text fontWeight={4}>Waiting for the right network...</Text>
+                <Text fontWeight={2}>
+                  Go to your Wallet and to switch
+                </Text>
+              </Box>
+            </Flex>
+          </Box>
+        ) : null}
+
+        <Box display={["block", "none"]}>
+          <Button onClick={this.props.closeModal} width={1}>
+            OK
+          </Button>
+        </Box>
+      </React.Fragment>
+    )
+  }
+
   render() {
     return (
       <Modal isOpen={this.props.isOpen}>
-        <Card p={5} maxWidth={"600px"}>
-          <Button.Text
-            icononly
-            icon={"Close"}
-            color={"moon-gray"}
-            position={"absolute"}
-            top={0}
-            right={0}
-            mt={3}
-            mr={3}
-            onClick={this.props.closeModal}
-          />
-
-          <Flex flexDirection={"column"} justifyContent={"space-between"}>
-            <Flex justifyContent={"center"} my={4}>
-              <Icon name="Warning" color="gold" size="40" />
-            </Flex>
-
-            <Heading.h2 my={3}>Wrong Network</Heading.h2>
-
-            <Text my={4}>
-              Looks like your account is connected to the{" "}
-              <Text.span style={{ textTransform: "capitalize" }}>
-                {this.props.network.current.name}
-              </Text.span>{" "}
-              network. Switch to the{" "}
-              {this.props.network.required.name} network.
-            </Text>
-
-            <ToastMessage
-              message={"Waiting for the right network..."}
-              icon={"InfoOutline"}
-            />
-          </Flex>
-        </Card>
+        <ModalCard closeFunc={this.props.closeModal}>
+          <ModalCard.Body>
+            {this.renderContent()}
+          </ModalCard.Body>
+        </ModalCard>
       </Modal>
     );
   }
