@@ -7,7 +7,7 @@ import connectors from './connectors';
 import theme from "../theme";
 // import styles from './App.module.scss';
 
-import { ThemeProvider, Box, Text } from 'rimble-ui';
+import { ThemeProvider, Box } from 'rimble-ui';
 import RimbleWeb3 from "../utilities/RimbleWeb3";
 import Header from "../utilities/components/Header";
 import Landing from "../Landing/Landing";

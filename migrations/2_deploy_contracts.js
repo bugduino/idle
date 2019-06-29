@@ -1,5 +1,41 @@
-var SimpleStorage = artifacts.require("./SimpleStorage.sol");
+var DiporDAI = artifacts.require("./DiporDAI.sol");
+require('openzeppelin-test-helpers/configure')({ web3 });
 
-module.exports = function(deployer) {
-  deployer.deploy(SimpleStorage);
+const { singletons } = require('openzeppelin-test-helpers');
+
+const cETH = {
+  'live': '0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5',
+  'live-fork': '0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5', // needed for truffle
+  'test': '0xd6801a1DfFCd0a410336Ef88DeF4320D6DF1883e',
+  'rinkeby': '0xd6801a1DfFCd0a410336Ef88DeF4320D6DF1883e',
+  'rinkeby-fork': '0xd6801a1DfFCd0a410336Ef88DeF4320D6DF1883e', // needed for truffle
+  // TODO ropsten and kovan
+  'ropsten': '0xd6801a1DfFCd0a410336Ef88DeF4320D6DF1883e',
+  'ropsten-fork': '0xd6801a1DfFCd0a410336Ef88DeF4320D6DF1883e', // needed for truffle
+  'kovan': '0xd6801a1DfFCd0a410336Ef88DeF4320D6DF1883e',
+  'kovan-fork': '0xd6801a1DfFCd0a410336Ef88DeF4320D6DF1883e' // needed for truffle
+};
+
+// TODO
+const iETH = {
+  'live': '0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5',
+  'live-fork': '0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5', // needed for truffle
+  'test': '0xd6801a1DfFCd0a410336Ef88DeF4320D6DF1883e',
+  'rinkeby': '0xd6801a1DfFCd0a410336Ef88DeF4320D6DF1883e',
+  'rinkeby-fork': '0xd6801a1DfFCd0a410336Ef88DeF4320D6DF1883e', // needed for truffle
+  'ropsten': '0xd6801a1DfFCd0a410336Ef88DeF4320D6DF1883e',
+  'ropsten-fork': '0xd6801a1DfFCd0a410336Ef88DeF4320D6DF1883e', // needed for truffle
+  'kovan': '0xd6801a1DfFCd0a410336Ef88DeF4320D6DF1883e',
+  'kovan-fork': '0xd6801a1DfFCd0a410336Ef88DeF4320D6DF1883e' // needed for truffle
+};
+
+module.exports = async function(deployer, network, accounts) {
+  if (network === 'development' || network === 'test') {
+    // In a test environment an ERC777 token requires deploying an ERC1820 registry
+    await singletons.ERC1820Registry(accounts[0]);
+  }
+
+  console.log('cETH address: ', cETH[network]);
+  console.log('iETH address: ', iETH[network]);
+  await deployer.deploy(DiporDAI, cETH[network], iETH[network]);
 };
