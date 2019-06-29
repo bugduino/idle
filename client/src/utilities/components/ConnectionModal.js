@@ -48,7 +48,7 @@ class ConnectionModal extends React.Component {
               <Icon
                 name="Public"
                 color="primary"
-                size="4rem"
+                size="4em"
               />
             </Flex>
             <Heading fontSize={2}>The blockchain is public</Heading>
@@ -63,7 +63,7 @@ class ConnectionModal extends React.Component {
               <Icon
                 name="AccountBalanceWallet"
                 color="primary"
-                size="4rem"
+                size="4em"
               />
             </Flex>
             <Heading fontSize={2}>Have some Ether for fees</Heading>
@@ -85,7 +85,7 @@ class ConnectionModal extends React.Component {
               <Icon
                 name="People"
                 color="primary"
-                size="4rem"
+                size="4em"
               />
             </Flex>
             <Heading fontSize={2}>Have the right account ready</Heading>

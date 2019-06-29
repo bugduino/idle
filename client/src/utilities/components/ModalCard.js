@@ -30,7 +30,7 @@ const ModalCard = ({children, closeFunc, ...props}) => (
         icon={"Close"}
         mainColor={"moon-gray"}
         onClick={closeFunc}
-        size={'2.5rem'}
+        size={'2.5em'}
       />
     </Box>
     <Flex flexDirection={'column'} height={'100%'}>
@@ -72,7 +72,7 @@ ModalCard.BackButton = ({onClick, ...props}) => (
       onClick={onClick}
       icononly
       icon={'ArrowBack'}
-      size={'2.5rem'}
+      size={'2.5em'}
     />
   </Box>
 );

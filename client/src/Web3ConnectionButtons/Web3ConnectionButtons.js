@@ -14,7 +14,7 @@ export default function Web3ConnectionButtons(props) {
     console.log('context loading', context);
   } else if (context.error) {
     console.log('context error', context);
-    //error
+    // error
   } else {
     console.log('context success', context);
     // success

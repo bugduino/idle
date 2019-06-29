@@ -18,7 +18,7 @@ function TransactionFeeModal(props) {
             <Icon
               name="Fingerprint"
               color="primary"
-              size="4rem"
+              size="4em"
             />
           </Flex>
           <Heading fontSize={2}>Undeniable proof</Heading>
@@ -32,7 +32,7 @@ function TransactionFeeModal(props) {
             <Icon
               name="EnhancedEncryption"
               color="primary"
-              size="4rem"
+              size="4em"
             />
           </Flex>
           <Heading fontSize={2}>Unbreakable encryption</Heading>
@@ -45,12 +45,12 @@ function TransactionFeeModal(props) {
             <Icon
               name="AccountBalance"
               color="primary"
-              size="4rem"
+              size="4em"
             />
             <Icon
               name="NotInterested"
               color="primary"
-              size="4rem"
+              size="4em"
             />
           </Flex>
           <Heading fontSize={2}>Unparalleled control</Heading>

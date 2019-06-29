@@ -41,7 +41,7 @@ class ConnectionPendingModal extends React.Component {
                   <Icon
                     name="Public"
                     color="primary"
-                    size="4rem"
+                    size="4em"
                   />
                 </Flex>
                 <Heading fontSize={2}>New to Idle?</Heading>
@@ -56,7 +56,7 @@ class ConnectionPendingModal extends React.Component {
                   <Icon
                     name="AccountBalanceWallet"
                     color="primary"
-                    size="4rem"
+                    size="4em"
                   />
                 </Flex>
                 <Heading fontSize={2}>What does connection mean?</Heading>
@@ -71,7 +71,7 @@ class ConnectionPendingModal extends React.Component {
                   <Icon
                     name="People"
                     color="primary"
-                    size="4rem"
+                    size="4em"
                   />
                 </Flex>
                 <Heading fontSize={2}>Connect your account</Heading>

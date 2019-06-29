@@ -10,6 +10,7 @@ import theme from "../theme";
 import { ToastMessage, ThemeProvider, Box } from 'rimble-ui';
 import RimbleWeb3 from "../utilities/RimbleWeb3";
 import Header from "../utilities/components/Header";
+import Landing from "../Landing/Landing";
 import Web3Debugger from "../Web3Debugger/Web3Debugger";
 
 class App extends Component {
@@ -54,75 +55,7 @@ class App extends Component {
             {context => {
               return (
                 <RimbleWeb3 config={this.config} context={context}>
-                  <RimbleWeb3.Consumer>
-                    {({
-                      needsPreflight,
-                      web3,
-                      account,
-                      accountBalance,
-                      accountBalanceDAI,
-                      accountBalanceLow,
-                      initAccount,
-                      rejectAccountConnect,
-                      userRejectedConnect,
-                      accountValidated,
-                      accountValidationPending,
-                      rejectValidation,
-                      userRejectedValidation,
-                      validateAccount,
-                      connectAndValidateAccount,
-                      modals,
-                      network,
-                      transaction
-                    }) => (
-                      <Box>
-                        <Header
-                          account={account}
-                          isMobile={isMobile}
-                          accountBalance={accountBalance}
-                          accountBalanceDAI={accountBalanceDAI}
-                          accountBalanceLow={accountBalanceLow}
-                          initAccount={initAccount}
-                          rejectAccountConnect={rejectAccountConnect}
-                          userRejectedConnect={userRejectedConnect}
-                          accountValidated={accountValidated}
-                          accountValidationPending={accountValidationPending}
-                          rejectValidation={rejectValidation}
-                          userRejectedValidation={userRejectedValidation}
-                          validateAccount={validateAccount}
-                          connectAndValidateAccount={connectAndValidateAccount}
-                          modals={modals}
-                          network={network}
-                        />
 
-                        {this.state.route === "onboarding" ? (
-                          <Web3Debugger
-                            web3={web3}
-                            account={account}
-                            accountBalance={accountBalance}
-                            accountBalanceLow={accountBalanceLow}
-                            initAccount={initAccount}
-                            rejectAccountConnect={rejectAccountConnect}
-                            userRejectedConnect={userRejectedConnect}
-                            accountValidated={accountValidated}
-                            accountValidationPending={accountValidationPending}
-                            rejectValidation={rejectValidation}
-                            userRejectedValidation={userRejectedValidation}
-                            validateAccount={validateAccount}
-                            connectAndValidateAccount={connectAndValidateAccount}
-                            modals={modals}
-                            network={network}
-                            transaction={transaction}
-                          />
-                        ) : null}
-                        {this.state.route === "default" ? (
-
-                          <Text>Todo</Text>
-                        ) : null}
-                        <ToastMessage.Provider ref={node => (window.toastProvider = node)} />
-                      </Box>
-                    )}
-                  </RimbleWeb3.Consumer>
                 </RimbleWeb3>
               );
             }}
