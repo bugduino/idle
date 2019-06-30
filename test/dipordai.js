@@ -31,7 +31,7 @@ contract('DiporDAI', function ([_, registryFunder, creator]) {
   });
 
   it('has a iDAI addr', async function () {
-    (await this.token.cToken()).should.equal(this.cDAIMock.address);
+    (await this.token.iToken()).should.equal(this.iDAIMock.address);
   });
 
   // it('assigns the initial total supply to the creator', async function () {
