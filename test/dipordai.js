@@ -15,7 +15,12 @@ contract('DiporDAI', function ([_, registryFunder, creator]) {
     this.ETHAddr = '0x0000000000000000000000000000000000000000';
 
     this.erc1820 = await singletons.ERC1820Registry(registryFunder);
-    this.token = await DiporDAI.new(this.cDAIMock.address, this.iDAIMock.address, { from: creator });
+    this.token = await DiporDAI.new(
+      this.cDAIMock.address,
+      this.iDAIMock.address,
+      this.DAIMock.address,
+      { from: creator }
+    );
   });
 
   it('has a name', async function () {
@@ -32,6 +37,10 @@ contract('DiporDAI', function ([_, registryFunder, creator]) {
 
   it('has a iDAI addr', async function () {
     (await this.token.iToken()).should.equal(this.iDAIMock.address);
+  });
+
+  it('has a DAI addr', async function () {
+    (await this.token.token()).should.equal(this.DAIMock.address);
   });
 
   // it('assigns the initial total supply to the creator', async function () {
