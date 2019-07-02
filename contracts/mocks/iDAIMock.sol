@@ -25,7 +25,7 @@ contract iDAIMock is ERC20Detailed, ERC20, iERC20 {
     require(this.transfer(receiver, amount), "Error during transfer"); // 50 cETH
     return 0;
   }
-  function burn(address receiver, uint256 amount) external returns (uint256) {
+  function burn(address receiver, uint256) external returns (uint256) {
     // here I should transfer 1 DAI back
 
     // the real cETH contract does not need to transferFrom
@@ -37,6 +37,9 @@ contract iDAIMock is ERC20Detailed, ERC20, iERC20 {
     return 0;
   }
 
+  /* function supplyInterestRate() external {
+    toTransfer = 1.1 * 10**18;
+  } */
   function setExchangeRateStoredForTest() external {
     toTransfer = 1.1 * 10**18;
   }
