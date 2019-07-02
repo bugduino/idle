@@ -15,11 +15,15 @@
     "deploy": "cd client && yarn deploy"
   },
   "dependencies": {
+    "@nomiclabs/buidler": "^1.0.0-beta.8",
+    "@nomiclabs/buidler-truffle5": "^1.0.0-beta.8",
+    "@nomiclabs/buidler-web3": "^1.0.0-beta.8",
     "babel-polyfill": "^6.26.0",
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
     "babel-preset-stage-3": "^6.24.1",
     "babel-register": "^6.26.0",
+    "bignumber.js": "^9.0.0",
     "chai": "^4.2.0",
     "dotenv": "^8.0.0",
     "eth-gas-reporter": "^0.2.1",
