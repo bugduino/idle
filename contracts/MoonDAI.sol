@@ -40,13 +40,12 @@ contract MoonDAI is ERC777, ReentrancyGuard, Ownable {
   constructor(address _cToken, address _iToken, address _token)
     public
     ERC777("MoonDAI", "MOONDAI", new address[](0)) {
-    /* fee = 1; // 1% */
-    cToken = _cToken;
-    iToken = _iToken;
-    token = _token;
-    // TODO get it from compound contract directly
-    blocksInAYear = 2102400; // ~15 sec per block
-    minRateDifference = 10**18 / 2; // 0.5% min
+      cToken = _cToken;
+      iToken = _iToken;
+      token = _token;
+      // TODO get it from compound contract directly
+      blocksInAYear = 2102400; // ~15 sec per block
+      minRateDifference = 500000000000000000; // 0.5% min
   }
 
   // onlyOwner
@@ -177,18 +176,17 @@ contract MoonDAI is ERC777, ReentrancyGuard, Ownable {
     returns (bool shouldRebalance, address bestTokenAddr) {
       shouldRebalance = false;
 
-      if (bestToken == address(0)) {
-        shouldRebalance = true;
-        return (shouldRebalance, address(0));
-      }
-
       uint256 _bestRate;
       uint256 _worstRate;
       (bestTokenAddr, _bestRate, _worstRate) = getBestRateToken();
-      if (bestTokenAddr != bestToken && (_worstRate.add(minRateDifference) < _bestRate)) {
+      if (
+          bestToken == address(0) ||
+          (bestTokenAddr != bestToken && (_worstRate.add(minRateDifference) < _bestRate))) {
         shouldRebalance = true;
         return (shouldRebalance, bestTokenAddr);
       }
+
+      return (shouldRebalance, bestTokenAddr);
   }
   /**
    * @dev Convert cToken pool in iToken pool (or the contrary) if needed
