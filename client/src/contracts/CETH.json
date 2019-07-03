@@ -36,14 +36,14 @@
     "absolutePath": "/home/bugman/Projects/idle/contracts/interfaces/CETH.sol",
     "exportedSymbols": {
       "CETH": [
-        108
+        1023
       ]
     },
-    "id": 109,
+    "id": 1024,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 99,
+        "id": 1014,
         "literals": [
           "solidity",
           "^",
@@ -51,7 +51,7 @@
           ".2"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:23:3"
+        "src": "0:23:4"
       },
       {
         "baseContracts": [],
@@ -59,9 +59,9 @@
         "contractKind": "interface",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 108,
+        "id": 1023,
         "linearizedBaseContracts": [
-          108
+          1023
         ],
         "name": "CETH",
         "nodeType": "ContractDefinition",
@@ -69,26 +69,26 @@
           {
             "body": null,
             "documentation": null,
-            "id": 102,
+            "id": 1017,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "mint",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 100,
+              "id": 1015,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "57:2:3"
+              "src": "57:2:4"
             },
             "returnParameters": {
-              "id": 101,
+              "id": 1016,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "76:0:3"
+              "src": "76:0:4"
             },
-            "scope": 108,
-            "src": "44:33:3",
+            "scope": 1023,
+            "src": "44:33:4",
             "stateMutability": "payable",
             "superFunction": null,
             "visibility": "external"
@@ -96,29 +96,29 @@
           {
             "body": null,
             "documentation": null,
-            "id": 107,
+            "id": 1022,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "exchangeRateStored",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 103,
+              "id": 1018,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "107:2:3"
+              "src": "107:2:4"
             },
             "returnParameters": {
-              "id": 106,
+              "id": 1021,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 105,
+                  "id": 1020,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 107,
-                  "src": "128:7:3",
+                  "scope": 1022,
+                  "src": "128:7:4",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -126,10 +126,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 104,
+                    "id": 1019,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "128:7:3",
+                    "src": "128:7:4",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -139,33 +139,33 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "127:9:3"
+              "src": "127:9:4"
             },
-            "scope": 108,
-            "src": "80:57:3",
+            "scope": 1023,
+            "src": "80:57:4",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 109,
-        "src": "25:114:3"
+        "scope": 1024,
+        "src": "25:114:4"
       }
     ],
-    "src": "0:140:3"
+    "src": "0:140:4"
   },
   "legacyAST": {
     "absolutePath": "/home/bugman/Projects/idle/contracts/interfaces/CETH.sol",
     "exportedSymbols": {
       "CETH": [
-        108
+        1023
       ]
     },
-    "id": 109,
+    "id": 1024,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 99,
+        "id": 1014,
         "literals": [
           "solidity",
           "^",
@@ -173,7 +173,7 @@
           ".2"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:23:3"
+        "src": "0:23:4"
       },
       {
         "baseContracts": [],
@@ -181,9 +181,9 @@
         "contractKind": "interface",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 108,
+        "id": 1023,
         "linearizedBaseContracts": [
-          108
+          1023
         ],
         "name": "CETH",
         "nodeType": "ContractDefinition",
@@ -191,26 +191,26 @@
           {
             "body": null,
             "documentation": null,
-            "id": 102,
+            "id": 1017,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "mint",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 100,
+              "id": 1015,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "57:2:3"
+              "src": "57:2:4"
             },
             "returnParameters": {
-              "id": 101,
+              "id": 1016,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "76:0:3"
+              "src": "76:0:4"
             },
-            "scope": 108,
-            "src": "44:33:3",
+            "scope": 1023,
+            "src": "44:33:4",
             "stateMutability": "payable",
             "superFunction": null,
             "visibility": "external"
@@ -218,29 +218,29 @@
           {
             "body": null,
             "documentation": null,
-            "id": 107,
+            "id": 1022,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "exchangeRateStored",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 103,
+              "id": 1018,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "107:2:3"
+              "src": "107:2:4"
             },
             "returnParameters": {
-              "id": 106,
+              "id": 1021,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 105,
+                  "id": 1020,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 107,
-                  "src": "128:7:3",
+                  "scope": 1022,
+                  "src": "128:7:4",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -248,10 +248,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 104,
+                    "id": 1019,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "128:7:3",
+                    "src": "128:7:4",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -261,20 +261,20 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "127:9:3"
+              "src": "127:9:4"
             },
-            "scope": 108,
-            "src": "80:57:3",
+            "scope": 1023,
+            "src": "80:57:4",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 109,
-        "src": "25:114:3"
+        "scope": 1024,
+        "src": "25:114:4"
       }
     ],
-    "src": "0:140:3"
+    "src": "0:140:4"
   },
   "compiler": {
     "name": "solc",
@@ -282,7 +282,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.11",
-  "updatedAt": "2019-06-29T11:05:16.026Z",
+  "updatedAt": "2019-07-03T16:51:38.014Z",
   "devdoc": {
     "methods": {}
   },

@@ -1,12 +1,12 @@
 const { expectEvent, singletons, constants, BN } = require('openzeppelin-test-helpers');
 const { ZERO_ADDRESS } = constants;
 
-const DiporDAI = artifacts.require('DiporDAI');
+const IdleDAI = artifacts.require('IdleDAI');
 const cDAIMock = artifacts.require('cDAIMock');
 const iDAIMock = artifacts.require('iDAIMock');
 const DAIMock = artifacts.require('DAIMock');
 
-contract('DiporDAI', function ([_, registryFunder, creator]) {
+contract('IdleDAI', function ([_, registryFunder, creator]) {
   beforeEach(async function () {
     this.DAIMock = await DAIMock.new();
     this.cDAIMock = await cDAIMock.new(this.DAIMock.address, {from: creator});
@@ -15,7 +15,7 @@ contract('DiporDAI', function ([_, registryFunder, creator]) {
     this.ETHAddr = '0x0000000000000000000000000000000000000000';
 
     this.erc1820 = await singletons.ERC1820Registry(registryFunder);
-    this.token = await DiporDAI.new(
+    this.token = await IdleDAI.new(
       this.cDAIMock.address,
       this.iDAIMock.address,
       this.DAIMock.address,
@@ -24,11 +24,11 @@ contract('DiporDAI', function ([_, registryFunder, creator]) {
   });
 
   it('has a name', async function () {
-    (await this.token.name()).should.equal('DiporDAI');
+    (await this.token.name()).should.equal('IdleDAI');
   });
 
   it('has a symbol', async function () {
-    (await this.token.symbol()).should.equal('DIPORDAI5050');
+    (await this.token.symbol()).should.equal('IDLEDAI');
   });
 
   it('has a cDAI addr', async function () {

@@ -10,6 +10,7 @@ contract cDAIMock is ERC20Detailed, ERC20, CERC20 {
   address public dai;
   uint256 public exchangeRate;
   uint256 public toTransfer;
+  uint256 public supplyRate;
 
   constructor(address _dai)
     ERC20()
@@ -17,6 +18,7 @@ contract cDAIMock is ERC20Detailed, ERC20, CERC20 {
     dai = _dai;
     exchangeRate = 200000000000000000000000000;
     toTransfer = 10**18;
+    supplyRate = 10**18;
     _mint(address(this), 10**14); // 1.000.000 cETH
   }
   function() payable external {}
@@ -40,6 +42,9 @@ contract cDAIMock is ERC20Detailed, ERC20, CERC20 {
 
   function exchangeRateStored() external view returns (uint256) {
     return exchangeRate;
+  }
+  function supplyRatePerBlock() external view returns (uint256) {
+    return supplyRate;
   }
 
   function setExchangeRateStoredForTest() external {
