@@ -34,7 +34,8 @@ class App extends Component {
   config = {
     requiredConfirmations: 1, // in ETH for gas fees
     accountBalanceMinimum: 0.0001, // in ETH for gas fees
-    requiredNetwork: 4 // Rinkeby
+    requiredNetwork: 3 // Ropsten
+    // requiredNetwork: 4 // Rinkeby
   };
 
   showRoute(route) {
