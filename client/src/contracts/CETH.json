@@ -36,14 +36,14 @@
     "absolutePath": "/home/bugman/Projects/idle/contracts/interfaces/CETH.sol",
     "exportedSymbols": {
       "CETH": [
-        1023
+        999
       ]
     },
-    "id": 1024,
+    "id": 1000,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1014,
+        "id": 990,
         "literals": [
           "solidity",
           "^",
@@ -59,9 +59,9 @@
         "contractKind": "interface",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 1023,
+        "id": 999,
         "linearizedBaseContracts": [
-          1023
+          999
         ],
         "name": "CETH",
         "nodeType": "ContractDefinition",
@@ -69,25 +69,25 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1017,
+            "id": 993,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "mint",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1015,
+              "id": 991,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "57:2:4"
             },
             "returnParameters": {
-              "id": 1016,
+              "id": 992,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "76:0:4"
             },
-            "scope": 1023,
+            "scope": 999,
             "src": "44:33:4",
             "stateMutability": "payable",
             "superFunction": null,
@@ -96,28 +96,28 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1022,
+            "id": 998,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "exchangeRateStored",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1018,
+              "id": 994,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "107:2:4"
             },
             "returnParameters": {
-              "id": 1021,
+              "id": 997,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1020,
+                  "id": 996,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1022,
+                  "scope": 998,
                   "src": "128:7:4",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -126,7 +126,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1019,
+                    "id": 995,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "128:7:4",
@@ -141,14 +141,14 @@
               ],
               "src": "127:9:4"
             },
-            "scope": 1023,
+            "scope": 999,
             "src": "80:57:4",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 1024,
+        "scope": 1000,
         "src": "25:114:4"
       }
     ],
@@ -158,14 +158,14 @@
     "absolutePath": "/home/bugman/Projects/idle/contracts/interfaces/CETH.sol",
     "exportedSymbols": {
       "CETH": [
-        1023
+        999
       ]
     },
-    "id": 1024,
+    "id": 1000,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1014,
+        "id": 990,
         "literals": [
           "solidity",
           "^",
@@ -181,9 +181,9 @@
         "contractKind": "interface",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 1023,
+        "id": 999,
         "linearizedBaseContracts": [
-          1023
+          999
         ],
         "name": "CETH",
         "nodeType": "ContractDefinition",
@@ -191,25 +191,25 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1017,
+            "id": 993,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "mint",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1015,
+              "id": 991,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "57:2:4"
             },
             "returnParameters": {
-              "id": 1016,
+              "id": 992,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "76:0:4"
             },
-            "scope": 1023,
+            "scope": 999,
             "src": "44:33:4",
             "stateMutability": "payable",
             "superFunction": null,
@@ -218,28 +218,28 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1022,
+            "id": 998,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "exchangeRateStored",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1018,
+              "id": 994,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "107:2:4"
             },
             "returnParameters": {
-              "id": 1021,
+              "id": 997,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1020,
+                  "id": 996,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1022,
+                  "scope": 998,
                   "src": "128:7:4",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -248,7 +248,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1019,
+                    "id": 995,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "128:7:4",
@@ -263,14 +263,14 @@
               ],
               "src": "127:9:4"
             },
-            "scope": 1023,
+            "scope": 999,
             "src": "80:57:4",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 1024,
+        "scope": 1000,
         "src": "25:114:4"
       }
     ],
@@ -282,7 +282,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.11",
-  "updatedAt": "2019-07-03T16:51:38.014Z",
+  "updatedAt": "2019-07-04T16:14:07.723Z",
   "devdoc": {
     "methods": {}
   },
