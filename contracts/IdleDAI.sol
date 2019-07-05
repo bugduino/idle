@@ -79,7 +79,7 @@ contract IdleDAI is ERC777, ReentrancyGuard {
           this.balanceOf(address(this))
       ));
       require(success, 'Reverted in idleClaim');
-      _mint(msg.sender, msg.sender, IdleHelp.bytesToUint(data), "", "");
+      _mint(msg.sender, msg.sender, IdleHelp.convertBytesToUint256(data), "", "");
       /* _mint(msg.sender, msg.sender, IdleHelp.bytesToUint(data), "", ""); */
   }
 

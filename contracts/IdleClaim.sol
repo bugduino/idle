@@ -111,7 +111,7 @@ contract IdleClaim {
         return claimedTokens;
       }
 
-      rebalance(bestToken,blocksInAYear, minRateDifference);
+      rebalance(bestToken, blocksInAYear, minRateDifference);
       if (bestToken == cToken) {
         _mintCTokens(claimedTokens);
       } else {

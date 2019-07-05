@@ -59,6 +59,7 @@ module.exports = async function(deployer, network, accounts) {
   console.log('iDAI address: ', iDAI[network]);
   await deployer.deploy(IdleHelp);
   await deployer.link(IdleHelp, IdleDAI);
+  await deployer.link(IdleHelp, IdleClaim);
   await deployer.deploy(IdleClaim, cDAI[network], iDAI[network], DAI[network]);
   await deployer.deploy(IdleDAI, cDAI[network], iDAI[network], DAI[network], IdleClaim.address);
 };
