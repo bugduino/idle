@@ -29,6 +29,7 @@ contract IdleDAI is ERC777, ReentrancyGuard {
   address public iToken; // iTokens have 18 decimals
   address public token;
   address public bestToken;
+  address public idleClaim;
 
   uint256 public blocksInAYear;
   uint256 public minRateDifference;
@@ -36,13 +37,14 @@ contract IdleDAI is ERC777, ReentrancyGuard {
   /**
    * @dev constructor
    */
-  constructor(address _cToken, address _iToken, address _token)
+  constructor(address _cToken, address _iToken, address _token, address _idleClaim)
     public
     ERC777("IdleDAI", "IDLEDAI", new address[](0)) {
       owner = msg.sender;
       cToken = _cToken;
       iToken = _iToken;
       token = _token;
+      idleClaim = _idleClaim;
       // TODO get it from compound contract directly
       blocksInAYear = 2102400; // ~15 sec per block
       minRateDifference = 500000000000000000; // 0.5% min
@@ -99,26 +101,21 @@ contract IdleDAI is ERC777, ReentrancyGuard {
   function redeemIndexToken(uint256 _amount)
     external nonReentrant
     returns (uint256 tokensRedeemed) {
-    /* uint256 senderBalance = this.balanceOf(msg.sender); */
-    /* require(senderBalance > 0, "senderBalance should be > 0");
-    require(senderBalance >= _amount, "senderBalance should be >= amount requested"); */
+      uint256 idleSupply = this.totalSupply();
+      require(idleSupply > 0, 'No IDLEDAI have been issued');
 
-    uint256 idleSupply = this.totalSupply();
-    require(idleSupply > 0, 'No IDLEDAI have been issued');
-
-    if (bestToken == cToken) {
-      uint256 cPoolBalance = IERC20(cToken).balanceOf(address(this));
-      uint256 cDAItoRedeem = _amount.mul(cPoolBalance).div(idleSupply);
-      tokensRedeemed = _redeemCTokens(cDAItoRedeem, msg.sender); //TODO fee?
-    } else {
-      uint256 iPoolBalance = IERC20(iToken).balanceOf(address(this));
-      uint256 iDAItoRedeem = _amount.mul(iPoolBalance).div(idleSupply);
-      // TODO we should inform the user of the eventual excess of token that can be redeemed directly in Fulcrum
-      tokensRedeemed = _redeemITokens(iDAItoRedeem, msg.sender);
-    }
-    this.burn(_amount, '');
-
-    /* investedBalances[msg.sender] = investedBalances[msg.sender].sub(tokensRedeemed); */
+      if (bestToken == cToken) {
+        uint256 cPoolBalance = IERC20(cToken).balanceOf(address(this));
+        uint256 cDAItoRedeem = _amount.mul(cPoolBalance).div(idleSupply);
+        tokensRedeemed = _redeemCTokens(cDAItoRedeem, msg.sender); //TODO fee?
+      } else {
+        uint256 iPoolBalance = IERC20(iToken).balanceOf(address(this));
+        uint256 iDAItoRedeem = _amount.mul(iPoolBalance).div(idleSupply);
+        // TODO we should inform the user of the eventual excess of token that can be redeemed directly in Fulcrum
+        tokensRedeemed = _redeemITokens(iDAItoRedeem, msg.sender);
+      }
+      this.burn(_amount, '');
+      rebalance();
   }
 
   /**
@@ -127,24 +124,14 @@ contract IdleDAI is ERC777, ReentrancyGuard {
    */
   function rebalance()
     public {
-      (bool shouldRebalance, address newBestTokenAddr) = IdleHelp.rebalanceCheck(cToken, iToken, bestToken, blocksInAYear, minRateDifference);
-      if (!shouldRebalance) {
-        return;
-      }
-
-      if (bestToken != address(0)) {
-        // bestToken here is the 'old' best token
-        if (bestToken == cToken) {
-          _redeemCTokens(IERC20(cToken).balanceOf(address(this)), address(this)); // token are now in this contract
-          _mintITokens(IERC20(token).balanceOf(address(this)));
-        } else {
-          _redeemITokens(IERC20(iToken).balanceOf(address(this)), address(this));
-          _mintCTokens(IERC20(token).balanceOf(address(this)));
-        }
-      }
-
-      // Update best token address
-      bestToken = newBestTokenAddr;
+      (bool success, bytes memory data) = address(idleClaim).delegatecall(
+        abi.encodeWithSelector(
+          this.rebalance.selector,
+          bestToken,
+          blocksInAYear,
+          minRateDifference
+      ));
+      require(success, 'Reverted in idleClaim');
   }
   /**
    * @dev here we are redeeming unclaimed token (from iToken contract) to this contracts
@@ -153,20 +140,15 @@ contract IdleDAI is ERC777, ReentrancyGuard {
    */
   function claimITokens()
     external
-    returns (uint256 claimedTokens) {
-      claimedTokens = iERC20(iToken).claimLoanToken();
-      if (claimedTokens == 0) {
-        return claimedTokens;
-      }
-
-      rebalance();
-      if (bestToken == cToken) {
-        _mintCTokens(claimedTokens);
-      } else {
-        _mintITokens(claimedTokens);
-      }
-
-      return claimedTokens;
+    returns (uint256) {
+      (bool success, bytes memory data) = address(idleClaim).delegatecall(
+        abi.encodeWithSelector(
+          this.claimITokens.selector,
+          bestToken,
+          blocksInAYear,
+          minRateDifference
+      ));
+      require(success, 'Reverted in idleClaim');
   }
 
   // internal

@@ -1,5 +1,6 @@
 var IdleDAI = artifacts.require("./IdleDAI.sol");
 var IdleHelp = artifacts.require("./IdleHelp.sol");
+var IdleClaim = artifacts.require("./IdleClaim.sol");
 require('openzeppelin-test-helpers/configure')({ web3 });
 
 const { singletons } = require('openzeppelin-test-helpers');
@@ -58,5 +59,6 @@ module.exports = async function(deployer, network, accounts) {
   console.log('iDAI address: ', iDAI[network]);
   await deployer.deploy(IdleHelp);
   await deployer.link(IdleHelp, IdleDAI);
-  await deployer.deploy(IdleDAI, cDAI[network], iDAI[network], DAI[network]);
+  await deployer.deploy(IdleClaim, cDAI[network], iDAI[network], DAI[network]);
+  await deployer.deploy(IdleDAI, cDAI[network], iDAI[network], DAI[network], IdleClaim.address);
 };
