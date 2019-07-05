@@ -1,4 +1,3 @@
-// var DiporDAI = artifacts.require("./DiporDAI.sol");
 var IdleDAI = artifacts.require("./IdleDAI.sol");
 var IdleHelp = artifacts.require("./IdleHelp.sol");
 require('openzeppelin-test-helpers/configure')({ web3 });

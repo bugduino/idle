@@ -42,7 +42,7 @@ task("cDAI:rate", "cDAI to DAI rate")
     console.log(`RES: ${res.toString()}`)
   });
 
-task("cDAI:apr", "Call method on cDAI contract. eg `npx buidler cDAI --method exchangeRateStored`")
+task("cDAI:apr", "Get apr")
   .setAction(async taskArgs => {
     const cERC20 = artifacts.require('CERC20');
     const cDAI = await cERC20.at('0xf5dce57282a584d2746faf1593d3121fcac444dc'); // mainnet
