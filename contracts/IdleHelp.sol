@@ -8,6 +8,16 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 library IdleHelp {
   using SafeMath for uint256;
 
+  function bytesToUint(bytes calldata b)
+    external view
+    returns (uint256) {
+      uint256 number;
+      for(uint256 i = 0; i < b.length; i++){
+        number = number + uint256(b[i]) * (2**(8*(b.length-(i+1))));
+      }
+      return number;
+  }
+
   function getPriceInToken(address cToken, address iToken, address bestToken, uint256 totalSupply)
     public view
     returns (uint256 tokenPrice) {

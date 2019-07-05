@@ -53,7 +53,52 @@ contract IdleClaim {
       // Update best token address
       bestToken = newBestTokenAddr;
   }
+  function mintIndexToken(uint256 _amount, address bestToken, uint256 blocksInAYear, uint256 minRateDifference, uint256 balanceOf)
+    external
+    returns (uint256 mintedTokens) {
+      /* require(_amount > 0, "Amount is not > 0"); */
+      // get a handle for the underlying asset contract
+      IERC20 underlying = IERC20(token);
+      // transfer to this contract
+      underlying.safeTransferFrom(msg.sender, address(this), _amount);
 
+      rebalance(bestToken, blocksInAYear, minRateDifference);
+
+      uint256 mintedUnderlyingTokens;
+      if (bestToken == cToken) {
+        mintedUnderlyingTokens = _mintCTokens(_amount);
+      } else {
+        mintedUnderlyingTokens = _mintITokens(_amount);
+      }
+
+      if (bestToken == address(0)) {
+        mintedTokens = _amount; // 1:1
+      } else {
+        uint256 currTokenPrice = IdleHelp.getPriceInToken(cToken, iToken, bestToken, balanceOf);
+        mintedTokens = _amount.div(currTokenPrice);
+      }
+  }
+
+  /**
+   * @dev here we calc the pool share of the cTokens | iTokens one can withdraw
+   */
+  function redeemIndexToken(uint256 _amount, address bestToken, uint256 blocksInAYear, uint256 minRateDifference, uint256 idleSupply)
+    external
+    returns (uint256 tokensRedeemed) {
+      require(idleSupply > 0, 'No IDLEDAI have been issued');
+
+      if (bestToken == cToken) {
+        uint256 cPoolBalance = IERC20(cToken).balanceOf(address(this));
+        uint256 cDAItoRedeem = _amount.mul(cPoolBalance).div(idleSupply);
+        tokensRedeemed = _redeemCTokens(cDAItoRedeem, msg.sender); //TODO fee?
+      } else {
+        uint256 iPoolBalance = IERC20(iToken).balanceOf(address(this));
+        uint256 iDAItoRedeem = _amount.mul(iPoolBalance).div(idleSupply);
+        // TODO we should inform the user of the eventual excess of token that can be redeemed directly in Fulcrum
+        tokensRedeemed = _redeemITokens(iDAItoRedeem, msg.sender);
+      }
+      rebalance(bestToken, blocksInAYear, minRateDifference);
+  }
   /**
    * @dev here we are redeeming unclaimed token (from iToken contract) to this contracts
    * then converting the claimedTokens in the bestToken after rebalancing
