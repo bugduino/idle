@@ -12,7 +12,7 @@ class CryptoInput extends Component {
           border={'1px solid'}
           borderColor={'#ccc'}
           p={0}
-          my={'1em'}
+          my={['0','1em']}
           mx={'auto'}
           >
             <Box width={[3/5]}>
@@ -22,6 +22,8 @@ class CryptoInput extends Component {
                 type="number"
                 borderRadius='2rem'
                 border='0'
+                pl={'1em'}
+                pt={[0,'0.5em']}
                 borderColor='transparent'
                 boxShadow='none !important'
                 min={0}
@@ -35,7 +37,12 @@ class CryptoInput extends Component {
                 onChange={this.props.handleChangeAmount}
               />
             </Box>
-            <Button className={[styles.button]} size={'large'} mainColor={'blue'} fontSize={[2,3]} px={[4,5]} my={0} width={2/5}>Start Lending</Button>
+            <Box display={['none','block']} width={2/5}>
+              <Button onClick={this.props.handleClick} className={[styles.button]} size={'large'} mainColor={'blue'} fontSize={[2,3]} px={[4,5]} my={0} width={1}>Start Lending</Button>
+            </Box>
+            <Box display={['block','none']} width={2/5}>
+              <Button onClick={this.props.handleClick} className={[styles.button]} size={'medium'} mainColor={'blue'} fontSize={[2,3]} px={[2,3]} my={0} width={1}>Start Lending</Button>
+            </Box>
         </Flex>
     );
   }

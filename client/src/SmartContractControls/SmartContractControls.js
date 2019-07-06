@@ -24,6 +24,7 @@ class SmartContractControls extends React.Component {
   state = {
     cETHRate: 0,
     cDAIRate: 0,
+    cDAIToRedeem: 0,
     approveIsOpen: false,
     tokenName: '',
     baseTokenName: '',
@@ -32,7 +33,8 @@ class SmartContractControls extends React.Component {
     genericError: null,
     selectedAsset: 'cDAI',
     sectionETH: null,
-    sectionDAI: null
+    sectionDAI: null,
+    selectedTab: '1',
   };
 
   // utilities
@@ -373,6 +375,11 @@ class SmartContractControls extends React.Component {
     this.setState(state => ({...state, sectionDAI: section}));
   }
 
+  selectTab(e, tabIndex) {
+    e.preventDefault();
+    this.setState(state => ({...state, selectedTab: tabIndex}));
+  }
+
   mint(e) {
     const selectedAsset = this.state.selectedAsset;
     if (selectedAsset === 'cETH') {
@@ -408,128 +415,78 @@ class SmartContractControls extends React.Component {
     return (
       <Box textAlign={'center'} alignItems={'center'}>
         <Form pb={[5, 4]} backgroundColor={'white'} color={'blue'}>
-          {isETHSelected && isETHLend && (this.state.sectionETH==null || this.state.sectionETH=='withdraw') &&
-            <Box py={3} textAlign={"center"}>
-              <Text color={'blue'} fontSize={[3, 5]} textAlign={"center"}>
-                Redeem ~{this.trimEth(this.state.ethToRedeem)} ETH
-              </Text>
-              <Box
-                textAlign={"center"}
-                pt={2}>
-                <Button
-                  className={styles.lendButton}
-                  mt={[1, 2]}
-                  size={this.props.isMobile ? 'medium' : 'large'}
-                  px={'80px'}
-                  borderRadius={4}
-                  onClick={this.redeemCETH}>
-                  Withdraw
-                </Button>
-              </Box>
-              <Box
-                textAlign={"center"}
-                pt={3}>
-                <Link
-                  href="javascript:void(0)"
-                  target={"_blank"}
-                  color={'blue'}
-                  fontWeight={'400'}
-                  onClick={e => this.selectETHSection(e, 'lend')}>
-                    <u>Back to Lending</u>
-                </Link>
-              </Box>
+          <Flex flexDirection={['column','row']} width={'100%'}>
+            <Box className={[styles.tab,this.state.selectedTab=='1' ? styles.tabSelected : '']} width={[1,1/3]} textAlign={'center'}>
+              <Link display={'block'} py={[3,4]} fontSize={[3,5]} fontWeight={2} onClick={e => this.selectTab(e, '1')}>
+                Lend
+              </Link>
             </Box>
-          }
-          {isDAISelected && isDAILend && (this.state.sectionDAI==null || this.state.sectionDAI=='withdraw') &&
-            <Box py={3}>
-              <Text color={'blue'} fontSize={6} textAlign={"center"}>
-                Redeem ~{this.trimEth(this.state.cDAIToRedeem)} DAI
-              </Text>
-              <Box
-                textAlign={"center"}
-                pt={2}>
-                <Button
-                  className={styles.lendButton}
-                  mt={[1, 2]}
-                  size={this.props.isMobile ? 'medium' : 'large'}
-                  px={'80px'}
-                  borderRadius={4}
-                  onClick={e => this.redeemCERC20(e, 'cDAI')}>
-                  Withdraw
-                </Button>
-              </Box>
-              <Box
-                textAlign={"center"}
-                pt={3}>
-                <Link
-                  href="javascript:void(0)"
-                  target={"_blank"}
-                  color={'blue'}
-                  fontWeight={'400'}
-                  onClick={e => this.selectDAISection(e, 'lend')}>
-                    <u>Back to Lending</u>
-                </Link>
-              </Box>
+            <Box className={[styles.tab,this.state.selectedTab=='2' ? styles.tabSelected : '']} width={[1,1/3]} textAlign={'center'} borderLeft={['none','1px solid #fff']} borderRight={['none','1px solid #fff']}>
+              <Link display={'block'} py={[3,4]} fontSize={[3,5]} fontWeight={2} onClick={e => this.selectTab(e, '2')}>
+                Your investments
+              </Link>
             </Box>
-          }
-          {((!isETHLend && !isDAILend) || (((!isETHLend && isETHSelected) || this.state.sectionETH=='lend') || ((!isDAILend && isDAISelected) || this.state.sectionDAI=='lend'))) &&
-            <Box textAlign={'text'}>
-              <Box py={[2, 4]}>
-                {isETHSelected &&
-                  <Heading.h3 fontFamily={'serif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
-                    Current Interest Rate: {this.state.cETHRate}%
-                  </Heading.h3>
-                }
-                {isDAISelected &&
+            <Box className={[styles.tab,this.state.selectedTab=='3' ? styles.tabSelected : '']} width={[1,1/3]} textAlign={'center'}>
+              <Link display={'block'} py={[3,4]} fontSize={[3,5]} fontWeight={2} onClick={e => this.selectTab(e, '3')}>
+                Magic Button
+              </Link>
+            </Box>
+          </Flex>
+
+          <Box py={[2, 4]}>
+            {this.state.selectedTab=='1' &&
+              <Box textAlign={'text'}>
+                <Box py={[2, 4]}>
                   <Heading.h3 fontFamily={'serif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
                     Current Interest Rate: {this.state.cDAIRate}%
                   </Heading.h3>
-                }
-              </Box>
-
-              <CryptoInput
-                defaultValue={this.state.lendAmount}
-                color={'black'}
-                selectedAsset={isDAISelected ? 'DAI' : 'ETH'}
-                handleChangeAmount={this.handleChangeAmount} />
-
-              <Box py={[2,3]} style={{textAlign:'center'}}>
-                <Link textAlign={'center'} color={'blue'} fontSize={3} fontWeight={1} className={[styles.link]}>How does it work?</Link>
-              </Box>
-
-              {this.state.genericError && (
-                <Text textAlign='center' color='white' fontSize={2}>{this.state.genericError}</Text>
-              )}
-
-              {isETHSelected && isETHLend && 
-                <Box
-                  textAlign={"center"}
-                  pt={3}>
-                  <Link
-                    href="javascript:void(0)"
-                    target={"_blank"}
-                    color={'white'}
-                    onClick={e => this.selectETHSection(e, 'withdraw')}>
-                      Redeem your ETH
-                  </Link>
                 </Box>
-              }
 
-              {isDAISelected && isDAILend && 
-                <Box
-                  textAlign={"center"}
-                  pt={3}>
-                  <Link
-                    href="javascript:void(0)"
-                    target={"_blank"}
-                    color={'white'}
-                    onClick={e => this.selectDAISection(e, 'withdraw')}>
-                      Redeem your DAI
-                  </Link>
+                <CryptoInput
+                  defaultValue={this.state.lendAmount}
+                  color={'black'}
+                  selectedAsset='DAI'
+                  handleChangeAmount={this.handleChangeAmount}
+                  handleClick={e => this.mint(e)} />
+
+                {this.state.genericError && (
+                  <Text textAlign='center' color={'red'} fontSize={2}>{this.state.genericError}</Text>
+                )}
+
+                <Box py={[2,3]} style={{textAlign:'center'}}>
+                  <Link textAlign={'center'} color={'blue'} hoverColor={'blue'} fontSize={3} fontWeight={1} className={[styles.link]} href="#how-it-works">How does it work?</Link>
                 </Box>
-              }
+
+              </Box>
+            }
+
+            {this.state.selectedTab=='2' &&
+              <Box textAlign={'text'}>
+                <Heading.h3 fontFamily={'serif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
+                  Redeem ~{this.trimEth(this.state.cDAIToRedeem)} DAI
+                </Heading.h3>
+                <Flex
+                  textAlign='center'
+                  pt={2}>
+                  <Button onClick={e => this.redeemCERC20(e, 'cDAI')} size={'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={[3,4]}>REDEEM</Button>
+                </Flex>
+              </Box>
+            }
+
+            {this.state.selectedTab=='3' &&
+              <Box textAlign={'text'}>
+                <Heading.h3 fontFamily={'serif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
+                  Rebalance the whole SHIT
+                </Heading.h3>
+                <Flex
+                  textAlign='center'
+                  pt={2}>
+                  <Button onClick={e => this.redeemCERC20(e, 'cDAI')} size={'large'} className={styles.magicButton} mainColor={'transparent'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={[3,4]}>REBALANCE NOW!</Button>
+                </Flex>
+              </Box>
+            }
+
             </Box>
-          }
         </Form>
 
         <ApproveModal

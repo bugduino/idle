@@ -30,16 +30,17 @@ class Header extends React.Component {
         }}
       >
         <Flex alignItems={"center"} bg={"#0028be"} py={1}>
-          <Box ml={[3, 6]} width={[4/12]} py={[3,4]} alignItems={"center"}>
+          <Box ml={[0, 6]} width={[1,4/12]} py={[3,4]} alignItems={"center"} textAlign={'center'}>
             <Image src="/images/logo.png"
-              height={['50px','70px']}
+              mx={'auto'}
+              height={['40px','70px']}
               position={['relative','absolute']} />
           </Box>
-          <Box width={[8/12]} justifyContent="flex-end">
+          <Box display={['none','block']} width={[8/12]} justifyContent="flex-end">
             <Flex alignItems={"center"} justifyContent="flex-end">
-              <MenuLink src="#" text="Start Lending" />
-              <MenuLink src="#" text="Your Investments" />
-              <MenuLink src="#" text="Help" />
+              <MenuLink linkSrc="#" linkText="Start Lending" />
+              <MenuLink linkSrc="#" linkText="Your Investments" />
+              <MenuLink linkSrc="#" linkText="Help" />
               {this.props.account ? (
                 <AccountOverview
                   account={this.props.account}

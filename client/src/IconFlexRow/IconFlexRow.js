@@ -16,7 +16,7 @@ class IconFlexRow extends Component {
       	</Box>
       	<Box width={[1,3/9]}>
       		<Text textAlign={['center','right']}>
-      			<Link color={'blue'} fontSize={[3,4]} fontWeight={1} className={[styles.link]} href={this.props.linkHref}>{this.props.linkText}</Link>
+      			<Link color={'blue'} hoverColor={'blue'} fontSize={[3,4]} fontWeight={1} className={[styles.link]} href={this.props.linkHref}>{this.props.linkText}</Link>
       		</Text>
       	</Box>
       </Flex>
