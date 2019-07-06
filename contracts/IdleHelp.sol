@@ -8,25 +8,21 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 library IdleHelp {
   using SafeMath for uint256;
 
-  function getPriceInToken(address cToken, address iToken, address bestToken, uint256 totalSupply)
+  function getPriceInToken(address cToken, address iToken, address bestToken, uint256 totalSupply, uint256 poolSupply)
     public view
     returns (uint256 tokenPrice) {
-      // 1IDLEDAI = nav_pool / total_liquidity_moonDAI
-      uint256 poolSupply;
-      uint256 navPool; // net asset value
+      // 1Token = net_asset_value / total_Token_liquidity
+      // net_asset_value = (rate of 1(cToken || iToken) in Token) * balanceOf((cToken || iToken))
+      uint256 navPool;
       uint256 price;
 
+      // rate
       if (bestToken == cToken) {
-        // nav == rate di 1cDAI = n DAI * balanceOf(cDAI)
         uint256 rate = CERC20(cToken).exchangeRateStored(); // 202487304197710837666727644 ->
         uint256 oneToken = 10**18;
         price = oneToken.div(rate.div(oneToken));
-        poolSupply = IERC20(cToken).balanceOf(address(this));
-        //
       } else {
-        poolSupply = IERC20(iToken).balanceOf(address(this));
-        // nav == rate di 1iDAI = n DAI * balanceOf(iDAI)
-        price = iERC20(iToken).tokenPrice(); // 1001495070730287403 -> 1iDAI in wei = 1001495070730287403 DAI
+        price = iERC20(iToken).tokenPrice(); // eg 1001495070730287403 -> 1iToken in wei = 1001495070730287403 Token
       }
 
       navPool = price.mul(poolSupply);

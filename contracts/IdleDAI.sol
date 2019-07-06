@@ -5,6 +5,7 @@ import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol";
 /* import "openzeppelin-solidity/contracts/token/ERC777/ERC777.sol"; */
 import "openzeppelin-solidity/contracts/utils/ReentrancyGuard.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
@@ -19,14 +20,10 @@ import "./IdleHelp.sol";
 
 // TODO we should inform the user of the eventual excess of token that can be redeemed directly in Fulcrum
 
-// TODO Add fee ?
-
 /* contract IdleDAI is ERC777, ReentrancyGuard { */
-contract IdleDAI is ERC20, ERC20Detailed, ReentrancyGuard {
+contract IdleDAI is ERC20, ERC20Detailed, ReentrancyGuard, Ownable {
   using SafeERC20 for IERC20;
   using SafeMath for uint256;
-
-  address public owner;
 
   address public cToken; // cTokens have 8 decimals
   address public iToken; // iTokens have 18 decimals
@@ -43,25 +40,33 @@ contract IdleDAI is ERC20, ERC20Detailed, ReentrancyGuard {
     public
     ERC20Detailed("IdleDAI", "IDLEDAI", 18) {
     /* ERC777("IdleDAI", "IDLEDAI", new address[](0)) { */
-      owner = msg.sender;
       cToken = _cToken;
       iToken = _iToken;
       token = _token;
-      // TODO get it from compound contract directly
       blocksInAYear = 2102400; // ~15 sec per block
       minRateDifference = 500000000000000000; // 0.5% min
   }
 
   // onlyOwner
   function setMinRateDifference(uint256 _rate)
-    external {
-      require(msg.sender == owner, 'Only owner');
+    external onlyOwner {
       minRateDifference = _rate;
   }
   function setBlocksInAYear(uint256 _blocks)
-    external {
-      require(msg.sender == owner, 'Only owner');
+    external onlyOwner {
       blocksInAYear = _blocks;
+  }
+  function setToken(address _token)
+    external onlyOwner {
+      token = _token;
+  }
+  function setIToken(address _iToken)
+    external onlyOwner {
+      iToken = _iToken;
+  }
+  function setCToken(address _cToken)
+    external onlyOwner {
+      cToken = _cToken;
   }
 
   // public
@@ -90,7 +95,17 @@ contract IdleDAI is ERC20, ERC20Detailed, ReentrancyGuard {
       if (bestToken == address(0)) {
         mintedTokens = _amount;
       } else {
-        uint256 currTokenPrice = IdleHelp.getPriceInToken(cToken, iToken, bestToken, this.balanceOf(address(this)));
+        uint256 poolSupply = IERC20(cToken).balanceOf(address(this));
+        if (bestToken == iToken) {
+          poolSupply = IERC20(iToken).balanceOf(address(this));
+        }
+        uint256 currTokenPrice = IdleHelp.getPriceInToken(
+          cToken,
+          iToken,
+          bestToken,
+          this.balanceOf(address(this)),
+          poolSupply
+        );
         mintedTokens = _amount.div(currTokenPrice);
       }
       /* _mint(msg.sender, msg.sender, mintedTokens, "", ""); */

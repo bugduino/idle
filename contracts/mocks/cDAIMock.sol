@@ -18,7 +18,7 @@ contract cDAIMock is ERC20Detailed, ERC20, CERC20 {
     dai = _dai;
     exchangeRate = 200000000000000000000000000;
     toTransfer = 10**18;
-    supplyRate = 10**18;
+    supplyRate = 32847953230;
     _mint(address(this), 10**14); // 1.000.000 cETH
   }
   function() payable external {}

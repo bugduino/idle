@@ -28,7 +28,7 @@ task("cDAI", "Call method on cDAI contract. eg `npx buidler cDAI --method exchan
   .addParam("method", "The method of the contract")
   .setAction(async taskArgs => {
     const cERC20 = artifacts.require('CERC20');
-    const cDAI = await cERC20.at('0xd6801a1DfFCd0a410336Ef88DeF4320D6DF1883e'); // mainnet
+    const cDAI = await cERC20.at('0xf5dce57282a584d2746faf1593d3121fcac444dc'); // mainnet
     const res = await cDAI[taskArgs.method].call();
 
     console.log(`RES: ${res.toString()}`)
@@ -69,7 +69,7 @@ module.exports = {
   },
   networks: {
     develop: {
-      url: `https://ropsten.infura.io/v3/${INFURA_KEY}`
+      url: `https://mainnet.infura.io/v3/${INFURA_KEY}`
     }
   }
 };

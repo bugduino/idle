@@ -18,8 +18,8 @@ contract iDAIMock is ERC20Detailed, ERC20, iERC20 {
     ERC20Detailed('iDAI', 'iDAI', 8) public {
     dai = _dai;
     toTransfer = 10**18;
-    supplyRate = 10**18;
-    price = 10**18;
+    supplyRate = 2927621524103328230;
+    price = 1001771560608330320;
     _mint(address(this), 10**14); // 1.000.000 cETH
   }
   function() payable external {}
@@ -49,6 +49,9 @@ contract iDAIMock is ERC20Detailed, ERC20, iERC20 {
   }
   function supplyInterestRate() external view returns (uint256)  {
     return supplyRate;
+  }
+  function setSupplyInterestRateForTest() external {
+    supplyRate = supplyRate * 4;
   }
   function setExchangeRateStoredForTest() external {
     toTransfer = 1.1 * 10**18;
