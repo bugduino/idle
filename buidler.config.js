@@ -55,7 +55,7 @@ task("cDAI:apr", "Get apr")
 task("TokenizedRegistry", "Call TokenizedRegistry")
   .setAction(async taskArgs => {
     const tokenizedRegistry = artifacts.require('TokenizedRegistry');
-    const reg = await tokenizedRegistry.at('0xaa5c713387972841995553c9690459596336800b'); // ropsten
+    const reg = await tokenizedRegistry.at('0xd03eea21041a19672e451bcbb413ce8be72d0381'); // ropsten
     let res = await reg.getTokens.call(BNify(0), BNify(20), BNify(0));
 
     console.log(`RES: ${res.toString()}`)
@@ -69,7 +69,7 @@ module.exports = {
   },
   networks: {
     develop: {
-      url: `https://mainnet.infura.io/v3/${INFURA_KEY}`
+      url: `https://ropsten.infura.io/v3/${INFURA_KEY}`
     }
   }
 };
