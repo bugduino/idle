@@ -24,16 +24,11 @@ module.exports = {
       port: 8545,
       network_id: '*'
     },
-    test: {
-      host: '127.0.0.1',
-      port: 8545,
-      network_id: '*'
-    },
     ropsten: {
       provider() {
         return new HDWalletProvider(process.env["TESTNET_MNEMONIC"], `https://ropsten.infura.io/v3/${INFURA_KEY}`)
       },
-      gasPrice: 70000000000, // 70 gwei
+      gasPrice: 7000000000, // 7 gwei
       network_id: 3
     },
     rinkeby: {

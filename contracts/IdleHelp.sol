@@ -69,24 +69,4 @@ library IdleHelp {
 
       return (shouldRebalance, bestTokenAddr);
   }
-/*
-  // TODO how do I call rebalance() on the caller contract?
-
-  function claimITokens(address cToken, address iToken, address bestToken)
-    external
-    returns (uint256 claimedTokens) {
-      claimedTokens = iERC20(iToken).claimLoanToken();
-      if (claimedTokens == 0) {
-        return claimedTokens;
-      }
-
-      this.rebalance();
-      if (bestToken == cToken) {
-        this._mintCTokens(claimedTokens);
-      } else {
-        this._mintITokens(claimedTokens);
-      }
-
-      return claimedTokens;
-  } */
 }

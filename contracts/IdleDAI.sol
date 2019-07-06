@@ -1,7 +1,9 @@
 pragma solidity ^0.5.2;
 
 import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
-import "openzeppelin-solidity/contracts/token/ERC777/ERC777.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol";
+/* import "openzeppelin-solidity/contracts/token/ERC777/ERC777.sol"; */
 import "openzeppelin-solidity/contracts/utils/ReentrancyGuard.sol";
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
@@ -19,7 +21,8 @@ import "./IdleHelp.sol";
 
 // TODO Add fee ?
 
-contract IdleDAI is ERC777, ReentrancyGuard {
+/* contract IdleDAI is ERC777, ReentrancyGuard { */
+contract IdleDAI is ERC20, ERC20Detailed, ReentrancyGuard {
   using SafeERC20 for IERC20;
   using SafeMath for uint256;
 
@@ -38,7 +41,8 @@ contract IdleDAI is ERC777, ReentrancyGuard {
    */
   constructor(address _cToken, address _iToken, address _token)
     public
-    ERC777("IdleDAI", "IDLEDAI", new address[](0)) {
+    ERC20Detailed("IdleDAI", "IDLEDAI", 18) {
+    /* ERC777("IdleDAI", "IDLEDAI", new address[](0)) { */
       owner = msg.sender;
       cToken = _cToken;
       iToken = _iToken;
@@ -84,13 +88,13 @@ contract IdleDAI is ERC777, ReentrancyGuard {
       }
 
       if (bestToken == address(0)) {
-        _mint(msg.sender, msg.sender, _amount, "", ""); // 1:1
         mintedTokens = _amount;
       } else {
         uint256 currTokenPrice = IdleHelp.getPriceInToken(cToken, iToken, bestToken, this.balanceOf(address(this)));
         mintedTokens = _amount.div(currTokenPrice);
-        _mint(msg.sender, msg.sender, mintedTokens, "", "");
       }
+      /* _mint(msg.sender, msg.sender, mintedTokens, "", ""); */
+      _mint(msg.sender, mintedTokens); // 1:1
   }
 
   /**
@@ -116,7 +120,9 @@ contract IdleDAI is ERC777, ReentrancyGuard {
       // TODO we should inform the user of the eventual excess of token that can be redeemed directly in Fulcrum
       tokensRedeemed = _redeemITokens(iDAItoRedeem, msg.sender);
     }
-    this.burn(_amount, '');
+    /* _burn(_amount, ''); */
+    _burn(msg.sender, _amount);
+    rebalance();
 
     /* investedBalances[msg.sender] = investedBalances[msg.sender].sub(tokensRedeemed); */
   }
