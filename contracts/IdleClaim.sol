@@ -20,13 +20,11 @@ contract IdleClaim {
   using SafeERC20 for IERC20;
   using SafeMath for uint256;
 
-  address public owner;
   address public cToken; // cTokens have 8 decimals
   address public iToken; // iTokens have 18 decimals
   address public token;
 
-  constructor(address _cToken, address _iToken, address _token, address idleDAI) public {
-    owner = idleDAI;
+  constructor(address _cToken, address _iToken, address _token) public {
     cToken = _cToken;
     iToken = _iToken;
     token = _token;
