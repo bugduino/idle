@@ -1,15 +1,28 @@
 .headerContainer {
-	// background: linear-gradient(120deg, #f6d365 0%, #ea0d73 100%);
 	background-size: 100%;
 	line-height: 1.2;
 	min-height: 100vh;
-	text-align: center;
+	background-color:#0030e0;
+	color:#fff;
 }
-
 .title {
-	text-align:center;
+	line-height:1.1em;
+	margin-bottom:0.5em;
 }
 .subtitle {
 	font-weight:400;
+	line-height:2em;
+}
+.button{
+	text-transform:uppercase;
 	text-align:center;
+	color:white;
+	outline:none;
+	font-weight:300;
+}
+.graySection{
+	background-color:#f7f7f7;
+}
+.whiteSection{
+	background-color:#ffffff;
 }

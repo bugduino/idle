@@ -5,7 +5,7 @@ import { tint, shade } from 'polished';
 export default {
   breakpoints: ['52em', '64em'],
   // breakpoints: ['40em', '52em', '64em', '80em'],
-  fontSizes: [12, 14, 16, 20, 24, 32, 48, 64],
+  fontSizes: [12, 14, 16, 20, 24, 32, 48, 64, 78, 84, 116],
   fontWeights: [0, 300, 400, 600, 700],
   letterSpacings: [0, 1, 2, 4, 8],
   lineHeights: {
@@ -14,7 +14,7 @@ export default {
     copy: 1.5,
   },
   fonts: {
-    serif: 'athelas, georgia, times, serif',
+    serif: '"georgia regular", athelas, times, serif',
     sansSerif: '"Inter", -apple-system, sans-serif',
   },
   space: [0, 4, 8, 16, 32, 64, 128, 256],
@@ -25,7 +25,7 @@ export default {
   heights: [0, 16, 32, 64, 128, 256],
   minHeights: [0, 16, 32, 64, 128, 256],
   maxHeights: [0, 16, 32, 64, 128, 256],
-  borders: [0, '1px solid transparent'],
+  borders: [0, '1px solid transparent',' 3px solid'],
   borderWidths: ['0', '1px', '2px', '4px'],
   shadows: [
     '0',
@@ -41,7 +41,8 @@ export default {
     'gradient-bg': 'linear-gradient(120deg, #f6d365 0%, #ea0d73 100%)',
     'primary-light': green.light[1],
     'primary-dark': green.dark[1],
-    blue: baseColors.consensysblue,
+    blue: '#0036ff',
+    lightBlue: '#79f4e1',
     copyColor: '#3F3D4B',
     black: baseColors.black,
     'near-black': '#111',
@@ -150,6 +151,7 @@ export default {
       fontSize: '1.5rem',
       height: '4rem',
       minWidth: '4rem',
+      borderRadius: '2rem'
     },
   },
 };

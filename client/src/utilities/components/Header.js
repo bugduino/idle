@@ -1,8 +1,9 @@
 import React from "react";
-import { Box, Flex, Button, Text, Icon } from "rimble-ui";
+import { Box, Flex, Button, Text, Icon, Image, Link } from "rimble-ui";
 // import NetworkIndicator from "@rimble/network-indicator"
 import AccountOverview from "./AccountOverview";
 import AccountModal from "./AccountModal";
+import MenuLink from "../../MenuLink/MenuLink";
 
 class Header extends React.Component {
   state = {
@@ -28,17 +29,17 @@ class Header extends React.Component {
         'right': '0',
         }}
       >
-        <Flex alignItems={"center"} bg={"transparent"} py={1}>
-          <Box ml={[3, 4]} width={[4/12]} alignItems={"center"}>
-            <Flex alignItems={"center"}>
-              <Icon name="Train" size={35} color="primary" />
-              <Text fontSize={3}>
-                Idle
-              </Text>
-            </Flex>
+        <Flex alignItems={"center"} bg={"#0028be"} py={1}>
+          <Box ml={[3, 6]} width={[4/12]} py={[3,4]} alignItems={"center"}>
+            <Image src="/images/logo.png"
+              height={['50px','70px']}
+              position={['relative','absolute']} />
           </Box>
           <Box width={[8/12]} justifyContent="flex-end">
             <Flex alignItems={"center"} justifyContent="flex-end">
+              <MenuLink src="#" text="Start Lending" />
+              <MenuLink src="#" text="Your Investments" />
+              <MenuLink src="#" text="Help" />
               {this.props.account ? (
                 <AccountOverview
                   account={this.props.account}
