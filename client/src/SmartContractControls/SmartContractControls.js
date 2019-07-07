@@ -423,12 +423,12 @@ class SmartContractControls extends React.Component {
             </Box>
             <Box className={[styles.tab,this.state.selectedTab=='2' ? styles.tabSelected : '']} width={[1,1/3]} textAlign={'center'} borderLeft={['none','1px solid #fff']} borderRight={['none','1px solid #fff']}>
               <Link display={'block'} py={[3,4]} fontSize={[3,5]} fontWeight={2} onClick={e => this.selectTab(e, '2')}>
-                Your investments
+                Dashboard
               </Link>
             </Box>
             <Box className={[styles.tab,this.state.selectedTab=='3' ? styles.tabSelected : '']} width={[1,1/3]} textAlign={'center'}>
               <Link display={'block'} py={[3,4]} fontSize={[3,5]} fontWeight={2} onClick={e => this.selectTab(e, '3')}>
-                Magic Button
+                Rebalance
               </Link>
             </Box>
           </Flex>
@@ -438,7 +438,7 @@ class SmartContractControls extends React.Component {
               <Box textAlign={'text'}>
                 <Box py={[2, 4]}>
                   <Heading.h3 fontFamily={'serif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
-                    Current Interest Rate: {this.state.cDAIRate}%
+                    Highest Available Interest Rate: {this.state.cDAIRate}%
                   </Heading.h3>
                 </Box>
 
@@ -463,7 +463,7 @@ class SmartContractControls extends React.Component {
             {this.state.selectedTab=='2' &&
               <Box textAlign={'text'}>
                 <Heading.h3 fontFamily={'serif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
-                  Redeem ~{this.trimEth(this.state.cDAIToRedeem)} DAI
+                  Redeemable funds: ~{this.trimEth(this.state.cDAIToRedeem)} DAI
                 </Heading.h3>
                 <Flex
                   textAlign='center'
@@ -476,7 +476,7 @@ class SmartContractControls extends React.Component {
             {this.state.selectedTab=='3' &&
               <Box textAlign={'text'}>
                 <Heading.h3 fontFamily={'serif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
-                  Rebalance the whole SHIT
+                  Rebalance the entire pool, all users will bless you.
                 </Heading.h3>
                 <Flex
                   textAlign='center'

@@ -8,44 +8,46 @@ class Faq extends Component {
     selectedSection: 'general',
     generalQuestions: [
       {
-        q: 'How could you provide such APR?',
-        a: `We source interest rates through different lending protocols and we forward your funds to the appropriate provider`
+        q: 'How does `Idle` work under the hood?',
+        a: `Idle gathers data from different lending protocols, seeking the highest available interest rate. Your funds are put into an asset pool (managed by the underlying protocol automatically choosen), from there borrowers can use the funds in pool to open up a loan. Those borrowers pay interest into the fund, increasing the size of the fund. When you withdraw your funds, you are entitled to a proportional amount of the interest accrued.
+        `
       },
       {
-        q: 'How could you provide such APR?',
-        a: `We source interest rates through different lending protocols and we forward your funds to the appropriate provider`
+        q: 'How long do I have to use Idle to earn interest?',
+        a: `You can use Idle for as short as one block; there are no requirements on how long an asset must be lended. Because interest accrues every block, you’re free to redeem your funds at any time.`
       },
       {
-        q: 'How could you provide such APR?',
-        a: `We source interest rates through different lending protocols and we forward your funds to the appropriate provider`
+        q: 'Can you walk me through an example?',
+        a: `When entering in Idle the best APR is automatically shown, and the best lending provider is already selected for you so if you decide to lend 1 ETH, you should only select the ETH crypto button, insert the amount and click on Lend.
+        We will forward your funds to the protocol offering the best rate, and gives you back tokens representing your position in such protocols.`
       }
     ],
     guidelinesQuestions: [
       {
-        q: 'Guidelines you provide such APR?',
-        a: `We source interest rates through different lending protocols and we forward your funds to the appropriate provider`
+        q: 'How do I get the supplied asset back?',
+        a: `You can redeem your assets back using Idle at any time. You just have to connect your wallet and choose to redeem the assets. Idle will send the tokens lended and the interest earned back directly into your wallet.`
       },
       {
-        q: 'Guidelines you provide such APR?',
-        a: `We source interest rates through different lending protocols and we forward your funds to the appropriate provider`
+        q: 'How could you provide such APR?',
+        a: `APR or annual premium rate is the return users would get if they lend their fund for a year based off the current utilization ratio of the token debt reserve of the underlying protocol. In Idle, APR is the best annual premium rate available between various lending providers. Because APR is variable, it changes for every block in the Ethereum blockchain and influenced by money market fluctuations, it’s worth to highlight that future returns may not reflect the current expected returns.`
       },
       {
-        q: 'Guidelines you provide such APR?',
-        a: `We source interest rates through different lending protocols and we forward your funds to the appropriate provider`
+        q: 'What lending providers are integrated?',
+        a: `We are currently integrated with Compound v2 and Fulcrum. Ideally we would integrate only protocols which gives tokens representing your lended assets back to the user so be completly trustless and non custodial.`
       }
     ],
     ratesQuestions: [
       {
-        q: 'Rates you provide such APR?',
-        a: `We source interest rates through different lending protocols and we forward your funds to the appropriate provider`
+        q: 'Is `Idle` a non-custodial platform?',
+        a: `Yes, we never have your tokens ownership, when you lend assets in Idle, we forward them to the best lending protocol and gives you back tokens (eg cDAI for Compound or iDAI for Fulcrum) representing your position in that protocol, all in the same transaction.`
       },
       {
-        q: 'Rates you provide such APR?',
-        a: `We source interest rates through different lending protocols and we forward your funds to the appropriate provider`
+        q: 'Is Idle safe to use?',
+        a: `Our contract have not been audited yet, but we are managing to get our smart contract audited as soon as possible. We're operating with different trustfully platforms and their smart contracts (all of them are audited and secured), our contract code is public and have been extensively tested, but the possibility of a bug always exists.`
       },
       {
-        q: 'Rates you provide such APR?',
-        a: `We source interest rates through different lending protocols and we forward your funds to the appropriate provider`
+        q: 'How does the decentralized rebalancing process work?',
+        a: `TODO`
       }
     ]
   };
@@ -94,7 +96,7 @@ class Faq extends Component {
               color={isGuidelinesSelected ? 'blue' : 'copyColor'}
               onClick={() => this.setSection('guidelines')}
               className={['pointer', isGuidelinesSelected ? 'selected' : '']}>
-              Guidelines
+              Investors
             </Text>
             <Text
               fontSize={[3, 4]}
@@ -102,7 +104,7 @@ class Faq extends Component {
               color={isRatesSelected ? 'blue' : 'copyColor'}
               onClick={() => this.setSection('rates')}
               className={['pointer', isRatesSelected ? 'selected' : '']}>
-              Rates
+              Security
             </Text>
           </Flex>
           <Box flex={'1 1'} width={1} mt={[3, 0]} mb={[4, 0]} mr={4} ml={[0, 5]}>
