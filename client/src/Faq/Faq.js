@@ -72,7 +72,7 @@ class Faq extends Component {
       <Flex
         py={[2, 4]}
         flexDirection={['column']}>
-        <Heading.h2 fontFamily={'serif'} fontSize={[5, 6]} textAlign={'center'} py={2} alignItems={'center'} my={0}>
+        <Heading.h2 fontFamily={'sansSerif'} fontSize={[5, 6]} textAlign={'center'} py={2} alignItems={'center'} my={0}>
           Faq
         </Heading.h2>
 

@@ -18,7 +18,7 @@ class Landing extends Component {
       >
         <Box className={[styles.headerContainer]} px={[0, 2]} pt={['1em', '2em']}>
           <Flex flexDirection={'column'} alignItems={['center','flex-start']} maxWidth={["50em", "50em"]} mx={['auto',6]} pb={3} px={[3,0]} textAlign={['center','left']} pt={['15vh', '20vh']}>
-            <Heading.h1 fontFamily={'serif'} className={[styles.title]} fontSize={[6,7]} textAlign={['center','left']}>
+            <Heading.h1 fontFamily={'sansSerif'} className={[styles.title]} fontSize={[6,7]} textAlign={['center','left']}>
               Get the best out of your lend, with just one token.
             </Heading.h1>
             <Heading.h2 className={[styles.subtitle]} fontSize={[3,4]} textAlign={['center','left']}>
@@ -43,12 +43,12 @@ class Landing extends Component {
           </Box>
           <Flex maxWidth={'100%'} flexDirection={['column','row']}>
             <Box p={[5,6]} backgroundColor={'blue'} color={'white'}>
-              <Heading.h3 fontFamily={'serif'} fontSize={[5,6]} mb={[3,4]}>Wealth Managers</Heading.h3>
+              <Heading.h3 fontFamily={'sansSerif'} fontSize={[5,6]} mb={[3,4]}>Wealth Managers</Heading.h3>
               <Heading.h4 fontWeight={1} lineHeight={2}>IdleTokens can be used by wealth managers in order to optimize their customer’ portfolio returns.</Heading.h4>
               <Button onClick={e => window.location.href='#invest'} size={'large'} mainColor={'lightBlue'} contrastColor={'blue'} fontWeight={2} fontSize={[2,3]} px={[4,5]} mt={[3,4]}>START LENDING</Button>
             </Box>
             <Box p={[5,6]} backgroundColor={'white'} color={'blue'}>
-              <Heading.h3 fontFamily={'serif'} fontSize={[5,6]} mb={[3,4]}>Retail Investors</Heading.h3>
+              <Heading.h3 fontFamily={'sansSerif'} fontSize={[5,6]} mb={[3,4]}>Retail Investors</Heading.h3>
               <Heading.h4 color={'black'} fontWeight={1} lineHeight={2}>IdleTokens can be owned by retail investors that want to seek the highest yield on their funds.</Heading.h4>
               <Button onClick={e => window.location.href='#invest'} size={'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} px={[4,5]} mt={[3,4]}>START LENDING</Button>
             </Box>
@@ -57,7 +57,7 @@ class Landing extends Component {
 
         <Box id='how-it-works'>
           <Box my={[2,3]}>
-            <Heading.h2 fontFamily={'serif'} fontSize={[5, 6]} textAlign={'center'} py={2} alignItems={'center'} my={0}>
+            <Heading.h2 fontFamily={'sansSerif'} fontSize={[5, 6]} textAlign={'center'} py={2} alignItems={'center'} my={0}>
               How it Works
             </Heading.h2>
             <Flex flexDirection={['column','row']}>
@@ -67,21 +67,21 @@ class Landing extends Component {
               <Flex flexDirection={'column'} width={[1,3/5]}>
                 <Flex flexDirection={['column','row']}>
                   <Box p={[4,5]} backgroundColor={'white'} color={'black'} borderBottom={['1px solid #eee','none']}>
-                    <Heading.h3 textAlign={['center','left']} fontFamily={'serif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>1. Lend your assets</Heading.h3>
+                    <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>1. Lend your assets</Heading.h3>
                     <Heading.h4 textAlign={['center','left']} fontWeight={2} lineHeight={2} fontSize={[1,2]}>Connect your wallet and lend your crypto assets to get started. You will receive idleTokens, which represent your interest accruing funds.</Heading.h4>
                   </Box>
                   <Box p={[4,5]} backgroundColor={'white'} color={'black'} borderBottom={['1px solid #eee','none']}>
-                    <Heading.h3 textAlign={['center','left']} fontFamily={'serif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>2. Earn interests</Heading.h3>
+                    <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>2. Earn interests</Heading.h3>
                     <Heading.h4 textAlign={['center','left']} fontWeight={2} lineHeight={2} fontSize={[1,2]}>Your assets will immediately start earning interest at the best available rate among different lending providers, with a block-per-block pace.</Heading.h4>
                   </Box>
                 </Flex>
                 <Flex flexDirection={['column','row']}>
                   <Box p={[4,5]} backgroundColor={'white'} color={'black'} borderBottom={['1px solid #eee','none']}>
-                    <Heading.h3 textAlign={['center','left']} fontFamily={'serif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>3. Dbasedecentralized rebalance</Heading.h3>
+                    <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>3. Decentralized rebalance</Heading.h3>
                     <Heading.h4 textAlign={['center','left']} fontWeight={2} lineHeight={2} fontSize={[1,2]}>If needed, you have the power to rebalance the entire Idle user funds pool on behalf of all users. One for all, all for one.</Heading.h4>
                   </Box>
                   <Box p={[4,5]} backgroundColor={'white'} color={'black'}>
-                    <Heading.h3 textAlign={['center','left']} fontFamily={'serif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>4. Redeem at anytime</Heading.h3>
+                    <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>4. Redeem at anytime</Heading.h3>
                     <Heading.h4 textAlign={['center','left']} fontWeight={2} lineHeight={2} fontSize={[1,2]}>Anytime, you can redeem your idleTokens and get back your increased funds, rebalancing the pool if needed. Kudos for you.</Heading.h4>
                   </Box>
                 </Flex>
@@ -92,24 +92,24 @@ class Landing extends Component {
 
         <Box className={[styles.graySection]}>
           <Box maxWidth={['35em','80em']} mx={'auto'} pt={[2,3]} pb={[4,6]}>
-            <Heading.h2 fontFamily={'serif'} fontSize={[5, 6]} textAlign={'center'} py={3} alignItems={'center'} my={0}>
+            <Heading.h2 fontFamily={'sansSerif'} fontSize={[5, 6]} textAlign={'center'} py={3} alignItems={'center'} my={0}>
               Always the best Rate
             </Heading.h2>
             <Flex flexDirection={['column','row']}>
               <Box p={[4,5]} pb={0} backgroundColor={'white'} color={'black'} boxShadow={1} borderBottom={'15px solid'} borderColor={'blue'}>
-                <Heading.h3 textAlign={['center','left']} fontFamily={'serif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>Compound</Heading.h3>
+                <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>Compound</Heading.h3>
                 <Heading.h4 textAlign={['center','left']} fontWeight={1} lineHeight={2} fontSize={[2,3]}>This is the current lending interest rate on Compound.</Heading.h4>
-                <Heading.h2 fontFamily={'serif'} textAlign={'center'} fontWeight={2} fontSize={[6,8]} mb={[4,0]}>0.7%</Heading.h2>
+                <Heading.h2 fontFamily={'sansSerif'} textAlign={'center'} fontWeight={2} fontSize={[6,8]} mb={[4,0]}>0.7%</Heading.h2>
               </Box>
               <Box p={[4,5]} pb={0} backgroundColor={'blue'} color={'white'} boxShadow={1} borderBottom={'15px solid'} borderColor={'white'}>
-                <Heading.h3 textAlign={['center','left']} fontFamily={'serif'} fontSize={[4,5]} mb={[2,3]}>Idle</Heading.h3>
+                <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]}>Idle</Heading.h3>
                 <Heading.h4 textAlign={['center','left']} fontWeight={1} lineHeight={2} fontSize={[2,3]}>Idle will get the best rate, thanks to users and Adam Smith' invisible hand principle.</Heading.h4>
-                <Heading.h2 fontFamily={'serif'} textAlign={'center'} fontWeight={2} fontSize={[9,10]} mb={[4,0]}>0.7%</Heading.h2>
+                <Heading.h2 fontFamily={'sansSerif'} textAlign={'center'} fontWeight={2} fontSize={[9,10]} mb={[4,0]}>0.7%</Heading.h2>
               </Box>
               <Box p={[4,5]} pb={0} backgroundColor={'white'} color={'black'} boxShadow={1} borderBottom={'15px solid'} borderColor={'blue'}>
-                <Heading.h3 textAlign={['center','left']} fontFamily={'serif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>Fulcrum</Heading.h3>
+                <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>Fulcrum</Heading.h3>
                 <Heading.h4 textAlign={['center','left']} fontWeight={1} lineHeight={2} fontSize={[2,3]}>This is the current lending interest rate on Fulcrum.</Heading.h4>
-                <Heading.h2 fontFamily={'serif'} textAlign={'center'} fontWeight={2} fontSize={[6,8]} mb={[4,0]}>0.5%</Heading.h2>
+                <Heading.h2 fontFamily={'sansSerif'} textAlign={'center'} fontWeight={2} fontSize={[6,8]} mb={[4,0]}>0.5%</Heading.h2>
               </Box>
             </Flex>
           </Box>

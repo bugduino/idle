@@ -437,7 +437,7 @@ class SmartContractControls extends React.Component {
             {this.state.selectedTab=='1' &&
               <Box textAlign={'text'}>
                 <Box py={[2, 4]}>
-                  <Heading.h3 fontFamily={'serif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
+                  <Heading.h3 fontFamily={'sansSerif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
                     Best available interest Rate: {this.state.cDAIRate}%
                   </Heading.h3>
                 </Box>
@@ -462,7 +462,7 @@ class SmartContractControls extends React.Component {
 
             {this.state.selectedTab=='2' &&
               <Box textAlign={'text'}>
-                <Heading.h3 fontFamily={'serif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
+                <Heading.h3 fontFamily={'sansSerif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
                   Redeemable funds: ~{this.trimEth(this.state.cDAIToRedeem)} DAI
                 </Heading.h3>
                 <Flex
@@ -475,7 +475,7 @@ class SmartContractControls extends React.Component {
 
             {this.state.selectedTab=='3' &&
               <Box textAlign={'text'}>
-                <Heading.h3 fontFamily={'serif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
+                <Heading.h3 fontFamily={'sansSerif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
                   Rebalance the entire pool, all users will bless you.
                 </Heading.h3>
                 <Flex

@@ -18,7 +18,7 @@ class Faquestion extends Component {
         alignItems={'center'}
         justifyContent={'center'}>
         <Heading.h4
-          fontFamily={'serif'}
+          fontFamily={'sansSerif'}
           style={{cursor: 'pointer'}}
           fontSize={[3, 4]}
           pt={(this.props.pt || this.props.pt === 0) ? this.props.pt : 2}

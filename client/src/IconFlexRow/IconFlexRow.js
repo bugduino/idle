@@ -12,7 +12,7 @@ class IconFlexRow extends Component {
       		<Image src={this.props.image} />
       	</Flex>
       	<Box width={[1,4/9]} pl={['0','4em']} pr={['0','4em']}>
-      		<Text textAlign={['center','left']} fontFamily={'serif'} color={'black'} fontSize={[4,5]}>{this.props.title}</Text>
+      		<Text textAlign={['center','left']} fontFamily={'sansSerif'} color={'black'} fontSize={[4,5]}>{this.props.title}</Text>
       	</Box>
       	<Box width={[1,3/9]}>
       		<Text textAlign={['center','right']}>
