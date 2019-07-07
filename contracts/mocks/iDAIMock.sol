@@ -31,11 +31,7 @@ contract iDAIMock is ERC20Detailed, ERC20, iERC20 {
   }
   function burn(address receiver, uint256 amount) external returns (uint256) {
     // here I should transfer 1 DAI back
-
-    // the real cETH contract does not need to transferFrom
-    // it just changes the balance but I'm unable to reproduce it
-    /* _balances[msg.sender] = _balances[msg.sender].sub(amount); */
-    /* _burnFrom(msg.sender, amount); */
+    /* _burn(msg.sender, amount); */
 
     require(IERC20(dai).transfer(receiver, amount), "Error during transfer"); // 1 DAI
     return amount;

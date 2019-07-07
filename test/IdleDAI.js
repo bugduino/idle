@@ -9,10 +9,10 @@ const iDAIMock = artifacts.require('iDAIMock');
 const DAIMock = artifacts.require('DAIMock');
 const BNify = n => new BN(String(n));
 
-contract('IdleDAI', function ([_, registryFunder, creator, nonOwner]) {
+contract('IdleDAI', function ([_, registryFunder, creator, nonOwner, someone]) {
   beforeEach(async function () {
-    this.DAIMock = await DAIMock.new();
-    this.cDAIMock = await cDAIMock.new(this.DAIMock.address, {from: creator});
+    this.DAIMock = await DAIMock.new({from: creator});
+    this.cDAIMock = await cDAIMock.new(this.DAIMock.address, someone, {from: creator});
     this.iDAIMock = await iDAIMock.new(this.DAIMock.address, {from: creator});
     this.one = new BN('1000000000000000000');
     this.ETHAddr = '0x0000000000000000000000000000000000000000';
@@ -94,5 +94,64 @@ contract('IdleDAI', function ([_, registryFunder, creator, nonOwner]) {
     (await this.token.cToken()).should.equal(val);
 
     await expectRevert.unspecified(this.token.setCToken(val, { from: nonOwner }));
+  });
+
+  it('rebalance method should set bestToken if current best token is address(0)', async function () {
+    await this.token.rebalance({ from: creator });
+    const bestToken = await this.token.bestToken({ from: creator });
+    bestToken.should.be.equal(this.cDAIMock.address);
+  });
+
+  it('rebalance method should not rebalance if it\'s not needed', async function () {
+    // first rebalance to set from address(0) to cToken
+    await this.token.rebalance({ from: creator });
+    const bestToken = await this.token.bestToken({ from: creator });
+    bestToken.should.be.equal(this.cDAIMock.address);
+    // second rebalance should not change bestToken
+    await this.token.rebalance({ from: creator });
+    const bestToken2 = await this.token.bestToken({ from: creator });
+    bestToken2.should.be.equal(this.cDAIMock.address);
+  });
+
+  it('rebalance should change bestToken if rates are changed', async function () {
+    // Needed for testing, owner transfers 100 DAI to the contract
+    await this.DAIMock.transfer(this.cDAIMock.address, BNify('100').mul(this.one), {from: creator});
+
+    // first rebalance to set from address(0) to cToken
+    await this.token.rebalance({ from: creator });
+    const bestToken = await this.token.bestToken({ from: creator });
+    bestToken.should.be.equal(this.cDAIMock.address);
+
+    await this.cDAIMock.setSupplyRatePerBlockForTest({ from: creator });
+
+    // second rebalance should change bestToken
+    await this.token.rebalance({ from: creator });
+    const bestToken2 = await this.token.bestToken({ from: creator });
+    bestToken2.should.be.equal(this.iDAIMock.address);
+  });
+
+  it('rebalance should convert the entire pool if rates are changed', async function () {
+    // Needed for testing, owner transfers 100 DAI to the contract
+    const oneCToken = new BN('100000000'); // 10**8 -> 1 cDAI
+    await this.DAIMock.transfer(this.cDAIMock.address, BNify('100').mul(this.one), {from: creator});
+    await this.cDAIMock.transfer(this.token.address, BNify('50').mul(oneCToken), {from: someone});
+
+    // first rebalance to set from address(0) to cToken
+    await this.token.rebalance({ from: creator });
+    const bestToken = await this.token.bestToken({ from: creator });
+    bestToken.should.be.equal(this.cDAIMock.address);
+
+    (await this.iDAIMock.balanceOf(this.token.address)).should.be.bignumber.equal(new BN('0'));
+    await this.cDAIMock.setSupplyRatePerBlockForTest({ from: creator });
+
+    // second rebalance changes bestToken to iToken and convert the pool
+    await this.token.rebalance({ from: creator });
+    const bestToken2 = await this.token.bestToken({ from: creator });
+    bestToken2.should.be.equal(this.iDAIMock.address);
+
+
+    (await this.iDAIMock.balanceOf(this.token.address)).should.be.bignumber.equal(this.one.toString());
+    // this
+    (await this.cDAIMock.balanceOf(this.token.address)).should.be.bignumber.equal(new BN('0'));
   });
 });

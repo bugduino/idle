@@ -12,14 +12,15 @@ contract cDAIMock is ERC20Detailed, ERC20, CERC20 {
   uint256 public toTransfer;
   uint256 public supplyRate;
 
-  constructor(address _dai)
+  constructor(address _dai, address tokenOwner)
     ERC20()
     ERC20Detailed('cDAI', 'cDAI', 8) public {
     dai = _dai;
     exchangeRate = 200000000000000000000000000;
     toTransfer = 10**18;
     supplyRate = 32847953230;
-    _mint(address(this), 10**14); // 1.000.000 cETH
+    _mint(address(this), 10**14); // 1.000.000 cDAI
+    _mint(tokenOwner, 10**11); // 1.000 cDAI
   }
   function() payable external {}
 
@@ -30,12 +31,7 @@ contract cDAIMock is ERC20Detailed, ERC20, CERC20 {
   }
   function redeem(uint256 amount) external returns (uint256) {
     // here I should transfer 1 DAI back
-    /* _burnFrom(msg.sender, amount); */
-    // the real cETH contract does not need to transferFrom
-    // it just changes the balance but I'm unable to reproduce it
-    /* _balances[msg.sender] = _balances[msg.sender].sub(amount); */
-    /* _burnFrom(msg.sender, amount); */
-
+    _burn(msg.sender, amount);
     require(IERC20(dai).transfer(msg.sender, toTransfer), "Error during transfer"); // 1 DAI
     return 0;
   }
@@ -47,6 +43,9 @@ contract cDAIMock is ERC20Detailed, ERC20, CERC20 {
     return supplyRate;
   }
 
+  function setSupplyRatePerBlockForTest() external {
+    supplyRate = supplyRate / 10;
+  }
   function setExchangeRateStoredForTest() external {
     exchangeRate = 220000000000000000000000000;
     toTransfer = 1.1 * 10**18;
