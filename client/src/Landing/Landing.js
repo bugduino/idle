@@ -19,10 +19,10 @@ class Landing extends Component {
         <Box className={[styles.headerContainer]} px={[0, 2]} pt={['1em', '2em']}>
           <Flex flexDirection={'column'} alignItems={['center','flex-start']} maxWidth={["50em", "50em"]} mx={['auto',6]} pb={3} px={[3,0]} textAlign={['center','left']} pt={['15vh', '20vh']}>
             <Heading.h1 fontFamily={'sansSerif'} className={[styles.title]} fontSize={[6,7]} textAlign={['center','left']}>
-              Get the best out of your lend, with just one token.
+              Get the best out of your lend, with just one token
             </Heading.h1>
             <Heading.h2 className={[styles.subtitle]} fontSize={[3,4]} textAlign={['center','left']}>
-              Idle connects different lending protocols with a decentralized rebalance process in order to get the best rate.
+              We connect different lending protocols with a decentralized rebalance process to always give you the best rate
             </Heading.h2>
             <Button className={[styles.button]} size={'large'} mainColor={'black'} fontSize={[2,3]} px={[4,5]} mt={[3,4]} mb={[5,7]}>START LENDING</Button>
           </Flex>
