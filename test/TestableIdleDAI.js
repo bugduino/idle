@@ -13,7 +13,7 @@ contract('TestableIdleDAI (internal functions exposed as public)', function ([_,
   beforeEach(async function () {
     this.DAIMock = await DAIMock.new({from: creator});
     this.cDAIMock = await cDAIMock.new(this.DAIMock.address, someone, {from: creator});
-    this.iDAIMock = await iDAIMock.new(this.DAIMock.address, {from: creator});
+    this.iDAIMock = await iDAIMock.new(this.DAIMock.address, someone, {from: creator});
     this.one = new BN('1000000000000000000');
     this.ETHAddr = '0x0000000000000000000000000000000000000000';
     this.IdleHelp = await IdleHelp.new();

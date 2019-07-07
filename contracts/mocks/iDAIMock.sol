@@ -13,7 +13,7 @@ contract iDAIMock is ERC20Detailed, ERC20, iERC20 {
   uint256 public supplyRate;
   uint256 public price;
 
-  constructor(address _dai)
+  constructor(address _dai, address someone)
     ERC20()
     ERC20Detailed('iDAI', 'iDAI', 8) public {
     dai = _dai;
@@ -21,6 +21,7 @@ contract iDAIMock is ERC20Detailed, ERC20, iERC20 {
     supplyRate = 2927621524103328230;
     price = 1001771560608330320;
     _mint(address(this), 10000 * 10**18); // 10.000 iDAI
+    _mint(someone, 10000 * 10**18); // 10.000 iDAI
   }
   function() payable external {}
 

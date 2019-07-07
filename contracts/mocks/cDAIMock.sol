@@ -46,6 +46,9 @@ contract cDAIMock is ERC20Detailed, ERC20, CERC20 {
   function setSupplyRatePerBlockForTest() external {
     supplyRate = supplyRate / 10;
   }
+  function resetSupplyRatePerBlockForTest() external {
+    supplyRate = supplyRate * 10;
+  }
   function setExchangeRateStoredForTest() external {
     exchangeRate = 220000000000000000000000000;
     toTransfer = 1.1 * 10**18;

@@ -13,7 +13,7 @@ contract('IdleDAI', function ([_, registryFunder, creator, nonOwner, someone]) {
   beforeEach(async function () {
     this.DAIMock = await DAIMock.new({from: creator});
     this.cDAIMock = await cDAIMock.new(this.DAIMock.address, someone, {from: creator});
-    this.iDAIMock = await iDAIMock.new(this.DAIMock.address, {from: creator});
+    this.iDAIMock = await iDAIMock.new(this.DAIMock.address, someone, {from: creator});
     this.one = new BN('1000000000000000000');
     this.ETHAddr = '0x0000000000000000000000000000000000000000';
     this.IdleHelp = await IdleHelp.new();
@@ -130,7 +130,7 @@ contract('IdleDAI', function ([_, registryFunder, creator, nonOwner, someone]) {
     bestToken2.should.be.equal(this.iDAIMock.address);
   });
 
-  it('rebalance should convert the entire pool if rates are changed', async function () {
+  it('rebalance should convert the entire pool if rates are changed (from cToken to iToken)', async function () {
     // Needed for testing, owner transfers 100 DAI to the contract
     const oneCToken = new BN('100000000'); // 10**8 -> 1 cDAI
     await this.DAIMock.transfer(this.cDAIMock.address, BNify('100').mul(this.one), {from: creator});
@@ -149,9 +149,34 @@ contract('IdleDAI', function ([_, registryFunder, creator, nonOwner, someone]) {
     const bestToken2 = await this.token.bestToken({ from: creator });
     bestToken2.should.be.equal(this.iDAIMock.address);
 
-
     (await this.iDAIMock.balanceOf(this.token.address)).should.be.bignumber.equal(this.one.toString());
-    // this
     (await this.cDAIMock.balanceOf(this.token.address)).should.be.bignumber.equal(new BN('0'));
+  });
+  it('rebalance should convert the entire pool if rates are changed (from iToken to cToken)', async function () {
+    await this.cDAIMock.setSupplyRatePerBlockForTest({ from: creator });
+    // Needed for testing, owner transfers 100 DAI to the contract
+    await this.DAIMock.transfer(this.iDAIMock.address, BNify('100').mul(this.one), {from: creator});
+
+    // Needed for testing, someone transfers 1 iDAI to the contract
+    await this.iDAIMock.transfer(this.token.address, this.one, {from: someone});
+
+    // first rebalance to set from address(0) to iToken
+    await this.token.rebalance({ from: creator });
+    const bestToken = await this.token.bestToken({ from: creator });
+    bestToken.should.be.equal(this.iDAIMock.address);
+
+    (await this.cDAIMock.balanceOf(this.token.address)).should.be.bignumber.equal(new BN('0'));
+    await this.cDAIMock.resetSupplyRatePerBlockForTest({ from: creator });
+
+    // second rebalance changes bestToken to iToken and convert the pool
+    await this.token.rebalance({ from: creator });
+    const bestToken2 = await this.token.bestToken({ from: creator });
+    bestToken2.should.be.equal(this.cDAIMock.address);
+
+    const oneCToken = new BN('100000000'); // 10**8 -> 1 cDAI
+    (await this.cDAIMock.balanceOf(this.token.address)).should.be.bignumber.equal(oneCToken.mul(new BN('50')));
+
+    // error on TestableIdleDAI when using _burn in iDAIMock 
+    // (await this.iDAIMock.balanceOf(this.token.address)).should.be.bignumber.equal(new BN('0'));
   });
 });
