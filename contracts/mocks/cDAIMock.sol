@@ -28,9 +28,9 @@ contract cDAIMock is ERC20Detailed, ERC20, CERC20 {
     require(this.transfer(msg.sender, 5000000000), "Error during transfer"); // 50 cETH
     return 0;
   }
-  function redeem(uint256) external returns (uint256) {
+  function redeem(uint256 amount) external returns (uint256) {
     // here I should transfer 1 DAI back
-
+    /* _burnFrom(msg.sender, amount); */
     // the real cETH contract does not need to transferFrom
     // it just changes the balance but I'm unable to reproduce it
     /* _balances[msg.sender] = _balances[msg.sender].sub(amount); */

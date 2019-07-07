@@ -38,9 +38,85 @@ contract('TestableIdleDAI (internal functions exposed as public)', function ([_,
     const res = await this.token._mintCTokens.call(this.one, { from: creator });
     res.should.be.bignumber.equal(new BN('5000000000')); // 50 cToken
 
-    // await this.token._mintCTokens(this.one, { from: creator });
-    // const cDAIBalance = await this.cDAIMock.balanceOf(this.token.address);
-    // cDAIBalance.should.be.bignumber.equal(new BN('5000000000')); // 50 cToken
+    await this.token._mintCTokens(this.one, { from: creator });
+    const cDAIBalance = await this.cDAIMock.balanceOf(this.token.address);
+    cDAIBalance.should.be.bignumber.equal(new BN('5000000000')); // 50 cToken
+    // test that DAI are not present in this.token
+  });
+  it('_mintITokens', async function () {
+    const DAIBalance = await this.DAIMock.balanceOf(creator);
+    const expectedBalance = BNify('1000').mul(this.one);
+    assert.equal(BNify(DAIBalance).toString(), expectedBalance.toString(), 'DAI balance is correct for owner');
+
+    // owner transfers 1 DAI to the contract
+    await this.DAIMock.transfer(this.token.address, this.one, {from: creator});
+
+    const res = await this.token._mintITokens.call(this.one, { from: creator });
+    res.should.be.bignumber.equal(this.one); // 1 iToken
+    await this.token._mintITokens(this.one, { from: creator });
+    const iDAIBalance = await this.iDAIMock.balanceOf(this.token.address);
+    iDAIBalance.should.be.bignumber.equal(this.one); // 1 iToken
+    // test that DAI are not present in this.token
+  });
+  it('_redeemCTokens', async function () {
+    const DAIBalance = await this.DAIMock.balanceOf(creator);
+    const expectedBalance = BNify('1000').mul(this.one);
+    assert.equal(BNify(DAIBalance).toString(), expectedBalance.toString(), 'DAI balance is correct for owner');
+
+    // owner transfers 1 DAI to the contract
+    await this.DAIMock.transfer(this.token.address, this.one, {from: creator});
+    // owner transfers 100 DAI to the contract
+    await this.DAIMock.transfer(this.cDAIMock.address, BNify('100').mul(this.one), {from: creator});
+
+    await this.token._mintCTokens(this.one, { from: creator });
+    const cDAIBalance = await this.cDAIMock.balanceOf(this.token.address);
+    cDAIBalance.should.be.bignumber.equal(new BN('5000000000')); // 50 cToken
+
+    await this.cDAIMock.setExchangeRateStoredForTest();
+    const res = await this.token._redeemCTokens.call(cDAIBalance, this.token.address, { from: creator });
+    res.should.be.bignumber.equal(new BN('1100000000000000000'));
+    await this.token._redeemCTokens(cDAIBalance, this.token.address, { from: creator });
+    const DAIBalanceAfter = await this.DAIMock.balanceOf(this.token.address);
+    DAIBalanceAfter.should.be.bignumber.equal(new BN('1100000000000000000'));
+    // test that DAI are not present in this.token
+  });
+  it('_redeemCTokens to Address', async function () {
+    const DAIBalance = await this.DAIMock.balanceOf(creator);
+    const expectedBalance = BNify('1000').mul(this.one);
+    assert.equal(BNify(DAIBalance).toString(), expectedBalance.toString(), 'DAI balance is correct for owner');
+
+    // owner transfers 1 DAI to the contract
+    await this.DAIMock.transfer(this.token.address, this.one, {from: creator});
+    // owner transfers 100 DAI to the contract
+    await this.DAIMock.transfer(this.cDAIMock.address, BNify('100').mul(this.one), {from: creator});
+
+    await this.token._mintCTokens(this.one, { from: creator });
+    const cDAIBalance = await this.cDAIMock.balanceOf(this.token.address);
+    cDAIBalance.should.be.bignumber.equal(new BN('5000000000')); // 50 cToken
+
+    await this.cDAIMock.setExchangeRateStoredForTest();
+    const res = await this.token._redeemCTokens.call(cDAIBalance, creator, { from: creator });
+    res.should.be.bignumber.equal(new BN('1100000000000000000'));
+    await this.token._redeemCTokens(cDAIBalance, creator, { from: creator });
+    const DAIBalanceAfter = await this.DAIMock.balanceOf(creator);
+    DAIBalanceAfter.should.be.bignumber.equal(new BN('900100000000000000000'));
+    // test that DAI are not present in this.token
+  });
+  it('_redeemITokens', async function () {
+    const DAIBalance = await this.DAIMock.balanceOf(creator);
+    const expectedBalance = BNify('1000').mul(this.one);
+    assert.equal(BNify(DAIBalance).toString(), expectedBalance.toString(), 'DAI balance is correct for owner');
+
+    // owner transfers 1 DAI to the contract
+    await this.DAIMock.transfer(this.token.address, this.one, {from: creator});
+    // owner transfers 100 DAI to the contract
+    await this.DAIMock.transfer(this.iDAIMock.address, BNify('100').mul(this.one), {from: creator});
+
+    const res = await this.token._redeemITokens.call(this.one, this.token.address, { from: creator });
+    res.should.be.bignumber.equal(this.one); // 1 iDAI
+    await this.token._redeemITokens(this.one, this.token.address, { from: creator });
+    const DAIBalanceAfter = await this.DAIMock.balanceOf(this.token.address);
+    DAIBalanceAfter.should.be.bignumber.equal(this.one.mul(new BN('2'))); // 2 DAI (one was sent before)
     // test that DAI are not present in this.token
   });
 });

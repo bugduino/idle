@@ -20,16 +20,16 @@ contract iDAIMock is ERC20Detailed, ERC20, iERC20 {
     toTransfer = 10**18;
     supplyRate = 2927621524103328230;
     price = 1001771560608330320;
-    _mint(address(this), 10**14); // 1.000.000 cETH
+    _mint(address(this), 10000 * 10**18); // 10.000 iDAI
   }
   function() payable external {}
 
   function mint(address receiver, uint256 amount) external returns (uint256) {
     require(IERC20(dai).transferFrom(msg.sender, address(this), amount), "Error during transferFrom"); // 1 DAI
-    require(this.transfer(receiver, amount), "Error during transfer"); // 50 cETH
-    return 0;
+    require(this.transfer(receiver, amount), "Error during transfer"); // 1 iDAI
+    return amount;
   }
-  function burn(address, uint256) external returns (uint256) {
+  function burn(address receiver, uint256 amount) external returns (uint256) {
     // here I should transfer 1 DAI back
 
     // the real cETH contract does not need to transferFrom
@@ -37,8 +37,8 @@ contract iDAIMock is ERC20Detailed, ERC20, iERC20 {
     /* _balances[msg.sender] = _balances[msg.sender].sub(amount); */
     /* _burnFrom(msg.sender, amount); */
 
-    /* require(IERC20(dai).transfer(receiver, toTransfer), "Error during transfer"); // 1 DAI */
-    return 0;
+    require(IERC20(dai).transfer(receiver, amount), "Error during transfer"); // 1 DAI
+    return amount;
   }
 
   function claimLoanToken() external returns (uint256)  {

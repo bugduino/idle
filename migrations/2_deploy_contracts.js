@@ -44,6 +44,10 @@ const DAI = {
   'ropsten': '0xaD6D458402F60fD3Bd25163575031ACDce07538D',
   'ropsten-fork': '0xaD6D458402F60fD3Bd25163575031ACDce07538D', // needed for truffle
 
+  // DAI for compound what should I do?
+  // 'ropsten': '0x25a01a05c188dacbcf1d61af55d4a5b4021f7eed',
+  // 'ropsten-fork': '0x25a01a05c188dacbcf1d61af55d4a5b4021f7eed', // needed for truffle
+
   'kovan': '0xd6801a1DfFCd0a410336Ef88DeF4320D6DF1883e',
   'kovan-fork': '0xd6801a1DfFCd0a410336Ef88DeF4320D6DF1883e' // needed for truffle
 };

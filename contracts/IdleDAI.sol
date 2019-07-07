@@ -194,7 +194,7 @@ contract IdleDAI is ERC20, ERC20Detailed, ReentrancyGuard, Ownable {
   function _mintCTokens(uint256 _amount)
     internal
     returns (uint256 cTokens) {
-      if (IERC20(cToken).balanceOf(address(this)) == 0) {
+      if (IERC20(token).balanceOf(address(this)) == 0) {
         return cTokens;
       }
       // approve the transfer to cToken contract
@@ -214,10 +214,10 @@ contract IdleDAI is ERC20, ERC20Detailed, ReentrancyGuard, Ownable {
   function _mintITokens(uint256 _amount)
     internal
     returns (uint256 iTokens) {
-      if (IERC20(iToken).balanceOf(address(this)) <= 0) {
+      if (IERC20(token).balanceOf(address(this)) == 0) {
         return iTokens;
       }
-      // approve the transfer to cToken contract
+      // approve the transfer to iToken contract
       IERC20(token).safeIncreaseAllowance(iToken, _amount);
       // get a handle for the corresponding iToken contract
       iERC20 _iToken = iERC20(iToken);
