@@ -438,7 +438,7 @@ class SmartContractControls extends React.Component {
               <Box textAlign={'text'}>
                 <Box py={[2, 4]}>
                   <Heading.h3 fontFamily={'serif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
-                    Highest Available Interest Rate: {this.state.cDAIRate}%
+                    Best available interest Rate: {this.state.cDAIRate}%
                   </Heading.h3>
                 </Box>
 
