@@ -72,12 +72,12 @@ contract IdleDAI is ERC20, ERC20Detailed, ReentrancyGuard, Ownable {
   // public
 
   /**
-   * @dev User should 'approve' _amount tokens before calling mintIndexToken
+   * @dev User should 'approve' _amount tokens before calling mintIdleToken
    */
-  function mintIndexToken(uint256 _amount)
+  function mintIdleToken(uint256 _amount)
     external nonReentrant
     returns (uint256 mintedTokens) {
-      /* require(_amount > 0, "Amount is not > 0"); */
+      require(_amount > 0, "Amount is not > 0");
       // get a handle for the underlying asset contract
       IERC20 underlying = IERC20(token);
       // transfer to this contract
@@ -93,7 +93,7 @@ contract IdleDAI is ERC20, ERC20Detailed, ReentrancyGuard, Ownable {
       }
 
       if (bestToken == address(0)) {
-        mintedTokens = _amount;
+        mintedTokens = _amount; // 1:1
       } else {
         uint256 poolSupply = IERC20(cToken).balanceOf(address(this));
         if (bestToken == iToken) {
@@ -109,26 +109,22 @@ contract IdleDAI is ERC20, ERC20Detailed, ReentrancyGuard, Ownable {
         mintedTokens = _amount.div(currTokenPrice);
       }
       /* _mint(msg.sender, msg.sender, mintedTokens, "", ""); */
-      _mint(msg.sender, mintedTokens); // 1:1
+      _mint(msg.sender, mintedTokens);
   }
 
   /**
    * @dev here we calc the pool share of the cTokens | iTokens one can withdraw
    */
-  function redeemIndexToken(uint256 _amount)
+  function redeemIdleToken(uint256 _amount)
     external nonReentrant
     returns (uint256 tokensRedeemed) {
-    /* uint256 senderBalance = this.balanceOf(msg.sender); */
-    /* require(senderBalance > 0, "senderBalance should be > 0");
-    require(senderBalance >= _amount, "senderBalance should be >= amount requested"); */
-
     uint256 idleSupply = this.totalSupply();
     require(idleSupply > 0, 'No IDLEDAI have been issued');
 
     if (bestToken == cToken) {
       uint256 cPoolBalance = IERC20(cToken).balanceOf(address(this));
       uint256 cDAItoRedeem = _amount.mul(cPoolBalance).div(idleSupply);
-      tokensRedeemed = _redeemCTokens(cDAItoRedeem, msg.sender); //TODO fee?
+      tokensRedeemed = _redeemCTokens(cDAItoRedeem, msg.sender);
     } else {
       uint256 iPoolBalance = IERC20(iToken).balanceOf(address(this));
       uint256 iDAItoRedeem = _amount.mul(iPoolBalance).div(idleSupply);
@@ -138,8 +134,6 @@ contract IdleDAI is ERC20, ERC20Detailed, ReentrancyGuard, Ownable {
     /* _burn(_amount, ''); */
     _burn(msg.sender, _amount);
     rebalance();
-
-    /* investedBalances[msg.sender] = investedBalances[msg.sender].sub(tokensRedeemed); */
   }
 
   /**

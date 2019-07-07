@@ -39,7 +39,8 @@ contract iDAIMock is ERC20Detailed, ERC20, iERC20 {
   }
 
   function claimLoanToken() external returns (uint256)  {
-    return 0;
+    require(this.transfer(msg.sender, toTransfer), "Error during transfer"); // 1 DAI
+    return toTransfer;
   }
   function tokenPrice() external view returns (uint256)  {
     return price;
