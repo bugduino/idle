@@ -34,8 +34,8 @@ const iDAI = {
 
 // TODO
 const DAI = {
-  'live': '0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5',
-  'live-fork': '0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5', // needed for truffle
+  'live': '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359',
+  'live-fork': '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359', // needed for truffle
   'test': '0xd6801a1DfFCd0a410336Ef88DeF4320D6DF1883e',
   'rinkeby': '0xd6801a1DfFCd0a410336Ef88DeF4320D6DF1883e',
   'rinkeby-fork': '0xd6801a1DfFCd0a410336Ef88DeF4320D6DF1883e', // needed for truffle
