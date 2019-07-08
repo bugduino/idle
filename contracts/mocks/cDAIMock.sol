@@ -10,6 +10,7 @@ contract cDAIMock is ERC20Detailed, ERC20, CERC20 {
   address public dai;
   uint256 public exchangeRate;
   uint256 public toTransfer;
+  uint256 public toMint;
   uint256 public supplyRate;
 
   constructor(address _dai, address tokenOwner)
@@ -18,6 +19,7 @@ contract cDAIMock is ERC20Detailed, ERC20, CERC20 {
     dai = _dai;
     exchangeRate = 200000000000000000000000000;
     toTransfer = 10**18;
+    toMint = 5000000000;
     supplyRate = 32847953230;
     _mint(address(this), 10**14); // 1.000.000 cDAI
     _mint(tokenOwner, 10**11); // 1.000 cDAI
@@ -26,7 +28,7 @@ contract cDAIMock is ERC20Detailed, ERC20, CERC20 {
 
   function mint(uint256 amount) external returns (uint256) {
     require(IERC20(dai).transferFrom(msg.sender, address(this), amount), "Error during transferFrom"); // 1 DAI
-    require(this.transfer(msg.sender, 5000000000), "Error during transfer"); // 50 cETH
+    require(this.transfer(msg.sender, toMint), "Error during transfer"); // 50 cETH
     return 0;
   }
   function redeem(uint256 amount) external returns (uint256) {
@@ -48,6 +50,9 @@ contract cDAIMock is ERC20Detailed, ERC20, CERC20 {
   }
   function resetSupplyRatePerBlockForTest() external {
     supplyRate = supplyRate * 10;
+  }
+  function setMintValueForTest() external {
+    toMint = 4545454545;
   }
   function setExchangeRateStoredForTest() external {
     exchangeRate = 220000000000000000000000000;

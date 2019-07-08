@@ -18,15 +18,15 @@ library IdleHelp {
 
       // rate
       if (bestToken == cToken) {
-        uint256 rate = CERC20(cToken).exchangeRateStored(); // 202487304197710837666727644 ->
-        uint256 oneToken = 10**18;
-        price = oneToken.div(rate.div(oneToken));
+        // rateMantissa is rate (in wei, 8 decimals) of 1cDAI in DAI * 10**18
+        uint256 rateMantissa = CERC20(cToken).exchangeRateStored(); // 202487304197710837666727644 ->
+        navPool = rateMantissa.mul(poolSupply).div(10**18); // eg 43388429749999990000 in DAI
+        tokenPrice = navPool.div(totalSupply.div(10**18)); // idleToken price in token wei
       } else {
         price = iERC20(iToken).tokenPrice(); // eg 1001495070730287403 -> 1iToken in wei = 1001495070730287403 Token
+        navPool = price.mul(poolSupply); // eg 43388429749999990000 in DAI
+        tokenPrice = navPool.div(totalSupply); // idleToken price in token wei
       }
-
-      navPool = price.mul(poolSupply);
-      tokenPrice = navPool.div(totalSupply); // moonToken price in token wei
   }
   function getAPRs(address cToken, address iToken, uint256 blocksInAYear)
     public view

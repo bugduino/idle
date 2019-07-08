@@ -20,6 +20,8 @@ import "./IdleHelp.sol";
 
 // TODO we should inform the user of the eventual excess of token that can be redeemed directly in Fulcrum
 
+// TODO see rounding issues in redeen test
+
 /* contract IdleDAI is ERC777, ReentrancyGuard { */
 contract IdleDAI is ERC20, ERC20Detailed, ReentrancyGuard, Ownable {
   using SafeERC20 for IERC20;
@@ -68,6 +70,17 @@ contract IdleDAI is ERC20, ERC20Detailed, ReentrancyGuard, Ownable {
     external onlyOwner {
       cToken = _cToken;
   }
+  // This should never be called, only in case of contract failure
+  // after an audit this should be removed
+  function emergencyWithdraw(address _token, uint256 _value)
+    external onlyOwner {
+      IERC20 underlying = IERC20(_token);
+      if (_value != 0) {
+        underlying.safeTransfer(msg.sender, _value);
+      } else {
+        underlying.safeTransfer(msg.sender, underlying.balanceOf(address(this)));
+      }
+  }
 
   // public
 
@@ -83,30 +96,35 @@ contract IdleDAI is ERC20, ERC20Detailed, ReentrancyGuard, Ownable {
       // transfer to this contract
       underlying.safeTransferFrom(msg.sender, address(this), _amount);
 
+      address initialBestToken = bestToken; // before rebalance, used only for setting inital rate
       rebalance();
 
-      uint256 mintedUnderlyingTokens;
-      if (bestToken == cToken) {
-        mintedUnderlyingTokens = _mintCTokens(_amount);
-      } else {
-        mintedUnderlyingTokens = _mintITokens(_amount);
+      uint256 poolSupply = IERC20(cToken).balanceOf(address(this));
+      if (bestToken == iToken) {
+        poolSupply = IERC20(iToken).balanceOf(address(this));
       }
 
-      if (bestToken == address(0)) {
-        mintedTokens = _amount; // 1:1
-      } else {
-        uint256 poolSupply = IERC20(cToken).balanceOf(address(this));
-        if (bestToken == iToken) {
-          poolSupply = IERC20(iToken).balanceOf(address(this));
-        }
-        uint256 currTokenPrice = IdleHelp.getPriceInToken(
+      uint256 tokenPrice;
+      if (initialBestToken != address(0)) {
+        tokenPrice = IdleHelp.getPriceInToken(
           cToken,
           iToken,
           bestToken,
-          this.balanceOf(address(this)),
+          this.totalSupply(),
           poolSupply
         );
-        mintedTokens = _amount.div(currTokenPrice);
+      }
+
+      if (bestToken == cToken) {
+        _mintCTokens(_amount);
+      } else {
+        _mintITokens(_amount);
+      }
+      // Given that we are rebalancing before we check if the initial bestToken was not set
+      if (initialBestToken == address(0)) {
+        mintedTokens = _amount; // 1:1
+      } else {
+        mintedTokens = _amount.mul(10**18).div(tokenPrice);
       }
       /* _mint(msg.sender, msg.sender, mintedTokens, "", ""); */
       _mint(msg.sender, mintedTokens);

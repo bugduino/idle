@@ -105,8 +105,9 @@ contract('IdleHelp', function ([_, registryFunder, creator, nonOwner, someone]) 
     res[1].should.be.equal(this.iDAIMock.address);
   });
   it('getPriceInToken returns token price when bestToken is cToken', async function () {
-    const totalSupply = new BN('1000');
-    const poolSupply = new BN('1000');
+    const oneCToken = new BN('100000000');
+    const totalSupply = (new BN('20')).mul(this.one);
+    const poolSupply = new BN('1000').mul(oneCToken);
     const res = await this.IdleHelp.getPriceInToken(
       this.cDAIMock.address,
       this.iDAIMock.address,
@@ -115,11 +116,29 @@ contract('IdleHelp', function ([_, registryFunder, creator, nonOwner, someone]) 
       poolSupply
     );
     const exchangeRate = await this.cDAIMock.exchangeRateStored();
-    const price = this.one.div(exchangeRate.div(this.one));
-    const navPool = price.mul(poolSupply);
-    const tokenPrice = navPool.div(totalSupply);
+    const navPool = exchangeRate.mul(poolSupply).div(this.one);
+    const tokenPrice = navPool.div(totalSupply.div(this.one));
 
-    res.should.be.bignumber.equal(price);
+    res.should.be.bignumber.equal(tokenPrice); // => == this.one
+  });
+  it('getPriceInToken returns token price when bestToken is cToken and rates changed', async function () {
+    const oneCToken = new BN('100000000');
+    const totalSupply = (new BN('20')).mul(this.one);
+    const poolSupply = new BN('1000').mul(oneCToken);
+    await this.cDAIMock.setExchangeRateStoredForTest();
+    const res = await this.IdleHelp.getPriceInToken(
+      this.cDAIMock.address,
+      this.iDAIMock.address,
+      this.cDAIMock.address,
+      totalSupply,
+      poolSupply
+    );
+
+    const exchangeRate = await this.cDAIMock.exchangeRateStored();
+    const navPool = exchangeRate.mul(poolSupply).div(this.one);
+    const tokenPrice = navPool.div(totalSupply.div(this.one));
+
+    res.should.be.bignumber.equal(tokenPrice); // => == this.one
   });
   it('getPriceInToken returns token price when bestToken is iToken', async function () {
     const totalSupply = new BN('1000');
