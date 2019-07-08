@@ -22,7 +22,7 @@ const supportedNetworkURLs = {
 };
 const manifestEmail = env.REACT_APP_TREZOR_MANIFEST_EMAIL; // trezor
 const manifestAppUrl = env.REACT_APP_TREZOR_MANIFEST_URL; // trezor
-const defaultNetwork = 3; // ropsten
+const defaultNetwork = 1; // mainnet
 // const defaultNetwork = 4; // rinkeby
 const fortmaticApiKey = env.REACT_APP_FORTMATIC_KEY_RINKEBY;
 const portisDAppId = env.REACT_APP_PORTIS_DAPP_ID;

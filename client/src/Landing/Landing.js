@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Flex, Box, Heading, Button, Text } from 'rimble-ui'
+import { Flex, Box, Heading, Button } from 'rimble-ui'
 import styles from './Landing.module.scss';
 import LandingForm from '../LandingForm/LandingForm';
 import IconFlexRow from '../IconFlexRow/IconFlexRow';
