@@ -4,7 +4,7 @@ import { tint, shade, readableColor } from 'polished';
 const baseColors = {
   black: '#000e1a',
   white: '#FFF',
-  blue: '#36ADF1',
+  blue: '#0036ff',
   green: '#28C081',
   yellow: '#FD9D28',
   red: '#DC2C10',

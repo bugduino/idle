@@ -12,7 +12,7 @@ import DAI from '../contracts/IERC20';
 import iDAI from '../abis/fulcrum/iToken.json';
 
 const IdleAbi = IdleDAI.abi;
-const IdleAddress = '0x274e316eecebe7454f7133b24d1e03f76a27b694';
+const IdleAddress = '0x63Dbc7cb16Fb5DbD81f52124051A302198DaC2C7';
 const IdleHelpAbi = IdleHelp.abi;
 const IdleHelpAddress = '0xbDF42Fc67cD442bA25605AEFa39733145F8E4F3a';
 const cDAIAbi = cDAI.abi;
@@ -98,9 +98,9 @@ class SmartContractControls extends React.Component {
     ]);
     console.log(poolBalance.toString());
     console.log(price.toString());
-    debugger;
+
     this.setState({
-      [`IdleDAIPrice`]: (+this.toEth(price[0])).toFixed(2),
+      [`IdleDAIPrice`]: totalIdleSupply.toString() === '0' ? 0 : (+this.toEth(price)),
       needsUpdate: false
     });
     return price;
@@ -242,8 +242,8 @@ class SmartContractControls extends React.Component {
     // do not wait for each one
     this.props.initContract('iDAI', iDAIAddress, iDAIAbi);
     this.props.initContract('cDAI', cDAIAddress, cDAIAbi);
-    this.props.initContract('IdleHelp', IdleHelpAddress, IdleHelpAbi);
     this.props.initContract('IdleDAI', IdleAddress, IdleAbi).then(async () => {
+      await this.props.initContract('IdleHelp', IdleHelpAddress, IdleHelpAbi);
       await this.getAprs();
     });
     this.props.initContract('DAI', DAIAddress, DAIAbi);
@@ -316,8 +316,9 @@ class SmartContractControls extends React.Component {
               <Box textAlign={'text'}>
                 {this.props.account &&
                   <Heading.h3 fontFamily={'sansSerif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
-                    Redeemable funds: ~{this.trimEth(this.state.DAIToRedeem)} DAI
-                    IdleDAI: ~{this.trimEth(this.state.balanceOfIdleDAI)} DAI
+                    Redeemable funds: ~{this.trimEth(this.state.DAIToRedeem)} DAI <br />
+                    IdleDAI: ~{this.trimEth(this.state.balanceOfIdleDAI)} <br />
+                    {!!this.state.IdleDAIPrice && `IdleDAIPrice: ~${this.trimEth(this.state.IdleDAIPrice)} DAI`}
                   </Heading.h3>
                 }
                 <Flex

@@ -96,7 +96,6 @@ contract IdleDAI is ERC20, ERC20Detailed, ReentrancyGuard, Ownable {
       // transfer to this contract
       underlying.safeTransferFrom(msg.sender, address(this), _amount);
 
-      address initialBestToken = bestToken; // before rebalance, used only for setting inital rate
       rebalance();
 
       uint256 poolSupply = IERC20(cToken).balanceOf(address(this));
@@ -105,12 +104,13 @@ contract IdleDAI is ERC20, ERC20Detailed, ReentrancyGuard, Ownable {
       }
 
       uint256 tokenPrice;
-      if (initialBestToken != address(0)) {
+      uint256 totalSupply = this.totalSupply();
+      if (totalSupply != 0) {
         tokenPrice = IdleHelp.getPriceInToken(
           cToken,
           iToken,
           bestToken,
-          this.totalSupply(),
+          totalSupply,
           poolSupply
         );
       }
@@ -121,7 +121,7 @@ contract IdleDAI is ERC20, ERC20Detailed, ReentrancyGuard, Ownable {
         _mintITokens(_amount);
       }
       // Given that we are rebalancing before we check if the initial bestToken was not set
-      if (initialBestToken == address(0)) {
+      if (totalSupply == 0) {
         mintedTokens = _amount; // 1:1
       } else {
         mintedTokens = _amount.mul(10**18).div(tokenPrice);

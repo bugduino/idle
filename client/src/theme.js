@@ -37,10 +37,10 @@ export default {
     disabled: 0.4,
   },
   colors: {
-    primary: green.base,
+    primary: blue.base,
     'gradient-bg': 'linear-gradient(120deg, #f6d365 0%, #ea0d73 100%)',
-    'primary-light': green.light[1],
-    'primary-dark': green.dark[1],
+    'primary-light': blue.light[1],
+    'primary-dark': blue.dark[1],
     bgBlue: '#0030e0',
     blue: '#0036ff',
     lightBlue: '#79f4e1',
@@ -117,11 +117,11 @@ export default {
   },
   buttons: {
     primary: {
-      color: green.text,
-      backgroundColor: green.base,
+      color: blue.text,
+      backgroundColor: blue.base,
       // use css custom props
-      '--main-color': green.base,
-      '--contrast-color': green.text,
+      '--main-color': blue.base,
+      '--contrast-color': blue.text,
     },
     normal: {
       color: baseColors.black,
