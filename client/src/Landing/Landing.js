@@ -37,9 +37,9 @@ class Landing extends Component {
             </Box>
           </Box>
           <Box maxWidth={['50em','70em']} mx={'auto'} my={[4,6]}>
-            <IconFlexRow image={'/images/feature-1.png'} title='100% non-custodial, thanks to our contract.' linkHref={'#'} linkText='Smart contract' />
-            <IconFlexRow image={'/images/feature-2.png'} title='Fully decentralized, thanks to our users.' linkHref={'#'} linkText='Rebalance process' />
-            <IconFlexRow image={'/images/feature-3.png'} title='No hidden fees, fully open source.' linkHref={'#'} linkText='See how it works' />
+            <IconFlexRow image={'images/feature-1.png'} title='100% non-custodial, thanks to our contract.' linkHref={'#'} linkText='Smart contract' />
+            <IconFlexRow image={'images/feature-2.png'} title='Fully decentralized, thanks to our users.' linkHref={'#'} linkText='Rebalance process' />
+            <IconFlexRow image={'images/feature-3.png'} title='No hidden fees, fully open source.' linkHref={'#'} linkText='See how it works' />
           </Box>
           <Flex maxWidth={'100%'} flexDirection={['column','row']}>
             <Box p={[5,6]} backgroundColor={'blue'} color={'white'}>

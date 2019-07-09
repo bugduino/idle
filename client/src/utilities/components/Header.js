@@ -31,7 +31,7 @@ class Header extends React.Component {
       >
         <Flex alignItems={"center"} bg={"#0028be"} py={1}>
           <Box ml={[0, 6]} width={[1,4/12]} py={[3,4]} alignItems={"center"} textAlign={'center'}>
-            <Image src="/images/logo.png"
+            <Image src="images/logo.png"
               mx={'auto'}
               height={['40px','70px']}
               position={['relative','absolute']} />
