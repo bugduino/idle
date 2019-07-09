@@ -61,6 +61,7 @@ contract cDAIMock is ERC20Detailed, ERC20, CERC20 {
   function setNewExchangeRateStoredForTest() external {
     exchangeRate = 300000000000000000000000000;
     toTransfer = 1.1 * 10**18;
+    toMint = 3333333333;
   }
   function setExchangeRateStoredForTestNoFee() external {
     exchangeRate = 220000000000000000000000000;

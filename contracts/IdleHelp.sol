@@ -12,21 +12,19 @@ library IdleHelp {
     public view
     returns (uint256 tokenPrice) {
       // 1Token = net_asset_value / total_Token_liquidity
-      // net_asset_value = (rate of 1(cToken || iToken) in Token) * balanceOf((cToken || iToken))
+      // net_asset_value = (rate of 1(cToken || iToken) in underlying_Token) * balanceOf((cToken || iToken))
       uint256 navPool;
       uint256 price;
 
       // rate
       if (bestToken == cToken) {
-        // rateMantissa is rate (in wei, 8 decimals) of 1cDAI in DAI * 10**18
-        uint256 rateMantissa = CERC20(cToken).exchangeRateStored(); // 202487304197710837666727644 ->
-        navPool = rateMantissa.mul(poolSupply).div(10**18); // eg 43388429749999990000 in DAI
-        tokenPrice = navPool.div(totalSupply.div(10**18)); // idleToken price in token wei
+        // exchangeRateStored is the rate (in wei, 8 decimals) of 1cDAI in DAI * 10**18
+        price = CERC20(cToken).exchangeRateStored(); // 202487304197710837666727644 ->
       } else {
         price = iERC20(iToken).tokenPrice(); // eg 1001495070730287403 -> 1iToken in wei = 1001495070730287403 Token
-        navPool = price.mul(poolSupply); // eg 43388429749999990000 in DAI
-        tokenPrice = navPool.div(totalSupply); // idleToken price in token wei
       }
+      navPool = price.mul(poolSupply); // eg 43388429749999990000 in DAI
+      tokenPrice = navPool.div(totalSupply); // idleToken price in token wei
   }
   function getAPRs(address cToken, address iToken, uint256 blocksInAYear)
     public view
