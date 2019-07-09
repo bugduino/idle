@@ -12,7 +12,8 @@
     "test-contracts": "truffle test",
     "test-client": "cd client && yarn test",
     "predeploy": "cd client && yarn predeploy",
-    "deploy": "cd client && yarn deploy"
+    "deploy": "cd client && yarn deploy",
+    "deploy-clean": "cd client && rm -rf node_modules/gh-pages/.cache"
   },
   "dependencies": {
     "@nomiclabs/buidler": "^1.0.0-beta.8",
