@@ -11,12 +11,13 @@ import cDAI from '../abis/compound/cDAI';
 import DAI from '../contracts/IERC20';
 import iDAI from '../abis/fulcrum/iToken.json';
 
+// mainnet
 const IdleAbi = IdleDAI.abi;
 const IdleAddress = '0x63Dbc7cb16Fb5DbD81f52124051A302198DaC2C7';
 const IdleHelpAbi = IdleHelp.abi;
 const IdleHelpAddress = '0xbDF42Fc67cD442bA25605AEFa39733145F8E4F3a';
 const cDAIAbi = cDAI.abi;
-const cDAIAddress = '0xf5dce57282a584d2746faf1593d3121fcac444dc'; // mainnet
+const cDAIAddress = '0xf5dce57282a584d2746faf1593d3121fcac444dc';
 const DAIAbi = DAI.abi;
 const DAIAddress = '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359';
 const iDAIAbi = iDAI.abi;
@@ -55,7 +56,7 @@ class SmartContractControls extends React.Component {
   }
   rebalanceCheck = async () => {
     const bestToken = await this.genericIdleCall('bestToken');
-    let res = await this.genericContractCall('IdleHelp', 'getAPRs', [
+    let res = await this.genericContractCall('IdleHelp', 'rebalanceCheck', [
       cDAIAddress,
       iDAIAddress,
       bestToken,
@@ -97,7 +98,7 @@ class SmartContractControls extends React.Component {
       poolBalance
     ]);
     console.log(poolBalance.toString());
-    console.log(price.toString());
+    console.log('IdleDAI price', this.toEth(price).toString());
 
     this.setState({
       [`IdleDAIPrice`]: totalIdleSupply.toString() === '0' ? 0 : (+this.toEth(price)),
