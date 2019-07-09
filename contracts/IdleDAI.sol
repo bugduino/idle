@@ -82,6 +82,34 @@ contract IdleDAI is ERC20, ERC20Detailed, ReentrancyGuard, Ownable {
       }
   }
 
+  // view
+  function tokenPrice()
+    public view
+    returns (uint256 price) {
+      uint256 poolSupply = IERC20(cToken).balanceOf(address(this));
+      if (bestToken == iToken) {
+        poolSupply = IERC20(iToken).balanceOf(address(this));
+      }
+
+      price = IdleHelp.getPriceInToken(
+        cToken,
+        iToken,
+        bestToken,
+        this.totalSupply(),
+        poolSupply
+      );
+  }
+  function rebalanceCheck()
+    public view
+    returns (bool shouldRebalance, address newBestTokenAddr) {
+      (shouldRebalance, newBestTokenAddr) = IdleHelp.rebalanceCheck(cToken, iToken, bestToken, blocksInAYear, minRateDifference);
+  }
+  function getAPRs()
+    external view
+    returns (uint256 cApr, uint256 iApr) {
+      (cApr, iApr) = IdleHelp.getAPRs(cToken, iToken, blocksInAYear);
+  }
+
   // public
 
   /**
@@ -98,21 +126,10 @@ contract IdleDAI is ERC20, ERC20Detailed, ReentrancyGuard, Ownable {
 
       rebalance();
 
-      uint256 poolSupply = IERC20(cToken).balanceOf(address(this));
-      if (bestToken == iToken) {
-        poolSupply = IERC20(iToken).balanceOf(address(this));
-      }
-
-      uint256 tokenPrice;
+      uint256 idlePrice = 10**18;
       uint256 totalSupply = this.totalSupply();
       if (totalSupply != 0) {
-        tokenPrice = IdleHelp.getPriceInToken(
-          cToken,
-          iToken,
-          bestToken,
-          totalSupply,
-          poolSupply
-        );
+        idlePrice = tokenPrice();
       }
 
       if (bestToken == cToken) {
@@ -120,11 +137,10 @@ contract IdleDAI is ERC20, ERC20Detailed, ReentrancyGuard, Ownable {
       } else {
         _mintITokens(_amount);
       }
-      // Given that we are rebalancing before we check if the initial bestToken was not set
       if (totalSupply == 0) {
         mintedTokens = _amount; // 1:1
       } else {
-        mintedTokens = _amount.mul(10**18).div(tokenPrice);
+        mintedTokens = _amount.mul(10**18).div(idlePrice);
       }
       /* _mint(msg.sender, msg.sender, mintedTokens, "", ""); */
       _mint(msg.sender, mintedTokens);
@@ -160,7 +176,7 @@ contract IdleDAI is ERC20, ERC20Detailed, ReentrancyGuard, Ownable {
    */
   function rebalance()
     public {
-      (bool shouldRebalance, address newBestTokenAddr) = IdleHelp.rebalanceCheck(cToken, iToken, bestToken, blocksInAYear, minRateDifference);
+      (bool shouldRebalance, address newBestTokenAddr) = rebalanceCheck();
       if (!shouldRebalance) {
         return;
       }
