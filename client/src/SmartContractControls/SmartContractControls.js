@@ -13,9 +13,10 @@ import iDAI from '../abis/fulcrum/iToken.json';
 
 // mainnet
 const IdleAbi = IdleDAI.abi;
-const IdleAddress = '0x63Dbc7cb16Fb5DbD81f52124051A302198DaC2C7';
+const IdleAddress = '0x10cf8e1CDba9A2Bd98b87000BCAdb002b13eA525';
 const IdleHelpAbi = IdleHelp.abi;
-const IdleHelpAddress = '0xbDF42Fc67cD442bA25605AEFa39733145F8E4F3a';
+const IdleHelpAddress = '0x79Bc74f157B59409687BfAc2c9e45Db759FeF375';
+
 const cDAIAbi = cDAI.abi;
 const cDAIAddress = '0xf5dce57282a584d2746faf1593d3121fcac444dc';
 const DAIAbi = DAI.abi;
