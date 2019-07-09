@@ -3,7 +3,6 @@ pragma solidity ^0.5.2;
 import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol";
-/* import "openzeppelin-solidity/contracts/token/ERC777/ERC777.sol"; */
 import "openzeppelin-solidity/contracts/utils/ReentrancyGuard.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
@@ -14,15 +13,6 @@ import "./interfaces/CERC20.sol";
 import "./interfaces/iERC20.sol";
 import "./IdleHelp.sol";
 
-// TODO
-// in rebalanceCheck we should also check how much
-// the interest rate changes due to the new liquidity we provide
-
-// TODO we should inform the user of the eventual excess of token that can be redeemed directly in Fulcrum
-
-// TODO see rounding issues in redeen test
-
-/* contract IdleDAI is ERC777, ReentrancyGuard { */
 contract IdleDAI is ERC20, ERC20Detailed, ReentrancyGuard, Ownable {
   using SafeERC20 for IERC20;
   using SafeMath for uint256;
@@ -41,12 +31,11 @@ contract IdleDAI is ERC20, ERC20Detailed, ReentrancyGuard, Ownable {
   constructor(address _cToken, address _iToken, address _token)
     public
     ERC20Detailed("IdleDAI", "IDLEDAI", 18) {
-    /* ERC777("IdleDAI", "IDLEDAI", new address[](0)) { */
       cToken = _cToken;
       iToken = _iToken;
       token = _token;
       blocksInAYear = 2102400; // ~15 sec per block
-      minRateDifference = 500000000000000000; // 0.5% min
+      minRateDifference = 300000000000000000; // 0.3% min
   }
 
   // onlyOwner
@@ -101,17 +90,16 @@ contract IdleDAI is ERC20, ERC20Detailed, ReentrancyGuard, Ownable {
   }
   function rebalanceCheck()
     public view
-    returns (bool shouldRebalance, address newBestTokenAddr) {
-      (shouldRebalance, newBestTokenAddr) = IdleHelp.rebalanceCheck(cToken, iToken, bestToken, blocksInAYear, minRateDifference);
+    returns (bool, address) {
+      return IdleHelp.rebalanceCheck(cToken, iToken, bestToken, blocksInAYear, minRateDifference);
   }
   function getAPRs()
     external view
-    returns (uint256 cApr, uint256 iApr) {
-      (cApr, iApr) = IdleHelp.getAPRs(cToken, iToken, blocksInAYear);
+    returns (uint256, uint256) {
+      return IdleHelp.getAPRs(cToken, iToken, blocksInAYear);
   }
 
   // public
-
   /**
    * @dev User should 'approve' _amount tokens before calling mintIdleToken
    */
@@ -142,7 +130,6 @@ contract IdleDAI is ERC20, ERC20Detailed, ReentrancyGuard, Ownable {
       } else {
         mintedTokens = _amount.mul(10**18).div(idlePrice);
       }
-      /* _mint(msg.sender, msg.sender, mintedTokens, "", ""); */
       _mint(msg.sender, mintedTokens);
   }
 
@@ -165,7 +152,6 @@ contract IdleDAI is ERC20, ERC20Detailed, ReentrancyGuard, Ownable {
       // TODO we should inform the user of the eventual excess of token that can be redeemed directly in Fulcrum
       tokensRedeemed = _redeemITokens(iDAItoRedeem, msg.sender);
     }
-    /* _burn(_amount, ''); */
     _burn(msg.sender, _amount);
     rebalance();
   }
