@@ -57,13 +57,13 @@ class Faq extends Component {
   render() {
     const {generalQuestions, selectedSection, guidelinesQuestions, ratesQuestions} = this.state;
     const generalDivs = generalQuestions.map((question, i) => (
-      <Faquestion question={question.q} answer={question.a} pt={i === 0 ? 0 : ''} />
+      <Faquestion key={`general-${i}`} question={question.q} answer={question.a} pt={i === 0 ? 0 : ''} />
     ));
     const guidelinesDivs = guidelinesQuestions.map((question, i) => (
-      <Faquestion question={question.q} answer={question.a} pt={i === 0 ? 0 : ''} />
+      <Faquestion key={`guidelines-${i}`} question={question.q} answer={question.a} pt={i === 0 ? 0 : ''} />
     ));
     const ratesDivs = ratesQuestions.map((question, i) => (
-      <Faquestion question={question.q} answer={question.a} pt={i === 0 ? 0 : ''} />
+      <Faquestion key={`rates-${i}`} question={question.q} answer={question.a} pt={i === 0 ? 0 : ''} />
     ));
     const isGeneralSelected = selectedSection === 'general';
     const isGuidelinesSelected = selectedSection === 'guidelines';

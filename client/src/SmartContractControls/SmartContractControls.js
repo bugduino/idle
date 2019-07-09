@@ -6,7 +6,6 @@ import CryptoInput from '../CryptoInput/CryptoInput.js';
 import ApproveModal from "../utilities/components/ApproveModal";
 
 import IdleDAI from "../contracts/IdleDAI.json";
-import IdleHelp from "../contracts/IdleHelp.json";
 import cDAI from '../abis/compound/cDAI';
 import DAI from '../contracts/IERC20';
 import iDAI from '../abis/fulcrum/iToken.json';
@@ -14,8 +13,6 @@ import iDAI from '../abis/fulcrum/iToken.json';
 // mainnet
 const IdleAbi = IdleDAI.abi;
 const IdleAddress = '0x10cf8e1CDba9A2Bd98b87000BCAdb002b13eA525';
-const IdleHelpAbi = IdleHelp.abi;
-const IdleHelpAddress = '0x79Bc74f157B59409687BfAc2c9e45Db759FeF375';
 
 const cDAIAbi = cDAI.abi;
 const cDAIAddress = '0xf5dce57282a584d2746faf1593d3121fcac444dc';
@@ -56,51 +53,23 @@ class SmartContractControls extends React.Component {
     );
   }
   rebalanceCheck = async () => {
-    const bestToken = await this.genericIdleCall('bestToken');
-    let res = await this.genericContractCall('IdleHelp', 'rebalanceCheck', [
-      cDAIAddress,
-      iDAIAddress,
-      bestToken,
-      this.BNify('2102400'),
-      this.BNify('500000000000000000')
-    ]);
-    console.log(res);
-    debugger;
-    //   this.setState({
-    //     [`${contractName}Rate`]: (+value).toFixed(2),
-    //     needsUpdate: false
-    //   });
-    // }
-    // return value;
+    const res = await this.genericIdleCall('rebalanceCheck');
+    this.setState({
+      shouldRebalance: res[0],
+      needsUpdate: false
+    });
   };
   getAprs = async () => {
-    let aprs = await this.genericContractCall('IdleHelp', 'getAPRs', [
-      cDAIAddress,
-      iDAIAddress,
-      2102400
-    ]);
+    let aprs = await this.genericIdleCall('getAPRs');
     this.setState({
-      [`compoundRate`]: (+this.toEth(aprs.cApr)).toFixed(2),
-      [`fulcrumRate`]: (+this.toEth(aprs.iApr)).toFixed(2),
+      [`compoundRate`]: (+this.toEth(aprs[0])).toFixed(2),
+      [`fulcrumRate`]: (+this.toEth(aprs[1])).toFixed(2),
       needsUpdate: false
     });
   };
   getPriceInToken = async () => {
-    const bestToken = await this.genericIdleCall('bestToken');
-    const poolBalance = bestToken.toLowerCase() === cDAIAddress.toLowerCase() ?
-      await this.genericContractCall('cDAI', 'balanceOf', [IdleAddress]) :
-      await this.genericContractCall('iDAI', 'balanceOf', [IdleAddress]);
     const totalIdleSupply = await this.genericIdleCall('totalSupply');
-    let price = await this.genericContractCall('IdleHelp', 'getPriceInToken', [
-      cDAIAddress,
-      iDAIAddress,
-      bestToken,
-      totalIdleSupply,
-      poolBalance
-    ]);
-    console.log(poolBalance.toString());
-    console.log('IdleDAI price', this.toEth(price).toString());
-
+    let price = await this.genericIdleCall('tokenPrice');
     this.setState({
       [`IdleDAIPrice`]: totalIdleSupply.toString() === '0' ? 0 : (+this.toEth(price)),
       needsUpdate: false
@@ -139,7 +108,11 @@ class SmartContractControls extends React.Component {
   };
   genericContractCall = async (contractName, methodName, params = []) => {
     let contract = this.props.contracts.find(c => c.name === contractName);
-    contract = contract.contract;
+    contract = contract && contract.contract;
+    if (!contract) {
+      console.log('Wrong contract name', contractName);
+      return;
+    }
 
     const value = await contract.methods[methodName](...params).call().catch(error => {
       console.log(`${contractName} contract method ${methodName} error: `, error);
@@ -150,7 +123,9 @@ class SmartContractControls extends React.Component {
 
   // Idle
   genericIdleCall = async (methodName, params = []) => {
-    return await this.genericContractCall('IdleDAI', methodName, params);
+    return await this.genericContractCall('IdleDAI', methodName, params).catch(err => {
+      console.error('Generic Idle call err:', err);
+    });
   }
 
   // Check for updates to the transactions collection
@@ -245,7 +220,6 @@ class SmartContractControls extends React.Component {
     this.props.initContract('iDAI', iDAIAddress, iDAIAbi);
     this.props.initContract('cDAI', cDAIAddress, cDAIAbi);
     this.props.initContract('IdleDAI', IdleAddress, IdleAbi).then(async () => {
-      await this.props.initContract('IdleHelp', IdleHelpAddress, IdleHelpAbi);
       await this.getAprs();
     });
     this.props.initContract('DAI', DAIAddress, DAIAbi);
@@ -258,9 +232,12 @@ class SmartContractControls extends React.Component {
     this.processTransactionUpdates(prevProps);
   }
 
-  selectTab(e, tabIndex) {
+  async selectTab(e, tabIndex) {
     e.preventDefault();
     this.setState(state => ({...state, selectedTab: tabIndex}));
+    if (tabIndex === '3') {
+      await this.rebalanceCheck();
+    }
   }
 
   render() {
@@ -286,7 +263,7 @@ class SmartContractControls extends React.Component {
           </Flex>
 
           <Box py={[2, 4]}>
-            {this.state.selectedTab==='1' &&
+            {this.state.selectedTab === '1' &&
               <Box textAlign={'text'}>
                 <Box py={[2, 4]}>
                   <Heading.h3 fontFamily={'sansSerif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
@@ -314,7 +291,7 @@ class SmartContractControls extends React.Component {
               </Box>
             }
 
-            {this.state.selectedTab==='2' &&
+            {this.state.selectedTab === '2' &&
               <Box textAlign={'text'}>
                 {this.props.account &&
                   <Heading.h3 fontFamily={'sansSerif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
@@ -333,15 +310,24 @@ class SmartContractControls extends React.Component {
               </Box>
             }
 
-            {this.state.selectedTab==='3' &&
+            {this.state.selectedTab === '3' &&
               <Box textAlign={'text'}>
                 <Heading.h3 fontFamily={'sansSerif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
                   Rebalance the entire pool, all users will bless you.
                 </Heading.h3>
+                <Heading.h5 fontFamily={'sansSerif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
+                  Should rebalance: {(!!this.state.shouldRebalance).toString()}
+                </Heading.h5>
                 <Flex
                   textAlign='center'
                   pt={2}>
-                  <Button onClick={e => this.redeem(e, 'cDAI')} size={'large'} className={styles.magicButton} mainColor={'transparent'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={[3,4]}>REBALANCE NOW!</Button>
+                  <Button
+                    disabled={this.state.shouldRebalance}
+                    onClick={e => this.rebalance(e, 'cDAI')}
+                    size={'large'}
+                    className={styles.magicButton}
+                    mainColor={'transparent'}
+                    contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={[3,4]}>REBALANCE NOW!</Button>
                 </Flex>
               </Box>
             }
