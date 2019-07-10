@@ -53,6 +53,9 @@ class Header extends React.Component {
                 />
               ) : (
                 <Button
+                  style={{
+                    backgroundColor:'blue'
+                  }}
                   borderRadius={4}
                   my={2}
                   mr={[3, 4]}

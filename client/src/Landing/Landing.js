@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Flex, Box, Heading, Button } from 'rimble-ui'
+import { Image, Flex, Box, Heading, Button } from 'rimble-ui'
 import BigNumber from 'bignumber.js';
 import styles from './Landing.module.scss';
 import LandingForm from '../LandingForm/LandingForm';
@@ -91,7 +91,7 @@ class Landing extends Component {
           paddingBottom: !network.isCorrectNetwork ? "8em" : "0"
         }}
       >
-        <Box className={[styles.headerContainer]} px={[0, 2]} pt={['1em', '2em']}>
+        <Box className={[styles.headerContainer]} pt={['1em', '2em']}>
           <Flex flexDirection={'column'} alignItems={['center','flex-start']} maxWidth={["50em", "50em"]} mx={['auto',6]} pb={3} px={[3,0]} textAlign={['center','left']} pt={['15vh', '20vh']}>
             <Heading.h1 fontFamily={'sansSerif'} className={[styles.title]} fontSize={[6,7]} textAlign={['center','left']}>
               Get the best out of your lend, with just one token
@@ -99,22 +99,21 @@ class Landing extends Component {
             <Heading.h2 className={[styles.subtitle]} fontSize={[3,4]} textAlign={['center','left']}>
               We connect different lending protocols with a decentralized rebalance process to always give you the best rate
             </Heading.h2>
-            <Button className={[styles.button]} size={'large'} mainColor={'black'} fontSize={[2,3]} px={[4,5]} mt={[3,4]} mb={[5,7]}>START LENDING</Button>
+            <Button className={[styles.button]} size={'large'} mainColor={'black'} fontSize={[2,3]} px={[4,5]} mt={[3,4]} mb={[5,'70vh']}>START LENDING</Button>
           </Flex>
-        </Box>
-
-        <Box className={[styles.graySection]}>
-          <Box id='invest' position={'relative'}>
-            <Box position={'absolute'} zIndex={'0'} width={'100%'} height={'50%'} top={'0'} left={'0'} backgroundColor={'bgBlue'}></Box>
+          <Box id='invest' position={['relative','absolute']} width={['auto','100%']} mt={['0','-250px']}>
             <Box position={'absolute'} zIndex={'0'} width={'100%'} height={'50%'} top={'50%'} left={'0'} backgroundColor={'gray'}></Box>
             <Box position={'relative'} zIndex={'1'}>
               <LandingForm />
             </Box>
           </Box>
-          <Box maxWidth={['50em','70em']} mx={'auto'} my={[4,6]}>
-            <IconFlexRow image={'images/feature-1.png'} title='100% non-custodial, thanks to our contract.' linkHref={'#'} linkText='Smart contract' />
+        </Box>
+
+        <Box className={[styles.graySection]} pt={[0,7]}>
+          <Box maxWidth={['50em','70em']} mx={'auto'} pt={[0,6]}>
+            <IconFlexRow image={'images/feature-1.png'} title='100% non-custodial, thanks to our contract.' linkHref={'https://github.com/bugduino/idle'} linkText='Smart contract' />
             <IconFlexRow image={'images/feature-2.png'} title='Fully decentralized, thanks to our users.' linkHref={'#'} linkText='Rebalance process' />
-            <IconFlexRow image={'images/feature-3.png'} title='No hidden fees, fully open source.' linkHref={'#'} linkText='See how it works' />
+            <IconFlexRow image={'images/feature-3.png'} title='No hidden fees, fully open source.' linkHref={'#how-it-works'} linkText='See how it works' />
           </Box>
           <Flex maxWidth={'100%'} flexDirection={['column','row']}>
             <Box p={[5,6]} backgroundColor={'blue'} color={'white'}>
@@ -136,8 +135,8 @@ class Landing extends Component {
               How it Works
             </Heading.h2>
             <Flex flexDirection={['column','row']}>
-              <Box width={[1,2/5]}>
-
+              <Box width={[1,2/5]} p={[3,4]} textAlign={'center'}>
+                <Image src="/images/how-it-works.png" />
               </Box>
               <Flex flexDirection={'column'} width={[1,3/5]}>
                 <Flex flexDirection={['column','row']}>
