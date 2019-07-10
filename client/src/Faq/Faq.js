@@ -8,8 +8,8 @@ class Faq extends Component {
     selectedSection: 'general',
     generalQuestions: [
       {
-        q: 'How does `Idle` work under the hood?',
-        a: `Idle gathers data from different lending protocols, seeking the highest available interest rate. Your funds are put into an asset pool (managed by the underlying protocol automatically choosen), from there borrowers can use the funds in pool to open up a loan. Those borrowers pay interest into the fund, increasing the size of the fund. When you withdraw your funds, you are entitled to a proportional amount of the interest accrued.
+        q: 'How does Idle work under the hood?',
+        a: `Idle gathers data from different lending protocols, seeking the highest available interest rate. Your funds are put into an asset pool (managed by the underlying lending protocol), from there borrowers can use the funds in pool to open up a loan. Those borrowers pay interest into the fund, increasing the size of the fund. When you withdraw your funds, you are entitled to a proportional amount of the interest accrued.
         `
       },
       {
@@ -18,7 +18,7 @@ class Faq extends Component {
       },
       {
         q: 'Can you walk me through an example?',
-        a: `When entering in Idle the best APR is automatically shown, and the best lending provider is already selected for you so if you decide to lend 1 ETH, you should only select the ETH crypto button, insert the amount and click on Lend.
+        a: `When entering in Idle the best APR is automatically shown, and the best lending provider is already selected for you so if you decide to lend 1 DAI, you should only insert the amount and click on 'Start Lending'.
         We will forward your funds to the protocol offering the best rate, and gives you back tokens representing your position in such protocols.`
       }
     ],
@@ -29,25 +29,29 @@ class Faq extends Component {
       },
       {
         q: 'How could you provide such APR?',
-        a: `APR or annual premium rate is the return users would get if they lend their fund for a year based off the current utilization ratio of the token debt reserve of the underlying protocol. In Idle, APR is the best annual premium rate available between various lending providers. Because APR is variable, it changes for every block in the Ethereum blockchain and influenced by money market fluctuations, it’s worth to highlight that future returns may not reflect the current expected returns.`
+        a: `APR or annual percentage rate is the return users would get if they lend their funds for a year based off the current utilization ratio of the token debt reserve of the underlying protocol. In Idle, APR is the best annual percentage rate available between various lending providers. Because APR is variable, it changes for every block in the Ethereum blockchain and is influenced by money market fluctuations, it’s worth to highlight that future returns may not reflect the current expected returns.`
       },
       {
         q: 'What lending providers are integrated?',
-        a: `We are currently integrated with Compound v2 and Fulcrum. Ideally we would integrate only protocols which gives tokens representing your lended assets back to the user so be completly trustless and non custodial.`
+        a: `We are currently integrated with Compound v2 and Fulcrum.`
+      }
+      {
+        q: 'What assets can I lend?',
+        a: `We currently support DAI only, but we plan to integrate other assets as well.`
       }
     ],
     ratesQuestions: [
       {
         q: 'Is `Idle` a non-custodial platform?',
-        a: `Yes, we never have your tokens ownership, when you lend assets in Idle, we forward them to the best lending protocol and gives you back tokens (eg cDAI for Compound or iDAI for Fulcrum) representing your position in that protocol, all in the same transaction.`
+        a: `Yes, we never have your direct tokens ownership, only our smart contract can move pool funds. When you lend assets in Idle, we forward them to the best lending protocol and give you back IdleTokens representing your position in such protocols, all in the same transaction.`
       },
       {
         q: 'Is Idle safe to use?',
-        a: `Our contract have not been audited yet, but we are managing to get our smart contract audited as soon as possible. We're operating with different trustfully platforms and their smart contracts (all of them are audited and secured), our contract code is public and have been extensively tested, but the possibility of a bug always exists.`
+        a: `Our contract have not been audited yet, but we are managing to get our smart contract audited as soon as possible. We're operating with different trustfully platforms and their smart contracts (all of them are audited and secured), our contract code is public and have been extensively tested, but the possibility of a bug always exists. Use at your own risk, it's beta software.`
       },
       {
         q: 'How does the decentralized rebalancing process work?',
-        a: `TODO`
+        a: 'For every lend or redeem action, of every user, the smart contract checks if the pool needs to be rebalanced, in that case it liquidates the entire pool position from the protocol with the worst rate and opens up a position in the best one. If at anytime the rates offered by the protocols are changed and no interactions are made to the contract, then any user can choose to rebalance the pool on their own, rebalancing therefore the position of everyone. The more funds one has invested the more one should be incentivized in rebalancing.
       }
     ]
   };
