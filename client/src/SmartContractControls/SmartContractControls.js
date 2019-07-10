@@ -252,18 +252,18 @@ class SmartContractControls extends React.Component {
     return (
       <Box textAlign={'center'} alignItems={'center'}>
         <Form pb={[5, 4]} backgroundColor={'white'} color={'blue'}>
-          <Flex flexDirection={['column','row']} width={'100%'}>
-            <Box className={[styles.tab,this.props.selectedTab==='1' ? styles.tabSelected : '']} width={[1,1/3]} textAlign={'center'}>
+          <Flex flexDirection={['row','row']} width={'100%'}>
+            <Box className={[styles.tab,this.props.selectedTab==='1' ? styles.tabSelected : '']} width={[1/3]} textAlign={'center'}>
               <Link display={'block'} py={[3,4]} fontSize={[3,5]} fontWeight={2} onClick={e => this.selectTab(e, '1')}>
                 Lend
               </Link>
             </Box>
-            <Box className={[styles.tab,this.props.selectedTab==='2' ? styles.tabSelected : '']} width={[1,1/3]} textAlign={'center'} borderLeft={['none','1px solid #fff']} borderRight={['none','1px solid #fff']}>
+            <Box className={[styles.tab,this.props.selectedTab==='2' ? styles.tabSelected : '']} width={[1/3]} textAlign={'center'} borderLeft={'1px solid #fff'} borderRight={'1px solid #fff'}>
               <Link display={'block'} py={[3,4]} fontSize={[3,5]} fontWeight={2} onClick={e => this.selectTab(e, '2')}>
                 Funds
               </Link>
             </Box>
-            <Box className={[styles.tab,this.props.selectedTab==='3' ? styles.tabSelected : '']} width={[1,1/3]} textAlign={'center'} borderRight={'none'}>
+            <Box className={[styles.tab,this.props.selectedTab==='3' ? styles.tabSelected : '']} width={[1/3]} textAlign={'center'} borderRight={'none'}>
               <Link display={'block'} py={[3,4]} fontSize={[3,5]} fontWeight={2} onClick={e => this.selectTab(e, '3')}>
                 Rebalance
               </Link>
@@ -342,7 +342,7 @@ class SmartContractControls extends React.Component {
                     {!isNaN(this.trimEth(this.state.DAIToRedeem)) && this.trimEth(this.state.DAIToRedeem) > 0 &&
                       <Flex
                         textAlign='center'>
-                        <Button onClick={e => this.redeem(e, 'IdleDAI')} size={'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={2}>
+                        <Button onClick={e => this.redeem(e, 'IdleDAI')} borderRadius={4} size={this.props.isMobile ? 'medium' : 'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={2}>
                           REDEEM DAI
                         </Button>
                       </Flex>
@@ -350,7 +350,7 @@ class SmartContractControls extends React.Component {
                     {(isNaN(this.trimEth(this.state.DAIToRedeem)) || parseFloat(this.state.DAIToRedeem)<=0) &&
                       <Flex
                         textAlign='center'>
-                        <Button onClick={e => this.selectTab(e, '1')} size={'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={2}>
+                        <Button onClick={e => this.selectTab(e, '1')} borderRadius={4} size={this.props.isMobile ? 'medium' : 'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={2}>
                           LEND NOW
                         </Button>
                       </Flex>
@@ -364,7 +364,18 @@ class SmartContractControls extends React.Component {
                       <Heading.h3 fontFamily={'sansSerif'} fontWeight={2} textAlign={'center'}>
                         Please connect to view your available funds.
                       </Heading.h3>
-                      <Button onClick={e => this.redeem(e, 'IdleDAI')} size={'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={[3,4]}>
+                      <Button
+                        onClick={e => this.redeem(e, 'IdleDAI')}
+                        size={this.props.isMobile ? 'medium' : 'large'}
+                        borderRadius={4}
+                        mainColor={'blue'}
+                        contrastColor={'white'}
+                        fontWeight={2}
+                        fontSize={[2,3]}
+                        mx={'auto'}
+                        px={[4,5]}
+                        mt={[3,4]}
+                      >
                         CONNECT
                       </Button>
                   </Flex>
@@ -377,7 +388,7 @@ class SmartContractControls extends React.Component {
                 <Heading.h3 fontFamily={'sansSerif'} fontWeight={2} textAlign={'center'}>
                   Rebalance the entire pool.<br />All users will bless you.
                 </Heading.h3>
-                <Heading.h4 my={[2,3]} color={'black'} fontWeight={1} textAlign={'center'}>
+                <Heading.h4 my={[2,3]} px={[2,0]} color={'black'} fontWeight={1} textAlign={'center'}>
                   The whole pool is automatically rebalanced each time a user interacts with Idle.<br />
                   But you can also trigger a rebalance anytime and this will benefit all users (included you).
                 </Heading.h4>
@@ -387,7 +398,8 @@ class SmartContractControls extends React.Component {
                   <Button
                     disabled={this.state.shouldRebalance}
                     onClick={e => this.rebalance(e, 'cDAI')}
-                    size={'large'}
+                    size={this.props.isMobile ? 'medium' : 'large'}
+                    borderRadius={4}
                     className={styles.magicButton}
                     mainColor={'transparent'}
                     contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={[2,3]}>REBALANCE NOW</Button>
@@ -400,7 +412,7 @@ class SmartContractControls extends React.Component {
                 <Heading.h3 fontFamily={'sansSerif'} fontWeight={2} textAlign={'center'}>
                   The pool is already balanced.
                 </Heading.h3>
-                <Heading.h4 my={[2,3]} color={'black'} fontWeight={1} textAlign={'center'}>
+                <Heading.h4 my={[2,3]} px={[2,0]} color={'black'} fontWeight={1} textAlign={'center'}>
                   The current interest rate is already the best between the integrated protocols.<br />Sit back and enjoy your earnings.
                 </Heading.h4>
                 <Flex
@@ -408,7 +420,8 @@ class SmartContractControls extends React.Component {
                   <Button
                     disabled={'disabled'}
                     onClick={e => {e.preventDefault()}}
-                    size={'large'}
+                    size={this.props.isMobile ? 'medium' : 'large'}
+                    borderRadius={4}
                     mainColor={'darkGray'}
                     contrastColor={'black'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={[2,3]}
                   >

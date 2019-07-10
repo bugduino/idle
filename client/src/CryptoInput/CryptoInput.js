@@ -44,10 +44,10 @@ class CryptoInput extends Component {
                 />
               </Box>
               <Box display={['none','block']} width={3/10}>
-                <Button onClick={this.props.handleClick} className={[styles.button]} size={'large'} mainColor={'blue'} fontWeight={2} fontSize={[2,3]} px={[4,5]} my={0} width={1}>LEND DAI</Button>
+                <Button onClick={this.props.handleClick} className={[styles.button]} size={'large'} mainColor={'blue'} fontWeight={2} fontSize={[2,3]} px={[4,5]} my={0} width={1}>LEND</Button>
               </Box>
               <Box display={['block','none']} width={3/10}>
-                <Button onClick={this.props.handleClick} className={[styles.button]} size={'medium'} mainColor={'blue'} fontWeight={2} fontSize={[2,3]} px={[2,3]} my={0} width={1}>LEND DAI</Button>
+                <Button onClick={this.props.handleClick} className={[styles.button]} size={'medium'} mainColor={'blue'} fontWeight={2} fontSize={[2,3]} px={[2,3]} my={0} width={1}>LEND</Button>
               </Box>
           </Flex>
           <Flex justifyContent={'center'}>

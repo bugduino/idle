@@ -62,7 +62,7 @@ class Header extends React.Component {
                   onClick={this.props.connectAndValidateAccount}
                   size={this.props.isMobile ? 'small' : 'medium'}
                 >
-                  Connect
+                  CONNECT
                 </Button>
               )}
             </Flex>

@@ -9,7 +9,8 @@ class WrongNetworkBanner extends React.Component {
       left: 0,
       right: 0,
       width: "100%",
-      backgroundColor: "white"
+      backgroundColor: "white",
+      zIndex: 9999
     };
 
     return (

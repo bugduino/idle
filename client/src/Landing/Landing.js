@@ -100,7 +100,7 @@ class Landing extends Component {
           <Box className={[styles.bgContainer,styles.bg1]} display={['none','block']}></Box>
           <Box className={[styles.bgContainer,styles.bg2]} display={['none','block']}></Box>
           <Box position={'relative'} zIndex={10}>
-            <Flex flexDirection={'column'} alignItems={['center','flex-start']} maxWidth={["50em", "50em"]} mx={['auto',6]} pb={3} px={[3,0]} textAlign={['center','left']} pt={['15vh', '20vh']}>
+            <Flex flexDirection={'column'} alignItems={['center','flex-start']} maxWidth={["50em", "50em"]} mx={['auto',6]} pb={3} px={[3,0]} textAlign={['center','left']} pt={['10vh', '20vh']}>
               <Heading.h1 fontFamily={'sansSerif'} className={[styles.title]} fontSize={[6,7]} textAlign={['center','left']}>
                 Get the best out of your lend, with just one token
               </Heading.h1>
@@ -124,7 +124,10 @@ class Landing extends Component {
             <Box id='invest' position={['relative','absolute']} width={['auto','100%']} mt={['0','-250px']}>
               <Box position={'absolute'} zIndex={'0'} width={'100%'} height={'50%'} top={'50%'} left={'0'} backgroundColor={'gray'}></Box>
               <Box position={'relative'} zIndex={'1'}>
-                <LandingForm updateSelectedTab={this.props.updateSelectedTab} selectedTab={this.props.selectedTab} />
+                <LandingForm
+                  isMobile={this.props.isMobile}
+                  updateSelectedTab={this.props.updateSelectedTab}
+                  selectedTab={this.props.selectedTab} />
               </Box>
             </Box>
           </Box>
