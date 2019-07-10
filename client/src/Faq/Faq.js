@@ -42,7 +42,7 @@ class Faq extends Component {
     ],
     ratesQuestions: [
       {
-        q: 'Is `Idle` a non-custodial platform?',
+        q: 'Is Idle a non-custodial platform?',
         a: `Yes, we never have your direct tokens ownership, only our smart contract can move pool funds. When you lend assets in Idle, we forward them to the best lending protocol and give you back IdleTokens representing your position in such protocols, all in the same transaction.`
       },
       {
