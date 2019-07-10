@@ -99,7 +99,7 @@ class Landing extends Component {
               Get the best out of your lend, with just one token
             </Heading.h1>
             <Heading.h2 className={[styles.subtitle]} fontSize={[3,4]} textAlign={['center','left']}>
-              We connect different lending protocols with a decentralized rebalance process to always give you the best rate
+              We connect different lending protocols with a decentralized rebalance process to always give you the best available rate
             </Heading.h2>
             <Button className={[styles.button]} size={'large'} mainColor={'black'} fontSize={[2,3]} px={[4,5]} mt={[3,4]} mb={[5,'70vh']}>START LENDING</Button>
           </Flex>
