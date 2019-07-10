@@ -51,7 +51,7 @@ class Faq extends Component {
       },
       {
         q: 'How does the decentralized rebalancing process work?',
-        a: 'For every lend or redeem action, of every user, the smart contract checks if the pool needs to be rebalanced, in that case it liquidates the entire pool position from the protocol with the worst rate and opens up a position in the best one. If at anytime the rates offered by the protocols are changed and no interactions are made to the contract, then any user can choose to rebalance the pool on their own, rebalancing therefore the position of everyone. The more funds one has invested the more one should be incentivized in rebalancing.
+        a: 'For every lend or redeem action, of every user, the smart contract checks if the pool needs to be rebalanced, in that case it liquidates the entire pool position from the protocol with the worst rate and opens up a position in the best one. If at anytime the rates offered by the protocols are changed and no interactions are made to the contract, then any user can choose to rebalance the pool on their own, rebalancing therefore the position of everyone. The more funds one has invested the more one should be incentivized in rebalancing.'
       }
     ]
   };
