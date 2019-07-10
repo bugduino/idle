@@ -25,24 +25,29 @@ export default function (props) {
     <Modal isOpen={isOpen}>
       <ModalCard closeFunc={closeModal}>
         <ModalCard.Body>
-          <Box width={["auto", "40em"]}>
+          <Flex
+            width={["auto", "40em"]}
+            flexDirection={'column'}
+            alignItems={'center'}
+            justifyContent={'center'}>
             <Heading.h2>Account overview</Heading.h2>
-            <Box>
-              <Heading.h4>Public Address:</Heading.h4>
-              <div style={{'wordBreak': 'break-word'}}>
-                {account &&
-                  <Flex p={1}>
-                    <QR
-                      value={props.account}
-                      renderAs={'svg'}
-                    />
-                  </Flex>
-                }
+            <Flex
+              flexDirection={'column'}
+              alignItems={'center'}
+              justifyContent={'center'}>
+              <Heading.h4>Wallet Address</Heading.h4>
+              {account &&
+                <QR
+                  value={props.account}
+                  renderAs={'svg'}
+                />
+              }
+              <Box style={{'wordBreak': 'break-word'}}>
                 <PublicAddress label="" address={props.account} />
-              </div>
-            </Box>
+              </Box>
+            </Flex>
             <Box>
-              <Heading.h4>Balance:</Heading.h4>
+              <Heading.h4>Balance</Heading.h4>
               <Text my={3} fontSize={3}>
                 {trimEth(accountBalance)} ETH
               </Text>
@@ -50,7 +55,7 @@ export default function (props) {
                 {trimEth(accountBalanceDAI)} DAI
               </Text>
             </Box>
-          </Box>
+          </Flex>
         </ModalCard.Body>
 
         <ModalCard.Footer>
