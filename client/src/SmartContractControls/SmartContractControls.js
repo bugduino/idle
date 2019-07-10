@@ -275,10 +275,10 @@ class SmartContractControls extends React.Component {
               <Box textAlign={'text'}>
                 <Box px={[2,0]} py={[2, 4]}>
                   <Heading.h3 fontFamily={'sansSerif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
-                    Best DAI interest Rate: {this.state.maxRate}%
+                    Best DAI interest rate: {this.state.maxRate}%
                   </Heading.h3>
                   <Heading.h4 my={[2,3]} color={'black'} fontWeight={1} textAlign={'center'}>
-                    We can guarantee the best interest by leveraging the most popular lending platforms.
+                    We offer the best available interest rate for your DAI through different lending platforms.
                   </Heading.h4>
                 </Box>
 
@@ -342,15 +342,15 @@ class SmartContractControls extends React.Component {
                     {!isNaN(this.trimEth(this.state.DAIToRedeem)) && this.trimEth(this.state.DAIToRedeem) > 0 &&
                       <Flex
                         textAlign='center'>
-                        <Button onClick={e => this.redeem(e, 'IdleDAI')} size={'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={[3,4]}>
-                          REDEEM
+                        <Button onClick={e => this.redeem(e, 'IdleDAI')} size={'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={2}>
+                          REDEEM DAI
                         </Button>
                       </Flex>
                     }
                     {(isNaN(this.trimEth(this.state.DAIToRedeem)) || parseFloat(this.state.DAIToRedeem)<=0) &&
                       <Flex
                         textAlign='center'>
-                        <Button onClick={e => this.selectTab(e, '1')} size={'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={[3,4]}>
+                        <Button onClick={e => this.selectTab(e, '1')} size={'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={2}>
                           LEND NOW
                         </Button>
                       </Flex>
@@ -378,8 +378,8 @@ class SmartContractControls extends React.Component {
                   Rebalance the entire pool.<br />All users will bless you.
                 </Heading.h3>
                 <Heading.h4 my={[2,3]} color={'black'} fontWeight={1} textAlign={'center'}>
-                  The whole pool is automatically rebalanced each time a user lends his DAI.<br />
-                  But you can also trigger a rebalance anytime and this will benefit all users (you included).
+                  The whole pool is automatically rebalanced each time a user interacts with Idle.<br />
+                  But you can also trigger a rebalance anytime and this will benefit all users (included you).
                 </Heading.h4>
                 <Flex
                   textAlign='center'
@@ -390,20 +390,31 @@ class SmartContractControls extends React.Component {
                     size={'large'}
                     className={styles.magicButton}
                     mainColor={'transparent'}
-                    contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={[3,4]}>REBALANCE NOW!</Button>
+                    contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={[2,3]}>REBALANCE NOW</Button>
                 </Flex>
               </Box>
             }
 
             {this.props.selectedTab === '3' && !this.state.shouldRebalance && 
-              <Box py={[2, 4]} textAlign={'text'}>
+              <Box py={[2, 4]} textAlign={'center'}>
                 <Heading.h3 fontFamily={'sansSerif'} fontWeight={2} textAlign={'center'}>
                   The pool is already balanced.
                 </Heading.h3>
                 <Heading.h4 my={[2,3]} color={'black'} fontWeight={1} textAlign={'center'}>
-                  The whole pool is automatically rebalanced each time a user lends his DAI.<br />
-                  But you can also trigger a rebalance anytime and this will benefit all users (you included).
+                  The current interest rate is already the best between the integrated protocols.<br />Sit back and enjoy your earnings.
                 </Heading.h4>
+                <Flex
+                  textAlign={'center'}>
+                  <Button
+                    disabled={'disabled'}
+                    onClick={e => {e.preventDefault()}}
+                    size={'large'}
+                    mainColor={'darkGray'}
+                    contrastColor={'black'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={[2,3]}
+                  >
+                    REBALANCE NOW
+                  </Button>
+                </Flex>
               </Box>
             }
 

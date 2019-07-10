@@ -132,7 +132,7 @@ class Landing extends Component {
 
         <Box className={[styles.graySection]} pt={[0,7]}>
           <Box maxWidth={['50em','70em']} mx={'auto'} pt={[0,6]}>
-            <IconFlexRow image={'images/feature-1.png'} title='100% non-custodial, thanks to our contract.' linkHref={'https://github.com/bugduino/idle'} linkText='Smart contract' />
+            <IconFlexRow image={'images/feature-1.png'} title='100% non-custodial, thanks to our contract.' linkHref={'https://etherscan.io/address/0x10cf8e1CDba9A2Bd98b87000BCAdb002b13eA525#code'} linkText='Smart contract' />
             <IconFlexRow image={'images/feature-2.png'} title='Fully decentralized, thanks to our users.' handleClick={e => this.props.updateSelectedTab(e,'3')} linkHref={'#invest'} linkText='Rebalance process' />
             <IconFlexRow image={'images/feature-3.png'} title='No hidden fees, best things in life are free!' linkHref={'#how-it-works'} linkText='See how it works' />
           </Box>
@@ -174,7 +174,7 @@ class Landing extends Component {
             </Heading.h2>
             <Flex flexDirection={['column','row']}>
               <Flex alignItems={'center'} width={[1,4/10]} px={[6,4]} textAlign={'center'}>
-                <Image src="/images/how-it-works.png" />
+                <Image src="images/how-it-works.png" />
               </Flex>
               <Flex alignItems={'center'} flexDirection={'column'} width={[1,6/10]}>
                 <Flex flexDirection={['column','row']}>
