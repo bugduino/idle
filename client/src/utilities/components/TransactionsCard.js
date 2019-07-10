@@ -36,15 +36,13 @@ class TransactionsCard extends React.Component {
     if (Object.keys(this.props.transactions).length < 1 && this.props.balance && parseFloat(this.props.balance) <= 0) {
       title = "No activity yet. Lend some assets to start a transaction. " ;
     } else if (Object.keys(this.props.transactions).length >= 1) {
-      title = "Activity"
+      title = "Activities"
     }
 
     return (
       <Flex px={4} mx={'auto'} flexDirection={'column'}>
-        <Text fontWeight={3} mb={3}>
-          <Text textAlign={"center"} p={3}>
-            {title}
-          </Text>
+        <Text my={2} fontWeight={3} textAlign={"center"}>
+          {title}
         </Text>
 
         <TransactionTable>
@@ -122,7 +120,7 @@ class TransactionsCard extends React.Component {
                     {this.props.transactions[keyName].confirmationCount}
                   </td>
                   <td>
-                    <Link href={'https://etherscan.io/tx/'+txHash} target='_blank'>
+                    <Link href={'https://etherscan.io/tx/'+txHash} target={'_blank'}>
                       {txHash}
                     </Link>
                   </td>

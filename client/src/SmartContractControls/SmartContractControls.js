@@ -211,7 +211,11 @@ class SmartContractControls extends React.Component {
   };
 
   handleChangeAmount = (e) => {
-    this.setState({ lendAmount: e.target.value });
+    if (this.props.account){
+      this.setState({ lendAmount: e.target.value });
+    } else {
+      this.mint(e);
+    }
   };
   toggleModal = (e) => {
     this.setState(state => ({...state, approveIsOpen: !state.approveIsOpen }));
@@ -259,7 +263,7 @@ class SmartContractControls extends React.Component {
                 Funds
               </Link>
             </Box>
-            <Box className={[styles.tab,this.props.selectedTab==='3' ? styles.tabSelected : '']} width={[1,1/3]} textAlign={'center'}>
+            <Box className={[styles.tab,this.props.selectedTab==='3' ? styles.tabSelected : '']} width={[1,1/3]} textAlign={'center'} borderRight={'none'}>
               <Link display={'block'} py={[3,4]} fontSize={[3,5]} fontWeight={2} onClick={e => this.selectTab(e, '3')}>
                 Rebalance
               </Link>
@@ -269,13 +273,17 @@ class SmartContractControls extends React.Component {
           <Box py={[2, 4]}>
             {this.props.selectedTab === '1' &&
               <Box textAlign={'text'}>
-                <Box py={[2, 4]}>
+                <Box px={[2,0]} py={[2, 4]}>
                   <Heading.h3 fontFamily={'sansSerif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
-                    Best available interest Rate: {this.state.maxRate}%
+                    Best DAI interest Rate: {this.state.maxRate}%
                   </Heading.h3>
+                  <Heading.h4 my={[2,3]} color={'black'} fontWeight={1} textAlign={'center'}>
+                    We can guarantee the best interest by leveraging the most popular lending platforms.
+                  </Heading.h4>
                 </Box>
 
                 <CryptoInput
+                  account={this.props.account}
                   defaultValue={this.state.lendAmount}
                   color={'black'}
                   selectedAsset='DAI'
@@ -294,37 +302,85 @@ class SmartContractControls extends React.Component {
             }
 
             {this.props.selectedTab === '2' &&
-              <Box textAlign={'text'}>
+              <Box px={[2,0]} py={[2, 4]} textAlign={'text'}>
                 {this.props.account &&
                   <>
-                    <Heading.h3 fontFamily={'sansSerif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
-                      Redeemable funds: ~{this.trimEth(this.state.DAIToRedeem)} DAI <br />
-                      IdleDAI: ~{this.trimEth(this.state.balanceOfIdleDAI)} <br />
-                      {!!this.state.IdleDAIPrice && `IdleDAIPrice: ~${this.trimEth(this.state.IdleDAIPrice)} DAI`}
-                    </Heading.h3>
-                    <TransactionsCard
-                      balance={this.state.balanceOfIdleDAI}
-                      transactions={this.props.transactions} />
+                    <Flex flexDirection={['column','row']} width={'100%'} py={[2,3]} borderBottom={'1px solid #D6D6D6'}>
+                      <Box width={[1,1/3]}>
+                        <Text fontFamily={'sansSerif'} fontSize={[2, 3]} fontWeight={2} color={'black'} textAlign={'center'}>
+                          Redeemable DAI
+                        </Text>
+                        <Heading.h3 fontFamily={'sansSerif'} fontSize={[5,6]} fontWeight={2} color={'black'} textAlign={'center'}>
+                          {!isNaN(this.trimEth(this.state.DAIToRedeem)) && `${this.trimEth(this.state.DAIToRedeem)}`}
+                          {isNaN(this.trimEth(this.state.DAIToRedeem)) && `-`}
+                        </Heading.h3>
+                      </Box>
+                      <Box width={[1,1/3]}>
+                        <Text fontFamily={'sansSerif'} fontSize={[2, 3]} fontWeight={2} color={'black'} textAlign={'center'}>
+                          Idle DAI
+                        </Text>
+                        <Heading.h3 fontFamily={'sansSerif'} fontSize={[5,6]} fontWeight={2} color={'black'} textAlign={'center'}>
+                          {!isNaN(this.trimEth(this.state.balanceOfIdleDAI)) && `${this.trimEth(this.state.balanceOfIdleDAI)}`}
+                          {isNaN(this.trimEth(this.state.balanceOfIdleDAI)) && `-`}
+                        </Heading.h3>
+                      </Box>
+                      <Box width={[1,1/3]}>
+                        <Text fontFamily={'sansSerif'} fontSize={[2, 3]} fontWeight={2} color={'black'} textAlign={'center'}>
+                          Idle DAI Price
+                        </Text>
+                        <Heading.h3 fontFamily={'sansSerif'} fontSize={[5,6]} fontWeight={2} color={'black'} textAlign={'center'}>
+                          {!isNaN(this.trimEth(this.state.IdleDAIPrice)) && !!this.state.IdleDAIPrice && `${this.trimEth(this.state.IdleDAIPrice)} DAI`}
+                          {(isNaN(this.trimEth(this.state.IdleDAIPrice)) || !this.state.IdleDAIPrice) && `-`}
+                        </Heading.h3>
+                      </Box>
+                    </Flex>
+                    <Box my={[3,4]}>
+                      <TransactionsCard
+                        balance={this.state.balanceOfIdleDAI}
+                        transactions={this.props.transactions} />
+                    </Box>
+                    {!isNaN(this.trimEth(this.state.DAIToRedeem)) && this.trimEth(this.state.DAIToRedeem) > 0 &&
+                      <Flex
+                        textAlign='center'>
+                        <Button onClick={e => this.redeem(e, 'IdleDAI')} size={'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={[3,4]}>
+                          REDEEM
+                        </Button>
+                      </Flex>
+                    }
+                    {(isNaN(this.trimEth(this.state.DAIToRedeem)) || parseFloat(this.state.DAIToRedeem)<=0) &&
+                      <Flex
+                        textAlign='center'>
+                        <Button onClick={e => this.selectTab(e, '1')} size={'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={[3,4]}>
+                          LEND NOW
+                        </Button>
+                      </Flex>
+                    }
                   </>
                 }
-                <Flex
-                  textAlign='center'
-                  pt={2}>
-                  <Button onClick={e => this.redeem(e, 'IdleDAI')} size={'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={[3,4]}>
-                    {this.props.account ? 'REDEEM' : 'CONNECT'}
-                  </Button>
-                </Flex>
+                {!this.props.account && 
+                  <Flex
+                    flexDirection={'column'}
+                    textAlign='center'>
+                      <Heading.h3 fontFamily={'sansSerif'} fontWeight={2} textAlign={'center'}>
+                        Please connect to view your available funds.
+                      </Heading.h3>
+                      <Button onClick={e => this.redeem(e, 'IdleDAI')} size={'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={[3,4]}>
+                        CONNECT
+                      </Button>
+                  </Flex>
+                }
               </Box>
             }
 
-            {this.props.selectedTab === '3' &&
-              <Box textAlign={'text'}>
-                <Heading.h3 fontFamily={'sansSerif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
-                  Rebalance the entire pool, all users will bless you.
+            {this.props.selectedTab === '3' && !!this.state.shouldRebalance && 
+              <Box px={[2,0]} py={[2, 4]} textAlign={'text'}>
+                <Heading.h3 fontFamily={'sansSerif'} fontWeight={2} textAlign={'center'}>
+                  Rebalance the entire pool.<br />All users will bless you.
                 </Heading.h3>
-                <Heading.h5 fontFamily={'sansSerif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
-                  Should rebalance: {(!!this.state.shouldRebalance).toString()}
-                </Heading.h5>
+                <Heading.h4 my={[2,3]} color={'black'} fontWeight={1} textAlign={'center'}>
+                  The whole pool is automatically rebalanced each time a user lends his DAI.<br />
+                  But you can also trigger a rebalance anytime and this will benefit all users (you included).
+                </Heading.h4>
                 <Flex
                   textAlign='center'
                   pt={2}>
@@ -336,6 +392,18 @@ class SmartContractControls extends React.Component {
                     mainColor={'transparent'}
                     contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={[3,4]}>REBALANCE NOW!</Button>
                 </Flex>
+              </Box>
+            }
+
+            {this.props.selectedTab === '3' && !this.state.shouldRebalance && 
+              <Box py={[2, 4]} textAlign={'text'}>
+                <Heading.h3 fontFamily={'sansSerif'} fontWeight={2} textAlign={'center'}>
+                  The pool is already balanced.
+                </Heading.h3>
+                <Heading.h4 my={[2,3]} color={'black'} fontWeight={1} textAlign={'center'}>
+                  The whole pool is automatically rebalanced each time a user lends his DAI.<br />
+                  But you can also trigger a rebalance anytime and this will benefit all users (you included).
+                </Heading.h4>
               </Box>
             }
 

@@ -5,6 +5,7 @@ const baseColors = {
   black: '#000e1a',
   white: '#FFF',
   blue: '#0036ff',
+  darkBlue: '#0028be',
   green: '#28C081',
   yellow: '#FD9D28',
   red: '#DC2C10',

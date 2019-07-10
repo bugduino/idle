@@ -40,13 +40,31 @@
 .button{
 	text-transform:uppercase;
 	text-align:center;
-	color:white;
 	outline:none;
-	font-weight:300;
+	font-weight:500;
 }
 .graySection{
 	background-color:#f7f7f7;
 }
 .whiteSection{
 	background-color:#ffffff;
+}
+.skewBg{
+	position:absolute;
+	width:50%;
+	height:100%;
+	top:10%;
+	right:0;
+	background:#f4fcf8;
+	transform: skewY(-15deg);
+	z-index:0;
+}
+.bgHeart{
+	/*transform:rotate(15deg);*/
+	opacity:0.5;
+	background-image:url(/images/heart.png);
+	background-position:right 16%;
+	background-repeat:no-repeat;
+	background-size:25%;
+	z-index:0;
 }

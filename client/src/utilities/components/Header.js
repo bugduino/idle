@@ -27,10 +27,10 @@ class Header extends React.Component {
         'position': 'absolute',
         'left': '0',
         'right': '0',
-        'zIndex': 10
+        'zIndex': 99
         }}
       >
-        <Flex alignItems={"center"} bg={"#0028be"} py={1}>
+        <Flex alignItems={"center"} bg={"darkBlue"} py={1}>
           <Box ml={[0, 6]} width={[1,4/12]} py={[3,4]} alignItems={"center"} textAlign={'center'}>
             <Image src="images/logo.png"
               mx={'auto'}
@@ -54,9 +54,8 @@ class Header extends React.Component {
                 />
               ) : (
                 <Button
-                  style={{
-                    backgroundColor:'blue'
-                  }}
+                  contrastColor={'blue'}
+                  mainColor={'white'}
                   borderRadius={4}
                   my={2}
                   mr={[3, 4]}

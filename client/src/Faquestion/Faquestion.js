@@ -15,12 +15,13 @@ class Faquestion extends Component {
       <Flex
         pt={(this.props.pt || this.props.pt === 0) ? this.props.pt : [2, 4]}
         flexDirection={['column']}
-        alignItems={'center'}
+        alignItems={'baseline'}
         justifyContent={'center'}>
         <Heading.h4
           fontFamily={'sansSerif'}
           style={{cursor: 'pointer'}}
-          fontSize={[3, 4]}
+          fontWeight={2}
+          color={this.state.isShowingAnswer ? 'blue' : 'copyColor'}
           pt={(this.props.pt || this.props.pt === 0) ? this.props.pt : 2}
           pb={2}
           my={0}
@@ -28,7 +29,7 @@ class Faquestion extends Component {
           <Flex alignItems={'center'}>
             <Icon
               name={this.state.isShowingAnswer ? 'Close' : 'Add'}
-              color="copyColor"
+              color={this.state.isShowingAnswer ? 'blue' : 'copyColor'}
               size={"1.5em"}
               mr={[2]}
             />
@@ -37,7 +38,7 @@ class Faquestion extends Component {
         </Heading.h4>
 
         {this.state.isShowingAnswer &&
-          <Text.p fontSize={[3]}>
+          <Text.p textAlign={'justify'} fontSize={[2,3]}>
             {this.props.answer}
           </Text.p>
         }

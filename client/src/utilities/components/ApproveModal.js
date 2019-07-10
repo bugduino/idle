@@ -16,8 +16,8 @@ export default function ApproveModal(props) {
     <Modal isOpen={isOpen}>
       <ModalCard closeFunc={closeModal}>
         <ModalCard.Body>
-          <Box mt={4} mb={5}>
-            <Heading fontSize={[4, 5]}>Enabling {tokenName} tokens</Heading>
+          <Box mt={3} mb={3}>
+            <Heading color={'black'} fontSize={[4, 5]}>Enabling {tokenName} tokens</Heading>
             <Text fontSize={[2, 3]} my={3}>
               What it means?
             </Text>
@@ -41,9 +41,11 @@ export default function ApproveModal(props) {
         </ModalCard.Body>
 
         <ModalCard.Footer>
-          <Button.Outline onClick={onClick}>
+          <Button
+            onClick={onClick}
+            borderRadius={4}>
             ENABLE {tokenName}
-          </Button.Outline>
+          </Button>
         </ModalCard.Footer>
       </ModalCard>
     </Modal>

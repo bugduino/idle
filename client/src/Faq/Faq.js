@@ -70,19 +70,19 @@ class Faq extends Component {
     const isRatesSelected = selectedSection === 'rates';
     return (
       <Flex
-        py={[2, 4]}
         flexDirection={['column']}>
-        <Heading.h2 fontFamily={'sansSerif'} fontSize={[5, 6]} textAlign={'center'} py={2} alignItems={'center'} my={0}>
+
+        <Heading.h2 fontFamily={'sansSerif'} fontSize={[5,6]} textAlign={'center'} py={[4,5]} alignItems={'center'}>
           Faq
         </Heading.h2>
 
         <Flex
           flexDirection={['column', 'row']}
           justifyContent={["flex-start", "space-between"]}
-          my={[2, 4]}
         >
-          <Flex flexDirection={['row', 'column']} justifyContent={['space-between', 'flex-start']}>
+          <Flex width={[1,2/10]} px={[2,0]} flexDirection={['row', 'column']} justifyContent={['space-between', 'flex-start']}>
             <Text
+              textAlign={'right'}
               fontSize={[3, 4]}
               mb={[1, 3]}
               color={isGeneralSelected ? 'blue' : 'copyColor'}
@@ -91,6 +91,7 @@ class Faq extends Component {
               General
             </Text>
             <Text
+              textAlign={'right'}
               fontSize={[3, 4]}
               mb={[1, 3]}
               color={isGuidelinesSelected ? 'blue' : 'copyColor'}
@@ -99,6 +100,7 @@ class Faq extends Component {
               Investors
             </Text>
             <Text
+              textAlign={'right'}
               fontSize={[3, 4]}
               mb={[1, 3]}
               color={isRatesSelected ? 'blue' : 'copyColor'}
@@ -107,7 +109,7 @@ class Faq extends Component {
               Security
             </Text>
           </Flex>
-          <Box flex={'1 1'} width={1} mt={[3, 0]} mb={[4, 0]} mr={4} ml={[0, 5]}>
+          <Box width={[1,8/10]} mt={[3, 0]} mb={[4, 0]} mr={4} pl={[0,6]}>
             {isGeneralSelected && generalDivs}
             {isGuidelinesSelected && guidelinesDivs}
             {isRatesSelected && ratesDivs}
