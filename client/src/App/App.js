@@ -17,8 +17,14 @@ class App extends Component {
   state = {
     genericError: null,
     width: window.innerWidth,
-    route: "default" // or 'onboarding'
+    route: "default", // or 'onboarding'
+    selectedTab: '1'
   };
+
+  async selectTab(e, tabIndex) {
+    // e.preventDefault();
+    this.setState(state => ({...state, selectedTab: tabIndex}));
+  }
 
   componentWillMount() {
     window.addEventListener('resize', this.handleWindowSizeChange);
@@ -95,6 +101,7 @@ class App extends Component {
                           userRejectedValidation={userRejectedValidation}
                           validateAccount={validateAccount}
                           connectAndValidateAccount={connectAndValidateAccount}
+                          handleMenuClick={this.selectTab.bind(this)}
                           modals={modals}
                           network={network}
                         />
@@ -129,6 +136,8 @@ class App extends Component {
                             account={account}
                             accountBalance={accountBalance}
                             accountBalanceLow={accountBalanceLow}
+                            updateSelectedTab={this.selectTab.bind(this)}
+                            selectedTab={this.state.selectedTab}
                             network={network} />
                         ) : null}
                       </Box>

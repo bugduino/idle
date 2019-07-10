@@ -15,7 +15,7 @@ class CryptoInput extends Component {
           my={['0','1em']}
           mx={'auto'}
           >
-            <Box width={[3/5]}>
+            <Box width={[3/5]} pt={[0,'0.5em']}>
               <Form.Input
                 placeholder={`Enter Amount`}
                 value={this.props.defaultValue}
@@ -23,7 +23,6 @@ class CryptoInput extends Component {
                 borderRadius='2rem'
                 border='0'
                 pl={'1em'}
-                pt={[0,'0.5em']}
                 borderColor='transparent'
                 boxShadow='none !important'
                 min={0}

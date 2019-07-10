@@ -27,6 +27,7 @@ class Header extends React.Component {
         'position': 'absolute',
         'left': '0',
         'right': '0',
+        'zIndex': 10
         }}
       >
         <Flex alignItems={"center"} bg={"#0028be"} py={1}>
@@ -38,9 +39,9 @@ class Header extends React.Component {
           </Box>
           <Box display={['none','block']} width={[8/12]} justifyContent="flex-end">
             <Flex alignItems={"center"} justifyContent="flex-end">
-              <MenuLink linkSrc="#" linkText="Start Lending" />
-              <MenuLink linkSrc="#" linkText="Your Investments" />
-              <MenuLink linkSrc="#" linkText="Help" />
+              <MenuLink handleClick={e => this.props.handleMenuClick(e, '1')} linkSrc="#invest" linkText="Start Lending" />
+              <MenuLink handleClick={e => this.props.handleMenuClick(e, '2')} linkSrc="#invest" linkText="Your Investments" />
+              <MenuLink linkSrc="#faq" linkText="Help" />
               {this.props.account ? (
                 <AccountOverview
                   account={this.props.account}

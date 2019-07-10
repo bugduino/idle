@@ -32,7 +32,7 @@ class TransactionsCard extends React.Component {
   // }
 
   render() {
-    const title = '';
+    let title = '';
     if (Object.keys(this.props.transactions).length < 1 && this.props.balance && parseFloat(this.props.balance) <= 0) {
       title = "No activity yet. Lend some assets to start a transaction. " ;
     } else if (Object.keys(this.props.transactions).length >= 1) {

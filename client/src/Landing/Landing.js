@@ -92,6 +92,8 @@ class Landing extends Component {
         }}
       >
         <Box className={[styles.headerContainer]} pt={['1em', '2em']}>
+          <Box className={[styles.bgContainer,styles.bg1]}></Box>
+          <Box className={[styles.bgContainer,styles.bg2]}></Box>
           <Flex flexDirection={'column'} alignItems={['center','flex-start']} maxWidth={["50em", "50em"]} mx={['auto',6]} pb={3} px={[3,0]} textAlign={['center','left']} pt={['15vh', '20vh']}>
             <Heading.h1 fontFamily={'sansSerif'} className={[styles.title]} fontSize={[6,7]} textAlign={['center','left']}>
               Get the best out of your lend, with just one token
@@ -104,7 +106,7 @@ class Landing extends Component {
           <Box id='invest' position={['relative','absolute']} width={['auto','100%']} mt={['0','-250px']}>
             <Box position={'absolute'} zIndex={'0'} width={'100%'} height={'50%'} top={'50%'} left={'0'} backgroundColor={'gray'}></Box>
             <Box position={'relative'} zIndex={'1'}>
-              <LandingForm />
+              <LandingForm updateSelectedTab={this.props.updateSelectedTab} selectedTab={this.props.selectedTab} />
             </Box>
           </Box>
         </Box>
@@ -189,7 +191,7 @@ class Landing extends Component {
           </Box>
         </Box>
 
-        <Box>
+        <Box id="faq">
           <Box maxWidth={['50em','70em']} mx={'auto'} my={[2,3]} px={[3,5]}>
             <Faq />
           </Box>

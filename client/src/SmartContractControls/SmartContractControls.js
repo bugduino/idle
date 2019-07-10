@@ -65,6 +65,7 @@ class SmartContractControls extends React.Component {
     this.setState({
       [`compoundRate`]: aprs ? (+this.toEth(aprs[0])).toFixed(2) : '0.00',
       [`fulcrumRate`]: aprs ? (+this.toEth(aprs[1])).toFixed(2) : '0.00',
+      [`maxRate`]: aprs ? (+this.toEth(Math.max(aprs[0],aprs[1]))).toFixed(2) : '0.00',
       needsUpdate: false
     });
   };
@@ -235,10 +236,12 @@ class SmartContractControls extends React.Component {
 
   async selectTab(e, tabIndex) {
     e.preventDefault();
-    this.setState(state => ({...state, selectedTab: tabIndex}));
+    // this.setState(state => ({...state, selectedTab: tabIndex}));
+    this.props.updateSelectedTab(e,tabIndex);
     if (tabIndex === '3') {
       await this.rebalanceCheck();
     }
+
   }
 
   render() {
@@ -246,17 +249,17 @@ class SmartContractControls extends React.Component {
       <Box textAlign={'center'} alignItems={'center'}>
         <Form pb={[5, 4]} backgroundColor={'white'} color={'blue'}>
           <Flex flexDirection={['column','row']} width={'100%'}>
-            <Box className={[styles.tab,this.state.selectedTab==='1' ? styles.tabSelected : '']} width={[1,1/3]} textAlign={'center'}>
+            <Box className={[styles.tab,this.props.selectedTab==='1' ? styles.tabSelected : '']} width={[1,1/3]} textAlign={'center'}>
               <Link display={'block'} py={[3,4]} fontSize={[3,5]} fontWeight={2} onClick={e => this.selectTab(e, '1')}>
                 Lend
               </Link>
             </Box>
-            <Box className={[styles.tab,this.state.selectedTab==='2' ? styles.tabSelected : '']} width={[1,1/3]} textAlign={'center'} borderLeft={['none','1px solid #fff']} borderRight={['none','1px solid #fff']}>
+            <Box className={[styles.tab,this.props.selectedTab==='2' ? styles.tabSelected : '']} width={[1,1/3]} textAlign={'center'} borderLeft={['none','1px solid #fff']} borderRight={['none','1px solid #fff']}>
               <Link display={'block'} py={[3,4]} fontSize={[3,5]} fontWeight={2} onClick={e => this.selectTab(e, '2')}>
                 Funds
               </Link>
             </Box>
-            <Box className={[styles.tab,this.state.selectedTab==='3' ? styles.tabSelected : '']} width={[1,1/3]} textAlign={'center'}>
+            <Box className={[styles.tab,this.props.selectedTab==='3' ? styles.tabSelected : '']} width={[1,1/3]} textAlign={'center'}>
               <Link display={'block'} py={[3,4]} fontSize={[3,5]} fontWeight={2} onClick={e => this.selectTab(e, '3')}>
                 Rebalance
               </Link>
@@ -264,13 +267,11 @@ class SmartContractControls extends React.Component {
           </Flex>
 
           <Box py={[2, 4]}>
-            {this.state.selectedTab === '1' &&
+            {this.props.selectedTab === '1' &&
               <Box textAlign={'text'}>
                 <Box py={[2, 4]}>
                   <Heading.h3 fontFamily={'sansSerif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
-                    Best available interest Rate:
-                      Compound: {this.state.compoundRate}%
-                      Fulcrum: {this.state.fulcrumRate}%
+                    Best available interest Rate: {this.state.maxRate}%
                   </Heading.h3>
                 </Box>
 
@@ -292,7 +293,7 @@ class SmartContractControls extends React.Component {
               </Box>
             }
 
-            {this.state.selectedTab === '2' &&
+            {this.props.selectedTab === '2' &&
               <Box textAlign={'text'}>
                 {this.props.account &&
                   <>
@@ -316,7 +317,7 @@ class SmartContractControls extends React.Component {
               </Box>
             }
 
-            {this.state.selectedTab === '3' &&
+            {this.props.selectedTab === '3' &&
               <Box textAlign={'text'}>
                 <Heading.h3 fontFamily={'sansSerif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
                   Rebalance the entire pool, all users will bless you.

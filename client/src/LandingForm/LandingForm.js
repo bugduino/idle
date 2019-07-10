@@ -26,6 +26,8 @@ class LandingForm extends Component {
             <SmartContractControls
               web3={web3}
               isMobile={this.props.isMobile}
+              updateSelectedTab={this.props.updateSelectedTab}
+              selectedTab={this.props.selectedTab}
               network={network}
               contracts={contracts}
               account={account}
