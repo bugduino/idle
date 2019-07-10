@@ -34,7 +34,7 @@ class Faq extends Component {
       {
         q: 'What lending providers are integrated?',
         a: `We are currently integrated with Compound v2 and Fulcrum.`
-      }
+      },
       {
         q: 'What assets can I lend?',
         a: `We currently support DAI only, but we plan to integrate other assets as well.`
