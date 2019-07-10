@@ -155,7 +155,7 @@ class Landing extends Component {
                       1. Lend your assets
                     </Heading.h3>
                     <Heading.h4 textAlign={['center','left']} fontWeight={2} lineHeight={2} fontSize={[1,2]}>
-                      Connect your Ethereum wallet and lend some crypto assets to get started.
+                      Connect your Ethereum wallet and lend some idle crypto assets to get started.
                       You will receive IdleTokens representing your contract pool share.
                     </Heading.h4>
                   </Box>
@@ -165,7 +165,7 @@ class Landing extends Component {
                     </Heading.h3>
                     <Heading.h4 textAlign={['center','left']} fontWeight={2} lineHeight={2} fontSize={[1,2]}>
                       Your funds will be automatically allocated among the best available interest bearing tokens.
-                      You will immediately start earning interest with a block-per-block pace.
+                      You will immediately start earning compounded interest with a block-per-block pace.
                     </Heading.h4>
                   </Box>
                 </Flex>
@@ -198,22 +198,26 @@ class Landing extends Component {
         <Box className={[styles.graySection]}>
           <Box maxWidth={['35em','80em']} mx={'auto'} pt={[2,3]} pb={[4,6]}>
             <Heading.h2 fontFamily={'sansSerif'} fontSize={[5, 6]} textAlign={'center'} py={3} alignItems={'center'} my={0}>
-              Always the best Rate
+              Get the best APR, always.
             </Heading.h2>
             <Flex flexDirection={['column','row']}>
               <Box p={[4,5]} pb={0} backgroundColor={'white'} color={'black'} boxShadow={1} borderBottom={'15px solid'} borderColor={'blue'}>
-                <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>Compound</Heading.h3>
-                <Heading.h4 textAlign={['center','left']} fontWeight={1} lineHeight={2} fontSize={[2,3]}>This is the current lending interest rate on Compound.</Heading.h4>
+                <Heading.h3 textAlign={['center']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>
+                  Compound DAI
+                </Heading.h3>
+                <Heading.h4 textAlign={['center']} fontWeight={1} lineHeight={2} fontSize={[2,3]}>
+                  This is the current lending interest rate on Compound.
+                </Heading.h4>
                 <Heading.h2 fontFamily={'sansSerif'} textAlign={'center'} fontWeight={2} fontSize={[6,8]} mb={[4,0]}>{this.state.compoundRate}%</Heading.h2>
               </Box>
               <Box p={[4,5]} pb={0} backgroundColor={'blue'} color={'white'} boxShadow={1} borderBottom={'15px solid'} borderColor={'white'}>
-                <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]}>Idle</Heading.h3>
-                <Heading.h4 textAlign={['center','left']} fontWeight={1} lineHeight={2} fontSize={[2,3]}>Idle will get the best rate, thanks to users and Adam Smith' invisible hand principle.</Heading.h4>
+                <Heading.h3 textAlign={['center']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]}>Idle DAI</Heading.h3>
+                <Heading.h4 textAlign={['center']} fontWeight={1} lineHeight={2} fontSize={[2,3]}>Idle will get the best rate, thanks to users and Adam Smith' invisible hand principle.</Heading.h4>
                 <Heading.h2 fontFamily={'sansSerif'} textAlign={'center'} fontWeight={2} fontSize={[9,10]} mb={[4,0]}>{this.state.maxRate}%</Heading.h2>
               </Box>
               <Box p={[4,5]} pb={0} backgroundColor={'white'} color={'black'} boxShadow={1} borderBottom={'15px solid'} borderColor={'blue'}>
-                <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>Fulcrum</Heading.h3>
-                <Heading.h4 textAlign={['center','left']} fontWeight={1} lineHeight={2} fontSize={[2,3]}>This is the current lending interest rate on Fulcrum.</Heading.h4>
+                <Heading.h3 textAlign={['center']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>Fulcrum DAI</Heading.h3>
+                <Heading.h4 textAlign={['center']} fontWeight={1} lineHeight={2} fontSize={[2,3]}>This is the current lending interest rate on Fulcrum.</Heading.h4>
                 <Heading.h2 fontFamily={'sansSerif'} textAlign={'center'} fontWeight={2} fontSize={[6,8]} mb={[4,0]}>{this.state.fulcrumRate}%</Heading.h2>
               </Box>
             </Flex>
