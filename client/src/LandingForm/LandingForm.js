@@ -6,7 +6,6 @@ import RimbleWeb3 from "../utilities/RimbleWeb3";
 import TransactionToastUtil from "../utilities/TransactionToastUtil";
 
 import SmartContractControls from "../SmartContractControls/SmartContractControls";
-// import TransactionsCard from "../utilities/components/TransactionsCard";
 
 class LandingForm extends Component {
   render() {

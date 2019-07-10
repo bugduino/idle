@@ -4,6 +4,7 @@ import { Form, Flex, Box, Heading, Text, Button, Link } from "rimble-ui";
 import BigNumber from 'bignumber.js';
 import CryptoInput from '../CryptoInput/CryptoInput.js';
 import ApproveModal from "../utilities/components/ApproveModal";
+import TransactionsCard from "../utilities/components/TransactionsCard";
 
 import IdleDAI from "../contracts/IdleDAI.json";
 import cDAI from '../abis/compound/cDAI';
@@ -62,8 +63,8 @@ class SmartContractControls extends React.Component {
   getAprs = async () => {
     let aprs = await this.genericIdleCall('getAPRs');
     this.setState({
-      [`compoundRate`]: (+this.toEth(aprs[0])).toFixed(2),
-      [`fulcrumRate`]: (+this.toEth(aprs[1])).toFixed(2),
+      [`compoundRate`]: aprs ? (+this.toEth(aprs[0])).toFixed(2) : '0.00',
+      [`fulcrumRate`]: aprs ? (+this.toEth(aprs[1])).toFixed(2) : '0.00',
       needsUpdate: false
     });
   };
@@ -252,7 +253,7 @@ class SmartContractControls extends React.Component {
             </Box>
             <Box className={[styles.tab,this.state.selectedTab==='2' ? styles.tabSelected : '']} width={[1,1/3]} textAlign={'center'} borderLeft={['none','1px solid #fff']} borderRight={['none','1px solid #fff']}>
               <Link display={'block'} py={[3,4]} fontSize={[3,5]} fontWeight={2} onClick={e => this.selectTab(e, '2')}>
-                Dashboard
+                Funds
               </Link>
             </Box>
             <Box className={[styles.tab,this.state.selectedTab==='3' ? styles.tabSelected : '']} width={[1,1/3]} textAlign={'center'}>
@@ -294,11 +295,14 @@ class SmartContractControls extends React.Component {
             {this.state.selectedTab === '2' &&
               <Box textAlign={'text'}>
                 {this.props.account &&
-                  <Heading.h3 fontFamily={'sansSerif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
-                    Redeemable funds: ~{this.trimEth(this.state.DAIToRedeem)} DAI <br />
-                    IdleDAI: ~{this.trimEth(this.state.balanceOfIdleDAI)} <br />
-                    {!!this.state.IdleDAIPrice && `IdleDAIPrice: ~${this.trimEth(this.state.IdleDAIPrice)} DAI`}
-                  </Heading.h3>
+                  <>
+                    <Heading.h3 fontFamily={'sansSerif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
+                      Redeemable funds: ~{this.trimEth(this.state.DAIToRedeem)} DAI <br />
+                      IdleDAI: ~{this.trimEth(this.state.balanceOfIdleDAI)} <br />
+                      {!!this.state.IdleDAIPrice && `IdleDAIPrice: ~${this.trimEth(this.state.IdleDAIPrice)} DAI`}
+                    </Heading.h3>
+                    <TransactionsCard transactions={this.props.transactions} />
+                  </>
                 }
                 <Flex
                   textAlign='center'

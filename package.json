@@ -30,6 +30,7 @@
     "eth-gas-reporter": "^0.2.1",
     "openzeppelin-solidity": "^2.3.0",
     "openzeppelin-test-helpers": "^0.4.0",
+    "rimble-ui": "^0.9.4",
     "truffle-assertions": "^0.9.1",
     "truffle-hdwallet-provider": "^1.0.12"
   }
