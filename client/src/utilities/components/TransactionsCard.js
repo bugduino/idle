@@ -20,15 +20,30 @@ const TransactionTable = styled(Table)`
 `;
 
 class TransactionsCard extends React.Component {
+  // TODO store and retrieve past txs
+  // this.state = {
+  //   storedTxs: null
+  // };
+  //
+  // componentDidMount() {
+  //   const txs = this.props.transactions;
+  //   const storedTxs = JSON.parse(localStorage.getItem('storedTxs'));
+  //
+  // }
+
   render() {
+    const title = '';
+    if (Object.keys(this.props.transactions).length < 1 && this.props.balance && parseFloat(this.props.balance) <= 0) {
+      title = "No activity yet. Lend some assets to start a transaction. " ;
+    } else if (Object.keys(this.props.transactions).length >= 1) {
+      title = "Activity"
+    }
+
     return (
       <Flex px={4} mx={'auto'} flexDirection={'column'}>
         <Text fontWeight={3} mb={3}>
           <Text textAlign={"center"} p={3}>
-            {Object.keys(this.props.transactions).length < 1 ?
-              "No activity yet. Lend some assets to start a transaction. " :
-              "Activity:"
-            }
+            {title}
           </Text>
         </Text>
 
@@ -107,7 +122,7 @@ class TransactionsCard extends React.Component {
                     {this.props.transactions[keyName].confirmationCount}
                   </td>
                   <td>
-                    <Link href={'https://mainnet.etherscan.io/tx/'+txHash} target='_blank'>
+                    <Link href={'https://etherscan.io/tx/'+txHash} target='_blank'>
                       {txHash}
                     </Link>
                   </td>

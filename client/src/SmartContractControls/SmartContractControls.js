@@ -301,7 +301,9 @@ class SmartContractControls extends React.Component {
                       IdleDAI: ~{this.trimEth(this.state.balanceOfIdleDAI)} <br />
                       {!!this.state.IdleDAIPrice && `IdleDAIPrice: ~${this.trimEth(this.state.IdleDAIPrice)} DAI`}
                     </Heading.h3>
-                    <TransactionsCard transactions={this.props.transactions} />
+                    <TransactionsCard
+                      balance={this.state.balanceOfIdleDAI}
+                      transactions={this.props.transactions} />
                   </>
                 }
                 <Flex
