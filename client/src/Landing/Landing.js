@@ -115,18 +115,26 @@ class Landing extends Component {
           <Box maxWidth={['50em','70em']} mx={'auto'} pt={[0,6]}>
             <IconFlexRow image={'images/feature-1.png'} title='100% non-custodial, thanks to our contract.' linkHref={'https://github.com/bugduino/idle'} linkText='Smart contract' />
             <IconFlexRow image={'images/feature-2.png'} title='Fully decentralized, thanks to our users.' linkHref={'#'} linkText='Rebalance process' />
-            <IconFlexRow image={'images/feature-3.png'} title='No hidden fees, fully open source.' linkHref={'#how-it-works'} linkText='See how it works' />
+            <IconFlexRow image={'images/feature-3.png'} title='No hidden fees, best things in life are free!' linkHref={'#how-it-works'} linkText='See how it works' />
           </Box>
           <Flex maxWidth={'100%'} flexDirection={['column','row']}>
             <Box p={[5,6]} backgroundColor={'blue'} color={'white'}>
-              <Heading.h3 fontFamily={'sansSerif'} fontSize={[5,6]} mb={[3,4]}>Wealth Managers</Heading.h3>
-              <Heading.h4 fontWeight={1} lineHeight={2}>IdleTokens can be used by wealth managers in order to optimize their customer’ portfolio returns.</Heading.h4>
-              <Button onClick={e => window.location.href='#invest'} size={'large'} mainColor={'lightBlue'} contrastColor={'blue'} fontWeight={2} fontSize={[2,3]} px={[4,5]} mt={[3,4]}>START LENDING</Button>
+              <Heading.h3 fontFamily={'sansSerif'} fontSize={[5,6]} mb={[3,4]}>Asset Managers</Heading.h3>
+              <Heading.h4 fontWeight={1} lineHeight={2}>
+                Enhance profitability for your customers and optimize portfolio returns.
+              </Heading.h4>
+              <Button onClick={e => window.location.href='#invest'} size={'large'} mainColor={'lightBlue'} contrastColor={'blue'} fontWeight={2} fontSize={[2,3]} px={[4,5]} mt={[3,4]}>
+                INVEST NOW
+              </Button>
             </Box>
             <Box p={[5,6]} backgroundColor={'white'} color={'blue'}>
               <Heading.h3 fontFamily={'sansSerif'} fontSize={[5,6]} mb={[3,4]}>Retail Investors</Heading.h3>
-              <Heading.h4 color={'black'} fontWeight={1} lineHeight={2}>IdleTokens can be owned by retail investors that want to seek the highest yield on their funds.</Heading.h4>
-              <Button onClick={e => window.location.href='#invest'} size={'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} px={[4,5]} mt={[3,4]}>START LENDING</Button>
+              <Heading.h4 color={'black'} fontWeight={1} lineHeight={2}>
+                Are you a yield seeker? Make your money grows at the fastest pace on the market
+              </Heading.h4>
+              <Button onClick={e => window.location.href='#invest'} size={'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} px={[4,5]} mt={[3,4]}>
+                START EARNING
+              </Button>
             </Box>
           </Flex>
         </Box>
