@@ -8,7 +8,7 @@ import TransactionsCard from "../utilities/components/TransactionsCard";
 
 import IdleDAI from "../contracts/IdleDAI.json";
 import cDAI from '../abis/compound/cDAI';
-import DAI from '../contracts/IERC20';
+import DAI from '../contracts/IERC20.json';
 import iDAI from '../abis/fulcrum/iToken.json';
 
 // mainnet

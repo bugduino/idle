@@ -1,13 +1,88 @@
 import React, { Component } from 'react';
 import { Flex, Box, Heading, Button } from 'rimble-ui'
+import BigNumber from 'bignumber.js';
 import styles from './Landing.module.scss';
 import LandingForm from '../LandingForm/LandingForm';
 import IconFlexRow from '../IconFlexRow/IconFlexRow';
 import Faq from '../Faq/Faq';
 
+import IdleDAI from "../contracts/IdleDAI.json";
+import cDAI from '../abis/compound/cDAI';
+import DAI from '../contracts/IERC20.json';
+import iDAI from '../abis/fulcrum/iToken.json';
+
+// mainnet
+const IdleAbi = IdleDAI.abi;
+const IdleAddress = '0x10cf8e1CDba9A2Bd98b87000BCAdb002b13eA525';
+
+const cDAIAbi = cDAI.abi;
+const cDAIAddress = '0xf5dce57282a584d2746faf1593d3121fcac444dc';
+const DAIAbi = DAI.abi;
+const DAIAddress = '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359';
+const iDAIAbi = iDAI.abi;
+const iDAIAddress = '0x14094949152eddbfcd073717200da82fed8dc960';
+
 class Landing extends Component {
   state = {
   };
+
+  componentDidMount() {
+    // TODO: we already created this contract
+    this.props.initContract('IdleDAI', IdleAddress, IdleAbi).then(async () => {
+      await this.getAprs();
+    });
+  }
+
+  // utilities
+  trimEth = eth => {
+    return this.BNify(eth).toFixed(6);
+  };
+  BNify = s => new BigNumber(String(s));
+  toEth(wei) {
+    return this.props.web3.utils.fromWei(
+      (wei || 0).toString(),
+      "ether"
+    );
+  }
+  toWei(eth) {
+    return this.props.web3.utils.toWei(
+      (eth || 0).toString(),
+      "ether"
+    );
+  }
+
+  getAprs = async () => {
+    let aprs = await this.genericIdleCall('getAPRs');
+    this.setState({
+      [`compoundRate`]: aprs ? (+this.toEth(aprs[0])).toFixed(2) : '0.00',
+      [`fulcrumRate`]: aprs ? (+this.toEth(aprs[1])).toFixed(2) : '0.00',
+      [`maxRate`]: aprs ? (+this.toEth(Math.max(aprs[0],aprs[1]))).toFixed(2) : '0.00',
+      needsUpdate: false
+    });
+  };
+
+  genericContractCall = async (contractName, methodName, params = []) => {
+    let contract = this.props.contracts.find(c => c.name === contractName);
+    contract = contract && contract.contract;
+    if (!contract) {
+      console.log('Wrong contract name', contractName);
+      return;
+    }
+
+    const value = await contract.methods[methodName](...params).call().catch(error => {
+      console.log(`${contractName} contract method ${methodName} error: `, error);
+      this.setState({ error });
+    });
+    return value;
+  }
+
+  // Idle
+  genericIdleCall = async (methodName, params = []) => {
+    return await this.genericContractCall('IdleDAI', methodName, params).catch(err => {
+      console.error('Generic Idle call err:', err);
+    });
+  }
+
   render() {
     const { network } = this.props;
     return (
@@ -99,17 +174,17 @@ class Landing extends Component {
               <Box p={[4,5]} pb={0} backgroundColor={'white'} color={'black'} boxShadow={1} borderBottom={'15px solid'} borderColor={'blue'}>
                 <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>Compound</Heading.h3>
                 <Heading.h4 textAlign={['center','left']} fontWeight={1} lineHeight={2} fontSize={[2,3]}>This is the current lending interest rate on Compound.</Heading.h4>
-                <Heading.h2 fontFamily={'sansSerif'} textAlign={'center'} fontWeight={2} fontSize={[6,8]} mb={[4,0]}>0.7%</Heading.h2>
+                <Heading.h2 fontFamily={'sansSerif'} textAlign={'center'} fontWeight={2} fontSize={[6,8]} mb={[4,0]}>{this.state.compoundRate}%</Heading.h2>
               </Box>
               <Box p={[4,5]} pb={0} backgroundColor={'blue'} color={'white'} boxShadow={1} borderBottom={'15px solid'} borderColor={'white'}>
                 <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]}>Idle</Heading.h3>
                 <Heading.h4 textAlign={['center','left']} fontWeight={1} lineHeight={2} fontSize={[2,3]}>Idle will get the best rate, thanks to users and Adam Smith' invisible hand principle.</Heading.h4>
-                <Heading.h2 fontFamily={'sansSerif'} textAlign={'center'} fontWeight={2} fontSize={[9,10]} mb={[4,0]}>0.7%</Heading.h2>
+                <Heading.h2 fontFamily={'sansSerif'} textAlign={'center'} fontWeight={2} fontSize={[9,10]} mb={[4,0]}>{this.state.maxRate}%</Heading.h2>
               </Box>
               <Box p={[4,5]} pb={0} backgroundColor={'white'} color={'black'} boxShadow={1} borderBottom={'15px solid'} borderColor={'blue'}>
                 <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>Fulcrum</Heading.h3>
                 <Heading.h4 textAlign={['center','left']} fontWeight={1} lineHeight={2} fontSize={[2,3]}>This is the current lending interest rate on Fulcrum.</Heading.h4>
-                <Heading.h2 fontFamily={'sansSerif'} textAlign={'center'} fontWeight={2} fontSize={[6,8]} mb={[4,0]}>0.5%</Heading.h2>
+                <Heading.h2 fontFamily={'sansSerif'} textAlign={'center'} fontWeight={2} fontSize={[6,8]} mb={[4,0]}>{this.state.fulcrumRate}%</Heading.h2>
               </Box>
             </Flex>
           </Box>

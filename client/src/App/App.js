@@ -61,10 +61,12 @@ class App extends Component {
                       needsPreflight,
                       web3,
                       account,
+                      contracts,
                       accountBalance,
                       accountBalanceDAI,
                       accountBalanceLow,
                       initAccount,
+                      initContract,
                       rejectAccountConnect,
                       userRejectedConnect,
                       accountValidated,
@@ -121,6 +123,8 @@ class App extends Component {
                         {this.state.route === "default" ? (
                           <Landing
                             web3={web3}
+                            initContract={initContract}
+                            contracts={contracts}
                             isMobile={isMobile}
                             account={account}
                             accountBalance={accountBalance}
