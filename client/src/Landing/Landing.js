@@ -7,20 +7,20 @@ import IconFlexRow from '../IconFlexRow/IconFlexRow';
 import Faq from '../Faq/Faq';
 
 import IdleDAI from "../contracts/IdleDAI.json";
-import cDAI from '../abis/compound/cDAI';
-import DAI from '../contracts/IERC20.json';
-import iDAI from '../abis/fulcrum/iToken.json';
+// import cDAI from '../abis/compound/cDAI';
+// import DAI from '../contracts/IERC20.json';
+// import iDAI from '../abis/fulcrum/iToken.json';
 
 // mainnet
 const IdleAbi = IdleDAI.abi;
 const IdleAddress = '0x10cf8e1CDba9A2Bd98b87000BCAdb002b13eA525';
 
-const cDAIAbi = cDAI.abi;
-const cDAIAddress = '0xf5dce57282a584d2746faf1593d3121fcac444dc';
-const DAIAbi = DAI.abi;
-const DAIAddress = '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359';
-const iDAIAbi = iDAI.abi;
-const iDAIAddress = '0x14094949152eddbfcd073717200da82fed8dc960';
+// const cDAIAbi = cDAI.abi;
+// const cDAIAddress = '0xf5dce57282a584d2746faf1593d3121fcac444dc';
+// const DAIAbi = DAI.abi;
+// const DAIAddress = '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359';
+// const iDAIAbi = iDAI.abi;
+// const iDAIAddress = '0x14094949152eddbfcd073717200da82fed8dc960';
 
 class Landing extends Component {
   state = {
