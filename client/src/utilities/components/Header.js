@@ -30,12 +30,24 @@ class Header extends React.Component {
         'zIndex': 99
         }}
       >
-        <Flex alignItems={"center"} bg={"darkBlue"} py={1}>
-          <Box ml={[0, 6]} width={[1,4/12]} py={[3,4]} alignItems={"center"} textAlign={'center'}>
+        <Flex bg={"darkBlue"} py={1}>
+          <Box ml={[3, 6]} width={[1, 4/12]} py={[2,4]}>
             <Image src="images/logo.png"
-              mx={'auto'}
-              height={['40px','70px']}
+              height={['35px','70px']}
               position={['relative','absolute']} />
+          </Box>
+          <Box display={['inline-block', 'none']}>
+            <Button
+              contrastColor={'blue'}
+              mainColor={'white'}
+              borderRadius={4}
+              my={2}
+              mr={[3, 4]}
+              onClick={this.props.connectAndValidateAccount}
+              size={this.props.isMobile ? 'small' : 'medium'}
+            >
+              CONNECT
+            </Button>
           </Box>
           <Box display={['none','block']} width={[8/12]} justifyContent="flex-end">
             <Flex alignItems={"center"} justifyContent="flex-end">

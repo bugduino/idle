@@ -175,11 +175,11 @@ class Landing extends Component {
             <Heading.h2 fontFamily={'sansSerif'} fontSize={[5,6]} textAlign={'center'} py={[3,5]} alignItems={'center'} my={0}>
               How it Works
             </Heading.h2>
-            <Flex flexDirection={['column','row']}>
-              <Flex alignItems={'center'} width={[1,4/10]} px={[6,4]} textAlign={'center'}>
+            <Flex flexDirection={['column','row']} alignItems={'center'}>
+              <Flex alignItems={'center'} width={[1, 5/12]} px={[6,4]} textAlign={'center'}>
                 <Image src="images/how-it-works.png" />
               </Flex>
-              <Flex alignItems={'center'} flexDirection={'column'} width={[1,6/10]}>
+              <Flex alignItems={'center'} flexDirection={'column'} width={[1,7/12]}>
                 <Flex flexDirection={['column','row']}>
                   <Box width={[1,1/2]} px={[4,4]} pt={[3,4]} pb={[2,0]} backgroundColor={'white'} color={'black'} borderBottom={['1px solid #eee','none']}>
                     <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>
