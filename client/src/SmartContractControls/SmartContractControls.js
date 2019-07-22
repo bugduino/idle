@@ -274,8 +274,8 @@ class SmartContractControls extends React.Component {
             {this.props.selectedTab === '1' &&
               <Box textAlign={'text'}>
                 <Box px={[2,0]} py={[2, 4]}>
-                  <Heading.h3 fontFamily={'sansSerif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
-                    Best DAI interest rate: {this.state.maxRate}%
+                  <Heading.h3 py={[3, 'initial']} fontFamily={'sansSerif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
+                    Earn {this.state.maxRate}% APR on your DAI
                   </Heading.h3>
                   <Heading.h4 my={[2,3]} color={'black'} fontWeight={1} textAlign={'center'}>
                     We offer the best available interest rate for your DAI through different lending platforms.
@@ -357,7 +357,7 @@ class SmartContractControls extends React.Component {
                     }
                   </>
                 }
-                {!this.props.account && 
+                {!this.props.account &&
                   <Flex
                     alignItems={'center'}
                     flexDirection={'column'}
@@ -384,7 +384,7 @@ class SmartContractControls extends React.Component {
               </Box>
             }
 
-            {this.props.selectedTab === '3' && !!this.state.shouldRebalance && 
+            {this.props.selectedTab === '3' && !!this.state.shouldRebalance &&
               <Box px={[2,0]} py={[2, 4]} textAlign={'text'}>
                 <Heading.h3 fontFamily={'sansSerif'} fontWeight={2} textAlign={'center'}>
                   Rebalance the entire pool.<br />All users will bless you.
@@ -408,7 +408,7 @@ class SmartContractControls extends React.Component {
               </Box>
             }
 
-            {this.props.selectedTab === '3' && !this.state.shouldRebalance && 
+            {this.props.selectedTab === '3' && !this.state.shouldRebalance &&
               <Box py={[2, 4]} textAlign={'center'}>
                 <Heading.h3 fontFamily={'sansSerif'} fontWeight={2} textAlign={'center'}>
                   The pool is already balanced.

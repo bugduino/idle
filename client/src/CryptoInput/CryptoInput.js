@@ -17,13 +17,13 @@ class CryptoInput extends Component {
             mx={'auto'}
             >
               <Box width={[1/10]}>
-                <Image src="images/btn-dai.svg" height={this.props.height} m={['0.5em','1em']} />
+                <Image src="images/btn-dai.svg" height={this.props.height} m={['0.6em','1em']} />
               </Box>
-              <Box width={[6/10]}
+              <Box width={[6/10, 7/10]}
                 pt={[0,'0.5em']}>
                 <Form.Input
                   style={{
-                    paddingLeft:'0.5em'
+                    paddingLeft: '1em'
                   }}
                   placeholder={`Enter DAI Amount`}
                   value={this.props.defaultValue}
@@ -35,7 +35,7 @@ class CryptoInput extends Component {
                   min={0}
                   height={this.props.height}
                   step={0.01}
-                  fontSize={[3,4]}
+                  fontSize={[2, 4]}
                   width={'100%'}
                   bg={'transparent'}
                   color={this.props.color}
@@ -43,15 +43,15 @@ class CryptoInput extends Component {
                   onChange={this.props.handleChangeAmount}
                 />
               </Box>
-              <Box display={['none','block']} width={3/10}>
+              <Box display={['none','block']} width={[3/10, 2/10]}>
                 <Button onClick={this.props.handleClick} className={[styles.button]} size={'large'} mainColor={'blue'} fontWeight={2} fontSize={[2,3]} px={[4,5]} my={0} width={1}>LEND</Button>
               </Box>
-              <Box display={['block','none']} width={3/10}>
+              <Box display={['block','none']} width={[3/10, 2/10]}>
                 <Button onClick={this.props.handleClick} className={[styles.button]} size={'medium'} mainColor={'blue'} fontWeight={2} fontSize={[2,3]} px={[2,3]} my={0} width={1}>LEND</Button>
               </Box>
           </Flex>
           <Flex justifyContent={'center'}>
-            <Heading.h5 color={'darkGray'} fontWeight={1} fontSize={1} textAlign={'center'}>
+            <Heading.h5 mt={[1, 2]} color={'darkGray'} fontWeight={1} fontSize={1} textAlign={'center'}>
               *This is beta software. Use at your own risk.
             </Heading.h5>
           </Flex>
