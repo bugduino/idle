@@ -97,26 +97,26 @@ class Landing extends Component {
         }}
       >
         <Box className={[styles.headerContainer]} pt={['2em', '2em']}>
-          <Box className={[styles.bgContainer,styles.bg1]} display={['none','block']}></Box>
+          <Box className={[styles.bgContainer,styles.bg1]} display={['block']}></Box>
           <Box className={[styles.bgContainer,styles.bg2]} display={['none','block']}></Box>
           <Box position={'relative'} zIndex={10}>
-            <Flex flexDirection={'column'} alignItems={['center','flex-start']} maxWidth={["50em", "50em"]} mx={['auto',6]} pb={3} px={[3,0]} textAlign={['center','left']} pt={['10vh', '20vh']}>
-              <Heading.h1 fontFamily={'sansSerif'} lineHeight={'1.1em'} mb={'0.5em'} fontSize={[6,7]} textAlign={['center','left']}>
+            <Flex flexDirection={'column'} alignItems={['center','flex-start']} maxWidth={["50em", "50em"]} mx={['auto', 6]} pb={3} px={[2,0]} textAlign={['center','left']} pt={['10vh', '20vh']}>
+              <Heading.h1 fontFamily={'sansSerif'} lineHeight={'1.1em'} mb={'0.5em'} fontSize={['2.5em',7]} textAlign={['center','left']}>
                 Get the best out of your lend, with just one token
               </Heading.h1>
-              <Heading.h2 fontWeight={'400'} lineHeight={'2em'} fontSize={[3,4]} textAlign={['center','left']}>
+              <Heading.h2 fontWeight={'400'} lineHeight={['1.4em', '2em']} fontSize={[3,4]} textAlign={['center','left']}>
                 We connect different lending protocols with a decentralized rebalance process to always give you the best available rate
               </Heading.h2>
               <Button
                 onClick={e => this.startLending(e)}
                 className={[styles.button]}
-                size={'large'}
+                size={this.props.isMobile ? 'medium' : 'large'}
                 contrastColor={'blue'}
                 mainColor={'white'}
-                fontSize={[2,3]}
-                px={[4,5]}
-                mt={[4,4]}
-                mb={[5,'70vh']}
+                fontSize={[2, 4]}
+                px={[4, 5]}
+                mt={[4, 4]}
+                mb={[5, '70vh']}
               >
                 START LENDING
               </Button>
