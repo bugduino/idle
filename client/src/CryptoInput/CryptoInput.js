@@ -11,13 +11,14 @@ class CryptoInput extends Component {
             maxWidth={['90%','40em']}
             borderRadius={'2rem'}
             border={'1px solid'}
+            alignItems={'center'}
             borderColor={'#ccc'}
             p={0}
             my={['0','1em']}
             mx={'auto'}
             >
               <Box width={[1/10]}>
-                <Image src="images/btn-dai.svg" height={this.props.height} m={['0.6em','1em']} />
+                <Image src="images/btn-dai.svg" height={this.props.height} ml={['0.5em','1em']} />
               </Box>
               <Box width={[6/10, 7/10]}
                 pt={[0,'0.5em']}>

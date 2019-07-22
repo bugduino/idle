@@ -97,7 +97,7 @@ class Landing extends Component {
         }}
       >
         <Box className={[styles.headerContainer]} pt={['2em', '2em']}>
-          <Box className={[styles.bgContainer,styles.bg1]} display={['block']}></Box>
+          <Box className={[styles.bgContainer,styles.bg1]} display={['none','block']}></Box>
           <Box className={[styles.bgContainer,styles.bg2]} display={['none','block']}></Box>
           <Box position={'relative'} zIndex={10}>
             <Flex flexDirection={'column'} alignItems={['center','flex-start']} maxWidth={["50em", "50em"]} mx={['auto', 6]} pb={3} px={[2,0]} textAlign={['center','left']} pt={['10vh', '20vh']}>
