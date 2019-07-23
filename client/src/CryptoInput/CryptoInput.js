@@ -20,8 +20,7 @@ class CryptoInput extends Component {
               <Box width={[1/10]}>
                 <Image src="images/btn-dai.svg" height={this.props.height} ml={['0.5em','1em']} />
               </Box>
-              <Box width={[6/10, 7/10]}
-                pt={[0,'0.5em']}>
+              <Box width={[6/10, 7/10]}>
                 <Form.Input
                   style={{
                     paddingLeft: '1em'
