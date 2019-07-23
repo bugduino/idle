@@ -140,7 +140,7 @@ class Landing extends Component {
             <IconFlexRow image={'images/feature-3.png'} title='No hidden fees, best things in life are free!' linkHref={'#how-it-works'} linkText='See how it works' />
           </Box>
           <Flex maxWidth={'100%'} flexDirection={['column','row']}>
-            <Box position={'relative'} p={[4,6]} backgroundColor={'blue'} color={'white'}>
+            <Box position={'relative'} width={[1, 1/2]} p={[4,6]} backgroundColor={'blue'} color={'white'}>
               <Heading.h3 fontFamily={'sansSerif'} fontSize={[5,6]} mb={[3,4]}>Asset Managers</Heading.h3>
               <Heading.h4 fontWeight={1} lineHeight={2}>
                 Enhance profitability for your customers and optimize portfolio returns.
@@ -152,7 +152,7 @@ class Landing extends Component {
                 <Button onClick={e => this.startLending(e)} borderRadius={4} size={'medium'} mainColor={'lightBlue'} contrastColor={'blue'} fontWeight={2} fontSize={[2,3]} px={[4,5]} mt={[4,4]}>INVEST NOW</Button>
               </Box>
             </Box>
-            <Box position={'relative'} overflow={['hidden','visible']} p={[4,6]} backgroundColor={'white'} color={'blue'}>
+            <Box position={'relative'} width={[1, 1/2]} overflow={['hidden','visible']} p={[4,6]} backgroundColor={'white'} color={'blue'}>
               <Box className={styles.skewBg}></Box>
               <Box position={'relative'} zIndex={2}>
                 <Heading.h3 fontFamily={'sansSerif'} fontSize={[5,6]} mb={[3,4]}>Retail Investors</Heading.h3>

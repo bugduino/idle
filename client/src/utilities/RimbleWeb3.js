@@ -366,13 +366,14 @@ class RimbleTransaction extends React.Component {
     contract = contract.contract;
     try {
       // const gasPrice = await axios.get('https://ethgasstation.info/json/ethgasAPI.json');
-      const gasPrice = await axios.get('https://www.etherchain.org/api/gasPriceOracle');
-      const gas = this.state.web3.utils.toWei(
-        gasPrice.data.fast,
-        "gwei"
-      );
+      // const gasPrice = await axios.get('https://www.etherchain.org/api/gasPriceOracle');
+      // const gas = this.state.web3.utils.toWei(
+      //   gasPrice.data.fast,
+      //   "gwei"
+      // );
       contract.methods[contractMethod](...params)
-        .send(value ? { from: account, value, gasPrice: gas.toString() } : { from: account })
+        // .send(value ? { from: account, value, gasPrice: gas.toString() } : { from: account })
+        .send(value ? { from: account, value } : { from: account })
         .on("transactionHash", hash => {
           // Submitted to block and received transaction hash
           // Set properties on the current transaction
@@ -476,15 +477,6 @@ class RimbleTransaction extends React.Component {
     transaction.lastUpdated = Date.now();
     transactions[`tx${updatedTransaction.created}`] = transaction;
     this.setState({ transactions });
-  };
-
-  // UTILITY
-  shortenHash = hash => {
-    let shortHash = hash;
-    const txStart = shortHash.substr(0, 7);
-    const txEnd = shortHash.substr(shortHash.length - 4);
-    shortHash = txStart + "..." + txEnd;
-    return shortHash;
   };
 
   // CONNECTION MODAL METHODS
