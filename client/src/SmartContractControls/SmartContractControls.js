@@ -5,11 +5,15 @@ import BigNumber from 'bignumber.js';
 import CryptoInput from '../CryptoInput/CryptoInput.js';
 import ApproveModal from "../utilities/components/ApproveModal";
 import TransactionsCard from "../utilities/components/TransactionsCard";
+import ShortHash from "../utilities/components/ShortHash";
+import axios from 'axios';
 
 import IdleDAI from "../contracts/IdleDAI.json";
 import cDAI from '../abis/compound/cDAI';
 import DAI from '../contracts/IERC20.json';
 import iDAI from '../abis/fulcrum/iToken.json';
+
+const env = process.env;
 
 // mainnet
 const IdleAbi = IdleDAI.abi;
@@ -221,6 +225,31 @@ class SmartContractControls extends React.Component {
     this.setState(state => ({...state, approveIsOpen: !state.approveIsOpen }));
   };
 
+  getPrevTxs = async () => {
+    const txs = await axios.get(`
+      http://api.etherscan.io/api?module=account&action=tokentx&address=${this.props.account}&startblock=8119247&endblock=999999999&sort=asc&apikey=${env.REACT_APP_ETHERSCAN_KEY}
+    `).catch(err => {
+      console.log('Error getting prev txs');
+    });
+    if (!txs || !txs.data || !txs.data.result) {
+      return;
+    }
+
+    this.setState({
+      prevTxs: txs.data.result.filter(
+        tx => tx.from.toLowerCase() === IdleAddress.toLowerCase() ||
+              tx.to.toLowerCase() === IdleAddress.toLowerCase()
+      ).map(tx => ({
+        from: tx.from,
+        to: tx.to,
+        hash: tx.hash,
+        value: this.toEth(tx.value),
+        tokenName: tx.tokenName,
+        tokenSymbol: tx.tokenSymbol
+      }))
+    });
+  };
+
   componentDidMount() {
     // do not wait for each one
     this.props.initContract('iDAI', iDAIAddress, iDAIAbi);
@@ -233,7 +262,10 @@ class SmartContractControls extends React.Component {
 
   async componentDidUpdate(prevProps, prevState) {
     if (this.props.account && prevProps.account !== this.props.account) {
-      await Promise.all([this.getBalanceOf('IdleDAI')]);
+      await Promise.all([
+        this.getBalanceOf('IdleDAI'),
+        this.getPrevTxs(),
+      ]);
     }
     this.processTransactionUpdates(prevProps);
   }
@@ -246,6 +278,26 @@ class SmartContractControls extends React.Component {
       await this.rebalanceCheck();
     }
 
+  }
+
+  // TODO move in a separate component
+  renderPrevTxs() {
+    const prevTxs = this.state.prevTxs || [];
+    if (!prevTxs.length) {
+      return null;
+    }
+    const txs = prevTxs.map((tx, i) => (
+      <Text key={i}>
+        {tx.to.toLowerCase() === IdleAddress.toLowerCase() ? 'Deposited' : 'Redeemed'}
+        {tx.value} {tx.tokenSymbol} (Tx: <ShortHash hash={tx.hash} />)
+      </Text>
+    ));
+
+    return (
+      <Box>
+        {txs}
+      </Box>
+    );
   }
 
   render() {
@@ -335,6 +387,8 @@ class SmartContractControls extends React.Component {
                       </Box>
                     </Flex>
                     <Box my={[3,4]}>
+                      {this.renderPrevTxs()}
+
                       <TransactionsCard
                         balance={this.state.balanceOfIdleDAI}
                         transactions={this.props.transactions} />

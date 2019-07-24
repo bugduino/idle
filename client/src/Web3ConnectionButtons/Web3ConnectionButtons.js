@@ -51,8 +51,8 @@ export default function Web3ConnectionButtons(props) {
                 mb={'-0.2rem'}
                 src={`images/${name.toLowerCase()}.svg`}
                 alt={name.toLowerCase()}
-                width={'1.2rem'}
-                height={'1.2rem'}
+                width={'2rem'}
+                height={'2rem'}
               />
               {name}
             </Button.Outline>
@@ -88,8 +88,8 @@ export default function Web3ConnectionButtons(props) {
               mb={'-0.2rem'}
               src={`images/${connectorName.toLowerCase()}.svg`}
               alt={connectorName.toLowerCase()}
-              width={'1.2rem'}
-              height={'1.2rem'}
+              width={'2rem'}
+              height={'2rem'}
             />
             {connectorName}
           </Button.Outline>
