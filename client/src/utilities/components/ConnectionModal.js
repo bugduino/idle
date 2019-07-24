@@ -6,7 +6,8 @@ import {
   Modal,
   Flex,
   Box,
-  Link
+  Link,
+  Button
 } from "rimble-ui";
 import ModalCard from './ModalCard';
 import TransactionFeeModal from "./TransactionFeeModal";
@@ -14,7 +15,8 @@ import Web3ConnectionButtons from "../../Web3ConnectionButtons/Web3ConnectionBut
 
 class ConnectionModal extends React.Component {
   state = {
-    showTxFees: false
+    showTxFees: false,
+    showConnectionButtons: false
   };
 
   toggleShowTxFees = e => {
@@ -26,7 +28,28 @@ class ConnectionModal extends React.Component {
     });
   };
 
+  toggleShowConnectionButtons = e => {
+    e.preventDefault();
+
+    this.setState({
+      showConnectionButtons: !this.state.showConnectionButtons
+    });
+  };
+
   renderModalContent = () => {
+    const showConnectionButtons = this.state.showConnectionButtons;
+
+    if (showConnectionButtons) {
+      return (
+        <Box width={1}>
+          <Heading fontSize={[4, 5]} mb={[3, 4]} textAlign='center'>
+            Connect with:
+          </Heading>
+          <Web3ConnectionButtons size={'medium'} />
+        </Box>
+      );
+    }
+
     return (
       <React.Fragment>
         {/* Start primary content */}
@@ -100,25 +123,43 @@ class ConnectionModal extends React.Component {
     );
   }
 
-  renderConnectButton = () => {
+  renderFooter = () => {
+    const showConnectionButtons = this.state.showConnectionButtons;
+
+    if (showConnectionButtons) {
+      return;
+    }
+
     return (
-      <Web3ConnectionButtons size={'medium'} />
+      <ModalCard.Footer>
+        <Button
+          onClick={this.toggleShowConnectionButtons}
+          borderRadius={4}>
+          CONNECT
+        </Button>
+      </ModalCard.Footer>
     );
+  }
+
+  closeModal = () => {
+    this.setState({
+      showTxFees: false,
+      showConnectionButtons: false
+    });
+    this.props.closeModal();
   }
 
   render() {
     return (
       <Modal isOpen={this.props.isOpen}>
-        <ModalCard closeFunc={this.props.closeModal}>
+        <ModalCard closeFunc={this.closeModal}>
 
           {this.state.showTxFees === false ? (
             <React.Fragment>
               <ModalCard.Body>
                 {this.renderModalContent()}
               </ModalCard.Body>
-              <ModalCard.Footer>
-                {this.renderConnectButton()}
-              </ModalCard.Footer>
+              {this.renderFooter()}
             </React.Fragment>
           ) : (
             <ModalCard.Body>

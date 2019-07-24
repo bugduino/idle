@@ -54,7 +54,7 @@ export default function Web3ConnectionButtons(props) {
                 width={'1.2rem'}
                 height={'1.2rem'}
               />
-              Connect with {name}
+              {name}
             </Button.Outline>
           )
         } else {
@@ -67,7 +67,7 @@ export default function Web3ConnectionButtons(props) {
               disabled={context.connectorName === connectorName}
               size={size}
               onClick={async () => await setConnector(connectorName)}>
-              Connect
+              Generic wallet
             </Button.Outline>
           )
         }
@@ -91,7 +91,7 @@ export default function Web3ConnectionButtons(props) {
               width={'1.2rem'}
               height={'1.2rem'}
             />
-            Connect with {connectorName}
+            {connectorName}
           </Button.Outline>
         );
     }
