@@ -130,7 +130,6 @@ class App extends Component {
                         {this.state.route === "default" ? (
                           <Landing
                             web3={web3}
-                            initContract={initContract}
                             contracts={contracts}
                             isMobile={isMobile}
                             account={account}

@@ -6,31 +6,17 @@ import LandingForm from '../LandingForm/LandingForm';
 import IconFlexRow from '../IconFlexRow/IconFlexRow';
 import Faq from '../Faq/Faq';
 
-import IdleDAI from "../contracts/IdleDAI.json";
-// import cDAI from '../abis/compound/cDAI';
-// import DAI from '../contracts/IERC20.json';
-// import iDAI from '../abis/fulcrum/iToken.json';
-
-// mainnet
-const IdleAbi = IdleDAI.abi;
-const IdleAddress = '0x10cf8e1CDba9A2Bd98b87000BCAdb002b13eA525';
-
-// const cDAIAbi = cDAI.abi;
-// const cDAIAddress = '0xf5dce57282a584d2746faf1593d3121fcac444dc';
-// const DAIAbi = DAI.abi;
-// const DAIAddress = '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359';
-// const iDAIAbi = iDAI.abi;
-// const iDAIAddress = '0x14094949152eddbfcd073717200da82fed8dc960';
-
 class Landing extends Component {
-  state = {
-  };
+  state = {};
 
-  componentDidMount() {
-    // TODO: we already created this contract
-    this.props.initContract('IdleDAI', IdleAddress, IdleAbi).then(async () => {
+  async componentDidUpdate(prevProps) {
+    let prevContract = (prevProps.contracts.find(c => c.name === 'IdleDAI') || {}).contract;
+    let contract = (this.props.contracts.find(c => c.name === 'IdleDAI') || {}).contract;
+
+    if (contract && prevContract !== contract) {
+      console.log('Getting APR');
       await this.getAprs();
-    });
+    }
   }
 
   // utilities
@@ -83,9 +69,9 @@ class Landing extends Component {
     });
   }
 
-  startLending = async (e)=>{
-    this.props.updateSelectedTab(e,'1');
-    window.location.href='#invest';
+  startLending = async e => {
+    this.props.updateSelectedTab(e, '1');
+    window.location.href = '#invest';
   }
 
   render() {
