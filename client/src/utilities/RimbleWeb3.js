@@ -4,10 +4,12 @@ import Web3 from "web3"; // uses latest 1.x.x version
 import ConnectionModalUtil from "./ConnectionModalsUtil";
 import NetworkUtil from "./NetworkUtil";
 import DAI from '../abis/tokens/DAI'; // rinkeby
-import axios from 'axios';
 
 const DAIAddr = DAI.address;
 const DAIAbi = DAI.abi;
+
+require('dotenv').config();
+const INFURA_KEY = process.env["REACT_APP_INFURA_KEY"];
 
 const RimbleTransactionContext = React.createContext({
   contracts: [],
@@ -96,7 +98,7 @@ class RimbleTransaction extends React.Component {
         console.log("Non-Ethereum browser detected. Using Infura fallback.");
 
         const web3Provider = new Web3.providers.HttpProvider(
-          "https://mainnet.infura.io/v3/db0b7b205b5a4889bd6ba73641c3fd6f"
+          `https://mainnet.infura.io/v3/${INFURA_KEY}`
         );
         web3 = new Web3(web3Provider);
       }
@@ -365,12 +367,6 @@ class RimbleTransaction extends React.Component {
     }
     contract = contract.contract;
     try {
-      // const gasPrice = await axios.get('https://ethgasstation.info/json/ethgasAPI.json');
-      // const gasPrice = await axios.get('https://www.etherchain.org/api/gasPriceOracle');
-      // const gas = this.state.web3.utils.toWei(
-      //   gasPrice.data.fast,
-      //   "gwei"
-      // );
       contract.methods[contractMethod](...params)
         // .send(value ? { from: account, value, gasPrice: gas.toString() } : { from: account })
         .send(value ? { from: account, value } : { from: account })
