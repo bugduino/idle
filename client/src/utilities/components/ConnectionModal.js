@@ -45,7 +45,7 @@ class ConnectionModal extends React.Component {
           <Heading fontSize={[4, 5]} mb={[3, 4]} textAlign='center'>
             Connect with:
           </Heading>
-          <Web3ConnectionButtons size={'medium'} />
+          <Web3ConnectionButtons size={'large'} />
         </Box>
       );
     }

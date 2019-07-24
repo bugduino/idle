@@ -60,8 +60,6 @@ const RimbleTransactionContext = React.createContext({
       openUserRejectedValidationModal: () => {},
       closeWrongNetworkModal: () => {},
       openWrongNetworkModal: () => {},
-      closeTransactionConnectionModal: () => {},
-      openTransactionConnectionModal: () => {},
       closeLowFundsModal: () => {},
       openLowFundsModal: () => {}
     }
@@ -335,7 +333,7 @@ class RimbleTransaction extends React.Component {
     // Is a wallet connected and verified?
     if (!this.state.account) {
     // if (!this.state.account || !this.state.accountValidated) {
-      this.openTransactionConnectionModal();
+      this.openConnectionModal();
       return;
     }
 
@@ -600,26 +598,6 @@ class RimbleTransaction extends React.Component {
     this.setState({ modals });
   };
 
-  closeTransactionConnectionModal = e => {
-    if (typeof e !== "undefined") {
-      e.preventDefault();
-    }
-
-    let modals = { ...this.state.modals };
-    modals.data.transactionConnectionModalIsOpen = false;
-    this.setState({ modals });
-  };
-
-  openTransactionConnectionModal = e => {
-    if (typeof e !== "undefined") {
-      e.preventDefault();
-    }
-
-    let modals = { ...this.state.modals };
-    modals.data.transactionConnectionModalIsOpen = true;
-    this.setState({ modals });
-  };
-
   closeLowFundsModal = e => {
     if (typeof e !== "undefined") {
       e.preventDefault();
@@ -694,8 +672,6 @@ class RimbleTransaction extends React.Component {
         openUserRejectedValidationModal: this.openUserRejectedValidationModal,
         closeWrongNetworkModal: this.closeWrongNetworkModal,
         openWrongNetworkModal: this.openWrongNetworkModal,
-        closeTransactionConnectionModal: this.closeTransactionConnectionModal,
-        openTransactionConnectionModal: this.openTransactionConnectionModal,
         closeLowFundsModal: this.closeLowFundsModal,
         openLowFundsModal: this.openLowFundsModal
       }

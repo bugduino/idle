@@ -5,7 +5,6 @@ import NoWalletModal from "./components/NoWalletModal";
 import WrongNetworkModal from "./components/WrongNetworkModal";
 
 import ConnectionModal from "./components/ConnectionModal";
-import TransactionConnectionModal from "./components/TransactionConnectionModal";
 import ConnectionPendingModal from "./components/ConnectionPendingModal";
 import UserRejectedConnectionModal from "./components/UserRejectedConnectionModal";
 
@@ -40,13 +39,6 @@ class ConnectionModalUtil extends React.Component {
             this.props.modals.data.connectionModalIsOpen &&
             !this.props.accountValidated
           }
-          currentNetwork={this.props.network.current}
-        />
-
-        <TransactionConnectionModal
-          closeModal={this.props.modals.methods.closeTransactionConnectionModal}
-          validateAccount={this.props.validateAccount}
-          isOpen={this.props.modals.data.transactionConnectionModalIsOpen}
           currentNetwork={this.props.network.current}
         />
 

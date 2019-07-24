@@ -50,14 +50,6 @@ const DebuggerButtons = props => (
     </Button>
     <Button
       size="small"
-      onClick={props.modals.methods.openTransactionConnectionModal}
-      mr={2}
-      mb={2}
-    >
-      Transaction Connection
-    </Button>
-    <Button
-      size="small"
       onClick={event => {
         props.modals.methods.openLowFundsModal(event);
       }}
