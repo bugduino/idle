@@ -264,7 +264,8 @@ class SmartContractControls extends React.Component {
     if (this.props.account && prevProps.account !== this.props.account) {
       await Promise.all([
         this.getBalanceOf('IdleDAI'),
-        this.getPrevTxs(),
+        // TODO uncomment once is visually ready
+        // this.getPrevTxs(),
       ]);
     }
     this.processTransactionUpdates(prevProps);
