@@ -77,7 +77,7 @@ class SmartContractControls extends React.Component {
     const totalIdleSupply = await this.genericIdleCall('totalSupply');
     let price = await this.genericIdleCall('tokenPrice');
     this.setState({
-      [`IdleDAIPrice`]: totalIdleSupply.toString() === '0' ? 0 : (+this.toEth(price)),
+      [`IdleDAIPrice`]: (totalIdleSupply || totalIdleSupply === 0) && totalIdleSupply.toString() === '0' ? 0 : (+this.toEth(price)),
       needsUpdate: false
     });
     return price;
