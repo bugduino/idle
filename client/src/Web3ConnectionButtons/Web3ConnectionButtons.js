@@ -1,6 +1,6 @@
 import React from 'react'
 import { useWeb3Context } from 'web3-react'
-import { Button, Image, Box, Text } from 'rimble-ui';
+import { Button, Image, Box, Text, Flex, Icon } from 'rimble-ui';
 import connectors from '../App/connectors';
 import GeneralUtil from "../utilities/GeneralUtil";
 import styles from './Web3ConnectionButtons.module.scss';
@@ -45,16 +45,17 @@ export default function Web3ConnectionButtons(props) {
               disabled={context.connectorName === connectorName}
               size={size}
               onClick={async () => await setConnector(connectorName)}>
-              <Image
-                display={'inline-flex'}
-                mr={'0.5rem'}
-                mb={'-0.2rem'}
-                src={`images/${name.toLowerCase()}.svg`}
-                alt={name.toLowerCase()}
-                width={'2rem'}
-                height={'2rem'}
-              />
-              {name}
+              <Flex alignItems={'center'}>
+                <Image
+                  display={'inline-flex'}
+                  mr={'0.5rem'}
+                  src={`images/${name.toLowerCase()}.svg`}
+                  alt={name.toLowerCase()}
+                  width={'2em'}
+                  height={'2em'}
+                />
+                {name}
+              </Flex>
             </Button.Outline>
           )
         } else {
@@ -67,7 +68,15 @@ export default function Web3ConnectionButtons(props) {
               disabled={context.connectorName === connectorName}
               size={size}
               onClick={async () => await setConnector(connectorName)}>
-              Generic wallet
+              <Flex alignItems={'center'}>
+                <Icon
+                  display={'inline-flex'}
+                  mr={'0.5rem'}
+                  color="primary"
+                  size={32}
+                  name="AccountBalanceWallet" />
+                Generic wallet
+              </Flex>
             </Button.Outline>
           )
         }
@@ -82,16 +91,17 @@ export default function Web3ConnectionButtons(props) {
             disabled={context.connectorName === connectorName}
             onClick={async () => await setConnector(connectorName)}
           >
-            <Image
-              display={'inline-flex'}
-              mr={'0.5rem'}
-              mb={'-0.2rem'}
-              src={`images/${connectorName.toLowerCase()}.svg`}
-              alt={connectorName.toLowerCase()}
-              width={'2rem'}
-              height={'2rem'}
-            />
-            {connectorName}
+            <Flex alignItems={'center'}>
+              <Image
+                display={'inline-flex'}
+                mr={'0.5rem'}
+                src={`images/${connectorName.toLowerCase()}.svg`}
+                alt={connectorName.toLowerCase()}
+                width={'2em'}
+                height={'2em'}
+              />
+              {connectorName}
+            </Flex>
           </Button.Outline>
         );
     }
