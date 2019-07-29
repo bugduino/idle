@@ -1,6 +1,6 @@
 import React from 'react'
 import { useWeb3Context } from 'web3-react'
-import { Button, Image, Box, Text, Flex, Icon } from 'rimble-ui';
+import { Button, Image, Box, Text, Flex, Icon, Link } from 'rimble-ui';
 import connectors from '../App/connectors';
 import GeneralUtil from "../utilities/GeneralUtil";
 import styles from './Web3ConnectionButtons.module.scss';
@@ -109,17 +109,38 @@ export default function Web3ConnectionButtons(props) {
 
   return (
     <Box width={[1]}>
-      {context.error && (
-        <Text.p>An error occurred, check the console for details.</Text.p>
-      )}
+      <Flex flexDirection={'column'} alignItems={"center"}>
+        {context.error && (
+          <Text.p textAlign="center">
+            An error occurred, are you using an Ethereum browser such as
+            <Link href="https://metamask.io/" target="_blank">
+              &nbsp; Metamask &nbsp;
+            </Link>
+             or
+            <Link href="https://www.meetdapper.com/" target="_blank">
+              &nbsp; Dapper
+            </Link>
+            ?
+            If you do not have an Ethereum wallet follow the
+            "I'm new to Ethereum" flow when connecting.
+            If you do have a wallet, click Reset and retry one of the wallet listed below,
+            Generic wallet option is used for Ethereum browsers only.
+          </Text.p>
+        )}
+        {(context.active || (context.error && context.connectorName)) && (
+          <Button.Outline
+            width={[1/2]}
+            className={[styles.button]}
+            mb={[1, 3]}
+            size={'large'}
+            key={'reset'}
+            onClick={async () => await context.unsetConnector()}
+          >
+            {context.active ? "Deactivate Connector" : "Reset"}
+          </Button.Outline>
+        )}
+      </Flex>
       {buttons}
-      {(context.active || (context.error && context.connectorName)) && (
-        <Button.Outline
-          className={[styles.button]}
-          mt={2} onClick={async () => await context.unsetConnector()}>
-          {context.active ? "Deactivate Connector" : "Reset"}
-        </Button.Outline>
-      )}
     </Box>
   );
 }
