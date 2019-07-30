@@ -1,12 +1,11 @@
 import styles from './SmartContractControls.module.scss';
 import React from "react";
-import { Form, Flex, Box, Heading, Text, Button, Link } from "rimble-ui";
+import { Form, Flex, Box, Heading, Text, Button, Link, Icon, Pill } from "rimble-ui";
 import BigNumber from 'bignumber.js';
 import CryptoInput from '../CryptoInput/CryptoInput.js';
 import ApproveModal from "../utilities/components/ApproveModal";
-import TransactionsCard from "../utilities/components/TransactionsCard";
-import ShortHash from "../utilities/components/ShortHash";
 import axios from 'axios';
+import moment from 'moment';
 
 import IdleDAI from "../contracts/IdleDAI.json";
 import cDAI from '../abis/compound/cDAI';
@@ -38,6 +37,7 @@ class SmartContractControls extends React.Component {
     needsUpdate: false,
     genericError: null,
     selectedTab: '1',
+    prevTxs : {}
   };
 
   // utilities
@@ -134,19 +134,6 @@ class SmartContractControls extends React.Component {
     });
   }
 
-  // Check for updates to the transactions collection
-  processTransactionUpdates = prevProps => {
-    const prevTxs = prevProps.transactions || {};
-    Object.keys(this.props.transactions).forEach(async key => {
-      let tx = this.props.transactions[key];
-      if ((!prevTxs[key] || prevTxs[key].status !== tx.status) && tx.status === "success" && this.state.needsUpdate) {
-        console.log("Getting updated balance in acc and in cTokens.");
-        this.getBalanceOf('IdleDAI'); // do not wait
-        this.props.getAccountBalance(); // do not wait
-      }
-    });
-  };
-
   enableERC20 = (e, name) => {
     e.preventDefault();
     // No need for callback atm
@@ -225,7 +212,12 @@ class SmartContractControls extends React.Component {
     this.setState(state => ({...state, approveIsOpen: !state.approveIsOpen }));
   };
 
-  getPrevTxs = async () => {
+  getPrevTxs = async (executedTxs) => {
+
+    console.log(`
+      http://api.etherscan.io/api?module=account&action=tokentx&address=${this.props.account}&startblock=8119247&endblock=999999999&sort=asc&apikey=${env.REACT_APP_ETHERSCAN_KEY}
+    `);
+    
     const txs = await axios.get(`
       http://api.etherscan.io/api?module=account&action=tokentx&address=${this.props.account}&startblock=8119247&endblock=999999999&sort=asc&apikey=${env.REACT_APP_ETHERSCAN_KEY}
     `).catch(err => {
@@ -235,8 +227,7 @@ class SmartContractControls extends React.Component {
       return;
     }
 
-    this.setState({
-      prevTxs: txs.data.result.filter(
+    const prevTxs = txs.data.result.filter(
         tx => tx.from.toLowerCase() === IdleAddress.toLowerCase() ||
               tx.to.toLowerCase() === IdleAddress.toLowerCase()
       ).map(tx => ({
@@ -245,10 +236,104 @@ class SmartContractControls extends React.Component {
         hash: tx.hash,
         value: this.toEth(tx.value),
         tokenName: tx.tokenName,
-        tokenSymbol: tx.tokenSymbol
-      }))
+        tokenSymbol: tx.tokenSymbol,
+        timeStamp: tx.timeStamp
+      }));
+
+    // console.log(transactions);
+    let transactions = {};
+    prevTxs.forEach((tx,index) => {
+      transactions[tx.hash] = tx;
+    });
+    
+    if (executedTxs){
+      Object.keys(executedTxs).forEach((key,index) => {
+        const tx = executedTxs[key];
+        transactions[tx.hash] = tx;
+      });
+    }
+
+    this.setState({
+      prevTxs: transactions
     });
   };
+
+  // Check for updates to the transactions collection
+  processTransactionUpdates = prevProps => {
+    let txs = this.state.prevTxs || {};
+    let newTxs = {};
+    // console.log('txs',txs,'transactions',this.props.transactions);
+    let updated = false;
+    let refresh = false;
+    if (Object.keys(this.props.transactions).length){
+      Object.keys(this.props.transactions).forEach(key => {
+        let pendingTx = this.props.transactions[key];
+        if ((!txs[key] || txs[key].status !== pendingTx.status)){
+
+          // Delete transaction is succeded or error
+          if (pendingTx.status === 'success' || pendingTx.status === 'error') {
+            if (txs[key]){
+              updated = true;
+              delete txs[key];
+            }
+
+            if (pendingTx.status === 'success'){
+              refresh = true;
+              if (this.state.needsUpdate) {
+                this.getBalanceOf('IdleDAI'); // do not wait
+                this.props.getAccountBalance(); // do not wait
+              }
+            }
+          } else {
+            let tx = {
+              from: '',
+              to: '',
+              status: 'Pending',
+              hash: key,
+              value: 0,
+              tokenName: '',
+              tokenSymbol: '',
+              timeStamp: parseInt(pendingTx.lastUpdated/1000)
+            };
+
+            if (pendingTx.transactionHash) {
+              tx.hash = pendingTx.transactionHash.toString();
+            }
+
+            if (!txs[key]){
+              newTxs[key] = tx;
+            }
+
+            txs[key] = tx;
+
+            updated = true;
+          }
+        }
+      });
+
+      if (refresh){
+        this.getPrevTxs(newTxs);
+      } else if (updated){
+        this.setState({
+          prevTxs: txs
+        });
+      }
+    }
+  };
+
+  /*
+  processTransactionUpdates = prevProps => {
+    const prevTxs = prevProps.transactions || {};
+    Object.keys(this.props.transactions).forEach(async key => {
+      let tx = this.props.transactions[key];
+      if ((!prevTxs[key] || prevTxs[key].status !== tx.status) && tx.status === "success" && this.state.needsUpdate) {
+        console.log("Getting updated balance in acc and in cTokens.");
+        this.getBalanceOf('IdleDAI'); // do not wait
+        this.props.getAccountBalance(); // do not wait
+      }
+    });
+  };
+  */
 
   componentDidMount() {
     // do not wait for each one
@@ -264,11 +349,12 @@ class SmartContractControls extends React.Component {
     if (this.props.account && prevProps.account !== this.props.account) {
       await Promise.all([
         this.getBalanceOf('IdleDAI'),
-        // TODO uncomment once is visually ready
-        // this.getPrevTxs(),
+        this.getPrevTxs()
       ]);
     }
-    this.processTransactionUpdates(prevProps);
+    if (prevProps.transactions !== this.props.transactions){
+      this.processTransactionUpdates(prevProps);
+    }
   }
 
   async selectTab(e, tabIndex) {
@@ -283,21 +369,64 @@ class SmartContractControls extends React.Component {
 
   // TODO move in a separate component
   renderPrevTxs() {
-    const prevTxs = this.state.prevTxs || [];
-    if (!prevTxs.length) {
+    const prevTxs = this.state.prevTxs || {};
+    
+    // console.log('renderPrevTxs',Object.keys(prevTxs).length);
+
+    if (!Object.keys(prevTxs).length) {
       return null;
     }
-    const txs = prevTxs.map((tx, i) => (
-      <Text key={i}>
-        {tx.to.toLowerCase() === IdleAddress.toLowerCase() ? 'Deposited' : 'Redeemed'}
-        {tx.value} {tx.tokenSymbol} (Tx: <ShortHash hash={tx.hash} />)
-      </Text>
-    ));
+
+    const txs = Object.keys(prevTxs).reverse().map((key, i) => {
+      const tx = prevTxs[key];
+      const date = new Date(tx.timeStamp*1000);
+      const status = tx.status ? tx.status : tx.to.toLowerCase() === IdleAddress.toLowerCase() ? 'Deposited' : 'Redeemed';
+      const value = parseFloat(tx.value) ? parseFloat(tx.value).toFixed(4) : '-';
+      const formattedDate = moment(date).fromNow();
+      let color;
+      let icon;
+      switch (status) {
+        case 'Deposited':
+          color = 'dark-gray';
+          icon = "FileDownload";
+        break;
+        case 'Redeemed':
+          color = 'green';
+          icon = "FileUpload";
+        break;
+        default:
+          color = 'grey';
+          icon = "Refresh";
+        break;
+      }
+      return (
+        <Link display={'block'} href={`https://etherscan.io/tx/${tx.hash}`} target={'_blank'}>
+          <Flex key={'tx_'+i} alignItems={'center'} flexDirection={['row','row']} width={'100%'} p={[2,3]} borderBottom={'1px solid #D6D6D6'}>
+            <Box width={[1/8]} display={['none','block']} textAlign={'right'}>
+                <Icon name={icon} color={"black"} style={{float:'left'}}></Icon>
+            </Box>
+            <Box width={[2/8,1/8]} textAlign={'center'}>
+              <Pill color={color}>
+                {status}
+              </Pill>
+            </Box>
+            <Box width={[3/8]}>
+              <Text textAlign={'center'}>{value} {tx.tokenSymbol}</Text>
+            </Box>
+            <Box width={[3/8]} textAlign={'center'}>
+              <Text textAlign={'center'}>{formattedDate}</Text>
+            </Box>
+          </Flex>
+        </Link>
+      )});
 
     return (
-      <Box>
+      <Flex flexDirection={'column'} width={[1,'80%']} m={'0 auto'}>
+        <Text fontFamily={'sansSerif'} fontSize={[2, 3]} fontWeight={2} color={'black'} textAlign={'center'}>
+          Transactions
+        </Text>
         {txs}
-      </Box>
+      </Flex>
     );
   }
 
@@ -389,10 +518,6 @@ class SmartContractControls extends React.Component {
                     </Flex>
                     <Box my={[3,4]}>
                       {this.renderPrevTxs()}
-
-                      <TransactionsCard
-                        balance={this.state.balanceOfIdleDAI}
-                        transactions={this.props.transactions} />
                     </Box>
                     {!isNaN(this.trimEth(this.state.DAIToRedeem)) && this.trimEth(this.state.DAIToRedeem) > 0 &&
                       <Flex
