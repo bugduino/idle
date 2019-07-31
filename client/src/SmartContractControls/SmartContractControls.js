@@ -390,12 +390,12 @@ class SmartContractControls extends React.Component {
       let icon;
       switch (status) {
         case 'Deposited':
-          color = 'dark-gray';
-          icon = "FileDownload";
+          color = 'blue';
+          icon = "ArrowDownward";
         break;
         case 'Redeemed':
           color = 'green';
-          icon = "FileUpload";
+          icon = "ArrowUpward";
         break;
         default:
           color = 'grey';
@@ -406,7 +406,7 @@ class SmartContractControls extends React.Component {
         <Link key={'tx_'+i} display={'block'} href={`https://etherscan.io/tx/${tx.hash}`} target={'_blank'}>
           <Flex alignItems={'center'} flexDirection={['row','row']} width={'100%'} p={[2,3]} borderBottom={'1px solid #D6D6D6'}>
             <Box width={[1/10]} display={['none','block']} textAlign={'right'}>
-                <Icon name={icon} color={"black"} style={{float:'left'}}></Icon>
+                <Icon name={icon} color={color} style={{float:'left'}}></Icon>
             </Box>
             <Box width={[2/10,2/10]} textAlign={'center'}>
               <Pill color={color}>
