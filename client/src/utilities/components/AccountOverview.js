@@ -43,7 +43,7 @@ class AccountOverview extends React.Component {
         }
         <Icon
           name='AccountCircle'
-          size={45}
+          size={'45'}
           ml={2}
           mt={[0, 0]}
           color='white' />
