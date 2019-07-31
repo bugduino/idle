@@ -34,10 +34,21 @@ class ConnectionModal extends React.Component {
     this.setState({
       showConnectionButtons: !this.state.showConnectionButtons
     });
+
+    const showConnectionButtons = this.getShowConnectionButtons();
+    if (showConnectionButtons){
+      localStorage.removeItem('showConnectionButtons');
+    } else {
+      localStorage.setItem('showConnectionButtons', true);
+    }
   };
 
+  getShowConnectionButtons = () => {
+    return localStorage ? localStorage.getItem('showConnectionButtons') !== null : this.state.showConnectionButtons;
+  }
+
   renderModalContent = () => {
-    const showConnectionButtons = this.state.showConnectionButtons;
+    const showConnectionButtons = this.getShowConnectionButtons();
 
     if (showConnectionButtons) {
       return (
@@ -97,6 +108,8 @@ class ConnectionModal extends React.Component {
             <Link
               title="Learn about Ethereum transaction fees"
               as={"a"}
+              color={'primary'}
+              hoverColor={'primary'}
               href="#"
               onClick={this.toggleShowTxFees}
             >
@@ -124,19 +137,28 @@ class ConnectionModal extends React.Component {
   }
 
   renderFooter = () => {
-    const showConnectionButtons = this.state.showConnectionButtons;
-
-    if (showConnectionButtons) {
-      return;
-    }
+    const showConnectionButtons = this.getShowConnectionButtons();
 
     return (
       <ModalCard.Footer>
-        <Button
-          onClick={this.toggleShowConnectionButtons}
-          borderRadius={4}>
-          CONNECT
-        </Button>
+        { showConnectionButtons ? (
+            <Link
+              title="Read instructions"
+              color={'primary'}
+              hoverColor={'primary'}
+              href="#"
+              onClick={this.toggleShowConnectionButtons}
+            >
+              Read instructions
+            </Link>
+          ) : (
+            <Button
+              onClick={this.toggleShowConnectionButtons}
+              borderRadius={4}>
+              CONNECT
+            </Button>
+          )
+        }
       </ModalCard.Footer>
     );
   }
