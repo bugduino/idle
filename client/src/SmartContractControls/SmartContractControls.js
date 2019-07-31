@@ -80,6 +80,7 @@ class SmartContractControls extends React.Component {
       [`IdleDAIPrice`]: (totalIdleSupply || totalIdleSupply === 0) && totalIdleSupply.toString() === '0' ? 0 : (+this.toEth(price)),
       needsUpdate: false
     });
+    // console.log('getPriceInToken',this.toEth(price));
     return price;
   };
   getBalanceOf = async contractName => {
@@ -340,7 +341,11 @@ class SmartContractControls extends React.Component {
     this.props.initContract('iDAI', iDAIAddress, iDAIAbi);
     this.props.initContract('cDAI', cDAIAddress, cDAIAbi);
     this.props.initContract('IdleDAI', IdleAddress, IdleAbi).then(async () => {
-      await this.getAprs();
+      // await this.getAprs();
+      await Promise.all([
+        this.getAprs(),
+        this.getPriceInToken()
+      ]);
     });
     this.props.initContract('DAI', DAIAddress, DAIAbi);
   }
@@ -465,8 +470,12 @@ class SmartContractControls extends React.Component {
                 </Box>
 
                 <CryptoInput
+                  isMobile={this.props.isMobile}
                   account={this.props.account}
                   defaultValue={this.state.lendAmount}
+                  IdleDAIPrice={this.state.IdleDAIPrice}
+                  BNify={this.BNify}
+                  trimEth={this.trimEth}
                   color={'black'}
                   selectedAsset='DAI'
                   handleChangeAmount={this.handleChangeAmount}
@@ -499,7 +508,7 @@ class SmartContractControls extends React.Component {
                       </Box>
                       <Box width={[1,1/3]}>
                         <Text fontFamily={'sansSerif'} fontSize={[2, 3]} fontWeight={2} color={'black'} textAlign={'center'}>
-                          Idle DAI
+                          idleDAI
                         </Text>
                         <Heading.h3 fontFamily={'sansSerif'} fontSize={[5,6]} fontWeight={2} color={'black'} textAlign={'center'}>
                           {!isNaN(this.trimEth(this.state.balanceOfIdleDAI)) && `${this.trimEth(this.state.balanceOfIdleDAI)}`}
@@ -508,7 +517,7 @@ class SmartContractControls extends React.Component {
                       </Box>
                       <Box width={[1,1/3]}>
                         <Text fontFamily={'sansSerif'} fontSize={[2, 3]} fontWeight={2} color={'black'} textAlign={'center'}>
-                          Idle DAI Price
+                          idleDAI Price
                         </Text>
                         <Heading.h3 fontFamily={'sansSerif'} fontSize={[5,6]} fontWeight={2} color={'black'} textAlign={'center'}>
                           {!isNaN(this.trimEth(this.state.IdleDAIPrice)) && !!this.state.IdleDAIPrice && `${this.trimEth(this.state.IdleDAIPrice)} DAI`}
