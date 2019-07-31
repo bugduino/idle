@@ -14,9 +14,11 @@ import TransactionFeeModal from "./TransactionFeeModal";
 import Web3ConnectionButtons from "../../Web3ConnectionButtons/Web3ConnectionButtons";
 
 class ConnectionModal extends React.Component {
+  // TODO save pref in localstorage and do not show 'Before connecting' info every time
   state = {
     showTxFees: false,
-    showConnectionButtons: false
+    showConnectionButtons: false,
+    newtoEthereum: false
   };
 
   toggleShowTxFees = e => {
@@ -47,9 +49,17 @@ class ConnectionModal extends React.Component {
     return localStorage ? localStorage.getItem('showConnectionButtons') !== null : this.state.showConnectionButtons;
   }
 
+  toggleNewtoEthereum = e => {
+    e.preventDefault();
+
+    this.setState({
+      newtoEthereum: !this.state.newtoEthereum
+    });
+  };
+
   renderModalContent = () => {
     const showConnectionButtons = this.getShowConnectionButtons();
-
+    const newtoEthereum = this.state.newtoEthereum;
     if (showConnectionButtons) {
       return (
         <Box width={1}>
@@ -61,13 +71,32 @@ class ConnectionModal extends React.Component {
       );
     }
 
+    if (newtoEthereum) {
+      return (
+        <React.Fragment>
+          <Box mt={4} mb={5}>
+            <Heading fontSize={[4, 5]}>Let's create your first Ethereum wallet</Heading>
+            <Text fontSize={[2, 3]} my={3}>
+              Managing ethereum wallet could be intimidating, but we are making it
+              seamless by integrating the Portis wallet provider.
+              After clicking the button below you will create you first Ethereum wallet
+              and you'll be ready to start your journey into Idle.
+            </Text>
+          </Box>
+          <Flex alignItems={"center"}>
+            <Web3ConnectionButtons size={'large'} onlyPortis={true} registerPage={true} />
+          </Flex>
+        </React.Fragment>
+      );
+    }
+
     return (
       <React.Fragment>
         {/* Start primary content */}
         <Box mt={4} mb={5}>
           <Heading fontSize={[4, 5]}>Before you connect</Heading>
           <Text fontSize={[2, 3]} my={3}>
-            Connecting lets you use the Idle dApp via your
+            Connecting lets you use Idle via your
             Ethereum account.
           </Text>
         </Box>
@@ -103,7 +132,8 @@ class ConnectionModal extends React.Component {
             <Heading fontSize={2}>Have some Ether for fees</Heading>
             <Text fontSize={1} mb={3}>
               You’ll need Ether to pay transaction fees. Buy Ether
-              from exchanges like Coinbase.
+              from exchanges like Coinbase or directly via enabled wallet
+              such as Portis or Dapper.
             </Text>
             <Link
               title="Learn about Ethereum transaction fees"
@@ -138,10 +168,10 @@ class ConnectionModal extends React.Component {
 
   renderFooter = () => {
     const showConnectionButtons = this.getShowConnectionButtons();
-
+    const newtoEthereum = this.state.newtoEthereum;
     return (
       <ModalCard.Footer>
-        { showConnectionButtons ? (
+        { showConnectionButtons || newtoEthereum ? (
             <Link
               title="Read instructions"
               color={'primary'}
@@ -152,11 +182,18 @@ class ConnectionModal extends React.Component {
               Read instructions
             </Link>
           ) : (
-            <Button
-              onClick={this.toggleShowConnectionButtons}
-              borderRadius={4}>
-              CONNECT
-            </Button>
+            <Flex flexDirection={['column', 'row']} width={1} justifyContent={['space-around']}>
+              <Button
+                onClick={this.toggleShowConnectionButtons}
+                borderRadius={4}>
+                CONNECT
+              </Button>
+              <Button
+                onClick={this.toggleNewtoEthereum}
+                borderRadius={4}>
+                I AM NEW TO ETHEREUM
+              </Button>
+            </Flex>
           )
         }
       </ModalCard.Footer>
@@ -166,7 +203,8 @@ class ConnectionModal extends React.Component {
   closeModal = () => {
     this.setState({
       showTxFees: false,
-      showConnectionButtons: false
+      showConnectionButtons: false,
+      newtoEthereum: false
     });
     this.props.closeModal();
   }
