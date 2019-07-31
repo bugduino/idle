@@ -354,10 +354,8 @@ class SmartContractControls extends React.Component {
 
   async componentDidUpdate(prevProps, prevState) {
     if (this.props.account && prevProps.account !== this.props.account) {
-      await Promise.all([
-        this.getBalanceOf('IdleDAI'),
-        this.getPrevTxs()
-      ]);
+      await this.getPrevTxs();
+      await this.getBalanceOf('IdleDAI');
     }
     if (prevProps.transactions !== this.props.transactions){
       this.processTransactionUpdates(prevProps);
@@ -542,24 +540,26 @@ class SmartContractControls extends React.Component {
                       </Flex>
                     </Box>
                     <Box my={[3,4]}>
+                      {!isNaN(this.trimEth(this.state.DAIToRedeem)) && this.trimEth(this.state.DAIToRedeem) > 0 &&
+                        <Flex
+                          textAlign='center'>
+                          <Button onClick={e => this.redeem(e, 'IdleDAI')} borderRadius={4} size={this.props.isMobile ? 'medium' : 'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={2}>
+                            REDEEM DAI
+                          </Button>
+                        </Flex>
+                      }
+                      {(isNaN(this.trimEth(this.state.DAIToRedeem)) || parseFloat(this.state.DAIToRedeem)<=0) &&
+                        <Flex
+                          textAlign='center'>
+                          <Button onClick={e => this.selectTab(e, '1')} borderRadius={4} size={this.props.isMobile ? 'medium' : 'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={2}>
+                            LEND NOW
+                          </Button>
+                        </Flex>
+                      }
+                    </Box>
+                    <Box my={[3,4]}>
                       {this.renderPrevTxs()}
                     </Box>
-                    {!isNaN(this.trimEth(this.state.DAIToRedeem)) && this.trimEth(this.state.DAIToRedeem) > 0 &&
-                      <Flex
-                        textAlign='center'>
-                        <Button onClick={e => this.redeem(e, 'IdleDAI')} borderRadius={4} size={this.props.isMobile ? 'medium' : 'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={2}>
-                          REDEEM DAI
-                        </Button>
-                      </Flex>
-                    }
-                    {(isNaN(this.trimEth(this.state.DAIToRedeem)) || parseFloat(this.state.DAIToRedeem)<=0) &&
-                      <Flex
-                        textAlign='center'>
-                        <Button onClick={e => this.selectTab(e, '1')} borderRadius={4} size={this.props.isMobile ? 'medium' : 'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={2}>
-                          LEND NOW
-                        </Button>
-                      </Flex>
-                    }
                   </>
                 }
                 {!this.props.account &&
