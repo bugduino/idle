@@ -107,8 +107,8 @@ class Landing extends Component {
                 START LENDING
               </Button>
             </Flex>
-            <Box id='invest' position={['relative','absolute']} width={['auto','100%']} mt={['0','-250px']}>
-              <Box position={'absolute'} zIndex={'0'} width={'100%'} height={'50%'} top={'50%'} left={'0'} backgroundColor={'gray'}></Box>
+            <Box id='invest' position={'relative'} width={['auto','100%']} mt={['0','-250px']}>
+              <Box position={'absolute'} zIndex={'0'} width={'100%'} height={'50%'} top={'50%'} left={'0'} backgroundColor={'white'}></Box>
               <Box position={'relative'} zIndex={'1'}>
                 <LandingForm
                   isMobile={this.props.isMobile}
@@ -119,8 +119,10 @@ class Landing extends Component {
           </Box>
         </Box>
 
-        <Box className={[styles.graySection]} pt={[0,7]}>
-          <Box maxWidth={['50em','70em']} mx={[3, 'auto']} pt={[0,6]} pb={[4, 0]}>
+        {
+        /*
+        <Box className={[styles.graySection]} pt={0}>
+          <Box maxWidth={['50em','70em']} mx={[3, 'auto']} pt={0} pb={[4, 0]}>
             <IconFlexRow image={'images/feature-1.png'} title='100% non-custodial, thanks to our contract.' linkHref={'https://etherscan.io/address/0x10cf8e1CDba9A2Bd98b87000BCAdb002b13eA525#code'} linkText='Smart contract' />
             <IconFlexRow image={'images/feature-2.png'} title='Fully decentralized, thanks to our users.' handleClick={e => this.props.updateSelectedTab(e,'3')} linkHref={'#invest'} linkText='Rebalance process' />
             <IconFlexRow image={'images/feature-3.png'} title='No hidden fees, best things in life are free!' linkHref={'#how-it-works'} linkText='See how it works' />
@@ -155,6 +157,8 @@ class Landing extends Component {
             </Box>
           </Flex>
         </Box>
+        */
+        }
 
         <Box id='how-it-works' pb={[4,6]}>
           <Box>
@@ -219,8 +223,7 @@ class Landing extends Component {
               Get the best APR, always.
             </Heading.h2>
             <Flex alignItems={['normal','flex-end']} flexDirection={['column','row']}>
-              <Box>
-                <Box display={['none','block']} height={'0.5em'}></Box>
+              <Box width={[1,3/10]}>
                 <Box p={[4,5]} pb={0} backgroundColor={'white'} color={'black'} boxShadow={1} borderBottom={'15px solid'} borderColor={'blue'}>
                   <Heading.h3 textAlign={['center']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>
                     Compound DAI
@@ -231,7 +234,7 @@ class Landing extends Component {
                   <Heading.h2 fontFamily={'sansSerif'} textAlign={'center'} fontWeight={2} fontSize={[6,8]} mb={[4,0]}>{this.state.compoundRate}%</Heading.h2>
                 </Box>
               </Box>
-              <Box p={[4,5]} pb={0} backgroundColor={'blue'} color={'white'} boxShadow={1} borderBottom={'15px solid'} borderColor={'white'}>
+              <Box width={[1,4/10]} p={[4,5]} pb={0} backgroundColor={'blue'} color={'white'} boxShadow={1} borderBottom={'15px solid'} borderColor={'white'}>
                 <Heading.h3 textAlign={['center']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]}>Idle DAI</Heading.h3>
                 <Heading.h4 textAlign={['center']} fontWeight={1} lineHeight={2} fontSize={[2,3]}>
                   We will always get the best rate, thanks to our users and the decentralized rebalance process.
@@ -244,8 +247,7 @@ class Landing extends Component {
                   <Button onClick={e => this.startLending(e)} borderRadius={4} size={'medium'} mainColor={'lightBlue'} contrastColor={'blue'} fontWeight={2} fontSize={[2,3]} px={[4,5]} mt={[2,4]} mb={[3,3]}>START EARNING</Button>
                 </Box>
               </Box>
-              <Box>
-                <Box display={['none','block']} height={'0.5em'}></Box>
+              <Box width={[1,3/10]}>
                 <Box p={[4,5]} pb={0} backgroundColor={'white'} color={'black'} boxShadow={1} borderBottom={'15px solid'} borderColor={'blue'}>
                   <Heading.h3 textAlign={['center']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>Fulcrum DAI</Heading.h3>
                   <Heading.h4 textAlign={['center']} fontWeight={1} lineHeight={2} fontSize={[2,3]}>
