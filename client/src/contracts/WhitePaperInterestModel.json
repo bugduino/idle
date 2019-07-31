@@ -1,0 +1,456 @@
+{
+  "contractName": "WhitePaperInterestModel",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "cash",
+          "type": "uint256"
+        },
+        {
+          "name": "borrows",
+          "type": "uint256"
+        },
+        {
+          "name": "_reserves",
+          "type": "uint256"
+        }
+      ],
+      "name": "getBorrowRate",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "metadata": "",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "pragma solidity ^0.5.2;\n\ninterface WhitePaperInterestModel {\n  function getBorrowRate(uint256 cash, uint256 borrows, uint256 _reserves) external view returns (uint256, uint256);\n}\n",
+  "sourcePath": "/home/bugman/Projects/idle/contracts/interfaces/WhitePaperInterestRateModel.sol",
+  "ast": {
+    "absolutePath": "/home/bugman/Projects/idle/contracts/interfaces/WhitePaperInterestRateModel.sol",
+    "exportedSymbols": {
+      "WhitePaperInterestModel": [
+        1112
+      ]
+    },
+    "id": 1113,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1098,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".2"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:4"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": null,
+        "fullyImplemented": false,
+        "id": 1112,
+        "linearizedBaseContracts": [
+          1112
+        ],
+        "name": "WhitePaperInterestModel",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": null,
+            "documentation": null,
+            "id": 1111,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getBorrowRate",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1105,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1100,
+                  "name": "cash",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1111,
+                  "src": "86:12:4",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1099,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "86:7:4",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1102,
+                  "name": "borrows",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1111,
+                  "src": "100:15:4",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1101,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "100:7:4",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1104,
+                  "name": "_reserves",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1111,
+                  "src": "117:17:4",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1103,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "117:7:4",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "85:50:4"
+            },
+            "returnParameters": {
+              "id": 1110,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1107,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1111,
+                  "src": "159:7:4",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1106,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "159:7:4",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1109,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1111,
+                  "src": "168:7:4",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1108,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "168:7:4",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "158:18:4"
+            },
+            "scope": 1112,
+            "src": "63:114:4",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "external"
+          }
+        ],
+        "scope": 1113,
+        "src": "25:154:4"
+      }
+    ],
+    "src": "0:180:4"
+  },
+  "legacyAST": {
+    "absolutePath": "/home/bugman/Projects/idle/contracts/interfaces/WhitePaperInterestRateModel.sol",
+    "exportedSymbols": {
+      "WhitePaperInterestModel": [
+        1112
+      ]
+    },
+    "id": 1113,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1098,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".2"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:4"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": null,
+        "fullyImplemented": false,
+        "id": 1112,
+        "linearizedBaseContracts": [
+          1112
+        ],
+        "name": "WhitePaperInterestModel",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": null,
+            "documentation": null,
+            "id": 1111,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getBorrowRate",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1105,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1100,
+                  "name": "cash",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1111,
+                  "src": "86:12:4",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1099,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "86:7:4",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1102,
+                  "name": "borrows",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1111,
+                  "src": "100:15:4",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1101,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "100:7:4",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1104,
+                  "name": "_reserves",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1111,
+                  "src": "117:17:4",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1103,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "117:7:4",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "85:50:4"
+            },
+            "returnParameters": {
+              "id": 1110,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1107,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1111,
+                  "src": "159:7:4",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1106,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "159:7:4",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1109,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1111,
+                  "src": "168:7:4",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1108,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "168:7:4",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "158:18:4"
+            },
+            "scope": 1112,
+            "src": "63:114:4",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "external"
+          }
+        ],
+        "scope": 1113,
+        "src": "25:154:4"
+      }
+    ],
+    "src": "0:180:4"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.2+commit.1df8f40c.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.0.11",
+  "updatedAt": "2019-07-31T10:31:11.368Z",
+  "devdoc": {
+    "methods": {}
+  },
+  "userdoc": {
+    "methods": {}
+  }
+}
