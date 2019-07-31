@@ -37,17 +37,29 @@ class Header extends React.Component {
               position={['relative','absolute']} />
           </Box>
           <Box display={['inline-block', 'none']}>
-            <Button
-              contrastColor={'blue'}
-              mainColor={'white'}
-              borderRadius={4}
-              my={2}
-              mr={[3, 4]}
-              onClick={this.props.connectAndValidateAccount}
-              size={this.props.isMobile ? 'small' : 'medium'}
-            >
-              CONNECT
-            </Button>
+            {this.props.account ? (
+              <AccountOverview
+                account={this.props.account}
+                hasQRCode={false}
+                isMobile={this.props.isMobile}
+                accountBalanceLow={this.props.accountBalanceLow}
+                accountBalance={this.props.accountBalance}
+                accountBalanceDAI={this.props.accountBalanceDAI}
+                toggleModal={this.toggleModal}
+              />
+            ) : (
+              <Button
+                contrastColor={'blue'}
+                mainColor={'white'}
+                borderRadius={4}
+                my={2}
+                mr={[3, 4]}
+                onClick={this.props.connectAndValidateAccount}
+                size={this.props.isMobile ? 'small' : 'medium'}
+              >
+                CONNECT
+              </Button>
+            )}
           </Box>
           <Box display={['none','block']} width={[8/12]} justifyContent="flex-end">
             <Flex alignItems={"center"} justifyContent="flex-end">
