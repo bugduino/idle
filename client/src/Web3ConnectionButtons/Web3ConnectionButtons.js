@@ -10,22 +10,35 @@ export default function Web3ConnectionButtons(props) {
   const size = props.size || 'large';
 
   if (!context.active && !context.error) {
-    // loading
     console.log('context loading', context);
   } else if (context.error) {
     console.log('context error', context);
-    // error
   } else {
     console.log('context success', context);
-    // success
   }
   const setConnector = async connectorName => {
-    return await context.setConnector(connectorName)
+    return await context.setConnector(connectorName);
   };
   const isMetamask = GeneralUtil.hasMetaMask();
   const isOpera = GeneralUtil.isOpera();
+  const onlyPortis = props.onlyPortis;
+  const registerPage = props.registerPage;
 
-  const buttons = Object.keys(connectors).map(connectorName => {
+  if (connectors.Portis) {
+    if (registerPage) {
+      connectors.Portis.options = connectors.Portis.options || {};
+      connectors.Portis.options.registerPageByDefault = true;
+    } else {
+      connectors.Portis.options = connectors.Portis.options || {};
+      connectors.Portis.options.registerPageByDefault = false;
+    }
+  }
+
+  let basicConnectorsName = Object.keys(connectors);
+  if (onlyPortis) {
+    basicConnectorsName = basicConnectorsName.filter(n => n === 'Portis');
+  }
+  const buttons = basicConnectorsName.map(connectorName => {
     switch (connectorName) {
       case 'Injected':
         if (isMetamask || isOpera) {

@@ -18,7 +18,7 @@ class ConnectionModal extends React.Component {
   state = {
     showTxFees: false,
     showConnectionButtons: false,
-    newtoEthereum: false
+    newToEthereum: false
   };
 
   toggleShowTxFees = e => {
@@ -44,22 +44,29 @@ class ConnectionModal extends React.Component {
       localStorage.setItem('showConnectionButtons', true);
     }
   };
+  resetModal = e => {
+    localStorage.removeItem('showConnectionButtons');
+    this.setState({
+      showConnectionButtons: false,
+      newToEthereum: false
+    });
+  };
 
   getShowConnectionButtons = () => {
-    return localStorage ? localStorage.getItem('showConnectionButtons') !== null : this.state.showConnectionButtons;
+    return localStorage ? localStorage.getItem('showConnectionButtons') : this.state.showConnectionButtons;
   }
 
   toggleNewtoEthereum = e => {
     e.preventDefault();
 
     this.setState({
-      newtoEthereum: !this.state.newtoEthereum
+      newToEthereum: !this.state.newToEthereum
     });
   };
 
   renderModalContent = () => {
     const showConnectionButtons = this.getShowConnectionButtons();
-    const newtoEthereum = this.state.newtoEthereum;
+    const newToEthereum = this.state.newToEthereum;
     if (showConnectionButtons) {
       return (
         <Box width={1}>
@@ -71,7 +78,7 @@ class ConnectionModal extends React.Component {
       );
     }
 
-    if (newtoEthereum) {
+    if (newToEthereum) {
       return (
         <React.Fragment>
           <Box mt={4} mb={5}>
@@ -168,16 +175,16 @@ class ConnectionModal extends React.Component {
 
   renderFooter = () => {
     const showConnectionButtons = this.getShowConnectionButtons();
-    const newtoEthereum = this.state.newtoEthereum;
+    const newToEthereum = this.state.newToEthereum;
     return (
       <ModalCard.Footer>
-        { showConnectionButtons || newtoEthereum ? (
+        { showConnectionButtons || newToEthereum ? (
             <Link
               title="Read instructions"
               color={'primary'}
               hoverColor={'primary'}
               href="#"
-              onClick={this.toggleShowConnectionButtons}
+              onClick={this.resetModal}
             >
               Read instructions
             </Link>
@@ -204,7 +211,7 @@ class ConnectionModal extends React.Component {
     this.setState({
       showTxFees: false,
       showConnectionButtons: false,
-      newtoEthereum: false
+      newToEthereum: false
     });
     this.props.closeModal();
   }

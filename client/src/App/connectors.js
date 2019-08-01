@@ -61,8 +61,7 @@ const Fortmatic = new FortmaticConnector({
 const Portis = new PortisConnector({
   api: PortisApi,
   dAppId: portisDAppId,
-  network: portisNetwork,
-  // options:
+  network: portisNetwork
 });
 
 export default {
