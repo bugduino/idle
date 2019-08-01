@@ -1435,13 +1435,15 @@
     xhr "^2.2.0"
     xtend "^4.0.1"
 
-"@portis/web3@^2.0.0-beta.1":
-  version "2.0.0-beta.30"
-  resolved "https://registry.yarnpkg.com/@portis/web3/-/web3-2.0.0-beta.30.tgz#672167af186603c448a6e6c2d269e508a27b6a45"
+"@portis/web3@^2.0.0-beta.34":
+  version "2.0.0-beta.34"
+  resolved "https://registry.yarnpkg.com/@portis/web3/-/web3-2.0.0-beta.34.tgz#0357d7ffc2269ddafd20864a7205b40f8df4b6de"
+  integrity sha512-IeTXq8ZOaWywl2wJGzu6asO14Wkpydk1Vz5Y2F7ZGrPBxVk4NMxmkXjuqJm5aODieddKfdIDpAqQDu2NjQgixA==
   dependencies:
     "@portis/web3-provider-engine" "1.0.10"
     ethereumjs-util "5.2.0"
     penpal "3.0.7"
+    pocket-js-core "0.0.3"
 
 "@rimble/connection-banner@^1.2.1":
   version "1.2.1"
@@ -2216,6 +2218,14 @@ aws-sign2@~0.7.0:
 aws4@^1.8.0:
   version "1.8.0"
   resolved "https://registry.yarnpkg.com/aws4/-/aws4-1.8.0.tgz#f0e003d9ca9e7f59c7a508945d7b2ef9a04a542f"
+
+axios@^0.18.0:
+  version "0.18.1"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-0.18.1.tgz#ff3f0de2e7b5d180e757ad98000f1081b87bcea3"
+  integrity sha512-0BfJq4NSfQXd+SkFdrvFbG7addhYSBA2mQwISr46pD6E5iqkWg02RAs8vyTT/j0RTnoYmeXauBuSv1qKwR179g==
+  dependencies:
+    follow-redirects "1.5.10"
+    is-buffer "^2.0.2"
 
 axios@^0.19.0:
   version "0.19.0"
@@ -9350,6 +9360,13 @@ pnp-webpack-plugin@1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/pnp-webpack-plugin/-/pnp-webpack-plugin-1.1.0.tgz#947a96d1db94bb5a1fc014d83b581e428699ac8c"
 
+pocket-js-core@0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/pocket-js-core/-/pocket-js-core-0.0.3.tgz#1ab278b9a6a5775e2bdc3c2c2e218057774061e4"
+  integrity sha512-OUTEvEVutdjLT6YyldvAlSebpBueUUWg2XKxGNt5u3QqrmLpBOOBmdDnGMNJ+lEwXtko+JqgwFq+HTi4g1QDVg==
+  dependencies:
+    axios "^0.18.0"
+
 polished@^3.2.0:
   version "3.4.1"
   resolved "https://registry.yarnpkg.com/polished/-/polished-3.4.1.tgz#1eb5597ec1792206365635811d465751f5cbf71c"
@@ -10797,6 +10814,19 @@ rimble-ui@^0.9.1:
 rimble-ui@^0.9.4:
   version "0.9.6"
   resolved "https://registry.yarnpkg.com/rimble-ui/-/rimble-ui-0.9.6.tgz#acc0c9a323c1ff3aea4d8b9a3c62fed951369a30"
+  dependencies:
+    "@d8660091/react-popper" "^1.0.4"
+    "@svgr/rollup" "^4.2.0"
+    ethereum-blockies "^0.1.1"
+    polished "^3.2.0"
+    qrcode.react "^0.9.3"
+    rmdi "^1.0.1"
+    styled-system "^4.1.0"
+
+rimble-ui@^0.9.4:
+  version "0.9.6"
+  resolved "https://registry.yarnpkg.com/rimble-ui/-/rimble-ui-0.9.6.tgz#acc0c9a323c1ff3aea4d8b9a3c62fed951369a30"
+  integrity sha512-srSTM8+8UiS2V0r4daX4ecNyAh4vRvChEBXEPWS3BovvXVDmVtQ81OUg7qZgcYdHr7WdRZCNrcg5pnvwortynA==
   dependencies:
     "@d8660091/react-popper" "^1.0.4"
     "@svgr/rollup" "^4.2.0"

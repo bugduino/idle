@@ -5,7 +5,7 @@
   "homepage": "https://idle.finance",
   "dependencies": {
     "@babel/core": "^7.4.5",
-    "@portis/web3": "^2.0.0-beta.1",
+    "@portis/web3": "^2.0.0-beta.34",
     "@rimble/connection-banner": "^1.2.1",
     "@rimble/network-indicator": "^1.2.1",
     "@svgr/webpack": "2.4.1",
