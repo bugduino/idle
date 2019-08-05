@@ -3,7 +3,7 @@ import { Image, Flex, Box, Heading, Button, Link, Text } from 'rimble-ui'
 import BigNumber from 'bignumber.js';
 import styles from './Landing.module.scss';
 import LandingForm from '../LandingForm/LandingForm';
-import IconFlexRow from '../IconFlexRow/IconFlexRow';
+// import IconFlexRow from '../IconFlexRow/IconFlexRow';
 import Faq from '../Faq/Faq';
 
 class Landing extends Component {
@@ -163,7 +163,7 @@ class Landing extends Component {
         <Box id='how-it-works' pb={[4,6]}>
           <Box>
             <Heading.h2 fontFamily={'sansSerif'} fontSize={[5,6]} textAlign={'center'} py={[4,5]} alignItems={'center'} my={0}>
-              How it Works
+              &nbsp;
             </Heading.h2>
             <Flex flexDirection={['column','row']} alignItems={'center'}>
               <Flex alignItems={'center'} width={[1, 5/12]} px={[4, 5]} textAlign={'center'}>

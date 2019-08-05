@@ -1,9 +1,7 @@
 import React from "react";
 import { Box, Flex, Button, Image } from "rimble-ui";
-// import NetworkIndicator from "@rimble/network-indicator"
 import AccountOverview from "./AccountOverview";
 import AccountModal from "./AccountModal";
-import MenuLink from "../../MenuLink/MenuLink";
 
 class Header extends React.Component {
   state = {
@@ -15,13 +13,6 @@ class Header extends React.Component {
   }
 
   render() {
-              // {!this.props.isMobile &&
-                // <Box mr={[2, 4]}>
-                //   <NetworkIndicator
-                //     currentNetwork={this.props.network.current.id}
-                //     requiredNetwork={this.props.network.required.id} />
-                // </Box>
-              // }
     return (
       <Box style={{
         'position': 'absolute',
@@ -63,9 +54,6 @@ class Header extends React.Component {
           </Box>
           <Box display={['none','block']} width={[8/12]} justifyContent="flex-end">
             <Flex alignItems={"center"} justifyContent="flex-end">
-              <MenuLink handleClick={e => this.props.handleMenuClick(e, '1')} linkSrc="#invest" linkText="Start Lending" />
-              <MenuLink handleClick={e => this.props.handleMenuClick(e, '2')} linkSrc="#invest" linkText="Your Investments" />
-              <MenuLink linkSrc="#faq" linkText="Help" />
               {this.props.account ? (
                 <AccountOverview
                   account={this.props.account}

@@ -30,12 +30,11 @@ export default function (props) {
             flexDirection={'column'}
             alignItems={'center'}
             justifyContent={'center'}>
-            <Heading.h2>Account overview</Heading.h2>
+            <Heading.h2 textAlign={'center'} mb={[2, 3]}>Account overview</Heading.h2>
             <Flex
               flexDirection={'column'}
               alignItems={'center'}
               justifyContent={'center'}>
-              <Heading.h4>Wallet Address</Heading.h4>
               {account &&
                 <QR
                   value={props.account}
@@ -47,7 +46,7 @@ export default function (props) {
               </Box>
             </Flex>
             <Box>
-              <Heading.h4>Balance</Heading.h4>
+              <Heading.h4 textAlign={'center'}>Balance</Heading.h4>
               <Text my={3} fontSize={3}>
                 {trimEth(accountBalance)} ETH
               </Text>
