@@ -99,7 +99,7 @@ class SmartContractControls extends React.Component {
       if (this.state.amountLent){
         earning = tokenToRedeem.minus(this.BNify(this.toEth(this.state.amountLent)));
       }
-      
+
       this.setState({
         [`balanceOf${contractName}`]: balance,
         [`DAIToRedeem`]: tokenToRedeem.toString(),
@@ -225,11 +225,11 @@ class SmartContractControls extends React.Component {
   getPrevTxs = async (executedTxs) => {
 
     console.log(`
-      http://api.etherscan.io/api?module=account&action=tokentx&address=${this.props.account}&startblock=8119247&endblock=999999999&sort=asc&apikey=${env.REACT_APP_ETHERSCAN_KEY}
+      https://api.etherscan.io/api?module=account&action=tokentx&address=${this.props.account}&startblock=8119247&endblock=999999999&sort=asc&apikey=${env.REACT_APP_ETHERSCAN_KEY}
     `);
-    
+
     const txs = await axios.get(`
-      http://api.etherscan.io/api?module=account&action=tokentx&address=${this.props.account}&startblock=8119247&endblock=999999999&sort=asc&apikey=${env.REACT_APP_ETHERSCAN_KEY}
+      https://api.etherscan.io/api?module=account&action=tokentx&address=${this.props.account}&startblock=8119247&endblock=999999999&sort=asc&apikey=${env.REACT_APP_ETHERSCAN_KEY}
     `).catch(err => {
       console.log('Error getting prev txs');
     });
@@ -262,7 +262,7 @@ class SmartContractControls extends React.Component {
       }
       transactions[tx.hash] = tx;
     });
-    
+
     if (executedTxs){
       Object.keys(executedTxs).forEach((key,index) => {
         const tx = executedTxs[key];
