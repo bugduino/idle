@@ -30,7 +30,9 @@ export default function (props) {
             flexDirection={'column'}
             alignItems={'center'}
             justifyContent={'center'}>
-            <Heading.h2 textAlign={'center'} mb={[2, 3]}>Account overview</Heading.h2>
+            <Heading.h2 textAlign={'center'} mb={[2, 3]}>
+              Account overview
+            </Heading.h2>
             <Flex
               flexDirection={'column'}
               alignItems={'center'}

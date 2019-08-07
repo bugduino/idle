@@ -156,6 +156,10 @@ class SmartContractControls extends React.Component {
       approveIsOpen: false
     });
   };
+  rebalance = e => {
+    e.preventDefault();
+    this.props.contractMethodSendWrapper('IdleDAI', 'rebalance');
+  };
   mint = async (e, contractName) => {
     e.preventDefault();
     if (this.props.account && !this.state.lendAmount) {
@@ -602,8 +606,7 @@ class SmartContractControls extends React.Component {
                   textAlign='center'
                   pt={2}>
                   <Button
-                    disabled={this.state.shouldRebalance}
-                    onClick={e => this.rebalance(e, 'cDAI')}
+                    onClick={this.rebalance}
                     size={this.props.isMobile ? 'medium' : 'large'}
                     borderRadius={4}
                     className={styles.magicButton}
