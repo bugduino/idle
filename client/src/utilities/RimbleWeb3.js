@@ -137,7 +137,8 @@ class RimbleTransaction extends React.Component {
     } catch (error) {
       console.log("Could not create contract.");
       window.toastProvider.addMessage("Contract creation failed.", {
-        variant: "failure"
+        variant: "failure",
+        colorTheme: 'light'
       });
     }
   };
@@ -425,6 +426,7 @@ class RimbleTransaction extends React.Component {
           // TODO: determine how to handle error messages globally
           window.toastProvider.addMessage("Something went wrong", {
             secondaryMessage: "Please retry",
+            colorTheme: 'light',
             actionHref: "",
             actionText: "",
             variant: "failure",
@@ -438,6 +440,7 @@ class RimbleTransaction extends React.Component {
       // TODO: should this be a custom error? What is the error here?
       // TODO: determine how to handle error messages globally
       window.toastProvider.addMessage("Something went really wrong, we are sorry", {
+        colorTheme: 'light',
         secondaryMessage: "Try refreshing the page :(",
         actionHref: "",
         actionText: "",

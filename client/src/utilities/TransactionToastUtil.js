@@ -96,6 +96,7 @@ class TransactionToastUtil extends React.Component {
     console.log("showTransactionToast: ", { ...transaction });
     // Get text info for toast
     let toastMeta = this.getTransactionToastMeta(transaction);
+    toastMeta.colorTheme = 'light';
 
     // Show toast
     window.toastProvider.addMessage(".", toastMeta);

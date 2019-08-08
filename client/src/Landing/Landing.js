@@ -3,7 +3,7 @@ import { Image, Flex, Box, Heading, Button, Link, Text } from 'rimble-ui'
 import BigNumber from 'bignumber.js';
 import styles from './Landing.module.scss';
 import LandingForm from '../LandingForm/LandingForm';
-// import IconFlexRow from '../IconFlexRow/IconFlexRow';
+import IconFlexRow from '../IconFlexRow/IconFlexRow';
 import Faq from '../Faq/Faq';
 
 class Landing extends Component {
@@ -108,7 +108,7 @@ class Landing extends Component {
               </Button>
             </Flex>
             <Box id='invest' position={'relative'} width={['auto','100%']} mt={['0','-250px']}>
-              <Box position={'absolute'} zIndex={'0'} width={'100%'} height={'50%'} top={'50%'} left={'0'} backgroundColor={'white'}></Box>
+              <Box position={'absolute'} zIndex={'0'} width={'100%'} height={'50%'} top={'50%'} left={'0'} backgroundColor={'#f7f7f7'}></Box>
               <Box position={'relative'} zIndex={'1'}>
                 <LandingForm
                   isMobile={this.props.isMobile}
@@ -119,14 +119,17 @@ class Landing extends Component {
           </Box>
         </Box>
 
-        {
-        /*
         <Box className={[styles.graySection]} pt={0}>
           <Box maxWidth={['50em','70em']} mx={[3, 'auto']} pt={0} pb={[4, 0]}>
             <IconFlexRow image={'images/feature-1.png'} title='100% non-custodial, thanks to our contract.' linkHref={'https://etherscan.io/address/0x10cf8e1CDba9A2Bd98b87000BCAdb002b13eA525#code'} linkText='Smart contract' />
             <IconFlexRow image={'images/feature-2.png'} title='Fully decentralized, thanks to our users.' handleClick={e => this.props.updateSelectedTab(e,'3')} linkHref={'#invest'} linkText='Rebalance process' />
             <IconFlexRow image={'images/feature-3.png'} title='No hidden fees, best things in life are free!' linkHref={'#how-it-works'} linkText='See how it works' />
           </Box>
+        </Box>
+
+        {
+        /*
+        <Box className={[styles.graySection]} pt={0}>
           <Flex maxWidth={'100%'} flexDirection={['column','row']}>
             <Box position={'relative'} width={[1, 1/2]} p={[4,6]} backgroundColor={'blue'} color={'white'}>
               <Heading.h3 fontFamily={'sansSerif'} fontSize={[5,6]} mb={[3,4]}>Asset Managers</Heading.h3>
@@ -163,7 +166,7 @@ class Landing extends Component {
         <Box id='how-it-works' pb={[4,6]}>
           <Box>
             <Heading.h2 fontFamily={'sansSerif'} fontSize={[5,6]} textAlign={'center'} py={[4,5]} alignItems={'center'} my={0}>
-              &nbsp;
+              How it Works
             </Heading.h2>
             <Flex flexDirection={['column','row']} alignItems={'center'}>
               <Flex alignItems={'center'} width={[1, 5/12]} px={[4, 5]} textAlign={'center'}>
