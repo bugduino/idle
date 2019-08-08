@@ -9,7 +9,7 @@ import moment from 'moment';
 
 import IdleDAI from "../contracts/IdleDAI.json";
 import cDAI from '../abis/compound/cDAI';
-import DAI from '../contracts/IERC2.json';
+import DAI from '../contracts/IERC20.json';
 import iDAI from '../abis/fulcrum/iToken.json';
 
 const env = process.env;
@@ -244,7 +244,7 @@ class SmartContractControls extends React.Component {
     const prevTxs = txs.data.result.filter(
         tx => tx.from.toLowerCase() === IdleAddress.toLowerCase() ||
               tx.to.toLowerCase() === IdleAddress.toLowerCase() ||
-              (tx.from.toLowerCase() === iDAIAddress.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase()) || 
+              (tx.from.toLowerCase() === iDAIAddress.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase()) ||
               (tx.from.toLowerCase() === cDAIAddress.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase())
       ).map(tx => ({
         from: tx.from,
