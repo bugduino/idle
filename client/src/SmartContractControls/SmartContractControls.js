@@ -243,7 +243,9 @@ class SmartContractControls extends React.Component {
 
     const prevTxs = txs.data.result.filter(
         tx => tx.from.toLowerCase() === IdleAddress.toLowerCase() ||
-              tx.to.toLowerCase() === IdleAddress.toLowerCase()
+              tx.to.toLowerCase() === IdleAddress.toLowerCase() ||
+              (tx.from.toLowerCase() === iDAIAddress.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase()) || 
+              (tx.from.toLowerCase() === cDAIAddress.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase())
       ).map(tx => ({
         from: tx.from,
         to: tx.to,
@@ -273,6 +275,8 @@ class SmartContractControls extends React.Component {
         transactions[tx.hash] = tx;
       });
     }
+
+    console.log('prevTxs',prevTxs);
 
     this.setState({
       prevTxs: transactions,
