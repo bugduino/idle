@@ -23,6 +23,44 @@ interface iERC20 {
     view
     returns (uint256);
 
+  function rateMultiplier()
+    external
+    view
+    returns (uint256);
+  function baseRate()
+    external
+    view
+    returns (uint256);
+
+  function borrowInterestRate()
+    external
+    view
+    returns (uint256);
+
+  function totalAssetBorrow()
+    external
+    view
+    returns (uint256);
+
+  function totalAssetSupply()
+    external
+    view
+    returns (uint256);
+
+  function nextSupplyInterestRate(uint256)
+    external
+    view
+    returns (uint256);
+
+  function nextBorrowInterestRate(uint256)
+    external
+    view
+    returns (uint256);
+  function nextLoanInterestRate(uint256)
+    external
+    view
+    returns (uint256);
+
   function claimLoanToken()
     external
     returns (uint256 claimedAmount);
