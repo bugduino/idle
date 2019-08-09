@@ -244,7 +244,7 @@ class SmartContractControls extends React.Component {
     const prevTxs = txs.data.result.filter(
         tx => tx.from.toLowerCase() === IdleAddress.toLowerCase() ||
               tx.to.toLowerCase() === IdleAddress.toLowerCase() ||
-              (tx.from.toLowerCase() === iDAIAddress.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase()) ||
+              (tx.from.toLowerCase() === iDAIAddress.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase()) || 
               (tx.from.toLowerCase() === cDAIAddress.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase())
       ).map(tx => ({
         from: tx.from,
@@ -575,7 +575,7 @@ class SmartContractControls extends React.Component {
                     alignItems={'center'}
                     flexDirection={'column'}
                     textAlign={'center'}>
-                      <Heading.h3 fontFamily={'sansSerif'} fontWeight={2} textAlign={'center'}>
+                      <Heading.h3 pt={[2, 4]} fontFamily={'sansSerif'} fontWeight={2} textAlign={'center'}>
                         Please connect to view your available funds.
                       </Heading.h3>
                       <Button

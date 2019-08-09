@@ -228,17 +228,19 @@ class Landing extends Component {
             <Flex alignItems={['normal','flex-end']} flexDirection={['column','row']}>
               <Box width={[1,3/10]}>
                 <Box p={[4,5]} pb={0} backgroundColor={'white'} color={'black'} boxShadow={1} borderBottom={'15px solid'} borderColor={'blue'}>
-                  <Heading.h3 textAlign={['center']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>
-                    Compound DAI
+                  <Heading.h3 textAlign={['center']} fontFamily={'sansSerif'} fontSize={[3,4]} mb={[2,3]} color={'blue'}>
+                    <Image src={'images/compound-mark-green.png'} className={styles.platformLogo} /> Compound DAI
                   </Heading.h3>
                   <Heading.h4 textAlign={['center']} fontWeight={1} lineHeight={2} fontSize={[2,3]}>
-                    Current lending interest rate on Compound V2
+                    Current lending interest rate on Compound V2.
                   </Heading.h4>
                   <Heading.h2 fontFamily={'sansSerif'} textAlign={'center'} fontWeight={2} fontSize={[6,8]} mb={[4,0]}>{this.state.compoundRate}%</Heading.h2>
                 </Box>
               </Box>
               <Box width={[1,4/10]} p={[4,5]} pb={0} backgroundColor={'blue'} color={'white'} boxShadow={1} borderBottom={'15px solid'} borderColor={'white'}>
-                <Heading.h3 textAlign={['center']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]}>Idle DAI</Heading.h3>
+                <Heading.h3 textAlign={['center']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]}>
+                  <Image src={'images/idle-mark.png'} className={styles.platformLogo} /> Idle DAI
+                </Heading.h3>
                 <Heading.h4 textAlign={['center']} fontWeight={1} lineHeight={2} fontSize={[2,3]}>
                   We will always get the best rate, thanks to our users and the decentralized rebalance process.
                 </Heading.h4>
@@ -252,7 +254,9 @@ class Landing extends Component {
               </Box>
               <Box width={[1,3/10]}>
                 <Box p={[4,5]} pb={0} backgroundColor={'white'} color={'black'} boxShadow={1} borderBottom={'15px solid'} borderColor={'blue'}>
-                  <Heading.h3 textAlign={['center']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>Fulcrum DAI</Heading.h3>
+                  <Heading.h3 textAlign={['center']} fontFamily={'sansSerif'} fontSize={[3,4]} mb={[2,3]} color={'blue'}>
+                    <Image src={'images/fulcrum-mark.png'} className={styles.platformLogo} /> Fulcrum DAI
+                  </Heading.h3>
                   <Heading.h4 textAlign={['center']} fontWeight={1} lineHeight={2} fontSize={[2,3]}>
                     Current lending interest rate on Fulcrum.
                   </Heading.h4>
@@ -280,7 +284,7 @@ class Landing extends Component {
                   <Image src="images/ethereum.png" height={['1.3em', '2em']} mx={[1,3]} my={[2,0]} />
                 </Link>
                 <Link href="https://app.compound.finance" target="_blank">
-                  <Image src="images/compound.png" height={['1.3em', '2em']} mx={[1,3]} my={[2,0]} />
+                  <Image src="images/compound-light.png" height={['1.3em', '2em']} mx={[1,3]} my={[2,0]} />
                 </Link>
                 <Link href="https://fulcrum.trade" target="_blank">
                   <Image src="images/fulcrum.svg" height={['1.3em', '2em']} mx={[1,3]} my={[2,0]} />
@@ -292,11 +296,23 @@ class Landing extends Component {
                 <Text color={'white'} textAlign={['center','right']}>Explore:</Text>
               </Box>
               <Flex flexDirection={['row']}>
+                <Link href="https://twitter.com/idlefinance" target="_blank">
+                  <Image src="images/twitter-logo.png" height={'2em'} mx={[2,3]} my={[2,0]} />
+                </Link>
+                <Link href="https://t.me/idlefinance" target="_blank">
+                  <Image src="images/telegram-logo.png" height={'2em'} mx={[2,3]} my={[2,0]} />
+                </Link>
+                <Link href="https://discord.gg/mpySAJp" target="_blank">
+                  <Image src="images/discord-logo.png" height={'2em'} mx={[2,3]} my={[2,0]} />
+                </Link>
+                <Link href="https://medium.com/@idlefinance" target="_blank">
+                  <Image src="images/medium-logo.png" height={'2em'} mx={[2,3]} my={[2,0]} />
+                </Link>
                 <Link href="https://github.com/bugduino/idle" target="_blank">
-                  <Image src="images/github.svg" height={'2em'} mx={[1,3]} my={[2,0]} />
+                  <Image src="images/github-logo.png" height={'2em'} mx={[2,3]} my={[2,0]} />
                 </Link>
                 <Link href="https://etherscan.io/address/0x10cf8e1CDba9A2Bd98b87000BCAdb002b13eA525#code" target="_blank">
-                  <Image src="images/etherscan.png" height={'2em'} mx={[1,3]} my={[2,0]} />
+                  <Image src="images/etherscan.png" height={'2em'} mx={[2,3]} my={[2,0]} />
                 </Link>
               </Flex>
             </Flex>
