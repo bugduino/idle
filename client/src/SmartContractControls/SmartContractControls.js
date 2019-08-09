@@ -413,10 +413,10 @@ class SmartContractControls extends React.Component {
       return (
         <Link key={'tx_'+i} display={'block'} href={`https://etherscan.io/tx/${tx.hash}`} target={'_blank'}>
           <Flex alignItems={'center'} flexDirection={['row','row']} width={'100%'} p={[2,3]} borderBottom={'1px solid #D6D6D6'}>
-            <Box width={[1/10]} display={['none','block']} textAlign={'right'}>
+            <Box width={[1/10]} textAlign={'right'}>
                 <Icon name={icon} color={color} style={{float:'left'}}></Icon>
             </Box>
-            <Box width={[2/10,2/10]} textAlign={'center'}>
+            <Box width={[2/10,2/10]} display={['none','block']} textAlign={'center'}>
               <Pill color={color}>
                 {status}
               </Pill>
@@ -424,7 +424,7 @@ class SmartContractControls extends React.Component {
             <Box width={[4/10]}>
               <Text textAlign={'center'}>{value} {tx.tokenSymbol}</Text>
             </Box>
-            <Box width={[3/10]} textAlign={'center'}>
+            <Box width={[4/10,3/10]} textAlign={'center'}>
               <Text textAlign={'center'}>{formattedDate}</Text>
             </Box>
           </Flex>
@@ -528,8 +528,8 @@ class SmartContractControls extends React.Component {
                       </Flex>
                     </Box>
                     <Box borderBottom={'1px solid #D6D6D6'}>
-                      <Flex flexDirection={['column','row']} py={[2,3]} width={[1,'70%']} m={'0 auto'}>
-                        <Box width={[1,1/2]}>
+                      <Flex flexDirection={'row'} py={[2,3]} width={[1,'70%']} m={'0 auto'}>
+                        <Box width={1/2}>
                           <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
                             Current holdings
                           </Text>
@@ -537,7 +537,7 @@ class SmartContractControls extends React.Component {
                             { balanceOfIdleDAI }
                           </Heading.h3>
                         </Box>
-                        <Box width={[1,1/2]}>
+                        <Box width={1/2}>
                           <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
                             idleDAI Price
                           </Text>
