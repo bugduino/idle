@@ -600,7 +600,7 @@ class SmartContractControls extends React.Component {
             {this.props.selectedTab === '3' && !!this.state.shouldRebalance &&
               <Box px={[2,0]} py={[2, 4]} textAlign={'text'}>
                 <Heading.h3 fontFamily={'sansSerif'} fontWeight={2} textAlign={'center'}>
-                  Rebalance the entire pool.<br />All users will bless you.
+                  Rebalance the entire pool. All users will bless you.
                 </Heading.h3>
                 <Heading.h4 my={[2,3]} px={[2,0]} color={'black'} fontWeight={1} textAlign={'center'}>
                   The whole pool is automatically rebalanced each time a user interacts with Idle.<br />
@@ -613,8 +613,6 @@ class SmartContractControls extends React.Component {
                     onClick={this.rebalance}
                     size={this.props.isMobile ? 'medium' : 'large'}
                     borderRadius={4}
-                    className={styles.magicButton}
-                    mainColor={'transparent'}
                     contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={[2,3]}>REBALANCE NOW</Button>
                 </Flex>
               </Box>
