@@ -1,6 +1,6 @@
 import styles from './SmartContractControls.module.scss';
 import React from "react";
-import { Form, Flex, Box, Heading, Text, Button, Link, Icon, Pill } from "rimble-ui";
+import { Form, Flex, Box, Heading, Text, Button, Link, Icon, Pill, Loader } from "rimble-ui";
 import BigNumber from 'bignumber.js';
 import CryptoInput from '../CryptoInput/CryptoInput.js';
 import ApproveModal from "../utilities/components/ApproveModal";
@@ -61,6 +61,9 @@ class SmartContractControls extends React.Component {
   }
   rebalanceCheck = async () => {
     const res = await this.genericIdleCall('rebalanceCheck');
+    if (!res || !res.length){
+      return false;
+    }
     this.setState({
       shouldRebalance: res[0],
       needsUpdate: false
@@ -158,7 +161,17 @@ class SmartContractControls extends React.Component {
   };
   rebalance = e => {
     e.preventDefault();
-    this.props.contractMethodSendWrapper('IdleDAI', 'rebalance');
+
+    this.setState(state => ({
+      ...state,
+      rebalanceProcessing: true
+    }));
+
+    this.props.contractMethodSendWrapper('IdleDAI', 'rebalance', [], null , (tx) => {
+      this.setState({
+        rebalanceProcessing: false
+      });
+    });
   };
   mint = async (e, contractName) => {
     e.preventDefault();
@@ -199,7 +212,8 @@ class SmartContractControls extends React.Component {
 
     this.setState(state => ({
       ...state,
-      [`isLoading${contractName}`]: true
+      [`isLoading${contractName}`]: true,
+      redeemProcessing: true
     }));
 
     let IdleDAIBalance = this.toWei('0');
@@ -208,10 +222,12 @@ class SmartContractControls extends React.Component {
     }
     this.props.contractMethodSendWrapper(contractName, 'redeemIdleToken', [
       IdleDAIBalance
-    ]);
-    this.setState({
-      [`isLoading${contractName}`]: false,
-      needsUpdate: true
+    ], null, (tx) => {
+      this.setState({
+        [`isLoading${contractName}`]: false,
+        needsUpdate: true,
+        redeemProcessing: false
+      });
     });
   };
 
@@ -434,7 +450,7 @@ class SmartContractControls extends React.Component {
     return (
       <Flex flexDirection={'column'} width={[1,'80%']} m={'0 auto'}>
         <Text fontFamily={'sansSerif'} fontSize={[2, 3]} fontWeight={2} color={'black'} textAlign={'center'}>
-          Transactions
+          Last 10 Transactions
         </Text>
         {txs}
       </Flex>
@@ -548,7 +564,7 @@ class SmartContractControls extends React.Component {
                       </Flex>
                     </Box>
                     <Box my={[3,4]}>
-                      {!isNaN(this.trimEth(this.state.DAIToRedeem)) && this.trimEth(this.state.DAIToRedeem) > 0 &&
+                      {!isNaN(this.trimEth(this.state.DAIToRedeem)) && this.trimEth(this.state.DAIToRedeem) > 0 && !this.state.redeemProcessing &&
                         <Flex
                           textAlign='center'>
                           <Button onClick={e => this.redeem(e, 'IdleDAI')} borderRadius={4} size={this.props.isMobile ? 'medium' : 'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={2}>
@@ -562,6 +578,14 @@ class SmartContractControls extends React.Component {
                           <Button onClick={e => this.selectTab(e, '1')} borderRadius={4} size={this.props.isMobile ? 'medium' : 'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={2}>
                             LEND NOW
                           </Button>
+                        </Flex>
+                      }
+                      {this.state.redeemProcessing && 
+                        <Flex
+                          justifyContent={'center'}
+                          alignItems={'center'}
+                          textAlign={'center'}>
+                          <Loader size="40px" /> <Text ml={2}>Processing redeem request...</Text>
                         </Flex>
                       }
                     </Box>
@@ -607,18 +631,28 @@ class SmartContractControls extends React.Component {
                   But you can also trigger a rebalance anytime and this will benefit all users (included you).
                 </Heading.h4>
                 <Flex
-                  textAlign='center'
+                  justifyContent={'center'}
+                  alignItems={'center'}
+                  textAlign={'center'}
                   pt={2}>
-                  <Button
-                    onClick={this.rebalance}
-                    size={this.props.isMobile ? 'medium' : 'large'}
-                    borderRadius={4}
-                    contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={[2,3]}>REBALANCE NOW</Button>
+                  {this.state.rebalanceProcessing && 
+                    <>
+                      <Loader size="40px" /> <Text ml={2}>Processing rebalance request...</Text>
+                    </>
+                  }
+                  {!this.state.rebalanceProcessing && 
+                    <Button
+                      onClick={this.rebalance}
+                      size={this.props.isMobile ? 'medium' : 'large'}
+                      borderRadius={4}
+                      contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={[2,3]}>REBALANCE NOW</Button>
+                  }
                 </Flex>
               </Box>
             }
 
-            {this.props.selectedTab === '3' && !this.state.shouldRebalance &&
+            {
+              this.props.selectedTab === '3' && !this.state.shouldRebalance &&
               <Box py={[2, 4]} textAlign={'center'}>
                 <Heading.h3 fontFamily={'sansSerif'} fontWeight={2} textAlign={'center'}>
                   The pool is already balanced.

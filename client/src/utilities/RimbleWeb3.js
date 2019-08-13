@@ -349,10 +349,11 @@ class RimbleTransaction extends React.Component {
     // Create new tx and add to collection
     // Maybe this needs to get moved out of the wrapper?
     let transaction = this.createTransaction();
+    transaction.method = contractMethod;
+
     this.addTransaction(transaction);
 
     // Add meta data to transaction
-    transaction.method = contractMethod;
     transaction.type = "contract";
     transaction.status = "started";
 
@@ -407,8 +408,9 @@ class RimbleTransaction extends React.Component {
           // Update transaction with receipt details
           transaction.recentEvent = "confirmation";
           this.updateTransaction(transaction);
-          if (transaction.status === 'success' && callback) {
-            callback();
+          
+          if (callback) {
+            callback(transaction);
           }
         })
         .on("receipt", receipt => {
@@ -432,6 +434,10 @@ class RimbleTransaction extends React.Component {
             variant: "failure",
             icon: 'Block'
           });
+
+          if (callback) {
+            callback(transaction);
+          }
         });
     } catch (error) {
       console.log(error);

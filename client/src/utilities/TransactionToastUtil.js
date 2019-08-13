@@ -98,6 +98,8 @@ class TransactionToastUtil extends React.Component {
     let toastMeta = this.getTransactionToastMeta(transaction);
     toastMeta.colorTheme = 'light';
 
+    // console.log('toastMeta',toastMeta);
+
     // Show toast
     window.toastProvider.addMessage(".", toastMeta);
   };
@@ -126,8 +128,30 @@ class TransactionToastUtil extends React.Component {
         transactionToastMeta = TransactionToastMessages.error;
         break;
       default:
-        break;
+      break;
     }
+
+    let transactionAction = '';
+    switch (transaction.method){
+      case 'redeemIdleToken':
+        transactionAction = 'Redeem';
+      break;
+      case 'mintIdleToken':
+        transactionAction = 'Lending';
+      break;
+      case 'approve':
+        transactionAction = 'Approve';
+      break;
+      case 'rebalance':
+        transactionAction = 'Rebalance';
+      break;
+    }
+
+    transactionToastMeta = JSON.parse(JSON.stringify(transactionToastMeta));
+
+    let newMessage = transactionToastMeta.message.replace('{action}',transactionAction);
+    newMessage = newMessage.charAt(0).toUpperCase() + newMessage.slice(1);
+    transactionToastMeta.message = newMessage;
 
     return transactionToastMeta;
   };

@@ -1,6 +1,6 @@
 const TransactionToastMessages = {
     initialized: {
-      message: "Lending request submitted",
+      message: "{action} request initialized",
       secondaryMessage: "Confirm with your wallet provider",
       actionHref: "",
       actionText: "",
@@ -8,7 +8,7 @@ const TransactionToastMessages = {
       icon: "InfoOutline"
     },
     started: {
-      message: "Lending request submitted",
+      message: "{action} request submitted",
       secondaryMessage: "Confirm with your wallet provider",
       actionHref: "",
       actionText: "",
@@ -16,7 +16,7 @@ const TransactionToastMessages = {
       icon: "InfoOutline"
     },
     pending: {
-      message: "Processing lending request...",
+      message: "Processing {action} request...",
       secondaryMessage: "This may take a few minutes",
       actionHref: "",
       actionText: "",
@@ -25,19 +25,19 @@ const TransactionToastMessages = {
     },
     confirmed: {
       message: "First block confirmed",
-      secondaryMessage: "Your lending request is in progress",
+      secondaryMessage: "Your {action} request is in progress",
       actionHref: "",
       actionText: "",
       variant: "processing",
       icon: 'CheckCircle'
     },
     success: {
-      message: "Lending request completed",
+      message: "{action} request completed",
       variant: "success",
       icon: 'CheckCircle'
     },
     error: {
-      message: "Lending request failed",
+      message: "{action} request failed",
       secondaryMessage: "Could not complete transaction.",
       actionHref: "",
       actionText: "",
