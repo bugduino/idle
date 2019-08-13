@@ -143,7 +143,7 @@
   "deployedBytecode": "0x",
   "sourceMap": "",
   "deployedSourceMap": "",
-  "source": "pragma solidity ^0.5.2;\n\ninterface CERC20 {\n  function mint(uint256 mintAmount) external returns (uint256);\n  function redeem(uint256 redeemTokens) external returns (uint256);\n  function exchangeRateStored() external view returns (uint256);\n  function supplyRatePerBlock() external view returns (uint256);\n  function borrowRatePerBlock() external view returns (uint256);\n\n  function totalReserves() external view returns (uint256);\n  function getCash() external view returns (uint256);\n  function totalBorrows() external view returns (uint256);\n  function reserveFactorMantissa() external view returns (uint256);\n}\n",
+  "source": "pragma solidity ^0.5.2;\n\ninterface CERC20 {\n  function mint(uint256 mintAmount) external returns (uint256);\n  function redeem(uint256 redeemTokens) external returns (uint256);\n  function exchangeRateStored() external view returns (uint256);\n  function supplyRatePerBlock() external view returns (uint256);\n\n  function borrowRatePerBlock() external view returns (uint256);\n  function totalReserves() external view returns (uint256);\n  function getCash() external view returns (uint256);\n  function totalBorrows() external view returns (uint256);\n  function reserveFactorMantissa() external view returns (uint256);\n}\n",
   "sourcePath": "/home/bugman/Projects/idle/contracts/interfaces/CERC20.sol",
   "ast": {
     "absolutePath": "/home/bugman/Projects/idle/contracts/interfaces/CERC20.sol",
@@ -462,7 +462,7 @@
               "id": 1081,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "335:2:3"
+              "src": "336:2:3"
             },
             "returnParameters": {
               "id": 1084,
@@ -474,7 +474,7 @@
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "scope": 1085,
-                  "src": "361:7:3",
+                  "src": "362:7:3",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -485,7 +485,7 @@
                     "id": 1082,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "361:7:3",
+                    "src": "362:7:3",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -495,10 +495,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "360:9:3"
+              "src": "361:9:3"
             },
             "scope": 1106,
-            "src": "308:62:3",
+            "src": "309:62:3",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "external"
@@ -1043,7 +1043,7 @@
               "id": 1081,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "335:2:3"
+              "src": "336:2:3"
             },
             "returnParameters": {
               "id": 1084,
@@ -1055,7 +1055,7 @@
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "scope": 1085,
-                  "src": "361:7:3",
+                  "src": "362:7:3",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1066,7 +1066,7 @@
                     "id": 1082,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "361:7:3",
+                    "src": "362:7:3",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1076,10 +1076,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "360:9:3"
+              "src": "361:9:3"
             },
             "scope": 1106,
-            "src": "308:62:3",
+            "src": "309:62:3",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "external"
@@ -1313,7 +1313,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.11",
-  "updatedAt": "2019-08-07T16:13:46.504Z",
+  "updatedAt": "2019-08-13T15:29:00.155Z",
   "devdoc": {
     "methods": {}
   },

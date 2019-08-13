@@ -67,4 +67,10 @@ contract cDAIMock is ERC20Detailed, ERC20, CERC20 {
     exchangeRate = 220000000000000000000000000;
     toTransfer = 1.078 * 10**18;
   }
+
+  function borrowRatePerBlock() external view returns (uint256) {}
+  function totalReserves() external view returns (uint256) {}
+  function getCash() external view returns (uint256) {}
+  function totalBorrows() external view returns (uint256) {}
+  function reserveFactorMantissa() external view returns (uint256) {}
 }

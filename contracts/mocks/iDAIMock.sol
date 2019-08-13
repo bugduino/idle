@@ -57,4 +57,41 @@ contract iDAIMock is ERC20Detailed, ERC20, iERC20 {
   function setExchangeRateStoredForTestNoFee() external {
     toTransfer = 1.078 * 10**18;
   }
+  function rateMultiplier()
+    external
+    view
+    returns (uint256) {}
+  function baseRate()
+    external
+    view
+    returns (uint256) {}
+
+  function borrowInterestRate()
+    external
+    view
+    returns (uint256) {}
+
+  function totalAssetBorrow()
+    external
+    view
+    returns (uint256) {}
+
+  function totalAssetSupply()
+    external
+    view
+    returns (uint256) {}
+
+  function nextSupplyInterestRate(uint256)
+    external
+    view
+    returns (uint256) {}
+
+  function nextBorrowInterestRate(uint256)
+    external
+    view
+    returns (uint256) {}
+  function nextLoanInterestRate(uint256)
+    external
+    view
+    returns (uint256) {}
 }

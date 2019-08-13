@@ -53,7 +53,7 @@ contract('IdleDAI', function ([_, registryFunder, creator, nonOwner, someone, fo
   });
 
   it('has minRateDifference', async function () {
-    (await this.token.minRateDifference()).toString().should.equal((new BN('500000000000000000')).toString());
+    (await this.token.minRateDifference()).toString().should.equal((new BN('300000000000000000')).toString());
   });
 
   it('allows onlyOwner to setMinRateDifference ', async function () {
