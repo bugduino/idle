@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Image, Flex, Box, Heading, Button, Link, Text } from 'rimble-ui'
+import { Image, Flex, Box, Heading, Button, Link, Text, Card } from 'rimble-ui'
 import BigNumber from 'bignumber.js';
 import styles from './Landing.module.scss';
 import LandingForm from '../LandingForm/LandingForm';
@@ -163,56 +163,73 @@ class Landing extends Component {
         */
         }
 
-        <Box id='how-it-works' pb={[4,6]}>
+        <Box id='how-it-works' pb={[0,6]}>
           <Box>
             <Heading.h2 fontFamily={'sansSerif'} fontSize={[5,6]} textAlign={'center'} py={[4,5]} alignItems={'center'} my={0}>
               How it Works
             </Heading.h2>
-            <Flex flexDirection={['column','row']} alignItems={'center'}>
-              <Flex alignItems={'center'} width={[1, 5/12]} px={[4, 5]} textAlign={'center'}>
-                <Image src="images/how-it-works.png" />
-              </Flex>
-              <Flex alignItems={'center'} flexDirection={'column'} width={[1,7/12]}>
+            <Flex flexDirection={['column','column']} alignItems={'center'}>
+              <Flex alignItems={'center'} flexDirection={'column'} width={1}>
                 <Flex flexDirection={['column','row']}>
-                  <Box width={[1,1/2]} px={[4,4]} pt={[3,4]} pb={[2,0]} backgroundColor={'white'} color={'black'} borderBottom={['1px solid #eee','none']}>
-                    <Heading.h3 pt={[2]} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>
-                      1. Lend your assets
-                    </Heading.h3>
-                    <Heading.h4 textAlign={['center','left']} fontWeight={2} lineHeight={1.5}>
-                      Connect your Ethereum wallet and lend some idle crypto assets to get started.
-                      You will receive IdleTokens representing your contract pool share.
-                    </Heading.h4>
-                  </Box>
-                  <Box width={[1,1/2]} px={[4,4]} pt={[3,4]} pb={[2,0]} backgroundColor={'white'} color={'black'} borderBottom={['1px solid #eee','none']}>
-                    <Heading.h3 pt={[2]} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>
-                      2. Earn interests
-                    </Heading.h3>
-                    <Heading.h4 textAlign={['center','left']} fontWeight={2} lineHeight={1.5}>
-                      Your funds will be automatically allocated among the best available interest bearing tokens.
-                      You will immediately start earning compounded interest with a block-per-block pace.
-                    </Heading.h4>
-                  </Box>
+                  <Flex width={[1,1/2]} justifyContent={'flex-end'} borderRight={[0,'1px solid #eee']}>
+                    <Card className={styles.bulletCard} width={[1,2/3]} mr={[0,'45px']}>
+                      <Text className={[styles.bulletPoint,styles.bulletRight]}>1</Text>
+                      <Heading.h3 pt={[2]} textAlign={['center','right']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>
+                        Lend your assets
+                      </Heading.h3>
+                      <Heading.h4 textAlign={['center','right']} fontWeight={2} lineHeight={1.5}>
+                        Connect your Ethereum wallet and lend some idle crypto assets to get started.
+                        You will receive IdleTokens representing your contract pool share.
+                      </Heading.h4>
+                    </Card>
+                  </Flex>
+                  <Flex width={[1,1/2]}></Flex>
                 </Flex>
-                <Flex flexDirection={['column','row']} justifyContent={'center'}>
-                  <Box width={[1,1/2]} px={[4,4]} pt={[3,4]} pb={[2,0]} backgroundColor={'white'} color={'black'} borderBottom={['1px solid #eee','none']}>
-                    <Heading.h3 pt={[2]} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>
-                      3. Decentralized rebalance
-                    </Heading.h3>
-                    <Heading.h4 textAlign={['center','left']} fontWeight={2} lineHeight={1.5}>
-                      Every interaction with Idle, made by any user, rebalances the entire pool if needed.
-                      If the current tracked rate is not the actual best, you have the power to rebalance on behalf
-                      of all users. One for all, all for one.
-                    </Heading.h4>
-                  </Box>
-                  <Box width={[1,1/2]} px={[4,4]} pt={[3,4]} pb={[2,0]} backgroundColor={'white'} color={'black'}>
-                    <Heading.h3 pt={[2]} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>
-                      4. Easy Redeem
-                    </Heading.h3>
-                    <Heading.h4 textAlign={['center','left']} fontWeight={2} lineHeight={1.5}>
-                      At anytime you can redeem your invested assets and get back your increased funds, automatically
-                      rebalancing the pool if needed. Kudos for you.
-                    </Heading.h4>
-                  </Box>
+                <Flex flexDirection={['column','row']}>
+                  <Flex width={[1,1/2]} borderRight={[0,'1px solid #eee']}></Flex>
+                  <Flex width={[1,1/2]} justifyContent={'flex-start'}>
+                    <Card className={styles.bulletCard} width={[1,2/3]} ml={[0,'45px']}>
+                      <Text className={[styles.bulletPoint,styles.bulletLeft]}>2</Text>
+                      <Heading.h3 pt={[2]} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>
+                        Earn interests
+                      </Heading.h3>
+                      <Heading.h4 textAlign={['center','left']} fontWeight={2} lineHeight={1.5}>
+                        Your funds will be automatically allocated among the best available interest bearing tokens.
+                        You will immediately start earning compounded interest with a block-per-block pace.
+                      </Heading.h4>
+                    </Card>
+                  </Flex>
+                </Flex>
+                <Flex flexDirection={['column','row']}>
+                  <Flex width={[1,1/2]} justifyContent={'flex-end'} borderRight={[0,'1px solid #eee']}>
+                    <Card className={styles.bulletCard} width={[1,2/3]} mr={[0,'45px']}>
+                      <Text className={[styles.bulletPoint,styles.bulletRight]}>3</Text>
+                      <Heading.h3 pt={[2]} textAlign={['center','right']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>
+                        Decentralized rebalance
+                      </Heading.h3>
+                      <Heading.h4 textAlign={['center','right']} fontWeight={2} lineHeight={1.5}>
+                        Every interaction with Idle, made by any user, rebalances the entire pool if needed.
+                        If the current tracked rate is not the actual best, you have the power to rebalance on behalf
+                        of all users. One for all, all for one.
+                      </Heading.h4>
+                    </Card>
+                  </Flex>
+                  <Flex width={[1,1/2]}></Flex>
+                </Flex>
+                <Flex flexDirection={['column','row']}>
+                  <Flex width={[1,1/2]} borderRight={[0,'1px solid #eee']} height={[0,'125px']}></Flex>
+                  <Flex width={[1,1/2]} justifyContent={'flex-start'}>
+                    <Card className={styles.bulletCard} width={[1,2/3]} ml={[0,'45px']}>
+                      <Text className={[styles.bulletPoint,styles.bulletLeft]}>4</Text>
+                      <Heading.h3 pt={[2]} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>
+                        Easy Redeem
+                      </Heading.h3>
+                      <Heading.h4 textAlign={['center','left']} fontWeight={2} lineHeight={1.5}>
+                        At anytime you can redeem your invested assets and get back your increased funds, automatically
+                        rebalancing the pool if needed. Kudos for you.
+                      </Heading.h4>
+                    </Card>
+                  </Flex>
                 </Flex>
               </Flex>
             </Flex>
