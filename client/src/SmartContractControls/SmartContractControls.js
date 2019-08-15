@@ -1,6 +1,6 @@
 import styles from './SmartContractControls.module.scss';
 import React from "react";
-import { Form, Flex, Box, Heading, Text, Button, Link, Icon, Pill, Loader } from "rimble-ui";
+import { Form, Flex, Box, Heading, Text, Button, Link, Icon, Pill, Loader, Flash } from "rimble-ui";
 import BigNumber from 'bignumber.js';
 import CryptoInput from '../CryptoInput/CryptoInput.js';
 import ApproveModal from "../utilities/components/ApproveModal";
@@ -79,17 +79,26 @@ class SmartContractControls extends React.Component {
       needsUpdate: false
     });
   };
-  getPriceInToken = async () => {
-    const totalIdleSupply = await this.genericIdleCall('totalSupply');
-    let price = await this.genericIdleCall('tokenPrice');
+  getPriceInToken = async (contractName) => {
+    const totalIdleSupply = await this.genericContractCall(contractName, 'totalSupply');
+    let price = await this.genericContractCall(contractName, 'tokenPrice');
     this.setState({
       [`IdleDAIPrice`]: (totalIdleSupply || totalIdleSupply === 0) && totalIdleSupply.toString() === '0' ? 0 : (+this.toEth(price)),
       needsUpdate: false
     });
     return price;
   };
+  getOldPriceInToken = async (contractName) => {
+    const totalIdleSupply = await this.genericContractCall(contractName, 'totalSupply');
+    let price = await this.genericContractCall(contractName, 'tokenPrice');
+    this.setState({
+      [`OldIdleDAIPrice`]: (totalIdleSupply || totalIdleSupply === 0) && totalIdleSupply.toString() === '0' ? 0 : (+this.toEth(price)),
+      needsUpdate: false
+    });
+    return price;
+  };
   getBalanceOf = async contractName => {
-    const price = await this.getPriceInToken();
+    const price = await this.getPriceInToken(contractName);
     let balance = await this.genericContractCall(contractName, 'balanceOf', [this.props.account]);
     if (balance) {
       balance = this.props.web3.utils.fromWei(
@@ -114,7 +123,7 @@ class SmartContractControls extends React.Component {
     return balance;
   };
   getOldBalanceOf = async contractName => {
-    const price = await this.getPriceInToken();
+    const price = await this.getOldPriceInToken(contractName);
     let balance = await this.genericContractCall(contractName, 'balanceOf', [this.props.account]);
     if (balance) {
       balance = this.props.web3.utils.fromWei(
@@ -128,11 +137,10 @@ class SmartContractControls extends React.Component {
       if (this.state.amountLent){
         earning = tokenToRedeem.minus(this.BNify(this.toEth(this.state.amountLent)));
       }
-
       this.setState({
         [`balanceOf${contractName}`]: balance,
         [`oldDAIToRedeem`]: tokenToRedeem.toString(),
-        earning: earning,
+        oldEarning: earning,
         needsUpdate: false
       });
     }
@@ -244,7 +252,7 @@ class SmartContractControls extends React.Component {
 
     let IdleDAIBalance = this.toWei('0');
     if (this.props.account) {
-      IdleDAIBalance = await this.genericIdleCall('balanceOf', [this.props.account]);
+      IdleDAIBalance = await this.genericContractCall(contractName, 'balanceOf', [this.props.account]);
     }
     this.props.contractMethodSendWrapper(contractName, 'redeemIdleToken', [
       IdleDAIBalance
@@ -269,11 +277,6 @@ class SmartContractControls extends React.Component {
   };
 
   getPrevTxs = async (executedTxs) => {
-
-    console.log(`
-      https://api.etherscan.io/api?module=account&action=tokentx&address=${this.props.account}&startblock=8119247&endblock=999999999&sort=asc&apikey=${env.REACT_APP_ETHERSCAN_KEY}
-    `);
-
     const txs = await axios.get(`
       https://api.etherscan.io/api?module=account&action=tokentx&address=${this.props.account}&startblock=8119247&endblock=999999999&sort=asc&apikey=${env.REACT_APP_ETHERSCAN_KEY}
     `).catch(err => {
@@ -397,7 +400,7 @@ class SmartContractControls extends React.Component {
       // await this.getAprs();
       await Promise.all([
         this.getAprs(),
-        this.getPriceInToken()
+        this.getPriceInToken('IdleDAI')
       ]);
     });
     this.props.initContract('DAI', DAIAddress, DAIAbi);
@@ -489,9 +492,13 @@ class SmartContractControls extends React.Component {
     const reedemableFunds = !isNaN(this.trimEth(this.state.DAIToRedeem)) ? ( <>{this.trimEth(this.state.DAIToRedeem)} <Text.span fontSize={[1,3]}>DAI</Text.span></> ) : '-';
     const oldReedemableFunds = !isNaN(this.trimEth(this.state.oldDAIToRedeem)) ? ( <>{this.trimEth(this.state.oldDAIToRedeem)} <Text.span fontSize={[1,3]}>DAI</Text.span></> ) : '-';
     const currentEarnings = !isNaN(this.trimEth(this.state.earning)) ? ( <>{this.trimEth(this.state.earning)} <Text.span fontSize={[1,3]}>DAI</Text.span></> ) : '-';
+    const oldEarning = !isNaN(this.trimEth(this.state.oldEarning)) ? ( <>{this.trimEth(this.state.oldEarning)} <Text.span fontSize={[1,3]}>DAI</Text.span></> ) : '-';
     const IdleDAIPrice = !isNaN(this.trimEth(this.state.IdleDAIPrice)) ? ( <>{this.trimEth(this.state.IdleDAIPrice)} <Text.span fontSize={[1,2]}>DAI</Text.span></> ) : '-';
+    const OldIdleDAIPrice = !isNaN(this.trimEth(this.state.OldIdleDAIPrice)) ? ( <>{this.trimEth(this.state.OldIdleDAIPrice)} <Text.span fontSize={[1,2]}>DAI</Text.span></> ) : '-';
     const balanceOfIdleDAI = !isNaN(this.trimEth(this.state.balanceOfIdleDAI)) ? ( <>{this.trimEth(this.state.balanceOfIdleDAI)} <Text.span fontSize={[1,2]}>idleDAI</Text.span></> ) : '-';
     const balanceOfOldIdleDAI = !isNaN(this.trimEth(this.state.balanceOfOldIdleDAI)) ? ( <>{this.trimEth(this.state.balanceOfOldIdleDAI)} <Text.span fontSize={[1,2]}>idleDAI (old version)</Text.span></> ) : '-';
+    const hasOldBalance = !isNaN(this.trimEth(this.state.oldDAIToRedeem)) && this.trimEth(this.state.oldDAIToRedeem) > 0;
+    const hasBalance = !isNaN(this.trimEth(this.state.DAIToRedeem)) && this.trimEth(this.state.DAIToRedeem) > 0
 
     return (
       <Box textAlign={'center'} alignItems={'center'}>
@@ -525,18 +532,25 @@ class SmartContractControls extends React.Component {
                     We offer the best available interest rate for your DAI through different lending platforms.
                   </Heading.h4>
                 </Box>
-
-                <CryptoInput
-                  isMobile={this.props.isMobile}
-                  account={this.props.account}
-                  defaultValue={this.state.lendAmount}
-                  IdleDAIPrice={this.state.IdleDAIPrice}
-                  BNify={this.BNify}
-                  trimEth={this.trimEth}
-                  color={'black'}
-                  selectedAsset='DAI'
-                  handleChangeAmount={this.handleChangeAmount}
-                  handleClick={e => this.mint(e)} />
+                {hasOldBalance ?
+                  <Flash variant="warning" width={1}>
+                    We have released a new version of the contract, with a small bug fix, please redeem
+                    your assets in the old contract, by heading to 'Funds' tab and clicking on `Redeem DAI`
+                    Once you have done that you will be able to mint and redeem with the new contract.
+                    Sorry for the inconvenience.
+                  </Flash> :
+                  <CryptoInput
+                    isMobile={this.props.isMobile}
+                    account={this.props.account}
+                    defaultValue={this.state.lendAmount}
+                    IdleDAIPrice={hasOldBalance ? this.state.OldIdleDAIPrice : this.state.IdleDAIPrice}
+                    BNify={this.BNify}
+                    trimEth={this.trimEth}
+                    color={'black'}
+                    selectedAsset='DAI'
+                    handleChangeAmount={this.handleChangeAmount}
+                    handleClick={e => this.mint(e)} />
+                }
 
                 {this.state.genericError && (
                   <Text textAlign='center' color={'red'} fontSize={2}>{this.state.genericError}</Text>
@@ -554,13 +568,21 @@ class SmartContractControls extends React.Component {
                 {this.props.account &&
                   <>
                     <Box borderBottom={'1px solid #D6D6D6'}>
+                      {!!hasOldBalance &&
+                        <Flash variant="warning" width={1}>
+                          We have released a new version of the contract, with a small bug fix, please redeem
+                          your assets in the old contract, by heading to 'Funds' tab and clicking on `Redeem DAI`
+                          Once you have done that you will be able to mint and redeem with the new contract.
+                          Sorry for the inconvenience.
+                        </Flash>
+                      }
                       <Flex flexDirection={['column','row']} py={[2,3]} width={[1,'70%']} m={'0 auto'}>
                         <Box width={[1,1/2]}>
                           <Text fontFamily={'sansSerif'} fontSize={[2, 3]} fontWeight={2} color={'black'} textAlign={'center'}>
                             Redeemable Funds
                           </Text>
                           <Heading.h3 fontFamily={'sansSerif'} fontSize={[5,6]} fontWeight={2} color={'black'} textAlign={'center'}>
-                            { reedemableFunds }
+                            { hasOldBalance ? oldReedemableFunds : reedemableFunds }
                           </Heading.h3>
                         </Box>
                         <Box width={[1,1/2]}>
@@ -568,7 +590,7 @@ class SmartContractControls extends React.Component {
                             Current earnings
                           </Text>
                           <Heading.h3 fontFamily={'sansSerif'} fontSize={[5,6]} fontWeight={2} color={'black'} textAlign={'center'}>
-                            { currentEarnings }
+                            { hasOldBalance ? oldEarning : currentEarnings }
                           </Heading.h3>
                         </Box>
                       </Flex>
@@ -580,7 +602,7 @@ class SmartContractControls extends React.Component {
                             Current holdings
                           </Text>
                           <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                            { balanceOfIdleDAI }
+                            { hasOldBalance ? balanceOfOldIdleDAI : balanceOfIdleDAI }
                           </Heading.h3>
                         </Box>
                         <Box width={1/2}>
@@ -588,13 +610,13 @@ class SmartContractControls extends React.Component {
                             idleDAI Price
                           </Text>
                           <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                            { IdleDAIPrice }
+                            { hasOldBalance ? OldIdleDAIPrice : IdleDAIPrice }
                           </Heading.h3>
                         </Box>
                       </Flex>
                     </Box>
                     <Box my={[3,4]}>
-                      {!isNaN(this.trimEth(this.state.DAIToRedeem)) && this.trimEth(this.state.DAIToRedeem) > 0 && !this.state.redeemProcessing &&
+                      {hasBalance && !hasOldBalance && !this.state.redeemProcessing &&
                         <Flex
                           textAlign='center'>
                           <Button onClick={e => this.redeem(e, 'IdleDAI')} borderRadius={4} size={this.props.isMobile ? 'medium' : 'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={2}>
@@ -602,15 +624,17 @@ class SmartContractControls extends React.Component {
                           </Button>
                         </Flex>
                       }
-                      {!isNaN(this.trimEth(this.state.oldDAIToRedeem)) && this.trimEth(this.state.oldDAIToRedeem) > 0 && !this.state.redeemProcessing &&
+                      {hasOldBalance && !this.state.redeemProcessing &&
                         <Flex
                           textAlign='center'>
+
+
                           <Button onClick={e => this.redeem(e, 'OldIdleDAI')} borderRadius={4} size={this.props.isMobile ? 'medium' : 'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={2}>
                             REDEEM DAI (old contract)
                           </Button>
                         </Flex>
                       }
-                      {(isNaN(this.trimEth(this.state.DAIToRedeem)) || parseFloat(this.state.DAIToRedeem)<=0) &&
+                      {!hasBalance && !hasOldBalance &&
                         <Flex
                           textAlign='center'>
                           <Button onClick={e => this.selectTab(e, '1')} borderRadius={4} size={this.props.isMobile ? 'medium' : 'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={2}>
@@ -661,6 +685,14 @@ class SmartContractControls extends React.Component {
 
             {this.props.selectedTab === '3' && !!this.state.shouldRebalance &&
               <Box px={[2,0]} py={[2, 4]} textAlign={'text'}>
+                {!!hasOldBalance &&
+                  <Flash variant="warning" width={1}>
+                    We have released a new version of the contract, with a small bug fix, please redeem
+                    your assets in the old contract, by heading to 'Funds' tab and clicking on `Redeem DAI`
+                    Once you have done that you will be able to mint and redeem with the new contract.
+                    Sorry for the inconvenience.
+                  </Flash>
+                }
                 <Heading.h3 fontFamily={'sansSerif'} fontWeight={2} textAlign={'center'}>
                   Rebalance the entire pool. All users will bless you.
                 </Heading.h3>

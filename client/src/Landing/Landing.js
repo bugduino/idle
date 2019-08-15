@@ -121,7 +121,7 @@ class Landing extends Component {
 
         <Box className={[styles.graySection]} pt={0}>
           <Box maxWidth={['50em','70em']} mx={[3, 'auto']} pt={0} pb={[4, 0]}>
-            <IconFlexRow image={'images/feature-1.png'} title='100% non-custodial, thanks to our contract.' linkHref={'https://etherscan.io/address/0x10cf8e1CDba9A2Bd98b87000BCAdb002b13eA525#code'} linkText='Smart contract' />
+            <IconFlexRow image={'images/feature-1.png'} title='100% non-custodial, thanks to our contract.' linkHref={'https://etherscan.io/address/0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9#code'} linkText='Smart contract' />
             <IconFlexRow image={'images/feature-2.png'} title='Fully decentralized, thanks to our users.' handleClick={e => this.props.updateSelectedTab(e,'3')} linkHref={'#invest'} linkText='Rebalance process' />
             <IconFlexRow image={'images/feature-3.png'} title='No hidden fees, best things in life are free!' linkHref={'#how-it-works'} linkText='See how it works' />
           </Box>
@@ -328,7 +328,7 @@ class Landing extends Component {
                 <Link href="https://github.com/bugduino/idle" target="_blank">
                   <Image src="images/github-logo.png" height={'2em'} mx={[2,3]} my={[2,0]} />
                 </Link>
-                <Link href="https://etherscan.io/address/0x10cf8e1CDba9A2Bd98b87000BCAdb002b13eA525#code" target="_blank">
+                <Link href="https://etherscan.io/address/0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9#code" target="_blank">
                   <Image src="images/etherscan.png" height={'2em'} mx={[2,3]} my={[2,0]} />
                 </Link>
               </Flex>
