@@ -16,7 +16,8 @@ const env = process.env;
 
 // mainnet
 const IdleAbi = IdleDAI.abi;
-const IdleAddress = '0x10cf8e1CDba9A2Bd98b87000BCAdb002b13eA525';
+const OldIdleAddress = '0x10cf8e1CDba9A2Bd98b87000BCAdb002b13eA525'; // v0.1 hackathon version
+const IdleAddress = '0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9';
 
 const cDAIAbi = cDAI.abi;
 const cDAIAddress = '0xf5dce57282a584d2746faf1593d3121fcac444dc';
@@ -106,6 +107,31 @@ class SmartContractControls extends React.Component {
       this.setState({
         [`balanceOf${contractName}`]: balance,
         [`DAIToRedeem`]: tokenToRedeem.toString(),
+        earning: earning,
+        needsUpdate: false
+      });
+    }
+    return balance;
+  };
+  getOldBalanceOf = async contractName => {
+    const price = await this.getPriceInToken();
+    let balance = await this.genericContractCall(contractName, 'balanceOf', [this.props.account]);
+    if (balance) {
+      balance = this.props.web3.utils.fromWei(
+        balance.toString(),
+        "ether"
+      );
+
+      const tokenToRedeem = this.BNify(balance).times(+this.toEth(price));
+      let earning = 0;
+
+      if (this.state.amountLent){
+        earning = tokenToRedeem.minus(this.BNify(this.toEth(this.state.amountLent)));
+      }
+
+      this.setState({
+        [`balanceOf${contractName}`]: balance,
+        [`oldDAIToRedeem`]: tokenToRedeem.toString(),
         earning: earning,
         needsUpdate: false
       });
@@ -260,7 +286,7 @@ class SmartContractControls extends React.Component {
     const prevTxs = txs.data.result.filter(
         tx => tx.from.toLowerCase() === IdleAddress.toLowerCase() ||
               tx.to.toLowerCase() === IdleAddress.toLowerCase() ||
-              (tx.from.toLowerCase() === iDAIAddress.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase()) || 
+              (tx.from.toLowerCase() === iDAIAddress.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase()) ||
               (tx.from.toLowerCase() === cDAIAddress.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase())
       ).map(tx => ({
         from: tx.from,
@@ -366,6 +392,7 @@ class SmartContractControls extends React.Component {
     // do not wait for each one
     this.props.initContract('iDAI', iDAIAddress, iDAIAbi);
     this.props.initContract('cDAI', cDAIAddress, cDAIAbi);
+    this.props.initContract('OldIdleDAI', OldIdleAddress, IdleAbi);
     this.props.initContract('IdleDAI', IdleAddress, IdleAbi).then(async () => {
       // await this.getAprs();
       await Promise.all([
@@ -380,6 +407,7 @@ class SmartContractControls extends React.Component {
     if (this.props.account && prevProps.account !== this.props.account) {
       await this.getPrevTxs();
       await this.getBalanceOf('IdleDAI');
+      await this.getOldBalanceOf('OldIdleDAI');
     }
     if (prevProps.transactions !== this.props.transactions){
       this.processTransactionUpdates(prevProps);
@@ -459,9 +487,11 @@ class SmartContractControls extends React.Component {
 
   render() {
     const reedemableFunds = !isNaN(this.trimEth(this.state.DAIToRedeem)) ? ( <>{this.trimEth(this.state.DAIToRedeem)} <Text.span fontSize={[1,3]}>DAI</Text.span></> ) : '-';
+    const oldReedemableFunds = !isNaN(this.trimEth(this.state.oldDAIToRedeem)) ? ( <>{this.trimEth(this.state.oldDAIToRedeem)} <Text.span fontSize={[1,3]}>DAI</Text.span></> ) : '-';
     const currentEarnings = !isNaN(this.trimEth(this.state.earning)) ? ( <>{this.trimEth(this.state.earning)} <Text.span fontSize={[1,3]}>DAI</Text.span></> ) : '-';
     const IdleDAIPrice = !isNaN(this.trimEth(this.state.IdleDAIPrice)) ? ( <>{this.trimEth(this.state.IdleDAIPrice)} <Text.span fontSize={[1,2]}>DAI</Text.span></> ) : '-';
     const balanceOfIdleDAI = !isNaN(this.trimEth(this.state.balanceOfIdleDAI)) ? ( <>{this.trimEth(this.state.balanceOfIdleDAI)} <Text.span fontSize={[1,2]}>idleDAI</Text.span></> ) : '-';
+    const balanceOfOldIdleDAI = !isNaN(this.trimEth(this.state.balanceOfOldIdleDAI)) ? ( <>{this.trimEth(this.state.balanceOfOldIdleDAI)} <Text.span fontSize={[1,2]}>idleDAI (old version)</Text.span></> ) : '-';
 
     return (
       <Box textAlign={'center'} alignItems={'center'}>
@@ -572,6 +602,14 @@ class SmartContractControls extends React.Component {
                           </Button>
                         </Flex>
                       }
+                      {!isNaN(this.trimEth(this.state.oldDAIToRedeem)) && this.trimEth(this.state.oldDAIToRedeem) > 0 && !this.state.redeemProcessing &&
+                        <Flex
+                          textAlign='center'>
+                          <Button onClick={e => this.redeem(e, 'OldIdleDAI')} borderRadius={4} size={this.props.isMobile ? 'medium' : 'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={2}>
+                            REDEEM DAI (old contract)
+                          </Button>
+                        </Flex>
+                      }
                       {(isNaN(this.trimEth(this.state.DAIToRedeem)) || parseFloat(this.state.DAIToRedeem)<=0) &&
                         <Flex
                           textAlign='center'>
@@ -580,7 +618,7 @@ class SmartContractControls extends React.Component {
                           </Button>
                         </Flex>
                       }
-                      {this.state.redeemProcessing && 
+                      {this.state.redeemProcessing &&
                         <Flex
                           justifyContent={'center'}
                           alignItems={'center'}
@@ -635,12 +673,12 @@ class SmartContractControls extends React.Component {
                   alignItems={'center'}
                   textAlign={'center'}
                   pt={2}>
-                  {this.state.rebalanceProcessing && 
+                  {this.state.rebalanceProcessing &&
                     <>
                       <Loader size="40px" /> <Text ml={2}>Processing rebalance request...</Text>
                     </>
                   }
-                  {!this.state.rebalanceProcessing && 
+                  {!this.state.rebalanceProcessing &&
                     <Button
                       onClick={this.rebalance}
                       size={this.props.isMobile ? 'medium' : 'large'}
