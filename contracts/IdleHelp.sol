@@ -7,7 +7,6 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 library IdleHelp {
   using SafeMath for uint256;
-
   function getPriceInToken(address cToken, address iToken, address bestToken, uint256 totalSupply, uint256 poolSupply)
     public view
     returns (uint256 tokenPrice) {

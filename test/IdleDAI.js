@@ -53,7 +53,7 @@ contract('IdleDAI', function ([_, registryFunder, creator, nonOwner, someone, fo
   });
 
   it('has minRateDifference', async function () {
-    (await this.token.minRateDifference()).toString().should.equal((new BN('300000000000000000')).toString());
+    (await this.token.minRateDifference()).toString().should.equal((new BN('100000000000000000')).toString());
   });
 
   it('allows onlyOwner to setMinRateDifference ', async function () {
@@ -149,7 +149,7 @@ contract('IdleDAI', function ([_, registryFunder, creator, nonOwner, someone, fo
     const bestToken2 = await this.token.bestToken({ from: creator });
     bestToken2.should.be.equal(this.iDAIMock.address);
 
-    (await this.iDAIMock.balanceOf(this.token.address)).should.be.bignumber.equal(this.one.toString());
+    (await this.iDAIMock.balanceOf(this.token.address)).should.be.bignumber.equal(new BN('998231572268577347'));
     (await this.cDAIMock.balanceOf(this.token.address)).should.be.bignumber.equal(new BN('0'));
   });
   it('rebalance should convert the entire pool if rates are changed (from iToken to cToken)', async function () {
@@ -204,7 +204,7 @@ contract('IdleDAI', function ([_, registryFunder, creator, nonOwner, someone, fo
     bestToken2.should.be.equal(this.iDAIMock.address);
 
     (await this.cDAIMock.balanceOf(this.token.address)).should.be.bignumber.equal(new BN('0'));
-    (await this.iDAIMock.balanceOf(this.token.address)).should.be.bignumber.equal(this.one.mul(new BN('2')));
+    (await this.iDAIMock.balanceOf(this.token.address)).should.be.bignumber.equal(new BN('1998231572268577347'));
   });
   it('mintIdleToken when bestToken is address(0)', async function () {
     const oneCToken = new BN('100000000'); // 10**8 -> 1 cDAI
@@ -300,6 +300,74 @@ contract('IdleDAI', function ([_, registryFunder, creator, nonOwner, someone, fo
     (await this.token.balanceOf(foo)).should.be.bignumber.equal(new BN('666666666698412698'));
     // 128.787878
     (await this.cDAIMock.balanceOf(this.token.address)).should.be.bignumber.equal(new BN('12878787878')); // 128.787878
+    (await this.DAIMock.balanceOf(foo)).should.be.bignumber.equal(BNify('4').mul(this.one));
+  });
+  it('mintIdleToken when bestToken does change (a rebalance happens)', async function () {
+    // ====== First interaction (initialization rate = 1DAI : 1idleDAI)
+    const oneCToken = new BN('100000000'); // 10**8 -> 1 cDAI
+    // approve idleDAI as DAI spender, one DAI
+    await this.DAIMock.approve(this.token.address, this.one, {from: creator});
+
+    const mintedIdleTokens = await this.token.mintIdleToken.call(this.one, { from: creator });
+    mintedIdleTokens.should.be.bignumber.equal(this.one);
+    await this.token.mintIdleToken(this.one, { from: creator });
+
+    // first it rebalances and set from address(0) to cToken
+    const bestToken = await this.token.bestToken({ from: creator });
+    bestToken.should.be.equal(this.cDAIMock.address);
+    // Idle contract has 50 cDAI
+    (await this.cDAIMock.balanceOf(this.token.address)).should.be.bignumber.equal(BNify('50').mul(oneCToken));
+    // caller has 1 idleDAI
+    (await this.token.balanceOf(creator)).should.be.bignumber.equal(this.one);
+    // ====== End First interaction (initialization rate = 1DAI : 1idleDAI)
+
+    // Set new rates for testing
+    await this.cDAIMock.setExchangeRateStoredForTest();
+    await this.cDAIMock.setMintValueForTest();
+    // Now the pool nav is 50 * 0.022 = 1.1 DAI
+
+    // creator gives 100 DAI to cDAI
+    await this.DAIMock.transfer(this.cDAIMock.address, BNify('100').mul(this.one), {from: creator});
+
+    // Set new rates for testing -> now iToken has the best rate
+
+    await this.cDAIMock.setSupplyRatePerBlockForTest({ from: creator });
+    // now on fulcrum 2.9% apr and on compound 0.69%
+    await this.iDAIMock.setPriceForTest({ from: creator });
+    // 1 iDAI = 1.5 DAI
+
+    // current nav (cDAI) = 50 * 0.022 = 1.1 DAI
+    // so idlePrice = nav / supply = 1.1 / 1 =  1.1
+
+    // ====== Other interaction
+    // creator gives 5 DAI to foo
+    await this.DAIMock.transfer(foo, this.one.mul(new BN('5')), {from: creator});
+    await this.DAIMock.approve(this.token.address, this.one, {from: foo});
+    // after the tx we will have:
+
+    // first we redeem cDAI in DAI 50 * 0.022 = 1.1 DAI
+    // then we convert 1.1 DAI in 1.1/1.5 = 0.73333333333 iDAI
+    // then use the new DAI given from foo (1 DAI) to mint iDAI for the pool and idleDAI for foo
+
+
+    // currTokenPrice = 0.73333333333 * 1.5 / 1IdleDAI = 1.1 DAI
+
+    // so we mint 1DAI / 1.5 (iDAI price) = 0.66666666666 iDAI
+    // and user get 1 DAI / tokenPrice = 1/1.1 = 0.90909090909 idleDAI
+
+    // totalSupply = 1.90909090909 idleDAI
+    // currTokenPrice = (0.73333333333 + 0.66666666666) * 1.5 / 1.90909090909 = 1.1
+    // always 1.1 given the fact that iDAI rate is the same
+
+    // call should always be before the tx!
+    const fooIdleTokens = await this.token.mintIdleToken.call(this.one, { from: foo });
+    fooIdleTokens.should.be.bignumber.equal(new BN('909090909090909091')); // 0.909090 Idle
+
+    await this.token.mintIdleToken(this.one, { from: foo });
+    //
+    (await this.iDAIMock.balanceOf(this.token.address)).should.be.bignumber.equal(new BN('1399999999999999999')); // 1.399999999989999900
+    (await this.token.balanceOf(foo)).should.be.bignumber.equal(new BN('909090909090909091'));
+    (await this.token.totalSupply()).should.be.bignumber.equal(new BN('1909090909090909091')); // 1.909090
     (await this.DAIMock.balanceOf(foo)).should.be.bignumber.equal(BNify('4').mul(this.one));
   });
   it('redeemIdleToken', async function () {

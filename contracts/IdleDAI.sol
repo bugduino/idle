@@ -35,7 +35,7 @@ contract IdleDAI is ERC20, ERC20Detailed, ReentrancyGuard, Ownable {
       iToken = _iToken;
       token = _token;
       blocksInAYear = 2102400; // ~15 sec per block
-      minRateDifference = 300000000000000000; // 0.3% min
+      minRateDifference = 100000000000000000; // 0.1% min
   }
 
   // onlyOwner
@@ -107,15 +107,18 @@ contract IdleDAI is ERC20, ERC20Detailed, ReentrancyGuard, Ownable {
     external nonReentrant
     returns (uint256 mintedTokens) {
       require(_amount > 0, "Amount is not > 0");
+
+      // First rebalance the current pool if needed
+      rebalance();
+
       // get a handle for the underlying asset contract
       IERC20 underlying = IERC20(token);
       // transfer to this contract
       underlying.safeTransferFrom(msg.sender, address(this), _amount);
 
-      rebalance();
-
       uint256 idlePrice = 10**18;
       uint256 totalSupply = this.totalSupply();
+
       if (totalSupply != 0) {
         idlePrice = tokenPrice();
       }

@@ -13,6 +13,8 @@ contract iDAIMock is ERC20Detailed, ERC20, iERC20 {
   uint256 public supplyRate;
   uint256 public price;
 
+  event LogCMOCK(uint256 price);
+
   constructor(address _dai, address someone)
     ERC20()
     ERC20Detailed('iDAI', 'iDAI', 8) public {
@@ -27,8 +29,9 @@ contract iDAIMock is ERC20Detailed, ERC20, iERC20 {
 
   function mint(address receiver, uint256 amount) external returns (uint256) {
     require(IERC20(dai).transferFrom(msg.sender, address(this), amount), "Error during transferFrom"); // 1 DAI
-    require(this.transfer(receiver, amount), "Error during transfer"); // 1 iDAI
-    return amount;
+    /* require(this.transfer(receiver, toTransfer), "Error during transfer"); // 1 iDAI */
+    require(this.transfer(receiver, (amount * 10**18)/price), "Error during transfer"); // 1 iDAI
+    return (amount * 10**18)/price;
   }
   function burn(address receiver, uint256 amount) external returns (uint256) {
     // here I should transfer 1 DAI back
@@ -50,6 +53,9 @@ contract iDAIMock is ERC20Detailed, ERC20, iERC20 {
   }
   function setSupplyInterestRateForTest() external {
     supplyRate = supplyRate * 4;
+  }
+  function setPriceForTest() external {
+    price = 1.5 * 10**18;
   }
   function setExchangeRateStoredForTest() external {
     toTransfer = 1.1 * 10**18;
