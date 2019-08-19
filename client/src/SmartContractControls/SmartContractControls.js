@@ -62,9 +62,10 @@ class SmartContractControls extends React.Component {
   }
   rebalanceCheck = async () => {
     const res = await this.genericIdleCall('rebalanceCheck');
-    if (!res || !res.length){
+    if (!res || !Object.keys(res).length){
       return false;
     }
+
     this.setState({
       shouldRebalance: res[0],
       needsUpdate: false
@@ -421,6 +422,7 @@ class SmartContractControls extends React.Component {
     e.preventDefault();
     // this.setState(state => ({...state, selectedTab: tabIndex}));
     this.props.updateSelectedTab(e,tabIndex);
+
     if (tabIndex === '3') {
       await this.rebalanceCheck();
     }

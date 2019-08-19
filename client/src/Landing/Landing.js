@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
-import { Image, Flex, Box, Heading, Button, Link, Text, Card } from 'rimble-ui'
+import { Image, Flex, Box, Heading, Button, Link, Text } from 'rimble-ui'
 import BigNumber from 'bignumber.js';
 import styles from './Landing.module.scss';
 import LandingForm from '../LandingForm/LandingForm';
 import IconFlexRow from '../IconFlexRow/IconFlexRow';
 import Faq from '../Faq/Faq';
+import NewsletterForm from '../NewsletterForm/NewsletterForm';
 
 class Landing extends Component {
   state = {};
@@ -172,63 +173,63 @@ class Landing extends Component {
               <Flex alignItems={'center'} flexDirection={'column'} width={1}>
                 <Flex flexDirection={['column','row']}>
                   <Flex width={[1,1/2]} justifyContent={'flex-end'} borderRight={[0,'1px solid #eee']}>
-                    <Card className={styles.bulletCard} width={[1,2/3]} mr={[0,'45px']}>
-                      <Text className={[styles.bulletPoint,styles.bulletRight]}>1</Text>
+                    <Box position={'relative'} className={styles.bulletCard} width={[1,2/3]} mr={[0,'45px']} mb={[2,4]}>
+                      <Text lineHeight={'50px'} fontSize={'22px'} color={'white'} position={'absolute'} display={'block'} className={[styles.bulletPoint,styles.bulletRight]}>1</Text>
                       <Heading.h3 pt={[2]} textAlign={['center','right']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>
                         Lend your assets
                       </Heading.h3>
-                      <Heading.h4 textAlign={['center','right']} fontWeight={2} lineHeight={1.5}>
+                      <Heading.h4 fontSize={[2,3]} px={[3,0]} textAlign={['center','right']} fontWeight={2} lineHeight={1.5}>
                         Connect your Ethereum wallet and lend some idle crypto assets to get started.
                         You will receive IdleTokens representing your contract pool share.
                       </Heading.h4>
-                    </Card>
+                    </Box>
                   </Flex>
                   <Flex width={[1,1/2]}></Flex>
                 </Flex>
                 <Flex flexDirection={['column','row']}>
                   <Flex width={[1,1/2]} borderRight={[0,'1px solid #eee']}></Flex>
                   <Flex width={[1,1/2]} justifyContent={'flex-start'}>
-                    <Card className={styles.bulletCard} width={[1,2/3]} ml={[0,'45px']}>
-                      <Text className={[styles.bulletPoint,styles.bulletLeft]}>2</Text>
+                    <Box position={'relative'} className={styles.bulletCard} width={[1,2/3]} ml={[0,'45px']} mb={[2,4]}>
+                      <Text lineHeight={'50px'} fontSize={'22px'} color={'white'} position={'absolute'} display={'block'} className={[styles.bulletPoint,styles.bulletLeft]}>2</Text>
                       <Heading.h3 pt={[2]} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>
                         Earn interests
                       </Heading.h3>
-                      <Heading.h4 textAlign={['center','left']} fontWeight={2} lineHeight={1.5}>
+                      <Heading.h4 fontSize={[2,3]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5}>
                         Your funds will be automatically allocated among the best available interest bearing tokens.
                         You will immediately start earning compounded interest with a block-per-block pace.
                       </Heading.h4>
-                    </Card>
+                    </Box>
                   </Flex>
                 </Flex>
                 <Flex flexDirection={['column','row']}>
                   <Flex width={[1,1/2]} justifyContent={'flex-end'} borderRight={[0,'1px solid #eee']}>
-                    <Card className={styles.bulletCard} width={[1,2/3]} mr={[0,'45px']}>
-                      <Text className={[styles.bulletPoint,styles.bulletRight]}>3</Text>
+                    <Box position={'relative'} className={styles.bulletCard} width={[1,2/3]} mr={[0,'45px']} mb={[2,4]}>
+                      <Text lineHeight={'50px'} fontSize={'22px'} color={'white'} position={'absolute'} display={'block'} className={[styles.bulletPoint,styles.bulletRight]}>3</Text>
                       <Heading.h3 pt={[2]} textAlign={['center','right']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>
                         Decentralized rebalance
                       </Heading.h3>
-                      <Heading.h4 textAlign={['center','right']} fontWeight={2} lineHeight={1.5}>
+                      <Heading.h4 fontSize={[2,3]} px={[3,0]} textAlign={['center','right']} fontWeight={2} lineHeight={1.5}>
                         Every interaction with Idle, made by any user, rebalances the entire pool if needed.
                         If the current tracked rate is not the actual best, you have the power to rebalance on behalf
                         of all users. One for all, all for one.
                       </Heading.h4>
-                    </Card>
+                    </Box>
                   </Flex>
                   <Flex width={[1,1/2]}></Flex>
                 </Flex>
                 <Flex flexDirection={['column','row']}>
                   <Flex width={[1,1/2]} borderRight={[0,'1px solid #eee']} height={[0,'125px']}></Flex>
                   <Flex width={[1,1/2]} justifyContent={'flex-start'}>
-                    <Card className={styles.bulletCard} width={[1,2/3]} ml={[0,'45px']}>
-                      <Text className={[styles.bulletPoint,styles.bulletLeft]}>4</Text>
+                    <Box position={'relative'} className={styles.bulletCard} width={[1,2/3]} ml={[0,'45px']}>
+                      <Text lineHeight={'50px'} fontSize={'22px'} color={'white'} position={'absolute'} display={'block'} className={[styles.bulletPoint,styles.bulletLeft]}>4</Text>
                       <Heading.h3 pt={[2]} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]} color={'blue'}>
                         Easy Redeem
                       </Heading.h3>
-                      <Heading.h4 textAlign={['center','left']} fontWeight={2} lineHeight={1.5}>
+                      <Heading.h4 fontSize={[2,3]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5}>
                         At anytime you can redeem your invested assets and get back your increased funds, automatically
                         rebalancing the pool if needed. Kudos for you.
                       </Heading.h4>
-                    </Card>
+                    </Box>
                   </Flex>
                 </Flex>
               </Flex>
@@ -284,7 +285,20 @@ class Landing extends Component {
           </Box>
         </Box>
 
+
         <Box id="faq" pb={[4,6]}>
+          <Box maxWidth={'50em'} mx={'auto'} px={[3,5]}>
+            <Heading.h2 fontFamily={'sansSerif'} fontSize={[5, 6]} textAlign={'center'} pt={[4,5]} pb={[2,3]} alignItems={'center'} my={0}>
+              Newsletter
+            </Heading.h2>
+            <Heading.h4 textAlign={['center']} fontWeight={1} lineHeight={2} fontSize={[2,3]} mb={[3,4]}>
+              Sign up for the newsletter to stay up-to-date on the latest Idle news
+            </Heading.h4>
+            <NewsletterForm />
+          </Box>
+        </Box>
+
+        <Box id="faq" pb={[4,6]} className={[styles.graySection]}>
           <Box maxWidth={['50em','70em']} mx={'auto'} px={[3,5]}>
             <Faq />
           </Box>

@@ -82,15 +82,9 @@
   /*margin:0 auto 10px auto;*/
 }
 .bulletPoint{
-  top:50%;
-  position:absolute;
-  display:block;
   width:50px;
   height:50px;
-  line-height:50px;
-  margin-top:-25px;
-  font-size:22px;
-  color:#fff;
+  margin-top:2px;
   border-radius:100%;
   background:#0036ff;
   text-align:center;
@@ -101,6 +95,7 @@
 .bulletPoint.bulletLeft{
   left:-71px;
 }
+/*
 .bulletPoint:before{
   content: "";
   position: absolute;
@@ -116,6 +111,7 @@
 .bulletPoint.bulletLeft:before{
   right: -21px;
 }
+*/
 @media (max-width: 30em) {
   .bulletCard{
     margin:50px auto;
