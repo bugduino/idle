@@ -21,7 +21,7 @@ class NewsletterForm extends Component {
 
     handleSubmit(e) {
       e.preventDefault();
-      this.setState({...this.state, validated:true });
+      this.setState(state => ({...state, validated:true }));
 
       const mailchimpInstance   = 'us3';
       const listUniqueId        = '372b87dacf';
