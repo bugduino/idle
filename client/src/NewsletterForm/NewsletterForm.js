@@ -3,10 +3,6 @@ import { Box, Button, Form, Text } from 'rimble-ui';
 import axios from 'axios';
 // import styles from './NewsletterForm.module.scss';
 
-const MAILCHIMP_KEY = process.env.REACT_APP_MAILCHIMP_KEY;
-const MAILCHIMP_INSTANCE = process.env.REACT_APP_MAILCHIMP_INSTANCE;
-const MAILCHIMP_LIST_ID = process.env.REACT_APP_MAILCHIMP_LIST_ID;
-
 class NewsletterForm extends Component {
   state = {
     validated: false,
@@ -25,14 +21,8 @@ class NewsletterForm extends Component {
     e.preventDefault();
     this.setState({validated:true });
 
-    axios.post(`https://${MAILCHIMP_INSTANCE}.api.mailchimp.com/3.0/lists/${MAILCHIMP_LIST_ID}/members/`, {
-      'email_address': this.state.email,
-      'status': 'subscribed'
-    }, {
-      headers:{
-        'Content-Type':'application/json;charset=utf-8',
-        'Authorization': `apikey ${MAILCHIMP_KEY}`
-      }
+    axios.post(`https://dev.lapisgroup.it/idle/newsletter.php`, {
+      'email': this.state.email
     }).then(r => {
       this.setState({message:'You have successfully subscribed to the newsletter', messageColor:'green' });
     })
