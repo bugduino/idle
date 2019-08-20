@@ -23,7 +23,7 @@ class NewsletterForm extends Component {
 
   handleSubmit(e) {
     e.preventDefault();
-    this.setState(state => ({...state, validated:true }));
+    this.setState({validated:true });
 
     axios.post(`https://${MAILCHIMP_INSTANCE}.api.mailchimp.com/3.0/lists/${MAILCHIMP_LIST_ID}/members/`, {
       'email_address': this.state.email,
@@ -34,16 +34,18 @@ class NewsletterForm extends Component {
         'Authorization': `apikey ${MAILCHIMP_KEY}`
       }
     }).then(r => {
-      this.setState(state => ({...state, message:'You have successfully subscribed to the newsletter', messageColor:'green' }));
+      this.setState({message:'You have successfully subscribed to the newsletter', messageColor:'green' });
     })
     .catch(err => {
-      this.setState(state => ({...state, message:'Error while sending your subscription... Please try again', messageColor:'red' }));
+      this.setState({message:'Error while sending your subscription... Please try again', messageColor:'red' });
     });
   }
 
   handleValidation(e) {
-    this.setState(state => ({...state, email: e.target.value }));
-    e.target.parentNode.classList.add("was-validated");
+    if (e && e.target) {
+      this.setState({ email: e.target.value });
+      e.target.parentNode.classList.add("was-validated");
+    }
   }
 
   render() {

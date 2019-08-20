@@ -128,23 +128,27 @@ class TransactionToastUtil extends React.Component {
         transactionToastMeta = TransactionToastMessages.error;
         break;
       default:
-      break;
+        // do nothing
+        break;
     }
 
     let transactionAction = '';
     switch (transaction.method){
       case 'redeemIdleToken':
         transactionAction = 'Redeem';
-      break;
+        break;
       case 'mintIdleToken':
         transactionAction = 'Lending';
-      break;
+        break;
       case 'approve':
         transactionAction = 'Approve';
-      break;
+        break;
       case 'rebalance':
         transactionAction = 'Rebalance';
-      break;
+        break;
+      default:
+        // do nothing
+        break;
     }
 
     transactionToastMeta = JSON.parse(JSON.stringify(transactionToastMeta));
