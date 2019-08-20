@@ -285,11 +285,10 @@ class Landing extends Component {
           </Box>
         </Box>
 
-
         <Box id="faq" pb={[4,6]}>
           <Box maxWidth={'50em'} mx={'auto'} px={[3,5]}>
             <Heading.h2 fontFamily={'sansSerif'} fontSize={[5, 6]} textAlign={'center'} pt={[4,5]} pb={[2,3]} alignItems={'center'} my={0}>
-              Newsletter
+              Latest Idle news
             </Heading.h2>
             <Heading.h4 textAlign={['center']} fontWeight={1} lineHeight={2} fontSize={[2,3]} mb={[3,4]}>
               Sign up for the newsletter to stay up-to-date on the latest Idle news

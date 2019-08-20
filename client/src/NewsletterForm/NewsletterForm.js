@@ -3,9 +3,11 @@ import { Box, Button, Form, Text } from 'rimble-ui';
 import axios from 'axios';
 // import styles from './NewsletterForm.module.scss';
 
-// export default function ImageTextBox(props) {
-class NewsletterForm extends Component {
+const MAILCHIMP_KEY = process.env.REACT_APP_MAILCHIMP_KEY;
+const MAILCHIMP_INSTANCE = process.env.REACT_APP_MAILCHIMP_INSTANCE;
+const MAILCHIMP_LIST_ID = process.env.REACT_APP_MAILCHIMP_LIST_ID;
 
+class NewsletterForm extends Component {
   state = {
     validated: false,
     email: null,
@@ -13,41 +15,36 @@ class NewsletterForm extends Component {
   };
 
   constructor(props) {
-      super(props);
-      this.state = { validated: false };
-      this.handleSubmit = this.handleSubmit.bind(this);
-      this.handleValidation = this.handleValidation.bind(this);
-    }
+    super(props);
+    this.state = { validated: false };
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleValidation = this.handleValidation.bind(this);
+  }
 
-    handleSubmit(e) {
-      e.preventDefault();
-      this.setState(state => ({...state, validated:true }));
+  handleSubmit(e) {
+    e.preventDefault();
+    this.setState(state => ({...state, validated:true }));
 
-      const mailchimpInstance   = 'us3';
-      const listUniqueId        = '372b87dacf';
-      const mailchimpApiKey     = 'a7d46c3c8ef3c315272fb58a8bdff1e9-us3';
+    axios.post(`https://${MAILCHIMP_INSTANCE}.api.mailchimp.com/3.0/lists/${MAILCHIMP_LIST_ID}/members/`, {
+      'email_address': this.state.email,
+      'status': 'subscribed'
+    }, {
+      headers:{
+        'Content-Type':'application/json;charset=utf-8',
+        'Authorization': `apikey ${MAILCHIMP_KEY}`
+      }
+    }).then(r => {
+      this.setState(state => ({...state, message:'You have successfully subscribed to the newsletter', messageColor:'green' }));
+    })
+    .catch(err => {
+      this.setState(state => ({...state, message:'Error while sending your subscription... Please try again', messageColor:'red' }));
+    });
+  }
 
-      axios
-          .post('https://' + mailchimpInstance + '.api.mailchimp.com/3.0/lists/' + listUniqueId + '/members/',{
-            'email_address': this.state.email,
-            'status': 'subscribed'
-          },{
-            headers:{
-              'Content-Type':'application/json;charset=utf-8',
-              'Authorization': 'apikey ' + mailchimpApiKey
-            }
-          }).then(r => {
-            this.setState({...this.state, message:'You have successfully subscribed to the newsletter', messageColor:'green' });
-          })
-          .catch(err => {
-            this.setState({...this.state, message:'Error while sending your subscription... Please try again', messageColor:'red' });
-          });
-    }
-
-    handleValidation(e) {
-      this.setState({...this.state, email:e.target.value });
-      e.target.parentNode.classList.add("was-validated");
-    }
+  handleValidation(e) {
+    this.setState(state => ({...state, email: e.target.value }));
+    e.target.parentNode.classList.add("was-validated");
+  }
 
   render() {
     return (
@@ -66,7 +63,7 @@ class NewsletterForm extends Component {
               <Text.p py={0} mt={0} mb={3} textAlign={'center'} color={this.state.messageColor}>{this.state.message}</Text.p>
             }
             <Button type="submit" width={1}>
-              Get Updates
+              GET UPDATES
             </Button>
           </Form>
         </Box>
