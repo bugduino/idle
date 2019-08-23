@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Heading, Box, Flex, Form, Button, Image } from 'rimble-ui'
+import { Heading, Box, Flex, Form, Button, Image, Link } from 'rimble-ui'
 import styles from './CryptoInput.module.scss';
 
 class CryptoInput extends Component {
@@ -72,9 +72,9 @@ class CryptoInput extends Component {
                 <Button onClick={this.props.handleClick} className={[styles.button]} size={this.props.isMobile ? 'medium' : 'large'} mainColor={'blue'} fontWeight={2} fontSize={[2,3]} px={this.props.isMobile ? [2,3] : [4,5]} my={0} width={1}>LEND</Button>
               </Box>
           </Flex>
-          <Flex maxWidth={['90%','40em']} justifyContent={'left'} alignItems={'left'} mt={[1, 2]} mb={[2,3]} mx={'auto'}>
+          <Flex maxWidth={['90%','40em']} justifyContent={'space-between'} mt={[2, 2]} mb={[2,3]} mx={'auto'}>
             <Box pl={'5%'}>
-              <Heading.h5 color={'darkGray'} fontWeight={1} fontSize={1} textAlign={'center'}>
+              <Heading.h5 color={'darkGray'} fontWeight={1} fontSize={1}>
               {!this.props.isMobile ? 
                   !isNaN(this.props.trimEth(this.props.IdleDAIPrice)) && !!this.props.IdleDAIPrice && `1 idleDAI = ${this.props.trimEth(this.props.IdleDAIPrice)} DAI`
                  : 
@@ -82,6 +82,14 @@ class CryptoInput extends Component {
               }
               </Heading.h5>
             </Box>
+            {this.props.account && !isNaN(this.props.trimEth(this.props.accountBalanceDAI)) && 
+              <Box pr={['5%','20%']}>
+                <Heading.h5 color={'darkGray'} fontWeight={1} fontSize={1}>
+                  <Link color={'darkGray'} hoverColor={'darkGray'} fontWeight={1} fontSize={1} lineHeight={'1.25'} onClick={ e => this.props.useEntireBalance(this.props.accountBalanceDAI) }>
+                    Balance: {!this.props.isMobile ? this.props.accountBalanceDAI.toFixed(6) : this.props.accountBalanceDAI.toFixed(2) } DAI</Link>
+                </Heading.h5>
+              </Box>
+            }
           </Flex>
           <Flex justifyContent={'center'}>
             <Heading.h5 mt={[1, 2]} color={'darkGray'} fontWeight={1} fontSize={1} textAlign={'center'}>

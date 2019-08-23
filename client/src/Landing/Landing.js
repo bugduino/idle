@@ -112,6 +112,7 @@ class Landing extends Component {
               <Box position={'absolute'} zIndex={'0'} width={'100%'} height={'50%'} top={'50%'} left={'0'} backgroundColor={'#f7f7f7'}></Box>
               <Box position={'relative'} zIndex={'1'}>
                 <LandingForm
+                  accountBalanceDAI={this.props.accountBalanceDAI}
                   isMobile={this.props.isMobile}
                   updateSelectedTab={this.props.updateSelectedTab}
                   selectedTab={this.props.selectedTab} />

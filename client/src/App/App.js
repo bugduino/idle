@@ -111,6 +111,7 @@ class App extends Component {
                             web3={web3}
                             account={account}
                             accountBalance={accountBalance}
+                            accountBalanceDAI={accountBalanceDAI}
                             accountBalanceLow={accountBalanceLow}
                             initAccount={initAccount}
                             rejectAccountConnect={rejectAccountConnect}
@@ -134,6 +135,7 @@ class App extends Component {
                             isMobile={isMobile}
                             account={account}
                             accountBalance={accountBalance}
+                            accountBalanceDAI={accountBalanceDAI}
                             accountBalanceLow={accountBalanceLow}
                             updateSelectedTab={this.selectTab.bind(this)}
                             selectedTab={this.state.selectedTab}
