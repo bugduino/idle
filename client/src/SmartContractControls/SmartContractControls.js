@@ -266,6 +266,10 @@ class SmartContractControls extends React.Component {
     });
   };
 
+  useEntireBalance = (balance) => {
+    this.setState({ lendAmount: balance.toString() });
+  }
+
   handleChangeAmount = (e) => {
     if (this.props.account){
       this.setState({ lendAmount: e.target.value });
@@ -544,12 +548,14 @@ class SmartContractControls extends React.Component {
                   <CryptoInput
                     isMobile={this.props.isMobile}
                     account={this.props.account}
+                    accountBalanceDAI={this.props.accountBalanceDAI}
                     defaultValue={this.state.lendAmount}
                     IdleDAIPrice={hasOldBalance ? this.state.OldIdleDAIPrice : this.state.IdleDAIPrice}
                     BNify={this.BNify}
                     trimEth={this.trimEth}
                     color={'black'}
                     selectedAsset='DAI'
+                    useEntireBalance={this.useEntireBalance}
                     handleChangeAmount={this.handleChangeAmount}
                     handleClick={e => this.mint(e)} />
                 }
