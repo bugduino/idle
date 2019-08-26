@@ -548,7 +548,7 @@ class SmartContractControls extends React.Component {
                   <CryptoInput
                     isMobile={this.props.isMobile}
                     account={this.props.account}
-                    accountBalanceDAI={this.props.accountBalanceDAI}
+                    /* accountBalanceDAI={this.props.accountBalanceDAI} */
                     defaultValue={this.state.lendAmount}
                     IdleDAIPrice={hasOldBalance ? this.state.OldIdleDAIPrice : this.state.IdleDAIPrice}
                     BNify={this.BNify}
