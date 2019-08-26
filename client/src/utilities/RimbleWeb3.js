@@ -4,12 +4,13 @@ import Web3 from "web3"; // uses latest 1.x.x version
 import ConnectionModalUtil from "./ConnectionModalsUtil";
 import NetworkUtil from "./NetworkUtil";
 import DAI from '../abis/tokens/DAI'; // rinkeby
-
+import BigNumber from 'bignumber.js';
 const DAIAddr = DAI.address;
 const DAIAbi = DAI.abi;
 
 require('dotenv').config();
 const INFURA_KEY = process.env["REACT_APP_INFURA_KEY"];
+const BNify = s => new BigNumber(String(s));
 
 const RimbleTransactionContext = React.createContext({
   contracts: [],
@@ -368,11 +369,16 @@ class RimbleTransaction extends React.Component {
     contract = contract.contract;
     try {
       // estimate gas price
-      const gas = await contract.methods[contractMethod](...params)
+      let gas = await contract.methods[contractMethod](...params)
         .estimateGas(value ? { from: account, value } : { from: account })
         .catch(e => console.error(e));
+
+      if (gas) {
+        gas = BNify(gas);
+        gas = this.state.web3.utils.toBN(gas.plus(gas.times(BNify('0.3')))); // 30% more
+      }
       contract.methods[contractMethod](...params)
-        .send(value ? { from: account, value, gas } : { from: account, gas })
+        .send(value ? { from: account, value, gas  } : { from: account, gas })
         .on("transactionHash", hash => {
           // Submitted to block and received transaction hash
           // Set properties on the current transaction
