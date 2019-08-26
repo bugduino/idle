@@ -367,9 +367,12 @@ class RimbleTransaction extends React.Component {
     }
     contract = contract.contract;
     try {
+      // estimate gas price
+      const gas = await contract.methods[contractMethod](...params)
+        .estimateGas(value ? { from: account, value } : { from: account })
+        .catch(e => console.error(e));
       contract.methods[contractMethod](...params)
-        // .send(value ? { from: account, value, gasPrice: gas.toString() } : { from: account })
-        .send(value ? { from: account, value } : { from: account })
+        .send(value ? { from: account, value, gas } : { from: account, gas })
         .on("transactionHash", hash => {
           // Submitted to block and received transaction hash
           // Set properties on the current transaction
@@ -408,7 +411,7 @@ class RimbleTransaction extends React.Component {
           // Update transaction with receipt details
           transaction.recentEvent = "confirmation";
           this.updateTransaction(transaction);
-          
+
           if (callback) {
             callback(transaction);
           }
