@@ -375,7 +375,7 @@ class RimbleTransaction extends React.Component {
 
       if (gas) {
         gas = BNify(gas);
-        gas = this.state.web3.utils.toBN(gas.plus(gas.times(BNify('0.3')))); // 30% more
+        gas = this.state.web3.utils.toBN(gas.plus(gas.times(BNify('0.3'))).integerValue(BigNumber.ROUND_FLOOR)); // 30% more
       }
       contract.methods[contractMethod](...params)
         .send(value ? { from: account, value, gas  } : { from: account, gas })
