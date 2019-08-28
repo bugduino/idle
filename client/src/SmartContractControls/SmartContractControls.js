@@ -9,7 +9,7 @@ import moment from 'moment';
 
 import IdleDAI from "../contracts/IdleDAI.json";
 import cDAI from '../abis/compound/cDAI';
-import DAI from '../contracts/IERC20.json';
+import DAI from '../contracts/IERC20Base.json';
 import iDAI from '../abis/fulcrum/iToken.json';
 
 const env = process.env;
@@ -31,7 +31,9 @@ class SmartContractControls extends React.Component {
     iDAIRate: 0,
     cDAIRate: 0,
     cDAIToRedeem: 0,
+    disableLendButton: false,
     approveIsOpen: false,
+    isApprovingDAITest: true,
     tokenName: 'DAI',
     baseTokenName: 'DAI',
     lendAmount: '',
@@ -182,18 +184,43 @@ class SmartContractControls extends React.Component {
     });
   }
 
+  disableERC20 = (e, name) => {
+    e.preventDefault();
+    // No need for callback atm
+    this.props.contractMethodSendWrapper(name, 'approve', [
+      IdleAddress,
+      0 // Disapprova
+    ],null,(tx)=>{
+      this.setState({
+        [`isApproving${name}`]: false, // TODO when set to false?
+      });
+    });
+
+    this.setState({
+      [`isApproving${name}`]: true, // TODO when set to false?
+      approveIsOpen: false
+    });
+  };
+
   enableERC20 = (e, name) => {
     e.preventDefault();
     // No need for callback atm
     this.props.contractMethodSendWrapper(name, 'approve', [
       IdleAddress,
       this.props.web3.utils.toTwosComplement('-1') // max uint solidity
-    ]);
+      // this.props.web3.utils.BN(0) // Disapprova
+    ],null,(tx)=>{
+      this.setState({
+        [`isApproving${name}`]: false, // TODO when set to false?
+      });
+    });
+
     this.setState({
       [`isApproving${name}`]: true, // TODO when set to false?
       approveIsOpen: false
     });
   };
+
   rebalance = e => {
     e.preventDefault();
 
@@ -209,6 +236,12 @@ class SmartContractControls extends React.Component {
     });
   };
   mint = async (e, contractName) => {
+
+    if (this.state[`isApprovingDAI`]){
+      return false;
+      // return this.setState({genericError: 'Wait for the approve tx to be mined'});
+    }
+
     e.preventDefault();
     if (this.props.account && !this.state.lendAmount) {
       return this.setState({genericError: 'Insert a DAI amount to lend'});
@@ -223,6 +256,7 @@ class SmartContractControls extends React.Component {
       this.state.lendAmount || '0',
       "ether"
     );
+
     // check if Idle is approved for DAI
     if (this.props.account && !this.state[`isApprovingDAI`]) {
       const allowance = await this.getAllowance('DAI'); // DAI
@@ -238,6 +272,7 @@ class SmartContractControls extends React.Component {
     this.setState({
       [`isLoading${contractName}`]: false,
       lendAmount: '',
+      genericError: '',
       needsUpdate: true
     });
   };
@@ -272,7 +307,19 @@ class SmartContractControls extends React.Component {
 
   handleChangeAmount = (e) => {
     if (this.props.account){
-      this.setState({ lendAmount: e.target.value });
+      let amount = e.target.value;
+      this.setState({ lendAmount: amount });
+      if (this.props.account && amount>this.props.accountBalanceDAI){
+        return this.setState({
+          disableLendButton: true,
+          genericError: 'The inserted amount exceeds your DAI balance'
+        });
+      } else {
+        return this.setState({
+          disableLendButton: false,
+          genericError: ''
+        });
+      }
     } else {
       this.mint(e);
     }
@@ -538,26 +585,37 @@ class SmartContractControls extends React.Component {
                     We offer the best available interest rate for your DAI through different lending platforms.
                   </Heading.h4>
                 </Box>
+
+                {this.state.isApprovingDAI && (
+                  <Flex
+                    justifyContent={'center'}
+                    alignItems={'center'}
+                    textAlign={'center'}>
+                    <Loader size="40px" /> <Text ml={2}>Wait for the approve transaction to be mined</Text>
+                  </Flex>
+                )}
+
                 {hasOldBalance ?
                   <Flash variant="warning" width={1}>
                     We have released a new version of the contract, with a small bug fix, please redeem
                     your assets in the old contract, by heading to 'Funds' tab and clicking on `Redeem DAI`
                     Once you have done that you will be able to mint and redeem with the new contract.
                     Sorry for the inconvenience.
-                  </Flash> :
-                  <CryptoInput
-                    isMobile={this.props.isMobile}
-                    account={this.props.account}
-                    /* accountBalanceDAI={this.props.accountBalanceDAI} */
-                    defaultValue={this.state.lendAmount}
-                    IdleDAIPrice={hasOldBalance ? this.state.OldIdleDAIPrice : this.state.IdleDAIPrice}
-                    BNify={this.BNify}
-                    trimEth={this.trimEth}
-                    color={'black'}
-                    selectedAsset='DAI'
-                    useEntireBalance={this.useEntireBalance}
-                    handleChangeAmount={this.handleChangeAmount}
-                    handleClick={e => this.mint(e)} />
+                  </Flash> : !this.state.isApprovingDAI && 
+                    (<CryptoInput
+                      disableLendButton={this.state.disableLendButton}
+                      isMobile={this.props.isMobile}
+                      account={this.props.account}
+                      accountBalanceDAI={this.props.accountBalanceDAI}
+                      defaultValue={this.state.lendAmount}
+                      IdleDAIPrice={hasOldBalance ? this.state.OldIdleDAIPrice : this.state.IdleDAIPrice}
+                      BNify={this.BNify}
+                      trimEth={this.trimEth}
+                      color={'black'}
+                      selectedAsset='DAI'
+                      useEntireBalance={this.useEntireBalance}
+                      handleChangeAmount={this.handleChangeAmount}
+                      handleClick={e => this.mint(e)} />)
                 }
 
                 {this.state.genericError && (

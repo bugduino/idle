@@ -193,7 +193,7 @@ class RimbleTransaction extends React.Component {
           accountBalance,
           "ether"
         );
-        accountBalance = parseFloat(accountBalance);
+        accountBalance = BNify(accountBalance).toString();
         this.setState({ accountBalance });
         console.log("account balance: ", accountBalance);
         this.determineAccountLowBalance();
@@ -205,7 +205,7 @@ class RimbleTransaction extends React.Component {
           accountBalanceDAI.toString(),
           "ether"
         );
-        accountBalanceDAI = parseFloat(accountBalanceDAI);
+        accountBalanceDAI = BNify(accountBalanceDAI).toString();
         this.setState({ accountBalanceDAI });
         console.log("account balance DAI: ", accountBalanceDAI);
       }
