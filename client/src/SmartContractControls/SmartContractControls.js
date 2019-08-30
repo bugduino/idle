@@ -101,19 +101,16 @@ class SmartContractControls extends React.Component {
     return price;
   };
   getBalanceOf = async contractName => {
-    const price = await this.getPriceInToken(contractName);
+    let price = await this.getPriceInToken(contractName);
     let balance = await this.genericContractCall(contractName, 'balanceOf', [this.props.account]);
     if (balance) {
-      balance = this.props.web3.utils.fromWei(
-        balance.toString(),
-        "ether"
-      );
-
-      const tokenToRedeem = this.BNify(balance).times(+this.toEth(price));
+      balance = this.BNify(balance).div(1e18);
+      price = this.BNify(price).div(1e18);
+      const tokenToRedeem = balance.times(price);
       let earning = 0;
 
       if (this.state.amountLent){
-        earning = tokenToRedeem.minus(this.BNify(this.toEth(this.state.amountLent)));
+        earning = tokenToRedeem.minus(this.BNify(this.state.amountLent).div(1e18));
       }
 
       this.setState({
@@ -126,19 +123,16 @@ class SmartContractControls extends React.Component {
     return balance;
   };
   getOldBalanceOf = async contractName => {
-    const price = await this.getOldPriceInToken(contractName);
+    let price = await this.getOldPriceInToken(contractName);
     let balance = await this.genericContractCall(contractName, 'balanceOf', [this.props.account]);
     if (balance) {
-      balance = this.props.web3.utils.fromWei(
-        balance.toString(),
-        "ether"
-      );
-
-      const tokenToRedeem = this.BNify(balance).times(+this.toEth(price));
+      balance = this.BNify(balance).div(1e18);
+      price = this.BNify(price).div(1e18);
+      const tokenToRedeem = balance.times(price);
       let earning = 0;
 
       if (this.state.amountLent){
-        earning = tokenToRedeem.minus(this.BNify(this.toEth(this.state.amountLent)));
+        earning = tokenToRedeem.minus(this.BNify(this.state.amountLent).div(1e18));
       }
       this.setState({
         [`balanceOf${contractName}`]: balance,
@@ -601,7 +595,7 @@ class SmartContractControls extends React.Component {
                     your assets in the old contract, by heading to 'Funds' tab and clicking on `Redeem DAI`
                     Once you have done that you will be able to mint and redeem with the new contract.
                     Sorry for the inconvenience.
-                  </Flash> : !this.state.isApprovingDAI && 
+                  </Flash> : !this.state.isApprovingDAI &&
                     (<CryptoInput
                       disableLendButton={this.state.disableLendButton}
                       isMobile={this.props.isMobile}
