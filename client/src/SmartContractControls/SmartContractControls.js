@@ -4,6 +4,7 @@ import { Form, Flex, Box, Heading, Text, Button, Link, Icon, Pill, Loader, Flash
 import BigNumber from 'bignumber.js';
 import CryptoInput from '../CryptoInput/CryptoInput.js';
 import ApproveModal from "../utilities/components/ApproveModal";
+import MaxCapModal from "../utilities/components/MaxCapModal";
 import axios from 'axios';
 import moment from 'moment';
 
@@ -33,6 +34,7 @@ class SmartContractControls extends React.Component {
     cDAIToRedeem: 0,
     disableLendButton: false,
     approveIsOpen: false,
+    capReached: false,
     isApprovingDAITest: true,
     tokenName: 'DAI',
     baseTokenName: 'DAI',
@@ -41,6 +43,8 @@ class SmartContractControls extends React.Component {
     genericError: null,
     selectedTab: '1',
     amountLent: null,
+    IdleDAISupply: null,
+    idleDAICap: 20000,
     earning: null,
     prevTxs : {}
   };
@@ -90,6 +94,14 @@ class SmartContractControls extends React.Component {
       needsUpdate: false
     });
     return price;
+  };
+  getTotalSupply = async (contractName) => {
+    const totalSupply = await this.genericContractCall(contractName, 'totalSupply');
+    this.setState({
+      [`${contractName}Supply`]: totalSupply,
+      needsUpdate: false
+    });
+    return totalSupply;
   };
   getOldPriceInToken = async (contractName) => {
     const totalIdleSupply = await this.genericContractCall(contractName, 'totalSupply');
@@ -230,7 +242,6 @@ class SmartContractControls extends React.Component {
     });
   };
   mint = async (e, contractName) => {
-
     if (this.state[`isApprovingDAI`]){
       return false;
       // return this.setState({genericError: 'Wait for the approve tx to be mined'});
@@ -250,6 +261,17 @@ class SmartContractControls extends React.Component {
       this.state.lendAmount || '0',
       "ether"
     );
+
+    const IdleDAISupply = this.BNify(this.state.IdleDAISupply).div(1e18);
+    const IdleDAIPrice = this.BNify(this.state.IdleDAIPrice);
+    const toMint = this.BNify(value).div(1e18).div(IdleDAIPrice);
+    const newTotalSupply = toMint.plus(IdleDAISupply);
+    const idleDAICap = this.BNify(this.state.idleDAICap);
+
+    if (this.props.account && newTotalSupply.gt(idleDAICap)) {
+      this.setState({capReached: true});
+      return;
+    }
 
     // check if Idle is approved for DAI
     if (this.props.account && !this.state[`isApprovingDAI`]) {
@@ -320,6 +342,9 @@ class SmartContractControls extends React.Component {
   };
   toggleModal = (e) => {
     this.setState(state => ({...state, approveIsOpen: !state.approveIsOpen }));
+  };
+  toggleMaxCapModal = (e) => {
+    this.setState(state => ({...state, capReached: !state.capReached }));
   };
 
   getPrevTxs = async (executedTxs) => {
@@ -457,6 +482,7 @@ class SmartContractControls extends React.Component {
       await this.getPrevTxs();
       await this.getBalanceOf('IdleDAI');
       await this.getOldBalanceOf('OldIdleDAI');
+      await this.getTotalSupply('IdleDAI');
     }
     if (prevProps.transactions !== this.props.transactions){
       this.processTransactionUpdates(prevProps);
@@ -816,6 +842,14 @@ class SmartContractControls extends React.Component {
           onClick={e => this.enableERC20(e, this.state.tokenName)}
           tokenName={this.state.tokenName}
           baseTokenName={this.state.baseTokenName}
+          network={this.props.network.current} />
+
+        <MaxCapModal
+          account={this.props.account}
+          isOpen={this.state.capReached}
+          maxCap={this.BNify(this.state.idleDAICap)}
+          currSupply={this.BNify(this.state.IdleDAISupply)}
+          closeModal={this.toggleMaxCapModal}
           network={this.props.network.current} />
       </Box>
     );
