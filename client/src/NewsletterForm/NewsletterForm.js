@@ -1,7 +1,7 @@
 import React, { Component } from "react";
-import { Box, Button, Form, Text } from 'rimble-ui';
+import { Flex, Box, Button, Form, Text } from 'rimble-ui';
 import axios from 'axios';
-// import styles from './NewsletterForm.module.scss';
+import styles from './NewsletterForm.module.scss';
 
 class NewsletterForm extends Component {
   state = {
@@ -40,23 +40,38 @@ class NewsletterForm extends Component {
 
   render() {
     return (
-        <Box>
+        <Box mt={[2,3]}>
           <Form onSubmit={this.handleSubmit}>
-            <Form.Field label="Email" width={1}>
-              <Form.Input
-                type="email"
-                name="EMAIL"
-                required
-                width={1}
-                onChange={this.handleValidation}
-              />
-            </Form.Field>
-            {this.state.message && this.state.message.length &&
-              <Text.p py={0} mt={0} mb={3} textAlign={'center'} color={this.state.messageColor}>{this.state.message}</Text.p>
-            }
-            <Button type="submit" width={1}>
-              GET UPDATES
-            </Button>
+            <Flex flexDirection={['column','row']} alignItems={['center','flex-start']} justifyContent={'center'}>
+              <Box width={[1,8/10]}>
+                <Form.Field width={1}>
+                  <Form.Input
+                    type="email"
+                    name="EMAIL"
+                    required
+                    width={1}
+                    outline={'none'}
+                    border={0}
+                    fontSize={[3,5]}
+                    borderRadius={0}
+                    pl={0}
+                    pb={3}
+                    placeholder={'yourbestmail@whatever.com'}
+                    boxShadow={'none !important'}
+                    borderBottom={'1px solid #a6a6a6'}
+                    onChange={this.handleValidation}
+                  />
+                </Form.Field>
+                {this.state.message && this.state.message.length &&
+                  <Text.p py={0} mt={0} mb={3} textAlign={'center'} color={this.state.messageColor}>{this.state.message}</Text.p>
+                }
+              </Box>
+              <Box width={[1,2/10]} my={[0,'26px']}>
+                <Button className={styles.gradientButton} type="submit" width={1}>
+                  GET UPDATES
+                </Button>
+              </Box>
+            </Flex>
           </Form>
         </Box>
     );

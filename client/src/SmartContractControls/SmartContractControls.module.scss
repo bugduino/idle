@@ -35,12 +35,11 @@ button{
   text-decoration:underline !important;
 }
 .tab{
-  color:#fff;
-  background-color:#0036ff;
+  color:#4e4e4e;
 }
 .tab a{
   text-align:center;
-  color:#fff;
+  color:#4e4e4e;
   text-decoration:none;
   cursor:pointer;
 }
@@ -50,7 +49,7 @@ button{
 }
 .tabSelected{
   color:#0036ff;
-  background-color:#fff;
+  border-bottom:2px solid #0036ff;
 }
 .tabSelected a{
   color:#0036ff;
@@ -59,6 +58,19 @@ button{
   background-image: url(/images/magical-gradient.png);
   background-position: center center;
   animation:rainbow 2s linear infinite;
+}
+.gradientButton{
+  border-radius: 48px !important;
+  background: -moz-linear-gradient(45deg, rgba(0,230,255,1) 0%, rgba(0,111,255,1) 100%) !important;
+  background: -webkit-gradient(left bottom, right top, color-stop(0%, rgba(0,230,255,1)), color-stop(100%, rgba(0,111,255,1))) !important;
+  background: -webkit-linear-gradient(45deg, rgba(0,230,255,1) 0%, rgba(0,111,255,1) 100%) !important;
+  background: -o-linear-gradient(45deg, rgba(0,230,255,1) 0%, rgba(0,111,255,1) 100%) !important;
+  background: -ms-linear-gradient(45deg, rgba(0,230,255,1) 0%, rgba(0,111,255,1) 100%) !important;
+  background: linear-gradient(45deg, rgba(0,230,255,1) 0%, rgba(0,111,255,1) 100%) !important;
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00e6ff', endColorstr='#006fff', GradientType=1 ) !important;
+}
+.gradientButton:before{
+  display:none !important;
 }
 /* sc-component-id: sc-keyframes-rainbow */
 

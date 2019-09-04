@@ -2,11 +2,8 @@
   position:relative;
   line-height: 1.2;
   min-height: 100vh;
-  background: rgb(0,54,255);
-  background: -moz-linear-gradient(180deg, rgba(0,54,255,1) 1%, rgba(0,54,255,1) 28%, rgba(0,31,143,1) 100%);
-  background: -webkit-linear-gradient(180deg, rgba(0,54,255,1) 1%, rgba(0,54,255,1) 28%, rgba(0,31,143,1) 100%);
-  background: linear-gradient(180deg, rgba(0,54,255,1) 1%, rgba(0,54,255,1) 28%, rgba(0,31,143,1) 100%);
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#0036ff",endColorstr="#001f8f",GradientType=1);
+  background:url(/images/idle-bg.png) no-repeat center top;
+  background-size:100%;
   color:#fff;
 }
 .bgContainer{
@@ -15,26 +12,6 @@
   height:100%;
   top:0;
   left:0;
-}
-.bg1{
-  background-image:url(/images/idle-bg.png);
-  background-position:top center;
-  background-size:100%;
-  background-repeat:no-repeat;
-}
-@media (max-width: 30em) {
-  .bg1 {
-    background-position: initial;
-    background-size: initial;
-    background-repeat: initial;
-  }
-}
-.bg2{
-  opacity:0.4;
-  background-image:url(/images/lines-bg.png);
-  background-position:bottom center;
-  background-size:auto;
-  background-repeat:repeat-x;
 }
 .button{
   text-transform:uppercase;
@@ -81,19 +58,74 @@
   vertical-align:bottom;
   /*margin:0 auto 10px auto;*/
 }
+.bulletCard{
+  /*height:225px;*/
+  position:relative;
+  box-shadow:0 7px 14px rgba(50,50,93,.1);
+  border-radius:10px;
+  z-index:1;
+  transition:box-shadow 0.75s ease-in-out 0.75s;
+}
+.bulletCardActive{
+  box-shadow:0px 0px 16px 2px rgba(0,54,255,0.3);
+}
 .bulletPoint{
-  width:50px;
-  height:50px;
+  width:30px;
+  height:30px;
   margin-top:2px;
   border-radius:100%;
-  background:#0036ff;
   text-align:center !important;
+  z-index:10;
 }
 .bulletPoint.bulletRight{
-  right:-71px;
+  top: -25px;
+  right: -15px;
+  border-left: 15px solid #0036ff;
+}
+.bulletPoint.bulletTop{
+  top: -17px;
+  right: -23px;
+  border-bottom: 15px solid #0036ff;
 }
 .bulletPoint.bulletLeft{
-  left:-71px;
+  top: -25px;
+  left: -15px;
+  border-right: 15px solid #0036ff;
+}
+.bulletPoint.bulletBottom{
+  bottom: -15px;
+  right: -23px;
+  border-top: 15px solid #0036ff;
+}
+.bulletPoint.bulletBottomLeft{
+  bottom: -15px;
+  left: -23px;
+  border-top: 15px solid #0036ff;
+}
+.bulletPoint.bulletBottomBottom{
+  bottom:-22px;
+  top:initial;
+  left: -15px;
+  border-right: 15px solid #0036ff;
+}
+.bulletPoint.bulletBottomBottom.bulletMobile{
+  top: -15px;
+  right: -19px;
+  left: initial;
+  border-bottom: 15px solid #0036ff;
+  border-right: 0;
+}
+.bulletPoint.bulletLeft.bulletMobile{
+  top: -15px;
+  left: -20px;
+  border-bottom: 15px solid #0036ff;
+  border-right: 0;
+}
+.bulletPoint.bulletBottom.bulletMobile{
+  bottom: -15px;
+  right: -23px;
+  border-top: 15px solid #0036ff;
+  border-left: 0;
 }
 /*
 .bulletPoint:before{
@@ -112,20 +144,187 @@
   right: -21px;
 }
 */
-@media (max-width: 30em) {
-  .bulletCard{
-    margin:50px auto;
+.carouselItem{
+  position:absolute;
+  width:200px;
+  height:200px;
+  border-radius:10px;
+  background: rgba(255,255,255,1);
+  transition: all 0.3s ease-in-out;
+  cursor:pointer;
+}
+.carouselItem:not(.pos1):hover{
+  box-shadow:0px 2px 7px rgba(0, 0, 0, 0.3)
+}
+.carouselItemMobile{
+  position:relative;
+}
+.carouselItem.pos1{
+  right:240px;
+  top:100px;
+  width:250px;
+  height:250px;
+}
+.carouselItem.pos2{
+  right:0;
+  top:0;
+}
+.carouselItem.pos3{
+  right:0;
+  top:250px;
+}
+.carouselItem img{
+  width:auto;
+  height:70px;
+  transition: all 0.3s ease-in-out;
+}
+.carouselItem.pos1 img{
+  width:auto;
+  height:120px;
+}
+.bentTube:before,
+.bentTube:after{
+  position: absolute;
+  content: "";
+}
+
+@-moz-keyframes bounce { 100% { -moz-transform: translateY(8px); } }
+@-webkit-keyframes bounce { 100% { -webkit-transform: translateY(8px); } }
+@keyframes bounce { 100% { -webkit-transform: translateY(8px); transform:translateY(8px); } }
+
+.bounceArrow{
+  -webkit-animation:bounce .5s ease-in-out infinite alternate;
+  -moz-animation:bounce .5s ease-in-out infinite alternate;
+  animation:bounce .5s ease-in-out infinite alternate;
+}
+
+@-moz-keyframes spin { 100% { -moz-transform: rotate(360deg); } }
+@-webkit-keyframes spin { 100% { -webkit-transform: rotate(360deg); } }
+@keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
+
+.rebalanceCircle{
+  background:url(/images/rebalance.png) no-repeat center center #fff;
+  background-size:73%;
+
+  -webkit-animation:spin 4s linear infinite;
+  -moz-animation:spin 4s linear infinite;
+  animation:spin 4s linear infinite;
+}
+.carouselDesc{
+  /*opacity:0.3;
+  transition: opacity 0.3s ease-in-out;*/
+  position: absolute;
+  opacity: 0;
+  transition: all 0.25s linear;
+  transform: translateY(50px);
+}
+.carouselDesc.selected{
+  /*opacity:1;*/
+  position: relative;
+  opacity: 1;
+  display: block;
+  transform: translateY(0);
+}
+.carouselNav{
+  display:inline-block;
+  width:20px;
+  height:20px;
+  margin:0 10px;
+  border-radius:50%;
+  background-color:#d8d8d8;
+}
+.carouselNav.selected{
+  background-color:#0036ff;
+}
+.footer{
+  background:url(/images/bg-footer.png) no-repeat center top;
+  background-size:cover;
+  height:450px;
+}
+.socialIcon{
+  background: -moz-linear-gradient(45deg, rgba(0,230,255,1) 0%, rgba(0,111,255,1) 100%);
+  background: -webkit-gradient(left bottom, right top, color-stop(0%, rgba(0,230,255,1)), color-stop(100%, rgba(0,111,255,1)));
+  background: -webkit-linear-gradient(45deg, rgba(0,230,255,1) 0%, rgba(0,111,255,1) 100%);
+  background: -o-linear-gradient(45deg, rgba(0,230,255,1) 0%, rgba(0,111,255,1) 100%);
+  background: -ms-linear-gradient(45deg, rgba(0,230,255,1) 0%, rgba(0,111,255,1) 100%);
+  background: linear-gradient(45deg, rgba(0,230,255,1) 0%, rgba(0,111,255,1) 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00e6ff', endColorstr='#006fff', GradientType=1 );
+  border-radius:5px;
+  padding:7px;
+}
+.gradientBackground{
+  background: rgba(228,235,254,1);
+  background: -moz-linear-gradient(left, rgba(228,235,254,1) 0%, rgba(255,255,255,1) 45%, rgba(255,255,255,1) 90%, rgba(228,235,254,1) 100%);
+  background: -webkit-gradient(left top, right top, color-stop(0%, rgba(228,235,254,1)), color-stop(45%, rgba(255,255,255,1)), color-stop(90%, rgba(255,255,255,1)), color-stop(100%, rgba(228,235,254,1)));
+  background: -webkit-linear-gradient(left, rgba(228,235,254,1) 0%, rgba(255,255,255,1) 45%, rgba(255,255,255,1) 90%, rgba(228,235,254,1) 100%);
+  background: -o-linear-gradient(left, rgba(228,235,254,1) 0%, rgba(255,255,255,1) 45%, rgba(255,255,255,1) 90%, rgba(228,235,254,1) 100%);
+  background: -ms-linear-gradient(left, rgba(228,235,254,1) 0%, rgba(255,255,255,1) 45%, rgba(255,255,255,1) 90%, rgba(228,235,254,1) 100%);
+  background: linear-gradient(to right, rgba(228,235,254,1) 0%, rgba(255,255,255,1) 45%, rgba(255,255,255,1) 90%, rgba(228,235,254,1) 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e4ebfe', endColorstr='#e4ebfe', GradientType=1 );
+}
+@media (min-width: 32em) {
+  .bentTube:before{
+    top: -15px;
+    width: 0%;
+    height: 15px;
+    border-radius: 0 0 0 0;
+    background: rgba(2, 55, 250, 0.6);
+    z-index: 0;
+    transition: border-radius .37s ease-in-out .37s,width .75s ease-out, height .75s ease-out 0.5s;
+    left: 0;
   }
-  .bulletPoint{
-    top: -70px !important;
-    left: 50% !important;
-    margin-top: 25px !important;
-    margin-left: -25px !important;
+  .bentTube:after{
+    width: 100%;
+    height: 100%;
+    top: 0;
+    border-radius: 0 37px 0 0;
+    background: #fff;
+    z-index: 1;
   }
-  .bulletPoint:before{
-    width: 1px;
-    height: 25px;
-    top: 100%;
-    left: 50% !important;
+  .bentTubeLeft:before{
+    right: 0;
+    left: initial;
+  }
+  .bentTubeLeft:after{
+    border-radius: 37px 0 0 0;
+  }
+  .bentTubeRight.bentTubeActive:before{
+    border-radius: 0 50px 0 0;
+    width: 106%;
+    height: 106%;
+  }
+  .bentTubeLeft.bentTubeActive:before{
+    border-radius: 50px 0 0 0;
+    width: 106%;
+    height: 106%;
+  }
+}
+@media (max-width: 31em) {
+  .bentTube:before{
+    position: absolute;
+    content: "";
+    top: 12px;
+    height: 0;
+    width: 10px;
+    right: -10px;
+    transition: height .75s ease-out;
+    background: rgba(2, 55, 250, 0.6);
+  }
+  .bentTube.bentTubeActive:before{
+    height: 95px;
+  }
+  .bulletPoint.bulletTop{
+    right: -20px;
+  }
+  .bulletPoint.bulletBottom{
+    right: -20px;
+  }
+  .bg1 {
+    background-position: initial;
+    background-size: initial;
+    background-repeat: initial;
+  }
+  .headerContainer {
+    background-size:auto 100%;
   }
 }

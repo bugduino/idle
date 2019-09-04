@@ -75,44 +75,54 @@ class Faq extends Component {
     return (
       <Flex
         flexDirection={['column']}>
-        <Heading.h2 fontFamily={'sansSerif'} fontSize={[5,6]} textAlign={'center'} py={[4,5]} alignItems={'center'}>
-          Faq
-        </Heading.h2>
+        <Heading.h4 color={'dark-gray'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]} textAlign={'center'} pb={[4,5]} alignItems={'center'}>
+          Frequently asked questions
+        </Heading.h4>
 
         <Flex
-          flexDirection={['column', 'row']}
-          justifyContent={["flex-start", "space-between"]}
+          flexDirection={'column'}
+          justifyContent={"center"}
+          alignItems={'center'}
         >
-          <Flex width={[1,2/10]} px={[2,0]} flexDirection={['row', 'column']} justifyContent={['space-between', 'flex-start']}>
-            <Text
-              textAlign={'right'}
-              fontSize={[3, 4]}
-              mb={[1, 3]}
-              color={isGeneralSelected ? 'blue' : 'copyColor'}
-              onClick={() => this.setSection('general')}
-              className={['pointer', isGeneralSelected ? 'selected' : '']}>
-              General
-            </Text>
-            <Text
-              textAlign={'right'}
-              fontSize={[3, 4]}
-              mb={[1, 3]}
-              color={isGuidelinesSelected ? 'blue' : 'copyColor'}
-              onClick={() => this.setSection('guidelines')}
-              className={['pointer', isGuidelinesSelected ? 'selected' : '']}>
-              Investors
-            </Text>
-            <Text
-              textAlign={'right'}
-              fontSize={[3, 4]}
-              mb={[1, 3]}
-              color={isRatesSelected ? 'blue' : 'copyColor'}
-              onClick={() => this.setSection('rates')}
-              className={['pointer', isRatesSelected ? 'selected' : '']}>
-              Security
-            </Text>
+          <Flex width={[1,3/5]} px={[2,0]} flexDirection={'row'} justifyContent={'space-between'}>
+            <Flex width={1/3} textAlign={'center'} justifyContent={'center'} borderBottom={ isGeneralSelected ? '3px solid #0036ff' : 'none'}>
+              <Text
+                textAlign={'center'}
+                fontSize={[3, 3]}
+                fontWeight={3}
+                mb={1}
+                color={isGeneralSelected ? 'blue' : 'copyColor'}
+                onClick={() => this.setSection('general')}
+                className={['pointer', isGeneralSelected ? 'selected' : '']}>
+                General
+              </Text>
+            </Flex>
+            <Flex width={1/3} textAlign={'center'} justifyContent={'center'} borderBottom={ isGuidelinesSelected ? '3px solid #0036ff' : 'none'}>
+              <Text
+                textAlign={'center'}
+                fontSize={[3, 3]}
+                fontWeight={3}
+                mb={1}
+                color={isGuidelinesSelected ? 'blue' : 'copyColor'}
+                onClick={() => this.setSection('guidelines')}
+                className={['pointer', isGuidelinesSelected ? 'selected' : '']}>
+                Investors
+              </Text>
+            </Flex>
+            <Flex width={1/3} textAlign={'center'} justifyContent={'center'} borderBottom={ isRatesSelected ? '3px solid #0036ff' : 'none'}>
+              <Text
+                textAlign={'center'}
+                fontSize={[3, 3]}
+                fontWeight={3}
+                mb={1}
+                color={isRatesSelected ? 'blue' : 'copyColor'}
+                onClick={() => this.setSection('rates')}
+                className={['pointer', isRatesSelected ? 'selected' : '']}>
+                Security
+              </Text>
+            </Flex>
           </Flex>
-          <Box width={[1,8/10]} mt={[3, 0]} mb={[4, 0]} mr={4} pl={[0,6]}>
+          <Box width={1} mt={[3, 4]} mb={[4, 0]}>
             {isGeneralSelected && generalDivs}
             {isGuidelinesSelected && guidelinesDivs}
             {isRatesSelected && ratesDivs}

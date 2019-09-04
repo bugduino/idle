@@ -23,7 +23,7 @@ class LandingForm extends Component {
           web3,
           network
         }) => (
-          <Box maxWidth={["50em", "70em"]} mx={"auto"}>
+          <Box width={'100%'} mx={"auto"}>
             <SmartContractControls
               web3={web3}
               accountBalanceDAI={this.props.accountBalanceDAI}

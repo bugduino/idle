@@ -31,7 +31,8 @@ export default {
     '0',
     '0px 2px 4px rgba(0, 0, 0, 0.1)',
     '0 7px 14px rgba(50,50,93,.1)',
-    '1px 1px 0px rgba(0,0,0,0.2)'
+    '1px 1px 0px rgba(0,0,0,0.2)',
+    '0px 0px 16px 2px rgba(0,54,255,0.3)'
   ],
   opacity: {
     disabled: 0.4,
@@ -47,7 +48,7 @@ export default {
     copyColor: '#3F3D4B',
     black: baseColors.black,
     'near-black': '#111',
-    'dark-gray': '#333',
+    'dark-gray': '#4e4e4e',
     'mid-gray': '#555',
     gray: ' #f7f7f7',
     grey: '#CCC',

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Flex, Icon, Text, Heading } from 'rimble-ui'
+import { Box, Flex, Icon, Text, Heading } from 'rimble-ui'
 // import styles from './Faquestion.module.scss';
 
 class Faquestion extends Component {
@@ -13,35 +13,44 @@ class Faquestion extends Component {
   render() {
     return (
       <Flex
-        pt={(this.props.pt || this.props.pt === 0) ? this.props.pt : [2, 4]}
-        flexDirection={['column']}
+        my={[3,3]}
+        py={[3,3]}
+        px={[4,4]}
+        flexDirection={'column'}
         alignItems={'baseline'}
-        justifyContent={'center'}>
-        <Heading.h4
-          fontFamily={'sansSerif'}
-          style={{cursor: 'pointer'}}
-          fontWeight={2}
-          color={this.state.isShowingAnswer ? 'blue' : 'copyColor'}
-          pt={(this.props.pt || this.props.pt === 0) ? this.props.pt : 2}
-          pb={2}
-          my={0}
-          onClick={this.toggleAnswer.bind(this)}>
-          <Flex alignItems={'center'}>
+        justifyContent={'center'}
+        backgroundColor={'white'}
+        borderRadius={ this.state.isShowingAnswer ? '30px' : '50px' }
+        boxShadow={1}
+        onClick={this.toggleAnswer.bind(this)}
+      >
+        <Flex flexDirection={'row'} alignItems={'center'} width={1}>
+          <Box width={4/5}>
+            <Heading.h4
+              fontSize={2}
+              fontFamily={'sansSerif'}
+              style={{cursor: 'pointer'}}
+              fontWeight={3}
+              color={this.state.isShowingAnswer ? 'blue' : 'dark-gray'}
+              my={0}>
+                {this.props.question}
+              </Heading.h4>
+          </Box>
+          <Flex width={1/5} justifyContent={'flex-end'}>
             <Icon
-              name={this.state.isShowingAnswer ? 'Close' : 'Add'}
+              name={this.state.isShowingAnswer ? 'KeyboardArrowUp' : 'KeyboardArrowDown'}
               color={this.state.isShowingAnswer ? 'blue' : 'copyColor'}
               size={"1.5em"}
-              mr={[2]}
             />
-            {this.props.question}
           </Flex>
-        </Heading.h4>
-
-        {this.state.isShowingAnswer &&
-          <Text.p textAlign={'justify'} fontSize={[2,3]}>
-            {this.props.answer}
-          </Text.p>
-        }
+        </Flex>
+        <Flex width={1}>
+          {this.state.isShowingAnswer &&
+            <Text.p textAlign={'justify'} fontSize={2}>
+              {this.props.answer}
+            </Text.p>
+          }
+        </Flex>
       </Flex>
     );
   }
