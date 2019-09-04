@@ -39,7 +39,7 @@ class Landing extends Component {
           }
           this.setState({activeBullet: activeBullet});
         },50);
-        
+
         this.setState({bulletTimeoutID:bulletTimeoutID});
     };
 
@@ -125,6 +125,91 @@ class Landing extends Component {
     window.location.href = '#invest';
   }
 
+  scrollIt = (destination, duration = 200, easing = 'linear', callback) => {
+
+    const easings = {
+      linear(t) {
+        return t;
+      },
+      easeInQuad(t) {
+        return t * t;
+      },
+      easeOutQuad(t) {
+        return t * (2 - t);
+      },
+      easeInOutQuad(t) {
+        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+      },
+      easeInCubic(t) {
+        return t * t * t;
+      },
+      easeOutCubic(t) {
+        return (--t) * t * t + 1;
+      },
+      easeInOutCubic(t) {
+        return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+      },
+      easeInQuart(t) {
+        return t * t * t * t;
+      },
+      easeOutQuart(t) {
+        return 1 - (--t) * t * t * t;
+      },
+      easeInOutQuart(t) {
+        return t < 0.5 ? 8 * t * t * t * t : 1 - 8 * (--t) * t * t * t;
+      },
+      easeInQuint(t) {
+        return t * t * t * t * t;
+      },
+      easeOutQuint(t) {
+        return 1 + (--t) * t * t * t * t;
+      },
+      easeInOutQuint(t) {
+        return t < 0.5 ? 16 * t * t * t * t * t : 1 + 16 * (--t) * t * t * t * t;
+      }
+    };
+
+    const start = window.pageYOffset;
+    const startTime = 'now' in window.performance ? performance.now() : new Date().getTime();
+
+    const documentHeight = Math.max(document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight);
+    const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.getElementsByTagName('body')[0].clientHeight;
+    const destinationOffset = typeof destination === 'number' ? destination : destination.offsetTop;
+    const destinationOffsetToScroll = Math.round(documentHeight - destinationOffset < windowHeight ? documentHeight - windowHeight : destinationOffset);
+
+    if ('requestAnimationFrame' in window === false) {
+      window.scroll(0, destinationOffsetToScroll);
+      if (callback) {
+        callback();
+      }
+      return;
+    }
+
+    function scroll() {
+      const now = 'now' in window.performance ? performance.now() : new Date().getTime();
+      const time = Math.min(1, ((now - startTime) / duration));
+      const timeFunction = easings[easing](time);
+      window.scroll(0, Math.ceil((timeFunction * (destinationOffsetToScroll - start)) + start));
+
+      if (window.pageYOffset === destinationOffsetToScroll) {
+        if (callback) {
+          callback();
+        }
+        return;
+      }
+
+      requestAnimationFrame(scroll);
+    }
+
+    scroll();
+  }
+
+  scrollToSection = (e,destinationID) => {
+    const destination = document.getElementById(destinationID);
+    this.scrollIt(destination);
+    e.preventDefault();
+  }
+
   render() {
     const { network } = this.props;
     const maxOpacity = 0.5;
@@ -158,19 +243,22 @@ class Landing extends Component {
                 selectedTab={this.props.selectedTab} />
             </Flex>
             <Flex flexDirection={'column'} py={[3,5]} alignItems={'center'}>
-              <Box>
-                <Link textAlign={'center'} color={'dark-gray'} hoverColor={'dark-gray'} fontSize={2} fontWeight={3} href="#how-it-works">How it works</Link>
-              </Box>
-              <Box>
-                <Icon
-                  className={styles.bounceArrow}
-                  textAlign={'center'}
-                  align={'center'}
-                  name={'KeyboardArrowDown'}
-                  color={'dark-gray'}
-                  size={"2em"}
-                />
-              </Box>
+              <Link onClick={e => this.scrollToSection(e,'how-it-works')} textAlign={'center'} color={'dark-gray'} hoverColor={'dark-gray'} fontSize={2} fontWeight={3} href="#how-it-works">
+                <Flex flexDirection={'column'} py={[3,5]} alignItems={'center'}>
+                  <Box>
+                    How it works
+                  </Box>
+                  <Box>
+                    <Icon
+                      className={styles.bounceArrow}
+                      align={'center'}
+                      name={'KeyboardArrowDown'}
+                      color={'dark-gray'}
+                      size={"2em"}
+                    />
+                  </Box>
+                </Flex>
+              </Link>
             </Flex>
           </Box>
         </Box>
@@ -180,10 +268,10 @@ class Landing extends Component {
             <Flex alignItems={'center'} flexDirection={'column'} width={1} maxWidth={['24em','90em']}>
               <Flex flexDirection={['column','row']} height={['auto','275px']}>
                 <Flex width={[1,1/2]} justifyContent={['center','flex-end']} alignItems={['center','start']}>
-                  <Flex flexDirection={['column','row']} position={'relative'} className={[styles.bulletCard,this.state.activeBullet>=1 ? styles.bulletCardActive :null]} width={[1,5/7]} p={[3,4]}>
+                  <Flex flexDirection={['column','row']} position={'relative'} className={[styles.bulletCard,styles.bulletCardFirst,this.state.activeBullet>=1 ? styles.bulletCardActive :null]} width={[1,5/7]} p={[3,4]}>
                     {
                       !this.props.isMobile && (
-                        <Flex width={1/4} p={[2,2]} alignItems={'center'} justifyContent={'center'} justifyContent={'center'}>
+                        <Flex width={1/4} p={[2,2]} alignItems={'center'} justifyContent={'center'}>
                           <Image width={1} src={'images/lend.png'} />
                         </Flex>
                       )
@@ -194,7 +282,7 @@ class Landing extends Component {
                       </Heading.h3>
                       {
                         this.props.isMobile && (
-                          <Flex width={1} p={[2,2]} alignItems={'center'} justifyContent={'center'} justifyContent={'center'}>
+                          <Flex width={1} p={[2,2]} alignItems={'center'} justifyContent={'center'}>
                             <Image width={1/5} src={'images/lend.png'} />
                           </Flex>
                         )
@@ -357,7 +445,7 @@ class Landing extends Component {
                   Our brand values
                 </Heading.h4>
               </Box>
-              <Box>
+              <Box position={'relative'}>
                 <Box className={[styles.carouselDesc,this.state.activeCarousel===1 || this.props.isMobile ? styles.selected : '']} py={[3,0]} my={[3,0]}>
                   {
                     this.props.isMobile && (
@@ -426,15 +514,15 @@ class Landing extends Component {
                   <Box width={'550px'} position={'relative'} minHeight={'500px'}>
                     <Flex flexDirection={'column'} textAlign={'center'} alignItems={'center'} justifyContent={'center'} className={[styles.carouselItem,this.state.activeCarousel===1?  styles.pos1 : (this.state.activeCarousel===2 ? styles.pos3 : styles.pos2) ]} boxShadow={ this.state.activeCarousel===1 ? 4 : 1} m={[2,3]} onClick={e => this.setActiveCarousel(1)}>
                       <Image src={'images/smart-contract.png'} pb={2} />
-                      <Text color={'white'} fontSize={3} fontWeight={3} color={'#4e4e4e'}>Smart Contract</Text>
+                      <Text fontSize={3} fontWeight={3} color={'dark-gray'}>Smart Contract</Text>
                     </Flex>
                     <Flex flexDirection={'column'} textAlign={'center'} alignItems={'center'} justifyContent={'center'} className={[styles.carouselItem,this.state.activeCarousel===2 ? styles.pos1 : (this.state.activeCarousel===1 ? styles.pos2 : styles.pos3)]} boxShadow={ this.state.activeCarousel===2 ? 4 : 1} m={[2,3]} onClick={e => this.setActiveCarousel(2)}>
                       <Image src={'images/no-hidden-feeds.png'} pb={2} />
-                      <Text color={'white'} fontSize={3} fontWeight={3} color={'#4e4e4e'}>Decentralized</Text>
+                      <Text fontSize={3} fontWeight={3} color={'dark-gray'}>Decentralized</Text>
                     </Flex>
-                    <Flex flexDirection={'column'} textAlign={'center'} alignItems={'center'} justifyContent={'center'} className={[styles.carouselItem,,this.state.activeCarousel===3 ? styles.pos1 : (this.state.activeCarousel===2 ? styles.pos2 : styles.pos3)]} boxShadow={ this.state.activeCarousel===3 ? 4 : 1} m={[2,3]} onClick={e => this.setActiveCarousel(3)}>
+                    <Flex flexDirection={'column'} textAlign={'center'} alignItems={'center'} justifyContent={'center'} className={[styles.carouselItem,this.state.activeCarousel===3 ? styles.pos1 : (this.state.activeCarousel===2 ? styles.pos2 : styles.pos3)]} boxShadow={ this.state.activeCarousel===3 ? 4 : 1} m={[2,3]} onClick={e => this.setActiveCarousel(3)}>
                       <Image src={'images/decentralized.png'} pb={2} />
-                      <Text color={'white'} fontSize={3} fontWeight={3} color={'#4e4e4e'}>No hidden fees</Text>
+                      <Text fontSize={3} fontWeight={3} color={'dark-gray'}>No hidden fees</Text>
                     </Flex>
                   </Box>
                   <Flex width={1} alignItems={'center'} justifyContent={'center'} position={'relative'} zIndex={'10'}>
@@ -454,7 +542,7 @@ class Landing extends Component {
               {
                 !this.props.isMobile && (
                 <Box width={1/2}>
-                    <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]}>
+                    <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[4,4]}>
                       Current lending interest rate
                     </Heading.h3>
                 </Box>
@@ -572,7 +660,7 @@ class Landing extends Component {
               <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} my={3} color={'dark-gray'}>
                 Start a Conversation
               </Heading.h3>
-              <Link textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={2} color={'dark-gray'} hoverColor={'blue'}>matteo.pandolfometro@gmail.com</Link>
+              <Link textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={2} color={'dark-gray'} hoverColor={'blue'}>matteo.pandolfi@gmail.com</Link>
             </Flex>
 
             <Flex width={[1,3/10]} flexDirection={'column'} height={['auto','100%']}>

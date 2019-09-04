@@ -44,7 +44,7 @@ class NewsletterForm extends Component {
           <Form onSubmit={this.handleSubmit}>
             <Flex flexDirection={['column','row']} alignItems={['center','flex-start']} justifyContent={'center'}>
               <Box width={[1,8/10]}>
-                <Form.Field width={1}>
+                <Form.Field label={''} width={1}>
                   <Form.Input
                     type="email"
                     name="EMAIL"
