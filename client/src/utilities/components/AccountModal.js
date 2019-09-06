@@ -66,7 +66,7 @@ export default function (props) {
               size={'medium'}
               px={'80px'}
               borderRadius={4}
-              onClick={async () => await context.unsetConnector()}>
+              onClick={async () => await context.setConnector('Infura')}>
               {context.active ? "Log out wallet" : "Reset"}
             </Button>
           )}

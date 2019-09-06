@@ -17,6 +17,7 @@ class LandingForm extends Component {
           transactions,
           initContract,
           initAccount,
+          initWeb3,
           getAccountBalance,
           contractMethodSendWrapper,
           web3,
@@ -34,6 +35,7 @@ class LandingForm extends Component {
               account={account}
               transactions={transactions}
               initContract={initContract}
+              initWeb3={initWeb3}
               getAccountBalance={getAccountBalance}
               contractMethodSendWrapper={contractMethodSendWrapper}
             />

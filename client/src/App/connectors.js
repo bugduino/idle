@@ -6,6 +6,7 @@ import PortisApi from "@portis/web3";
 
 const {
   InjectedConnector,
+  NetworkOnlyConnector,
   TrezorConnector,
   LedgerConnector,
   // WalletConnectConnector,
@@ -16,9 +17,7 @@ const {
 const env = process.env;
 
 const supportedNetworkURLs = {
-  1: `https://mainnet.infura.io/v3/${env.REACT_APP_INFURA_KEY}`,
-  3: `https://ropsten.infura.io/v3/${env.REACT_APP_INFURA_KEY}`,
-  4: `https://rinkeby.infura.io/v3/${env.REACT_APP_INFURA_KEY}`,
+  1: `https://mainnet.infura.io/v3/${env.REACT_APP_INFURA_KEY}`
 };
 const manifestEmail = env.REACT_APP_TREZOR_MANIFEST_EMAIL; // trezor
 const manifestAppUrl = env.REACT_APP_TREZOR_MANIFEST_URL; // trezor
@@ -29,7 +28,11 @@ const portisDAppId = env.REACT_APP_PORTIS_DAPP_ID;
 const portisNetwork = env.REACT_APP_PORTIS_NETWORK;
 
 const Injected = new InjectedConnector({
-  supportedNetworks: [1, 3, 4]
+  supportedNetworks: [1]
+});
+
+const Infura = new NetworkOnlyConnector({
+  providerURL: supportedNetworkURLs[1]
 });
 
 const Trezor = new TrezorConnector({
@@ -66,6 +69,7 @@ const Portis = new PortisConnector({
 
 export default {
   Injected,
+  Infura,
   Fortmatic,
   Trezor,
   Ledger,

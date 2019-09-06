@@ -1,5 +1,4 @@
-import React from "react";
-import Web3 from "web3"; // uses latest 1.x.x version
+import React from 'react';
 
 import ConnectionModalUtil from "./ConnectionModalsUtil";
 import NetworkUtil from "./NetworkUtil";
@@ -7,9 +6,6 @@ import DAI from '../abis/tokens/DAI'; // rinkeby
 import BigNumber from 'bignumber.js';
 const DAIAddr = DAI.address;
 const DAIAbi = DAI.abi;
-
-require('dotenv').config();
-const INFURA_KEY = process.env["REACT_APP_INFURA_KEY"];
 const BNify = s => new BigNumber(String(s));
 
 const RimbleTransactionContext = React.createContext({
@@ -78,54 +74,35 @@ class RimbleTransaction extends React.Component {
   static Consumer = RimbleTransactionContext.Consumer;
 
   // Initialize a web3 provider
-  initWeb3 = async (web3, account) => {
-    if (!web3) {
-      web3 = {};
-      // Check for modern web3 provider
-      if (window.ethereum) {
-        console.log("Using modern web3 provider.");
-        web3 = new Web3(window.ethereum);
-      }
-      // Legacy dapp browsers, public wallet address always exposed
-      else if (window.web3) {
-        console.log("Legacy web3 provider. Try updating.");
-        web3 = new Web3(window.web3.currentProvider);
-      }
-      // Non-dapp browsers...
-      else {
-        console.log("Non-Ethereum browser detected. Using Infura fallback.");
-
-        const web3Provider = new Web3.providers.HttpProvider(
-          `https://mainnet.infura.io/v3/${INFURA_KEY}`
-        );
-        web3 = new Web3(web3Provider);
-      }
+  initWeb3 = async () => {
+    const context = this.props.context;
+    if (!context.active) {
+      await context.setFirstValidConnector(['Injected', 'Infura']);
+      return;
     }
+    const web3 = context.library;
+    if (!web3) { return; }
 
     this.setState({ web3 }, async () => {
       // After setting the web3 provider, check network
       this.checkNetwork();
-      if (account || (window.ethereum && window.ethereum.selectedAddress)) {
-        await this.initAccount(window.ethereum && window.ethereum.selectedAddress);
+      if (context.account) {
+        await this.initAccount(context.account);
       }
     });
 
     console.log("Finished initWeb3");
+    return web3;
   };
 
   initContract = async (name, address, abi) => {
     console.log(`Init contract: ${name}`);
 
-    if (!this.state.web3) {
-      console.log("Awaiting web3");
-      await this.initWeb3();
-    }
-
     return await this.createContract(name, address, abi);
   };
 
   createContract = async (name, address, abi) => {
-    console.log("creating contract", address, abi);
+    console.log(`creating contract ${name} - addr: ${address}`);
     // Create contract on initialized web3 provider with given abi and address
     try {
       const contract = new this.state.web3.eth.Contract(abi, address);
@@ -152,7 +129,9 @@ class RimbleTransaction extends React.Component {
       // Request account access if needed
       await this.state.web3.eth.getAccounts().then(wallets => {
         const account = wallets[0];
-        this.closeConnectionPendingModal();
+        if (!hideModal) {
+          this.closeConnectionPendingModal();
+        }
         this.setState({ account });
 
         console.log("wallet address:", this.state.account);
@@ -703,14 +682,6 @@ class RimbleTransaction extends React.Component {
       methods: {}
     }
   };
-
-  async componentDidMount() {
-    const { context } = this.props;
-    const { library, account } = context || {}; // library is the web3 provider object
-    if (!this.state.web3) {
-      await this.initWeb3(library, account);
-    }
-  }
 
   render() {
     return (

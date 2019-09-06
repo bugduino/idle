@@ -34,7 +34,7 @@ export default function Web3ConnectionButtons(props) {
     }
   }
 
-  let basicConnectorsName = Object.keys(connectors);
+  let basicConnectorsName = Object.keys(connectors).filter(c => c !== 'Infura');
   if (onlyPortis) {
     basicConnectorsName = basicConnectorsName.filter(n => n === 'Portis');
   }
@@ -140,7 +140,7 @@ export default function Web3ConnectionButtons(props) {
             Generic wallet option is used for Ethereum browsers only.
           </Text.p>
         )}
-        {(context.active || (context.error && context.connectorName)) && (
+        {(context.active || (context.error && context.connectorName)) && context.connectorName !== 'Infura' && (
           <Button.Outline
             width={[1/2]}
             className={[styles.button]}
