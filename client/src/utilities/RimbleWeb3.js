@@ -81,7 +81,6 @@ class RimbleTransaction extends React.Component {
   initWeb3 = async (web3, account) => {
     if (!web3) {
       web3 = {};
-
       // Check for modern web3 provider
       if (window.ethereum) {
         console.log("Using modern web3 provider.");
@@ -106,8 +105,8 @@ class RimbleTransaction extends React.Component {
     this.setState({ web3 }, async () => {
       // After setting the web3 provider, check network
       this.checkNetwork();
-      if (account) {
-        await this.initAccount();
+      if (account || (window.ethereum && window.ethereum.selectedAddress)) {
+        await this.initAccount(window.ethereum && window.ethereum.selectedAddress);
       }
     });
 
@@ -115,7 +114,7 @@ class RimbleTransaction extends React.Component {
   };
 
   initContract = async (name, address, abi) => {
-    console.log("Init contract");
+    console.log(`Init contract: ${name}`);
 
     if (!this.state.web3) {
       console.log("Awaiting web3");
@@ -144,8 +143,10 @@ class RimbleTransaction extends React.Component {
     }
   };
 
-  initAccount = async () => {
-    this.openConnectionPendingModal();
+  initAccount = async (hideModal = false) => {
+    if (!hideModal) {
+      this.openConnectionPendingModal();
+    }
 
     try {
       // Request account access if needed
@@ -703,10 +704,12 @@ class RimbleTransaction extends React.Component {
     }
   };
 
-  componentDidMount() {
+  async componentDidMount() {
     const { context } = this.props;
     const { library, account } = context || {}; // library is the web3 provider object
-    this.initWeb3(library, account);
+    if (!this.state.web3) {
+      await this.initWeb3(library, account);
+    }
   }
 
   render() {
