@@ -120,9 +120,8 @@ class SmartContractControls extends React.Component {
       price = this.BNify(price).div(1e18);
       const tokenToRedeem = balance.times(price);
       let earning = 0;
-
       if (this.state.amountLent){
-        earning = tokenToRedeem.minus(this.BNify(this.state.amountLent).div(1e18));
+        earning = tokenToRedeem.minus(this.BNify(this.state.amountLent));
       }
 
       this.setState({
@@ -144,7 +143,7 @@ class SmartContractControls extends React.Component {
       let earning = 0;
 
       if (this.state.amountLent){
-        earning = tokenToRedeem.minus(this.BNify(this.state.amountLent).div(1e18));
+        earning = tokenToRedeem.minus(this.BNify(this.state.amountLent));
       }
       this.setState({
         [`balanceOf${contractName}`]: balance,
@@ -357,34 +356,28 @@ class SmartContractControls extends React.Component {
       return;
     }
 
-    const prevTxs = txs.data.result.filter(
-        tx => tx.from.toLowerCase() === IdleAddress.toLowerCase() ||
-              tx.to.toLowerCase() === IdleAddress.toLowerCase() ||
-              (tx.from.toLowerCase() === iDAIAddress.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase()) ||
-              (tx.from.toLowerCase() === cDAIAddress.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase())
-      ).map(tx => ({
-        from: tx.from,
-        to: tx.to,
-        hash: tx.hash,
-        realValue: tx.value,
-        value: this.toEth(tx.value),
-        tokenName: tx.tokenName,
-        tokenSymbol: tx.tokenSymbol,
-        timeStamp: tx.timeStamp
-      }));
+    const results = txs.data.result;
+    const prevTxs = results.filter(
+        tx => tx.to.toLowerCase() === IdleAddress.toLowerCase() ||
+              tx.from.toLowerCase() === IdleAddress.toLowerCase() ||
+              (tx.from.toLowerCase() === iDAIAddress.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase())
+      ).filter(tx => {
+        const internalTxs = results.filter(r => r.hash === tx.hash);
+        // remove txs from old contract
+        return !internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === OldIdleAddress.toLowerCase()).length;
+      }).map(tx => ({...tx, value: this.toEth(tx.value)}));
 
     let amountLent = 0;
     let transactions = {};
     prevTxs.forEach((tx,index) => {
       // Deposited
       if (tx.to.toLowerCase() === IdleAddress.toLowerCase()){
-        amountLent += parseFloat(tx.realValue);
+        amountLent += parseFloat(tx.value);
       } else {
         amountLent = 0;
       }
       transactions[tx.hash] = tx;
     });
-
     if (executedTxs){
       Object.keys(executedTxs).forEach((key,index) => {
         const tx = executedTxs[key];
