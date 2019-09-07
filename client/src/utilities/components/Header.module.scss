@@ -1,35 +1,3 @@
-.mainInput {
-  paddingLeft: 0;
-  paddingRight: 1em;
-  background-color: transparent;
-  &:focus {
-    border-color: white !important;
-  }
-  &::-webkit-input-placeholder { /* Chrome/Opera/Safari */
-    color: rgba(0,0,0,0.3) !important;
-  }
-  &::-moz-placeholder { /* Firefox 19+ */
-    color: rgba(0,0,0,0.3) !important;
-  }
-  &:-ms-input-placeholder { /* IE 10+ */
-    color: rgba(0,0,0,0.3) !important;
-  }
-  &:-moz-placeholder { /* Firefox 18- */
-    color: rgba(0,0,0,0.3) !important;
-  }
-}
-.button{
-  border-radius: 0 2rem 2rem 0 !important;
-}
-
-/* Hide HTML5 Up and Down arrows. */
-input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-input[type="number"] {
-    -moz-appearance: textfield;
-}
 .gradientButton{
   border-radius: 48px !important;
   background: rgba(0,221,255,1) !important;
@@ -43,10 +11,4 @@ input[type="number"] {
 }
 .gradientButton:before{
   display:none !important;
-}
-@media (max-width: 30em){
-  .mainInput {
-    paddingLeft: 1em;
-    paddingRight: 1em;
-  }
 }

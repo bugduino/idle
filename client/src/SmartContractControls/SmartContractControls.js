@@ -46,6 +46,7 @@ class SmartContractControls extends React.Component {
     IdleDAISupply: null,
     idleDAICap: 30000,
     earning: null,
+    maxRate: '-',
     prevTxs : {}
   };
 
@@ -77,14 +78,36 @@ class SmartContractControls extends React.Component {
       needsUpdate: false
     });
   };
+  animateMaxRate = (start = 0, end = null, duration = 1000) => {
+    end = parseFloat(parseFloat(end).toFixed(2));
+    const minStep = 0.13;
+    const steps = (end-start)/minStep;
+    const stepTime = Math.ceil(duration/steps);
+    let timer = null;
+
+    const run = () => {
+      const newRate = Math.min(parseFloat(this.state.maxRate)+minStep,end);
+      this.setState({maxRate:parseFloat(newRate).toFixed(2)});
+      if (newRate == end){
+        window.clearInterval(timer);
+      }
+    }
+
+    timer = window.setInterval(run,stepTime);
+  }
   getAprs = async () => {
-    let aprs = await this.genericIdleCall('getAPRs');
+    const aprs = await this.genericIdleCall('getAPRs');
+    const maxRate = this.toEth(Math.max(aprs[0],aprs[1]));
+    // const startMaxRate = parseFloat(parseFloat(maxRate*0.5).toFixed(2));
     this.setState({
       [`compoundRate`]: aprs ? (+this.toEth(aprs[0])).toFixed(2) : '0.00',
       [`fulcrumRate`]: aprs ? (+this.toEth(aprs[1])).toFixed(2) : '0.00',
-      [`maxRate`]: aprs ? (+this.toEth(Math.max(aprs[0],aprs[1]))).toFixed(2) : '0.00',
+      [`maxRate`]: aprs ? ((+maxRate).toFixed(2)) : '0.00',
+      // [`maxRate`]: maxRate,
       needsUpdate: false
     });
+
+    // this.animateMaxRate(startMaxRate,maxRate);
   };
   getPriceInToken = async (contractName) => {
     const totalIdleSupply = await this.genericContractCall(contractName, 'totalSupply');
@@ -552,7 +575,7 @@ class SmartContractControls extends React.Component {
       )});
 
     return (
-      <Flex flexDirection={'column'} width={[1,'80%']} m={'0 auto'}>
+      <Flex flexDirection={'column'} width={[1,'90%']} m={'0 auto'}>
         <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'dark-gray'}>
           Last transactions
         </Heading.h3>
@@ -575,40 +598,30 @@ class SmartContractControls extends React.Component {
 
     return (
       <Box textAlign={'center'} alignItems={'center'} width={'100%'}>
-        <Form pb={[0, 2]} minHeight={['auto','20em']} backgroundColor={'white'} color={'blue'} boxShadow={1} borderRadius={'15px'}>
+        <Form pb={[0, 2]} minHeight={['auto','20em']} backgroundColor={'white'} color={'blue'} boxShadow={'0 0 25px 5px rgba(102, 139, 255, 0.7)'} borderRadius={'15px'}>
           <Flex justifyContent={'center'}>
             <Flex flexDirection={['row','row']} width={['100%','80%']} pt={[2,3]}>
               <Box className={[styles.tab,this.props.selectedTab==='1' ? styles.tabSelected : '']} width={[1/3]} textAlign={'center'}>
-                <Link display={'block'} pt={[2,3]} pb={2} fontSize={[2,3]} fontWeight={3} onClick={e => this.selectTab(e, '1')}>
+                <Link display={'block'} pt={[2,3]} pb={2} fontSize={[2,3]} fontWeight={2} onClick={e => this.selectTab(e, '1')}>
                   Lend
                 </Link>
               </Box>
               <Box className={[styles.tab,this.props.selectedTab==='2' ? styles.tabSelected : '']} width={[1/3]} textAlign={'center'} borderLeft={'1px solid #fff'} borderRight={'1px solid #fff'}>
-                <Link display={'block'} pt={[2,3]} pb={2} fontSize={[2,3]} fontWeight={3} onClick={e => this.selectTab(e, '2')}>
+                <Link display={'block'} pt={[2,3]} pb={2} fontSize={[2,3]} fontWeight={2} onClick={e => this.selectTab(e, '2')}>
                   Funds
                 </Link>
               </Box>
               <Box className={[styles.tab,this.props.selectedTab==='3' ? styles.tabSelected : '']} width={[1/3]} textAlign={'center'} borderRight={'none'}>
-                <Link display={'block'} pt={[2,3]} pb={2} fontSize={[2,3]} fontWeight={3} onClick={e => this.selectTab(e, '3')}>
+                <Link display={'block'} pt={[2,3]} pb={2} fontSize={[2,3]} fontWeight={2} onClick={e => this.selectTab(e, '3')}>
                   Rebalance
                 </Link>
               </Box>
             </Flex>
           </Flex>
 
-          <Box py={[2, 4]} boxShadow={'inset 0px 7px 4px -4px rgba(0,0,0,0.1)'}>
+          <Box boxShadow={'inset 0px 7px 4px -4px rgba(0,0,0,0.1)'} py={[2, 3]}>
             {this.props.selectedTab === '1' &&
               <Box textAlign={'text'} py={3}>
-                {
-                /*
-                <Box px={[2,0]} py={[2, 2]}>
-                  <Heading.h4 fontWeight={'400'} lineHeight={['1.4em', '2em']} fontSize={[2,2]} textAlign={'center'} color={'dark-gray'}>
-                    We offer the best available interest rate for your DAI through different lending platforms.
-                  </Heading.h4>
-                </Box>
-                */
-                }
-
                 {this.state.isApprovingDAI && (
                   <Flex
                     justifyContent={'center'}
@@ -618,6 +631,10 @@ class SmartContractControls extends React.Component {
                   </Flex>
                 )}
 
+                <Heading.h3 py={[3, 0]} mb={[2,3]} fontFamily={'sansSerif'} fontSize={[2, 3]} fontWeight={2} color={'dark-gray'} textAlign={'center'}>
+                  Earn <Text.span fontWeight={'bold'} fontSize={[3,4]}>{this.state.maxRate}% APR</Text.span> on your DAI
+                </Heading.h3>
+
                 {hasOldBalance ?
                   <Flash variant="warning" width={1}>
                     We have released a new version of the contract, with a small bug fix, please redeem
@@ -626,6 +643,7 @@ class SmartContractControls extends React.Component {
                     Sorry for the inconvenience.
                   </Flash> : !this.state.isApprovingDAI &&
                     (<CryptoInput
+                      genericError={this.state.genericError}
                       disableLendButton={this.state.disableLendButton}
                       isMobile={this.props.isMobile}
                       account={this.props.account}
@@ -641,19 +659,11 @@ class SmartContractControls extends React.Component {
                       handleClick={e => this.mint(e)} />)
                 }
 
-                <Heading.h3 py={[3, 'initial']} fontFamily={'sansSerif'} fontSize={[2, 2]} fontWeight={2} color={'dark-gray'} textAlign={'center'}>
-                  Earn <Text.span fontWeight={'bold'} fontSize={3}>{this.state.maxRate}% APR</Text.span> on your DAI
-                </Heading.h3>
-
                 <Flex justifyContent={'center'}>
-                  <Heading.h5 mt={[1, 2]} color={'darkGray'} fontWeight={1} fontSize={1} textAlign={'center'}>
+                  <Heading.h5 mt={2} color={'darkGray'} fontWeight={1} fontSize={1} textAlign={'center'}>
                     *This is beta software. Use at your own risk.
                   </Heading.h5>
                 </Flex>
-
-                {this.state.genericError && (
-                  <Text textAlign='center' color={'red'} fontSize={2}>{this.state.genericError}</Text>
-                )}
 
               </Box>
             }
@@ -673,7 +683,7 @@ class SmartContractControls extends React.Component {
                       }
                       <Flex flexDirection={['column','row']} py={[2,3]} width={[1,'70%']} m={'0 auto'}>
                         <Box width={[1,1/2]}>
-                          <Heading.h3 fontWeight={2} textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'dark-gray'}>
+                          <Heading.h3 fontWeight={2} textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
                             Redeemable Funds
                           </Heading.h3>
                           <Heading.h3 fontFamily={'sansSerif'} fontSize={[4,5]} fontWeight={2} color={'black'} textAlign={'center'}>
@@ -681,7 +691,7 @@ class SmartContractControls extends React.Component {
                           </Heading.h3>
                         </Box>
                         <Box width={[1,1/2]}>
-                          <Heading.h3 fontWeight={2} textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'dark-gray'}>
+                          <Heading.h3 fontWeight={2} textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
                             Current earnings
                           </Heading.h3>
                           <Heading.h3 fontFamily={'sansSerif'} fontSize={[4,5]} fontWeight={2} color={'black'} textAlign={'center'}>
@@ -791,8 +801,9 @@ class SmartContractControls extends React.Component {
                   <Flex
                     alignItems={'center'}
                     flexDirection={'column'}
-                    textAlign={'center'}>
-                      <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} color={'blue'}>
+                    textAlign={'center'}
+                    py={[1,3]}>
+                      <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontWeight={2} fontSize={[3,3]} color={'blue'}>
                         Please connect to view your available funds.
                       </Heading.h3>
                       <Button
@@ -864,9 +875,9 @@ class SmartContractControls extends React.Component {
 
             {
               this.props.selectedTab === '3' && !this.state.shouldRebalance &&
-              <Box textAlign={'center'} py={[3,0]}>
+              <Box textAlign={'center'} py={3}>
                 <Heading.h3 textAlign={'center'}
-                fontFamily={'sansSerif'} fontSize={[3,3]} color={'blue'}>
+                fontFamily={'sansSerif'} fontSize={[3,3]} fontWeight={2} color={'blue'}>
                   The pool is already balanced.
                 </Heading.h3>
                 <Heading.h4 color={'dark-gray'} fontSize={[2,2]} px={[3,0]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>

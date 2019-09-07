@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Heading, Box, Flex, Form, Button, Image, Link } from 'rimble-ui'
+import { Heading, Box, Flex, Form, Button, Image, Link, Text } from 'rimble-ui'
 import styles from './CryptoInput.module.scss';
 
 class CryptoInput extends Component {
@@ -8,9 +8,8 @@ class CryptoInput extends Component {
     return (
         <>
           <Flex
-            maxWidth={['90%','40em']}
+            maxWidth={['90%','30em']}
             borderRadius={'2rem'}
-            /*border={'1px solid'}*/
             alignItems={'center'}
             borderColor={'#ccc'}
             boxShadow={1}
@@ -20,7 +19,7 @@ class CryptoInput extends Component {
               <Flex width={[1/10]}>
                 <Image src="images/btn-dai.svg" height={this.props.height} ml={['0.5em','10px']} />
               </Flex>
-              <Box width={9/10}>
+              <Box width={8/10}>
                 <Form.Input
                   placeholder={`Enter DAI Amount`}
                   value={this.props.defaultValue}
@@ -42,7 +41,7 @@ class CryptoInput extends Component {
               </Box>
               {
                 !this.props.isMobile && (
-                  <Box width={2/10}>
+                  <Box width={3/10}>
                     <Form.Input
                       style={{
                         paddingLeft: '0',
@@ -70,10 +69,12 @@ class CryptoInput extends Component {
               }
           </Flex>
           <Flex
-            maxWidth={['90%','40em']}
+            maxWidth={['90%','30em']}
             justifyContent={'space-between'}
             mt={[2, 2]} mb={[2,3]} mx={'auto'}
           >
+            {
+            /*
             <Box pl={'5%'}>
               <Heading.h5 color={'darkGray'} fontWeight={1} fontSize={1}>
               {!this.props.isMobile ? 
@@ -83,9 +84,11 @@ class CryptoInput extends Component {
               }
               </Heading.h5>
             </Box>
+            */
+            }
             {
               this.props.account && !isNaN(this.props.trimEth(this.props.accountBalanceDAI)) && 
-              <Box pr={'5%'}>
+              <Box pl={'5%'}>
                 <Heading.h5 color={'darkGray'} fontWeight={1} fontSize={1}>
                   <Link color={'darkGray'} hoverColor={'darkGray'} fontWeight={1} fontSize={1} lineHeight={'1.25'} onClick={ e => this.props.useEntireBalance(this.props.accountBalanceDAI) }>
                     Balance: {!this.props.isMobile ? parseFloat(this.props.accountBalanceDAI).toFixed(6) : parseFloat(this.props.accountBalanceDAI).toFixed(2) } DAI</Link>
@@ -93,6 +96,11 @@ class CryptoInput extends Component {
               </Box>
             }
           </Flex>
+
+          {this.props.genericError && (
+            <Text textAlign='center' color={'red'} fontSize={2} mb={[2,3]}>{this.props.genericError}</Text>
+          )}
+
           <Flex width={1} alignItems={'center'} justifyContent={'center'} mb={[0,3]} mx={'auto'}>
             <Button
               onClick={this.props.handleClick}
@@ -101,9 +109,9 @@ class CryptoInput extends Component {
               mainColor={'blue'}
               fontWeight={3}
               fontSize={2}
-              px={this.props.isMobile ? [2,3] : [4,5]}
+              px={0}
               my={0}
-              width={[1/2,1/4]}
+              width={[1/2,1/5]}
               disabled={this.props.disableLendButton ? 'disabled' : false}
             >
               LEND

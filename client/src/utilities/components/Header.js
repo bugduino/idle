@@ -2,7 +2,7 @@ import React from "react";
 import { Box, Flex, Button, Image } from "rimble-ui";
 import AccountOverview from "./AccountOverview";
 import AccountModal from "./AccountModal";
-import styles from '../../SmartContractControls/SmartContractControls.module.scss';
+import styles from './Header.module.scss';
 
 class Header extends React.Component {
   state = {
@@ -22,10 +22,10 @@ class Header extends React.Component {
         'zIndex': 99
         }}
       >
-        <Flex bg={"transparent"} pt={[3,3]} alignItems={'flex-end'}>
+        <Flex bg={"transparent"} pt={[3,4]} alignItems={'flex-end'}>
           <Box ml={[3, 5]} width={[1, 3/12]}>
             <Image src="images/logo.png"
-              height={['35px','50px']}
+              height={['35px','40px']}
               position={'relative'} />
           </Box>
           <Box display={['inline-block', 'none']}>
@@ -66,8 +66,7 @@ class Header extends React.Component {
                 />
               ) : (
                 <Button
-                  contrastColor={'blue'}
-                  mainColor={'white'}
+                  className={styles.gradientButton}
                   borderRadius={4}
                   my={2}
                   mr={[3, 4]}

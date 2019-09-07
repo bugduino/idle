@@ -38,7 +38,7 @@ class Landing extends Component {
             }
           }
           this.setState({activeBullet: activeBullet});
-        },50);
+        },100);
 
         this.setState({bulletTimeoutID:bulletTimeoutID});
     };
@@ -57,11 +57,13 @@ class Landing extends Component {
   }
 
   startCarousel = () => {
-    if (this.state.carouselIntervalID){
-      window.clearInterval(this.state.carouselIntervalID);
+    if (!this.props.isMobile){
+      if (this.state.carouselIntervalID){
+        window.clearInterval(this.state.carouselIntervalID);
+      }
+      const intervalID = setInterval( () => this.setActiveCarousel(this.state.activeCarousel+1) ,5000);
+      this.setState({carouselIntervalID:intervalID});
     }
-    const intervalID = setInterval( () => this.setActiveCarousel(this.state.activeCarousel+1) ,5000);
-    this.setState({carouselIntervalID:intervalID});
   }
 
   setActiveCarousel = (index) => {
@@ -235,7 +237,7 @@ class Landing extends Component {
                 We connect different lending protocols with a decentralized rebalance process to always give you the best available rate
               </Heading.h2>
             </Flex>
-            <Flex flexDirection={'column'} alignItems={'center'} maxWidth={["50em", "55em"]} mx={'auto'} textAlign={'center'}>
+            <Flex flexDirection={'column'} alignItems={'center'} maxWidth={["50em", "50em"]} mx={'auto'} textAlign={'center'}>
               <LandingForm
                 accountBalanceDAI={this.props.accountBalanceDAI}
                 isMobile={this.props.isMobile}
@@ -455,11 +457,6 @@ class Landing extends Component {
                     )
                   }
                   <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} my={[3,4]} color={'dark-gray'}>
-                    {
-                      !this.props.isMobile && (
-                        `1. `
-                      )
-                    }
                     100% non-custodial, thanks to our Smart Contract
                   </Heading.h3>
                   <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5} color={'dark-gray'}>
@@ -475,11 +472,6 @@ class Landing extends Component {
                     )
                   }
                   <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} my={[3,4]} color={'dark-gray'}>
-                    {
-                      !this.props.isMobile && (
-                        `2. `
-                      )
-                    }
                     Fully decentralized, thanks to our users.
                   </Heading.h3>
                   <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5} color={'dark-gray'}>
@@ -495,11 +487,6 @@ class Landing extends Component {
                     )
                   }
                   <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} my={[3,4]} color={'dark-gray'}>
-                    {
-                      !this.props.isMobile && (
-                        `3. `
-                      )
-                    }
                     No hidden fees, best things in life are free!
                   </Heading.h3>
                   <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5} color={'dark-gray'}>
