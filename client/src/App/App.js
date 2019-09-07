@@ -38,8 +38,8 @@ class App extends Component {
 
   // Optional parameters to pass into RimbleWeb3
   config = {
-    requiredConfirmations: 1, // in ETH for gas fees
-    accountBalanceMinimum: 0.0001, // in ETH for gas fees
+    requiredConfirmations: 1,
+    accountBalanceMinimum: 0, // in ETH for gas fees
     requiredNetwork: 1 // Mainnet
     // requiredNetwork: 3 // Ropsten
   };
