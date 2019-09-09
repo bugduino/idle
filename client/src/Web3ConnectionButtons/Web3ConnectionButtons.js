@@ -17,7 +17,13 @@ export default function Web3ConnectionButtons(props) {
     console.log('context success', context);
   }
   const setConnector = async connectorName => {
+    if (connectorName === 'Injected') {
+      localStorage.setItem('walletProvider', 'Injected');
+    }
     return await context.setConnector(connectorName);
+  };
+  const unsetConnector = async () => {
+    return await context.unsetConnector();
   };
   const isMetamask = GeneralUtil.hasMetaMask();
   const isOpera = GeneralUtil.isOpera();
@@ -147,7 +153,7 @@ export default function Web3ConnectionButtons(props) {
             mb={[1, 3]}
             size={'large'}
             key={'reset'}
-            onClick={async () => await context.unsetConnector()}
+            onClick={async () => await unsetConnector()}
           >
             {context.active ? "Deactivate Connector" : "Reset"}
           </Button.Outline>

@@ -4,6 +4,10 @@ import ConnectionModalUtil from "./ConnectionModalsUtil";
 import NetworkUtil from "./NetworkUtil";
 import DAI from '../abis/tokens/DAI'; // rinkeby
 import BigNumber from 'bignumber.js';
+import Web3 from "web3";
+
+require('dotenv').config();
+const INFURA_KEY = process.env["REACT_APP_INFURA_KEY"];
 const DAIAddr = DAI.address;
 const DAIAbi = DAI.abi;
 const BNify = s => new BigNumber(String(s));
@@ -77,11 +81,30 @@ class RimbleTransaction extends React.Component {
   initWeb3 = async () => {
     const context = this.props.context;
     if (!context.active) {
-      await context.setFirstValidConnector(['Injected', 'Infura']);
+      if (localStorage.getItem('walletProvider') === 'Injected') {
+        console.log('Already logged in with Injected web3');
+        await context.setFirstValidConnector(['Injected', 'Infura']);
+      } else {
+        await context.setFirstValidConnector(['Infura']);
+      }
       return;
     }
-    const web3 = context.library;
-    if (!web3) { return; }
+    let web3 = context.library;
+    if (!web3) { // safety web3 implementation
+      if (window.ethereum) {
+        console.log("Using modern web3 provider.");
+        web3 = new Web3(window.ethereum);
+      } else if (window.web3) {
+        console.log("Legacy web3 provider. Try updating.");
+        web3 = new Web3(window.web3.currentProvider);
+      } else {
+        console.log("Non-Ethereum browser detected. Using Infura fallback.");
+        const web3Provider = new Web3.providers.HttpProvider(
+          `https://mainnet.infura.io/v3/${INFURA_KEY}`
+        );
+        web3 = new Web3(web3Provider);
+      }
+    }
 
     this.setState({ web3 }, async () => {
       // After setting the web3 provider, check network
