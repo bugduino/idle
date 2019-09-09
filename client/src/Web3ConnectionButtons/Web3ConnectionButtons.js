@@ -23,6 +23,7 @@ export default function Web3ConnectionButtons(props) {
     return await context.setConnector(connectorName);
   };
   const unsetConnector = async () => {
+    localStorage.setItem('walletProvider', '');
     return await context.unsetConnector();
   };
   const isMetamask = GeneralUtil.hasMetaMask();

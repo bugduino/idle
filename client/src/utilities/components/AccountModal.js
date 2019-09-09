@@ -20,7 +20,10 @@ export default function (props) {
   const trimEth = eth => {
     return BNify(eth).toFixed(6);
   };
-
+  const setConnector = async connectorName => {
+    localStorage.setItem('walletProvider', '');
+    return await context.setConnector(connectorName);
+  };
   return (
     <Modal isOpen={isOpen}>
       <ModalCard closeFunc={closeModal}>
@@ -66,7 +69,7 @@ export default function (props) {
               size={'medium'}
               px={'80px'}
               borderRadius={4}
-              onClick={async () => await context.setConnector('Infura')}>
+              onClick={async () => await setConnector('Infura')}>
               {context.active ? "Log out wallet" : "Reset"}
             </Button>
           )}
