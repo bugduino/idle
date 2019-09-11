@@ -21,7 +21,9 @@ export default function (props) {
     return BNify(eth).toFixed(6);
   };
   const setConnector = async connectorName => {
-    localStorage.setItem('walletProvider', '');
+    if (localStorage) {
+      localStorage.setItem('walletProvider', '');
+    }
     return await context.setConnector(connectorName);
   };
   return (

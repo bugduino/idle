@@ -456,12 +456,15 @@ class SmartContractControls extends React.Component {
   };
 
   async componentDidMount() {
+    console.log('Smart contract didMount')
     // do not wait for each one just for the first who will guarantee web3 initialization
     const web3 = await this.props.initWeb3();
     if (!web3) {
-      return console.log('no web3 in SmartContractControls');
+      return console.log('No Web3 SmartContractControls')
     }
-    this.props.initContract('iDAI', iDAIAddress, iDAIAbi);
+
+    console.log('Web3 SmartContractControls initialized')
+    this.props.initContract('iDAI', iDAIAddress, iDAIAbi, true);
     this.props.initContract('cDAI', cDAIAddress, cDAIAbi);
     this.props.initContract('OldIdleDAI', OldIdleAddress, IdleAbi);
     this.props.initContract('IdleDAI', IdleAddress, IdleAbi).then(async () => {

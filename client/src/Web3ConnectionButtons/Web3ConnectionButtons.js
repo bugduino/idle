@@ -17,13 +17,15 @@ export default function Web3ConnectionButtons(props) {
     console.log('context success', context);
   }
   const setConnector = async connectorName => {
-    if (connectorName === 'Injected') {
+    if (localStorage && connectorName === 'Injected') {
       localStorage.setItem('walletProvider', 'Injected');
     }
     return await context.setConnector(connectorName);
   };
   const unsetConnector = async () => {
-    localStorage.setItem('walletProvider', '');
+    if (localStorage) {
+      localStorage.setItem('walletProvider', '');
+    }
     return await context.unsetConnector();
   };
   const isMetamask = GeneralUtil.hasMetaMask();

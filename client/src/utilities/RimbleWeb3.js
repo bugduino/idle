@@ -80,15 +80,16 @@ class RimbleTransaction extends React.Component {
   // Initialize a web3 provider
   initWeb3 = async () => {
     const context = this.props.context;
-    if (!context.active) {
-      if (localStorage.getItem('walletProvider') === 'Injected') {
-        console.log('Already logged in with Injected web3');
-        await context.setFirstValidConnector(['Injected', 'Infura']);
-      } else {
-        await context.setFirstValidConnector(['Infura']);
-      }
-      return;
-    }
+    // if (!context.active) {
+    //   if (localStorage && localStorage.getItem('walletProvider') === 'Injected') {
+    //     console.log('Already logged in with Injected web3');
+    //     await context.setFirstValidConnector(['Injected', 'Infura']);
+    //   } else {
+    //     console.log('Already logged in with Injected web3');
+    //     await context.setFirstValidConnector(['Infura']);
+    //   }
+    //   return;
+    // }
     let web3 = context.library;
     if (!web3) { // safety web3 implementation
       if (window.ethereum) {
@@ -136,6 +137,7 @@ class RimbleTransaction extends React.Component {
       return {name, contract};
     } catch (error) {
       console.log("Could not create contract.");
+      console.log(error);
       window.toastProvider.addMessage("Contract creation failed.", {
         variant: "failure",
         colorTheme: 'light'

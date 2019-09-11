@@ -38,14 +38,18 @@ class ConnectionModal extends React.Component {
     });
 
     const showConnectionButtons = this.getShowConnectionButtons();
-    if (showConnectionButtons){
-      localStorage.removeItem('showConnectionButtons');
-    } else {
-      localStorage.setItem('showConnectionButtons', true);
+    if (localStorage) {
+      if (showConnectionButtons){
+        localStorage.removeItem('showConnectionButtons');
+      } else {
+        localStorage.setItem('showConnectionButtons', true);
+      }
     }
   };
   resetModal = e => {
-    localStorage.removeItem('showConnectionButtons');
+    if (localStorage) {
+      localStorage.removeItem('showConnectionButtons');
+    }
     this.setState({
       showConnectionButtons: false,
       newToEthereum: false
