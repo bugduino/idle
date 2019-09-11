@@ -324,7 +324,7 @@ class SmartContractControls extends React.Component {
     if (this.props.account){
       let amount = e.target.value;
       this.setState({ lendAmount: amount });
-      if (this.props.account && amount>this.props.accountBalanceDAI){
+      if (this.props.account && this.BNify(amount).gt(this.BNify(this.props.accountBalanceDAI))) {
         return this.setState({
           disableLendButton: true,
           genericError: 'The inserted amount exceeds your DAI balance'
