@@ -11,37 +11,77 @@ class Landing extends Component {
     activeCarousel:1,
     carouselIntervalID:null,
     activeBullet:0,
-    bulletTimeoutID:null
+    scrolling:false,
+    startCarousel:null,
+    setActiveCarousel:null,
+    processScrolling:null
   };
 
+  async componentWillUnmount(){
+    window.clearTimeout(this.state.carouselIntervalID);
+  }
+
   async componentDidMount(){
+
+    let scrollTimeoutID = null;
+    window.onscroll = async () => {
+      if (scrollTimeoutID){
+        window.clearTimeout(scrollTimeoutID);
+      }
+      scrollTimeoutID = window.setTimeout( async () => {
+        this.setState({scrolling:true});
+      },150);
+    };
     
+    const processScrolling = () => {
+      if (this.state.scrolling){
+
+        const bulletCards = document.getElementsByClassName('Landing_bulletCard__3num6');
+        let activeBullet = 0;
+
+        for (let i=0;i<bulletCards.length;i++){
+          const bulletCard = bulletCards[i];
+          const offsetY = bulletCard.offsetTop;
+          if (window.scrollY >= offsetY-200){
+            activeBullet = i+2;
+          }
+        }
+        this.setState({scrolling:false,activeBullet: activeBullet});
+      }
+    };
+
+    this.setState({processScrolling});
+
+    const startCarousel = async () => {
+      if (!this.props.isMobile){
+        if (this.state.carouselIntervalID){
+          window.clearTimeout(this.state.carouselIntervalID);
+        }
+        const intervalID = window.setTimeout( async () => setActiveCarousel(this.state.activeCarousel+1) ,5000);
+        this.setState({carouselIntervalID:intervalID});
+      }
+    }
+
+    const setActiveCarousel = (index) => {
+      index = index<=3 ? index : 1;
+      this.setState({activeCarousel:index});
+      startCarousel();
+    }
+
+    this.setState({startCarousel,setActiveCarousel});
+
+    if (!this.props.isMobile && !this.state.carouselIntervalID){
+      startCarousel();
+    }
   }
 
   async componentDidUpdate(prevProps) {
 
-    window.onscroll = () => {
-        if (this.state.bulletTimeoutID){
-          window.clearTimeout(this.state.bulletTimeoutID);
-          this.setState({bulletTimeoutID:null});
-        }
-
-        const bulletTimeoutID = window.setTimeout(() => {
-          const bulletCards = document.getElementsByClassName('Landing_bulletCard__3num6');
-          let activeBullet = 0;
-
-          for (let i=0;i<bulletCards.length;i++){
-            const bulletCard = bulletCards[i];
-            const offsetY = bulletCard.offsetTop;
-            if (window.scrollY >= offsetY-200){
-              activeBullet = i+2;
-            }
-          }
-          this.setState({activeBullet: activeBullet});
-        },100);
-
-        this.setState({bulletTimeoutID:bulletTimeoutID});
-    };
+    if (typeof window.requestIdleCallback === 'function'){
+      window.requestIdleCallback(this.state.processScrolling);
+    } else {
+      this.state.processScrolling();
+    }
 
     let prevContract = (prevProps.contracts.find(c => c.name === 'IdleDAI') || {}).contract;
     let contract = (this.props.contracts.find(c => c.name === 'IdleDAI') || {}).contract;
@@ -50,26 +90,6 @@ class Landing extends Component {
       console.log('Getting APR');
       await this.getAprs();
     }
-
-    if (!this.props.isMobile && !this.state.carouselIntervalID){
-      this.startCarousel();
-    }
-  }
-
-  startCarousel = () => {
-    if (!this.props.isMobile){
-      if (this.state.carouselIntervalID){
-        window.clearInterval(this.state.carouselIntervalID);
-      }
-      const intervalID = setInterval( () => this.setActiveCarousel(this.state.activeCarousel+1) ,5000);
-      this.setState({carouselIntervalID:intervalID});
-    }
-  }
-
-  setActiveCarousel = (index) => {
-    index = index<=3 ? index : 1;
-    this.setState({activeCarousel:index});
-    this.startCarousel();
   }
 
   // utilities
@@ -499,15 +519,15 @@ class Landing extends Component {
               !this.props.isMobile && (
                 <Flex flexDirection={'column'} width={[1,1/2]} justifyContent={'flex-end'} alignItems={'flex-end'}>
                   <Box width={'550px'} position={'relative'} minHeight={'500px'}>
-                    <Flex flexDirection={'column'} textAlign={'center'} alignItems={'center'} justifyContent={'center'} className={[styles.carouselItem,this.state.activeCarousel===1?  styles.pos1 : (this.state.activeCarousel===2 ? styles.pos3 : styles.pos2) ]} boxShadow={ this.state.activeCarousel===1 ? 4 : 1} m={[2,3]} onClick={e => this.setActiveCarousel(1)}>
+                    <Flex flexDirection={'column'} textAlign={'center'} alignItems={'center'} justifyContent={'center'} className={[styles.carouselItem,this.state.activeCarousel===1?  styles.pos1 : (this.state.activeCarousel===2 ? styles.pos3 : styles.pos2) ]} boxShadow={ this.state.activeCarousel===1 ? 4 : 1} m={[2,3]} onClick={e => this.state.setActiveCarousel(1)}>
                       <Image src={'images/smart-contract.png'} pb={2} />
                       <Text fontSize={3} fontWeight={3} color={'dark-gray'}>Smart Contract</Text>
                     </Flex>
-                    <Flex flexDirection={'column'} textAlign={'center'} alignItems={'center'} justifyContent={'center'} className={[styles.carouselItem,this.state.activeCarousel===2 ? styles.pos1 : (this.state.activeCarousel===1 ? styles.pos2 : styles.pos3)]} boxShadow={ this.state.activeCarousel===2 ? 4 : 1} m={[2,3]} onClick={e => this.setActiveCarousel(2)}>
+                    <Flex flexDirection={'column'} textAlign={'center'} alignItems={'center'} justifyContent={'center'} className={[styles.carouselItem,this.state.activeCarousel===2 ? styles.pos1 : (this.state.activeCarousel===1 ? styles.pos2 : styles.pos3)]} boxShadow={ this.state.activeCarousel===2 ? 4 : 1} m={[2,3]} onClick={e => this.state.setActiveCarousel(2)}>
                       <Image src={'images/no-hidden-feeds.png'} pb={2} />
                       <Text fontSize={3} fontWeight={3} color={'dark-gray'}>Decentralized</Text>
                     </Flex>
-                    <Flex flexDirection={'column'} textAlign={'center'} alignItems={'center'} justifyContent={'center'} className={[styles.carouselItem,this.state.activeCarousel===3 ? styles.pos1 : (this.state.activeCarousel===2 ? styles.pos2 : styles.pos3)]} boxShadow={ this.state.activeCarousel===3 ? 4 : 1} m={[2,3]} onClick={e => this.setActiveCarousel(3)}>
+                    <Flex flexDirection={'column'} textAlign={'center'} alignItems={'center'} justifyContent={'center'} className={[styles.carouselItem,this.state.activeCarousel===3 ? styles.pos1 : (this.state.activeCarousel===2 ? styles.pos2 : styles.pos3)]} boxShadow={ this.state.activeCarousel===3 ? 4 : 1} m={[2,3]} onClick={e => this.state.setActiveCarousel(3)}>
                       <Image src={'images/decentralized.png'} pb={2} />
                       <Text fontSize={3} fontWeight={3} color={'dark-gray'}>No hidden fees</Text>
                     </Flex>
