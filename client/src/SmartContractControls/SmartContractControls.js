@@ -44,7 +44,7 @@ class SmartContractControls extends React.Component {
     selectedTab: '1',
     amountLent: null,
     IdleDAISupply: null,
-    idleDAICap: 25000,
+    idleDAICap: 30000,
     earning: null,
     prevTxs : {}
   };
