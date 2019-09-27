@@ -10,7 +10,7 @@ import moment from 'moment';
 
 import IdleDAI from "../contracts/IdleDAI.json";
 import cDAI from '../abis/compound/cDAI';
-import DAI from '../contracts/IERC20Base.json';
+import DAI from '../contracts/IERC20.json';
 import iDAI from '../abis/fulcrum/iToken.json';
 
 const env = process.env;
