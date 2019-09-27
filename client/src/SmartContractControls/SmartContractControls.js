@@ -104,12 +104,16 @@ class SmartContractControls extends React.Component {
   getAprs = async () => {
     const aprs = await this.genericIdleCall('getAPRs');
     const maxRate = this.toEth(Math.max(aprs[0],aprs[1]));
+    let currentProtocol = false;
+    if (aprs){
+      currentProtocol = aprs[0]>aprs[1] ? 'Compound' : 'Fulcrum';
+    }
     // const startMaxRate = parseFloat(parseFloat(maxRate*0.5).toFixed(2));
     this.setState({
       [`compoundRate`]: aprs ? (+this.toEth(aprs[0])).toFixed(2) : '0.00',
       [`fulcrumRate`]: aprs ? (+this.toEth(aprs[1])).toFixed(2) : '0.00',
       [`maxRate`]: aprs ? ((+maxRate).toFixed(2)) : '0.00',
-      // [`maxRate`]: maxRate,
+      currentProtocol: currentProtocol,
       needsUpdate: false
     });
 
@@ -118,8 +122,11 @@ class SmartContractControls extends React.Component {
   getPriceInToken = async (contractName) => {
     const totalIdleSupply = await this.genericContractCall(contractName, 'totalSupply');
     let price = await this.genericContractCall(contractName, 'tokenPrice');
+    const navPool = this.BNify(totalIdleSupply).div(1e18).times(this.BNify(price).div(1e18));
+    console.log("navPool",totalIdleSupply.toString(),price.toString(),navPool);
     this.setState({
       [`IdleDAIPrice`]: (totalIdleSupply || totalIdleSupply === 0) && totalIdleSupply.toString() === '0' ? 0 : (+this.toEth(price)),
+      ['navPool'] : navPool,
       needsUpdate: false
     });
     return price;
@@ -609,6 +616,7 @@ class SmartContractControls extends React.Component {
   }
 
   render() {
+    const navPool = !isNaN(this.trimEth(this.state.navPool)) ? ( <>{this.BNify(this.state.navPool).toFixed(0)} <Text.span fontSize={[1,2]}>DAI</Text.span></> ) : '-';
     const reedemableFunds = !isNaN(this.trimEth(this.state.DAIToRedeem)) ? ( <>{this.trimEth(this.state.DAIToRedeem)} <Text.span fontSize={[1,3]}>DAI</Text.span></> ) : '-';
     const oldReedemableFunds = !isNaN(this.trimEth(this.state.oldDAIToRedeem)) ? ( <>{this.trimEth(this.state.oldDAIToRedeem)} <Text.span fontSize={[1,3]}>DAI</Text.span></> ) : '-';
     const currentEarnings = !isNaN(this.trimEth(this.state.earning)) ? ( <>{this.trimEth(this.state.earning)} <Text.span fontSize={[1,3]}>DAI</Text.span></> ) : '-';
@@ -850,9 +858,32 @@ class SmartContractControls extends React.Component {
               </Box>
             }
 
+            { this.props.selectedTab === '3' && 
+              <Box width={'100%'} borderBottom={'1px solid #D6D6D6'} mb={2}>
+                <Flex flexDirection={['column','row']} py={[2,3]} width={[1,'50%']} m={'0 auto'}>
+                  <Box width={[1,1/2]}>
+                    <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
+                      Allocated funds
+                    </Text>
+                    <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                      { navPool }
+                    </Heading.h3>
+                  </Box>
+                  <Box width={[1,1/2]}>
+                    <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
+                      Current protocol
+                    </Text>
+                    <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                      { this.state.currentProtocol ? this.state.currentProtocol : '-' }
+                    </Heading.h3>
+                  </Box>
+                </Flex>
+              </Box>
+            }
+
             { this.props.selectedTab === '3' && !!this.state.calculataingShouldRebalance && 
               <Box px={[2,0]} textAlign={'text'} py={[3,0]}>
-                <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} color={'blue'}>
+                <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} py={3} color={'blue'}>
                   Rebalance the entire pool. All users will bless you.
                 </Heading.h3>
                 <Flex
@@ -875,7 +906,7 @@ class SmartContractControls extends React.Component {
                     Sorry for the inconvenience.
                   </Flash>
                 }
-                <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} color={'blue'}>
+                <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} py={3} color={'blue'}>
                   Rebalance the entire pool. All users will bless you.
                 </Heading.h3>
                 <Heading.h4 color={'dark-gray'} fontSize={[2,2]} px={[3,0]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
@@ -919,22 +950,9 @@ class SmartContractControls extends React.Component {
                 fontFamily={'sansSerif'} fontSize={[3,3]} fontWeight={2} color={'blue'}>
                   The pool is already balanced.
                 </Heading.h3>
-                <Heading.h4 color={'dark-gray'} fontSize={[2,2]} px={[3,0]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
+                <Heading.h4 color={'dark-gray'} fontSize={[2,2]} pt={2} px={[3,0]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
                   The current interest rate is already the best between the integrated protocols.<br />Sit back and enjoy your earnings.
                 </Heading.h4>
-                <Flex
-                  textAlign={'center'}>
-                  <Button
-                    disabled={'disabled'}
-                    onClick={e => {e.preventDefault()}}
-                    size={this.props.isMobile ? 'medium' : 'medium'}
-                    borderRadius={4}
-                    mainColor={'darkGray'}
-                    contrastColor={'black'} fontWeight={3} fontSize={[2,2]} mx={'auto'} px={[4,5]} mt={[2,3]}
-                  >
-                    REBALANCE NOW
-                  </Button>
-                </Flex>
               </Box>
             }
 
