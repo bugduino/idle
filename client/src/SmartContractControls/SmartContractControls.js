@@ -47,6 +47,8 @@ class SmartContractControls extends React.Component {
     idleDAICap: 30000,
     earning: null,
     maxRate: '-',
+    calculataingShouldRebalance: true,
+    fundsTimeoutID: null,
     prevTxs : {}
   };
 
@@ -68,12 +70,16 @@ class SmartContractControls extends React.Component {
     );
   }
   rebalanceCheck = async () => {
+
+    this.setState({calculataingShouldRebalance:true});
+
     const res = await this.genericIdleCall('rebalanceCheck');
     if (!res || !Object.keys(res).length){
       return false;
     }
 
     this.setState({
+      calculataingShouldRebalance: false,
       shouldRebalance: res[0],
       needsUpdate: false
     });
@@ -154,6 +160,12 @@ class SmartContractControls extends React.Component {
         needsUpdate: false
       });
     }
+
+    if (this.props.account){
+      const fundsTimeoutID = setTimeout(() => {this.getBalanceOf(contractName)},10000);
+      this.setState({fundsTimeoutID});
+    }
+
     return balance;
   };
   getOldBalanceOf = async contractName => {
@@ -254,7 +266,7 @@ class SmartContractControls extends React.Component {
 
     this.setState(state => ({
       ...state,
-      rebalanceProcessing: true
+      rebalanceProcessing: this.props.account ? true : false
     }));
 
     this.props.contractMethodSendWrapper('IdleDAI', 'rebalance', [], null , (tx) => {
@@ -497,6 +509,7 @@ class SmartContractControls extends React.Component {
         this.getPriceInToken('IdleDAI')
       ]);
     });
+
     this.props.initContract('DAI', DAIAddress, DAIAbi);
   }
 
@@ -506,7 +519,18 @@ class SmartContractControls extends React.Component {
       await this.getBalanceOf('IdleDAI');
       await this.getOldBalanceOf('OldIdleDAI');
       await this.getTotalSupply('IdleDAI');
+
+      if (this.props.selectedTab === '3') {
+        await this.rebalanceCheck();
+      }
     }
+
+    if (this.props.selectedTab !== '2' && this.state.fundsTimeoutID){
+      console.log("Clear funds timeout "+this.state.fundsTimeoutID);
+      clearTimeout(this.state.fundsTimeoutID);
+      this.setState({fundsTimeoutID:null});
+    }
+
     if (prevProps.transactions !== this.props.transactions){
       this.processTransactionUpdates(prevProps);
     }
@@ -826,7 +850,22 @@ class SmartContractControls extends React.Component {
               </Box>
             }
 
-            { this.props.selectedTab === '3' && !!this.state.shouldRebalance && 
+            { this.props.selectedTab === '3' && !!this.state.calculataingShouldRebalance && 
+              <Box px={[2,0]} textAlign={'text'} py={[3,0]}>
+                <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} color={'blue'}>
+                  Rebalance the entire pool. All users will bless you.
+                </Heading.h3>
+                <Flex
+                  justifyContent={'center'}
+                  alignItems={'center'}
+                  textAlign={'center'}
+                  pt={3}>
+                      <Loader size="40px" /> <Text ml={2}>Checking rebalance status...</Text>
+                </Flex>
+              </Box>
+            }
+
+            { this.props.selectedTab === '3' && !this.state.calculataingShouldRebalance && !!this.state.shouldRebalance && 
               <Box px={[2,0]} textAlign={'text'} py={[3,0]}>
                 {!!hasOldBalance &&
                   <Flash variant="warning" width={1}>
@@ -874,7 +913,7 @@ class SmartContractControls extends React.Component {
             }
 
             {
-              this.props.selectedTab === '3' && !this.state.shouldRebalance &&
+              this.props.selectedTab === '3' && !this.state.calculataingShouldRebalance && !this.state.shouldRebalance &&
               <Box textAlign={'center'} py={3}>
                 <Heading.h3 textAlign={'center'}
                 fontFamily={'sansSerif'} fontSize={[3,3]} fontWeight={2} color={'blue'}>
