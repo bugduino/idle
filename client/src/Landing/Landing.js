@@ -22,7 +22,6 @@ class Landing extends Component {
   }
 
   async componentDidMount(){
-
     let scrollTimeoutID = null;
     window.onscroll = async () => {
       if (scrollTimeoutID){

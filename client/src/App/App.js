@@ -22,7 +22,6 @@ class App extends Component {
   };
 
   async selectTab(e, tabIndex) {
-    // e.preventDefault();
     this.setState(state => ({...state, selectedTab: tabIndex}));
   }
 

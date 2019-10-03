@@ -46,6 +46,7 @@ class SmartContractControls extends React.Component {
     IdleDAISupply: null,
     idleDAICap: 30000,
     earning: null,
+    earningIntervalId: null,
     maxRate: '-',
     calculataingShouldRebalance: true,
     fundsTimeoutID: null,
@@ -53,8 +54,9 @@ class SmartContractControls extends React.Component {
   };
 
   // utilities
-  trimEth = eth => {
-    return this.BNify(eth).toFixed(6);
+  trimEth = (eth,decimals) => {
+    decimals = !isNaN(decimals) ? decimals : 6;
+    return this.BNify(eth).toFixed(decimals);
   };
   BNify = s => new BigNumber(String(s));
   toEth(wei) {
@@ -116,14 +118,13 @@ class SmartContractControls extends React.Component {
       currentProtocol: currentProtocol,
       needsUpdate: false
     });
-
     // this.animateMaxRate(startMaxRate,maxRate);
   };
   getPriceInToken = async (contractName) => {
     const totalIdleSupply = await this.genericContractCall(contractName, 'totalSupply');
     let price = await this.genericContractCall(contractName, 'tokenPrice');
     const navPool = this.BNify(totalIdleSupply).div(1e18).times(this.BNify(price).div(1e18));
-    console.log("navPool",totalIdleSupply.toString(),price.toString(),navPool);
+    // console.log("navPool",totalIdleSupply.toString(),price.toString(),navPool);
     this.setState({
       [`IdleDAIPrice`]: (totalIdleSupply || totalIdleSupply === 0) && totalIdleSupply.toString() === '0' ? 0 : (+this.toEth(price)),
       ['navPool'] : navPool,
@@ -163,18 +164,60 @@ class SmartContractControls extends React.Component {
       this.setState({
         [`balanceOf${contractName}`]: balance,
         [`DAIToRedeem`]: tokenToRedeem.toString(),
+        tokenToRedeem: tokenToRedeem,
         earning: earning,
         needsUpdate: false
       });
     }
 
     if (this.props.account){
-      const fundsTimeoutID = setTimeout(() => {this.getBalanceOf(contractName)},10000);
-      this.setState({fundsTimeoutID});
+      this.animateCurrentEarnings();
     }
 
     return balance;
   };
+
+  animateCurrentEarnings = async () => {
+    const currentApr = this.BNify(this.state.maxRate).div(100);
+    const currentBalance = this.BNify(this.state.tokenToRedeem);
+    const earningPerYear = currentBalance.times(currentApr);
+    const secondsInYear = this.BNify(31536000); // Seconds in a Year
+    const blocksPerYear = this.BNify(2336000); // Blocks per year
+    let minEarningPerInterval = this.BNify(0.00000001);
+    let earningPerSecond = earningPerYear.div(secondsInYear);
+    let earningPerInterval = earningPerYear.div(secondsInYear);
+    let interval = 100;
+    if (interval<1000){
+      earningPerInterval = earningPerInterval.div((1000/interval));
+    }
+
+    if (earningPerInterval<minEarningPerInterval){
+      const times = minEarningPerInterval.div(earningPerInterval).toFixed(3);
+      earningPerInterval = minEarningPerInterval;
+      interval *= times;
+    }
+
+    interval = Math.floor(interval);
+
+    if (this.state.earningIntervalId){
+      window.clearInterval(this.state.earningIntervalId);
+    }
+
+    const earningIntervalId = window.setInterval(() => {
+      const newTokenToRedeem = this.state.tokenToRedeem.plus(earningPerInterval);
+      const newEarning = this.state.earning.plus(earningPerInterval);
+      this.setState({
+        DAIToRedeem:newTokenToRedeem.toString(),
+        tokenToRedeem:newTokenToRedeem,
+        earning:newEarning
+      });
+    },interval);
+
+    this.setState({
+      earningIntervalId
+    });
+  };
+
   getOldBalanceOf = async contractName => {
     let price = await this.getOldPriceInToken(contractName);
     let balance = await this.genericContractCall(contractName, 'balanceOf', [this.props.account]);
@@ -497,6 +540,12 @@ class SmartContractControls extends React.Component {
     }
   };
 
+  async componentWillUnmount(){
+    if (this.state.earningIntervalId){
+      window.clearInterval(this.state.earningIntervalId);
+    }
+  }
+
   async componentDidMount() {
     console.log('Smart contract didMount')
     // do not wait for each one just for the first who will guarantee web3 initialization
@@ -545,11 +594,20 @@ class SmartContractControls extends React.Component {
 
   async selectTab(e, tabIndex) {
     e.preventDefault();
-    // this.setState(state => ({...state, selectedTab: tabIndex}));
     this.props.updateSelectedTab(e,tabIndex);
 
     if (tabIndex === '3') {
       await this.rebalanceCheck();
+    }
+
+    if (tabIndex !== '2') {
+      if (this.state.earningIntervalId){
+        window.clearInterval(this.state.earningIntervalId);
+      }
+    } else {
+      if (this.props.account){
+        this.animateCurrentEarnings();
+      }
     }
 
   }
@@ -615,18 +673,46 @@ class SmartContractControls extends React.Component {
     );
   }
 
+  getFormattedBalance(balance,label,decimals,maxLen,fontSize,defaultValue){
+    defaultValue = defaultValue ? defaultValue : '-';
+    decimals = !isNaN(decimals) ? decimals : 6;
+    maxLen = !isNaN(maxLen) ? maxLen : 10;
+    balance = this.BNify(balance).toFixed(decimals);
+    const numLen = balance.toString().replace('.','').length;
+    if (numLen>maxLen){
+      decimals = Math.max(0,decimals-(numLen-maxLen));
+      balance = this.BNify(balance).toFixed(decimals);
+    }
+
+    const intPart = Math.floor(balance);
+    const decPart = (balance%1).toString().substr(2,decimals);
+
+    return !isNaN(this.trimEth(balance)) ? ( <>{intPart}<small>.{decPart}</small> <Text.span fontSize={[1,2]}>{label}</Text.span></> ) : defaultValue;
+  }
+
   render() {
+    /*
     const navPool = !isNaN(this.trimEth(this.state.navPool)) ? ( <>{this.BNify(this.state.navPool).toFixed(0)} <Text.span fontSize={[1,2]}>DAI</Text.span></> ) : '-';
-    const reedemableFunds = !isNaN(this.trimEth(this.state.DAIToRedeem)) ? ( <>{this.trimEth(this.state.DAIToRedeem)} <Text.span fontSize={[1,3]}>DAI</Text.span></> ) : '-';
+    const reedemableFunds = !isNaN(this.trimEth(this.state.DAIToRedeem)) ? ( <>{this.trimEth(this.state.DAIToRedeem,8)} <Text.span fontSize={[1,3]}>DAI</Text.span></> ) : '-';
     const oldReedemableFunds = !isNaN(this.trimEth(this.state.oldDAIToRedeem)) ? ( <>{this.trimEth(this.state.oldDAIToRedeem)} <Text.span fontSize={[1,3]}>DAI</Text.span></> ) : '-';
-    const currentEarnings = !isNaN(this.trimEth(this.state.earning)) ? ( <>{this.trimEth(this.state.earning)} <Text.span fontSize={[1,3]}>DAI</Text.span></> ) : '-';
+    const currentEarnings = !isNaN(this.trimEth(this.state.earning)) ? ( <>{this.trimEth(this.state.earning,8)} <Text.span fontSize={[1,3]}>DAI</Text.span></> ) : '-';
     const oldEarning = !isNaN(this.trimEth(this.state.oldEarning)) ? ( <>{this.trimEth(this.state.oldEarning)} <Text.span fontSize={[1,3]}>DAI</Text.span></> ) : '-';
     const IdleDAIPrice = !isNaN(this.trimEth(this.state.IdleDAIPrice)) ? ( <>{this.trimEth(this.state.IdleDAIPrice)} <Text.span fontSize={[1,2]}>DAI</Text.span></> ) : '-';
     const OldIdleDAIPrice = !isNaN(this.trimEth(this.state.OldIdleDAIPrice)) ? ( <>{this.trimEth(this.state.OldIdleDAIPrice)} <Text.span fontSize={[1,2]}>DAI</Text.span></> ) : '-';
     const balanceOfIdleDAI = !isNaN(this.trimEth(this.state.balanceOfIdleDAI)) ? ( <>{this.trimEth(this.state.balanceOfIdleDAI)} <Text.span fontSize={[1,2]}>idleDAI</Text.span></> ) : '-';
     const balanceOfOldIdleDAI = !isNaN(this.trimEth(this.state.balanceOfOldIdleDAI)) ? ( <>{this.trimEth(this.state.balanceOfOldIdleDAI)} <Text.span fontSize={[1,2]}>idleDAI (old version)</Text.span></> ) : '-';
+    */
+    const navPool = this.getFormattedBalance(this.state.navPool,'DAI');
+    const reedemableFunds = this.getFormattedBalance(this.state.DAIToRedeem,'DAI',8,11);
+    const oldReedemableFunds = this.getFormattedBalance(this.state.oldDAIToRedeem,'DAI');
+    const currentEarnings = this.getFormattedBalance(this.state.earning,'DAI',8,11);
+    const oldEarning = this.getFormattedBalance(this.state.oldEarning,'DAI');
+    const IdleDAIPrice = this.getFormattedBalance(this.state.IdleDAIPrice,'DAI');
+    const OldIdleDAIPrice = this.getFormattedBalance(this.state.OldIdleDAIPrice,'DAI');
+    const balanceOfIdleDAI = this.getFormattedBalance(this.state.balanceOfIdleDAI,'idleDAI');
+    const balanceOfOldIdleDAI = this.getFormattedBalance(this.state.balanceOfOldIdleDAI,'idleDAI');
     const hasOldBalance = !isNaN(this.trimEth(this.state.oldDAIToRedeem)) && this.trimEth(this.state.oldDAIToRedeem) > 0;
-    const hasBalance = !isNaN(this.trimEth(this.state.DAIToRedeem)) && this.trimEth(this.state.DAIToRedeem) > 0
+    const hasBalance = !isNaN(this.trimEth(this.state.DAIToRedeem)) && this.trimEth(this.state.DAIToRedeem) > 0;
 
     return (
       <Box textAlign={'center'} alignItems={'center'} width={'100%'}>
@@ -718,7 +804,7 @@ class SmartContractControls extends React.Component {
                           <Heading.h3 fontWeight={2} textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
                             Redeemable Funds
                           </Heading.h3>
-                          <Heading.h3 fontFamily={'sansSerif'} fontSize={[4,5]} fontWeight={2} color={'black'} textAlign={'center'}>
+                          <Heading.h3 fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,0]} fontWeight={2} color={'black'} textAlign={'center'}>
                             { hasOldBalance ? oldReedemableFunds : reedemableFunds }
                           </Heading.h3>
                         </Box>
