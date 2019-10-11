@@ -4,10 +4,14 @@ import styles from './CryptoInput.module.scss';
 
 class CryptoInput extends Component {
   render() {
-    const convertedValue = !isNaN(this.props.trimEth(this.props.IdleDAIPrice)) && !!this.props.IdleDAIPrice ? '~'+this.props.BNify(this.props.defaultValue/this.props.IdleDAIPrice).toFixed(2)+' idleDAI' : '';
+    const convertedLabel = this.props.convertedLabel ? this.props.convertedLabel : 'idleDAI';
+    const convertedValue = !isNaN(this.props.trimEth(this.props.IdleDAIPrice)) && !!this.props.IdleDAIPrice ? '~'+this.props.BNify(this.props.defaultValue/this.props.IdleDAIPrice).toFixed(2)+' '+convertedLabel : '';
+    const showLendButton = typeof this.props.showLendButton === 'undefined' || !!this.props.showLendButton;
+    const buttonLabel = typeof this.props.buttonLabel === 'undefined' ? 'LEND' : this.props.buttonLabel;
     return (
         <>
           <Flex
+            width={'100%'}
             maxWidth={['90%','30em']}
             borderRadius={'2rem'}
             alignItems={'center'}
@@ -17,11 +21,11 @@ class CryptoInput extends Component {
             mx={'auto'}
             >
               <Flex width={[1/10]}>
-                <Image src="images/btn-dai.svg" height={this.props.height} ml={['0.5em','10px']} />
+                <Image src={this.props.icon ? this.props.icon : 'images/btn-dai.svg'} height={'32px'} ml={['0.5em','10px']} />
               </Flex>
               <Box width={8/10}>
                 <Form.Input
-                  placeholder={`Enter DAI Amount`}
+                  placeholder={this.props.placeholder ? this.props.placeholder : `Enter DAI Amount`}
                   value={this.props.defaultValue}
                   type="number"
                   borderRadius='2rem'
@@ -69,23 +73,11 @@ class CryptoInput extends Component {
               }
           </Flex>
           <Flex
+            width={'100%'}
             maxWidth={['90%','30em']}
             justifyContent={'space-between'}
             mt={[2, 2]} mb={[2,3]} mx={'auto'}
           >
-            {
-            /*
-            <Box pl={'5%'}>
-              <Heading.h5 color={'darkGray'} fontWeight={1} fontSize={1}>
-              {!this.props.isMobile ? 
-                  !isNaN(this.props.trimEth(this.props.IdleDAIPrice)) && !!this.props.IdleDAIPrice && `1 idleDAI = ${this.props.trimEth(this.props.IdleDAIPrice)} DAI`
-                 : 
-                  convertedValue
-              }
-              </Heading.h5>
-            </Box>
-            */
-            }
             {
               this.props.account && !isNaN(this.props.trimEth(this.props.accountBalanceDAI)) && 
               <Box pl={'5%'}>
@@ -101,22 +93,25 @@ class CryptoInput extends Component {
             <Text textAlign='center' color={'red'} fontSize={2} mb={[2,3]}>{this.props.genericError}</Text>
           )}
 
-          <Flex width={1} alignItems={'center'} justifyContent={'center'} mb={[0,3]} mx={'auto'}>
-            <Button
-              onClick={this.props.handleClick}
-              className={styles.gradientButton}
-              size={this.props.isMobile ? 'medium' : 'medium'}
-              mainColor={'blue'}
-              fontWeight={3}
-              fontSize={2}
-              px={0}
-              my={0}
-              width={[1/2,1/5]}
-              disabled={this.props.disableLendButton ? 'disabled' : false}
-            >
-              LEND
-            </Button>
-          </Flex>
+          {
+            showLendButton && 
+            <Flex width={1} alignItems={'center'} justifyContent={'center'} mb={[0,3]} mx={'auto'}>
+              <Button
+                onClick={this.props.handleClick}
+                className={styles.gradientButton}
+                size={this.props.isMobile ? 'medium' : 'medium'}
+                mainColor={'blue'}
+                fontWeight={3}
+                fontSize={2}
+                px={0}
+                my={0}
+                width={[1/2,1/5]}
+                disabled={this.props.disableLendButton ? 'disabled' : false}
+              >
+                {buttonLabel}
+              </Button>
+            </Flex>
+          }
         </>
     );
   }
