@@ -9,9 +9,11 @@ import {
   Link,
   Button
 } from "rimble-ui";
+import styles from './Header.module.scss';
 import ModalCard from './ModalCard';
 import TransactionFeeModal from "./TransactionFeeModal";
 import Web3ConnectionButtons from "../../Web3ConnectionButtons/Web3ConnectionButtons";
+import Web3ConnectionButtons_styles from '../../Web3ConnectionButtons/Web3ConnectionButtons.module.scss';
 
 class ConnectionModal extends React.Component {
   // TODO save pref in localstorage and do not show 'Before connecting' info every time
@@ -94,8 +96,30 @@ class ConnectionModal extends React.Component {
               and you'll be ready to start your journey into Idle.
             </Text>
           </Box>
-          <Flex alignItems={"center"}>
-            <Web3ConnectionButtons size={'large'} onlyPortis={true} registerPage={true} />
+          <Flex alignItems={"center"} flexDirection={['column','row']}>
+            <Box width={[1,1/2]}>
+              <Web3ConnectionButtons size={'large'} onlyPortis={true} registerPage={true} />
+            </Box>
+            <Box width={[1,1/2]}>
+              <Button.Outline
+                className={[Web3ConnectionButtons_styles.button]}
+                display={'flex'}
+                alignItems={'center'}
+                mb={[1, 3]}
+                width={1}
+                key={'Reset'}
+                size={'large'}
+                onClick={this.toggleShowConnectionButtons}>
+                <Flex alignItems={'center'}>
+                  <Icon
+                    name="Replay"
+                    color="copyColor"
+                    size={'1.5em'}
+                  />
+                  {'Choose another wallet'}
+                </Flex>
+              </Button.Outline>
+            </Box>
           </Flex>
         </React.Fragment>
       );
@@ -195,13 +219,23 @@ class ConnectionModal extends React.Component {
           ) : (
             <Flex flexDirection={['column', 'row']} width={1} justifyContent={['space-around']}>
               <Button
+                className={styles.gradientButton}
+                borderRadius={4}
+                my={2}
+                mr={[3, 4]}
+                size={this.props.isMobile ? 'small' : 'medium'}
                 onClick={this.toggleShowConnectionButtons}
-                borderRadius={4}>
+              >
                 CONNECT
               </Button>
               <Button
+                borderRadius={4}
+                my={2}
+                mr={[3, 4]}
+                size={this.props.isMobile ? 'small' : 'medium'}
+                mainColor={'darkGray'}
                 onClick={this.toggleNewtoEthereum}
-                borderRadius={4}>
+              >
                 I AM NEW TO ETHEREUM
               </Button>
             </Flex>

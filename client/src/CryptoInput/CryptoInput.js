@@ -83,7 +83,7 @@ class CryptoInput extends Component {
               <Box pl={'5%'}>
                 <Heading.h5 color={'darkGray'} fontWeight={1} fontSize={1}>
                   <Link color={'darkGray'} hoverColor={'darkGray'} fontWeight={1} fontSize={1} lineHeight={'1.25'} onClick={ e => this.props.useEntireBalance(this.props.accountBalanceDAI) }>
-                    Balance: {!this.props.isMobile ? parseFloat(this.props.accountBalanceDAI).toFixed(6) : parseFloat(this.props.accountBalanceDAI).toFixed(2) } DAI</Link>
+                    Balance: {!this.props.isMobile ? parseFloat(this.props.accountBalanceDAI).toFixed(6) : parseFloat(this.props.accountBalanceDAI).toFixed(2) } { this.props.balanceLabel ? this.props.balanceLabel : 'DAI' }</Link>
                 </Heading.h5>
               </Box>
             }
@@ -95,7 +95,7 @@ class CryptoInput extends Component {
 
           {
             showLendButton && 
-            <Flex width={1} alignItems={'center'} justifyContent={'center'} mb={[0,3]} mx={'auto'}>
+            <Flex width={1} alignItems={'center'} justifyContent={'center'} mb={0} mx={'auto'}>
               <Button
                 onClick={this.props.handleClick}
                 className={styles.gradientButton}

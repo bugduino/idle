@@ -666,7 +666,7 @@ class Landing extends Component {
               <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} my={3} color={'dark-gray'}>
                 Start a Conversation
               </Heading.h3>
-              <Link textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={2} color={'dark-gray'} hoverColor={'blue'}>matteo.pandolfi@gmail.com</Link>
+              <Link textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={2} color={'dark-gray'} hoverColor={'blue'}>idlefinance.info@gmail.com</Link>
             </Flex>
 
             <Flex width={[1,3/10]} flexDirection={'column'} height={['auto','100%']}>

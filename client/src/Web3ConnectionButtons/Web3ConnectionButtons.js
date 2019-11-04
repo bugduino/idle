@@ -47,6 +47,7 @@ export default function Web3ConnectionButtons(props) {
   if (onlyPortis) {
     basicConnectorsName = basicConnectorsName.filter(n => n === 'Portis');
   }
+
   const buttons = basicConnectorsName.map(connectorName => {
     switch (connectorName) {
       case 'Injected':
@@ -62,7 +63,7 @@ export default function Web3ConnectionButtons(props) {
               display={'flex'}
               alignItems={'center'}
               mb={[1, 3]}
-              width={[1, 1/2]}
+              width={basicConnectorsName.length>1 ? [1,1/2] : 1}
               key={connectorName}
               disabled={context.connectorName === connectorName}
               size={size}
@@ -84,7 +85,7 @@ export default function Web3ConnectionButtons(props) {
           return (
             <Button.Outline
               className={[styles.button]}
-              width={[1, 1/2]}
+              width={basicConnectorsName.length>1 ? [1,1/2] : 1}
               mb={[1, 3]}
               key={connectorName}
               disabled={context.connectorName === connectorName}
@@ -107,7 +108,7 @@ export default function Web3ConnectionButtons(props) {
           <Button.Outline
             className={[styles.button]}
             mb={[1, 3]}
-            width={[1, 1/2]}
+            width={basicConnectorsName.length>1 ? [1,1/2] : 1}
             size={size}
             key={connectorName}
             disabled={context.connectorName === connectorName}

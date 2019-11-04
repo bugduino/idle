@@ -38,6 +38,7 @@ class SmartContractControls extends React.Component {
     disableRedeemButton: false,
     approveIsOpen: false,
     capReached: false,
+    showFundsInfo:false,
     isApprovingDAITest: true,
     tokenName: 'DAI',
     baseTokenName: 'DAI',
@@ -108,6 +109,13 @@ class SmartContractControls extends React.Component {
 
     timer = window.setInterval(run,stepTime);
   };
+  toggleShowFundsInfo = (e) => {
+    e.preventDefault();
+    this.setState(state => ({
+      ...state,
+      showFundsInfo: !state.showFundsInfo
+    }));
+  }
   togglePartialRedeem = () => {
     this.setState(state => ({
       ...state,
@@ -175,11 +183,10 @@ class SmartContractControls extends React.Component {
       const currentApr = this.BNify(this.state.maxRate).div(100);
       const earningPerYear = tokenToRedeem.times(currentApr);
 
-      // console.log('getBalanceOf',tokenToRedeem,earning,earningPerYear);
-
       this.setState({
         [`balanceOf${contractName}`]: balance,
         [`DAIToRedeem`]: tokenToRedeem.toString(),
+        currentApr,
         tokenToRedeem,
         earning,
         earningPerYear,
@@ -463,17 +470,24 @@ class SmartContractControls extends React.Component {
       let amount = e.target.value;
       console.log('handleChangeAmountRedeem',amount,this.state.balanceOfIdleDAI);
       this.setState({ redeemAmount: amount });
-      if (this.props.account && this.BNify(amount).gt(this.BNify(this.state.balanceOfIdleDAI))) {
-        return this.setState({
-          disableRedeemButton: true,
-          genericError: 'The inserted amount exceeds your Redeemable balance'
-        });
-      } else {
-        return this.setState({
-          disableRedeemButton: false,
-          genericError: ''
-        });
+
+      let disableRedeemButton = false;
+      let genericError = '';
+
+      if (this.props.account) {
+        if (this.BNify(amount).gt(this.BNify(this.state.balanceOfIdleDAI))){
+          disableRedeemButton = true;
+          genericError = 'The inserted amount exceeds your Redeemable balance';
+        } else if (this.BNify(amount).lte(0)) {
+          disableRedeemButton = true;
+          genericError = 'Please insert a positive amount';
+        }
       }
+
+      return this.setState({
+        disableRedeemButton,
+        genericError
+      });
     } else {
       this.redeem(e);
     }
@@ -483,17 +497,24 @@ class SmartContractControls extends React.Component {
     if (this.props.account){
       let amount = e.target.value;
       this.setState({ lendAmount: amount });
-      if (this.props.account && this.BNify(amount).gt(this.BNify(this.props.accountBalanceDAI))) {
-        return this.setState({
-          disableLendButton: true,
-          genericError: 'The inserted amount exceeds your DAI balance'
-        });
-      } else {
-        return this.setState({
-          disableLendButton: false,
-          genericError: ''
-        });
+
+      let disableLendButton = false;
+      let genericError = '';
+
+      if (this.props.account) {
+        if (this.BNify(amount).gt(this.BNify(this.props.accountBalanceDAI))){
+          disableLendButton = true;
+          genericError = 'The inserted amount exceeds your DAI balance';
+        } else if (this.BNify(amount).lte(0)) {
+          disableLendButton = true;
+          genericError = 'Please insert a positive amount';
+        }
       }
+
+      return this.setState({
+        disableLendButton,
+        genericError
+      });
     } else {
       this.mint(e);
     }
@@ -785,8 +806,8 @@ class SmartContractControls extends React.Component {
     }
   }
 
-  formatCountUp(number){
-    const decimals = 9;
+  formatCountUp(number,decimals){
+    decimals = decimals ? decimals : 9;
     const intPart = Math.floor(number);
     let decPart = (number%1).toString().substr(2,decimals);
     decPart = (decPart+("0".repeat(decimals))).substr(0,decimals);
@@ -814,10 +835,18 @@ class SmartContractControls extends React.Component {
     const earningPerMonth = this.getFormattedBalance((this.state.earningPerYear/12),'DAI',4);
     const earningPerYear = this.getFormattedBalance((this.state.earningPerYear),'DAI',4);
 
+    const currentNavPool = !isNaN(this.trimEth(this.state.navPool)) ? parseFloat(this.trimEth(this.state.navPool,9)) : null;
+    const navPoolEarningPerYear = currentNavPool ? parseFloat(this.trimEth(this.BNify(this.state.navPool).times(this.BNify(this.state.maxRate/100)),9)) : null;
+    const navPoolAtEndOfYear = currentNavPool ? parseFloat(this.trimEth(this.BNify(this.state.navPool).plus(this.BNify(navPoolEarningPerYear)),9)) : null;
+
+    // console.log('currentNavPool',currentNavPool,'navPoolEarningPerYear',navPoolEarningPerYear,'navPoolAtEndOfYear',navPoolAtEndOfYear);
+
     const currentReedemableFunds = !isNaN(this.trimEth(this.state.DAIToRedeem)) && !isNaN(this.trimEth(this.state.earningPerYear)) ? parseFloat(this.trimEth(this.state.DAIToRedeem,9)) : 0;
     const reedemableFundsAtEndOfYear = !isNaN(this.trimEth(this.state.DAIToRedeem)) && !isNaN(this.trimEth(this.state.earningPerYear)) ? parseFloat(this.trimEth(this.BNify(this.state.DAIToRedeem).plus(this.BNify(this.state.earningPerYear)),9)) : 0;
     const currentEarning = !isNaN(this.trimEth(this.state.earning)) ? parseFloat(this.trimEth(this.state.earning,9)) : 0;
     const earningAtEndOfYear = !isNaN(this.trimEth(this.state.earning)) ? parseFloat(this.trimEth(this.BNify(this.state.earning).plus(this.BNify(this.state.earningPerYear)),9)) : 0;
+
+    const fundsAreReady = !isNaN(this.trimEth(this.state.DAIToRedeem)) && !isNaN(this.trimEth(this.state.earning)) && !isNaN(this.trimEth(this.state.amountLent)) && !isNaN(this.trimEth(this.state.earning));
 
     return (
       <Box textAlign={'center'} alignItems={'center'} width={'100%'}>
@@ -882,7 +911,7 @@ class SmartContractControls extends React.Component {
                       handleClick={e => this.mint(e)} />)
                 }
 
-                <Flex justifyContent={'center'}>
+                <Flex justifyContent={'center'} mt={[0,3]}>
                   <Heading.h5 mt={2} color={'darkGray'} fontWeight={1} fontSize={1} textAlign={'center'}>
                     *This is beta software. Use at your own risk.
                   </Heading.h5>
@@ -896,12 +925,9 @@ class SmartContractControls extends React.Component {
                 {this.props.account &&
                   <>
                     {
-                      !isNaN(this.trimEth(this.state.DAIToRedeem)) &&
-                        !isNaN(this.trimEth(this.state.earning)) &&
-                          !isNaN(this.trimEth(this.state.amountLent)) &&
-                            !isNaN(this.trimEth(this.state.earning)) ? (
+                      fundsAreReady ? (
                         <>
-                          <Box borderBottom={'1px solid #D6D6D6'}>
+                          <Box>
                             {!!hasOldBalance &&
                               <Flash variant="warning" width={1}>
                                 We have released a new version of the contract, with a small bug fix, please redeem
@@ -921,7 +947,7 @@ class SmartContractControls extends React.Component {
                                       <CountUp
                                         start={currentReedemableFunds}
                                         end={reedemableFundsAtEndOfYear}
-                                        duration={31556926}
+                                        duration={315569260}
                                         delay={0}
                                         separator=" "
                                         decimals={9}
@@ -946,7 +972,7 @@ class SmartContractControls extends React.Component {
                                       <CountUp
                                         start={currentEarning}
                                         end={earningAtEndOfYear}
-                                        duration={31556926}
+                                        duration={315569260}
                                         delay={0}
                                         separator=" "
                                         decimals={9}
@@ -963,46 +989,152 @@ class SmartContractControls extends React.Component {
                               </Box>
                             </Flex>
                         </Box>
-                        <Box borderBottom={'1px solid #D6D6D6'}>
-                          <Flex flexDirection={['column','row']} py={[2,3]} width={[1,'100%']} m={'0 auto'}>
-                            <Flex flexDirection={'row'} py={[2,3]} width={[1,'1/2']} m={'0 auto'}>
-                              <Box width={1/2}>
-                                <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                  Deposited Funds
-                                </Text>
-                                <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                  { depositedFunds }
-                                </Heading.h3>
-                              </Box>
-                              <Box width={1/2}>
-                                <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                  Earning
-                                </Text>
-                                <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                  { earningPerc }
-                                </Heading.h3>
-                              </Box>
+                        <Box pb={[3,4]} borderBottom={'1px solid #D6D6D6'}>
+                          {hasBalance && !hasOldBalance && !this.state.redeemProcessing &&
+                            <Flex
+                              textAlign='center'
+                              flexDirection={'column'}
+                              alignItems={'center'}>
+                              {
+                                this.state.partialRedeemEnabled &&
+                                  <CryptoInput
+                                    genericError={this.state.genericError}
+                                    icon={'images/idle-dai.png'}
+                                    buttonLabel={'REDEEM idleDAI'}
+                                    placeholder={'Enter idleDAI amount'}
+                                    disableLendButton={this.state.disableRedeemButton}
+                                    isMobile={this.props.isMobile}
+                                    account={this.props.account}
+                                    accountBalanceDAI={this.state.balanceOfIdleDAI}
+                                    defaultValue={this.state.redeemAmount}
+                                    IdleDAIPrice={hasOldBalance ? (1/this.state.OldIdleDAIPrice) : (1/this.state.IdleDAIPrice)}
+                                    convertedLabel={'DAI'}
+                                    balanceLabel={'idleDAI'}
+                                    BNify={this.BNify}
+                                    trimEth={this.trimEth}
+                                    color={'black'}
+                                    selectedAsset='DAI'
+                                    useEntireBalance={this.useEntireBalanceRedeem}
+                                    handleChangeAmount={this.handleChangeAmountRedeem}
+                                    handleClick={e => this.redeem(e, 'IdleDAI')} />
+                              }
+
+                              {
+                                !this.state.partialRedeemEnabled &&
+                                  <Button
+                                    className={styles.gradientButton}
+                                    onClick={e => this.redeem(e, 'IdleDAI')}
+                                    borderRadius={4}
+                                    size={this.props.isMobile ? 'medium' : 'medium'}
+                                    mainColor={'blue'}
+                                    contrastColor={'white'}
+                                    fontWeight={3}
+                                    fontSize={[2,2]}
+                                    mx={'auto'}
+                                    px={[4,5]}
+                                    mt={2}
+                                  >
+                                    REDEEM ALL
+                                  </Button>
+                              }
+                              <Link color={'darkGray'} hoverColor={'blue'} fontWeight={1} fontSize={1} mt={[1,2]} onClick={ e => { this.togglePartialRedeem() } }>
+                                Redeem {!this.state.partialRedeemEnabled ? 'partial' : 'entire'} amount
+                              </Link>
                             </Flex>
-                            <Flex flexDirection={'row'} py={[2,3]} width={[1,'1/2']} m={'0 auto'}>
-                              <Box width={1/2}>
-                                <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                  Current holdings
-                                </Text>
-                                <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                  { hasOldBalance ? balanceOfOldIdleDAI : balanceOfIdleDAI }
-                                </Heading.h3>
-                              </Box>
-                              <Box width={1/2}>
-                                <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                  idleDAI Price
-                                </Text>
-                                <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                  { hasOldBalance ? OldIdleDAIPrice : IdleDAIPrice }
-                                </Heading.h3>
-                              </Box>
+                          }
+                          {hasOldBalance && !this.state.redeemProcessing &&
+                            <Flex
+                              textAlign='center'>
+                              <Button
+                                className={styles.gradientButton}
+                                onClick={e => this.redeem(e, 'OldIdleDAI')}
+                                borderRadius={4}
+                                size={this.props.isMobile ? 'medium' : 'medium'}
+                                mainColor={'blue'}
+                                contrastColor={'white'}
+                                fontWeight={3}
+                                fontSize={[2,2]}
+                                mx={'auto'}
+                                px={[4,5]}
+                                mt={2}
+                              >
+                                REDEEM DAI (old contract)
+                              </Button>
                             </Flex>
-                          </Flex>
+                          }
+                          {!hasBalance && !hasOldBalance &&
+                            <Flex
+                              textAlign='center'>
+                              <Button
+                                className={styles.gradientButton}
+                                onClick={e => this.selectTab(e, '1')}
+                                borderRadius={4}
+                                size={this.props.isMobile ? 'medium' : 'medium'}
+                                mainColor={'blue'}
+                                contrastColor={'white'}
+                                fontWeight={3}
+                                fontSize={[2,2]}
+                                mx={'auto'}
+                                px={[4,5]}
+                                mt={2}
+                              >
+                                LEND NOW
+                              </Button>
+                            </Flex>
+                          }
+                          {this.state.redeemProcessing &&
+                            <Flex
+                              justifyContent={'center'}
+                              alignItems={'center'}
+                              textAlign={'center'}>
+                              <Loader size="40px" /> <Text ml={2}>Processing redeem request...</Text>
+                            </Flex>
+                          }
                         </Box>
+                        <Flex flexDirection={'column'} pt={[3,4]} pb={[0,3]} alignItems={'center'}>
+                          <Button
+                            onClick={e => this.toggleShowFundsInfo(e) }
+                            textAlign={'center'}
+                            color={'darkGray'}
+                            hoverColor={'dark-gray'}
+                            fontSize={2}
+                            fontWeight={3}
+                            borderRadius={4}
+                            mainColor={'darkGray'}
+                            size={'small'}
+                            contrastColor={'white'}
+                          >
+                            <Flex flexDirection={'column'} pb={0} alignItems={'center'}>
+                              {
+                                false && this.state.showFundsInfo && 
+                                <Box>
+                                  <Icon
+                                    className={styles.bounceArrow}
+                                    align={'center'}
+                                    name={'KeyboardArrowUp'}
+                                    color={'darkGray'}
+                                    size={"2em"}
+                                  />
+                                </Box>
+                              }
+                              <Box>
+                                { this.state.showFundsInfo ? 'Show less info' : 'Show more info' }
+                              </Box>
+                              {
+                                false && !this.state.showFundsInfo && 
+                                <Box>
+                                  <Icon
+                                    className={styles.bounceArrow}
+                                    align={'center'}
+                                    name={'KeyboardArrowDown'}
+                                    color={'darkGray'}
+                                    size={"2em"}
+                                  />
+                                </Box>
+                              }
+                            </Flex>
+                          </Button>
+                        </Flex>
                       </>
                       ) : (
                         <Flex
@@ -1014,178 +1146,126 @@ class SmartContractControls extends React.Component {
                         </Flex>
                       )
                     }
-                    <Box my={[3,4]}>
-                      {hasBalance && !hasOldBalance && !this.state.redeemProcessing &&
-                        <Flex
-                          textAlign='center'
-                          flexDirection={'column'}
-                          alignItems={'center'}>
-                          {
-                            this.state.partialRedeemEnabled &&
-                              <CryptoInput
-                                genericError={this.state.genericError}
-                                icon={'images/idle-dai.png'}
-                                buttonLabel={'REDEEM idleDAI'}
-                                placeholder={'Enter idleDAI amount'}
-                                disableLendButton={this.state.disableRedeemButton}
-                                isMobile={this.props.isMobile}
-                                account={this.props.account}
-                                accountBalanceDAI={this.state.balanceOfIdleDAI}
-                                defaultValue={this.state.redeemAmount}
-                                IdleDAIPrice={hasOldBalance ? (1/this.state.OldIdleDAIPrice) : (1/this.state.IdleDAIPrice)}
-                                convertedLabel={'DAI'}
-                                BNify={this.BNify}
-                                trimEth={this.trimEth}
-                                color={'black'}
-                                selectedAsset='DAI'
-                                useEntireBalance={this.useEntireBalanceRedeem}
-                                handleChangeAmount={this.handleChangeAmountRedeem}
-                                handleClick={e => this.redeem(e, 'IdleDAI')} />
-                          }
-
-                          {
-                            !this.state.partialRedeemEnabled &&
-                              <Button
-                                className={styles.gradientButton}
-                                onClick={e => this.redeem(e, 'IdleDAI')}
-                                borderRadius={4}
-                                size={this.props.isMobile ? 'medium' : 'medium'}
-                                mainColor={'blue'}
-                                contrastColor={'white'}
-                                fontWeight={3}
-                                fontSize={[2,2]}
-                                mx={'auto'}
-                                px={[4,5]}
-                                mt={2}
-                              >
-                                REDEEM ALL
-                              </Button>
-                          }
-                          <Link color={'darkGray'} hoverColor={'blue'} fontWeight={1} fontSize={1} mt={[1,2]} onClick={ e => { this.togglePartialRedeem() } }>
-                            Redeem {!this.state.partialRedeemEnabled ? 'partial' : 'entire'} amount
-                          </Link>
-                        </Flex>
-                      }
-                      {hasOldBalance && !this.state.redeemProcessing &&
-                        <Flex
-                          textAlign='center'>
-                          <Button
-                            className={styles.gradientButton}
-                            onClick={e => this.redeem(e, 'OldIdleDAI')}
-                            borderRadius={4}
-                            size={this.props.isMobile ? 'medium' : 'medium'}
-                            mainColor={'blue'}
-                            contrastColor={'white'}
-                            fontWeight={3}
-                            fontSize={[2,2]}
-                            mx={'auto'}
-                            px={[4,5]}
-                            mt={2}
-                          >
-                            REDEEM DAI (old contract)
-                          </Button>
-                        </Flex>
-                      }
-                      {!hasBalance && !hasOldBalance &&
-                        <Flex
-                          textAlign='center'>
-                          <Button
-                            className={styles.gradientButton}
-                            onClick={e => this.selectTab(e, '1')}
-                            borderRadius={4}
-                            size={this.props.isMobile ? 'medium' : 'medium'}
-                            mainColor={'blue'}
-                            contrastColor={'white'}
-                            fontWeight={3}
-                            fontSize={[2,2]}
-                            mx={'auto'}
-                            px={[4,5]}
-                            mt={2}
-                          >
-                            LEND NOW
-                          </Button>
-                        </Flex>
-                      }
-                      {this.state.redeemProcessing &&
-                        <Flex
-                          justifyContent={'center'}
-                          alignItems={'center'}
-                          textAlign={'center'}>
-                          <Loader size="40px" /> <Text ml={2}>Processing redeem request...</Text>
-                        </Flex>
-                      }
-                    </Box>
-                    <Box my={[3,4]}>
-                      {
+                    {
+                      this.state.showFundsInfo ?
                         !isNaN(this.trimEth(this.state.earningPerYear)) ? (
-                          <Flex flexDirection={'column'} width={[1,'90%']} m={'0 auto'}>
-                            <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'dark-gray'}>
-                              Estimated earnings
-                            </Heading.h3>
-                            <Flex flexDirection={['column','row']} width={'100%'}>
-                              <Flex flexDirection={'row'} py={[2,3]} width={[1,'1/2']} m={'0 auto'}>
-                                <Box width={1/2}>
-                                  <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                    Daily
-                                  </Text>
-                                  <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                    {earningPerDay}
-                                  </Heading.h3>
-                                </Box>
-                                <Box width={1/2}>
-                                  <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                    Weekly
-                                  </Text>
-                                  <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                    {earningPerWeek}
-                                  </Heading.h3>
-                                </Box>
-                              </Flex>
-                              <Flex flexDirection={'row'} py={[2,3]} width={[1,'1/2']} m={'0 auto'}>
-                                <Box width={1/2}>
-                                  <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                    Monthly
-                                  </Text>
-                                  <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                    {earningPerMonth}
-                                  </Heading.h3>
-                                </Box>
-                                <Box width={1/2}>
-                                  <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                    Yearly
-                                  </Text>
-                                  <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                    {earningPerYear}
-                                  </Heading.h3>
-                                </Box>
+                        <>
+                          <Box my={[3,4]} pb={3,4} borderBottom={'1px solid #D6D6D6'}>
+                            <Flex flexDirection={'column'} width={[1,'90%']} m={'0 auto'}>
+                              <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'dark-gray'}>
+                                Funds overview
+                              </Heading.h3>
+                              <Flex flexDirection={['column','row']} width={'100%'}>
+                                <Flex flexDirection={'row'} py={[2,3]} width={[1,'1/2']} m={'0 auto'}>
+                                  <Box width={1/2}>
+                                    <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                      Deposited Funds
+                                    </Text>
+                                    <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                      { depositedFunds }
+                                    </Heading.h3>
+                                  </Box>
+                                  <Box width={1/2}>
+                                    <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                      Earning
+                                    </Text>
+                                    <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                      { earningPerc }
+                                    </Heading.h3>
+                                  </Box>
+                                </Flex>
+                                <Flex flexDirection={'row'} py={[2,3]} width={[1,'1/2']} m={'0 auto'}>
+                                  <Box width={1/2}>
+                                    <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                      Current holdings
+                                    </Text>
+                                    <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                      { hasOldBalance ? balanceOfOldIdleDAI : balanceOfIdleDAI }
+                                    </Heading.h3>
+                                  </Box>
+                                  <Box width={1/2}>
+                                    <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                      idleDAI Price
+                                    </Text>
+                                    <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                      { hasOldBalance ? OldIdleDAIPrice : IdleDAIPrice }
+                                    </Heading.h3>
+                                  </Box>
+                                </Flex>
                               </Flex>
                             </Flex>
-                          </Flex>
+                          </Box>
+                          <Box my={[3,4]} pb={3,4} borderBottom={'1px solid #D6D6D6'}>
+                            <Flex flexDirection={'column'} width={[1,'90%']} m={'0 auto'}>
+                              <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'dark-gray'}>
+                                Estimated earnings
+                              </Heading.h3>
+                              <Flex flexDirection={['column','row']} width={'100%'}>
+                                <Flex flexDirection={'row'} py={[2,3]} width={[1,'1/2']} m={'0 auto'}>
+                                  <Box width={1/2}>
+                                    <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                      Daily
+                                    </Text>
+                                    <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                      {earningPerDay}
+                                    </Heading.h3>
+                                  </Box>
+                                  <Box width={1/2}>
+                                    <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                      Weekly
+                                    </Text>
+                                    <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                      {earningPerWeek}
+                                    </Heading.h3>
+                                  </Box>
+                                </Flex>
+                                <Flex flexDirection={'row'} py={[2,3]} width={[1,'1/2']} m={'0 auto'}>
+                                  <Box width={1/2}>
+                                    <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                      Monthly
+                                    </Text>
+                                    <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                      {earningPerMonth}
+                                    </Heading.h3>
+                                  </Box>
+                                  <Box width={1/2}>
+                                    <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                      Yearly
+                                    </Text>
+                                    <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                      {earningPerYear}
+                                    </Heading.h3>
+                                  </Box>
+                                </Flex>
+                              </Flex>
+                            </Flex>
+                          </Box>
+                          <Box my={[3,4]} pb={3,4}>
+                            {
+                              this.state.prevTxs ? (
+                                this.renderPrevTxs()
+                              ) : (
+                                <Flex
+                                  justifyContent={'center'}
+                                  alignItems={'center'}
+                                  textAlign={'center'}>
+                                  <Loader size="40px" /> <Text ml={2}>Processing transactions...</Text>
+                                </Flex>
+                              )
+                            }
+                          </Box>
+                        </>
                         ) : (
                           <Flex
                             py={[2,3]}
                             justifyContent={'center'}
                             alignItems={'center'}
                             textAlign={'center'}>
-                            <Loader size="40px" /> <Text ml={2}>Processing earnings...</Text>
+                            <Loader size="40px" /> <Text ml={2}>Processing funds info...</Text>
                           </Flex>
                         )
-                      }
-                    </Box>
-                    <Box my={[3,4]}>
-                      {
-                        this.state.prevTxs ? (
-                          this.renderPrevTxs()
-                        ) : (
-                          <Flex
-                            justifyContent={'center'}
-                            alignItems={'center'}
-                            textAlign={'center'}>
-                            <Loader size="40px" /> <Text ml={2}>Processing transactions...</Text>
-                          </Flex>
-                        )
-                      }
-                    </Box>
+                      : ''
+                    }
                   </>
                 }
 
@@ -1226,7 +1306,23 @@ class SmartContractControls extends React.Component {
                       Allocated funds
                     </Text>
                     <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                      { navPool }
+                      {navPool ? 
+                        <CountUp
+                          start={currentNavPool}
+                          end={navPoolAtEndOfYear}
+                          duration={315569260}
+                          delay={0}
+                          separator=" "
+                          decimals={6}
+                          decimal="."
+                          formattingFn={(n)=>{ return this.formatCountUp(n,6); }}
+                        >
+                          {({ countUpRef, start }) => (
+                            <span ref={countUpRef} />
+                          )}
+                        </CountUp>
+                        : '-'
+                      }
                     </Heading.h3>
                   </Box>
                   <Box width={[1,1/2]}>
