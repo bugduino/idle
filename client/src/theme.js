@@ -44,6 +44,7 @@ export default {
     'primary-dark': blue.dark[1],
     bgBlue: '#0030e0',
     blue: '#0036ff',
+    skyBlue: '#00abfe',
     lightBlue: '#79f4e1',
     copyColor: '#3F3D4B',
     black: baseColors.black,

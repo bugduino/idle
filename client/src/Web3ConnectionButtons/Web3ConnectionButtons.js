@@ -8,6 +8,7 @@ import styles from './Web3ConnectionButtons.module.scss';
 export default function Web3ConnectionButtons(props) {
   const context = useWeb3Context()
   const size = props.size || 'large';
+  const width = props.width || 1/2;
 
   if (!context.active && !context.error) {
     console.log('context loading', context);
@@ -63,7 +64,7 @@ export default function Web3ConnectionButtons(props) {
               display={'flex'}
               alignItems={'center'}
               mb={[1, 3]}
-              width={basicConnectorsName.length>1 ? [1,1/2] : 1}
+              width={basicConnectorsName.length>1 ? [1,width] : 1}
               key={connectorName}
               disabled={context.connectorName === connectorName}
               size={size}
@@ -85,7 +86,7 @@ export default function Web3ConnectionButtons(props) {
           return (
             <Button.Outline
               className={[styles.button]}
-              width={basicConnectorsName.length>1 ? [1,1/2] : 1}
+              width={basicConnectorsName.length>1 ? [1,width] : 1}
               mb={[1, 3]}
               key={connectorName}
               disabled={context.connectorName === connectorName}
@@ -94,7 +95,7 @@ export default function Web3ConnectionButtons(props) {
               <Flex alignItems={'center'}>
                 <Icon
                   display={'inline-flex'}
-                  mr={'0.5rem'}
+                  mr={[0,'0.5rem']}
                   color="primary"
                   size={32}
                   name="AccountBalanceWallet" />
@@ -108,7 +109,7 @@ export default function Web3ConnectionButtons(props) {
           <Button.Outline
             className={[styles.button]}
             mb={[1, 3]}
-            width={basicConnectorsName.length>1 ? [1,1/2] : 1}
+            width={basicConnectorsName.length>1 ? [1,width] : 1}
             size={size}
             key={connectorName}
             disabled={context.connectorName === connectorName}
@@ -117,7 +118,7 @@ export default function Web3ConnectionButtons(props) {
             <Flex alignItems={'center'}>
               <Image
                 display={'inline-flex'}
-                mr={'0.5rem'}
+                mr={[0,'0.5rem']}
                 src={`images/${connectorName.toLowerCase()}.svg`}
                 alt={connectorName.toLowerCase()}
                 width={'2em'}

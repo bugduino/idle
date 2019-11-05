@@ -29,15 +29,13 @@ export default function (props) {
   return (
     <Modal isOpen={isOpen}>
       <ModalCard closeFunc={closeModal}>
+        <ModalCard.Header title={'Account overview'}></ModalCard.Header>
         <ModalCard.Body>
           <Flex
             width={["auto", "40em"]}
             flexDirection={'column'}
             alignItems={'center'}
             justifyContent={'center'}>
-            <Heading.h2 textAlign={'center'} mb={[2, 3]}>
-              Account overview
-            </Heading.h2>
             <Flex
               flexDirection={'column'}
               alignItems={'center'}

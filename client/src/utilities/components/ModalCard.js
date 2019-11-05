@@ -4,6 +4,8 @@ import {
   Flex,
   Card,
   Button,
+  Heading,
+  Image
 } from "rimble-ui";
 
 const ModalCard = ({children, closeFunc, ...props}) => (
@@ -16,6 +18,7 @@ const ModalCard = ({children, closeFunc, ...props}) => (
     width={['auto']}
     maxWidth={'960px'}
     overflow={'hidden'}
+    borderRadius={2}
   >
     <Box
       position={"absolute"}
@@ -33,19 +36,40 @@ const ModalCard = ({children, closeFunc, ...props}) => (
         size={'2.5em'}
       />
     </Box>
-    <Flex flexDirection={'column'} height={'100%'}>
+    <Flex flex={'1 1 auto'} style={{ overflow: 'auto',background: 'url(images/bg-bottom-right.png) no-repeat bottom right',backgroundSize:'65%' }} flexDirection={'column'} height={'100%'}>
       {children}
     </Flex>
   </Card>
 );
 
+ModalCard.Header = (props) => (
+  <Box width={1} pt={[5,4]} borderBottom={'1px solid #eee'} mb={[2,3]} pb={[2,3]}>
+    <Flex flexDirection={'column'} alignItems={'center'} px={[1,2]}>
+      { props.icon && <Image width={'50px'} src={props.icon} /> }
+      <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mt={props.icon ? [2,3] : 0} mb={0} color={'dark-gray'}>
+        {props.title}
+      </Heading.h3>
+      <Heading.h4 pt={[1,2]} fontSize={[2,2]} textAlign={'center'} fontWeight={2} lineHeight={1.5} color={'dark-gray'}>
+        {props.subtitle}
+      </Heading.h4>
+    </Flex>
+  </Box>
+);
+
+ModalCard.Body = ({children, ...props}) => (
+  <Box width={1} px={[3,5]}>
+    {children}
+  </Box>
+);
+/*
 ModalCard.Body = ({children, ...props}) => (
   <Flex flex={'1 1 auto'} style={{ overflow: 'auto' }} >
-    <Box width={1} p={['4', '5']} m={'auto'}>
+    <Box width={1} px={[4,5]} py={[3,4]} m={'auto'}>
       {children}
     </Box>
   </Flex>
 );
+*/
 
 ModalCard.Footer = ({children, ...props}) => (
   <Flex

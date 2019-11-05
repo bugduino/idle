@@ -7,7 +7,9 @@ import {
   Flex,
   Box,
   Link,
-  Button
+  Button,
+  Card,
+  Image
 } from "rimble-ui";
 import styles from './Header.module.scss';
 import ModalCard from './ModalCard';
@@ -36,6 +38,7 @@ class ConnectionModal extends React.Component {
     e.preventDefault();
 
     this.setState({
+      showTxFees: false,
       showConnectionButtons: !this.state.showConnectionButtons
     });
 
@@ -53,6 +56,7 @@ class ConnectionModal extends React.Component {
       localStorage.removeItem('showConnectionButtons');
     }
     this.setState({
+      showTxFees: false,
       showConnectionButtons: false,
       newToEthereum: false
     });
@@ -66,6 +70,7 @@ class ConnectionModal extends React.Component {
     e.preventDefault();
 
     this.setState({
+      showTxFees: false,
       newToEthereum: !this.state.newToEthereum
     });
   };
@@ -75,52 +80,56 @@ class ConnectionModal extends React.Component {
     const newToEthereum = this.state.newToEthereum;
     if (showConnectionButtons) {
       return (
-        <Box width={1}>
-          <Heading fontSize={[4, 5]} mb={[3, 4]} textAlign='center'>
-            Connect with:
-          </Heading>
-          <Web3ConnectionButtons size={'large'} />
-        </Box>
+        <>
+          <ModalCard.Header title={'Select your Wallet'} subtitle={'And get started with Idle.'} icon={'images/idle-dai.png'}></ModalCard.Header>
+          <ModalCard.Body>
+            <Box width={1} px={[3,5]} justifyContent={'center'}>
+              <Web3ConnectionButtons width={1/2} size={'large'} />
+            </Box>
+          </ModalCard.Body>
+        </>
       );
     }
 
     if (newToEthereum) {
       return (
         <React.Fragment>
-          <Box mt={4} mb={5}>
-            <Heading fontSize={[4, 5]}>Let's create your first Ethereum wallet</Heading>
-            <Text fontSize={[2, 3]} my={3}>
-              Managing ethereum wallet could be intimidating, but we are making it
-              seamless by integrating the Portis wallet provider.
-              After clicking the button below you will create you first Ethereum wallet
-              and you'll be ready to start your journey into Idle.
-            </Text>
-          </Box>
-          <Flex alignItems={"center"} flexDirection={['column','row']}>
-            <Box width={[1,1/2]}>
-              <Web3ConnectionButtons size={'large'} onlyPortis={true} registerPage={true} />
+          <ModalCard.Header title={'Let\'s create your first Ethereum wallet'}></ModalCard.Header>
+          <ModalCard.Body>
+            <Box mb={[3,4]}>
+              <Text fontSize={[2,2]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5}>
+                Managing ethereum wallet could be intimidating, but we are making it
+                seamless by integrating the Portis wallet provider.
+                After clicking the button below you will create you first Ethereum wallet
+                and you'll be ready to start your journey into Idle.
+              </Text>
             </Box>
-            <Box width={[1,1/2]}>
-              <Button.Outline
-                className={[Web3ConnectionButtons_styles.button]}
-                display={'flex'}
-                alignItems={'center'}
-                mb={[1, 3]}
-                width={1}
-                key={'Reset'}
-                size={'large'}
-                onClick={this.toggleShowConnectionButtons}>
-                <Flex alignItems={'center'}>
-                  <Icon
-                    name="Replay"
-                    color="copyColor"
-                    size={'1.5em'}
-                  />
-                  {'Choose another wallet'}
-                </Flex>
-              </Button.Outline>
-            </Box>
-          </Flex>
+            <Flex alignItems={"center"} flexDirection={['column','row']}>
+              <Box width={[1,1/2]}>
+                <Web3ConnectionButtons size={'large'} onlyPortis={true} registerPage={true} />
+              </Box>
+              <Box width={[1,1/2]}>
+                <Button.Outline
+                  className={[Web3ConnectionButtons_styles.button]}
+                  display={'flex'}
+                  alignItems={'center'}
+                  mb={[1, 3]}
+                  width={1}
+                  key={'Reset'}
+                  size={['medium','large']}
+                  onClick={this.toggleShowConnectionButtons}>
+                  <Flex alignItems={'center'}>
+                    <Icon
+                      name="Replay"
+                      color="copyColor"
+                      size={'1.5em'}
+                    />
+                    {'Choose another wallet'}
+                  </Flex>
+                </Button.Outline>
+              </Box>
+            </Flex>
+          </ModalCard.Body>
         </React.Fragment>
       );
     }
@@ -128,75 +137,80 @@ class ConnectionModal extends React.Component {
     return (
       <React.Fragment>
         {/* Start primary content */}
+        {
+          /*
         <Box mt={4} mb={5}>
           <Heading fontSize={[4, 5]}>Before you connect</Heading>
           <Text fontSize={[2, 3]} my={3}>
-            Connecting lets you use Idle via your
-            Ethereum account.
+            Connecting lets you use Idle via your Ethereum account.
           </Text>
         </Box>
-
-        <Flex
-          flexDirection={['column', 'row']}
-          justifyContent={"space-between"}
-          my={[0, 4]}
-        >
-          <Box flex={'1 1'} width={1} mt={[3, 0]} mb={[4, 0]} mr={4}>
-            <Flex justifyContent={"center"} mb={3}>
-              <Icon
-                name="Public"
-                color="primary"
-                size="4em"
-              />
-            </Flex>
-            <Heading fontSize={2}>The blockchain is public</Heading>
-            <Text fontSize={1}>
-              Your Ethereum account activity is public on the
-              blockchain. Choose an account you don’t mind being
-              linked with your activity here.
-            </Text>
-          </Box>
-          <Box flex={'1 1'} width={1} mt={[3, 0]} mb={[4, 0]} mr={4}>
-            <Flex justifyContent={"center"} mb={3}>
-              <Icon
-                name="AccountBalanceWallet"
-                color="primary"
-                size="4em"
-              />
-            </Flex>
-            <Heading fontSize={2}>Have some Ether for fees</Heading>
-            <Text fontSize={1} mb={3}>
-              You’ll need Ether to pay transaction fees. Buy Ether
-              from exchanges like Coinbase or directly via enabled wallet
-              such as Portis or Dapper.
-            </Text>
-            <Link
-              title="Learn about Ethereum transaction fees"
-              as={"a"}
-              color={'primary'}
-              hoverColor={'primary'}
-              href="#"
-              onClick={this.toggleShowTxFees}
-            >
-              What are transaction fees?
-            </Link>
-          </Box>
-          <Box flex={'1 1'} width={1} mt={[3, 0]} mb={[4, 0]}>
-            <Flex justifyContent={"center"} mb={3}>
-              <Icon
-                name="People"
-                color="primary"
-                size="4em"
-              />
-            </Flex>
-            <Heading fontSize={2}>Have the right account ready</Heading>
-            <Text fontSize={1}>
-              If you have multiple Ethereum accounts, check that the
-              one you want to use is active in your browser.
-            </Text>
-          </Box>
-        </Flex>
-        {/* End Modal Content */}
+        */
+        }
+        <ModalCard.Header title={'Before you connect'} subtitle={'Connecting lets you use Idle via your Ethereum account.'}></ModalCard.Header>
+        <ModalCard.Body>
+          <Flex
+            flexDirection={['column', 'row']}
+            justifyContent={"space-between"}
+            my={[0, 3]}
+          >
+            <Box flex={'1 1'} width={1} mt={[0, 0]} mb={[4, 0]} mr={4}>
+              <Flex justifyContent={"center"} mb={3}>
+                <Icon
+                  name="Public"
+                  color="skyBlue"
+                  size="4em"
+                />
+              </Flex>
+              <Heading fontSize={2} textAlign={'center'}>The blockchain is public</Heading>
+              <Text fontSize={1} textAlign={'center'}>
+                Your Ethereum account activity is public on the
+                blockchain. Choose an account you don’t mind being
+                linked with your activity here.
+              </Text>
+            </Box>
+            <Box flex={'1 1'} width={1} mt={[0, 0]} mb={[4, 0]} mr={4}>
+              <Flex justifyContent={"center"} mb={3}>
+                <Icon
+                  name="AccountBalanceWallet"
+                  color="skyBlue"
+                  size="4em"
+                />
+              </Flex>
+              <Heading fontSize={2} textAlign={'center'}>Have some Ether for fees</Heading>
+              <Text fontSize={1} mb={3} textAlign={'center'}>
+                You’ll need Ether to pay transaction fees. Buy Ether
+                from exchanges like Coinbase or directly via enabled wallet
+                such as Portis or Dapper.<br />
+                <Link
+                  title="Learn about Ethereum transaction fees"
+                  fontWeight={'0'}
+                  color={'blue'}
+                  textAlign={'center'}
+                  hoverColor={'blue'}
+                  href="#"
+                  onClick={this.toggleShowTxFees}
+                >
+                  What are transaction fees?
+                </Link>
+              </Text>
+            </Box>
+            <Box flex={'1 1'} width={1} mt={[0, 0]} mb={[4, 0]}>
+              <Flex justifyContent={"center"} mb={3}>
+                <Icon
+                  name="People"
+                  color="skyBlue"
+                  size="4em"
+                />
+              </Flex>
+              <Heading fontSize={2} textAlign={'center'}>Have the right account ready</Heading>
+              <Text fontSize={1} textAlign={'center'}>
+                If you have multiple Ethereum accounts, check that the
+                one you want to use is active in your browser.
+              </Text>
+            </Box>
+          </Flex>
+        </ModalCard.Body>
       </React.Fragment>
     );
   }
@@ -222,22 +236,37 @@ class ConnectionModal extends React.Component {
                 className={styles.gradientButton}
                 borderRadius={4}
                 my={2}
-                mr={[3, 4]}
+                mr={[0, 4]}
                 size={this.props.isMobile ? 'small' : 'medium'}
                 onClick={this.toggleShowConnectionButtons}
               >
                 CONNECT
               </Button>
-              <Button
-                borderRadius={4}
-                my={2}
-                mr={[3, 4]}
-                size={this.props.isMobile ? 'small' : 'medium'}
-                mainColor={'darkGray'}
-                onClick={this.toggleNewtoEthereum}
-              >
-                I AM NEW TO ETHEREUM
-              </Button>
+              {
+                this.state.showTxFees ? (
+                  <Button
+                    borderRadius={4}
+                    my={2}
+                    mr={[0, 4]}
+                    size={this.props.isMobile ? 'small' : 'medium'}
+                    mainColor={'darkGray'}
+                    onClick={this.resetModal}
+                  >
+                    BACK TO INSTRUCTIONS
+                  </Button>
+                ) : (
+                <Button
+                  borderRadius={4}  
+                  my={2}
+                  mr={[0, 4]}
+                  size={this.props.isMobile ? 'small' : 'medium'}
+                  mainColor={'darkGray'}
+                  onClick={this.toggleNewtoEthereum}
+                >
+                  I AM NEW TO ETHEREUM
+                </Button>
+                )
+              }
             </Flex>
           )
         }
@@ -258,19 +287,16 @@ class ConnectionModal extends React.Component {
     return (
       <Modal isOpen={this.props.isOpen}>
         <ModalCard closeFunc={this.closeModal}>
-
           {this.state.showTxFees === false ? (
             <React.Fragment>
-              <ModalCard.Body>
-                {this.renderModalContent()}
-              </ModalCard.Body>
+              {this.renderModalContent()}
               {this.renderFooter()}
             </React.Fragment>
           ) : (
-            <ModalCard.Body>
+            <>
               <TransactionFeeModal />
-              <ModalCard.BackButton onClick={this.toggleShowTxFees} />
-            </ModalCard.Body>
+              {this.renderFooter()}
+            </>
           )}
 
         </ModalCard>

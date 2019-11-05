@@ -11,7 +11,7 @@ import CountUp from 'react-countup';
 
 import IdleDAI from "../contracts/IdleDAI.json";
 import cDAI from '../abis/compound/cDAI';
-import DAI from '../contracts/IERC20.json';
+import DAI from '../contracts/IERC20Base.json';
 import iDAI from '../abis/fulcrum/iToken.json';
 
 const env = process.env;
@@ -839,8 +839,6 @@ class SmartContractControls extends React.Component {
     const navPoolEarningPerYear = currentNavPool ? parseFloat(this.trimEth(this.BNify(this.state.navPool).times(this.BNify(this.state.maxRate/100)),9)) : null;
     const navPoolAtEndOfYear = currentNavPool ? parseFloat(this.trimEth(this.BNify(this.state.navPool).plus(this.BNify(navPoolEarningPerYear)),9)) : null;
 
-    // console.log('currentNavPool',currentNavPool,'navPoolEarningPerYear',navPoolEarningPerYear,'navPoolAtEndOfYear',navPoolAtEndOfYear);
-
     const currentReedemableFunds = !isNaN(this.trimEth(this.state.DAIToRedeem)) && !isNaN(this.trimEth(this.state.earningPerYear)) ? parseFloat(this.trimEth(this.state.DAIToRedeem,9)) : 0;
     const reedemableFundsAtEndOfYear = !isNaN(this.trimEth(this.state.DAIToRedeem)) && !isNaN(this.trimEth(this.state.earningPerYear)) ? parseFloat(this.trimEth(this.BNify(this.state.DAIToRedeem).plus(this.BNify(this.state.earningPerYear)),9)) : 0;
     const currentEarning = !isNaN(this.trimEth(this.state.earning)) ? parseFloat(this.trimEth(this.state.earning,9)) : 0;
@@ -883,7 +881,7 @@ class SmartContractControls extends React.Component {
                   </Flex>
                 )}
 
-                <Heading.h3 py={[3, 0]} mb={[2,3]} fontFamily={'sansSerif'} fontSize={[2, 3]} fontWeight={2} color={'dark-gray'} textAlign={'center'}>
+                <Heading.h3 pb={[2, 0]} mb={[2,3]} fontFamily={'sansSerif'} fontSize={[2, 3]} fontWeight={2} color={'dark-gray'} textAlign={'center'}>
                   Earn <Text.span fontWeight={'bold'} fontSize={[3,4]}>{this.state.maxRate}% APR</Text.span> on your DAI
                 </Heading.h3>
 
@@ -1275,7 +1273,7 @@ class SmartContractControls extends React.Component {
                     flexDirection={'column'}
                     textAlign={'center'}
                     py={[1,3]}>
-                      <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontWeight={2} fontSize={[3,3]} color={'blue'}>
+                      <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontWeight={2} fontSize={[3,3]} color={'dark-gray'}>
                         Please connect to view your available funds.
                       </Heading.h3>
                       <Button
@@ -1299,58 +1297,60 @@ class SmartContractControls extends React.Component {
             }
 
             { this.props.selectedTab === '3' && 
-              <Box width={'100%'} borderBottom={'1px solid #D6D6D6'} mb={2}>
-                <Flex flexDirection={['column','row']} py={[2,3]} width={[1,'50%']} m={'0 auto'}>
-                  <Box width={[1,1/2]}>
-                    <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
-                      Allocated funds
-                    </Text>
-                    <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                      {navPool ? 
-                        <CountUp
-                          start={currentNavPool}
-                          end={navPoolAtEndOfYear}
-                          duration={315569260}
-                          delay={0}
-                          separator=" "
-                          decimals={6}
-                          decimal="."
-                          formattingFn={(n)=>{ return this.formatCountUp(n,6); }}
-                        >
-                          {({ countUpRef, start }) => (
-                            <span ref={countUpRef} />
-                          )}
-                        </CountUp>
-                        : '-'
-                      }
+              <>
+                <Box width={'100%'} borderBottom={'1px solid #D6D6D6'} mb={2}>
+                  <Flex flexDirection={['column','row']} py={[2,3]} width={[1,'50%']} m={'0 auto'}>
+                    <Box width={[1,1/2]}>
+                      <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
+                        Allocated funds
+                      </Text>
+                      <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                        {navPool ? 
+                          <CountUp
+                            start={currentNavPool}
+                            end={navPoolAtEndOfYear}
+                            duration={315569260}
+                            delay={0}
+                            separator=" "
+                            decimals={6}
+                            decimal="."
+                            formattingFn={(n)=>{ return this.formatCountUp(n,6); }}
+                          >
+                            {({ countUpRef, start }) => (
+                              <span ref={countUpRef} />
+                            )}
+                          </CountUp>
+                          : '-'
+                        }
+                      </Heading.h3>
+                    </Box>
+                    <Box width={[1,1/2]}>
+                      <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
+                        Current protocol
+                      </Text>
+                      <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                        { this.state.currentProtocol ? this.state.currentProtocol : '-' }
+                      </Heading.h3>
+                    </Box>
+                  </Flex>
+                </Box>
+                { !!this.state.calculataingShouldRebalance && 
+                  <Box px={[2,0]} textAlign={'text'} py={[3,0]}>
+                    <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} py={3} color={'blue'}>
+                      Rebalance the entire pool. All users will bless you.
                     </Heading.h3>
+                    <Flex
+                      justifyContent={'center'}
+                      alignItems={'center'}
+                      textAlign={'center'}
+                      pt={3}>
+                          <Loader size="40px" /> <Text ml={2}>Checking rebalance status...</Text>
+                    </Flex>
                   </Box>
-                  <Box width={[1,1/2]}>
-                    <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
-                      Current protocol
-                    </Text>
-                    <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                      { this.state.currentProtocol ? this.state.currentProtocol : '-' }
-                    </Heading.h3>
-                  </Box>
-                </Flex>
-              </Box>
+                }
+              </>
             }
 
-            { this.props.selectedTab === '3' && !!this.state.calculataingShouldRebalance && 
-              <Box px={[2,0]} textAlign={'text'} py={[3,0]}>
-                <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} py={3} color={'blue'}>
-                  Rebalance the entire pool. All users will bless you.
-                </Heading.h3>
-                <Flex
-                  justifyContent={'center'}
-                  alignItems={'center'}
-                  textAlign={'center'}
-                  pt={3}>
-                      <Loader size="40px" /> <Text ml={2}>Checking rebalance status...</Text>
-                </Flex>
-              </Box>
-            }
 
             { this.props.selectedTab === '3' && !this.state.calculataingShouldRebalance && !!this.state.shouldRebalance && 
               <Box px={[2,0]} textAlign={'text'} py={[3,0]}>
