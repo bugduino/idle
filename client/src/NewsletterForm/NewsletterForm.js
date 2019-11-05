@@ -1,11 +1,12 @@
 import React, { Component } from "react";
-import { Flex, Box, Button, Form, Text } from 'rimble-ui';
+import { Flex, Box, Button, Form, Text, Checkbox, Link } from 'rimble-ui';
 import axios from 'axios';
 import styles from './NewsletterForm.module.scss';
 
 class NewsletterForm extends Component {
   state = {
     validated: false,
+    privacy: false,
     email: null,
     message: ''
   };
@@ -19,6 +20,12 @@ class NewsletterForm extends Component {
 
   handleSubmit(e) {
     e.preventDefault();
+
+    if (!this.state.privacy){
+      this.setState({message:'Please check the privacy policy box to proceed.', messageColor:'red' });
+      return false;
+    }
+
     this.setState({validated:true });
 
     axios.post(`https://dev.lapisgroup.it/idle/newsletter.php`, {
@@ -29,6 +36,10 @@ class NewsletterForm extends Component {
     .catch(err => {
       this.setState({message:'Error while sending your subscription... Please try again', messageColor:'red' });
     });
+  }
+
+  toggleCheckbox(e) {
+    this.setState({ privacy: e.target.checked });
   }
 
   handleValidation(e) {
@@ -62,8 +73,12 @@ class NewsletterForm extends Component {
                     onChange={this.handleValidation}
                   />
                 </Form.Field>
+                <Flex flexDirection={'row'} alignItems={'center'}>
+                  <Checkbox onClick={ e => this.toggleCheckbox(e) } label="I've read and accepted the" required />
+                  <Link color={'blue'} hoverColor={'blue'} target={'_blank'} href={"https://www.iubenda.com/privacy-policy/61211749"}>Privacy Policy</Link>
+                </Flex>
                 {this.state.message && this.state.message.length &&
-                  <Text.p py={0} mt={0} mb={3} textAlign={'center'} color={this.state.messageColor}>{this.state.message}</Text.p>
+                  <Text.p py={0} mt={[2,3]} mb={3} textAlign={['center','left']} color={this.state.messageColor}>{this.state.message}</Text.p>
                 }
               </Box>
               <Box width={[1,2/10]} my={[0,'26px']}>

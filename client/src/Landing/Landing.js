@@ -532,9 +532,9 @@ class Landing extends Component {
                     </Flex>
                   </Box>
                   <Flex width={1} alignItems={'center'} justifyContent={'center'} position={'relative'} zIndex={'10'}>
-                    <Link className={[styles.carouselNav,this.state.activeCarousel===1 ? styles.selected : '']} onClick={e => this.setActiveCarousel(1)}></Link>
-                    <Link className={[styles.carouselNav,this.state.activeCarousel===2 ? styles.selected : '']} onClick={e => this.setActiveCarousel(2)}></Link>
-                    <Link className={[styles.carouselNav,this.state.activeCarousel===3 ? styles.selected : '']} onClick={e => this.setActiveCarousel(3)}></Link>
+                    <Link className={[styles.carouselNav,this.state.activeCarousel===1 ? styles.selected : '']} onClick={e => this.state.setActiveCarousel(1)}></Link>
+                    <Link className={[styles.carouselNav,this.state.activeCarousel===2 ? styles.selected : '']} onClick={e => this.state.setActiveCarousel(2)}></Link>
+                    <Link className={[styles.carouselNav,this.state.activeCarousel===3 ? styles.selected : '']} onClick={e => this.state.setActiveCarousel(3)}></Link>
                   </Flex>
                 </Flex>
               )
