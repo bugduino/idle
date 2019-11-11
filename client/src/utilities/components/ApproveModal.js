@@ -15,21 +15,22 @@ export default function ApproveModal(props) {
   return (
     <Modal isOpen={isOpen}>
       <ModalCard closeFunc={closeModal}>
+        <ModalCard.Header title={`Enabling ${tokenName} tokens`}>
+        </ModalCard.Header>
         <ModalCard.Body>
-          <Box mt={3} mb={3}>
-            <Heading color={'black'} fontSize={[4, 5]}>Enabling {tokenName} tokens</Heading>
-            <Text fontSize={[2, 3]} my={3}>
+          <Box mt={2} mb={4}>
+            <Text fontWeight={3} fontSize={[2, 3]} my={0}>
               What it means?
             </Text>
-            <Text fontSize={1}>
+            <Text fontSize={2}>
               Currently {tokenName} tokens are in your wallet and you are the one and only owner of them.
             </Text>
-            <Text fontSize={1}>
+            <Text fontSize={2}>
               By clicking on ENABLE you are allowing the Idle contract to actually
               move {tokenName} on your behalf so we can forward them on various lending protocols.
             </Text>
-            <Text fontSize={[2, 3]} my={3}>You need to enable {tokenName} tokens to:</Text>
-            <Text fontSize={1}>
+            <Text fontWeight={3} fontSize={[2, 3]} my={3}>You need to enable {tokenName} tokens to:</Text>
+            <Text fontSize={2}>
               <ul>
                 {isRedeeming ?
                   <li>Redeem {baseTokenName} plus interest</li>:

@@ -7,9 +7,7 @@ import {
   Flex,
   Box,
   Link,
-  Button,
-  Card,
-  Image
+  Button
 } from "rimble-ui";
 import styles from './Header.module.scss';
 import ModalCard from './ModalCard';

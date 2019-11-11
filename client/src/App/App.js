@@ -32,7 +32,9 @@ class App extends Component {
     window.removeEventListener('resize', this.handleWindowSizeChange);
   }
   handleWindowSizeChange = () => {
-    this.setState({ width: window.innerWidth });
+    if (window.innerWidth !== this.state.width){
+      this.setState({ width: window.innerWidth });
+    }
   };
 
   // Optional parameters to pass into RimbleWeb3

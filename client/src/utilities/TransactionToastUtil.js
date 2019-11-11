@@ -93,7 +93,7 @@ class TransactionToastUtil extends React.Component {
   };
 
   showTransactionToast = transaction => {
-    console.log("showTransactionToast: ", { ...transaction });
+    // console.log("showTransactionToast: ", { ...transaction });
     // Get text info for toast
     let toastMeta = this.getTransactionToastMeta(transaction);
     toastMeta.colorTheme = 'light';

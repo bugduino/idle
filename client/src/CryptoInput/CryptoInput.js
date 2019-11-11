@@ -82,8 +82,17 @@ class CryptoInput extends Component {
               this.props.account && !isNaN(this.props.trimEth(this.props.accountBalanceDAI)) && 
               <Box pl={'5%'}>
                 <Heading.h5 color={'darkGray'} fontWeight={1} fontSize={1}>
-                  <Link color={'darkGray'} hoverColor={'darkGray'} fontWeight={1} fontSize={1} lineHeight={'1.25'} onClick={ e => this.props.useEntireBalance(this.props.accountBalanceDAI) }>
-                    Balance: {!this.props.isMobile ? parseFloat(this.props.accountBalanceDAI).toFixed(6) : parseFloat(this.props.accountBalanceDAI).toFixed(2) } { this.props.balanceLabel ? this.props.balanceLabel : 'DAI' }</Link>
+                    {
+                      parseFloat(this.props.accountBalanceDAI)>0 ? (
+                        <Link color={'darkGray'} hoverColor={'darkGray'} fontWeight={1} fontSize={1} lineHeight={'1.25'} onClick={ e => this.props.useEntireBalance(this.props.accountBalanceDAI) }>
+                          Balance: {!this.props.isMobile ? parseFloat(this.props.accountBalanceDAI).toFixed(6) : parseFloat(this.props.accountBalanceDAI).toFixed(2) } { this.props.balanceLabel ? this.props.balanceLabel : 'DAI' }
+                        </Link>
+                      ) : (
+                        <Link color={'darkGray'} hoverColor={'darkGray'} fontWeight={1} fontSize={1} lineHeight={'1.25'}>
+                          You have no { this.props.balanceLabel ? this.props.balanceLabel : 'DAI' } in your wallet
+                        </Link>
+                      )
+                    }
                 </Heading.h5>
               </Box>
             }

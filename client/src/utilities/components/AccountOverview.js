@@ -1,16 +1,24 @@
 import React from "react";
-import { Flex, Icon, Box, Text, QR } from "rimble-ui";
+import { Flex, Icon, Box, Text, QR, Image } from "rimble-ui";
 import ShortHash from "./ShortHash";
 import BigNumber from 'bignumber.js';
+import styles from './AccountOverview.module.scss';
 
 class AccountOverview extends React.Component {
   BNify = s => new BigNumber(String(s));
   trimEth = (eth, to) => {
     return this.BNify(eth).toFixed(to);
   };
+  getWalletProvider(){
+    if (localStorage){
+      return localStorage.getItem('walletProvider');
+    }
+    return null;
+  }
   render() {
     const roundedBalance = this.trimEth(this.props.accountBalance, 4);
     const roundedDAIBalance = this.trimEth(this.props.accountBalanceDAI, 2);
+    const walletProvider = this.getWalletProvider();
     return (
       <Flex alignItems={"flex-start"} style={{cursor: 'pointer'}} mx={3} my={2} onClick={this.props.toggleModal}>
         {!this.props.isMobile &&
@@ -41,12 +49,24 @@ class AccountOverview extends React.Component {
             </Box>
           </Box>
         }
-        <Icon
-          name='AccountCircle'
-          size={'45'}
-          ml={2}
-          mt={[0, 0]}
-          color='white' />
+        {
+          walletProvider ? (
+            <Image
+              display={'inline-flex'}
+              mr={[0,'0.5rem']}
+              src={`images/${walletProvider.toLowerCase()}.svg`}
+              alt={walletProvider.toLowerCase()}
+              className={styles.walletProvider}
+            />
+          ) : (
+            <Icon
+              name='AccountCircle'
+              size={'45'}
+              ml={2}
+              mt={[0, 0]}
+              color='white' />
+          )
+        }
       </Flex>
     );
   }

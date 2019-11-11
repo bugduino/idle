@@ -17,9 +17,13 @@ export default function Web3ConnectionButtons(props) {
   } else {
     console.log('context success', context);
   }
-  const setConnector = async connectorName => {
-    if (localStorage && connectorName === 'Injected') {
-      localStorage.setItem('walletProvider', 'Injected');
+  const setConnector = async (connectorName,name) => {
+    if (localStorage) {
+      if (connectorName === 'Injected'){
+        localStorage.setItem('walletProvider', name);
+      } else {
+        localStorage.setItem('walletProvider', connectorName);
+      }
     }
     return await context.setConnector(connectorName);
   };
@@ -68,7 +72,7 @@ export default function Web3ConnectionButtons(props) {
               key={connectorName}
               disabled={context.connectorName === connectorName}
               size={size}
-              onClick={async () => await setConnector(connectorName)}>
+              onClick={async () => await setConnector(connectorName,name)}>
               <Flex alignItems={'center'}>
                 <Image
                   display={'inline-flex'}
