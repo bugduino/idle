@@ -577,13 +577,14 @@ class Landing extends Component {
         */
         }
 
-        <Flex position={'relative'} justifyContent={'center'} alignItems={'center'} height={['auto','700px']} p={[4,6]}>
-          <Flex width={1} flexDirection={'column'} maxWidth={['35em','70em']}>
+        <Flex position={'relative'} justifyContent={'center'} alignItems={'center'} height={['auto','700px']} pt={[4,6]} pb={[4,6]}>
+          <Flex width={1} flexDirection={'column'} maxWidth={['35em','70em']} px={[3,5]}>
             <Heading.h4 color={'dark-gray'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]} textAlign={'center'} alignItems={'center'}>
-              Maximize interests return
+              Maximize interest return
             </Heading.h4>
-            <Flex height={'500px'}>
+            <Flex height={['auto','500px']}>
               <EquityChart
+                isMobile={this.props.isMobile}
                 account={this.props.account}
                 web3={this.props.web3}
               />

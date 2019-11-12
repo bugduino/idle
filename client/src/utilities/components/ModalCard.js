@@ -49,9 +49,12 @@ ModalCard.Header = (props) => (
       <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mt={props.icon ? [2,3] : 0} mb={0} color={'dark-gray'}>
         {props.title}
       </Heading.h3>
-      <Heading.h4 pt={[1,2]} fontSize={[2,2]} textAlign={'center'} fontWeight={2} lineHeight={1.5} color={'dark-gray'}>
-        {props.subtitle}
-      </Heading.h4>
+      {
+        props.subtitle &&
+        <Heading.h4 pt={[1,2]} fontSize={[2,2]} textAlign={'center'} fontWeight={2} lineHeight={1.5} color={'dark-gray'}>
+          {props.subtitle}
+        </Heading.h4>
+      }
     </Flex>
   </Box>
 );

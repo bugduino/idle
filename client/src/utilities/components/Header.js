@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useWeb3Context } from 'web3-react'
 import { Box, Flex, Button, Image } from "rimble-ui";
 import AccountOverview from "./AccountOverview";
 import AccountModal from "./AccountModal";
