@@ -8,12 +8,13 @@ import NewsletterForm from '../NewsletterForm/NewsletterForm';
 import APRsChart from '../APRsChart/APRsChart';
 import EquityChart from '../EquityChart/EquityChart';
 
+let scrolling = false;
+
 class Landing extends Component {
   state = {
+    selectedToken:'DAI',
     activeCarousel:1,
     carouselIntervalID:null,
-    activeBullet:0,
-    scrolling:false,
     startCarousel:null,
     setActiveCarousel:null,
     processScrolling:null,
@@ -31,12 +32,19 @@ class Landing extends Component {
         window.clearTimeout(scrollTimeoutID);
       }
       scrollTimeoutID = window.setTimeout( async () => {
-        this.setState({scrolling:true});
+        // this.setState({scrolling:true});
+        scrolling = true;
+        // if (typeof window.requestIdleCallback === 'function'){
+        //   window.requestIdleCallback(this.state.processScrolling);
+        // } else {
+          this.state.processScrolling();
+        // }
       },150);
     };
     
     const processScrolling = () => {
-      if (this.state.scrolling){
+      console.log(scrolling);
+      if (scrolling){
 
         const bulletCards = document.getElementsByClassName('Landing_bulletCard__3num6');
         let activeBullet = 0;
@@ -48,7 +56,10 @@ class Landing extends Component {
             activeBullet = i+2;
           }
         }
-        this.setState({scrolling:false,activeBullet: activeBullet});
+        scrolling = false;
+        if (activeBullet !== this.state.activeBullet){
+          this.setState({activeBullet});
+        }
       }
     };
 
@@ -59,7 +70,7 @@ class Landing extends Component {
         if (this.state.carouselIntervalID){
           window.clearTimeout(this.state.carouselIntervalID);
         }
-        const intervalID = window.setTimeout( async () => setActiveCarousel(this.state.activeCarousel+1) ,5000);
+        const intervalID = window.setTimeout( async () => setActiveCarousel(this.state.activeCarousel+1) ,10000);
         this.setState({carouselIntervalID:intervalID});
       }
     }
@@ -79,11 +90,11 @@ class Landing extends Component {
 
   async componentDidUpdate(prevProps) {
 
-    if (typeof window.requestIdleCallback === 'function'){
-      window.requestIdleCallback(this.state.processScrolling);
-    } else {
-      this.state.processScrolling();
-    }
+    // if (typeof window.requestIdleCallback === 'function'){
+    //   window.requestIdleCallback(this.state.processScrolling);
+    // } else {
+    //   this.state.processScrolling();
+    // }
 
     let prevContract = (prevProps.contracts.find(c => c.name === 'IdleDAI') || {}).contract;
     let contract = (this.props.contracts.find(c => c.name === 'IdleDAI') || {}).contract;
@@ -149,6 +160,85 @@ class Landing extends Component {
     window.location.href = '#invest';
   }
 
+  scrollIt = (destination, duration = 200, easing = 'linear', callback) => {
+
+    const easings = {
+      linear(t) {
+        return t;
+      },
+      easeInQuad(t) {
+        return t * t;
+      },
+      easeOutQuad(t) {
+        return t * (2 - t);
+      },
+      easeInOutQuad(t) {
+        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+      },
+      easeInCubic(t) {
+        return t * t * t;
+      },
+      easeOutCubic(t) {
+        return (--t) * t * t + 1;
+      },
+      easeInOutCubic(t) {
+        return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+      },
+      easeInQuart(t) {
+        return t * t * t * t;
+      },
+      easeOutQuart(t) {
+        return 1 - (--t) * t * t * t;
+      },
+      easeInOutQuart(t) {
+        return t < 0.5 ? 8 * t * t * t * t : 1 - 8 * (--t) * t * t * t;
+      },
+      easeInQuint(t) {
+        return t * t * t * t * t;
+      },
+      easeOutQuint(t) {
+        return 1 + (--t) * t * t * t * t;
+      },
+      easeInOutQuint(t) {
+        return t < 0.5 ? 16 * t * t * t * t * t : 1 + 16 * (--t) * t * t * t * t;
+      }
+    };
+
+    const start = window.pageYOffset;
+    const startTime = 'now' in window.performance ? performance.now() : new Date().getTime();
+
+    const documentHeight = Math.max(document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight);
+    const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.getElementsByTagName('body')[0].clientHeight;
+    const destinationOffset = typeof destination === 'number' ? destination : destination.offsetTop;
+    const destinationOffsetToScroll = Math.round(documentHeight - destinationOffset < windowHeight ? documentHeight - windowHeight : destinationOffset);
+
+    if ('requestAnimationFrame' in window === false) {
+      window.scroll(0, destinationOffsetToScroll);
+      if (callback) {
+        callback();
+      }
+      return;
+    }
+
+    function scroll() {
+      const now = 'now' in window.performance ? performance.now() : new Date().getTime();
+      const time = Math.min(1, ((now - startTime) / duration));
+      const timeFunction = easings[easing](time);
+      window.scroll(0, Math.ceil((timeFunction * (destinationOffsetToScroll - start)) + start));
+
+      if (window.pageYOffset === destinationOffsetToScroll) {
+        if (callback) {
+          callback();
+        }
+        return;
+      }
+
+      requestAnimationFrame(scroll);
+    }
+
+    scroll();
+  }
+
   render() {
     const { network } = this.props;
     const maxOpacity = 0.5;
@@ -166,24 +256,25 @@ class Landing extends Component {
       >
         <Box className={[styles.headerContainer]} px={[3,6]} pt={['2em', '2em']}>
           <Box position={'relative'} zIndex={10}>
-            <Flex flexDirection={'column'} alignItems={'center'} maxWidth={["50em", "50em"]} mx={'auto'} pb={3} textAlign={'center'} pt={['8vh', '8vh']}>
+            <Flex flexDirection={'column'} alignItems={'center'} maxWidth={["50em", "60em"]} mx={'auto'} pb={3} textAlign={'center'} pt={['8vh', '8vh']}>
               <Heading.h1 fontFamily={'sansSerif'} lineHeight={'1.1em'} mb={'0.2em'} fontSize={['2.5em',7]} textAlign={'center'} color={'white'}>
-                Get the best out of your lend, with just one token
+                Best yield for your lending
               </Heading.h1>
               <Heading.h2 fontWeight={'400'} lineHeight={['1.4em', '2em']} fontSize={[2,3]} textAlign={'center'} color={'white'}>
-                We connect different lending protocols with a decentralized rebalance process to always give you the best available rate
+                Maximize your returns on different Ethereum lending protocol
               </Heading.h2>
             </Flex>
             <Flex flexDirection={'column'} alignItems={'center'} maxWidth={["50em", "50em"]} mx={'auto'} textAlign={'center'}>
               <LandingForm
+                selectedToken={this.state.selectedToken}
                 accountBalanceDAI={this.props.accountBalanceDAI}
                 isMobile={this.props.isMobile}
                 updateSelectedTab={this.props.updateSelectedTab}
                 selectedTab={this.props.selectedTab} />
             </Flex>
             <Flex flexDirection={'column'} py={[3,5]} alignItems={'center'}>
-              <Link textAlign={'center'} color={'dark-gray'} hoverColor={'dark-gray'} fontSize={2} fontWeight={3} href="#how-it-works">
-                <Flex flexDirection={'column'} py={[3,5]} alignItems={'center'}>
+              <Link onClick={(e) => {this.scrollIt(document.getElementById('how-it-works'))}} textAlign={'center'} color={'dark-gray'} hoverColor={'dark-gray'} fontSize={2} fontWeight={3}>
+                <Flex flexDirection={'column'} py={[2,1]} alignItems={'center'}>
                   <Box>
                     How it works
                   </Box>
@@ -584,6 +675,7 @@ class Landing extends Component {
             </Heading.h4>
             <Flex height={['auto','500px']}>
               <EquityChart
+                selectedToken={this.state.selectedToken}
                 isMobile={this.props.isMobile}
                 account={this.props.account}
                 web3={this.props.web3}

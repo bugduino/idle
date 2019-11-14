@@ -4,8 +4,8 @@ import styles from './CryptoInput.module.scss';
 
 class CryptoInput extends Component {
   render() {
-    const convertedLabel = this.props.convertedLabel ? this.props.convertedLabel : 'idleDAI';
-    const convertedValue = !isNaN(this.props.trimEth(this.props.IdleDAIPrice)) && !!this.props.IdleDAIPrice ? '~'+this.props.BNify(this.props.defaultValue/this.props.IdleDAIPrice).toFixed(2)+' '+convertedLabel : '';
+    const convertedLabel = this.props.convertedLabel ? this.props.convertedLabel : 'idle'+this.props.selectedAsset;
+    const convertedValue = !isNaN(this.props.trimEth(this.props.idleTokenPrice)) && !!this.props.idleTokenPrice ? '~'+this.props.BNify(this.props.defaultValue/this.props.idleTokenPrice).toFixed(2)+' '+convertedLabel : '';
     const showLendButton = typeof this.props.showLendButton === 'undefined' || !!this.props.showLendButton;
     const buttonLabel = typeof this.props.buttonLabel === 'undefined' ? 'LEND' : this.props.buttonLabel;
     return (
@@ -21,11 +21,11 @@ class CryptoInput extends Component {
             mx={'auto'}
             >
               <Flex width={[1/10]}>
-                <Image src={this.props.icon ? this.props.icon : 'images/btn-dai.svg'} height={'32px'} ml={['0.5em','10px']} />
+                <Image src={this.props.icon ? this.props.icon : `images/btn-${this.props.selectedAsset.toLowerCase()}.svg`} height={'32px'} ml={['0.5em','10px']} />
               </Flex>
               <Box width={8/10}>
                 <Form.Input
-                  placeholder={this.props.placeholder ? this.props.placeholder : `Enter DAI Amount`}
+                  placeholder={this.props.placeholder ? this.props.placeholder : `Enter ${this.props.selectedAsset} Amount`}
                   value={this.props.defaultValue}
                   type="number"
                   borderRadius='2rem'
@@ -79,19 +79,15 @@ class CryptoInput extends Component {
             mt={[2, 2]} mb={[2,3]} mx={'auto'}
           >
             {
-              this.props.account && !isNaN(this.props.trimEth(this.props.accountBalanceDAI)) && 
+              this.props.account && !isNaN(this.props.trimEth(this.props.balance)) && 
               <Box pl={'5%'}>
                 <Heading.h5 color={'darkGray'} fontWeight={1} fontSize={1}>
                     {
-                      parseFloat(this.props.accountBalanceDAI)>0 ? (
-                        <Link color={'darkGray'} hoverColor={'darkGray'} fontWeight={1} fontSize={1} lineHeight={'1.25'} onClick={ e => this.props.useEntireBalance(this.props.accountBalanceDAI) }>
-                          Balance: {!this.props.isMobile ? parseFloat(this.props.accountBalanceDAI).toFixed(6) : parseFloat(this.props.accountBalanceDAI).toFixed(2) } { this.props.balanceLabel ? this.props.balanceLabel : 'DAI' }
+                      parseFloat(this.props.balance)>0 ? (
+                        <Link color={'primary'} hoverColor={'primary'} fontWeight={1} fontSize={1} lineHeight={'1.25'} onClick={ e => this.props.useEntireBalance(this.props.balance) }>
+                          Use Max: {!this.props.isMobile ? parseFloat(this.props.balance).toFixed(6) : parseFloat(this.props.balance).toFixed(2) } { this.props.balanceLabel ? this.props.balanceLabel : this.props.selectedAsset }
                         </Link>
-                      ) : (
-                        <Link color={'darkGray'} hoverColor={'darkGray'} fontWeight={1} fontSize={1} lineHeight={'1.25'}>
-                          You have no { this.props.balanceLabel ? this.props.balanceLabel : 'DAI' } in your wallet
-                        </Link>
-                      )
+                      ) : null
                     }
                 </Heading.h5>
               </Box>
@@ -101,6 +97,16 @@ class CryptoInput extends Component {
           {this.props.genericError && (
             <Text textAlign='center' color={'red'} fontSize={2} mb={[2,3]}>{this.props.genericError}</Text>
           )}
+
+          {
+            this.props.account && this.props.showTokenApproved && !this.props.isAssetApproved && (
+              <Flex textAlign={'center'} alignItems={'center'}>
+                <Link textAlign='center' color={'darkGray'} hoverColor={'blue'} fontWeight={1} fontSize={1} mt={[1,2]} onClick={this.props.showApproveModal}>
+                  You have to enable {this.props.selectedAsset} before lending
+                </Link>
+              </Flex>
+            )
+          }
 
           {
             showLendButton && 

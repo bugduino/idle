@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Flex, Box, Text, Card, Image, Slider, Heading} from "rimble-ui";
+import { Flex, Box, Text, Card, Image, Slider, Heading, Link, Pill } from "rimble-ui";
 import { ResponsiveLine } from '@nivo/line';
 import request from 'request';
 import axios from 'axios';
@@ -15,10 +15,11 @@ const iDAIAddress = '0x14094949152eddbfcd073717200da82fed8dc960';
 class EquityChart extends Component {
   state = {
     secondsInYear:315569260,
-    initialBalance:10000,
+    initialBalance:1000,
     graphData: null,
     minValue: null,
     maxValue: null,
+    rebalanceTxs: null
   };
   setSection(section) {
     this.setState(state => ({...state, selectedSection: section}));
@@ -125,7 +126,7 @@ class EquityChart extends Component {
 
           totalEarned = secondsPassed*earningPerSecond;
 
-          console.log(v.id,moment(aprTime*1000).format('DD/MM/YYYY'),moment(lastAprTime*1000).format('DD/MM/YYYY'),apr,balance,totalEarned);
+          // console.log(v.id,moment(aprTime*1000).format('DD/MM/YYYY'),moment(lastAprTime*1000).format('DD/MM/YYYY'),apr,balance,totalEarned);
 
           balance += totalEarned;
         }
@@ -185,6 +186,28 @@ class EquityChart extends Component {
     return data;
   }
 
+  getProtocolByAddress(graphData,address){
+    let output = null;
+    graphData.forEach((v,i) => {
+      if (v.address === address){
+        output = v;
+        return false;
+      }
+    });
+    return output;
+  }
+
+  getProtocolDataByAddress(graphData,address){
+    let output = null;
+    graphData.forEach((v,i) => {
+      if (v.address === address){
+        output = v.aprs;
+        return false;
+      }
+    });
+    return output;
+  }
+
   async getAprs() {
     // const timeMonthAgo = parseInt(new Date().getTime()/1000)-(60*60*24*31*6);
     // const timeWeekAgo = parseInt(new Date().getTime()/1000)-(60*60*24*7);
@@ -216,15 +239,17 @@ class EquityChart extends Component {
         "aprs": [],
         "data": [],
         'endpoint':'https://defiportfolio-backend.herokuapp.com/api/v1/markets/fulcrum/dai'
-      }/*,
+      }/*
       {
         "id": "DyDx",
+        'pos_box':4,
+        'pos':4,
         'address' : '0x000000000000000000000',
         'icon' : 'dydx-mark.png',
         "color": "hsl(210, 13%, 18%)",
         "aprs": [],
         "data": [],
-        'endpoint':'https://defiportfolio-backend.herokuapp.com/api/v1/markets/dydx/dai?start_date='+graphStartTimestamp
+        'endpoint':'https://defiportfolio-backend.herokuapp.com/api/v1/markets/dydx/dai'
       }*/
     ];
 
@@ -285,35 +310,13 @@ class EquityChart extends Component {
       });
     }
 
-    const getProtocolByAddress = (address) => {
-      let output = null;
-      graphData.forEach((v,i) => {
-        if (v.address === address){
-          output = v;
-          return false;
-        }
-      });
-      return output;
-    }
-
-    const getProtocolDataByAddress = (address) => {
-      let output = null;
-      graphData.forEach((v,i) => {
-        if (v.address === address){
-          output = v.aprs;
-          return false;
-        }
-      });
-      return output;
-    }
-
     const getDayTimestamp = (timestamp) => {
       return parseInt(moment(moment(timestamp).format('DD/MM/YYYY'),'DD/MM/YYYY')._d.getTime()/1000);
     }
 
     const getClosestProtocolAprByTimestamp = (address,timestamp,maxTimestamp) => {
       let output = null;
-      const protocolData = getProtocolDataByAddress(address);
+      const protocolData = this.getProtocolDataByAddress(graphData,address);
       protocolData.forEach((apr,i) => {
         const baseTimestamp = getDayTimestamp(apr.t*1000);
         if (!output && baseTimestamp>=parseInt(timestamp) && (!maxTimestamp || baseTimestamp<=parseInt(maxTimestamp))){
@@ -369,6 +372,7 @@ class EquityChart extends Component {
     }
 
     // Group transaction by BlockTime
+    const rebalancesTxs = [];
     const idleBlocks = {};
     internalTxs.forEach((v,i) => {
       if (v.to === cDAIAddress || v.to === iDAIAddress){
@@ -381,7 +385,19 @@ class EquityChart extends Component {
           timeStamp:blockTime,
           date:blockDate
         };
+
+        // if (rebalancesTxs.length>0){
+        //   console.log(rebalancesTxs.length,rebalancesTxs[rebalancesTxs.length-1].to,v.to);
+        // }
+
+        if (!rebalancesTxs.length || (rebalancesTxs.length>0 && rebalancesTxs[rebalancesTxs.length-1].to !== v.to)){
+          rebalancesTxs.push(v);
+        }
       }
+    });
+
+    this.setState({
+      rebalancesTxs
     });
 
     const idleBlocksOrdered = {};
@@ -412,7 +428,7 @@ class EquityChart extends Component {
         apr.blockTime = blockTime;
         idleData.push(apr);
 
-        const protocolID = getProtocolByAddress(apr.address).id;
+        const protocolID = this.getProtocolByAddress(graphData,apr.address).id;
         const latestIdleApr = idleData.length>1 ? idleData[idleData.length-2] : null;
 
         // console.log(moment(blockTime*1000).format('DD/MM/YYYY'),moment(apr.t*1000).format('DD/MM/YYYY'),protocolID,apr.y,getHighestAprByTimestamp(blockTime).y);
@@ -458,98 +474,105 @@ class EquityChart extends Component {
       }
     );
 
-    // console.log(graphData);
-
     return graphData;
   }
 
   render() {
-    const MyResponsiveLine = (data,interestBoxes) => (
+    const MyResponsiveLine = (data,interestBoxes,txs) => (
       <Flex width={'100%'} flexDirection={'column'}>
         <Heading.h4 fontSize={[2,2]} py={[2,3]} px={[3,0]} textAlign={'center'} fontWeight={2} lineHeight={1.5} color={'dark-gray'}>
-          These are the interest you would earn by lending <strong>{this.state.initialBalance} DAI</strong> for <strong>{this.state.days} days</strong>.
+          Interest earned with Idle on a <strong>{this.state.initialBalance} DAI</strong> lend for <strong>{this.state.days} days</strong>.
         </Heading.h4>
         <Flex width={'100%'} flexDirection={['column','row']} mt={[2,3]}>
           { interestBoxes }
         </Flex>
         {
           !this.props.isMobile && (
-            <ResponsiveLine
-                data={data}
-                margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
-                xScale={{
-                  type: 'time',
-                  format: '%d/%m/%Y',
-                  precision: 'day'
-                }}
-                curve="catmullRom"
-                xFormat="time:%d/%m/%Y"
-                // yScale={{
-                //   type: 'log',
-                //   base: 10,
-                //   max: 'auto',
-                // }}
-                yScale={{
-                  type: 'linear',
-                  stacked: false,
-                  // min: this.state.minValue,
-                  // max: this.state.maxValue,
-                }}
-                axisLeft={{
-                  legend: 'Interest earned',
-                  legendOffset: -40,
-                  legendPosition: 'middle'
-                }}
-                axisBottom={{
-                  format: '%b %d',
-                  // tickValues: 'every 2 days',
-                  // tickValues: 'every 13 days',
-                  // legend: 'TIME',
-                  legendOffset: 36,
-                  legendPosition: 'middle'
+            <>
+              <ResponsiveLine
+                  data={data}
+                  margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
+                  xScale={{
+                    type: 'time',
+                    format: '%d/%m/%Y',
+                    precision: 'day'
+                  }}
+                  curve="catmullRom"
+                  xFormat="time:%d/%m/%Y"
+                  // yScale={{
+                  //   type: 'log',
+                  //   base: 10,
+                  //   max: 'auto',
+                  // }}
+                  yScale={{
+                    type: 'linear',
+                    stacked: false,
+                    // min: this.state.minValue,
+                    // max: this.state.maxValue,
+                  }}
+                  axisLeft={{
+                    legend: this.props.selectedToken+' earned',
+                    legendOffset: -40,
+                    legendPosition: 'middle'
+                  }}
+                  axisBottom={{
+                    format: '%b %d',
+                    // tickValues: 'every 2 days',
+                    // tickValues: 'every 13 days',
+                    // legend: 'TIME',
+                    legendOffset: 36,
+                    legendPosition: 'middle'
 
-                }}
-                yFormat={value =>
-                  parseFloat(value).toFixed(2)+' DAI'
-                }
-                enableGridX={false}
-                enableGridY={false}
-                colors={d => d.color}
-                pointSize={0}
-                pointColor={{ from: 'color', modifiers: [] }}
-                pointBorderWidth={1}
-                pointLabel="y"
-                pointLabelYOffset={-12}
-                enableSlices="x"
-                useMesh={true}
-                animate={false}
-                legends={[
-                    {
-                        anchor: 'bottom-right',
-                        direction: 'column',
-                        justify: false,
-                        translateX: 100,
-                        translateY: 0,
-                        itemsSpacing: 0,
-                        itemDirection: 'left-to-right',
-                        itemWidth: 80,
-                        itemHeight: 20,
-                        itemOpacity: 0.75,
-                        symbolSize: 12,
-                        symbolShape: 'circle',
-                        symbolBorderColor: 'rgba(0, 0, 0, .5)',
-                        effects: [
-                            {
-                                on: 'hover',
-                                style: {
-                                    itemBackground: 'rgba(0, 0, 0, .03)',
-                                    itemOpacity: 1
-                                }
-                            }
-                        ]
-                    }
-                ]}
-            />
+                  }}
+                  yFormat={value =>
+                    parseFloat(value).toFixed(2)+' '+this.props.selectedToken
+                  }
+                  enableGridX={false}
+                  enableGridY={false}
+                  colors={d => d.color}
+                  pointSize={0}
+                  pointColor={{ from: 'color', modifiers: [] }}
+                  pointBorderWidth={1}
+                  pointLabel="y"
+                  pointLabelYOffset={-12}
+                  enableSlices="x"
+                  useMesh={true}
+                  animate={false}
+                  legends={[
+                      {
+                          anchor: 'bottom-right',
+                          direction: 'column',
+                          justify: false,
+                          translateX: 100,
+                          translateY: 0,
+                          itemsSpacing: 0,
+                          itemDirection: 'left-to-right',
+                          itemWidth: 80,
+                          itemHeight: 20,
+                          itemOpacity: 0.75,
+                          symbolSize: 12,
+                          symbolShape: 'circle',
+                          symbolBorderColor: 'rgba(0, 0, 0, .5)',
+                          effects: [
+                              {
+                                  on: 'hover',
+                                  style: {
+                                      itemBackground: 'rgba(0, 0, 0, .03)',
+                                      itemOpacity: 1
+                                  }
+                              }
+                          ]
+                      }
+                  ]}
+              />
+              {
+                txs && (
+                  <Flex width={'100%'} flexDirection={['column','row']} mt={[2,3]}>
+                    { txs }
+                  </Flex>
+                )
+              }
+            </>
           )
         }
       </Flex>
@@ -562,6 +585,50 @@ class EquityChart extends Component {
         return a.pos_box - b.pos_box;
       });
 
+      const renderTxs = () => {
+        const rebalanceTxs = this.state.rebalancesTxs || {};
+
+        if (!Object.keys(rebalanceTxs).length) {
+          return null;
+        }
+
+        // console.log('renderTxs',rebalanceTxs);
+
+        const txs = Object.keys(rebalanceTxs).reverse().map((key, i) => {
+          const tx = rebalanceTxs[key];
+          const procotolInfo = this.getProtocolByAddress(graphData,tx.to.toLowerCase());
+          const date = new Date(tx.timeStamp*1000);
+          const value = parseFloat(tx.value) ? (this.props.isMobile ? parseFloat(tx.value).toFixed(4) : parseFloat(tx.value).toFixed(8)) : '-';
+          const formattedDate = moment(date).fromNow();
+          let color;
+          return (
+            <Link key={'tx_'+i} display={'block'} href={`https://etherscan.io/tx/${tx.hash}`} target={'_blank'}>
+              <Flex alignItems={'center'} flexDirection={['row','row']} width={'100%'} p={[2,3]} borderBottom={'1px solid #D6D6D6'}>
+                <Box width={[4/10,3/10]} textAlign={'center'}>
+                  <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>{formattedDate}</Text>
+                </Box>
+                <Box width={[2/10,2/10]} display={['none','block']} textAlign={'center'}>
+                  <Pill color={procotolInfo.color}>
+                    {procotolInfo.id}
+                  </Pill>
+                </Box>
+                <Box width={[4/10]}>
+                  <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>{value} {tx.tokenSymbol}</Text>
+                </Box>
+              </Flex>
+            </Link>
+          )});
+
+        return (
+          <Flex flexDirection={'column'} width={[1,'90%']} m={'0 auto'}>
+            <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'dark-gray'}>
+              Last transactions
+            </Heading.h3>
+            {txs}
+          </Flex>
+        );
+      }
+
       const interestBoxes = graphData.map(v=>{
         const isIdle = v.id==='Idle';
         const interestEarned = parseFloat(v.data[v.data.length-1].y);
@@ -573,6 +640,7 @@ class EquityChart extends Component {
         const finalBalanceAfterYear = this.state.initialBalance+(interestEarnedPerSecond*this.state.secondsInYear);
         const annualReturn = parseFloat((finalBalanceAfterYear/this.state.initialBalance-1)*10).toFixed(2);
         // console.log(v.id,moment(v.data[0].t*1000).format('DD/MM/YYYY'),moment(v.data[v.data.length-1].t*1000).format('DD/MM/YYYY'),interestEarned,finalBalance,percentageEarned,secondsPassed,interestEarnedPerSecond,finalBalanceAfterYear,annualReturn);
+        
         return (
           <Flex key={'graph_'+v.id} width={[1,1/3]} mx={[0,2]} flexDirection={'column'}>
             <Box>
@@ -583,7 +651,7 @@ class EquityChart extends Component {
                   </Flex>
                   <Box width={6/12} borderRight={'1px solid #eee'}>
                     <Text color={isIdle ? 'white' : 'copyColor'} fontSize={[3,'28px']} fontWeight={4} textAlign={'center'}>
-                      {interestEarned.toFixed(2)} <Text.span color={isIdle ? 'white' : 'copyColor'} fontWeight={2} fontSize={['90%','60%']}>DAI</Text.span>
+                      {interestEarned.toFixed(2)} <Text.span color={isIdle ? 'white' : 'copyColor'} fontWeight={2} fontSize={['90%','60%']}>{this.props.selectedToken}</Text.span>
                     </Text>
                   </Box>
                   <Flex alignItems={'center'} flexDirection={'column'} width={3/12}>
@@ -603,7 +671,7 @@ class EquityChart extends Component {
         return a.pos - b.pos;
       });
 
-      return MyResponsiveLine(graphData,interestBoxes);
+      return MyResponsiveLine(graphData,interestBoxes/*,renderTxs()*/);
     } else {
       return null;
     }

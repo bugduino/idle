@@ -73,7 +73,7 @@ export default function (props) {
                         color={'dark-gray'}
                         className={[styles.mainInput]}
                       >
-                        {trimEth(accountBalance)}
+                        {!isNaN(trimEth(accountBalance)) ? trimEth(accountBalance) : trimEth(0)}
                       </Text>
                     </Box>
                 </Flex>
@@ -102,7 +102,7 @@ export default function (props) {
                         color={'dark-gray'}
                         className={[styles.mainInput]}
                       >
-                        {trimEth(accountBalanceDAI)}
+                        {!isNaN(trimEth(accountBalanceDAI)) ? trimEth(accountBalanceDAI) : trimEth(0)}
                       </Text>
                     </Box>
                 </Flex>

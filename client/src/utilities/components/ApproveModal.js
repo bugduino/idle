@@ -10,6 +10,7 @@ import ModalCard from './ModalCard';
 
 export default function ApproveModal(props) {
   const { isOpen, closeModal, onClick, tokenName, baseTokenName } = props;
+
   const isRedeeming = tokenName.charAt(0) === 'c';
 
   return (
