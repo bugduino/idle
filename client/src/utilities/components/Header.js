@@ -1,17 +1,74 @@
-import React, { useEffect } from "react";
-import { useWeb3Context } from 'web3-react'
+import React from "react";
 import { Box, Flex, Button, Image } from "rimble-ui";
 import AccountOverview from "./AccountOverview";
 import AccountModal from "./AccountModal";
 import styles from './Header.module.scss';
+import BigNumber from 'bignumber.js';
+
+import IdleDAI from "../../contracts/IdleDAI.json";
+const IdleAbi = IdleDAI.abi;
+const IdleAddress = '0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9';
 
 class Header extends React.Component {
   state = {
+    idleTokenBalance: null,
     isOpen: false
   }
 
   toggleModal = () => {
     this.setState(state => ({...state, isOpen: !state.isOpen}));
+  }
+
+  genericContractCall = async (contractName, methodName, params = []) => {
+    let contract = this.props.contracts.find(c => c.name === contractName);
+    contract = contract && contract.contract;
+    if (!contract) {
+      console.log('Wrong contract name', contractName);
+      return;
+    }
+
+    const value = await contract.methods[methodName](...params).call().catch(error => {
+      console.log(`${contractName} contract method ${methodName} error: `, error);
+      this.setState({ error });
+    });
+    return value;
+  }
+
+  // Idle
+  genericIdleCall = async (methodName, params = []) => {
+    return await this.genericContractCall('idleDAI', methodName, params).catch(err => {
+      console.error('Generic Idle call err:', err);
+    });
+  }
+
+  getIdleTokenBalance = async () => {
+    console.log('Header.js getIdleTokenBalance',this.props.account);
+    return await this.genericIdleCall('balanceOf', [this.props.account]);
+  }
+
+  async componentDidMount() {
+    // do not wait for each one just for the first who will guarantee web3 initialization
+    const web3 = await this.props.initWeb3();
+    if (!web3) {
+      return console.log('No Web3 SmartContractControls')
+    }
+
+    await this.props.initContract('idleDAI', IdleAddress, IdleAbi);
+  }
+
+  BNify = s => new BigNumber(String(s));
+
+  async componentDidUpdate(prevProps, prevState) {
+    if (this.props.account && (prevProps.account !== this.props.account)) {
+      let idleTokenBalance = await this.getIdleTokenBalance();
+      if (idleTokenBalance){
+        idleTokenBalance = this.BNify(idleTokenBalance).div(1e18);
+        // console.log('Header.js componentDidUpdate',idleTokenBalance.toString());
+        this.setState({
+          idleTokenBalance
+        });
+      }
+    }
   }
 
   render() {
@@ -84,6 +141,7 @@ class Header extends React.Component {
           account={this.props.account}
           accountBalance={this.props.accountBalance}
           accountBalanceDAI={this.props.accountBalanceDAI}
+          idleTokenBalance={this.state.idleTokenBalance}
           isOpen={this.state.isOpen}
           isMobile={this.props.isMobile}
           closeModal={this.toggleModal}

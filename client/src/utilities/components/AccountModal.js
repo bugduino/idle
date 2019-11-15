@@ -16,7 +16,23 @@ import styles from '../../CryptoInput/CryptoInput.module.scss';
 
 export default function (props) {
   const context = useWeb3Context();
-  const { account, accountBalance, accountBalanceDAI, isOpen, closeModal } = props;
+  const { account, accountBalance, accountBalanceDAI, idleTokenBalance, isOpen, closeModal } = props;
+
+  const balances = [
+    {
+      'icon':'images/ether.png',
+      'amount':accountBalance
+    },
+    {
+      'icon':'images/btn-dai.svg',
+      'amount':accountBalanceDAI
+    },
+    {
+      'icon':'images/idle-dai.png',
+      'amount':idleTokenBalance
+    }
+  ];
+
   const BNify = s => new BigNumber(String(s));
   const trimEth = eth => {
     return BNify(eth).toFixed(6);
@@ -28,6 +44,41 @@ export default function (props) {
     return await context.setConnector(connectorName);
   };
   if (account){
+
+    const renderBalances = balances.map( (balance,i) => {
+      return (
+        <Flex
+          key={'balance_'+i}
+          width={['100%','auto']}
+          maxWidth={['90%','14em']}
+          borderRadius={'2rem'}
+          alignItems={'center'}
+          boxShadow={0}
+          p={1}
+          my={[1,2]}
+          mx={'auto'}
+          >
+            <Flex justifyContent={['flex-end','flex-start']} width={[2/5,2/10]}>
+              <Image src={balance.icon} height={'32px'} ml={['0.5em','10px']} />
+            </Flex>
+            <Box width={[3/5,8/10]} pl={['0.6em','20px']}>
+              <Text
+                border='0'
+                borderColor='transparent'
+                boxShadow='none !important'
+                fontSize={[2, 3]}
+                width={'100%'}
+                bg={'transparent'}
+                color={'dark-gray'}
+                className={[styles.mainInput]}
+              >
+                {!isNaN(trimEth(balance.amount)) ? trimEth(balance.amount) : trimEth(0)}
+              </Text>
+            </Box>
+        </Flex>
+      );
+    });
+
     return (
       <Modal isOpen={isOpen}>
         <ModalCard closeFunc={closeModal}>
@@ -49,63 +100,7 @@ export default function (props) {
               </Flex>
               <Flex alignItems={'center'} flexDirection={'column'} width={'100%'}>
                 <Heading.h4 textAlign={'center'}>Balance</Heading.h4>
-                <Flex
-                  width={['100%','auto']}
-                  maxWidth={['90%','14em']}
-                  borderRadius={'2rem'}
-                  alignItems={'center'}
-                  boxShadow={0}
-                  p={1}
-                  my={[1,2]}
-                  mx={'auto'}
-                  >
-                    <Flex justifyContent={['flex-end','flex-start']} width={[2/5,2/10]}>
-                      <Image src={'images/ether.png'} height={'32px'} ml={['0.5em','10px']} />
-                    </Flex>
-                    <Box width={[3/5,8/10]} pl={['0.6em','20px']}>
-                      <Text
-                        border='0'
-                        borderColor='transparent'
-                        boxShadow='none !important'
-                        fontSize={[2, 3]}
-                        width={'100%'}
-                        bg={'transparent'}
-                        color={'dark-gray'}
-                        className={[styles.mainInput]}
-                      >
-                        {!isNaN(trimEth(accountBalance)) ? trimEth(accountBalance) : trimEth(0)}
-                      </Text>
-                    </Box>
-                </Flex>
-
-                <Flex
-                  width={['100%','auto']}
-                  maxWidth={['90%','14em']}
-                  borderRadius={'2rem'}
-                  alignItems={'center'}
-                  boxShadow={0}
-                  p={1}
-                  my={[1,2]}
-                  mx={'auto'}
-                  >
-                    <Flex justifyContent={['flex-end','flex-start']} width={[2/5,2/10]}>
-                      <Image src={'images/btn-dai.svg'} height={'32px'} ml={['0.5em','10px']} />
-                    </Flex>
-                    <Box width={[3/5,8/10]} pl={['0.6em','20px']}>
-                      <Text
-                        border='0'
-                        borderColor='transparent'
-                        boxShadow='none !important'
-                        fontSize={[2, 3]}
-                        width={'100%'}
-                        bg={'transparent'}
-                        color={'dark-gray'}
-                        className={[styles.mainInput]}
-                      >
-                        {!isNaN(trimEth(accountBalanceDAI)) ? trimEth(accountBalanceDAI) : trimEth(0)}
-                      </Text>
-                    </Box>
-                </Flex>
+                {renderBalances}
               </Flex>
             </Flex>
           </ModalCard.Body>

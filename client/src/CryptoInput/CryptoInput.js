@@ -85,7 +85,7 @@ class CryptoInput extends Component {
                     {
                       parseFloat(this.props.balance)>0 ? (
                         <Link color={'primary'} hoverColor={'primary'} fontWeight={1} fontSize={1} lineHeight={'1.25'} onClick={ e => this.props.useEntireBalance(this.props.balance) }>
-                          Use Max: {!this.props.isMobile ? parseFloat(this.props.balance).toFixed(6) : parseFloat(this.props.balance).toFixed(2) } { this.props.balanceLabel ? this.props.balanceLabel : this.props.selectedAsset }
+                          {this.props.action} Max: {!this.props.isMobile ? parseFloat(this.props.balance).toFixed(6) : parseFloat(this.props.balance).toFixed(2) } { this.props.balanceLabel ? this.props.balanceLabel : this.props.selectedAsset }
                         </Link>
                       ) : null
                     }

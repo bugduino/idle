@@ -67,6 +67,7 @@ class App extends Component {
                     {({
                       needsPreflight,
                       web3,
+                      initWeb3,
                       account,
                       contracts,
                       accountBalance,
@@ -89,6 +90,9 @@ class App extends Component {
                       <Box>
                         <Header
                           account={account}
+                          initWeb3={initWeb3}
+                          initContract={initContract}
+                          contracts={contracts}
                           isMobile={isMobile}
                           accountBalance={accountBalance}
                           accountBalanceDAI={accountBalanceDAI}

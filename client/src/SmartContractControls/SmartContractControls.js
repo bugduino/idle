@@ -1,6 +1,6 @@
 import styles from './SmartContractControls.module.scss';
 import React from "react";
-import { Form, Flex, Box, Heading, Text, Button, Link, Icon, Pill, Loader, Flash } from "rimble-ui";
+import { Form, Flex, Box, Heading, Text, Button, Link, Icon, Pill, Loader, Flash, Image } from "rimble-ui";
 import BigNumber from 'bignumber.js';
 import CryptoInput from '../CryptoInput/CryptoInput.js';
 import ApproveModal from "../utilities/components/ApproveModal";
@@ -59,6 +59,7 @@ class SmartContractControls extends React.Component {
     earningIntervalId: null,
     earningPerDay: null,
     earningPerYear: null,
+    tokenBalanceBNify: null,
     maxRate: '-',
     calculataingShouldRebalance: true,
     fundsTimeoutID: null,
@@ -100,23 +101,6 @@ class SmartContractControls extends React.Component {
       needsUpdate: false
     });
   };
-  animateMaxRate = (start = 0, end = null, duration = 1000) => {
-    end = parseFloat(parseFloat(end).toFixed(2));
-    const minStep = 0.13;
-    const steps = (end-start)/minStep;
-    const stepTime = Math.ceil(duration/steps);
-    let timer = null;
-
-    const run = () => {
-      const newRate = Math.min(parseFloat(this.state.maxRate)+minStep,end);
-      this.setState({maxRate:parseFloat(newRate).toFixed(2)});
-      if (newRate === end){
-        window.clearInterval(timer);
-      }
-    }
-
-    timer = window.setInterval(run,stepTime);
-  };
   toggleShowFundsInfo = (e) => {
     e.preventDefault();
     this.setState(state => ({
@@ -132,32 +116,38 @@ class SmartContractControls extends React.Component {
   };
   getAprs = async () => {
     const aprs = await this.genericIdleCall('getAPRs');
+    const bestToken = await this.genericIdleCall('bestToken');
+    const currentProtocol = await this.getCurrentProtocol(bestToken);
     if (!aprs){
-      // this.setState({
-      //   needsUpdate: true
-      // });
+      setTimeout(() => {
+        this.getAprs();
+      },5000);
       return false;
     }
-    // console.log('getAprs',aprs);
     const maxRate = this.toEth(Math.max(aprs[0],aprs[1]));
-    let currentProtocol = false;
-    if (aprs){
-      currentProtocol = aprs[0]>aprs[1] ? 'Compound' : 'Fulcrum';
-    }
-    // const startMaxRate = parseFloat(parseFloat(maxRate*0.5).toFixed(2));
+    const currentRate = bestToken.toString().toLowerCase() === cDAIAddress ? aprs[0] : aprs[1];
     this.setState({
       [`compoundRate`]: aprs ? (+this.toEth(aprs[0])).toFixed(2) : '0.00',
       [`fulcrumRate`]: aprs ? (+this.toEth(aprs[1])).toFixed(2) : '0.00',
       [`maxRate`]: aprs ? ((+maxRate).toFixed(2)) : '0.00',
-      currentProtocol: currentProtocol,
-      needsUpdate: false
+      needsUpdate: false,
+      currentProtocol,
+      currentRate
     });
-    // this.animateMaxRate(startMaxRate,maxRate);
   };
+  getCurrentProtocol = async (bestToken) => {
+    bestToken = bestToken ? bestToken : await this.genericIdleCall('bestToken');
+    // console.log('getCurrentProtocol',bestToken);
+    if (bestToken){
+      return bestToken.toString().toLowerCase() === cDAIAddress ? 'Compound' : 'Fulcrum';
+    }
+    return false;
+  }
   getPriceInToken = async (contractName) => {
     const totalIdleSupply = await this.genericContractCall(contractName, 'totalSupply');
     let price = await this.genericContractCall(contractName, 'tokenPrice');
     const navPool = this.BNify(totalIdleSupply).div(1e18).times(this.BNify(price).div(1e18));
+    // console.log('getPriceInToken',totalIdleSupply.toString(),price.toString(),navPool.toString());
     this.setState({
       idleTokenPrice: (totalIdleSupply || totalIdleSupply === 0) && totalIdleSupply.toString() === '0' ? 0 : (+this.toEth(price)),
       navPool: navPool,
@@ -204,7 +194,7 @@ class SmartContractControls extends React.Component {
         earning = tokenToRedeem.minus(this.BNify(this.state.amountLent));
       }
 
-      console.log('earning',earning.toString());
+      // console.log('earning',earning.toString());
 
       const redirectToFundsAfterLogged = localStorage ? parseInt(localStorage.getItem('redirectToFundsAfterLogged')) : true;
 
@@ -226,6 +216,7 @@ class SmartContractControls extends React.Component {
       this.setState({
         [`balanceOf${contractName}`]: balance,
         [`DAIToRedeem`]: tokenToRedeem.toString(),
+        tokenBalanceBNify:balance,
         tokenBalance:balance.toString(),
         currentApr,
         tokenToRedeem,
@@ -323,6 +314,7 @@ class SmartContractControls extends React.Component {
     }
     return allowance;
   };
+
   genericContractCall = async (contractName, methodName, params = []) => {
     let contract = this.props.contracts.find(c => c.name === contractName);
     contract = contract && contract.contract;
@@ -353,11 +345,13 @@ class SmartContractControls extends React.Component {
       0 // Disapprova
     ],null,(tx)=>{
       this.setState({
+        isApprovingToken: false,
         [`isApproving${name}`]: false, // TODO when set to false?
       });
     });
 
     this.setState({
+      isApprovingToken: true,
       [`isApproving${name}`]: true, // TODO when set to false?
       approveIsOpen: false
     });
@@ -390,12 +384,14 @@ class SmartContractControls extends React.Component {
       // this.props.web3.utils.BN(0) // Disapprova
     ],null,(tx)=>{
       this.setState({
+        isApprovingToken: false,
         [`isApproving${token}`]: false, // TODO when set to false?
         'needsUpdate': true,
       });
     });
 
     this.setState({
+      isApprovingToken: true,
       [`isApproving${token}`]: true, // TODO when set to false?
       approveIsOpen: false
     });
@@ -424,7 +420,10 @@ class SmartContractControls extends React.Component {
       const value = this.props.web3.utils.toWei('0','ether');
       const allowance = await this.getAllowance(token); // DAI
       const tokenApproved = !this.BNify(allowance).lt(this.BNify(value.toString()));
-      return this.setState({[`is${token}Approved`]: tokenApproved});
+      return this.setState({
+        isTokenApproved: tokenApproved,
+        [`is${token}Approved`]: tokenApproved
+      });
     }
   }
 
@@ -504,7 +503,7 @@ class SmartContractControls extends React.Component {
       IdleDAIBalance = await this.genericContractCall(contractName, 'balanceOf', [this.props.account]);
     }
 
-    if (this.state.partialRedeemEnabled && this.BNify(this.state.redeemAmount).lte(this.BNify(this.state.balanceOfIdleDAI)) ){
+    if (this.state.partialRedeemEnabled && this.BNify(this.state.redeemAmount).lte(this.BNify(this.state.tokenBalanceBNify)) ){
       IdleDAIBalance = this.props.web3.utils.toWei(
         this.state.redeemAmount || '0',
         "ether"
@@ -547,14 +546,14 @@ class SmartContractControls extends React.Component {
   handleChangeAmountRedeem = (e) => {
     if (this.props.account){
       let amount = e.target.value;
-      console.log('handleChangeAmountRedeem',amount,this.state.balanceOfIdleDAI);
+      console.log('handleChangeAmountRedeem',amount,this.state.tokenBalanceBNify);
       this.setState({ redeemAmount: amount });
 
       let disableRedeemButton = false;
       let genericError = '';
 
       if (this.props.account) {
-        if (this.BNify(amount).gt(this.BNify(this.state.balanceOfIdleDAI))){
+        if (this.BNify(amount).gt(this.BNify(this.state.tokenBalanceBNify))){
           disableRedeemButton = true;
           genericError = 'The inserted amount exceeds your redeemable balance';
         } else if (this.BNify(amount).lte(0)) {
@@ -726,8 +725,10 @@ class SmartContractControls extends React.Component {
   };
 
   async componentWillUnmount(){
-    if (this.state.earningIntervalId){
-      window.clearInterval(this.state.earningIntervalId);
+    var id = window.setTimeout(function() {}, 0);
+
+    while (id--) {
+        window.clearTimeout(id); // will do nothing if no timeout with id is present
     }
   }
 
@@ -744,7 +745,6 @@ class SmartContractControls extends React.Component {
     this.props.initContract('cDAI', cDAIAddress, cDAIAbi);
     this.props.initContract('OldIdleDAI', OldIdleAddress, IdleAbi);
     this.props.initContract(this.state.idleTokenName, IdleAddress, IdleAbi).then(async () => {
-      // await this.getAprs();
       await Promise.all([
         this.getAprs(),
         this.getPriceInToken(this.state.idleTokenName)
@@ -828,22 +828,42 @@ class SmartContractControls extends React.Component {
       return null;
     }
 
-    const txs = Object.keys(prevTxs).reverse().map((key, i) => {
+    let totalInterestsAccrued = 0;
+    let depositedSinceLastRedeem = 0;
+    let txs = Object.keys(prevTxs).map((key, i) => {
+
       const tx = prevTxs[key];
+
+      // Skip other tokens
+      if (tx.tokenSymbol !== this.props.selectedToken){
+        return;
+      }
+
       const date = new Date(tx.timeStamp*1000);
       const status = tx.status ? tx.status : tx.to.toLowerCase() === IdleAddress.toLowerCase() ? 'Deposited' : 'Redeemed';
-      const value = parseFloat(tx.value) ? (this.props.isMobile ? parseFloat(tx.value).toFixed(4) : parseFloat(tx.value).toFixed(8)) : '-';
+      const parsedValue = parseFloat(tx.value);
+      const value = parsedValue ? (this.props.isMobile ? parsedValue.toFixed(4) : parsedValue.toFixed(8)) : '-';
       const formattedDate = moment(date).fromNow();
       let color;
       let icon;
+      let interest = null;
       switch (status) {
         case 'Deposited':
           color = 'blue';
           icon = "ArrowDownward";
+          depositedSinceLastRedeem+=parsedValue;
         break;
         case 'Redeemed':
           color = 'green';
           icon = "ArrowUpward";
+          interest = Math.abs(parsedValue)-depositedSinceLastRedeem;
+          interest = interest>0 ? '+'+(this.props.isMobile ? parseFloat(interest).toFixed(4) : parseFloat(interest).toFixed(8))+' DAI' : null;
+          depositedSinceLastRedeem -= parsedValue;
+          depositedSinceLastRedeem = Math.max(0,depositedSinceLastRedeem);
+
+          if (interest){
+            totalInterestsAccrued += interest;
+          }
         break;
         default:
           color = 'grey';
@@ -853,23 +873,30 @@ class SmartContractControls extends React.Component {
       return (
         <Link key={'tx_'+i} display={'block'} href={`https://etherscan.io/tx/${tx.hash}`} target={'_blank'}>
           <Flex alignItems={'center'} flexDirection={['row','row']} width={'100%'} p={[2,3]} borderBottom={'1px solid #D6D6D6'}>
-            <Box width={[1/10]} textAlign={'right'}>
+            <Box width={[1/12]} textAlign={'right'}>
                 <Icon name={icon} color={color} style={{float:'left'}}></Icon>
             </Box>
-            <Box width={[2/10,2/10]} display={['none','block']} textAlign={'center'}>
+            <Box width={[2/12,2/12]} display={['none','block']} textAlign={'center'}>
               <Pill color={color}>
                 {status}
               </Pill>
             </Box>
-            <Box width={[4/10]}>
+            <Box width={[3/12]}>
               <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>{value} {tx.tokenSymbol}</Text>
             </Box>
-            <Box width={[4/10,3/10]} textAlign={'center'}>
+            <Box width={[3/12]}>
+              <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>
+                {interest ? <Pill color={'green'}>{interest}</Pill> : null}
+              </Text>
+            </Box>
+            <Box width={[3/12,3/12]} textAlign={'center'}>
               <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>{formattedDate}</Text>
             </Box>
           </Flex>
         </Link>
       )});
+
+    txs = txs.reverse();
 
     return (
       <Flex flexDirection={'column'} width={[1,'90%']} m={'0 auto'}>
@@ -923,7 +950,7 @@ class SmartContractControls extends React.Component {
     const OldIdleDAIPrice = this.getFormattedBalance(this.state.OldIdleDAIPrice,this.props.selectedToken);
     const depositedFunds = this.getFormattedBalance(this.state.amountLent,this.props.selectedToken);
     const earningPerc = !isNaN(this.trimEth(this.state.DAIToRedeem)) && this.trimEth(this.state.DAIToRedeem)>0 ? this.getFormattedBalance(this.BNify(this.state.DAIToRedeem).div(this.BNify(this.state.amountLent)).minus(1).times(100),'%',4) : '0%';
-    const balanceOfIdleDAI = this.getFormattedBalance(this.state.balanceOfIdleDAI,this.state.idleTokenName);
+    const balanceOfIdleDAI = this.getFormattedBalance(this.state.tokenBalanceBNify,this.state.idleTokenName);
     const balanceOfOldIdleDAI = this.getFormattedBalance(this.state.balanceOfOldIdleDAI,this.state.idleTokenName);
     const hasOldBalance = !isNaN(this.trimEth(this.state.oldDAIToRedeem)) && this.trimEth(this.state.oldDAIToRedeem) > 0;
 
@@ -945,7 +972,7 @@ class SmartContractControls extends React.Component {
 
     return (
       <Box textAlign={'center'} alignItems={'center'} width={'100%'}>
-        <Form pb={[0, 2]} minHeight={['auto','20em']} backgroundColor={'white'} color={'blue'} boxShadow={'0 0 25px 5px rgba(102, 139, 255, 0.7)'} borderRadius={'15px'}>
+        <Form minHeight={['auto','20em']} backgroundColor={'white'} color={'blue'} boxShadow={'0 0 25px 5px rgba(102, 139, 255, 0.7)'} borderRadius={'15px'}>
           <Flex justifyContent={'center'}>
             <Flex flexDirection={['row','row']} width={['100%','80%']} pt={[2,3]}>
               <Box className={[styles.tab,this.props.selectedTab==='1' ? styles.tabSelected : '']} width={[1/3]} textAlign={'center'}>
@@ -966,7 +993,7 @@ class SmartContractControls extends React.Component {
             </Flex>
           </Flex>
 
-          <Box boxShadow={'inset 0px 7px 4px -4px rgba(0,0,0,0.1)'} py={[2, 3]}>
+          <Box boxShadow={'inset 0px 7px 4px -4px rgba(0,0,0,0.1)'} py={[2, 3]} style={{position:'relative'}}>
             {this.props.selectedTab === '1' &&
               <Box textAlign={'text'} py={3}>
                 {
@@ -986,6 +1013,40 @@ class SmartContractControls extends React.Component {
                   >
                     DISABLE DAI
                   </Button>
+                }
+
+                {
+                  this.props.account && this.state.isTokenApproved===false && !this.state.isApprovingDAI &&
+                  <Box style={{position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'99'}}>
+                    <Box style={{backgroundColor:'rgba(0,0,0,0.83)',position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'0',borderRadius:'0 0 15px 15px'}}></Box>
+                    <Flex style={{position:'relative',zIndex:'99',height:'100%'}} flexDirection={'column'} alignItems={'center'} justifyContent={'center'}>
+                      <Flex flexDirection={'column'} alignItems={'center'} p={[2,4]}>
+                        <Flex width={1} justifyContent={'center'} flexDirection={'row'}>
+                          <Image src={`images/btn-${this.props.selectedToken.toLowerCase()}.svg`} height={'38px'} />
+                          <Icon
+                            name={'KeyboardArrowRight'}
+                            color={'white'}
+                            size={'38'}
+                          />
+                          <Icon
+                            name={'LockOpen'}
+                            color={'white'}
+                            size={'38'}
+                          />
+                        </Flex>
+                        <Heading.h4 mt={[2,'5px']} mb={[3,'5px']} color={'white'} fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
+                          By clicking on ENABLE you are allowing Idle smart contract to actually move {this.props.selectedToken} on your behalf so we can forward them on various lending protocols.
+                        </Heading.h4>
+                        <Button
+                          onClick={e => this.enableERC20(e, this.props.selectedToken)}
+                          borderRadius={4}
+                          size={'medium'}
+                        >
+                          ENABLE {this.props.selectedToken}
+                        </Button>
+                      </Flex>
+                    </Flex>
+                  </Box>
                 }
 
                 <Heading.h3 pb={[2, 0]} mb={[2,3]} fontFamily={'sansSerif'} fontSize={[2, 3]} fontWeight={2} color={'dark-gray'} textAlign={'center'}>
@@ -1009,8 +1070,9 @@ class SmartContractControls extends React.Component {
                           account={this.props.account}
                           balance={this.props.accountBalanceDAI}
                           defaultValue={this.state.lendAmount}
-                          idleTokenPrice={hasOldBalance ? this.state.OldIdleDAIPrice : this.state.idleTokenPrice}
+                          //idleTokenPrice={hasOldBalance ? this.state.OldIdleDAIPrice : this.state.idleTokenPrice}
                           BNify={this.BNify}
+                          action={'Lend'}
                           trimEth={this.trimEth}
                           color={'black'}
                           selectedAsset={this.props.selectedToken}
@@ -1128,7 +1190,7 @@ class SmartContractControls extends React.Component {
                               flexDirection={'column'}
                               alignItems={'center'}>
                                 <Heading.h3 fontWeight={2} textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
-                                  Redeem your {this.props.idleTokenName}
+                                  Redeem your {this.state.idleTokenName}
                                 </Heading.h3>
                               {
                                 (this.state.partialRedeemEnabled || true) &&
@@ -1140,6 +1202,7 @@ class SmartContractControls extends React.Component {
                                     disableLendButton={this.state.disableRedeemButton}
                                     isMobile={this.props.isMobile}
                                     account={this.props.account}
+                                    action={'Redeem'}
                                     defaultValue={this.state.redeemAmount}
                                     idleTokenPrice={hasOldBalance ? (1/this.state.OldIdleDAIPrice) : (1/this.state.idleTokenPrice)}
                                     convertedLabel={this.props.selectedToken}
@@ -1406,8 +1469,8 @@ class SmartContractControls extends React.Component {
             { this.props.selectedTab === '3' && 
               <>
                 <Box width={'100%'} borderBottom={'1px solid #D6D6D6'} mb={2}>
-                  <Flex flexDirection={['column','row']} py={[2,3]} width={[1,'50%']} m={'0 auto'}>
-                    <Box width={[1,1/2]}>
+                  <Flex flexDirection={['column','row']} py={[2,3]} width={[1,'80%']} m={'0 auto'}>
+                    <Box width={[1,1/3]}>
                       <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
                         Allocated funds
                       </Text>
@@ -1431,12 +1494,20 @@ class SmartContractControls extends React.Component {
                         }
                       </Heading.h3>
                     </Box>
-                    <Box width={[1,1/2]}>
+                    <Box width={[1,1/3]}>
                       <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
                         Current protocol
                       </Text>
                       <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
                         { this.state.currentProtocol ? this.state.currentProtocol : '-' }
+                      </Heading.h3>
+                    </Box>
+                    <Box width={[1,1/3]}>
+                      <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
+                        Current APR
+                      </Text>
+                      <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                        { this.state.maxRate ? `${this.state.maxRate}%` : '-' }
                       </Heading.h3>
                     </Box>
                   </Flex>

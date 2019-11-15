@@ -15,7 +15,7 @@ import RimbleUtils from "@rimble/utils";
 class WrongNetworkModal extends React.Component {
   renderContent = () => {
     return (
-      <React.Fragment>
+      <ModalCard.Body>
         <Heading.h2 my={3}>
           Switch to the {this.props.network.required.name} network in{" "}
           {GeneralUtil.hasMetaMask() ? `MetaMask` : `Settings`}
@@ -57,7 +57,7 @@ class WrongNetworkModal extends React.Component {
             OK
           </Button>
         </Box>
-      </React.Fragment>
+      </ModalCard.Body>
     )
   }
 
@@ -65,9 +65,9 @@ class WrongNetworkModal extends React.Component {
     return (
       <Modal isOpen={this.props.isOpen}>
         <ModalCard closeFunc={this.props.closeModal}>
-          <ModalCard.Body>
+          <React.Fragment>
             {this.renderContent()}
-          </ModalCard.Body>
+          </React.Fragment>
         </ModalCard>
       </Modal>
     );

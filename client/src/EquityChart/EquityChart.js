@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
-import { Flex, Box, Text, Card, Image, Slider, Heading, Link, Pill } from "rimble-ui";
+import { Flex, Box, Text, Card, Image, Heading, Link, Pill } from "rimble-ui";
 import { ResponsiveLine } from '@nivo/line';
-import request from 'request';
 import axios from 'axios';
 import moment from 'moment';
 import styles from './EquityChart.module.scss';
@@ -101,7 +100,6 @@ class EquityChart extends Component {
 
     graphData.forEach((v,i) => {
       let balance = this.state.initialBalance;
-      let lastBalance = balance;
       let lastAprInfo = null;
       v.aprs.forEach((aprInfo,j) => {
         let totalEarned = 0;
@@ -136,7 +134,6 @@ class EquityChart extends Component {
           y:((balance-this.state.initialBalance)*10).toFixed(4)
           // y:balance.toFixed(4)
         });
-        lastBalance = balance;
         lastAprInfo = aprInfo;
       });
 
@@ -413,7 +410,7 @@ class EquityChart extends Component {
         return;
       }
 
-      const tx = idleBlocksOrdered[blockTime];
+      // const tx = idleBlocksOrdered[blockTime];
 
       // Set the max timestamp to look for
       const nextBlockTime = blockTimes[i+1];
@@ -428,7 +425,7 @@ class EquityChart extends Component {
         apr.blockTime = blockTime;
         idleData.push(apr);
 
-        const protocolID = this.getProtocolByAddress(graphData,apr.address).id;
+        // const protocolID = this.getProtocolByAddress(graphData,apr.address).id;
         const latestIdleApr = idleData.length>1 ? idleData[idleData.length-2] : null;
 
         // console.log(moment(blockTime*1000).format('DD/MM/YYYY'),moment(apr.t*1000).format('DD/MM/YYYY'),protocolID,apr.y,getHighestAprByTimestamp(blockTime).y);
@@ -475,6 +472,49 @@ class EquityChart extends Component {
     );
 
     return graphData;
+  }
+
+  renderTxs(graphData) {
+    const rebalanceTxs = this.state.rebalancesTxs || {};
+
+    if (!Object.keys(rebalanceTxs).length) {
+      return null;
+    }
+
+    // console.log('renderTxs',rebalanceTxs);
+
+    const txs = Object.keys(rebalanceTxs).reverse().map((key, i) => {
+      const tx = rebalanceTxs[key];
+      const procotolInfo = this.getProtocolByAddress(graphData,tx.to.toLowerCase());
+      const date = new Date(tx.timeStamp*1000);
+      const value = parseFloat(tx.value) ? (this.props.isMobile ? parseFloat(tx.value).toFixed(4) : parseFloat(tx.value).toFixed(8)) : '-';
+      const formattedDate = moment(date).fromNow();
+      return (
+        <Link key={'tx_'+i} display={'block'} href={`https://etherscan.io/tx/${tx.hash}`} target={'_blank'}>
+          <Flex alignItems={'center'} flexDirection={['row','row']} width={'100%'} p={[2,3]} borderBottom={'1px solid #D6D6D6'}>
+            <Box width={[4/10,3/10]} textAlign={'center'}>
+              <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>{formattedDate}</Text>
+            </Box>
+            <Box width={[2/10,2/10]} display={['none','block']} textAlign={'center'}>
+              <Pill color={procotolInfo.color}>
+                {procotolInfo.id}
+              </Pill>
+            </Box>
+            <Box width={[4/10]}>
+              <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>{value} {tx.tokenSymbol}</Text>
+            </Box>
+          </Flex>
+        </Link>
+      )});
+
+    return (
+      <Flex flexDirection={'column'} width={[1,'90%']} m={'0 auto'}>
+        <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'dark-gray'}>
+          Last transactions
+        </Heading.h3>
+        {txs}
+      </Flex>
+    );
   }
 
   render() {
@@ -585,57 +625,13 @@ class EquityChart extends Component {
         return a.pos_box - b.pos_box;
       });
 
-      const renderTxs = () => {
-        const rebalanceTxs = this.state.rebalancesTxs || {};
-
-        if (!Object.keys(rebalanceTxs).length) {
-          return null;
-        }
-
-        // console.log('renderTxs',rebalanceTxs);
-
-        const txs = Object.keys(rebalanceTxs).reverse().map((key, i) => {
-          const tx = rebalanceTxs[key];
-          const procotolInfo = this.getProtocolByAddress(graphData,tx.to.toLowerCase());
-          const date = new Date(tx.timeStamp*1000);
-          const value = parseFloat(tx.value) ? (this.props.isMobile ? parseFloat(tx.value).toFixed(4) : parseFloat(tx.value).toFixed(8)) : '-';
-          const formattedDate = moment(date).fromNow();
-          let color;
-          return (
-            <Link key={'tx_'+i} display={'block'} href={`https://etherscan.io/tx/${tx.hash}`} target={'_blank'}>
-              <Flex alignItems={'center'} flexDirection={['row','row']} width={'100%'} p={[2,3]} borderBottom={'1px solid #D6D6D6'}>
-                <Box width={[4/10,3/10]} textAlign={'center'}>
-                  <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>{formattedDate}</Text>
-                </Box>
-                <Box width={[2/10,2/10]} display={['none','block']} textAlign={'center'}>
-                  <Pill color={procotolInfo.color}>
-                    {procotolInfo.id}
-                  </Pill>
-                </Box>
-                <Box width={[4/10]}>
-                  <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>{value} {tx.tokenSymbol}</Text>
-                </Box>
-              </Flex>
-            </Link>
-          )});
-
-        return (
-          <Flex flexDirection={'column'} width={[1,'90%']} m={'0 auto'}>
-            <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'dark-gray'}>
-              Last transactions
-            </Heading.h3>
-            {txs}
-          </Flex>
-        );
-      }
-
       const interestBoxes = graphData.map(v=>{
         const isIdle = v.id==='Idle';
         const interestEarned = parseFloat(v.data[v.data.length-1].y);
         const finalBalance = this.state.initialBalance+interestEarned;
         const percentageEarned = (finalBalance/this.state.initialBalance-1);
         const secondsPassed = parseInt(v.data[v.data.length-1].t)-parseInt(v.data[0].t);
-        const percentageEarnedPerSecond = percentageEarned/secondsPassed;
+        // const percentageEarnedPerSecond = percentageEarned/secondsPassed;
         const interestEarnedPerSecond = interestEarned/secondsPassed;
         const finalBalanceAfterYear = this.state.initialBalance+(interestEarnedPerSecond*this.state.secondsInYear);
         const annualReturn = parseFloat((finalBalanceAfterYear/this.state.initialBalance-1)*10).toFixed(2);
@@ -671,7 +667,7 @@ class EquityChart extends Component {
         return a.pos - b.pos;
       });
 
-      return MyResponsiveLine(graphData,interestBoxes/*,renderTxs()*/);
+      return MyResponsiveLine(graphData,interestBoxes/*,this.renderTxs(graphData)*/);
     } else {
       return null;
     }

@@ -96,8 +96,10 @@ class Landing extends Component {
     //   this.state.processScrolling();
     // }
 
-    let prevContract = (prevProps.contracts.find(c => c.name === 'IdleDAI') || {}).contract;
-    let contract = (this.props.contracts.find(c => c.name === 'IdleDAI') || {}).contract;
+    let prevContract = (prevProps.contracts.find(c => c.name === 'idleDAI') || {}).contract;
+    let contract = (this.props.contracts.find(c => c.name === 'idleDAI') || {}).contract;
+
+    // console.log(this.props.contracts,prevContract,contract);
 
     if (contract && prevContract !== contract) {
       console.log('Getting APR');
@@ -125,6 +127,7 @@ class Landing extends Component {
 
   getAprs = async () => {
     let aprs = await this.genericIdleCall('getAPRs');
+    // console.lof(aprs);
     this.setState({
       [`compoundRate`]: aprs ? (+this.toEth(aprs[0])).toFixed(2) : '0.00',
       [`fulcrumRate`]: aprs ? (+this.toEth(aprs[1])).toFixed(2) : '0.00',
@@ -150,7 +153,7 @@ class Landing extends Component {
 
   // Idle
   genericIdleCall = async (methodName, params = []) => {
-    return await this.genericContractCall('IdleDAI', methodName, params).catch(err => {
+    return await this.genericContractCall('idleDAI', methodName, params).catch(err => {
       console.error('Generic Idle call err:', err);
     });
   }
