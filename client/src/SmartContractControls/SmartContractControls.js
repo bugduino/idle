@@ -41,6 +41,7 @@ class SmartContractControls extends React.Component {
     approveIsOpen: false,
     capReached: false,
     showFundsInfo:false,
+    isApprovingToken:false,
     isApprovingDAITest: true,
     redeemProcessing: false,
     lendingProcessing: false,
@@ -419,11 +420,13 @@ class SmartContractControls extends React.Component {
     if (this.props.account) {
       const value = this.props.web3.utils.toWei('0','ether');
       const allowance = await this.getAllowance(token); // DAI
-      const tokenApproved = !this.BNify(allowance).lt(this.BNify(value.toString()));
-      return this.setState({
+      const tokenApproved = this.BNify(allowance).gt(this.BNify(value.toString()));
+      // console.log('checkTokenApproved',this.BNify(allowance).toString(),this.BNify(value.toString()));
+      this.setState({
         isTokenApproved: tokenApproved,
         [`is${token}Approved`]: tokenApproved
       });
+      return tokenApproved;
     }
   }
 
@@ -454,11 +457,8 @@ class SmartContractControls extends React.Component {
     }
 
     // check if Idle is approved for DAI
-    if (this.props.account && !this.state[`isApprovingDAI`]) {
-      const allowance = await this.getAllowance(this.props.selectedToken); // DAI
-      if (this.BNify(allowance).lt(this.BNify(value.toString()))) {
-        return this.setState({approveIsOpen: true});
-      }
+    if (this.props.account && !this.state.isTokenApproved) {
+      return this.setState({approveIsOpen: true});
     }
 
     if (localStorage){
@@ -469,10 +469,11 @@ class SmartContractControls extends React.Component {
     this.props.contractMethodSendWrapper(this.state.idleTokenName, 'mintIdleToken', [
       value
     ], null, (tx) => {
-      const needsUpdate = tx.status === 'success' || !this.checkTransactionMined(tx,true);
-      if (needsUpdate){
+      const txSucceeded = tx.status === 'success';
+      const needsUpdate = txSucceeded || !this.checkTransactionMined(tx,true);
+      if (txSucceeded){
         this.selectTab({ preventDefault:()=>{} },'2');
-        console.log('mintIdleToken_callback needsUpdate');
+        // console.log('mintIdleToken_callback needsUpdate');
       }
       this.setState({
         lendingProcessing: false,
@@ -828,9 +829,11 @@ class SmartContractControls extends React.Component {
       return null;
     }
 
+    const txsIndexes = Object.keys(prevTxs);
+    const txsToShow = 10;
     let totalInterestsAccrued = 0;
     let depositedSinceLastRedeem = 0;
-    let txs = Object.keys(prevTxs).map((key, i) => {
+    let txs = txsIndexes.map((key, i) => {
 
       const tx = prevTxs[key];
 
@@ -843,7 +846,9 @@ class SmartContractControls extends React.Component {
       const status = tx.status ? tx.status : tx.to.toLowerCase() === IdleAddress.toLowerCase() ? 'Deposited' : 'Redeemed';
       const parsedValue = parseFloat(tx.value);
       const value = parsedValue ? (this.props.isMobile ? parsedValue.toFixed(4) : parsedValue.toFixed(8)) : '-';
-      const formattedDate = moment(date).fromNow();
+      const momentDate = moment(date);
+      const formattedDate = momentDate.fromNow();
+      const formattedDateAlt = momentDate.format('YYYY-MM-DD HH:mm:ss');
       let color;
       let icon;
       let interest = null;
@@ -870,31 +875,37 @@ class SmartContractControls extends React.Component {
           icon = "Refresh";
         break;
       }
-      return (
-        <Link key={'tx_'+i} display={'block'} href={`https://etherscan.io/tx/${tx.hash}`} target={'_blank'}>
-          <Flex alignItems={'center'} flexDirection={['row','row']} width={'100%'} p={[2,3]} borderBottom={'1px solid #D6D6D6'}>
-            <Box width={[1/12]} textAlign={'right'}>
-                <Icon name={icon} color={color} style={{float:'left'}}></Icon>
-            </Box>
-            <Box width={[2/12,2/12]} display={['none','block']} textAlign={'center'}>
-              <Pill color={color}>
-                {status}
-              </Pill>
-            </Box>
-            <Box width={[3/12]}>
-              <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>{value} {tx.tokenSymbol}</Text>
-            </Box>
-            <Box width={[3/12]}>
-              <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>
-                {interest ? <Pill color={'green'}>{interest}</Pill> : null}
-              </Text>
-            </Box>
-            <Box width={[3/12,3/12]} textAlign={'center'}>
-              <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>{formattedDate}</Text>
-            </Box>
-          </Flex>
-        </Link>
-      )});
+
+      if (i>=txsIndexes.length-txsToShow){
+        return (
+          <Link key={'tx_'+i} display={'block'} href={`https://etherscan.io/tx/${tx.hash}`} target={'_blank'}>
+            <Flex alignItems={'center'} flexDirection={['row','row']} width={'100%'} p={[2,3]} borderBottom={'1px solid #D6D6D6'}>
+              <Box width={[1/12]} textAlign={'right'}>
+                  <Icon name={icon} color={color} style={{float:'left'}}></Icon>
+              </Box>
+              <Box width={[2/12,2/12]} display={['none','block']} textAlign={'center'}>
+                <Pill color={color}>
+                  {status}
+                </Pill>
+              </Box>
+              <Box width={[3/12]}>
+                <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>{value} {tx.tokenSymbol}</Text>
+              </Box>
+              <Box width={[3/12]}>
+                <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>
+                  {interest ? <Pill color={'green'}>{interest}</Pill> : null}
+                </Text>
+              </Box>
+              <Box width={[3/12,3/12]} textAlign={'center'}>
+                <Text alt={formattedDateAlt} textAlign={'center'} fontSize={[2,2]} fontWeight={2}>{formattedDate}</Text>
+              </Box>
+            </Flex>
+          </Link>
+        );
+      }
+
+      return null;
+    });
 
     txs = txs.reverse();
 
@@ -1016,7 +1027,7 @@ class SmartContractControls extends React.Component {
                 }
 
                 {
-                  this.props.account && this.state.isTokenApproved===false && !this.state.isApprovingDAI &&
+                  this.props.account && this.state.isTokenApproved===false && !this.state.isApprovingToken &&
                   <Box style={{position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'99'}}>
                     <Box style={{backgroundColor:'rgba(0,0,0,0.83)',position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'0',borderRadius:'0 0 15px 15px'}}></Box>
                     <Flex style={{position:'relative',zIndex:'99',height:'100%'}} flexDirection={'column'} alignItems={'center'} justifyContent={'center'}>

@@ -55,6 +55,12 @@ ModalCard.Header = (props) => (
           {props.subtitle}
         </Heading.h4>
       }
+      {
+        props.subtitle2 &&
+        <Heading.h4 pt={0} fontSize={[2,2]} textAlign={'center'} fontWeight={2} lineHeight={1.5} color={'dark-gray'}>
+          {props.subtitle2}
+        </Heading.h4>
+      }
     </Flex>
   </Box>
 );

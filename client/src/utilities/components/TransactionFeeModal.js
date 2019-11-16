@@ -5,7 +5,7 @@ import ModalCard from './ModalCard';
 function TransactionFeeModal(props) {
   return (
     <Box>
-      <ModalCard.Header title={'Transaction fees, what are you paying for?'} subtitle={'You need to pay a fee to use the Ethereum blockchain. This pays for someone to process your transaction and store the data.'}></ModalCard.Header>
+      <ModalCard.Header title={'Transaction fees, what are you paying for?'} subtitle={'You need to pay a fee to use the Ethereum blockchain.'} subtitle2={'This pays for someone to process your transaction and store the data.'}></ModalCard.Header>
       <ModalCard.Body>
         <Flex flexDirection={['column', 'row']}
           justifyContent={"space-between"}

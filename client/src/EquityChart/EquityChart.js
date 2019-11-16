@@ -13,7 +13,7 @@ const iDAIAddress = '0x14094949152eddbfcd073717200da82fed8dc960';
 
 class EquityChart extends Component {
   state = {
-    secondsInYear:315569260,
+    secondsInYear:31556952,
     initialBalance:1000,
     graphData: null,
     minValue: null,
@@ -97,6 +97,7 @@ class EquityChart extends Component {
 
     let minValue = null;
     let maxValue = null;
+    let minDataLength = null;
 
     graphData.forEach((v,i) => {
       let balance = this.state.initialBalance;
@@ -124,21 +125,40 @@ class EquityChart extends Component {
 
           totalEarned = secondsPassed*earningPerSecond;
 
-          // console.log(v.id,moment(aprTime*1000).format('DD/MM/YYYY'),moment(lastAprTime*1000).format('DD/MM/YYYY'),apr,balance,totalEarned);
+          // console.log(v.id,moment(aprTime*1000).format('DD/MM/YYYY'),moment(lastAprTime*1000).format('DD/MM/YYYY'),apr,balance,earningPerYear,totalEarned);
 
           balance += totalEarned;
         }
         graphData[i].data.push({
+          a:aprInfo,
           t:aprInfo.t,
           x:aprInfo.x,
-          y:((balance-this.state.initialBalance)*10).toFixed(4)
+          b:balance,
+          y:(balance-this.state.initialBalance).toFixed(4)
           // y:balance.toFixed(4)
         });
         lastAprInfo = aprInfo;
       });
 
+      minDataLength = minDataLength===null ? graphData[i].data.length : Math.min(minDataLength,graphData[i].data.length);
+
       // maxValue = maxValue ? Math.max(maxValue,balance) : balance;
     });
+
+    const super_log = [];
+    for (var j=0;j<minDataLength;j++){
+      let log = [graphData[0].data[j].x];
+      for (var i=0;i<graphData.length;i++){
+        log.push(graphData[i].data[j].b);
+        log.push(parseFloat(graphData[i].data[j].a.y).toFixed(4)+'%');
+        if (i==graphData.length-1){
+          log.push(this.getProtocolByAddress(graphData,graphData[i].data[j].a.address).id);
+        }
+      }
+      super_log.push(log.join("\t"));
+    }
+
+    console.log(super_log.join("\n"));
 
     // const startTimestamp = parseInt(moment('01/09/2019','DD/MM/YYYY')._d.getTime()/1000);
     // graphData = this.filterGraphData(graphData,startTimestamp);
@@ -206,19 +226,16 @@ class EquityChart extends Component {
   }
 
   async getAprs() {
-    // const timeMonthAgo = parseInt(new Date().getTime()/1000)-(60*60*24*31*6);
-    // const timeWeekAgo = parseInt(new Date().getTime()/1000)-(60*60*24*7);
-    // const graphStartTimestamp = 0; // All data
-    // const graphStartTimestamp = timeMonthAgo;
+    // const graphEndTimestamp = parseInt(moment('05-11-2019','DD-MM-YYYY')._d.getTime()/1000);
+    // const graphStartTimestamp = parseInt(moment('01-09-2019','DD-MM-YYYY')._d.getTime()/1000);
     const graphStartTimestamp = 1565866741; // First Idle block mined
-    // const graphStartTimestamp = 1557720000; // First Fulcrum block mined
-    // const graphStartTimestamp = 1563187879; // 14/07/2019
-    // const graphStartTimestamp = parseInt(moment('01/08/2019','DD/MM/YYYY')._d.getTime()/1000);
+    const graphEndTimestamp = parseInt(moment()._d.getTime()/1000);
     const graphData = [
       {
         "id": "Compound",
         'pos_box':1,
         'pos':1,
+        'fee':0,
         'address' : cDAIAddress,
         'icon' : 'compound-mark-green.png',
         "color": "hsl(162, 100%, 41%)",
@@ -230,6 +247,7 @@ class EquityChart extends Component {
         "id": "Fulcrum",
         'pos_box':3,
         'pos':2,
+        'fee':0.1,
         'address' : iDAIAddress,
         'icon' : 'fulcrum-mark.png',
         "color": "hsl(197, 98%, 38%)",
@@ -255,29 +273,9 @@ class EquityChart extends Component {
     const loadGraphData = async () => {
       await this.asyncForEach(graphData, async (info,key) => {
         if (info.endpoint){
-          /*
-          const endpoint = info.endpoint+'?start_date='+parseInt(graphStartTimestamp);
-          let remote_data = await this.makeCachedRequest(endpoint,43200);
-
-          if (!remote_data || !remote_data.data) {
-            return;
-          }
-
-          remote_data = remote_data.data;
-
-          maxLen = Math.max(maxLen,remote_data.chart.length);
-          remote_data.chart.forEach((v,i) => {
-            const date = moment(v.timestamp*1000).format('DD/MM/YYYY');
-            const timestamp = getDayTimestamp(v.timestamp*1000);
-            const rate = v.supply_rate;
-
-            graphData[key].aprs.push({t:timestamp,x:date,y:rate});
-          });
-          */
           let t;
-          const currentTime = parseInt(new Date().getTime()/1000);
           const monthTime = parseInt(60*60*24*31);
-          for (t=graphStartTimestamp;t<currentTime;t+=monthTime){
+          for (t=graphStartTimestamp;t<graphEndTimestamp;t+=monthTime){
             const endpoint = info.endpoint+'?start_date='+parseInt(t)+'&end_date='+(parseInt(t)+parseInt(monthTime));
 
             let remote_data = await this.makeCachedRequest(endpoint,43200);
@@ -292,7 +290,16 @@ class EquityChart extends Component {
             remote_data.chart.forEach((v,i) => {
               const date = moment(v.timestamp*1000).format('DD/MM/YYYY');
               const timestamp = getDayTimestamp(v.timestamp*1000);
-              const rate = v.supply_rate;
+
+              // if (timestamp>graphEndTimestamp){
+              //   return;
+              // }
+
+              let rate = v.supply_rate;
+
+              if (graphData[key].fee){
+                rate -= rate*graphData[key].fee;
+              }
 
               graphData[key].aprs.push({t:timestamp,x:date,y:rate});
             });
@@ -369,6 +376,7 @@ class EquityChart extends Component {
     }
 
     // Group transaction by BlockTime
+    const secondsPerDay = 60*60*24;
     const rebalancesTxs = [];
     const idleBlocks = {};
     internalTxs.forEach((v,i) => {
@@ -377,11 +385,17 @@ class EquityChart extends Component {
         const m = moment(txTimestamp);
         const blockDate = m.format('DD/MM/YYYY');
         const blockTime = getDayTimestamp(txTimestamp);
-        idleBlocks[blockTime] = {
-          to:v.to,
-          timeStamp:blockTime,
-          date:blockDate
-        };
+
+        const apr = getClosestProtocolAprByTimestamp(v.to,blockTime,parseInt(blockTime)+secondsPerDay);
+
+        if (!idleBlocks[blockTime] || (apr && idleBlocks[blockTime].to !== v.to && parseFloat(apr.y)>idleBlocks[blockTime].apr)){
+          idleBlocks[blockTime] = {
+            to:v.to,
+            timeStamp:blockTime,
+            date:blockDate,
+            apr:(apr ? parseFloat(apr.y) : null)
+          };
+        }
 
         // if (rebalancesTxs.length>0){
         //   console.log(rebalancesTxs.length,rebalancesTxs[rebalancesTxs.length-1].to,v.to);
@@ -410,14 +424,14 @@ class EquityChart extends Component {
         return;
       }
 
-      // const tx = idleBlocksOrdered[blockTime];
+      const tx = idleBlocksOrdered[blockTime];
 
       // Set the max timestamp to look for
       const nextBlockTime = blockTimes[i+1];
       const nextTx = nextBlockTime ? idleBlocksOrdered[nextBlockTime] : null;
       const maxTimestamp = nextTx ? nextTx.timeStamp : null;
-      // const apr = getClosestProtocolAprByTimestamp(tx.to,blockTime,maxTimestamp);
-      const apr = getHighestAprByTimestamp(blockTime,maxTimestamp);
+      const apr = getClosestProtocolAprByTimestamp(tx.to,blockTime,maxTimestamp); // Use this to obtain the real APR
+      const max_apr = getHighestAprByTimestamp(blockTime,maxTimestamp); // Use this to obtain always the best APR
 
       if (apr){
         nextTimestamp = apr.t;
@@ -425,26 +439,25 @@ class EquityChart extends Component {
         apr.blockTime = blockTime;
         idleData.push(apr);
 
-        // const protocolID = this.getProtocolByAddress(graphData,apr.address).id;
+        const protocolID = this.getProtocolByAddress(graphData,apr.address).id;
         const latestIdleApr = idleData.length>1 ? idleData[idleData.length-2] : null;
 
-        // console.log(moment(blockTime*1000).format('DD/MM/YYYY'),moment(apr.t*1000).format('DD/MM/YYYY'),protocolID,apr.y,getHighestAprByTimestamp(blockTime).y);
+        // console.log(moment(blockTime*1000).format('DD/MM/YYYY'),moment(apr.t*1000).format('DD/MM/YYYY'),protocolID,apr.y,moment(max_apr.t*1000).format('DD/MM/YYYY'),max_apr.y);
 
         // Check if skipped some days between last and current apr
         if (latestIdleApr){
           const lastTimestamp = latestIdleApr.t;
           const timestampDiff = apr.t-latestIdleApr.t;
-          const secondsPerDay = 60*60*24;
           const daysBetweenTimestamps = parseInt(timestampDiff/secondsPerDay)-1;
 
           if (daysBetweenTimestamps>1){
             let timestamp = lastTimestamp+secondsPerDay;
             for (timestamp;timestamp<blockTime;timestamp+=secondsPerDay){
               const maxTimestamp = timestamp+secondsPerDay;
-              // const apr = getClosestProtocolAprByTimestamp(latestIdleApr.address,timestamp,maxTimestamp);
-              const apr = getHighestAprByTimestamp(blockTime,maxTimestamp);
+              const apr = getClosestProtocolAprByTimestamp(latestIdleApr.address,timestamp,maxTimestamp); // Use this to obtain the real APR
+              // const apr = getHighestAprByTimestamp(blockTime,maxTimestamp); // Use this to obtain always the best APR
               if (apr){
-                // console.log('Filling skipped day',getProtocolByAddress(latestIdleApr.address).id,moment(timestamp*1000).format('DD/MM/YYYY'),' => ',moment(apr.t*1000).format('DD/MM/YYYY'),getProtocolByAddress(latestIdleApr.address).id,apr.y);
+                // console.log('Filling skipped day',this.getProtocolByAddress(graphData,latestIdleApr.address).id,moment(timestamp*1000).format('DD/MM/YYYY'),' => ',moment(apr.t*1000).format('DD/MM/YYYY'),this.getProtocolByAddress(graphData,latestIdleApr.address).id,apr.y);
                 apr.blockTime = timestamp;
                 idleData.push(apr);
                 timestamp = apr.t;
@@ -458,6 +471,30 @@ class EquityChart extends Component {
         });
       }
     });
+
+
+    // Take missing days
+    const latestIdleApr = idleData[idleData.length-1];
+    // Take the last available time
+    const lastAprAvailable = Math.max(parseInt(graphData[0].aprs[graphData[0].aprs.length-1].t),parseInt(graphData[1].aprs[graphData[1].aprs.length-1].t));
+
+    if (latestIdleApr.t<lastAprAvailable){
+      const lastTimestamp = latestIdleApr.t;
+      
+      let timestamp = lastTimestamp+secondsPerDay;
+      // console.log(timestamp,lastAprAvailable);
+      for (timestamp;timestamp<=lastAprAvailable;timestamp+=secondsPerDay){
+        const maxTimestamp = timestamp+secondsPerDay;
+        const apr = getClosestProtocolAprByTimestamp(latestIdleApr.address,timestamp,maxTimestamp); // Use this to obtain the real APR
+        // console.log(latestIdleApr.address,timestamp,maxTimestamp,apr);
+        // const apr = getHighestAprByTimestamp(blockTime,maxTimestamp); // Use this to obtain always the best APR
+        if (apr){
+          apr.blockTime = timestamp;
+          idleData.push(apr);
+          timestamp = apr.t;
+        }
+      }
+    }
 
     graphData.push(
       {
@@ -634,9 +671,9 @@ class EquityChart extends Component {
         // const percentageEarnedPerSecond = percentageEarned/secondsPassed;
         const interestEarnedPerSecond = interestEarned/secondsPassed;
         const finalBalanceAfterYear = this.state.initialBalance+(interestEarnedPerSecond*this.state.secondsInYear);
-        const annualReturn = parseFloat((finalBalanceAfterYear/this.state.initialBalance-1)*10).toFixed(2);
+        const annualReturn = parseFloat((finalBalanceAfterYear/this.state.initialBalance-1)*100).toFixed(2);
         // console.log(v.id,moment(v.data[0].t*1000).format('DD/MM/YYYY'),moment(v.data[v.data.length-1].t*1000).format('DD/MM/YYYY'),interestEarned,finalBalance,percentageEarned,secondsPassed,interestEarnedPerSecond,finalBalanceAfterYear,annualReturn);
-        
+
         return (
           <Flex key={'graph_'+v.id} width={[1,1/3]} mx={[0,2]} flexDirection={'column'}>
             <Box>
@@ -651,7 +688,7 @@ class EquityChart extends Component {
                     </Text>
                   </Box>
                   <Flex alignItems={'center'} flexDirection={'column'} width={3/12}>
-                    <Text.span color={isIdle ? 'white' : 'copyColor'} fontWeight={[1,2]} fontSize={['90%','70%']}>APR</Text.span>
+                    <Text.span color={isIdle ? 'white' : 'copyColor'} fontWeight={[1,2]} fontSize={['90%','70%']}>AVG APR</Text.span>
                     <Text lineHeight={1} pl={'10px'} color={isIdle ? 'white' : 'copyColor'} fontSize={[2,3]} fontWeight={3} textAlign={'center'}>
                       {annualReturn}<Text.span color={isIdle ? 'white' : 'copyColor'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
                     </Text>
