@@ -1,6 +1,35 @@
+.newLink{
+  text-decoration:none !important;
+}
+/*
+.newPillContainer{
+  -webkit-animation: newPillContainerAnim 0.5s ease infinite alternate;
+  -moz-animation: newPillContainerAnim 0.5s ease infinite alternate;
+  -o-animation: newPillContainerAnim 0.5s ease infinite alternate;
+  animation: newPillContainerAnim 0.5s ease infinite alternate;
+}
+*/
+.newPillContainer:hover{
+  background-color:rgba(0, 54, 255, 0.15);
+  animation:none;
+}
+
+@-webkit-keyframes newPillContainerAnim {
+    0%{
+      background-color:rgba(0, 54, 255, 0.05);
+    }
+    100%{
+      background-color:rgba(0, 54, 255, 0.15);
+    }
+}
+
+.newPill{
+  background:linear-gradient(180deg,#013aff,#6081ff);
+}
+
 .mainInput {
-  paddingLeft: 0;
-  paddingRight: 1em;
+  padding-left: 0;
+  padding-right: 1em;
   background-color: transparent;
   &:focus {
     border-color: white !important;
@@ -46,7 +75,7 @@ input[type="number"] {
 }
 @media (max-width: 30em){
   .mainInput {
-    paddingLeft: 1em;
-    paddingRight: 1em;
+    padding-left: 0;
+    padding-right: 1em;
   }
 }

@@ -5,7 +5,6 @@ import styles from './Landing.module.scss';
 import LandingForm from '../LandingForm/LandingForm';
 import Faq from '../Faq/Faq';
 import NewsletterForm from '../NewsletterForm/NewsletterForm';
-import APRsChart from '../APRsChart/APRsChart';
 import EquityChart from '../EquityChart/EquityChart';
 
 let scrolling = false;
@@ -17,7 +16,7 @@ class Landing extends Component {
     carouselIntervalID:null,
     startCarousel:null,
     setActiveCarousel:null,
-    processScrolling:null,
+    activeBullet:null,
     testPerformed:false
   };
 
@@ -26,44 +25,17 @@ class Landing extends Component {
   }
 
   async componentDidMount(){
+
     let scrollTimeoutID = null;
     window.onscroll = async () => {
       if (scrollTimeoutID){
         window.clearTimeout(scrollTimeoutID);
       }
       scrollTimeoutID = window.setTimeout( async () => {
-        // this.setState({scrolling:true});
         scrolling = true;
-        // if (typeof window.requestIdleCallback === 'function'){
-        //   window.requestIdleCallback(this.state.processScrolling);
-        // } else {
-          this.state.processScrolling();
-        // }
+        this.processScrolling();
       },150);
     };
-    
-    const processScrolling = () => {
-      console.log(scrolling);
-      if (scrolling){
-
-        const bulletCards = document.getElementsByClassName('Landing_bulletCard__3num6');
-        let activeBullet = 0;
-
-        for (let i=0;i<bulletCards.length;i++){
-          const bulletCard = bulletCards[i];
-          const offsetY = bulletCard.offsetTop;
-          if (window.scrollY >= offsetY-200){
-            activeBullet = i+2;
-          }
-        }
-        scrolling = false;
-        if (activeBullet !== this.state.activeBullet){
-          this.setState({activeBullet});
-        }
-      }
-    };
-
-    this.setState({processScrolling});
 
     const startCarousel = async () => {
       if (!this.props.isMobile){
@@ -90,12 +62,6 @@ class Landing extends Component {
 
   async componentDidUpdate(prevProps) {
 
-    // if (typeof window.requestIdleCallback === 'function'){
-    //   window.requestIdleCallback(this.state.processScrolling);
-    // } else {
-    //   this.state.processScrolling();
-    // }
-
     let prevContract = (prevProps.contracts.find(c => c.name === 'idleDAI') || {}).contract;
     let contract = (this.props.contracts.find(c => c.name === 'idleDAI') || {}).contract;
 
@@ -106,6 +72,26 @@ class Landing extends Component {
       await this.getAprs();
     }
   }
+
+  processScrolling = () => {
+    if (scrolling){
+
+      const bulletCards = document.getElementsByClassName('Landing_bulletCard__3num6');
+      let activeBullet = 0;
+
+      for (let i=0;i<bulletCards.length;i++){
+        const bulletCard = bulletCards[i];
+        const offsetY = bulletCard.offsetTop;
+        if (window.scrollY >= offsetY-200){
+          activeBullet = i+2;
+        }
+      }
+      scrolling = false;
+      if (parseInt(activeBullet) !== parseInt(this.state.activeBullet)){
+        this.setState({activeBullet});
+      }
+    }
+  };
 
   // utilities
   trimEth = eth => {
@@ -760,7 +746,6 @@ class Landing extends Component {
               </Flex>
             </Flex>
           </Flex>
-
         </Flex>
       </Box>
     );

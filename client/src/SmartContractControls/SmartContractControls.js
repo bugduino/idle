@@ -29,6 +29,8 @@ const DAIAddress = '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359';
 const iDAIAbi = iDAI.abi;
 const iDAIAddress = '0x14094949152eddbfcd073717200da82fed8dc960';
 
+const daysInYear = 365.2422;
+
 class SmartContractControls extends React.Component {
   state = {
     iDAIRate: 0,
@@ -46,12 +48,15 @@ class SmartContractControls extends React.Component {
     redeemProcessing: false,
     lendingProcessing: false,
     idleTokenName: 'idle'+this.props.selectedToken,
+    tokenBalance: this.props.accountBalanceDAI,
     tokenName: 'DAI',
     baseTokenName: 'DAI',
     lendAmount: '',
     redeemAmount: '',
     needsUpdate: false,
     genericError: null,
+    genericErrorRedeem: null,
+    buyTokenMessage:null,
     selectedTab: '1',
     amountLent: null,
     IdleDAISupply: null,
@@ -64,10 +69,41 @@ class SmartContractControls extends React.Component {
     maxRate: '-',
     calculataingShouldRebalance: true,
     fundsTimeoutID: null,
-    tokenBalance: null,
+    idleTokenBalance: null,
     prevTxs : {},
     successTransactions:{}
   };
+
+  renderZeroExInstant = (e,amount) => {
+    if (e){
+      e.preventDefault();
+    }
+    if (window.zeroExInstant){
+      const params = {
+        orderSource: 'https://api.radarrelay.com/0x/v2/',
+        affiliateInfo: {
+            feeRecipient: '0xf1363d3d55d9e679cc6aa0a0496fd85bdfcf7464',
+            feePercentage: 0.0075
+        },
+        defaultSelectedAssetData: '0xf47261b000000000000000000000000089d24a6b4ccb1b6faa2625fe562bdd9a23260359',
+        availableAssetDatas: ['0xf47261b000000000000000000000000089d24a6b4ccb1b6faa2625fe562bdd9a23260359'],
+        onSuccess: async (txHash) => {
+          await this.getTokenBalance();
+          this.useEntireBalance(this.state.tokenBalance);
+          console.log('Success! Transaction hash is: ' + txHash)
+        },
+        onClose: () => {
+          console.log('Closed');
+          return true;
+        }
+      };
+
+      if (amount){
+        params.defaultAssetBuyAmount = parseFloat(amount);
+      }
+      window.zeroExInstant.render(params, 'body');
+    }
+  }
 
   // utilities
   trimEth = (eth,decimals) => {
@@ -173,6 +209,18 @@ class SmartContractControls extends React.Component {
     });
     return price;
   };
+  getTokenBalance = async () => {
+    if (this.props.account){
+      const tokenBalance = await this.genericContractCall(this.props.selectedToken,'balanceOf',[this.props.account]);
+      if (tokenBalance){
+        // console.log('getTokenBalance',tokenBalance,this.BNify(tokenBalance).div(1e18).toString(),parseFloat(this.BNify(tokenBalance).div(1e18).toString()));
+        return this.setState({
+          tokenBalance: this.BNify(tokenBalance).div(1e18).toString()
+        });
+      }
+    }
+    return null;
+  };
   getBalanceOf = async contractName => {
     let price = await this.getPriceInToken(contractName);
     let balance = await this.genericContractCall(contractName, 'balanceOf', [this.props.account]);
@@ -218,7 +266,7 @@ class SmartContractControls extends React.Component {
         [`balanceOf${contractName}`]: balance,
         [`DAIToRedeem`]: tokenToRedeem.toString(),
         tokenBalanceBNify:balance,
-        tokenBalance:balance.toString(),
+        idleTokenBalance:balance.toString(),
         currentApr,
         tokenToRedeem,
         earning,
@@ -473,7 +521,6 @@ class SmartContractControls extends React.Component {
       const needsUpdate = txSucceeded || !this.checkTransactionMined(tx,true);
       if (txSucceeded){
         this.selectTab({ preventDefault:()=>{} },'2');
-        // console.log('mintIdleToken_callback needsUpdate');
       }
       this.setState({
         lendingProcessing: false,
@@ -499,22 +546,20 @@ class SmartContractControls extends React.Component {
       redeemProcessing: true
     }));
 
-    let IdleDAIBalance = this.toWei('0');
-    if (this.props.account) {
-      IdleDAIBalance = await this.genericContractCall(contractName, 'balanceOf', [this.props.account]);
-    }
+    // let IdleDAIBalance = this.toWei('0');
+    // if (this.props.account) {
+    //   IdleDAIBalance = await this.genericContractCall(contractName, 'balanceOf', [this.props.account]);
+    // }
 
-    if (this.state.partialRedeemEnabled && this.BNify(this.state.redeemAmount).lte(this.BNify(this.state.tokenBalanceBNify)) ){
-      IdleDAIBalance = this.props.web3.utils.toWei(
-        this.state.redeemAmount || '0',
-        "ether"
-      );
-    }
+    let idleTokenToRedeem = this.props.web3.utils.toWei(
+      this.state.redeemAmount || '0',
+      "ether"
+    );
 
-    // console.log('redeem',IdleDAIBalance);
+    console.log('redeem',idleTokenToRedeem);
 
     this.props.contractMethodSendWrapper(contractName, 'redeemIdleToken', [
-      IdleDAIBalance
+      idleTokenToRedeem
     ], null, (tx) => {
       console.log('redeemIdleToken_callback needsUpdate');
       const needsUpdate = tx.status === 'success' || !this.checkTransactionMined(tx,true);
@@ -547,25 +592,25 @@ class SmartContractControls extends React.Component {
   handleChangeAmountRedeem = (e) => {
     if (this.props.account){
       let amount = e.target.value;
-      console.log('handleChangeAmountRedeem',amount,this.state.tokenBalanceBNify);
+      // console.log('handleChangeAmountRedeem',amount,this.state.tokenBalanceBNify);
       this.setState({ redeemAmount: amount });
 
       let disableRedeemButton = false;
-      let genericError = '';
+      let genericErrorRedeem = '';
 
       if (this.props.account) {
         if (this.BNify(amount).gt(this.BNify(this.state.tokenBalanceBNify))){
           disableRedeemButton = true;
-          genericError = 'The inserted amount exceeds your redeemable balance';
+          genericErrorRedeem = 'The inserted amount exceeds your redeemable balance';
         } else if (this.BNify(amount).lte(0)) {
           disableRedeemButton = true;
-          genericError = 'Please insert a positive amount';
+          genericErrorRedeem = 'Please insert a positive amount';
         }
       }
 
       return this.setState({
         disableRedeemButton,
-        genericError
+        genericErrorRedeem
       });
     } else {
       this.redeem(e);
@@ -579,18 +624,21 @@ class SmartContractControls extends React.Component {
 
       let disableLendButton = false;
       let genericError = '';
+      let buyTokenMessage = null;
 
       if (this.props.account) {
-        if (this.BNify(amount).gt(this.BNify(this.props.accountBalanceDAI))){
+        if (this.BNify(amount).gt(this.BNify(this.props.tokenBalance))){
           disableLendButton = true;
-          genericError = `The inserted amount exceeds your ${this.props.selectedToken} balance`;
+          buyTokenMessage = `The inserted amount exceeds your balance. Click here to buy more ${this.props.selectedToken}`;
+          // genericError = `The inserted amount exceeds your ${this.props.selectedToken} balance`;
         } else if (this.BNify(amount).lte(0)) {
           disableLendButton = true;
-          genericError = 'Please insert a positive amount';
+          genericError = `Please insert a positive amount of ${this.props.selectedToken}`;
         }
       }
 
       return this.setState({
+        buyTokenMessage,
         disableLendButton,
         genericError
       });
@@ -734,6 +782,12 @@ class SmartContractControls extends React.Component {
   }
 
   async componentDidMount() {
+
+    const script = document.createElement("script");
+    script.src = "https://instant.0x.org/instant.js";
+    script.async = true;
+    document.body.appendChild(script);
+
     console.log('Smart contract didMount')
     // do not wait for each one just for the first who will guarantee web3 initialization
     const web3 = await this.props.initWeb3();
@@ -764,6 +818,7 @@ class SmartContractControls extends React.Component {
 
       console.log('componentDidUpdate needsUpdate');
       await Promise.all([
+        this.getTokenBalance(),
         this.checkTokenApproved(this.props.selectedToken), // Check if the token is already approved
         this.getPrevTxs(),
         this.getBalanceOf(this.state.idleTokenName),
@@ -833,6 +888,8 @@ class SmartContractControls extends React.Component {
     const txsToShow = 10;
     let totalInterestsAccrued = 0;
     let depositedSinceLastRedeem = 0;
+    let totalRedeemed = 0;
+
     let txs = txsIndexes.map((key, i) => {
 
       const tx = prevTxs[key];
@@ -857,14 +914,24 @@ class SmartContractControls extends React.Component {
           color = 'blue';
           icon = "ArrowDownward";
           depositedSinceLastRedeem+=parsedValue;
+          // totalRedeemed = 0;
         break;
         case 'Redeemed':
           color = 'green';
           icon = "ArrowUpward";
-          interest = Math.abs(parsedValue)-depositedSinceLastRedeem;
-          interest = interest>0 ? '+'+(this.props.isMobile ? parseFloat(interest).toFixed(4) : parseFloat(interest).toFixed(8))+' DAI' : null;
-          depositedSinceLastRedeem -= parsedValue;
-          depositedSinceLastRedeem = Math.max(0,depositedSinceLastRedeem);
+          totalRedeemed += Math.abs(parsedValue);
+
+          // console.log(formattedDateAlt,totalRedeemed,depositedSinceLastRedeem,totalRedeemed-depositedSinceLastRedeem);
+          if (totalRedeemed<depositedSinceLastRedeem){
+            interest = null;
+          } else {
+            interest = totalRedeemed-depositedSinceLastRedeem;
+            interest = interest>0 ? '+'+(this.props.isMobile ? parseFloat(interest).toFixed(4) : parseFloat(interest).toFixed(8))+' DAI' : null;
+            depositedSinceLastRedeem -= totalRedeemed;
+            depositedSinceLastRedeem = Math.max(0,depositedSinceLastRedeem);
+            totalRedeemed = 0;
+          }
+          
 
           if (interest){
             totalInterestsAccrued += interest;
@@ -892,7 +959,7 @@ class SmartContractControls extends React.Component {
                 <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>{value} {tx.tokenSymbol}</Text>
               </Box>
               <Box width={[3/12]}>
-                <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>
+                <Text textAlign={'center'} display={['none','block']} fontSize={[2,2]} fontWeight={2}>
                   {interest ? <Pill color={'green'}>{interest}</Pill> : null}
                 </Text>
               </Box>
@@ -965,14 +1032,18 @@ class SmartContractControls extends React.Component {
     const balanceOfOldIdleDAI = this.getFormattedBalance(this.state.balanceOfOldIdleDAI,this.state.idleTokenName);
     const hasOldBalance = !isNaN(this.trimEth(this.state.oldDAIToRedeem)) && this.trimEth(this.state.oldDAIToRedeem) > 0;
 
-    let earningPerDay = this.getFormattedBalance((this.state.earningPerYear/365),this.props.selectedToken,4);
-    const earningPerWeek = this.getFormattedBalance((this.state.earningPerYear/365*7),this.props.selectedToken,4);
+    let earningPerDay = this.getFormattedBalance((this.state.earningPerYear/daysInYear),this.props.selectedToken,4);
+    const earningPerWeek = this.getFormattedBalance((this.state.earningPerYear/daysInYear*7),this.props.selectedToken,4);
     const earningPerMonth = this.getFormattedBalance((this.state.earningPerYear/12),this.props.selectedToken,4);
     const earningPerYear = this.getFormattedBalance((this.state.earningPerYear),this.props.selectedToken,4);
 
     const currentNavPool = !isNaN(this.trimEth(this.state.navPool)) ? parseFloat(this.trimEth(this.state.navPool,9)) : null;
-    const navPoolEarningPerYear = currentNavPool ? parseFloat(this.trimEth(this.BNify(this.state.navPool).times(this.BNify(this.state.maxRate/100)),9)) : null;
+    let navPoolEarningPerYear = currentNavPool ? parseFloat(this.trimEth(this.BNify(this.state.navPool).times(this.BNify(this.state.maxRate/100)),9)) : null;
     const navPoolAtEndOfYear = currentNavPool ? parseFloat(this.trimEth(this.BNify(this.state.navPool).plus(this.BNify(navPoolEarningPerYear)),9)) : null;
+    const navPoolEarningPerDay = navPoolEarningPerYear ? (navPoolEarningPerYear/daysInYear) : null;
+    const navPoolEarningPerWeek = navPoolEarningPerDay ? (navPoolEarningPerDay*7) : null;
+    const navPoolEarningPerMonth = navPoolEarningPerWeek ? (navPoolEarningPerWeek*4.35) : null;
+    navPoolEarningPerYear = navPoolEarningPerYear ? navPoolEarningPerYear : null;
 
     const currentReedemableFunds = !isNaN(this.trimEth(this.state.DAIToRedeem)) && !isNaN(this.trimEth(this.state.earningPerYear)) ? parseFloat(this.trimEth(this.state.DAIToRedeem,9)) : 0;
     const reedemableFundsAtEndOfYear = !isNaN(this.trimEth(this.state.DAIToRedeem)) && !isNaN(this.trimEth(this.state.earningPerYear)) ? parseFloat(this.trimEth(this.BNify(this.state.DAIToRedeem).plus(this.BNify(this.state.earningPerYear)),9)) : 0;
@@ -981,10 +1052,13 @@ class SmartContractControls extends React.Component {
 
     const fundsAreReady = !isNaN(this.trimEth(this.state.DAIToRedeem)) && !isNaN(this.trimEth(this.state.earning)) && !isNaN(this.trimEth(this.state.amountLent));
 
+    const tokenNotApproved = (this.props.account && this.state.isTokenApproved===false && !this.state.isApprovingToken);
+    const walletIsEmpty = this.props.account && !tokenNotApproved && this.state.tokenBalance !== null && !parseFloat(this.state.tokenBalance);
+
     return (
       <Box textAlign={'center'} alignItems={'center'} width={'100%'}>
-        <Form minHeight={['auto','20em']} backgroundColor={'white'} color={'blue'} boxShadow={'0 0 25px 5px rgba(102, 139, 255, 0.7)'} borderRadius={'15px'}>
-          <Flex justifyContent={'center'}>
+        <Form minHeight={['auto','20em']} backgroundColor={'white'} color={'blue'} boxShadow={'0 0 25px 5px rgba(102, 139, 255, 0.7)'} borderRadius={'15px'} style={{position:'relative'}}>
+          <Flex justifyContent={'center'} position={'relative'} zIndex={'999'} backgroundColor={'#fff'} borderRadius={'15px 15px 0 0'}>
             <Flex flexDirection={['row','row']} width={['100%','80%']} pt={[2,3]}>
               <Box className={[styles.tab,this.props.selectedTab==='1' ? styles.tabSelected : '']} width={[1/3]} textAlign={'center'}>
                 <Link display={'block'} pt={[2,3]} pb={2} fontSize={[2,3]} fontWeight={2} onClick={e => this.selectTab(e, '1')}>
@@ -1004,7 +1078,7 @@ class SmartContractControls extends React.Component {
             </Flex>
           </Flex>
 
-          <Box boxShadow={'inset 0px 7px 4px -4px rgba(0,0,0,0.1)'} py={[2, 3]} style={{position:'relative'}}>
+          <Box boxShadow={'inset 0px 7px 4px -4px rgba(0,0,0,0.1)'} py={[2, 3]}>
             {this.props.selectedTab === '1' &&
               <Box textAlign={'text'} py={3}>
                 {
@@ -1027,9 +1101,43 @@ class SmartContractControls extends React.Component {
                 }
 
                 {
-                  this.props.account && this.state.isTokenApproved===false && !this.state.isApprovingToken &&
-                  <Box style={{position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'99'}}>
-                    <Box style={{backgroundColor:'rgba(0,0,0,0.83)',position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'0',borderRadius:'0 0 15px 15px'}}></Box>
+                  walletIsEmpty &&
+                  <Box pt={['50px','73px']} style={{position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'99'}}>
+                    <Box style={{backgroundColor:'rgba(0,0,0,0.83)',position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'0',borderRadius:'15px'}}></Box>
+                    <Flex style={{position:'relative',zIndex:'99',height:'100%'}} flexDirection={'column'} alignItems={'center'} justifyContent={'center'}>
+                      <Flex flexDirection={'column'} alignItems={'center'} p={[2,4]}>
+                        <Flex width={1} justifyContent={'center'} flexDirection={'row'}>
+                          <Image src={`images/btn-${this.props.selectedToken.toLowerCase()}.svg`} height={'38px'} />
+                          <Icon
+                            name={'KeyboardArrowRight'}
+                            color={'white'}
+                            size={'38'}
+                          />
+                          <Icon
+                            name={'AccountBalanceWallet'}
+                            color={'white'}
+                            size={'38'}
+                          />
+                        </Flex>
+                        <Heading.h4 mt={[2,'15px']} mb={[2,'15px']} color={'white'} fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
+                          You don't have any {this.props.selectedToken} in your wallet. Click the button below to buy some.
+                        </Heading.h4>
+                        <Button
+                          onClick={e => { this.renderZeroExInstant(e) }}
+                          borderRadius={4}
+                          size={'medium'}
+                        >
+                          BUY {this.props.selectedToken}
+                        </Button>
+                      </Flex>
+                    </Flex>
+                  </Box>
+                }
+
+                {
+                  tokenNotApproved &&
+                  <Box pt={['50px','73px']} style={{position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'99'}}>
+                    <Box style={{backgroundColor:'rgba(0,0,0,0.83)',position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'0',borderRadius:'15px'}}></Box>
                     <Flex style={{position:'relative',zIndex:'99',height:'100%'}} flexDirection={'column'} alignItems={'center'} justifyContent={'center'}>
                       <Flex flexDirection={'column'} alignItems={'center'} p={[2,4]}>
                         <Flex width={1} justifyContent={'center'} flexDirection={'row'}>
@@ -1045,7 +1153,7 @@ class SmartContractControls extends React.Component {
                             size={'38'}
                           />
                         </Flex>
-                        <Heading.h4 mt={[2,'5px']} mb={[3,'5px']} color={'white'} fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
+                        <Heading.h4 mt={[2,'10px']} mb={[2,'10px']} color={'white'} fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
                           By clicking on ENABLE you are allowing Idle smart contract to actually move {this.props.selectedToken} on your behalf so we can forward them on various lending protocols.
                         </Heading.h4>
                         <Button
@@ -1075,11 +1183,13 @@ class SmartContractControls extends React.Component {
                     <>
                       { !this.state.isApprovingDAI && !this.state.lendingProcessing &&
                         <CryptoInput
+                          renderZeroExInstant={this.renderZeroExInstant}
                           genericError={this.state.genericError}
+                          buyTokenMessage={this.state.buyTokenMessage}
                           disableLendButton={this.state.disableLendButton}
                           isMobile={this.props.isMobile}
                           account={this.props.account}
-                          balance={this.props.accountBalanceDAI}
+                          balance={this.state.tokenBalance}
                           defaultValue={this.state.lendAmount}
                           //idleTokenPrice={hasOldBalance ? this.state.OldIdleDAIPrice : this.state.idleTokenPrice}
                           BNify={this.BNify}
@@ -1092,6 +1202,7 @@ class SmartContractControls extends React.Component {
                           showTokenApproved={false}
                           isAssetApproved={this.state.isDAIApproved}
                           showApproveModal={this.toggleModal}
+                          showLendButton={!walletIsEmpty && !tokenNotApproved}
                           handleClick={e => this.mint(e)} />
                       }
 
@@ -1201,12 +1312,12 @@ class SmartContractControls extends React.Component {
                               flexDirection={'column'}
                               alignItems={'center'}>
                                 <Heading.h3 fontWeight={2} textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
-                                  Redeem your {this.state.idleTokenName}
+                                  Redeem your {this.props.selectedToken}
                                 </Heading.h3>
                               {
                                 (this.state.partialRedeemEnabled || true) &&
                                   <CryptoInput
-                                    genericError={this.state.genericError}
+                                    genericError={this.state.genericErrorRedeem}
                                     icon={'images/idle-dai.png'}
                                     buttonLabel={`REDEEM ${this.state.idleTokenName}`}
                                     placeholder={`Enter ${this.state.idleTokenName} amount`}
@@ -1221,7 +1332,7 @@ class SmartContractControls extends React.Component {
                                     BNify={this.BNify}
                                     trimEth={this.trimEth}
                                     color={'black'}
-                                    balance={this.state.tokenBalance}
+                                    balance={this.state.idleTokenBalance}
                                     selectedAsset={this.props.selectedToken}
                                     useEntireBalance={this.useEntireBalanceRedeem}
                                     handleChangeAmount={this.handleChangeAmountRedeem}
@@ -1298,7 +1409,7 @@ class SmartContractControls extends React.Component {
                           }
                         </Box>
                         { true &&
-                          <Flex flexDirection={'column'} pt={[3,4]} pb={[0,3]} alignItems={'center'}>
+                          <Flex flexDirection={'column'} pt={[3,3]} pb={[0,2]} alignItems={'center'}>
                             <Link
                               color={'primary'}
                               hoverColor={'primary'}
@@ -1454,7 +1565,7 @@ class SmartContractControls extends React.Component {
                     flexDirection={'column'}
                     textAlign={'center'}
                     py={[1,3]}>
-                      <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontWeight={2} fontSize={[3,3]} color={'dark-gray'}>
+                      <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontWeight={2} fontSize={[2,3]} color={'dark-gray'}>
                         Please connect to view your available funds.
                       </Heading.h3>
                       <Button
@@ -1479,7 +1590,7 @@ class SmartContractControls extends React.Component {
 
             { this.props.selectedTab === '3' && 
               <>
-                <Box width={'100%'} borderBottom={'1px solid #D6D6D6'} mb={2}>
+                <Box width={'100%'} borderBottom={'1px solid #D6D6D6'}>
                   <Flex flexDirection={['column','row']} py={[2,3]} width={[1,'80%']} m={'0 auto'}>
                     <Box width={[1,1/3]}>
                       <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
@@ -1523,11 +1634,57 @@ class SmartContractControls extends React.Component {
                     </Box>
                   </Flex>
                 </Box>
+                <Box borderBottom={'1px solid #D6D6D6'}>
+                  <Flex flexDirection={'column'} width={[1,'90%']} m={'0 auto'}>
+                    {
+                    /*
+                    <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mt={[2,3]} mb={[2,2]} color={'dark-gray'}>
+                      Overall returns
+                    </Heading.h3>
+                    */
+                    }
+                    <Flex flexDirection={['column','row']} width={'100%'}>
+                      <Flex flexDirection={'row'} py={[2,3]} width={[1,'1/2']} m={'0 auto'}>
+                        <Box width={1/2}>
+                          <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
+                            Daily
+                          </Text>
+                          <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                            {this.getFormattedBalance(navPoolEarningPerDay,this.props.selectedToken,4)}
+                          </Heading.h3>
+                        </Box>
+                        <Box width={1/2}>
+                          <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
+                            Weekly
+                          </Text>
+                          <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                            {this.getFormattedBalance(navPoolEarningPerWeek,this.props.selectedToken,4)}
+                          </Heading.h3>
+                        </Box>
+                      </Flex>
+                      <Flex flexDirection={'row'} py={[2,3]} width={[1,'1/2']} m={'0 auto'}>
+                        <Box width={1/2}>
+                          <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
+                            Monthly
+                          </Text>
+                          <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                            {this.getFormattedBalance(navPoolEarningPerMonth,this.props.selectedToken,4)}
+                          </Heading.h3>
+                        </Box>
+                        <Box width={1/2}>
+                          <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
+                            Yearly
+                          </Text>
+                          <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                            {this.getFormattedBalance(navPoolEarningPerYear,this.props.selectedToken,4)}
+                          </Heading.h3>
+                        </Box>
+                      </Flex>
+                    </Flex>
+                  </Flex>
+                </Box>
                 { !!this.state.calculataingShouldRebalance && 
                   <Box px={[2,0]} textAlign={'text'} py={[3,0]}>
-                    <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} py={3} color={'blue'}>
-                      Rebalance the entire pool. All users will bless you.
-                    </Heading.h3>
                     <Flex
                       justifyContent={'center'}
                       alignItems={'center'}
@@ -1552,14 +1709,14 @@ class SmartContractControls extends React.Component {
                 }
                 {this.state.rebalanceProcessing ? (
                     <>
-                      <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} py={3} color={'blue'}>
+                      <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} pt={[0,3]} pb={[2,2]} color={'blue'}>
                         Thanks for rebalancing!
                       </Heading.h3>
                       <Loader size="40px" /> <Text ml={2}>Processing rebalance request...</Text>
                     </>
                   ) : (
                     <>
-                      <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} py={3} color={'blue'}>
+                      <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} pt={[0,3]} pb={[2,2]} color={'blue'}>
                         Rebalance the entire pool. All users will bless you.
                       </Heading.h3>
                       <Heading.h4 color={'dark-gray'} fontSize={[2,2]} px={[3,0]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
@@ -1595,7 +1752,7 @@ class SmartContractControls extends React.Component {
             {
               this.props.selectedTab === '3' && !this.state.calculataingShouldRebalance && !this.state.shouldRebalance &&
               <Box px={[2,0]} textAlign={'center'} py={[3,0]}>
-                <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} py={3} color={'blue'}>
+                <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} pt={[0,3]} pb={[2,2]} color={'blue'}>
                   The pool is already balanced.
                 </Heading.h3>
                 <Heading.h4 color={'dark-gray'} fontSize={[2,2]} px={[3,0]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>

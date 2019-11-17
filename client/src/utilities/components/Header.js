@@ -42,7 +42,7 @@ class Header extends React.Component {
   }
 
   getIdleTokenBalance = async () => {
-    console.log('Header.js getIdleTokenBalance',this.props.account);
+    // console.log('Header.js getIdleTokenBalance',this.props.account);
     return await this.genericIdleCall('balanceOf', [this.props.account]);
   }
 

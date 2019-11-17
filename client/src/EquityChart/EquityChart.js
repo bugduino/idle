@@ -227,7 +227,7 @@ class EquityChart extends Component {
 
   async getAprs() {
     // const graphEndTimestamp = parseInt(moment('05-11-2019','DD-MM-YYYY')._d.getTime()/1000);
-    // const graphStartTimestamp = parseInt(moment('01-09-2019','DD-MM-YYYY')._d.getTime()/1000);
+    // const graphStartTimestamp = parseInt(moment('02-09-2019','DD-MM-YYYY')._d.getTime()/1000);
     const graphStartTimestamp = 1565866741; // First Idle block mined
     const graphEndTimestamp = parseInt(moment()._d.getTime()/1000);
     const graphData = [
