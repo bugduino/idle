@@ -329,7 +329,7 @@ class RimbleTransaction extends React.Component {
     this.setState({ network });
   };
 
-  contractMethodSendWrapper = async (contractName, contractMethod, params = [], value = null, callback = null) => {
+  contractMethodSendWrapper = async (contractName, contractMethod, params = [], value = null, callback = null, callback_receipt = null) => {
     // Is it on the correct network?
     if (!this.state.network.isCorrectNetwork) {
       // wrong network modal
@@ -391,6 +391,10 @@ class RimbleTransaction extends React.Component {
           transaction.status = "pending";
           transaction.recentEvent = "transactionHash";
           this.updateTransaction(transaction);
+
+          if (callback_receipt){
+            callback_receipt(transaction);
+          }
         })
         .on("confirmation", (confirmationNumber, receipt) => {
           // Update confirmation count on each subsequent confirmation that's received

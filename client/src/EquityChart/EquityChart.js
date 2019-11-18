@@ -158,7 +158,7 @@ class EquityChart extends Component {
       super_log.push(log.join("\t"));
     }
 
-    console.log(super_log.join("\n"));
+    // console.log(super_log.join("\n"));
 
     // const startTimestamp = parseInt(moment('01/09/2019','DD/MM/YYYY')._d.getTime()/1000);
     // graphData = this.filterGraphData(graphData,startTimestamp);

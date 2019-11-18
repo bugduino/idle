@@ -2,6 +2,7 @@ import styles from './SmartContractControls.module.scss';
 import React from "react";
 import { Form, Flex, Box, Heading, Text, Button, Link, Icon, Pill, Loader, Flash, Image } from "rimble-ui";
 import BigNumber from 'bignumber.js';
+import TxProgressBar from '../TxProgressBar/TxProgressBar.js';
 import CryptoInput from '../CryptoInput/CryptoInput.js';
 import ApproveModal from "../utilities/components/ApproveModal";
 import WelcomeModal from "../utilities/components/WelcomeModal";
@@ -53,6 +54,7 @@ class SmartContractControls extends React.Component {
     baseTokenName: 'DAI',
     lendAmount: '',
     redeemAmount: '',
+    updateInProgress: false,
     needsUpdate: false,
     genericError: null,
     genericErrorRedeem: null,
@@ -70,8 +72,10 @@ class SmartContractControls extends React.Component {
     calculataingShouldRebalance: true,
     fundsTimeoutID: null,
     idleTokenBalance: null,
+    lendingTx: null,
+    redeemTx: null,
     prevTxs : {},
-    successTransactions:{}
+    transactions:{}
   };
 
   renderZeroExInstant = (e,amount) => {
@@ -109,22 +113,25 @@ class SmartContractControls extends React.Component {
   trimEth = (eth,decimals) => {
     decimals = !isNaN(decimals) ? decimals : 6;
     return this.BNify(eth).toFixed(decimals);
-  };
-  BNify = s => new BigNumber(String(s));
+  }
+
+  BNify = s => new BigNumber(String(s))
+
   toEth(wei) {
     return this.props.web3.utils.fromWei(
       (wei || 0).toString(),
       "ether"
     );
   }
+
   toWei(eth) {
     return this.props.web3.utils.toWei(
       (eth || 0).toString(),
       "ether"
     );
   }
-  rebalanceCheck = async () => {
 
+  rebalanceCheck = async () => {
     this.setState({calculataingShouldRebalance:true});
 
     const res = await this.genericIdleCall('rebalanceCheck');
@@ -137,7 +144,8 @@ class SmartContractControls extends React.Component {
       shouldRebalance: res[0],
       needsUpdate: false
     });
-  };
+  }
+
   toggleShowFundsInfo = (e) => {
     e.preventDefault();
     this.setState(state => ({
@@ -145,12 +153,97 @@ class SmartContractControls extends React.Component {
       showFundsInfo: !state.showFundsInfo
     }));
   }
+
   togglePartialRedeem = () => {
     this.setState(state => ({
       ...state,
       partialRedeemEnabled: !state.partialRedeemEnabled
     }));
-  };
+  }
+
+  getPendingTransactions = () => {
+    const txs = localStorage ? JSON.parse(localStorage.getItem('transactions')) : this.state.transactions;
+    const pendingTxHash = Object.keys(txs).filter((hash,i) => { return txs[hash].status==='pending' });
+    const pendingTransactions = Object.keys(txs)
+      .filter(key => pendingTxHash.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = txs[key];
+        return obj;
+      }, {});
+
+    const state = {};
+    Object.keys(pendingTransactions).forEach((txHash,i) => {
+      const tx = pendingTransactions[txHash];
+      // console.log('getPendingTransactions',tx);
+      switch (tx.method){
+        case 'mintIdleToken':
+          window.web3.eth.getTransaction(txHash,(err,transaction) => {
+            if (transaction.from.toLowerCase() === this.props.account.toLowerCase()){
+              this.setState({
+                lendingProcessing:true,
+                lendingTx:tx
+              });
+              this.listenTransaction(txHash,(tx) => {
+                this.setState({
+                  lendingProcessing:false,
+                  lendingTx:null,
+                  needsUpdate:true
+                });
+                this.addTransaction(tx);
+              });
+            } else {
+              this.setState({
+                lendingProcessing:false,
+                lendingTx:null
+              });
+              this.deleteTransaction(tx);
+            }
+          });
+
+        break;
+        case 'redeemIdleToken':
+          window.web3.eth.getTransaction(txHash,(err,transaction) => {
+            // console.log('redeemIdleToken',transaction.from,this.props.account);
+            if (transaction.from.toLowerCase() === this.props.account.toLowerCase()){
+              this.setState({
+                redeemProcessing:true,
+                redeemTx:tx
+              });
+              this.listenTransaction(txHash,(tx) => {
+                this.setState({
+                  redeemProcessing:false,
+                  redeemTx:null,
+                  needsUpdate:true
+                });
+                this.addTransaction(tx);
+              });
+            } else {
+              this.setState({
+                redeemProcessing:false,
+                redeemTx:null
+              });
+              this.deleteTransaction(tx);
+            }
+          });
+        break;
+      }
+    });
+  }
+
+  listenTransaction = (hash,callback) => {
+    window.web3.eth.getTransactionReceipt(hash,(err,tx) => {
+      console.log('getTransactionReceipt',hash,tx);
+      if (tx){
+        if (callback){
+          return callback(tx);
+        }
+        return tx;
+      }
+      setTimeout(() => { this.listenTransaction(hash,callback) },5000);
+      return err;
+    });
+  }
+
   getAprs = async () => {
     const aprs = await this.genericIdleCall('getAPRs');
     const bestToken = await this.genericIdleCall('bestToken');
@@ -212,8 +305,8 @@ class SmartContractControls extends React.Component {
   getTokenBalance = async () => {
     if (this.props.account){
       const tokenBalance = await this.genericContractCall(this.props.selectedToken,'balanceOf',[this.props.account]);
+      console.log('getTokenBalance',tokenBalance,this.BNify(tokenBalance).div(1e18).toString(),parseFloat(this.BNify(tokenBalance).div(1e18).toString()));
       if (tokenBalance){
-        // console.log('getTokenBalance',tokenBalance,this.BNify(tokenBalance).div(1e18).toString(),parseFloat(this.BNify(tokenBalance).div(1e18).toString()));
         return this.setState({
           tokenBalance: this.BNify(tokenBalance).div(1e18).toString()
         });
@@ -406,22 +499,38 @@ class SmartContractControls extends React.Component {
     });
   };
 
-  checkTransactionMined = (tx,add_if_not) => {
-    const output = this.state.successTransactions[tx.hash];
-    if (add_if_not){
-      this.addMinedTransaction(tx);
-    }
-    return output;
+  checkTransactionMined = (tx,add_if_not,delete_if_mined) => {
+    let transaction = this.state.transactions[tx.transactionHash];
+    const tx_is_mined = transaction && transaction.status === 'success';
+    this.addTransaction(tx);
+
+    return tx_is_mined;
   }
 
-  addMinedTransaction = (tx) => {
-    let successTransactions = this.state.successTransactions;
-    if (!successTransactions[tx.hash]){
-      successTransactions[tx.hash] = tx;
+  deleteTransaction = (tx) => {
+    let transactions = this.state.transactions;
+    if (transactions[tx.transactionHash]){
+      delete transactions[tx.transactionHash];
+      if (localStorage){
+        localStorage.setItem('transactions',JSON.stringify(transactions));
+      }
       return this.setState({
-        successTransactions
+        transactions
       });
     }
+  }
+
+  addTransaction = (tx) => {
+    let transactions = this.state.transactions;
+    transactions[tx.transactionHash] = tx;
+
+    if (localStorage){
+      localStorage.setItem('transactions',JSON.stringify(transactions));
+    }
+
+    return this.setState({
+      transactions
+    });
   }
 
   enableERC20 = (e, token) => {
@@ -456,7 +565,7 @@ class SmartContractControls extends React.Component {
 
     this.props.contractMethodSendWrapper(this.state.idleTokenName, 'rebalance', [], null , (tx) => {
       console.log('rebalance_callback needsUpdate');
-      const needsUpdate = tx.status === 'success' || !this.checkTransactionMined(tx,true);
+      const needsUpdate = tx.status === 'success' && !this.checkTransactionMined(tx,true);
       this.setState({
         needsUpdate: needsUpdate,
         rebalanceProcessing: false
@@ -464,15 +573,14 @@ class SmartContractControls extends React.Component {
     });
   };
 
-  checkTokenApproved = async (token) => {
+  checkTokenApproved = async () => {
     if (this.props.account) {
       const value = this.props.web3.utils.toWei('0','ether');
-      const allowance = await this.getAllowance(token); // DAI
+      const allowance = await this.getAllowance(this.props.selectedToken); // DAI
       const tokenApproved = this.BNify(allowance).gt(this.BNify(value.toString()));
-      // console.log('checkTokenApproved',this.BNify(allowance).toString(),this.BNify(value.toString()));
       this.setState({
         isTokenApproved: tokenApproved,
-        [`is${token}Approved`]: tokenApproved
+        [`is${this.props.selectedToken}Approved`]: tokenApproved
       });
       return tokenApproved;
     }
@@ -518,20 +626,26 @@ class SmartContractControls extends React.Component {
       value
     ], null, (tx) => {
       const txSucceeded = tx.status === 'success';
-      const needsUpdate = txSucceeded || !this.checkTransactionMined(tx,true);
+      const needsUpdate = txSucceeded && !this.checkTransactionMined(tx,true);
       if (txSucceeded){
         this.selectTab({ preventDefault:()=>{} },'2');
       }
       this.setState({
         lendingProcessing: false,
         [`isLoading${contractName}`]: false,
-        needsUpdate,
+        lendingTx:null,
+        needsUpdate
+      });
+    }, (tx) => {
+      this.addTransaction(tx);
+      this.setState({
+        lendingTx: tx
       });
     });
 
     this.setState({
       [`isLoading${contractName}`]: false,
-      lendingProcessing: this.props.account,
+      lendingProcessing: true,
       lendAmount: '',
       genericError: '',
     });
@@ -562,11 +676,17 @@ class SmartContractControls extends React.Component {
       idleTokenToRedeem
     ], null, (tx) => {
       console.log('redeemIdleToken_callback needsUpdate');
-      const needsUpdate = tx.status === 'success' || !this.checkTransactionMined(tx,true);
+      const needsUpdate = tx.status === 'success' && !this.checkTransactionMined(tx,true);
       this.setState({
         [`isLoading${contractName}`]: false,
-        needsUpdate: needsUpdate,
-        redeemProcessing: false
+        redeemProcessing: false,
+        redeemTx:null,
+        needsUpdate
+      });
+    }, (tx) => {
+      this.addTransaction(tx);
+      this.setState({
+        redeemTx: tx
       });
     });
   };
@@ -813,13 +933,16 @@ class SmartContractControls extends React.Component {
     if (this.props.account && (prevProps.account !== this.props.account || this.state.needsUpdate)) {
 
       this.setState({
+        updateInProgress: true,
         needsUpdate: false
       });
+
+      this.getPendingTransactions();
 
       console.log('componentDidUpdate needsUpdate');
       await Promise.all([
         this.getTokenBalance(),
-        this.checkTokenApproved(this.props.selectedToken), // Check if the token is already approved
+        this.checkTokenApproved(), // Check if the token is already approved
         this.getPrevTxs(),
         this.getBalanceOf(this.state.idleTokenName),
         this.getOldBalanceOf('OldIdleDAI'),
@@ -830,13 +953,6 @@ class SmartContractControls extends React.Component {
         await this.rebalanceCheck();
       }
 
-      // check if Idle is approved for DAI
-      // if (this.props.account && !this.state.isDAIApproved) {
-      //   return this.setState({
-      //     approveIsOpen: true,
-      //   });
-      // }
-
       // Check if first time entered
       let welcomeIsOpen = prevProps.account !== this.props.account;
       if (localStorage){
@@ -845,6 +961,10 @@ class SmartContractControls extends React.Component {
       } else {
         welcomeIsOpen = false;
       }
+
+      this.setState({
+        updateInProgress: false
+      });
     }
 
     if (this.props.selectedTab !== '2' && this.state.fundsTimeoutID){
@@ -1050,7 +1170,7 @@ class SmartContractControls extends React.Component {
     const currentEarning = !isNaN(this.trimEth(this.state.earning)) ? parseFloat(this.trimEth(this.state.earning,9)) : 0;
     const earningAtEndOfYear = !isNaN(this.trimEth(this.state.earning)) ? parseFloat(this.trimEth(this.BNify(this.state.earning).plus(this.BNify(this.state.earningPerYear)),9)) : 0;
 
-    const fundsAreReady = !isNaN(this.trimEth(this.state.DAIToRedeem)) && !isNaN(this.trimEth(this.state.earning)) && !isNaN(this.trimEth(this.state.amountLent));
+    const fundsAreReady = !this.state.updateInProgress && !isNaN(this.trimEth(this.state.DAIToRedeem)) && !isNaN(this.trimEth(this.state.earning)) && !isNaN(this.trimEth(this.state.amountLent));
 
     const tokenNotApproved = (this.props.account && this.state.isTokenApproved===false && !this.state.isApprovingToken);
     const walletIsEmpty = this.props.account && !tokenNotApproved && this.state.tokenBalance !== null && !parseFloat(this.state.tokenBalance);
@@ -1207,12 +1327,20 @@ class SmartContractControls extends React.Component {
                       }
 
                       { this.state.lendingProcessing &&
-                        <Flex
-                          justifyContent={'center'}
-                          alignItems={'center'}
-                          textAlign={'center'}>
-                          <Loader size="40px" /> <Text ml={2}>Processing lend request...</Text>
-                        </Flex>
+                        <>
+                          {
+                            this.state.lendingTx ? (
+                              <TxProgressBar endMessage={'Finalizing lend request...'} hash={this.state.lendingTx.transactionHash} />
+                            ) : (
+                              <Flex
+                                justifyContent={'center'}
+                                alignItems={'center'}
+                                textAlign={'center'}>
+                                <Loader size="40px" /> <Text ml={2}>Sending lend request...</Text>
+                              </Flex>
+                            )
+                          }
+                        </>
                       }
                     </>
                   )
@@ -1399,13 +1527,21 @@ class SmartContractControls extends React.Component {
                               </Button>
                             </Flex>
                           }
-                          {this.state.redeemProcessing &&
-                            <Flex
-                              justifyContent={'center'}
-                              alignItems={'center'}
-                              textAlign={'center'}>
-                              <Loader size="40px" /> <Text ml={2}>Processing redeem request...</Text>
-                            </Flex>
+                          { this.state.redeemProcessing &&
+                            <>
+                              {
+                                this.state.redeemTx ? (
+                                  <TxProgressBar endMessage={'Finalizing redeem request...'} hash={this.state.redeemTx.transactionHash} />
+                                ) : (
+                                  <Flex
+                                    justifyContent={'center'}
+                                    alignItems={'center'}
+                                    textAlign={'center'}>
+                                    <Loader size="40px" /> <Text ml={2}>Sending redeem request...</Text>
+                                  </Flex>
+                                )
+                              }
+                            </>
                           }
                         </Box>
                         { true &&

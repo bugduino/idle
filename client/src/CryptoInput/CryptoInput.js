@@ -136,6 +136,11 @@ class CryptoInput extends Component {
               </Button>
             </Flex>
           }
+          {
+            /*
+            <TxProgressBar hash={'0xd8718542754b99dc2b8ef49a753e4360804cfa555ac21d919c7a747ba2d5ce8a'} />
+            */
+          }
 
           {this.props.renderZeroExInstant && (
             <>
