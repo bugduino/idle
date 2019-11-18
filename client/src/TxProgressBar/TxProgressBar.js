@@ -67,7 +67,6 @@ class TxProgressBar extends Component {
     var intercept = 4.2794;
     var hpa = .0329;
     var hgo = -3.2836;
-    var wb = -0.0048;
     var tx = -0.0004;
     var intercept2 = 7.5375;
     var hpa_coef = -0.0801;
@@ -130,7 +129,6 @@ class TxProgressBar extends Component {
   }
 
   getTxEstimatedTime(gasPrice) {
-    let estimatedTime = 0;
     let prediction = null;
     this.state.predictTable.forEach((p,i) => {
       if (!prediction && parseFloat(p.gasprice)>=parseFloat(gasPrice)){
