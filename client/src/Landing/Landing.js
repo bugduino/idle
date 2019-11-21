@@ -702,7 +702,7 @@ class Landing extends Component {
 
         <Box id="faq" pt={[4,6]} pb={[4,6]}>
           <Box maxWidth={['50em','60em']} mx={'auto'} px={[3,5]}>
-            <Faq />
+            <Faq selectedToken={this.props.selectedToken} tokenConfig={this.props.tokenConfig} />
           </Box>
         </Box>
 

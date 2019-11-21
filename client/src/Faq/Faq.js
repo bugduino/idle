@@ -18,7 +18,7 @@ class Faq extends Component {
       },
       {
         q: 'Can you walk me through an example?',
-        a: `When entering in Idle the best APR is automatically shown, and the best lending provider is already selected for you so if you decide to lend 1 DAI, you should only insert the amount and click on 'Start Lending'.
+        a: `When entering in Idle the best APR is automatically shown, and the best lending provider is already selected for you so if you decide to lend 1 ${this.props.selectedToken}, you should only insert the amount and click on 'Start Lending'.
         We will forward your funds to the protocol offering the best rate, and gives you back tokens representing your position in such protocols.`
       }
     ],
@@ -37,7 +37,7 @@ class Faq extends Component {
       },
       {
         q: 'What assets can I lend?',
-        a: `We currently support DAI only, but we plan to integrate other assets as well.`
+        a: `We currently support ${this.props.selectedToken} only, but we plan to integrate other assets as well.`
       }
     ],
     ratesQuestions: [
