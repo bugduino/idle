@@ -68,17 +68,18 @@ class NewsletterForm extends Component {
                     width={1}
                     outline={'none'}
                     border={0}
-                    fontSize={[3,5]}
+                    fontSize={[2,5]}
                     borderRadius={0}
                     pl={0}
                     pb={3}
+                    textAlign={['center','left']}
                     placeholder={'yourbestmail@whatever.com'}
                     boxShadow={'none !important'}
                     borderBottom={'1px solid #a6a6a6'}
                     onChange={this.handleValidation}
                   />
                 </Form.Field>
-                <Flex my={[,0]} flexDirection={'row'} alignItems={'center'}>
+                <Flex mb={[3,0]} flexDirection={'row'} alignItems={'center'}>
                   <Checkbox onClick={ e => this.toggleCheckbox(e) } label={label} required />
                 </Flex>
                 {this.state.message && this.state.message.length &&

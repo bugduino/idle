@@ -17,7 +17,7 @@ class AccountOverview extends React.Component {
   }
   render() {
     const roundedBalance = this.trimEth(this.props.accountBalance, 4);
-    const roundedDAIBalance = this.trimEth(this.props.accountBalanceDAI, 2);
+    const roundedTokenBalance = this.trimEth(this.props.accountBalanceToken, 2);
     const walletProvider = this.getWalletProvider();
     return (
       <Flex alignItems={"flex-start"} style={{cursor: 'pointer'}} mx={3} my={2} onClick={this.props.toggleModal}>
@@ -44,7 +44,7 @@ class AccountOverview extends React.Component {
                 color={this.props.accountBalanceLow ? 'white' : 'white'}
                 >
                 {isNaN(roundedBalance) ? '0' : roundedBalance} ETH
-                {roundedDAIBalance && !isNaN(roundedDAIBalance) ? `, ${roundedDAIBalance} DAI` : ', 0 DAI'}
+                {roundedTokenBalance && !isNaN(roundedTokenBalance) ? `, ${roundedTokenBalance}` : ', 0'} {this.props.selectedToken}
               </Text>
             </Box>
           </Box>

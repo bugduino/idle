@@ -4,6 +4,7 @@ import AccountOverview from "./AccountOverview";
 import AccountModal from "./AccountModal";
 import styles from './Header.module.scss';
 import BigNumber from 'bignumber.js';
+import TokenSelector from '../../TokenSelector/TokenSelector';
 
 import IdleDAI from "../../contracts/IdleDAI.json";
 const IdleAbi = IdleDAI.abi;
@@ -42,11 +43,13 @@ class Header extends React.Component {
   }
 
   getIdleTokenBalance = async () => {
-    // console.log('Header.js getIdleTokenBalance',this.props.account);
     return await this.genericIdleCall('balanceOf', [this.props.account]);
   }
 
   async componentDidMount() {
+
+    console.log('TokenConfig',this.props.tokenConfig);
+
     // do not wait for each one just for the first who will guarantee web3 initialization
     const web3 = await this.props.initWeb3();
     if (!web3) {
@@ -63,7 +66,6 @@ class Header extends React.Component {
       let idleTokenBalance = await this.getIdleTokenBalance();
       if (idleTokenBalance){
         idleTokenBalance = this.BNify(idleTokenBalance).div(1e18);
-        // console.log('Header.js componentDidUpdate',idleTokenBalance.toString());
         this.setState({
           idleTokenBalance
         });
@@ -88,15 +90,18 @@ class Header extends React.Component {
           </Box>
           <Box display={['inline-block', 'none']}>
             {this.props.account ? (
-              <AccountOverview
-                account={this.props.account}
-                hasQRCode={false}
-                isMobile={this.props.isMobile}
-                accountBalanceLow={this.props.accountBalanceLow}
-                accountBalance={this.props.accountBalance}
-                accountBalanceDAI={this.props.accountBalanceDAI}
-                toggleModal={this.toggleModal}
-              />
+              <Flex>
+                <AccountOverview
+                  account={this.props.account}
+                  hasQRCode={false}
+                  isMobile={this.props.isMobile}
+                  selectedToken={this.props.selectedToken}
+                  accountBalanceLow={this.props.accountBalanceLow}
+                  accountBalance={this.props.accountBalance}
+                  accountBalanceToken={this.props.accountBalanceToken}
+                  toggleModal={this.toggleModal}
+                />
+              </Flex>
             ) : (
               <Button
                 className={styles.gradientButton}
@@ -112,35 +117,40 @@ class Header extends React.Component {
           </Box>
           <Box display={['none','block']} width={[8/12]} justifyContent="flex-end">
             <Flex alignItems={"center"} justifyContent="flex-end">
-              {this.props.account ? (
-                <AccountOverview
-                  account={this.props.account}
-                  hasQRCode={false}
-                  isMobile={this.props.isMobile}
-                  accountBalanceLow={this.props.accountBalanceLow}
-                  accountBalance={this.props.accountBalance}
-                  accountBalanceDAI={this.props.accountBalanceDAI}
-                  toggleModal={this.toggleModal}
-                />
-              ) : (
-                <Button
-                  className={styles.gradientButton}
-                  borderRadius={4}
-                  my={2}
-                  mr={[3, 4]}
-                  onClick={this.props.connectAndValidateAccount}
-                  size={this.props.isMobile ? 'small' : 'medium'}
-                >
-                  CONNECT
-                </Button>
-              )}
+              <>
+                <TokenSelector setSelectedToken={this.props.setSelectedToken} selectedToken={this.props.selectedToken} availableTokens={this.props.availableTokens} />
+                {this.props.account ? (
+                  <AccountOverview
+                    account={this.props.account}
+                    hasQRCode={false}
+                    isMobile={this.props.isMobile}
+                    selectedToken={this.props.selectedToken}
+                    accountBalanceLow={this.props.accountBalanceLow}
+                    accountBalance={this.props.accountBalance}
+                    accountBalanceToken={this.props.accountBalanceToken}
+                    toggleModal={this.toggleModal}
+                  />
+                ) : (
+                  <Button
+                    className={styles.gradientButton}
+                    borderRadius={4}
+                    my={2}
+                    mr={[3, 4]}
+                    onClick={this.props.connectAndValidateAccount}
+                    size={this.props.isMobile ? 'small' : 'medium'}
+                  >
+                    CONNECT
+                  </Button>
+                )}
+              </>
             </Flex>
           </Box>
         </Flex>
         <AccountModal
           account={this.props.account}
+          selectedToken={this.props.selectedToken}
           accountBalance={this.props.accountBalance}
-          accountBalanceDAI={this.props.accountBalanceDAI}
+          accountBalanceToken={this.props.accountBalanceToken}
           idleTokenBalance={this.state.idleTokenBalance}
           isOpen={this.state.isOpen}
           isMobile={this.props.isMobile}

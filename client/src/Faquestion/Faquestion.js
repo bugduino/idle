@@ -27,7 +27,7 @@ class Faquestion extends Component {
         <Flex flexDirection={'row'} alignItems={'center'} width={1}>
           <Box width={4/5}>
             <Heading.h4
-              fontSize={2}
+              fontSize={[1,2]}
               fontFamily={'sansSerif'}
               style={{cursor: 'pointer'}}
               fontWeight={3}
@@ -46,7 +46,7 @@ class Faquestion extends Component {
         </Flex>
         <Flex width={1}>
           {this.state.isShowingAnswer &&
-            <Text.p textAlign={'justify'} fontSize={2}>
+            <Text.p textAlign={'justify'} fontSize={[1,2]}>
               {this.props.answer}
             </Text.p>
           }

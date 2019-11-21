@@ -2,22 +2,22 @@ import React from 'react';
 
 import ConnectionModalUtil from "./ConnectionModalsUtil";
 import NetworkUtil from "./NetworkUtil";
-import DAI from '../abis/tokens/DAI'; // rinkeby
 import BigNumber from 'bignumber.js';
 import Web3 from "web3";
 
 require('dotenv').config();
 const INFURA_KEY = process.env["REACT_APP_INFURA_KEY"];
-const DAIAddr = DAI.address;
-const DAIAbi = DAI.abi;
 const BNify = s => new BigNumber(String(s));
+
+window.BNify = BNify;
 
 const RimbleTransactionContext = React.createContext({
   contracts: [],
   account: {},
   accountBalance: {},
-  accountBalanceDAI: {},
+  accountBalanceToken: {},
   accountBalanceLow: {},
+  tokenConfig: {},
   web3: {},
   transactions: {},
   checkPreflight: () => {},
@@ -79,6 +79,9 @@ class RimbleTransaction extends React.Component {
 
   // Initialize a web3 provider
   initWeb3 = async () => {
+
+    console.log(this.props);
+
     const context = this.props.context;
     // if (!context.active) {
     //   if (localStorage && localStorage.getItem('walletProvider') === 'Injected') {
@@ -107,9 +110,11 @@ class RimbleTransaction extends React.Component {
       }
     }
 
+
     this.setState({ web3 }, async () => {
       // After setting the web3 provider, check network
       this.checkNetwork();
+      await this.initializeContracts();
       if (context.account) {
         await this.initAccount(context.account);
       }
@@ -157,7 +162,7 @@ class RimbleTransaction extends React.Component {
         if (!hideModal) {
           this.closeConnectionPendingModal();
         }
-        this.setState({ account });
+        this.setState({ account/*:'[custom_addr]'*/ });
 
         console.log("wallet address:", this.state.account);
 
@@ -189,8 +194,11 @@ class RimbleTransaction extends React.Component {
     try {
       const res = await Promise.all([
         this.state.web3.eth.getBalance(this.state.account),
-        this.getDAIBalance(this.state.account)
+        this.getTokenBalance(this.state.account),
+        this.getTokenDecimals()
       ]);
+
+      console.log('getAccountBalance',res[0],res[1].toString(),res[2].toString());
 
       let accountBalance = res[0];
       if (accountBalance) {
@@ -204,29 +212,62 @@ class RimbleTransaction extends React.Component {
         this.determineAccountLowBalance();
       }
 
-      let accountBalanceDAI = res[1];
-      if (accountBalanceDAI) {
-        accountBalanceDAI = this.state.web3.utils.fromWei(
-          accountBalanceDAI.toString(),
-          "ether"
-        );
-        accountBalanceDAI = BNify(accountBalanceDAI).toString();
-        this.setState({ accountBalanceDAI });
-        console.log("account balance DAI: ", accountBalanceDAI);
+      const tokenDecimals = res[2].toString();
+      let accountBalanceToken = res[1];
+
+      // console.log('getAccountBalance',accountBalanceToken,accountBalanceToken.toString(),tokenDecimals,Math.pow(10,parseInt(tokenDecimals)));
+      if (accountBalanceToken) {
+        accountBalanceToken = BNify(accountBalanceToken.toString()).div(BNify(Math.pow(10,parseInt(tokenDecimals)).toString())).toString();
+        this.setState({
+          accountBalanceToken,
+          [`accountBalance${this.props.selectedToken}`]:accountBalanceToken
+        });
+        console.log(`account balance ${this.props.selectedToken}: `, accountBalanceToken);
       }
     } catch (error) {
       console.log("Failed to get account balance.", error);
     }
   };
 
-  getDAIBalance = async (account) => {
-    let contract = this.state.contracts.find(c => c.name === 'DAI');
-    if (!contract) {
-      contract = await this.initContract('DAI', DAIAddr, DAIAbi);
+  initializeContracts = async() => {
+
+    console.log('initializeContracts',this.props);
+
+    const tokenConfig = this.props.tokenConfig;
+
+    // Initialize Token Contract
+    let foundTokenContract = this.state.contracts.find(c => c.name === this.props.selectedToken);
+    if (!foundTokenContract) {
+      await this.initContract(this.props.selectedToken, tokenConfig.address, tokenConfig.abi);
     }
-    contract = contract.contract;
+
+    // Initialize IdleToken Contract
+    let foundIdleTokenContract = this.state.contracts.find(c => c.name === tokenConfig.idle.token);
+    if (!foundIdleTokenContract) {
+      await this.initContract(tokenConfig.idle.token, tokenConfig.idle.address, tokenConfig.idle.abi);
+    }
+  }
+
+  getContractByName = async (contractName) => {
+    let contract = this.state.contracts.find(c => c.name === contractName);
+    if (!contract) {
+      const TOKEN = this.props.tokenConfig.abi;
+      contract = await this.initContract(contractName, TOKEN.address, TOKEN.abi);
+    }
+    return contract.contract;
+  }
+
+  getTokenDecimals = async () => {
+    const contract = await this.getContractByName(this.props.selectedToken);
+    return await contract.methods.decimals().call().catch(error => {
+      console.log(`Failed to get ${this.props.selectedToken} decimals`, error);
+    });
+  }
+
+  getTokenBalance = async (account) => {
+    const contract = await this.getContractByName(this.props.selectedToken);
     return await contract.methods.balanceOf(account).call().catch(error => {
-      console.log(`Failed to get DAI balance`, error);
+      console.log(`Failed to get ${this.props.selectedToken} balance`, error);
     });
   };
 
@@ -362,6 +403,7 @@ class RimbleTransaction extends React.Component {
     // Add meta data to transaction
     transaction.type = "contract";
     transaction.status = "started";
+    transaction.params = params;
 
     // Show toast for starting transaction
     this.updateTransaction(transaction);
@@ -427,7 +469,7 @@ class RimbleTransaction extends React.Component {
           transaction.recentEvent = "confirmation";
           this.updateTransaction(transaction);
 
-          if (callback) {
+          if (callback && transaction.confirmationCount<2) {
             callback(transaction);
           }
         })

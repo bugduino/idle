@@ -13,24 +13,20 @@ import CountUp from 'react-countup';
 
 import IdleDAI from "../contracts/IdleDAI.json";
 import cDAI from '../abis/compound/cDAI';
-import DAI from '../contracts/IERC20.json';
+import DAI from '../contracts/IERC20Generic.json';
 import iDAI from '../abis/fulcrum/iToken.json';
 
 const env = process.env;
 
 // mainnet
-const IdleAbi = IdleDAI.abi;
 const OldIdleAddress = '0x10cf8e1CDba9A2Bd98b87000BCAdb002b13eA525'; // v0.1 hackathon version
-const IdleAddress = '0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9';
-
-const cDAIAbi = cDAI.abi;
 const cDAIAddress = '0xf5dce57282a584d2746faf1593d3121fcac444dc';
-const DAIAbi = DAI.abi;
-const DAIAddress = '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359';
-const iDAIAbi = iDAI.abi;
 const iDAIAddress = '0x14094949152eddbfcd073717200da82fed8dc960';
 
 const daysInYear = 365.2422;
+
+const customLog = (...props) => { console.log(moment().format('HH:mm:ss'),...props); }
+const customLogError = (...props) => { console.error(moment().format('HH:mm:ss'),...props); }
 
 class SmartContractControls extends React.Component {
   state = {
@@ -48,8 +44,7 @@ class SmartContractControls extends React.Component {
     isApprovingDAITest: true,
     redeemProcessing: false,
     lendingProcessing: false,
-    idleTokenName: 'idle'+this.props.selectedToken,
-    tokenBalance: this.props.accountBalanceDAI,
+    tokenBalance: this.props.accountBalanceToken,
     tokenName: 'DAI',
     baseTokenName: 'DAI',
     lendAmount: '',
@@ -72,8 +67,11 @@ class SmartContractControls extends React.Component {
     calculataingShouldRebalance: true,
     fundsTimeoutID: null,
     idleTokenBalance: null,
+    executedTxs:null,
     lendingTx: null,
     redeemTx: null,
+    approveTx: null,
+    fundsError: false,
     prevTxs : {},
     transactions:{}
   };
@@ -89,15 +87,15 @@ class SmartContractControls extends React.Component {
             feeRecipient: '0xf1363d3d55d9e679cc6aa0a0496fd85bdfcf7464',
             feePercentage: 0.0075
         },
-        defaultSelectedAssetData: '0xf47261b000000000000000000000000089d24a6b4ccb1b6faa2625fe562bdd9a23260359',
-        availableAssetDatas: ['0xf47261b000000000000000000000000089d24a6b4ccb1b6faa2625fe562bdd9a23260359'],
+        defaultSelectedAssetData: this.props.tokenConfig.zeroExInstant.assetData,
+        availableAssetDatas: [this.props.tokenConfig.zeroExInstant.assetData],
         onSuccess: async (txHash) => {
           await this.getTokenBalance();
           this.useEntireBalance(this.state.tokenBalance);
-          console.log('Success! Transaction hash is: ' + txHash)
+          customLog('Success! Transaction hash is: ' + txHash)
         },
         onClose: () => {
-          console.log('Closed');
+          customLog('Closed');
           return true;
         }
       };
@@ -162,7 +160,10 @@ class SmartContractControls extends React.Component {
   }
 
   getPendingTransactions = () => {
-    const txs = localStorage ? JSON.parse(localStorage.getItem('transactions')) : this.state.transactions;
+    const txs = localStorage ? JSON.parse(localStorage.getItem('transactions')) : this.props.transactions;
+    if (!txs){
+      return false;
+    }
     const pendingTxHash = Object.keys(txs).filter((hash,i) => { return txs[hash].status==='pending' });
     const pendingTransactions = Object.keys(txs)
       .filter(key => pendingTxHash.includes(key))
@@ -174,7 +175,7 @@ class SmartContractControls extends React.Component {
     const state = {};
     Object.keys(pendingTransactions).forEach((txHash,i) => {
       const tx = pendingTransactions[txHash];
-      // console.log('getPendingTransactions',tx);
+      // customLog('getPendingTransactions',tx);
       switch (tx.method){
         case 'mintIdleToken':
           window.web3.eth.getTransaction(txHash,(err,transaction) => {
@@ -189,21 +190,21 @@ class SmartContractControls extends React.Component {
                   lendingTx:null,
                   needsUpdate:true
                 });
-                this.addTransaction(tx);
+                // this.addTransaction(tx);
               });
             } else {
               this.setState({
                 lendingProcessing:false,
                 lendingTx:null
               });
-              this.deleteTransaction(tx);
+              // this.deleteTransaction(tx);
             }
           });
 
         break;
         case 'redeemIdleToken':
           window.web3.eth.getTransaction(txHash,(err,transaction) => {
-            // console.log('redeemIdleToken',transaction.from,this.props.account);
+            // customLog('redeemIdleToken',transaction.from,this.props.account);
             if (transaction.from.toLowerCase() === this.props.account.toLowerCase()){
               this.setState({
                 redeemProcessing:true,
@@ -215,14 +216,14 @@ class SmartContractControls extends React.Component {
                   redeemTx:null,
                   needsUpdate:true
                 });
-                this.addTransaction(tx);
+                // this.addTransaction(tx);
               });
             } else {
               this.setState({
                 redeemProcessing:false,
                 redeemTx:null
               });
-              this.deleteTransaction(tx);
+              // this.deleteTransaction(tx);
             }
           });
         break;
@@ -232,7 +233,7 @@ class SmartContractControls extends React.Component {
 
   listenTransaction = (hash,callback) => {
     window.web3.eth.getTransactionReceipt(hash,(err,tx) => {
-      console.log('getTransactionReceipt',hash,tx);
+      customLog('getTransactionReceipt',hash,tx);
       if (tx){
         if (callback){
           return callback(tx);
@@ -255,7 +256,7 @@ class SmartContractControls extends React.Component {
       return false;
     }
     const maxRate = this.toEth(Math.max(aprs[0],aprs[1]));
-    const currentRate = bestToken.toString().toLowerCase() === cDAIAddress ? aprs[0] : aprs[1];
+    const currentRate = bestToken ? (bestToken.toString().toLowerCase() === cDAIAddress ? aprs[0] : aprs[1]) : null;
     this.setState({
       [`compoundRate`]: aprs ? (+this.toEth(aprs[0])).toFixed(2) : '0.00',
       [`fulcrumRate`]: aprs ? (+this.toEth(aprs[1])).toFixed(2) : '0.00',
@@ -267,7 +268,7 @@ class SmartContractControls extends React.Component {
   };
   getCurrentProtocol = async (bestToken) => {
     bestToken = bestToken ? bestToken : await this.genericIdleCall('bestToken');
-    // console.log('getCurrentProtocol',bestToken);
+    // customLog('getCurrentProtocol',bestToken);
     if (bestToken){
       return bestToken.toString().toLowerCase() === cDAIAddress ? 'Compound' : 'Fulcrum';
     }
@@ -277,7 +278,7 @@ class SmartContractControls extends React.Component {
     const totalIdleSupply = await this.genericContractCall(contractName, 'totalSupply');
     let price = await this.genericContractCall(contractName, 'tokenPrice');
     const navPool = this.BNify(totalIdleSupply).div(1e18).times(this.BNify(price).div(1e18));
-    // console.log('getPriceInToken',totalIdleSupply.toString(),price.toString(),navPool.toString());
+    // customLog('getPriceInToken',totalIdleSupply.toString(),price.toString(),navPool.toString());
     this.setState({
       idleTokenPrice: (totalIdleSupply || totalIdleSupply === 0) && totalIdleSupply.toString() === '0' ? 0 : (+this.toEth(price)),
       navPool: navPool,
@@ -302,19 +303,41 @@ class SmartContractControls extends React.Component {
     });
     return price;
   };
+
+  getTokenDecimals = async () => {
+    return await this.genericContractCall(this.props.selectedToken,'decimals');
+  }
+
   getTokenBalance = async () => {
     if (this.props.account){
       const tokenBalance = await this.genericContractCall(this.props.selectedToken,'balanceOf',[this.props.account]);
-      console.log('getTokenBalance',tokenBalance,this.BNify(tokenBalance).div(1e18).toString(),parseFloat(this.BNify(tokenBalance).div(1e18).toString()));
+      const tokenDecimals = await this.getTokenDecimals();
       if (tokenBalance){
+        customLog('getTokenBalance',tokenBalance.toString(),tokenDecimals,this.BNify(tokenBalance).div(this.BNify(`1e${tokenDecimals}`)).toString());
         return this.setState({
-          tokenBalance: this.BNify(tokenBalance).div(1e18).toString()
+          tokenDecimals,
+          tokenBalance: this.BNify(tokenBalance).div(this.BNify(`1e${tokenDecimals}`)).toString()
         });
+      } else {
+        console.error('Error on getting balance');
       }
     }
     return null;
   };
-  getBalanceOf = async contractName => {
+  reloadFunds = async(e) => {
+    e.preventDefault();
+    this.getBalanceOf(this.props.tokenConfig.idle.token);
+  }
+  getBalanceOf = async (contractName,count) => {
+    count = count ? count : 0;
+
+    if (count===3){
+      this.setState({
+        fundsError:true
+      });
+      return false;
+    }
+
     let price = await this.getPriceInToken(contractName);
     let balance = await this.genericContractCall(contractName, 'balanceOf', [this.props.account]);
     if (balance) {
@@ -323,25 +346,27 @@ class SmartContractControls extends React.Component {
       const tokenToRedeem = balance.times(price);
       let earning = 0;
 
-      // console.log('tokenToRedeem',tokenToRedeem.toString(),'amountLent',this.state.amountLent);
+      // customLog('tokenToRedeem',tokenToRedeem.toString(),'amountLent',this.state.amountLent);
 
-      if (this.state.amountLent && this.trimEth(this.state.amountLent.toString())>0 && this.trimEth(tokenToRedeem.toString())>0 && tokenToRedeem.lt(this.state.amountLent)){
-        setTimeout(() => {
-          this.getBalanceOf(contractName);
-        },10000);
+      if (this.state.amountLent && this.trimEth(this.state.amountLent.toString())>0 && this.trimEth(tokenToRedeem.toString())>0 && parseFloat(tokenToRedeem.toString())<parseFloat(this.state.amountLent.toString())){
+        customLogError('Balance '+this.trimEth(tokenToRedeem.toString())+' is less than AmountLent ('+this.trimEth(this.state.amountLent.toString())+').. wait 5 seconds and try again');
+        setTimeout(async () => {
+          await this.getPrevTxs();
+          this.getBalanceOf(contractName,count+1);
+        },5000);
         return false;
       }
 
-      if (this.trimEth(tokenToRedeem.toString())>0 && this.state.amountLent){
+      if (this.BNify(tokenToRedeem).gt(this.BNify(this.state.amountLent))){
         earning = tokenToRedeem.minus(this.BNify(this.state.amountLent));
       }
 
-      // console.log('earning',earning.toString());
+      // customLog('earning',earning.toString());
 
       const redirectToFundsAfterLogged = localStorage ? parseInt(localStorage.getItem('redirectToFundsAfterLogged')) : true;
 
       // Select seconds Tab
-      if (balance.gt(0) && !this.state.DAIToRedeem && redirectToFundsAfterLogged){
+      if (balance.gt(0) && !this.state.tokenToRedeemParsed && redirectToFundsAfterLogged){
         this.selectTab({ preventDefault:()=>{} },'2');
       }
 
@@ -353,11 +378,12 @@ class SmartContractControls extends React.Component {
       const earningPerYear = tokenToRedeem.times(currentApr);
       const earningPerDay = earningPerYear.div(365);
 
-      // console.log('getBalanceOf',balance,balance.gt(0),tokenToRedeem,this.state.amountLent,earning,currentApr,earningPerYear);
+      customLog('getBalanceOf',balance.toString(),tokenToRedeem.toString(),this.state.amountLent,earning,currentApr,earningPerYear);
 
-      this.setState({
+      return this.setState({
+        fundsError:false,
         [`balanceOf${contractName}`]: balance,
-        [`DAIToRedeem`]: tokenToRedeem.toString(),
+        tokenToRedeemParsed: tokenToRedeem.toString(),
         tokenBalanceBNify:balance,
         idleTokenBalance:balance.toString(),
         currentApr,
@@ -409,7 +435,7 @@ class SmartContractControls extends React.Component {
         const newTokenToRedeem = this.state.tokenToRedeem.plus(earningPerInterval);
         const newEarning = this.state.earning.plus(earningPerInterval);
         this.setState({
-          DAIToRedeem:newTokenToRedeem.toString(),
+          tokenToRedeemParsed:newTokenToRedeem.toString(),
           tokenToRedeem:newTokenToRedeem,
           earning:newEarning
         });
@@ -447,7 +473,7 @@ class SmartContractControls extends React.Component {
   // should be called with DAI contract as params
   getAllowance = async contractName => {
     let allowance = await this.genericContractCall(
-      contractName, 'allowance', [this.props.account, IdleAddress]
+      contractName, 'allowance', [this.props.account, this.props.tokenConfig.idle.address]
     );
     if (allowance) {
       this.setState({
@@ -461,12 +487,12 @@ class SmartContractControls extends React.Component {
     let contract = this.props.contracts.find(c => c.name === contractName);
     contract = contract && contract.contract;
     if (!contract) {
-      console.log('Wrong contract name', contractName);
+      customLog('Wrong contract name', contractName);
       return;
     }
 
     const value = await contract.methods[methodName](...params).call().catch(error => {
-      console.log(`${contractName} contract method ${methodName} error: `, error);
+      customLog(`${contractName} contract method ${methodName} error: `, error);
       this.setState({ error });
     });
     return value;
@@ -474,8 +500,8 @@ class SmartContractControls extends React.Component {
 
   // Idle
   genericIdleCall = async (methodName, params = []) => {
-    return await this.genericContractCall(this.state.idleTokenName, methodName, params).catch(err => {
-      console.error('Generic Idle call err:', err);
+    return await this.genericContractCall(this.props.tokenConfig.idle.token, methodName, params).catch(err => {
+      customLogError('Generic Idle call err:', err);
     });
   }
 
@@ -483,12 +509,18 @@ class SmartContractControls extends React.Component {
     e.preventDefault();
     // No need for callback atm
     this.props.contractMethodSendWrapper(name, 'approve', [
-      IdleAddress,
+      this.props.tokenConfig.idle.address,
       0 // Disapprova
     ],null,(tx)=>{
       this.setState({
         isApprovingToken: false,
+        approveTx:null,
         [`isApproving${name}`]: false, // TODO when set to false?
+      });
+    }, (tx) => {
+      // this.addTransaction(tx);
+      this.setState({
+        approveTx: tx
       });
     });
 
@@ -499,14 +531,12 @@ class SmartContractControls extends React.Component {
     });
   };
 
-  checkTransactionMined = (tx,add_if_not,delete_if_mined) => {
-    let transaction = this.state.transactions[tx.transactionHash];
-    const tx_is_mined = transaction && transaction.status === 'success';
-    this.addTransaction(tx);
-
-    return tx_is_mined;
+  checkTransactionMined = (tx) => {
+    let transaction = this.props.transactions[tx.created];
+    return transaction && transaction.status === 'success' && transaction.confirmationCount>1;
   }
 
+  /*
   deleteTransaction = (tx) => {
     let transactions = this.state.transactions;
     if (transactions[tx.transactionHash]){
@@ -520,24 +550,28 @@ class SmartContractControls extends React.Component {
     }
   }
 
-  addTransaction = (tx) => {
+  addTransaction = (tx,update) => {
+    update = update ? update : false;
     let transactions = this.state.transactions;
-    transactions[tx.transactionHash] = tx;
-
-    if (localStorage){
-      localStorage.setItem('transactions',JSON.stringify(transactions));
+    if (!transactions[tx.transactionHash] || update){
+      // customLog('addTransaction',tx.transactionHash,tx.status);
+      transactions[tx.transactionHash] = tx;
+      if (localStorage){
+        localStorage.setItem('transactions',JSON.stringify(transactions));
+      }
+      return this.setState({
+        transactions
+      });
     }
-
-    return this.setState({
-      transactions
-    });
+    return null;
   }
+  */
 
   enableERC20 = (e, token) => {
     e.preventDefault();
     // No need for callback atm
     this.props.contractMethodSendWrapper(token, 'approve', [
-      IdleAddress,
+      this.props.tokenConfig.idle.address,
       this.props.web3.utils.toTwosComplement('-1') // max uint solidity
       // this.props.web3.utils.BN(0) // Disapprova
     ],null,(tx)=>{
@@ -545,6 +579,12 @@ class SmartContractControls extends React.Component {
         isApprovingToken: false,
         [`isApproving${token}`]: false, // TODO when set to false?
         'needsUpdate': true,
+        approveTx:null,
+      });
+    }, (tx) => {
+      // this.addTransaction(tx);
+      this.setState({
+        approveTx: tx
       });
     });
 
@@ -563,9 +603,8 @@ class SmartContractControls extends React.Component {
       rebalanceProcessing: this.props.account ? true : false
     }));
 
-    this.props.contractMethodSendWrapper(this.state.idleTokenName, 'rebalance', [], null , (tx) => {
-      console.log('rebalance_callback needsUpdate');
-      const needsUpdate = tx.status === 'success' && !this.checkTransactionMined(tx,true);
+    this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'rebalance', [], null , (tx) => {
+      const needsUpdate = tx.status === 'success' && !this.checkTransactionMined(tx);
       this.setState({
         needsUpdate: needsUpdate,
         rebalanceProcessing: false
@@ -578,12 +617,13 @@ class SmartContractControls extends React.Component {
       const value = this.props.web3.utils.toWei('0','ether');
       const allowance = await this.getAllowance(this.props.selectedToken); // DAI
       const tokenApproved = this.BNify(allowance).gt(this.BNify(value.toString()));
-      this.setState({
+      customLog('checkTokenApproved',value,allowance.toString(),tokenApproved);
+      return this.setState({
         isTokenApproved: tokenApproved,
         [`is${this.props.selectedToken}Approved`]: tokenApproved
       });
-      return tokenApproved;
     }
+    return null;
   }
 
   mint = async (e, contractName) => {
@@ -622,11 +662,12 @@ class SmartContractControls extends React.Component {
     }
 
     // No need for callback atm
-    this.props.contractMethodSendWrapper(this.state.idleTokenName, 'mintIdleToken', [
+    this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'mintIdleToken', [
       value
     ], null, (tx) => {
       const txSucceeded = tx.status === 'success';
-      const needsUpdate = txSucceeded && !this.checkTransactionMined(tx,true);
+      const needsUpdate = txSucceeded && !this.checkTransactionMined(tx);
+      customLog('mintIdleToken_callback needsUpdate:',tx.status,this.checkTransactionMined(tx),needsUpdate);
       if (txSucceeded){
         this.selectTab({ preventDefault:()=>{} },'2');
       }
@@ -637,7 +678,7 @@ class SmartContractControls extends React.Component {
         needsUpdate
       });
     }, (tx) => {
-      this.addTransaction(tx);
+      // this.addTransaction(tx);
       this.setState({
         lendingTx: tx
       });
@@ -645,7 +686,7 @@ class SmartContractControls extends React.Component {
 
     this.setState({
       [`isLoading${contractName}`]: false,
-      lendingProcessing: true,
+      lendingProcessing: this.props.account,
       lendAmount: '',
       genericError: '',
     });
@@ -670,13 +711,13 @@ class SmartContractControls extends React.Component {
       "ether"
     );
 
-    console.log('redeem',idleTokenToRedeem);
+    customLog('redeem',idleTokenToRedeem);
 
     this.props.contractMethodSendWrapper(contractName, 'redeemIdleToken', [
       idleTokenToRedeem
     ], null, (tx) => {
-      console.log('redeemIdleToken_callback needsUpdate');
-      const needsUpdate = tx.status === 'success' && !this.checkTransactionMined(tx,true);
+      const needsUpdate = tx.status === 'success' && !this.checkTransactionMined(tx);
+      customLog('redeemIdleToken_mined_callback needsUpdate:',tx.status,this.checkTransactionMined(tx),needsUpdate);
       this.setState({
         [`isLoading${contractName}`]: false,
         redeemProcessing: false,
@@ -684,7 +725,8 @@ class SmartContractControls extends React.Component {
         needsUpdate
       });
     }, (tx) => {
-      this.addTransaction(tx);
+      customLog('redeemIdleToken_receipt_callback',tx.transactionHash,tx.status);
+      // this.addTransaction(tx);
       this.setState({
         redeemTx: tx
       });
@@ -712,7 +754,7 @@ class SmartContractControls extends React.Component {
   handleChangeAmountRedeem = (e) => {
     if (this.props.account){
       let amount = e.target.value;
-      // console.log('handleChangeAmountRedeem',amount,this.state.tokenBalanceBNify);
+      // customLog('handleChangeAmountRedeem',amount,this.state.tokenBalanceBNify);
       this.setState({ redeemAmount: amount });
 
       let disableRedeemButton = false;
@@ -776,11 +818,12 @@ class SmartContractControls extends React.Component {
     this.setState(state => ({...state, welcomeIsOpen: !state.welcomeIsOpen }));
   };
 
-  getPrevTxs = async (executedTxs) => {
+  getPrevTxs = async () => {
+    // customLog('Call getPrevTxs');
     const txs = await axios.get(`
       https://api.etherscan.io/api?module=account&action=tokentx&address=${this.props.account}&startblock=8119247&endblock=999999999&sort=asc&apikey=${env.REACT_APP_ETHERSCAN_KEY}
     `).catch(err => {
-      console.log('Error getting prev txs');
+      customLog('Error getting prev txs');
     });
     if (!txs || !txs.data || !txs.data.result) {
       return;
@@ -788,9 +831,12 @@ class SmartContractControls extends React.Component {
 
     const results = txs.data.result;
     const prevTxs = results.filter(
-        tx => tx.to.toLowerCase() === IdleAddress.toLowerCase() ||
-              tx.from.toLowerCase() === IdleAddress.toLowerCase() ||
-              (tx.from.toLowerCase() === iDAIAddress.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase())
+        tx => {
+          return (tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()) ||
+              (tx.from.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()) ||
+              (tx.from.toLowerCase() === iDAIAddress.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase()) ||
+              (tx.from.toLowerCase() === cDAIAddress.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase())
+          }
       ).filter(tx => {
         const internalTxs = results.filter(r => r.hash === tx.hash);
         // remove txs from old contract
@@ -799,20 +845,79 @@ class SmartContractControls extends React.Component {
 
     let amountLent = 0;
     let transactions = {};
+
+
+
     prevTxs.forEach((tx,index) => {
       // Deposited
-      if (tx.to.toLowerCase() === IdleAddress.toLowerCase()){
+      if (tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()){
         amountLent += parseFloat(tx.value);
+        // console.log('Deposited '+parseFloat(tx.value),'AmountLent',amountLent);
       } else if (tx.to.toLowerCase() === this.props.account.toLowerCase()){
         amountLent -= parseFloat(tx.value);
         amountLent = Math.max(0,amountLent);
+        // console.log('Redeemed '+parseFloat(tx.value),'AmountLent',amountLent);
       }
       transactions[tx.hash] = tx;
     });
-    if (executedTxs){
-      Object.keys(executedTxs).forEach((key,index) => {
-        const tx = executedTxs[key];
-        transactions[tx.hash] = tx;
+
+    // Add missing executed transactions
+    if (this.state.executedTxs){
+
+      let missingTxs = 0;
+
+      console.log('getPrevTxs adding executedTxs',this.state.executedTxs);
+
+      const asyncForEach = async(array, callback) => {
+        for (let index = 0; index < array.length; index++) {
+          await callback(array[index], index, array);
+        }
+      }
+
+      await asyncForEach(Object.keys(this.state.executedTxs),async (key,i) => {
+        const tx = this.state.executedTxs[key];
+
+        if (!transactions[tx.transactionHash]){
+          missingTxs++;
+        } else {
+          return;
+        }
+
+        const realTx = await (new Promise( async (resolve, reject) => {
+          window.web3.eth.getTransaction(tx.transactionHash,(err,tx)=>{
+            if (err){
+              return reject(err);
+            }
+              return resolve(tx);
+            });
+        }));
+        realTx.contractAddress = this.props.tokenConfig.address;
+        realTx.timeStamp = parseInt(tx.created/1000);
+
+        switch (tx.method){
+          case 'mintIdleToken':
+            realTx.status = 'Deposited';
+            realTx.value = tx.params ? this.toEth(tx.params[0]).toString() : 0;
+          break;
+          case 'redeemIdleToken':
+            realTx.status = 'Redeemed';
+            realTx.value = tx.params ? (+this.toEth(tx.params[0])*parseFloat(this.state.idleTokenPrice)).toString() : 0;
+          break;
+        }
+        realTx.tokenSymbol = this.props.selectedToken;
+        realTx.tx = tx;
+
+        // Deposited
+        if (realTx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()){
+          amountLent += parseFloat(realTx.value);
+        } else if (realTx.to.toLowerCase() === this.props.account.toLowerCase()){
+          amountLent -= parseFloat(realTx.value);
+          amountLent = Math.max(0,amountLent);
+        }
+
+        transactions[realTx.hash] = realTx;
+
+        console.log('getPrevTxs inserted executed tx',transactions[realTx.hash]);
       });
     }
 
@@ -823,7 +928,7 @@ class SmartContractControls extends React.Component {
 
     amountLent = Math.max(0,amountLent);
 
-    this.setState({
+    return this.setState({
       prevTxs: transactions,
       amountLent,
       earning
@@ -831,68 +936,66 @@ class SmartContractControls extends React.Component {
   };
 
   // Check for updates to the transactions collection
-  processTransactionUpdates = prevProps => {
-    let txs = this.state.prevTxs || {};
-    let newTxs = {};
-    let updated = false;
+  processTransactionUpdates = prevTxs => {
+    const transactions = this.state.prevTxs || {};
+    let update_txs = false;
     let refresh = false;
+    const executedTxs = {};
     if (Object.keys(this.props.transactions).length){
       Object.keys(this.props.transactions).forEach(key => {
-        let pendingTx = this.props.transactions[key];
-        if ((!txs[key] || txs[key].status !== pendingTx.status)){
+        let newTx = this.props.transactions[key];
+        // Check if it is a new transaction OR status changed 
+        if ((!prevTxs[key] || prevTxs[key].status !== newTx.status)){
 
-          // Delete transaction is succeded or error
-          if (pendingTx.status === 'success' || pendingTx.status === 'error') {
-            if (txs[key]){
-              updated = true;
-              delete txs[key];
-            }
-
-            if (pendingTx.status === 'success'){
+          // Delete pending transaction if succeded or error
+          if (newTx.status === 'success' || newTx.status === 'error') {
               refresh = true;
-              if (this.state.needsUpdate) {
-                this.getBalanceOf(this.state.idleTokenName); // do not wait
-                this.props.getAccountBalance(); // do not wait
+              if (newTx.status === 'success'){
+                executedTxs[newTx.transactionHash] = newTx;
               }
-            }
+          // Transaction is pending add it in the list
           } else {
             let tx = {
               from: '',
               to: '',
+              contractAddress:this.props.tokenConfig.address,
               status: 'Pending',
               hash: key,
               value: 0,
               tokenName: '',
               tokenSymbol: '',
-              timeStamp: parseInt(pendingTx.lastUpdated/1000)
+              timeStamp: parseInt(newTx.lastUpdated/1000)
             };
 
-            if (pendingTx.transactionHash) {
-              tx.hash = pendingTx.transactionHash.toString();
+            if (newTx.transactionHash) {
+              tx.hash = newTx.transactionHash.toString();
             }
 
-            if (!txs[key]){
-              newTxs[key] = tx;
-            }
+            transactions[key] = tx;
 
-            txs[key] = tx;
-
-            updated = true;
+            update_txs = true;
           }
         }
       });
 
+      // console.log('processTransactionUpdates',refresh,update_txs,prevTxs);
+
       if (refresh){
-        // console.log('processTransactionUpdates',refresh,newTxs);
-        this.getPrevTxs(newTxs);
-      } else if (updated){
         this.setState({
-          prevTxs: txs
+          executedTxs,
+          prevTxs: transactions,
+          'needsUpdate':true
+        });
+      } else if (update_txs){
+        this.setState({
+          prevTxs: transactions,
+          'needsUpdate':false
         });
       }
     }
   };
 
+  // Clear all the timeouts
   async componentWillUnmount(){
     var id = window.setTimeout(function() {}, 0);
 
@@ -903,51 +1006,72 @@ class SmartContractControls extends React.Component {
 
   async componentDidMount() {
 
+    customLog('SmartContractControls componentDidMount',this.state.accountBalanceToken);
+
     const script = document.createElement("script");
     script.src = "https://instant.0x.org/instant.js";
     script.async = true;
     document.body.appendChild(script);
 
-    console.log('Smart contract didMount')
+    customLog('Smart contract didMount')
     // do not wait for each one just for the first who will guarantee web3 initialization
     const web3 = await this.props.initWeb3();
     if (!web3) {
-      return console.log('No Web3 SmartContractControls')
+      return customLog('No Web3 SmartContractControls')
     }
 
-    console.log('Web3 SmartContractControls initialized')
-    this.props.initContract('iDAI', iDAIAddress, iDAIAbi, true);
-    this.props.initContract('cDAI', cDAIAddress, cDAIAbi);
-    this.props.initContract('OldIdleDAI', OldIdleAddress, IdleAbi);
-    this.props.initContract(this.state.idleTokenName, IdleAddress, IdleAbi).then(async () => {
+    customLog('Web3 SmartContractControls initialized')
+
+    this.props.initContract('OldIdleDAI', OldIdleAddress, this.props.tokenConfig.idle.abi);
+    this.props.initContract(this.props.tokenConfig.idle.token, this.props.tokenConfig.idle.address, this.props.tokenConfig.idle.abi).then(async () => {
       await Promise.all([
         this.getAprs(),
-        this.getPriceInToken(this.state.idleTokenName)
+        this.getPriceInToken(this.props.tokenConfig.idle.token)
       ]);
     });
 
-    this.props.initContract(this.props.selectedToken, DAIAddress, DAIAbi);
+    /*
+    // PUT TEMP FUNCTIONS HERE
+    window.tempFunc = (tx) => {}
+    */
+
+    this.props.initContract(this.props.selectedToken, this.props.tokenConfig.address, this.props.tokenConfig.abi);
   }
 
   async componentDidUpdate(prevProps, prevState) {
-    if (this.props.account && (prevProps.account !== this.props.account || this.state.needsUpdate)) {
+    const accountChanged = prevProps.account !== this.props.account;
+    const selectedTokenChanged = prevProps.selectedToken !== this.props.selectedToken;
 
+    if (selectedTokenChanged){
+      await this.componentDidMount();
+    }
+
+    if (this.props.account && (accountChanged || this.state.needsUpdate || selectedTokenChanged)) {
+
+      // Reset funds and force loader
       this.setState({
+        'tokenBalance':null,
+        tokenToRedeemParsed:null,
+        amountLent:null,
+        earning:null,
         updateInProgress: true,
         needsUpdate: false
       });
 
-      this.getPendingTransactions();
+      // this.getPendingTransactions();
 
-      console.log('componentDidUpdate needsUpdate');
+      customLog('componentDidUpdate needsUpdate');
+
       await Promise.all([
         this.getTokenBalance(),
         this.checkTokenApproved(), // Check if the token is already approved
         this.getPrevTxs(),
-        this.getBalanceOf(this.state.idleTokenName),
         this.getOldBalanceOf('OldIdleDAI'),
-        this.getTotalSupply(this.state.idleTokenName)
+        this.getTotalSupply(this.props.tokenConfig.idle.token)
       ]);
+
+      // Keep this call seprated from others cause it needs getPrevTxs results
+      await this.getBalanceOf(this.props.tokenConfig.idle.token);
 
       if (this.props.selectedTab === '3') {
         await this.rebalanceCheck();
@@ -968,13 +1092,19 @@ class SmartContractControls extends React.Component {
     }
 
     if (this.props.selectedTab !== '2' && this.state.fundsTimeoutID){
-      console.log("Clear funds timeout "+this.state.fundsTimeoutID);
+      customLog("Clear funds timeout "+this.state.fundsTimeoutID);
       clearTimeout(this.state.fundsTimeoutID);
       this.setState({fundsTimeoutID:null});
     }
 
+    // TO CHECK!!
     if (prevProps.transactions !== this.props.transactions){
-      this.processTransactionUpdates(prevProps);
+      // Store transactions into Local Storage
+      if (localStorage){
+        localStorage.setItem('transactions',JSON.stringify(this.props.transactions));
+      }
+      console.log('Transactions changed from',prevProps.transactions,'to',this.props.transactions);
+      this.processTransactionUpdates(prevProps.transactions);
     }
   }
 
@@ -996,9 +1126,37 @@ class SmartContractControls extends React.Component {
 
   }
 
+  async getTransaction(hash) {
+    return new Promise( async (resolve, reject) => {
+      window.web3.eth.getTransaction(hash,(err,transaction) => {
+        if (transaction){
+          return resolve(transaction);
+        }
+        return reject(false);
+      });
+    });
+  }
+
+  async loadTxs_async(txsHashes) {
+    const asyncForEach = async(array, callback) => {
+      for (let index = 0; index < array.length; index++) {
+        await callback(array[index], index, array);
+      }
+    }
+
+    var transactions = {};
+    await asyncForEach(txsHashes,async (txHash,i) => {
+      await window.web3.eth.getTransaction(txHash,(err,tx)=>{
+        transactions[tx.hash] = tx;
+      });
+    });
+
+    return transactions;
+  }
+
   // TODO move in a separate component
-  renderPrevTxs() {
-    const prevTxs = this.state.prevTxs || {};
+  renderPrevTxs(prevTxs) {
+    prevTxs = prevTxs ? prevTxs : (this.state.prevTxs || {});
 
     if (!Object.keys(prevTxs).length) {
       return null;
@@ -1015,12 +1173,13 @@ class SmartContractControls extends React.Component {
       const tx = prevTxs[key];
 
       // Skip other tokens
-      if (tx.tokenSymbol !== this.props.selectedToken){
+      // customLog('renderPrevTxs',tx.tokenSymbol,this.props.selectedToken,tx.to.toLowerCase(),this.props.tokenConfig.idle.address.toLowerCase());
+      if (tx.contractAddress !== this.props.tokenConfig.address){
         return;
       }
 
       const date = new Date(tx.timeStamp*1000);
-      const status = tx.status ? tx.status : tx.to.toLowerCase() === IdleAddress.toLowerCase() ? 'Deposited' : 'Redeemed';
+      const status = tx.status ? tx.status : tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase() ? 'Deposited' : 'Redeemed';
       const parsedValue = parseFloat(tx.value);
       const value = parsedValue ? (this.props.isMobile ? parsedValue.toFixed(4) : parsedValue.toFixed(8)) : '-';
       const momentDate = moment(date);
@@ -1041,7 +1200,7 @@ class SmartContractControls extends React.Component {
           icon = "ArrowUpward";
           totalRedeemed += Math.abs(parsedValue);
 
-          // console.log(formattedDateAlt,totalRedeemed,depositedSinceLastRedeem,totalRedeemed-depositedSinceLastRedeem);
+          // customLog(formattedDateAlt,totalRedeemed,depositedSinceLastRedeem,totalRedeemed-depositedSinceLastRedeem);
           if (totalRedeemed<depositedSinceLastRedeem){
             interest = null;
           } else {
@@ -1080,7 +1239,7 @@ class SmartContractControls extends React.Component {
               </Box>
               <Box width={[3/12]}>
                 <Text textAlign={'center'} display={['none','block']} fontSize={[2,2]} fontWeight={2}>
-                  {interest ? <Pill color={'green'}>{interest}</Pill> : null}
+                  {interest ? <Pill color={'green'}>{interest}</Pill> : '-'}
                 </Text>
               </Box>
               <Box width={[3/12,3/12]} textAlign={'center'}>
@@ -1094,14 +1253,25 @@ class SmartContractControls extends React.Component {
       return null;
     });
 
-    txs = txs.reverse();
+    txs = txs
+            .reverse()
+            .filter(function( element ) {
+               return element !== undefined;
+            });
+
 
     return (
       <Flex flexDirection={'column'} width={[1,'90%']} m={'0 auto'}>
         <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'dark-gray'}>
           Last transactions
         </Heading.h3>
-        {txs}
+        {
+          txs && txs.length ? txs : (
+            <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontWeight={2} fontSize={[2]} color={'dark-gray'}>
+              There are no transactions for {this.props.selectedToken}
+            </Heading.h3>
+          )
+        }
       </Flex>
     );
   }
@@ -1138,18 +1308,18 @@ class SmartContractControls extends React.Component {
   }
 
   render() {
-    let hasBalance = !isNaN(this.trimEth(this.state.DAIToRedeem)) && this.trimEth(this.state.DAIToRedeem) > 0;
+    let hasBalance = !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && this.trimEth(this.state.tokenToRedeemParsed) > 0;
     const navPool = this.getFormattedBalance(this.state.navPool,this.props.selectedToken);
-    const reedemableFunds = this.getFormattedBalance(this.state.DAIToRedeem,this.props.selectedToken,9,12);
+    const reedemableFunds = this.getFormattedBalance(this.state.tokenToRedeemParsed,this.props.selectedToken,9,12);
     const oldReedemableFunds = this.getFormattedBalance(this.state.oldDAIToRedeem,this.props.selectedToken);
     const currentEarnings = this.getFormattedBalance(this.state.earning,this.props.selectedToken,9,12);
     const oldEarning = this.getFormattedBalance(this.state.oldEarning,this.props.selectedToken);
     const idleTokenPrice = this.getFormattedBalance(this.state.idleTokenPrice,this.props.selectedToken);
     const OldIdleDAIPrice = this.getFormattedBalance(this.state.OldIdleDAIPrice,this.props.selectedToken);
     const depositedFunds = this.getFormattedBalance(this.state.amountLent,this.props.selectedToken);
-    const earningPerc = !isNaN(this.trimEth(this.state.DAIToRedeem)) && this.trimEth(this.state.DAIToRedeem)>0 ? this.getFormattedBalance(this.BNify(this.state.DAIToRedeem).div(this.BNify(this.state.amountLent)).minus(1).times(100),'%',4) : '0%';
-    const balanceOfIdleDAI = this.getFormattedBalance(this.state.tokenBalanceBNify,this.state.idleTokenName);
-    const balanceOfOldIdleDAI = this.getFormattedBalance(this.state.balanceOfOldIdleDAI,this.state.idleTokenName);
+    const earningPerc = !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && this.trimEth(this.state.tokenToRedeemParsed)>0 ? this.getFormattedBalance(this.BNify(this.state.tokenToRedeemParsed).div(this.BNify(this.state.amountLent)).minus(1).times(100),'%',4) : '0%';
+    const balanceOfIdleDAI = this.getFormattedBalance(this.state.tokenBalanceBNify,this.props.tokenConfig.idle.token);
+    const balanceOfOldIdleDAI = this.getFormattedBalance(this.state.balanceOfOldIdleDAI,this.props.tokenConfig.idle.token);
     const hasOldBalance = !isNaN(this.trimEth(this.state.oldDAIToRedeem)) && this.trimEth(this.state.oldDAIToRedeem) > 0;
 
     let earningPerDay = this.getFormattedBalance((this.state.earningPerYear/daysInYear),this.props.selectedToken,4);
@@ -1165,15 +1335,15 @@ class SmartContractControls extends React.Component {
     const navPoolEarningPerMonth = navPoolEarningPerWeek ? (navPoolEarningPerWeek*4.35) : null;
     navPoolEarningPerYear = navPoolEarningPerYear ? navPoolEarningPerYear : null;
 
-    const currentReedemableFunds = !isNaN(this.trimEth(this.state.DAIToRedeem)) && !isNaN(this.trimEth(this.state.earningPerYear)) ? parseFloat(this.trimEth(this.state.DAIToRedeem,9)) : 0;
-    const reedemableFundsAtEndOfYear = !isNaN(this.trimEth(this.state.DAIToRedeem)) && !isNaN(this.trimEth(this.state.earningPerYear)) ? parseFloat(this.trimEth(this.BNify(this.state.DAIToRedeem).plus(this.BNify(this.state.earningPerYear)),9)) : 0;
+    const currentReedemableFunds = !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && !isNaN(this.trimEth(this.state.earningPerYear)) ? parseFloat(this.trimEth(this.state.tokenToRedeemParsed,9)) : 0;
+    const reedemableFundsAtEndOfYear = !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && !isNaN(this.trimEth(this.state.earningPerYear)) ? parseFloat(this.trimEth(this.BNify(this.state.tokenToRedeemParsed).plus(this.BNify(this.state.earningPerYear)),9)) : 0;
     const currentEarning = !isNaN(this.trimEth(this.state.earning)) ? parseFloat(this.trimEth(this.state.earning,9)) : 0;
     const earningAtEndOfYear = !isNaN(this.trimEth(this.state.earning)) ? parseFloat(this.trimEth(this.BNify(this.state.earning).plus(this.BNify(this.state.earningPerYear)),9)) : 0;
 
-    const fundsAreReady = !this.state.updateInProgress && !isNaN(this.trimEth(this.state.DAIToRedeem)) && !isNaN(this.trimEth(this.state.earning)) && !isNaN(this.trimEth(this.state.amountLent));
+    const fundsAreReady = !this.state.fundsError && !this.state.updateInProgress && !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && !isNaN(this.trimEth(this.state.earning)) && !isNaN(this.trimEth(this.state.amountLent));
 
     const tokenNotApproved = (this.props.account && this.state.isTokenApproved===false && !this.state.isApprovingToken);
-    const walletIsEmpty = this.props.account && !tokenNotApproved && this.state.tokenBalance !== null && !parseFloat(this.state.tokenBalance);
+    const walletIsEmpty = this.props.account && !tokenNotApproved && !this.state.isApprovingToken && this.state.tokenBalance !== null && !isNaN(this.state.tokenBalance) && !parseFloat(this.state.tokenBalance);
 
     return (
       <Box textAlign={'center'} alignItems={'center'} width={'100%'}>
@@ -1227,7 +1397,7 @@ class SmartContractControls extends React.Component {
                     <Flex style={{position:'relative',zIndex:'99',height:'100%'}} flexDirection={'column'} alignItems={'center'} justifyContent={'center'}>
                       <Flex flexDirection={'column'} alignItems={'center'} p={[2,4]}>
                         <Flex width={1} justifyContent={'center'} flexDirection={'row'}>
-                          <Image src={`images/btn-${this.props.selectedToken.toLowerCase()}.svg`} height={'38px'} />
+                          <Image src={`images/tokens/${this.props.selectedToken}.svg`} height={'38px'} />
                           <Icon
                             name={'KeyboardArrowRight'}
                             color={'white'}
@@ -1239,7 +1409,7 @@ class SmartContractControls extends React.Component {
                             size={'38'}
                           />
                         </Flex>
-                        <Heading.h4 mt={[2,'15px']} mb={[2,'15px']} color={'white'} fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
+                        <Heading.h4 my={[3,'15px']} color={'white'} fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
                           You don't have any {this.props.selectedToken} in your wallet. Click the button below to buy some.
                         </Heading.h4>
                         <Button
@@ -1261,7 +1431,7 @@ class SmartContractControls extends React.Component {
                     <Flex style={{position:'relative',zIndex:'99',height:'100%'}} flexDirection={'column'} alignItems={'center'} justifyContent={'center'}>
                       <Flex flexDirection={'column'} alignItems={'center'} p={[2,4]}>
                         <Flex width={1} justifyContent={'center'} flexDirection={'row'}>
-                          <Image src={`images/btn-${this.props.selectedToken.toLowerCase()}.svg`} height={'38px'} />
+                          <Image src={`images/tokens/${this.props.selectedToken}.svg`} height={'38px'} />
                           <Icon
                             name={'KeyboardArrowRight'}
                             color={'white'}
@@ -1273,7 +1443,7 @@ class SmartContractControls extends React.Component {
                             size={'38'}
                           />
                         </Flex>
-                        <Heading.h4 mt={[2,'10px']} mb={[2,'10px']} color={'white'} fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
+                        <Heading.h4 my={[3,'15px']} color={'white'} fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
                           By clicking on ENABLE you are allowing Idle smart contract to actually move {this.props.selectedToken} on your behalf so we can forward them on various lending protocols.
                         </Heading.h4>
                         <Button
@@ -1289,7 +1459,7 @@ class SmartContractControls extends React.Component {
                 }
 
                 <Heading.h3 pb={[2, 0]} mb={[2,3]} fontFamily={'sansSerif'} fontSize={[2, 3]} fontWeight={2} color={'dark-gray'} textAlign={'center'}>
-                  Earn <Text.span fontWeight={'bold'} fontSize={[3,4]}>{this.state.maxRate}% APR</Text.span> on your {this.props.selectedToken}
+                  Earn <Text.span fontWeight={'bold'} fontSize={[3,4]}>{this.state.maxRate}% APR</Text.span> on your <Text.span fontWeight={'bold'} fontSize={[3,4]}>{this.props.selectedToken}</Text.span>
                 </Heading.h3>
 
                 {hasOldBalance ?
@@ -1301,7 +1471,7 @@ class SmartContractControls extends React.Component {
                   </Flash> : 
                   (
                     <>
-                      { !this.state.isApprovingDAI && !this.state.lendingProcessing &&
+                      { !this.state.isApprovingToken && !this.state.lendingProcessing &&
                         <CryptoInput
                           renderZeroExInstant={this.renderZeroExInstant}
                           genericError={this.state.genericError}
@@ -1310,6 +1480,7 @@ class SmartContractControls extends React.Component {
                           isMobile={this.props.isMobile}
                           account={this.props.account}
                           balance={this.state.tokenBalance}
+                          tokenDecimals={this.state.tokenDecimals}
                           defaultValue={this.state.lendAmount}
                           //idleTokenPrice={hasOldBalance ? this.state.OldIdleDAIPrice : this.state.idleTokenPrice}
                           BNify={this.BNify}
@@ -1330,7 +1501,7 @@ class SmartContractControls extends React.Component {
                         <>
                           {
                             this.state.lendingTx ? (
-                              <TxProgressBar endMessage={'Finalizing lend request...'} hash={this.state.lendingTx.transactionHash} />
+                              <TxProgressBar waitText={'Lending in'} endMessage={'Finalizing lend request...'} hash={this.state.lendingTx.transactionHash} />
                             ) : (
                               <Flex
                                 justifyContent={'center'}
@@ -1346,13 +1517,21 @@ class SmartContractControls extends React.Component {
                   )
                 }
 
-                {this.state.isApprovingDAI && (
-                  <Flex
-                    justifyContent={'center'}
-                    alignItems={'center'}
-                    textAlign={'center'}>
-                    <Loader size="40px" /> <Text ml={2}>Wait for the approve transaction to be mined</Text>
-                  </Flex>
+                {this.state.isApprovingToken && (
+                  <>
+                    {
+                      this.state.approveTx ? (
+                        <TxProgressBar waitText={'Approving in'} endMessage={'Finalizing approve request...'} hash={this.state.approveTx.transactionHash} />
+                      ) : (
+                        <Flex
+                          justifyContent={'center'}
+                          alignItems={'center'}
+                          textAlign={'center'}>
+                          <Loader size="40px" /> <Text ml={2}>Sending approve request...</Text>
+                        </Flex>
+                      )
+                    }
+                  </>
                 )}
 
                 <Flex justifyContent={'center'} mt={[0,3]}>
@@ -1447,8 +1626,8 @@ class SmartContractControls extends React.Component {
                                   <CryptoInput
                                     genericError={this.state.genericErrorRedeem}
                                     icon={'images/idle-dai.png'}
-                                    buttonLabel={`REDEEM ${this.state.idleTokenName}`}
-                                    placeholder={`Enter ${this.state.idleTokenName} amount`}
+                                    buttonLabel={`REDEEM ${this.props.tokenConfig.idle.token}`}
+                                    placeholder={`Enter ${this.props.tokenConfig.idle.token} amount`}
                                     disableLendButton={this.state.disableRedeemButton}
                                     isMobile={this.props.isMobile}
                                     account={this.props.account}
@@ -1456,7 +1635,7 @@ class SmartContractControls extends React.Component {
                                     defaultValue={this.state.redeemAmount}
                                     idleTokenPrice={hasOldBalance ? (1/this.state.OldIdleDAIPrice) : (1/this.state.idleTokenPrice)}
                                     convertedLabel={this.props.selectedToken}
-                                    balanceLabel={this.state.idleTokenName}
+                                    balanceLabel={this.props.tokenConfig.idle.token}
                                     BNify={this.BNify}
                                     trimEth={this.trimEth}
                                     color={'black'}
@@ -1464,14 +1643,14 @@ class SmartContractControls extends React.Component {
                                     selectedAsset={this.props.selectedToken}
                                     useEntireBalance={this.useEntireBalanceRedeem}
                                     handleChangeAmount={this.handleChangeAmountRedeem}
-                                    handleClick={e => this.redeem(e, this.state.idleTokenName)} />
+                                    handleClick={e => this.redeem(e, this.props.tokenConfig.idle.token)} />
                               }
 
                               {
                                 false && !this.state.partialRedeemEnabled &&
                                   <Button
                                     className={styles.gradientButton}
-                                    onClick={e => this.redeem(e, this.state.idleTokenName)}
+                                    onClick={e => this.redeem(e, this.props.tokenConfig.idle.token)}
                                     borderRadius={4}
                                     size={this.props.isMobile ? 'medium' : 'medium'}
                                     mainColor={'blue'}
@@ -1531,7 +1710,7 @@ class SmartContractControls extends React.Component {
                             <>
                               {
                                 this.state.redeemTx ? (
-                                  <TxProgressBar endMessage={'Finalizing redeem request...'} hash={this.state.redeemTx.transactionHash} />
+                                  <TxProgressBar waitText={'Redeeming in'} endMessage={'Finalizing redeem request...'} hash={this.state.redeemTx.transactionHash} />
                                 ) : (
                                   <Flex
                                     justifyContent={'center'}
@@ -1559,15 +1738,40 @@ class SmartContractControls extends React.Component {
                           </Flex>
                         }
                       </>
-                      ) : (
-                        <Flex
-                          py={[2,3]}
-                          justifyContent={'center'}
-                          alignItems={'center'}
-                          textAlign={'center'}>
-                          <Loader size="40px" /> <Text ml={2}>Processing funds...</Text>
-                        </Flex>
-                      )
+                      ) : (!this.state.updateInProgress && this.state.fundsError) ? (
+                          <Flex
+                            alignItems={'center'}
+                            flexDirection={'column'}
+                            textAlign={'center'}
+                            py={[1,3]}>
+                              <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontWeight={2} fontSize={[2,3]} color={'dark-gray'}>
+                                We were not able to load your funds...
+                              </Heading.h3>
+                              <Button
+                                className={styles.gradientButton}
+                                onClick={e => this.reloadFunds(e) }
+                                size={this.props.isMobile ? 'medium' : 'medium'}
+                                borderRadius={4}
+                                mainColor={'blue'}
+                                contrastColor={'white'}
+                                fontWeight={3}
+                                fontSize={[2,2]}
+                                mx={'auto'}
+                                px={[4,5]}
+                                mt={[3,4]}
+                              >
+                                TRY AGAIN
+                              </Button>
+                          </Flex>
+                        ) : (
+                          <Flex
+                            py={[2,3]}
+                            justifyContent={'center'}
+                            alignItems={'center'}
+                            textAlign={'center'}>
+                            <Loader size="40px" /> <Text ml={2}>Processing funds...</Text>
+                          </Flex>
+                        ) 
                     }
                     {
                       hasBalance && this.state.showFundsInfo ?
@@ -1608,7 +1812,7 @@ class SmartContractControls extends React.Component {
                                   </Box>
                                   <Box width={1/2}>
                                     <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                      {this.state.idleTokenName} price
+                                      {this.props.tokenConfig.idle.token} price
                                     </Text>
                                     <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
                                       { hasOldBalance ? OldIdleDAIPrice : idleTokenPrice }
@@ -1706,7 +1910,7 @@ class SmartContractControls extends React.Component {
                       </Heading.h3>
                       <Button
                         className={styles.gradientButton}
-                        onClick={e => this.redeem(e, this.state.idleTokenName)}
+                        onClick={e => this.redeem(e, this.props.tokenConfig.idle.token)}
                         size={this.props.isMobile ? 'medium' : 'medium'}
                         borderRadius={4}
                         mainColor={'blue'}
@@ -1732,7 +1936,7 @@ class SmartContractControls extends React.Component {
                       <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
                         Allocated funds
                       </Text>
-                      <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                      <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'} style={{whiteSpace:'nowrap'}}>
                         {navPool ? 
                           <CountUp
                             start={currentNavPool}
@@ -1756,7 +1960,7 @@ class SmartContractControls extends React.Component {
                       <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
                         Current protocol
                       </Text>
-                      <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                      <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'} style={{whiteSpace:'nowrap'}}>
                         { this.state.currentProtocol ? this.state.currentProtocol : '-' }
                       </Heading.h3>
                     </Box>
@@ -1764,7 +1968,7 @@ class SmartContractControls extends React.Component {
                       <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
                         Current APR
                       </Text>
-                      <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                      <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'} style={{whiteSpace:'nowrap'}}>
                         { this.state.maxRate ? `${this.state.maxRate}%` : '-' }
                       </Heading.h3>
                     </Box>
@@ -1820,7 +2024,7 @@ class SmartContractControls extends React.Component {
                   </Flex>
                 </Box>
                 { !!this.state.calculataingShouldRebalance && 
-                  <Box px={[2,0]} textAlign={'text'} py={[3,0]}>
+                  <Box px={[2,0]} textAlign={'text'} py={[3,2]}>
                     <Flex
                       justifyContent={'center'}
                       alignItems={'center'}
@@ -1834,7 +2038,7 @@ class SmartContractControls extends React.Component {
             }
 
             { this.props.selectedTab === '3' && !this.state.calculataingShouldRebalance && !!this.state.shouldRebalance && 
-              <Box px={[2,0]}py={[3,0]}>
+              <Box px={[2,0]} py={[3,2]}>
                 {!!hasOldBalance &&
                   <Flash variant="warning" width={1}>
                     We have released a new version of the contract, with a small bug fix, please redeem
@@ -1887,7 +2091,7 @@ class SmartContractControls extends React.Component {
 
             {
               this.props.selectedTab === '3' && !this.state.calculataingShouldRebalance && !this.state.shouldRebalance &&
-              <Box px={[2,0]} textAlign={'center'} py={[3,0]}>
+              <Box px={[2,0]} textAlign={'center'} py={[3,2]}>
                 <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} pt={[0,3]} pb={[2,2]} color={'blue'}>
                   The pool is already balanced.
                 </Heading.h3>

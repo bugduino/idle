@@ -12,13 +12,16 @@ import RimbleWeb3 from "../utilities/RimbleWeb3";
 import Header from "../utilities/components/Header";
 import Landing from "../Landing/Landing";
 import Web3Debugger from "../Web3Debugger/Web3Debugger";
+import availableTokens from '../tokens.js';
 
 class App extends Component {
   state = {
+    selectedToken: null,
+    tokenConfig: null,
     genericError: null,
     width: window.innerWidth,
     route: "default", // or 'onboarding'
-    selectedTab: '1'
+    selectedTab: '1',
   };
 
   async selectTab(e, tabIndex) {
@@ -26,6 +29,15 @@ class App extends Component {
   }
 
   componentWillMount() {
+    let selectedToken = this.state.selectedToken;
+    if (!selectedToken){
+      selectedToken = localStorage ? localStorage.getItem('selectedToken') : null;
+      if (!selectedToken){
+        selectedToken = Object.keys(availableTokens)[0];
+      }
+    }
+    this.setSelectedToken(selectedToken);
+
     window.addEventListener('resize', this.handleWindowSizeChange);
   }
   componentWillUnmount() {
@@ -49,6 +61,22 @@ class App extends Component {
     this.setState({ route });
   };
 
+  setSelectedToken(selectedToken){
+    // console.log('setSelectedToken',selectedToken);
+    if (Object.keys(availableTokens).indexOf(selectedToken) !== -1){
+      const tokenConfig = availableTokens[selectedToken];
+      if (selectedToken !== this.state.selectedToken || tokenConfig !== this.state.tokenConfig){
+        if (localStorage){
+          localStorage.setItem('selectedToken',selectedToken);
+        }
+        return this.setState({
+          tokenConfig,
+          selectedToken
+        });
+      }
+    }
+  }
+
   render() {
     const isMobile = this.state.width <= 768;
 
@@ -62,7 +90,7 @@ class App extends Component {
           <Web3Consumer>
             {context => {
               return (
-                <RimbleWeb3 config={this.config} context={context}>
+                <RimbleWeb3 config={this.config} context={context} tokenConfig={this.state.tokenConfig} selectedToken={this.state.selectedToken}>
                   <RimbleWeb3.Consumer>
                     {({
                       needsPreflight,
@@ -71,7 +99,7 @@ class App extends Component {
                       account,
                       contracts,
                       accountBalance,
-                      accountBalanceDAI,
+                      accountBalanceToken,
                       accountBalanceLow,
                       initAccount,
                       initContract,
@@ -86,7 +114,8 @@ class App extends Component {
                       modals,
                       network,
                       transaction
-                    }) => (
+                    }) => {
+                      return (
                       <Box>
                         <Header
                           account={account}
@@ -95,7 +124,7 @@ class App extends Component {
                           contracts={contracts}
                           isMobile={isMobile}
                           accountBalance={accountBalance}
-                          accountBalanceDAI={accountBalanceDAI}
+                          accountBalanceToken={accountBalanceToken}
                           accountBalanceLow={accountBalanceLow}
                           initAccount={initAccount}
                           rejectAccountConnect={rejectAccountConnect}
@@ -107,6 +136,10 @@ class App extends Component {
                           validateAccount={validateAccount}
                           connectAndValidateAccount={connectAndValidateAccount}
                           handleMenuClick={this.selectTab.bind(this)}
+                          availableTokens={availableTokens}
+                          tokenConfig={this.state.tokenConfig}
+                          selectedToken={this.state.selectedToken}
+                          setSelectedToken={ e => { this.setSelectedToken(e) } }
                           modals={modals}
                           network={network}
                         />
@@ -116,7 +149,7 @@ class App extends Component {
                             web3={web3}
                             account={account}
                             accountBalance={accountBalance}
-                            accountBalanceDAI={accountBalanceDAI}
+                            accountBalanceToken={accountBalanceToken}
                             accountBalanceLow={accountBalanceLow}
                             initAccount={initAccount}
                             rejectAccountConnect={rejectAccountConnect}
@@ -140,14 +173,18 @@ class App extends Component {
                             isMobile={isMobile}
                             account={account}
                             accountBalance={accountBalance}
-                            accountBalanceDAI={accountBalanceDAI}
+                            accountBalanceToken={accountBalanceToken}
                             accountBalanceLow={accountBalanceLow}
                             updateSelectedTab={this.selectTab.bind(this)}
                             selectedTab={this.state.selectedTab}
+                            selectedToken={this.state.selectedToken}
+                            availableTokens={availableTokens}
+                            tokenConfig={this.state.tokenConfig}
+                            setSelectedToken={ e => { this.setSelectedToken(e) } }
                             network={network} />
                         ) : null}
                       </Box>
-                    )}
+                    )}}
                   </RimbleWeb3.Consumer>
                 </RimbleWeb3>
               );

@@ -223,7 +223,7 @@ class TxProgressBar extends Component {
                   </Flex>
                 ): (
                   <>
-                    <Text my={2} color={'dark-gray'}>Remaining time: <Text.span fontWeight={3}>{`${this.state.remainingTime}s`}</Text.span></Text>
+                    <Text mb={2} color={'dark-gray'}>{ this.props.waitText ? this.props.waitText : 'Remaining time:' } <Text.span fontWeight={3}>{`${this.state.remainingTime}s`}</Text.span></Text>
                     <Progress value={ this.state.percentage } />
                   </>
                 )

@@ -22,7 +22,7 @@ class CryptoInput extends Component {
             mx={'auto'}
             >
               <Flex width={[2/10]}>
-                <Image src={this.props.icon ? this.props.icon : `images/btn-${this.props.selectedAsset.toLowerCase()}.svg`} height={'32px'} ml={['0.5em','10px']} />
+                <Image src={this.props.icon ? this.props.icon : `images/tokens/${this.props.selectedAsset}.svg`} height={'32px'} ml={['0.5em','10px']} />
               </Flex>
               <Box width={8/10}>
                 <Form.Input
@@ -86,7 +86,7 @@ class CryptoInput extends Component {
                     {
                       parseFloat(this.props.balance)>0 ? (
                         <Link color={'primary'} hoverColor={'primary'} fontWeight={2} fontSize={1} lineHeight={'1.25'} onClick={ e => this.props.useEntireBalance(this.props.balance) }>
-                          {this.props.action} Max: {!this.props.isMobile ? parseFloat(this.props.balance).toFixed(6) : parseFloat(this.props.balance).toFixed(2) } { this.props.balanceLabel ? this.props.balanceLabel : this.props.selectedAsset }
+                          {this.props.action} Max: {!this.props.isMobile ? parseFloat(this.props.balance).toFixed( this.props.tokenDecimals && this.props.tokenDecimals<6 ? this.props.tokenDecimals : 6 ) : parseFloat(this.props.balance).toFixed(2) } { this.props.balanceLabel ? this.props.balanceLabel : this.props.selectedAsset }
                         </Link>
                       ) : null
                     }
@@ -136,21 +136,16 @@ class CryptoInput extends Component {
               </Button>
             </Flex>
           }
-          {
-            /*
-            <TxProgressBar hash={'0xd8718542754b99dc2b8ef49a753e4360804cfa555ac21d919c7a747ba2d5ce8a'} />
-            */
-          }
 
           {this.props.renderZeroExInstant && (
             <>
-              <Flex justifyContent={'center'} my={[2,3]} >
+              <Flex justifyContent={'center'} mt={[3,3]} mb={[2,3]}>
                 <Link className={styles.newLink} display={'flex'} color={'dark-gray'} hoverColor={'blue'} justifyContent={'center'} onClick={ e => { this.props.renderZeroExInstant(e) } }>
-                  <Flex flexDirection={'row'} width={[1,'14em']} borderRadius={3} className={styles.newPillContainer} p={'4px'}>
-                    <Flex width={3/11} alignItems={'center'} justifyContent={'center'} className={styles.newPill} color={'white'} fontSize={2} fontWeight={3} borderRadius={3}>
+                  <Flex flexDirection={'row'} width={'auto'} justifyContent={'center'} borderRadius={3} className={styles.newPillContainer} p={'4px'}>
+                    <Flex width={'50px'} alignItems={'center'} justifyContent={'center'} className={styles.newPill} color={'white'} fontSize={2} fontWeight={3} borderRadius={3}>
                       NEW
                     </Flex>
-                    <Flex width={8/11} justifyContent={'center'}>
+                    <Flex ml={2} mr={1} justifyContent={'center'}>
                       <Text textAlign={'center'} fontWeight={2} fontSize={1}>Get more {this.props.selectedAsset} now</Text>
                     </Flex>
                   </Flex>

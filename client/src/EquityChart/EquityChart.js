@@ -241,7 +241,7 @@ class EquityChart extends Component {
         "color": "hsl(162, 100%, 41%)",
         "aprs": [],
         "data": [],
-        'endpoint':'https://defiportfolio-backend.herokuapp.com/api/v1/markets/compound_v2/dai'
+        'endpoint':'https://defiportfolio-backend.herokuapp.com/api/v1/markets/compound_v2/'
       },
       {
         "id": "Fulcrum",
@@ -253,7 +253,7 @@ class EquityChart extends Component {
         "color": "hsl(197, 98%, 38%)",
         "aprs": [],
         "data": [],
-        'endpoint':'https://defiportfolio-backend.herokuapp.com/api/v1/markets/fulcrum/dai'
+        'endpoint':'https://defiportfolio-backend.herokuapp.com/api/v1/markets/fulcrum/'
       }/*
       {
         "id": "DyDx",
@@ -276,7 +276,7 @@ class EquityChart extends Component {
           let t;
           const monthTime = parseInt(60*60*24*31);
           for (t=graphStartTimestamp;t<graphEndTimestamp;t+=monthTime){
-            const endpoint = info.endpoint+'?start_date='+parseInt(t)+'&end_date='+(parseInt(t)+parseInt(monthTime));
+            const endpoint = info.endpoint+this.props.tokenConfig.defiPrime.token.toLowerCase()+'?start_date='+parseInt(t)+'&end_date='+(parseInt(t)+parseInt(monthTime));
 
             let remote_data = await this.makeCachedRequest(endpoint,43200);
 
@@ -558,7 +558,7 @@ class EquityChart extends Component {
     const MyResponsiveLine = (data,interestBoxes,txs) => (
       <Flex width={'100%'} flexDirection={'column'}>
         <Heading.h4 fontSize={[2,2]} py={[2,3]} px={[3,0]} textAlign={'center'} fontWeight={2} lineHeight={1.5} color={'dark-gray'}>
-          Interest earned with Idle on a <strong>{this.state.initialBalance} DAI</strong> lend for <strong>{this.state.days} days</strong>.
+          Interest earned with Idle on a <strong>{this.state.initialBalance} {this.props.selectedToken}</strong> lend for <strong>{this.state.days} days</strong>.
         </Heading.h4>
         <Flex width={'100%'} flexDirection={['column','row']} mt={[2,3]}>
           { interestBoxes }
@@ -680,7 +680,7 @@ class EquityChart extends Component {
               <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={ isIdle ? 1 : 1 } className={isIdle ? styles.gradientBg : null}>
                 <Flex flexDirection={'row'} alignItems={'center'}>
                   <Flex width={3/12} borderRight={'1px solid #eee'} justifyContent={'center'}>
-                    <Image src={`images/${v.icon}`} height={['1.3em', '2em']} verticalAlign={'middle'} />
+                    <Image src={`images/${v.icon}`} height={['1.7em', '2em']} verticalAlign={'middle'} />
                   </Flex>
                   <Box width={6/12} borderRight={'1px solid #eee'}>
                     <Text color={isIdle ? 'white' : 'copyColor'} fontSize={[3,'28px']} fontWeight={4} textAlign={'center'}>

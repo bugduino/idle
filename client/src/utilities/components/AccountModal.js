@@ -16,7 +16,7 @@ import styles from '../../CryptoInput/CryptoInput.module.scss';
 
 export default function (props) {
   const context = useWeb3Context();
-  const { account, accountBalance, accountBalanceDAI, idleTokenBalance, isOpen, closeModal } = props;
+  const { account, selectedToken, accountBalance, accountBalanceToken, idleTokenBalance, isOpen, closeModal } = props;
 
   const balances = [
     {
@@ -24,11 +24,11 @@ export default function (props) {
       'amount':accountBalance
     },
     {
-      'icon':'images/btn-dai.svg',
-      'amount':accountBalanceDAI
+      'icon':'images/tokens/'+selectedToken+'.svg',
+      'amount':accountBalanceToken
     },
     {
-      'icon':'images/idle-dai.png',
+      'icon':'images/tokens/idleDAI.png',
       'amount':idleTokenBalance
     }
   ];

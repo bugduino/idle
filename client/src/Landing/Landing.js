@@ -11,7 +11,6 @@ let scrolling = false;
 
 class Landing extends Component {
   state = {
-    selectedToken:'DAI',
     activeCarousel:1,
     carouselIntervalID:null,
     startCarousel:null,
@@ -42,7 +41,7 @@ class Landing extends Component {
         if (this.state.carouselIntervalID){
           window.clearTimeout(this.state.carouselIntervalID);
         }
-        const intervalID = window.setTimeout( async () => setActiveCarousel(this.state.activeCarousel+1) ,10000);
+        const intervalID = window.setTimeout( async () => setActiveCarousel(this.state.activeCarousel+1) ,6500);
         this.setState({carouselIntervalID:intervalID});
       }
     }
@@ -111,15 +110,38 @@ class Landing extends Component {
     );
   }
 
+  getCurrentProtocol = async (bestToken) => {
+    bestToken = bestToken ? bestToken : await this.genericIdleCall('bestToken');
+    if (bestToken){
+      // console.log('getCurrentProtocol',bestToken,this.props.tokenConfig.protocols);
+      const bestProtocol = this.props.tokenConfig.protocols.find(p => p.address.toString().toLowerCase() === bestToken.toString().toLowerCase());
+      return bestProtocol ? bestProtocol.name : null;
+    }
+    return false;
+  }
+
   getAprs = async () => {
-    let aprs = await this.genericIdleCall('getAPRs');
-    // console.lof(aprs);
-    this.setState({
+    const aprs = await this.genericIdleCall('getAPRs');
+    if (!aprs){
+      setTimeout(() => {
+        this.getAprs();
+      },5000);
+      return false;
+    }
+    const bestToken = await this.genericIdleCall('bestToken');
+    const currentProtocol = await this.getCurrentProtocol(bestToken);
+    const maxRate = this.toEth(Math.max(aprs[0],aprs[1]));
+    const currentRate = bestToken ? (bestToken.toString().toLowerCase() === this.props.tokenConfig.protocols[0].address ? aprs[0] : aprs[1]) : null;
+    // console.log('Landing.js getAprs',bestToken,currentRate.toString());
+    const state = {
       [`compoundRate`]: aprs ? (+this.toEth(aprs[0])).toFixed(2) : '0.00',
       [`fulcrumRate`]: aprs ? (+this.toEth(aprs[1])).toFixed(2) : '0.00',
-      [`maxRate`]: aprs ? (+this.toEth(Math.max(aprs[0],aprs[1]))).toFixed(2) : '0.00',
-      needsUpdate: false
-    });
+      [`maxRate`]: aprs ? ((+maxRate).toFixed(2)) : '0.00',
+      currentProtocol,
+      currentRate: currentRate ? (+this.toEth(currentRate)).toFixed(2) : null
+    };
+    this.setState(state);
+    return state;
   };
 
   genericContractCall = async (contractName, methodName, params = []) => {
@@ -232,18 +254,18 @@ class Landing extends Component {
     const { network } = this.props;
     const maxOpacity = 0.5;
     const minOpacity = 0.1;
-    const fulcrumIsBest = this.state.fulcrumRate && this.state.fulcrumRate === this.state.maxRate;
-    const compoundIsBest = this.state.compoundRate && this.state.compoundRate === this.state.maxRate;
+    const fulcrumIsBest = this.state.currentProtocol==='fulcrum';
+    const compoundIsBest = this.state.currentProtocol==='compound';
     const compoundOpacity = compoundIsBest ? maxOpacity : minOpacity;
     const fulcrumOpacity = fulcrumIsBest ? maxOpacity : minOpacity;
-    const idleOpacity = this.state.maxRate ? maxOpacity : minOpacity;
+    const idleOpacity = (this.state.maxRate && (fulcrumIsBest || compoundIsBest)) ? maxOpacity : minOpacity;
     return (
       <Box
         style={{
           paddingBottom: !network.isCorrectNetwork ? "8em" : "0"
         }}
       >
-        <Box className={[styles.headerContainer]} px={[3,6]} pt={['2em', '2em']}>
+        <Box className={[styles.headerContainer]} px={[3,6]} pt={['2em', '3em']}>
           <Box position={'relative'} zIndex={10}>
             <Flex flexDirection={'column'} alignItems={'center'} maxWidth={["50em", "60em"]} mx={'auto'} pb={3} textAlign={'center'} pt={['8vh', '8vh']}>
               <Heading.h1 fontFamily={'sansSerif'} lineHeight={'1.1em'} mb={'0.2em'} fontSize={['2.5em',7]} textAlign={'center'} color={'white'}>
@@ -255,8 +277,11 @@ class Landing extends Component {
             </Flex>
             <Flex flexDirection={'column'} alignItems={'center'} maxWidth={["50em", "50em"]} mx={'auto'} textAlign={'center'}>
               <LandingForm
-                selectedToken={this.state.selectedToken}
-                accountBalanceDAI={this.props.accountBalanceDAI}
+                getAprs={this.getAprs}
+                selectedToken={this.props.selectedToken}
+                tokenConfig={this.props.tokenConfig}
+                setSelectedToken={this.props.setSelectedToken}
+                accountBalanceToken={this.props.accountBalanceToken}
                 isMobile={this.props.isMobile}
                 updateSelectedTab={this.props.updateSelectedTab}
                 selectedTab={this.props.selectedTab} />
@@ -562,10 +587,10 @@ class Landing extends Component {
               <Flex width={[1,1/2]} flexDirection={['row','column']}>
                 <Flex width={[1/2,1]} flexDirection={['column','row']} mr={[1,0]}>
                   <Flex width={[1,1/2]} flexDirection={'column'}>
-                    <Flex flexDirection={'row'} justifyContent={['center','left']} alignItems={'center'}>
-                      <Image src="images/compound-mark-green.png" height={['1.3em', '2em']} mx={[0,3]} my={[2,0]} verticalAlign={['middle','bottom']} />
+                    <Flex flexDirection={'row'} justifyContent={'center'} alignItems={'center'}>
+                      <Image src="images/compound-mark-green.png" height={['1.3em', '2em']} mr={[1,2]} my={[2,0]} verticalAlign={['middle','bottom']} />
                       <Text.span fontSize={[2,3]} textAlign={['center','left']} fontWeight={3} color={'dark-gray'}>
-                        Compound DAI
+                        {this.props.tokenConfig.protocols[0].token}
                       </Text.span>
                     </Flex>
                     <Box>
@@ -582,10 +607,10 @@ class Landing extends Component {
                 </Flex>
                 <Flex width={[1/2,1]} flexDirection={['column','row']} mt={[0,4]} ml={[1,0]}>
                   <Flex width={[1,1/2]} flexDirection={'column'}>
-                    <Flex flexDirection={'row'} justifyContent={['center','left']} alignItems={'center'}>
-                      <Image src="images/fulcrum-mark.png" height={['1.3em', '2em']} mx={[0,3]} my={[2,0]} verticalAlign={['middle','bottom']} />
+                    <Flex flexDirection={'row'} justifyContent={'center'} alignItems={'center'}>
+                      <Image src="images/fulcrum-mark.png" height={['1.3em', '2em']} mr={[1,2]} my={[2,0]} verticalAlign={['middle','bottom']} />
                       <Text.span fontSize={[2,3]} textAlign={['center','left']} fontWeight={3} color={'dark-gray'}>
-                        Fulcrum DAI
+                        {this.props.tokenConfig.protocols[1].token}
                       </Text.span>
                     </Flex>
                     <Box>
@@ -601,6 +626,7 @@ class Landing extends Component {
                   </Box>
                 </Flex>
               </Flex>
+
               <Flex width={[1,1/2]} flexDirection={['column','row']}>
                 <Flex zIndex={'-1'} width={[1,2/5]} flexDirection={['column','row']} position={'relative'} height={['50px','100%']}>
                   <Box className={styles.rebalanceCircle} position={'absolute'} zIndex={'2'} width={['50px','72px']} height={['50px','72px']} backgroundColor={'white'} borderRadius={'50%'} boxShadow={2} left={['50%','-44px']} top={['0','50%']} mt={['-41px','-14px']} ml={['-25px',0]}></Box>
@@ -610,15 +636,15 @@ class Landing extends Component {
                 <Flex width={[1,3/5]} flexDirection={'column'} position={'relative'}>
                   <Flex width={1} flexDirection={'column'} height={'100%'} justifyContent={'center'}>
                     <Flex justifyContent={'center'} alignItems={'center'}>
-                      <Image src="images/idle-mark.png" height={['1.3em', '2em']} mr={[1,1]} verticalAlign={'middle'} />
+                      <Image src="images/idle-mark.png" height={['1.3em', '2em']} mr={[1,2]} verticalAlign={'middle'} />
                       <Text.span fontSize={[4,5]} textAlign={'center'} fontWeight={3} color={'dark-gray'}>
-                        Idle DAI
+                        {this.props.tokenConfig.idle.token}
                       </Text.span>
                     </Flex>
                     <Box>
-                      <Card my={[2,2]} p={4} borderRadius={'10px'} boxShadow={this.state.maxRate ? 4 : 0}>
+                      <Card my={[2,2]} p={4} borderRadius={'10px'} boxShadow={this.state.currentRate ? 4 : 0}>
                         <Text fontSize={[5,7]} fontWeight={4} textAlign={'center'}>
-                          {this.state.maxRate}<Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
+                          {this.state.currentRate}<Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
                         </Text>
                       </Card>
                     </Box>
@@ -664,7 +690,8 @@ class Landing extends Component {
             </Heading.h4>
             <Flex height={['auto','500px']}>
               <EquityChart
-                selectedToken={this.state.selectedToken}
+                tokenConfig={this.props.tokenConfig}
+                selectedToken={this.props.selectedToken}
                 isMobile={this.props.isMobile}
                 account={this.props.account}
                 web3={this.props.web3}

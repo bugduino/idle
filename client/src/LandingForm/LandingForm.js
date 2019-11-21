@@ -27,7 +27,9 @@ class LandingForm extends Component {
             <SmartContractControls
               web3={web3}
               selectedToken={this.props.selectedToken}
-              accountBalanceDAI={this.props.accountBalanceDAI}
+              tokenConfig={this.props.tokenConfig}
+              setSelectedToken={this.props.setSelectedToken}
+              accountBalanceToken={this.props.accountBalanceToken}
               isMobile={this.props.isMobile}
               updateSelectedTab={this.props.updateSelectedTab}
               selectedTab={this.props.selectedTab}
