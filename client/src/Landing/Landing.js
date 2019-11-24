@@ -286,7 +286,7 @@ class Landing extends Component {
                 updateSelectedTab={this.props.updateSelectedTab}
                 selectedTab={this.props.selectedTab} />
             </Flex>
-            <Flex flexDirection={'column'} py={[3,5]} alignItems={'center'}>
+            <Flex flexDirection={'column'} py={[3,4]} alignItems={'center'}>
               <Link onClick={(e) => {this.scrollIt(document.getElementById('how-it-works'))}} textAlign={'center'} color={'dark-gray'} hoverColor={'dark-gray'} fontSize={2} fontWeight={3}>
                 <Flex flexDirection={'column'} py={[2,1]} alignItems={'center'}>
                   <Box>
@@ -725,7 +725,7 @@ class Landing extends Component {
               <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} my={3} color={'dark-gray'}>
                 Start a Conversation
               </Heading.h3>
-              <Link textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={2} color={'dark-gray'} hoverColor={'blue'}>idlefinance.info@gmail.com</Link>
+              <Link textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={2} color={'dark-gray'} hoverColor={'blue'}>info@idle.finance</Link>
             </Flex>
 
             <Flex width={[1,3/10]} flexDirection={'column'} height={['auto','100%']}>

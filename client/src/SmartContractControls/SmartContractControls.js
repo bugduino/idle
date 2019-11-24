@@ -1171,7 +1171,7 @@ class SmartContractControls extends React.Component {
       // Skip other tokens
       // customLog('renderPrevTxs',tx.tokenSymbol,this.props.selectedToken,tx.to.toLowerCase(),this.props.tokenConfig.idle.address.toLowerCase());
       if (tx.contractAddress !== this.props.tokenConfig.address){
-        return false;
+        return null;
       }
 
       const date = new Date(tx.timeStamp*1000);
@@ -1251,9 +1251,8 @@ class SmartContractControls extends React.Component {
     txs = txs
             .reverse()
             .filter(function( element ) {
-               return element !== undefined;
+               return (element !== undefined) && (element !== null);
             });
-
 
     return (
       <Flex flexDirection={'column'} width={[1,'90%']} m={'0 auto'}>
