@@ -8,7 +8,7 @@ import {
 import ModalCard from './ModalCard';
 
 export default function WelcomeModal(props) {
-  const { isOpen, closeModal, tokenName, baseTokenName } = props;
+  const { isOpen, closeModal } = props;
   const walletProvider = localStorage ? ' '+localStorage.getItem('walletProvider')+' ' : null;
   // const icon = walletProvider ? walletProvider.trim().toLowerCase()+'.svg' : 'idle-dai.png';
   const icon = 'idle-dai.png';

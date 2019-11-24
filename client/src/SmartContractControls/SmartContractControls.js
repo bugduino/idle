@@ -11,11 +11,6 @@ import axios from 'axios';
 import moment from 'moment';
 import CountUp from 'react-countup';
 
-import IdleDAI from "../contracts/IdleDAI.json";
-import cDAI from '../abis/compound/cDAI';
-import DAI from '../contracts/IERC20Generic.json';
-import iDAI from '../abis/fulcrum/iToken.json';
-
 const env = process.env;
 
 // mainnet
@@ -172,7 +167,7 @@ class SmartContractControls extends React.Component {
         return obj;
       }, {});
 
-    const state = {};
+    // const state = {};
     Object.keys(pendingTransactions).forEach((txHash,i) => {
       const tx = pendingTransactions[txHash];
       // customLog('getPendingTransactions',tx);
@@ -200,7 +195,6 @@ class SmartContractControls extends React.Component {
               // this.deleteTransaction(tx);
             }
           });
-
         break;
         case 'redeemIdleToken':
           window.web3.eth.getTransaction(txHash,(err,transaction) => {
@@ -226,6 +220,8 @@ class SmartContractControls extends React.Component {
               // this.deleteTransaction(tx);
             }
           });
+        break;
+        default:
         break;
       }
     });
@@ -864,8 +860,6 @@ class SmartContractControls extends React.Component {
     // Add missing executed transactions
     if (this.state.executedTxs){
 
-      let missingTxs = 0;
-
       console.log('getPrevTxs adding executedTxs',this.state.executedTxs);
 
       const asyncForEach = async(array, callback) => {
@@ -877,9 +871,7 @@ class SmartContractControls extends React.Component {
       await asyncForEach(Object.keys(this.state.executedTxs),async (key,i) => {
         const tx = this.state.executedTxs[key];
 
-        if (!transactions[tx.transactionHash]){
-          missingTxs++;
-        } else {
+        if (transactions[tx.transactionHash]){
           return;
         }
 
@@ -902,6 +894,8 @@ class SmartContractControls extends React.Component {
           case 'redeemIdleToken':
             realTx.status = 'Redeemed';
             realTx.value = tx.params ? (+this.toEth(tx.params[0])*parseFloat(this.state.idleTokenPrice)).toString() : 0;
+          break;
+          default:
           break;
         }
         realTx.tokenSymbol = this.props.selectedToken;
@@ -1077,6 +1071,7 @@ class SmartContractControls extends React.Component {
         await this.rebalanceCheck();
       }
 
+      /*
       // Check if first time entered
       let welcomeIsOpen = prevProps.account !== this.props.account;
       if (localStorage){
@@ -1085,6 +1080,7 @@ class SmartContractControls extends React.Component {
       } else {
         welcomeIsOpen = false;
       }
+      */
 
       this.setState({
         updateInProgress: false
@@ -1164,7 +1160,7 @@ class SmartContractControls extends React.Component {
 
     const txsIndexes = Object.keys(prevTxs);
     const txsToShow = 10;
-    let totalInterestsAccrued = 0;
+    // let totalInterestsAccrued = 0;
     let depositedSinceLastRedeem = 0;
     let totalRedeemed = 0;
 
@@ -1175,7 +1171,7 @@ class SmartContractControls extends React.Component {
       // Skip other tokens
       // customLog('renderPrevTxs',tx.tokenSymbol,this.props.selectedToken,tx.to.toLowerCase(),this.props.tokenConfig.idle.address.toLowerCase());
       if (tx.contractAddress !== this.props.tokenConfig.address){
-        return;
+        return false;
       }
 
       const date = new Date(tx.timeStamp*1000);
@@ -1210,11 +1206,10 @@ class SmartContractControls extends React.Component {
             depositedSinceLastRedeem = Math.max(0,depositedSinceLastRedeem);
             totalRedeemed = 0;
           }
-          
 
-          if (interest){
-            totalInterestsAccrued += interest;
-          }
+          // if (interest){
+          //   totalInterestsAccrued += interest;
+          // }
         break;
         default:
           color = 'grey';
@@ -1311,9 +1306,7 @@ class SmartContractControls extends React.Component {
     let hasBalance = !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && this.trimEth(this.state.tokenToRedeemParsed) > 0;
     const navPool = this.getFormattedBalance(this.state.navPool,this.props.selectedToken);
     const reedemableFunds = this.getFormattedBalance(this.state.tokenToRedeemParsed,this.props.selectedToken,9,12);
-    const oldReedemableFunds = this.getFormattedBalance(this.state.oldDAIToRedeem,this.props.selectedToken);
     const currentEarnings = this.getFormattedBalance(this.state.earning,this.props.selectedToken,9,12);
-    const oldEarning = this.getFormattedBalance(this.state.oldEarning,this.props.selectedToken);
     const idleTokenPrice = this.getFormattedBalance(this.state.idleTokenPrice,this.props.selectedToken);
     const OldIdleDAIPrice = this.getFormattedBalance(this.state.OldIdleDAIPrice,this.props.selectedToken);
     const depositedFunds = this.getFormattedBalance(this.state.amountLent,this.props.selectedToken);
@@ -1774,114 +1767,117 @@ class SmartContractControls extends React.Component {
                         ) 
                     }
                     {
-                      hasBalance && this.state.showFundsInfo ?
-                        !isNaN(this.trimEth(this.state.earningPerYear)) ? (
+                      hasBalance && this.state.showFundsInfo &&
                         <>
-                          <Box my={[3,4]} pb={3,4} borderBottom={'1px solid #D6D6D6'}>
-                            <Flex flexDirection={'column'} width={[1,'90%']} m={'0 auto'}>
-                              <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'dark-gray'}>
-                                Funds overview
-                              </Heading.h3>
-                              <Flex flexDirection={['column','row']} width={'100%'}>
-                                <Flex flexDirection={'row'} py={[2,3]} width={[1,'1/2']} m={'0 auto'}>
-                                  <Box width={1/2}>
-                                    <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                      Deposited funds
-                                    </Text>
-                                    <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                      { depositedFunds }
-                                    </Heading.h3>
-                                  </Box>
-                                  <Box width={1/2}>
-                                    <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                      Earning
-                                    </Text>
-                                    <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                      { earningPerc }
-                                    </Heading.h3>
-                                  </Box>
-                                </Flex>
-                                <Flex flexDirection={'row'} py={[2,3]} width={[1,'1/2']} m={'0 auto'}>
-                                  <Box width={1/2}>
-                                    <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                      Current holdings
-                                    </Text>
-                                    <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                      { hasOldBalance ? balanceOfOldIdleDAI : balanceOfIdleDAI }
-                                    </Heading.h3>
-                                  </Box>
-                                  <Box width={1/2}>
-                                    <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                      {this.props.tokenConfig.idle.token} price
-                                    </Text>
-                                    <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                      { hasOldBalance ? OldIdleDAIPrice : idleTokenPrice }
-                                    </Heading.h3>
-                                  </Box>
-                                </Flex>
-                              </Flex>
-                            </Flex>
-                          </Box>
-                          <Box my={[3,4]} pb={3,4} borderBottom={'1px solid #D6D6D6'}>
-                            <Flex flexDirection={'column'} width={[1,'90%']} m={'0 auto'}>
-                              <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'dark-gray'}>
-                                Estimated earnings
-                              </Heading.h3>
-                              <Flex flexDirection={['column','row']} width={'100%'}>
-                                <Flex flexDirection={'row'} py={[2,3]} width={[1,'1/2']} m={'0 auto'}>
-                                  <Box width={1/2}>
-                                    <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                      Daily
-                                    </Text>
-                                    <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                      {earningPerDay}
-                                    </Heading.h3>
-                                  </Box>
-                                  <Box width={1/2}>
-                                    <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                      Weekly
-                                    </Text>
-                                    <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                      {earningPerWeek}
-                                    </Heading.h3>
-                                  </Box>
-                                </Flex>
-                                <Flex flexDirection={'row'} py={[2,3]} width={[1,'1/2']} m={'0 auto'}>
-                                  <Box width={1/2}>
-                                    <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                      Monthly
-                                    </Text>
-                                    <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                      {earningPerMonth}
-                                    </Heading.h3>
-                                  </Box>
-                                  <Box width={1/2}>
-                                    <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                      Yearly
-                                    </Text>
-                                    <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                      {earningPerYear}
-                                    </Heading.h3>
-                                  </Box>
+                          {
+                          !isNaN(this.trimEth(this.state.earningPerYear)) ? (
+                          <>
+                            <Box my={[3,4]} pb={[3,4]} borderBottom={'1px solid #D6D6D6'}>
+                              <Flex flexDirection={'column'} width={[1,'90%']} m={'0 auto'}>
+                                <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'dark-gray'}>
+                                  Funds overview
+                                </Heading.h3>
+                                <Flex flexDirection={['column','row']} width={'100%'}>
+                                  <Flex flexDirection={'row'} py={[2,3]} width={[1,'1/2']} m={'0 auto'}>
+                                    <Box width={1/2}>
+                                      <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                        Deposited funds
+                                      </Text>
+                                      <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                        { depositedFunds }
+                                      </Heading.h3>
+                                    </Box>
+                                    <Box width={1/2}>
+                                      <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                        Earning
+                                      </Text>
+                                      <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                        { earningPerc }
+                                      </Heading.h3>
+                                    </Box>
+                                  </Flex>
+                                  <Flex flexDirection={'row'} py={[2,3]} width={[1,'1/2']} m={'0 auto'}>
+                                    <Box width={1/2}>
+                                      <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                        Current holdings
+                                      </Text>
+                                      <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                        { hasOldBalance ? balanceOfOldIdleDAI : balanceOfIdleDAI }
+                                      </Heading.h3>
+                                    </Box>
+                                    <Box width={1/2}>
+                                      <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                        {this.props.tokenConfig.idle.token} price
+                                      </Text>
+                                      <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                        { hasOldBalance ? OldIdleDAIPrice : idleTokenPrice }
+                                      </Heading.h3>
+                                    </Box>
+                                  </Flex>
                                 </Flex>
                               </Flex>
+                            </Box>
+                            <Box my={[3,4]} pb={[3,4]} borderBottom={'1px solid #D6D6D6'}>
+                              <Flex flexDirection={'column'} width={[1,'90%']} m={'0 auto'}>
+                                <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'dark-gray'}>
+                                  Estimated earnings
+                                </Heading.h3>
+                                <Flex flexDirection={['column','row']} width={'100%'}>
+                                  <Flex flexDirection={'row'} py={[2,3]} width={[1,'1/2']} m={'0 auto'}>
+                                    <Box width={1/2}>
+                                      <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                        Daily
+                                      </Text>
+                                      <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                        {earningPerDay}
+                                      </Heading.h3>
+                                    </Box>
+                                    <Box width={1/2}>
+                                      <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                        Weekly
+                                      </Text>
+                                      <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                        {earningPerWeek}
+                                      </Heading.h3>
+                                    </Box>
+                                  </Flex>
+                                  <Flex flexDirection={'row'} py={[2,3]} width={[1,'1/2']} m={'0 auto'}>
+                                    <Box width={1/2}>
+                                      <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                        Monthly
+                                      </Text>
+                                      <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                        {earningPerMonth}
+                                      </Heading.h3>
+                                    </Box>
+                                    <Box width={1/2}>
+                                      <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                        Yearly
+                                      </Text>
+                                      <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                        {earningPerYear}
+                                      </Heading.h3>
+                                    </Box>
+                                  </Flex>
+                                </Flex>
+                              </Flex>
+                            </Box>
+                          </>
+                          ) : (
+                            <Flex
+                              py={[2,3]}
+                              justifyContent={'center'}
+                              alignItems={'center'}
+                              textAlign={'center'}>
+                              <Loader size="40px" /> <Text ml={2}>Processing funds info...</Text>
                             </Flex>
-                          </Box>
+                          )
+                        }
                         </>
-                        ) : (
-                          <Flex
-                            py={[2,3]}
-                            justifyContent={'center'}
-                            alignItems={'center'}
-                            textAlign={'center'}>
-                            <Loader size="40px" /> <Text ml={2}>Processing funds info...</Text>
-                          </Flex>
-                        )
-                      : ''
                     }
                     {
                       this.state.showFundsInfo &&
-                        <Box my={[3,4]} pb={3,4}>
+                        <Box my={[3,4]} pb={[3,4]}>
                           {
                             this.state.prevTxs ? (
                               this.renderPrevTxs()

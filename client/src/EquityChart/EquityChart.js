@@ -151,7 +151,7 @@ class EquityChart extends Component {
       for (var i=0;i<graphData.length;i++){
         log.push(graphData[i].data[j].b);
         log.push(parseFloat(graphData[i].data[j].a.y).toFixed(4)+'%');
-        if (i==graphData.length-1){
+        if (i===graphData.length-1){
           log.push(this.getProtocolByAddress(graphData,graphData[i].data[j].a.address).id);
         }
       }
@@ -431,7 +431,7 @@ class EquityChart extends Component {
       const nextTx = nextBlockTime ? idleBlocksOrdered[nextBlockTime] : null;
       const maxTimestamp = nextTx ? nextTx.timeStamp : null;
       const apr = getClosestProtocolAprByTimestamp(tx.to,blockTime,maxTimestamp); // Use this to obtain the real APR
-      const max_apr = getHighestAprByTimestamp(blockTime,maxTimestamp); // Use this to obtain always the best APR
+      // const max_apr = getHighestAprByTimestamp(blockTime,maxTimestamp); // Use this to obtain always the best APR
 
       if (apr){
         nextTimestamp = apr.t;
@@ -439,9 +439,9 @@ class EquityChart extends Component {
         apr.blockTime = blockTime;
         idleData.push(apr);
 
-        const protocolID = this.getProtocolByAddress(graphData,apr.address).id;
         const latestIdleApr = idleData.length>1 ? idleData[idleData.length-2] : null;
 
+        // const protocolID = this.getProtocolByAddress(graphData,apr.address).id;
         // console.log(moment(blockTime*1000).format('DD/MM/YYYY'),moment(apr.t*1000).format('DD/MM/YYYY'),protocolID,apr.y,moment(max_apr.t*1000).format('DD/MM/YYYY'),max_apr.y);
 
         // Check if skipped some days between last and current apr
@@ -665,13 +665,14 @@ class EquityChart extends Component {
       const interestBoxes = graphData.map(v=>{
         const isIdle = v.id==='Idle';
         const interestEarned = parseFloat(v.data[v.data.length-1].y);
-        const finalBalance = this.state.initialBalance+interestEarned;
-        const percentageEarned = (finalBalance/this.state.initialBalance-1);
         const secondsPassed = parseInt(v.data[v.data.length-1].t)-parseInt(v.data[0].t);
-        // const percentageEarnedPerSecond = percentageEarned/secondsPassed;
         const interestEarnedPerSecond = interestEarned/secondsPassed;
         const finalBalanceAfterYear = this.state.initialBalance+(interestEarnedPerSecond*this.state.secondsInYear);
         const annualReturn = parseFloat((finalBalanceAfterYear/this.state.initialBalance-1)*100).toFixed(2);
+        
+        // const finalBalance = this.state.initialBalance+interestEarned;
+        // const percentageEarned = (finalBalance/this.state.initialBalance-1);
+        // const percentageEarnedPerSecond = percentageEarned/secondsPassed;
         // console.log(v.id,moment(v.data[0].t*1000).format('DD/MM/YYYY'),moment(v.data[v.data.length-1].t*1000).format('DD/MM/YYYY'),interestEarned,finalBalance,percentageEarned,secondsPassed,interestEarnedPerSecond,finalBalanceAfterYear,annualReturn);
 
         return (

@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Heading, Box, Flex, Form, Button, Image, Link, Text, Pill } from 'rimble-ui'
+import { Heading, Box, Flex, Form, Button, Image, Link, Text } from 'rimble-ui'
 import styles from './CryptoInput.module.scss';
 
 class CryptoInput extends Component {

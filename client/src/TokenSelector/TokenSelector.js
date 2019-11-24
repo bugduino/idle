@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Image, Flex, Text, Icon } from 'rimble-ui';
+import { Flex } from 'rimble-ui';
 import styles from './TokenSelector.module.scss';
 import TokenSelectorItem from './TokenSelectorItem.js';
 
@@ -27,6 +27,7 @@ class TokenSelector extends Component {
                           <TokenSelectorItem key={'token_selector_'+token} isChild={true} token={token} handleClick={ e => {this.selectToken(token) }} />
                         );
                       }
+                      return null;
                     });
 
     return (
