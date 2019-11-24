@@ -22,14 +22,12 @@ class Faquestion extends Component {
         backgroundColor={'white'}
         borderRadius={ this.state.isShowingAnswer ? '30px' : '50px' }
         boxShadow={1}
-        onClick={this.toggleAnswer.bind(this)}
       >
-        <Flex flexDirection={'row'} alignItems={'center'} width={1}>
+        <Flex flexDirection={'row'} alignItems={'center'} width={1} onClick={this.toggleAnswer.bind(this)} style={{cursor: 'pointer'}}>
           <Box width={4/5}>
             <Heading.h4
               fontSize={[1,2]}
               fontFamily={'sansSerif'}
-              style={{cursor: 'pointer'}}
               fontWeight={3}
               color={this.state.isShowingAnswer ? 'blue' : 'dark-gray'}
               my={0}>

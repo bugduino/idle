@@ -1,6 +1,6 @@
 import styles from './SmartContractControls.module.scss';
 import React from "react";
-import { Form, Flex, Box, Heading, Text, Button, Link, Icon, Pill, Loader, Flash, Image } from "rimble-ui";
+import { Form, Flex, Box, Heading, Text, Button, Link, Icon, Pill, Loader, Image } from "rimble-ui";
 import BigNumber from 'bignumber.js';
 import TxProgressBar from '../TxProgressBar/TxProgressBar.js';
 import CryptoInput from '../CryptoInput/CryptoInput.js';
@@ -1307,11 +1307,9 @@ class SmartContractControls extends React.Component {
     const reedemableFunds = this.getFormattedBalance(this.state.tokenToRedeemParsed,this.props.selectedToken,9,12);
     const currentEarnings = this.getFormattedBalance(this.state.earning,this.props.selectedToken,9,12);
     const idleTokenPrice = this.getFormattedBalance(this.state.idleTokenPrice,this.props.selectedToken);
-    const OldIdleDAIPrice = this.getFormattedBalance(this.state.OldIdleDAIPrice,this.props.selectedToken);
     const depositedFunds = this.getFormattedBalance(this.state.amountLent,this.props.selectedToken);
     const earningPerc = !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && this.trimEth(this.state.tokenToRedeemParsed)>0 ? this.getFormattedBalance(this.BNify(this.state.tokenToRedeemParsed).div(this.BNify(this.state.amountLent)).minus(1).times(100),'%',4) : '0%';
     const balanceOfIdleDAI = this.getFormattedBalance(this.state.tokenBalanceBNify,this.props.tokenConfig.idle.token);
-    const balanceOfOldIdleDAI = this.getFormattedBalance(this.state.balanceOfOldIdleDAI,this.props.tokenConfig.idle.token);
 
     let earningPerDay = this.getFormattedBalance((this.state.earningPerYear/daysInYear),this.props.selectedToken,4);
     const earningPerWeek = this.getFormattedBalance((this.state.earningPerYear/daysInYear*7),this.props.selectedToken,4);

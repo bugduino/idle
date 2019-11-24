@@ -286,7 +286,7 @@ class Landing extends Component {
                 updateSelectedTab={this.props.updateSelectedTab}
                 selectedTab={this.props.selectedTab} />
             </Flex>
-            <Flex flexDirection={'column'} py={[3,4]} alignItems={'center'}>
+            <Flex flexDirection={'column'} py={[3,4]} mb={[3,5]} alignItems={'center'}>
               <Link onClick={(e) => {this.scrollIt(document.getElementById('how-it-works'))}} textAlign={'center'} color={'dark-gray'} hoverColor={'dark-gray'} fontSize={2} fontWeight={3}>
                 <Flex flexDirection={'column'} py={[2,1]} alignItems={'center'}>
                   <Box>
