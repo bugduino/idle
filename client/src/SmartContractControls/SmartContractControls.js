@@ -10,7 +10,7 @@ import moment from 'moment';
 
 import IdleDAI from "../contracts/IdleDAI.json";
 import cDAI from '../abis/compound/cDAI';
-import DAI from '../contracts/IERC20.json';
+import DAI from '../contracts/IERC20Generic.json';
 import iDAI from '../abis/fulcrum/iToken.json';
 
 const env = process.env;
@@ -620,7 +620,7 @@ class SmartContractControls extends React.Component {
             { this.state.showMigrationWarning && this.props.account && this.state.DAIToRedeem && 
               <Flash variant="warning" width={[1,9/10]} mx={'auto'} position={'relative'} className={styles.noOutline}>
                 <Text textAlign={'center'}>
-                  Since 18th of November 2019, existing Single-Collateral Dai will be referred to as "Sai", while Multi-Collateral Dai will be called "Dai". <Link size={'small'} href={'https://medium.com/@idlefinance/mcd-transition-update-on-idle-8d6dd75a156d'} target={'\_blank'} color={'blue'} hoverColor={'blue'}>Read more.</Link>
+                  Since 18th of November 2019, existing Single-Collateral Dai will be referred to as "Sai", while Multi-Collateral Dai will be called "Dai". <Link size={'small'} href={'https://medium.com/@idlefinance/mcd-transition-update-on-idle-8d6dd75a156d'} target={'_blank'} color={'blue'} hoverColor={'blue'}>Read more.</Link>
                 </Text>
                 <Link className={styles.closeCross} textAlign={'center'} color={'blue'} hoverColor={'blue'} onClick={ e => { this.closeMigrationWarning(e); } }>✕</Link>
               </Flash>
