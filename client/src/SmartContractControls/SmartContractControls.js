@@ -1313,7 +1313,6 @@ class SmartContractControls extends React.Component {
     const earningPerc = !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && this.trimEth(this.state.tokenToRedeemParsed)>0 ? this.getFormattedBalance(this.BNify(this.state.tokenToRedeemParsed).div(this.BNify(this.state.amountLent)).minus(1).times(100),'%',4) : '0%';
     const balanceOfIdleDAI = this.getFormattedBalance(this.state.tokenBalanceBNify,this.props.tokenConfig.idle.token);
     const balanceOfOldIdleDAI = this.getFormattedBalance(this.state.balanceOfOldIdleDAI,this.props.tokenConfig.idle.token);
-    const hasOldBalance = !isNaN(this.trimEth(this.state.oldDAIToRedeem)) && this.trimEth(this.state.oldDAIToRedeem) > 0;
 
     let earningPerDay = this.getFormattedBalance((this.state.earningPerYear/daysInYear),this.props.selectedToken,4);
     const earningPerWeek = this.getFormattedBalance((this.state.earningPerYear/daysInYear*7),this.props.selectedToken,4);
@@ -1455,59 +1454,46 @@ class SmartContractControls extends React.Component {
                   Earn <Text.span fontWeight={'bold'} fontSize={[3,4]}>{this.state.maxRate}% APR</Text.span> on your <Text.span fontWeight={'bold'} fontSize={[3,4]}>{this.props.selectedToken}</Text.span>
                 </Heading.h3>
 
-                {hasOldBalance ?
-                  <Flash variant="warning" width={1}>
-                    We have released a new version of the contract, with a small bug fix, please redeem
-                    your assets in the old contract, by heading to 'Funds' tab and clicking on `Redeem DAI`
-                    Once you have done that you will be able to mint and redeem with the new contract.
-                    Sorry for the inconvenience.
-                  </Flash> : 
-                  (
-                    <>
-                      { !this.state.isApprovingToken && !this.state.lendingProcessing &&
-                        <CryptoInput
-                          renderZeroExInstant={this.renderZeroExInstant}
-                          genericError={this.state.genericError}
-                          buyTokenMessage={this.state.buyTokenMessage}
-                          disableLendButton={this.state.disableLendButton}
-                          isMobile={this.props.isMobile}
-                          account={this.props.account}
-                          balance={this.state.tokenBalance}
-                          tokenDecimals={this.state.tokenDecimals}
-                          defaultValue={this.state.lendAmount}
-                          //idleTokenPrice={hasOldBalance ? this.state.OldIdleDAIPrice : this.state.idleTokenPrice}
-                          BNify={this.BNify}
-                          action={'Lend'}
-                          trimEth={this.trimEth}
-                          color={'black'}
-                          selectedAsset={this.props.selectedToken}
-                          useEntireBalance={this.useEntireBalance}
-                          handleChangeAmount={this.handleChangeAmount}
-                          showTokenApproved={false}
-                          isAssetApproved={this.state.isDAIApproved}
-                          showApproveModal={this.toggleModal}
-                          showLendButton={!walletIsEmpty && !tokenNotApproved}
-                          handleClick={e => this.mint(e)} />
-                      }
+                { !this.state.isApprovingToken && !this.state.lendingProcessing &&
+                  <CryptoInput
+                    renderZeroExInstant={this.renderZeroExInstant}
+                    genericError={this.state.genericError}
+                    buyTokenMessage={this.state.buyTokenMessage}
+                    disableLendButton={this.state.disableLendButton}
+                    isMobile={this.props.isMobile}
+                    account={this.props.account}
+                    balance={this.state.tokenBalance}
+                    tokenDecimals={this.state.tokenDecimals}
+                    defaultValue={this.state.lendAmount}
+                    BNify={this.BNify}
+                    action={'Lend'}
+                    trimEth={this.trimEth}
+                    color={'black'}
+                    selectedAsset={this.props.selectedToken}
+                    useEntireBalance={this.useEntireBalance}
+                    handleChangeAmount={this.handleChangeAmount}
+                    showTokenApproved={false}
+                    isAssetApproved={this.state.isDAIApproved}
+                    showApproveModal={this.toggleModal}
+                    showLendButton={!walletIsEmpty && !tokenNotApproved}
+                    handleClick={e => this.mint(e)} />
+                }
 
-                      { this.state.lendingProcessing &&
-                        <>
-                          {
-                            this.state.lendingTx ? (
-                              <TxProgressBar waitText={'Lending in'} endMessage={'Finalizing lend request...'} hash={this.state.lendingTx.transactionHash} />
-                            ) : (
-                              <Flex
-                                justifyContent={'center'}
-                                alignItems={'center'}
-                                textAlign={'center'}>
-                                <Loader size="40px" /> <Text ml={2}>Sending lend request...</Text>
-                              </Flex>
-                            )
-                          }
-                        </>
-                      }
-                    </>
-                  )
+                { this.state.lendingProcessing &&
+                  <>
+                    {
+                      this.state.lendingTx ? (
+                        <TxProgressBar waitText={'Lending in'} endMessage={'Finalizing lend request...'} hash={this.state.lendingTx.transactionHash} />
+                      ) : (
+                        <Flex
+                          justifyContent={'center'}
+                          alignItems={'center'}
+                          textAlign={'center'}>
+                          <Loader size="40px" /> <Text ml={2}>Sending lend request...</Text>
+                        </Flex>
+                      )
+                    }
+                  </>
                 }
 
                 {this.state.isApprovingToken && (
@@ -1544,14 +1530,6 @@ class SmartContractControls extends React.Component {
                       fundsAreReady ? (
                         <>
                           <Box>
-                            {!!hasOldBalance &&
-                              <Flash variant="warning" width={1}>
-                                We have released a new version of the contract, with a small bug fix, please redeem
-                                your assets in the old contract, by heading to 'Funds' tab and clicking on `Redeem DAI`
-                                Once you have done that you will be able to mint and redeem with the new contract.
-                                Sorry for the inconvenience.
-                              </Flash>
-                            }
                             <Flex flexDirection={['column','row']} py={[2,3]} width={[1,'70%']} m={'0 auto'}>
                               <Box width={[1,1/2]}>
                                 <Heading.h3 fontWeight={2} textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
@@ -1606,7 +1584,7 @@ class SmartContractControls extends React.Component {
                             </Flex>
                         </Box>
                         <Box pb={[3,4]} borderBottom={'1px solid #D6D6D6'}>
-                          {hasBalance && !hasOldBalance && !this.state.redeemProcessing &&
+                          {hasBalance && !this.state.redeemProcessing &&
                             <Flex
                               textAlign='center'
                               flexDirection={'column'}
@@ -1626,7 +1604,7 @@ class SmartContractControls extends React.Component {
                                     account={this.props.account}
                                     action={'Redeem'}
                                     defaultValue={this.state.redeemAmount}
-                                    idleTokenPrice={hasOldBalance ? (1/this.state.OldIdleDAIPrice) : (1/this.state.idleTokenPrice)}
+                                    idleTokenPrice={(1/this.state.idleTokenPrice)}
                                     convertedLabel={this.props.selectedToken}
                                     balanceLabel={this.props.tokenConfig.idle.token}
                                     BNify={this.BNify}
@@ -1659,27 +1637,7 @@ class SmartContractControls extends React.Component {
                               }
                             </Flex>
                           }
-                          {hasOldBalance && !this.state.redeemProcessing &&
-                            <Flex
-                              textAlign='center'>
-                              <Button
-                                className={styles.gradientButton}
-                                onClick={e => this.redeem(e, 'OldIdleDAI')}
-                                borderRadius={4}
-                                size={this.props.isMobile ? 'medium' : 'medium'}
-                                mainColor={'blue'}
-                                contrastColor={'white'}
-                                fontWeight={3}
-                                fontSize={[2,2]}
-                                mx={'auto'}
-                                px={[4,5]}
-                                mt={2}
-                              >
-                                REDEEM {this.props.selectedToken} (old contract)
-                              </Button>
-                            </Flex>
-                          }
-                          {!hasBalance && !hasOldBalance &&
+                          {!hasBalance &&
                             <Flex
                               textAlign='center'>
                               <Button
@@ -1802,7 +1760,7 @@ class SmartContractControls extends React.Component {
                                         Current holdings
                                       </Text>
                                       <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                        { hasOldBalance ? balanceOfOldIdleDAI : balanceOfIdleDAI }
+                                        { balanceOfIdleDAI }
                                       </Heading.h3>
                                     </Box>
                                     <Box width={1/2}>
@@ -1810,7 +1768,7 @@ class SmartContractControls extends React.Component {
                                         {this.props.tokenConfig.idle.token} price
                                       </Text>
                                       <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                        { hasOldBalance ? OldIdleDAIPrice : idleTokenPrice }
+                                        { idleTokenPrice }
                                       </Heading.h3>
                                     </Box>
                                   </Flex>
@@ -2035,14 +1993,6 @@ class SmartContractControls extends React.Component {
 
             { this.props.selectedTab === '3' && !this.state.calculataingShouldRebalance && !!this.state.shouldRebalance && 
               <Box px={[2,0]} py={[3,2]}>
-                {!!hasOldBalance &&
-                  <Flash variant="warning" width={1}>
-                    We have released a new version of the contract, with a small bug fix, please redeem
-                    your assets in the old contract, by heading to 'Funds' tab and clicking on `Redeem DAI`
-                    Once you have done that you will be able to mint and redeem with the new contract.
-                    Sorry for the inconvenience.
-                  </Flash>
-                }
                 {this.state.rebalanceProcessing ? (
                     <>
                       <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} pt={[0,3]} pb={[2,2]} color={'blue'}>
