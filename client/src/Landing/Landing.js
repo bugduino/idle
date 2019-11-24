@@ -248,7 +248,7 @@ class Landing extends Component {
               <Box width={[1,3/10]}>
                 <Box p={[4,5]} pb={0} backgroundColor={'white'} color={'black'} boxShadow={1} borderBottom={'15px solid'} borderColor={'blue'}>
                   <Heading.h3 textAlign={['center']} fontFamily={'sansSerif'} fontSize={[3,4]} mb={[2,3]} color={'blue'}>
-                    <Image src={'images/compound-mark-green.png'} className={styles.platformLogo} /> Compound DAI
+                    <Image src={'images/compound-mark-green.png'} className={styles.platformLogo} /> Compound SAI
                   </Heading.h3>
                   <Heading.h4 textAlign={['center']} fontWeight={1} lineHeight={2} fontSize={[2,3]}>
                     Current lending interest rate on Compound V2.
@@ -258,7 +258,7 @@ class Landing extends Component {
               </Box>
               <Box width={[1,4/10]} p={[4,5]} pb={0} backgroundColor={'blue'} color={'white'} boxShadow={1} borderBottom={'15px solid'} borderColor={'white'}>
                 <Heading.h3 textAlign={['center']} fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,3]}>
-                  <Image src={'images/idle-mark.png'} className={styles.platformLogo} /> Idle DAI
+                  <Image src={'images/idle-mark.png'} className={styles.platformLogo} /> Idle SAI
                 </Heading.h3>
                 <Heading.h4 textAlign={['center']} fontWeight={1} lineHeight={2} fontSize={[2,3]}>
                   We will always get the best rate, thanks to our users and the decentralized rebalance process.
@@ -274,7 +274,7 @@ class Landing extends Component {
               <Box width={[1,3/10]}>
                 <Box p={[4,5]} pb={0} backgroundColor={'white'} color={'black'} boxShadow={1} borderBottom={'15px solid'} borderColor={'blue'}>
                   <Heading.h3 textAlign={['center']} fontFamily={'sansSerif'} fontSize={[3,4]} mb={[2,3]} color={'blue'}>
-                    <Image src={'images/fulcrum-mark.png'} className={styles.platformLogo} /> Fulcrum DAI
+                    <Image src={'images/fulcrum-mark.png'} className={styles.platformLogo} /> Fulcrum SAI
                   </Heading.h3>
                   <Heading.h4 textAlign={['center']} fontWeight={1} lineHeight={2} fontSize={[2,3]}>
                     Current lending interest rate on Fulcrum.

@@ -4,7 +4,7 @@ import styles from './CryptoInput.module.scss';
 
 class CryptoInput extends Component {
   render() {
-    const convertedValue = !isNaN(this.props.trimEth(this.props.IdleDAIPrice)) && !!this.props.IdleDAIPrice ? '~'+this.props.BNify(this.props.defaultValue/this.props.IdleDAIPrice).toFixed(2)+' idleDAI' : '';
+    const convertedValue = !isNaN(this.props.trimEth(this.props.IdleDAIPrice)) && !!this.props.IdleDAIPrice ? '~'+this.props.BNify(this.props.defaultValue/this.props.IdleDAIPrice).toFixed(2)+' idleSAI' : '';
     return (
         <>
           <Flex
@@ -26,7 +26,7 @@ class CryptoInput extends Component {
                     paddingLeft: '1em',
                     paddingRight: '1em'
                   }}
-                  placeholder={`Enter DAI Amount`}
+                  placeholder={`Enter SAI Amount`}
                   value={this.props.defaultValue}
                   type="number"
                   borderRadius='2rem'
@@ -76,7 +76,7 @@ class CryptoInput extends Component {
             <Box pl={'5%'}>
               <Heading.h5 color={'darkGray'} fontWeight={1} fontSize={1}>
               {!this.props.isMobile ? 
-                  !isNaN(this.props.trimEth(this.props.IdleDAIPrice)) && !!this.props.IdleDAIPrice && `1 idleDAI = ${this.props.trimEth(this.props.IdleDAIPrice)} DAI`
+                  !isNaN(this.props.trimEth(this.props.IdleDAIPrice)) && !!this.props.IdleDAIPrice && `1 idleSAI = ${this.props.trimEth(this.props.IdleDAIPrice)} SAI`
                  : 
                   convertedValue
               }
@@ -87,7 +87,7 @@ class CryptoInput extends Component {
               <Box pr={['5%','20%']}>
                 <Heading.h5 color={'darkGray'} fontWeight={1} fontSize={1}>
                   <Link color={'darkGray'} hoverColor={'darkGray'} fontWeight={1} fontSize={1} lineHeight={'1.25'} onClick={ e => this.props.useEntireBalance(this.props.accountBalanceDAI) }>
-                    Balance: {!this.props.isMobile ? parseFloat(this.props.accountBalanceDAI).toFixed(6) : parseFloat(this.props.accountBalanceDAI).toFixed(2) } DAI</Link>
+                    Balance: {!this.props.isMobile ? parseFloat(this.props.accountBalanceDAI).toFixed(6) : parseFloat(this.props.accountBalanceDAI).toFixed(2) } SAI</Link>
                 </Heading.h5>
               </Box>
             }

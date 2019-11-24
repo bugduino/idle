@@ -20,6 +20,16 @@
     color: white !important;
   }
 }
+.closeCross{
+  position:absolute;
+  width:20px;
+  height:20px;
+  top:2px;
+  right:4px;
+}
+.noOutline{
+  outline:none;
+}
 .aprLabel{
   font-size:1.4em;
   text-align:center;

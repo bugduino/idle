@@ -58,7 +58,7 @@ export default function (props) {
                 {trimEth(accountBalance)} ETH
               </Text>
               <Text my={3} fontSize={3}>
-                {trimEth(accountBalanceDAI)} DAI
+                {trimEth(accountBalanceDAI)} SAI
               </Text>
             </Box>
           </Flex>

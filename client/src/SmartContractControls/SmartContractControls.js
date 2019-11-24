@@ -10,7 +10,7 @@ import moment from 'moment';
 
 import IdleDAI from "../contracts/IdleDAI.json";
 import cDAI from '../abis/compound/cDAI';
-import DAI from '../contracts/IERC20Base.json';
+import DAI from '../contracts/IERC20.json';
 import iDAI from '../abis/fulcrum/iToken.json';
 
 const env = process.env;
@@ -35,9 +35,10 @@ class SmartContractControls extends React.Component {
     disableLendButton: false,
     approveIsOpen: false,
     capReached: false,
+    showMigrationWarning: true,
     isApprovingDAITest: true,
     tokenName: 'DAI',
-    baseTokenName: 'DAI',
+    baseTokenName: 'SAI',
     lendAmount: '',
     needsUpdate: false,
     genericError: null,
@@ -65,6 +66,15 @@ class SmartContractControls extends React.Component {
       (eth || 0).toString(),
       "ether"
     );
+  }
+  closeMigrationWarning = (e) => {
+    e.preventDefault();
+    if (localStorage){
+      localStorage.setItem('showMigrationWarning',false);
+    }
+    this.setState({
+      showMigrationWarning: false
+    });
   }
   rebalanceCheck = async () => {
     const res = await this.genericIdleCall('rebalanceCheck');
@@ -248,7 +258,7 @@ class SmartContractControls extends React.Component {
 
     e.preventDefault();
     if (this.props.account && !this.state.lendAmount) {
-      return this.setState({genericError: 'Insert a DAI amount to lend'});
+      return this.setState({genericError: 'Insert a SAI amount to lend'});
     }
 
     this.setState(state => ({
@@ -327,7 +337,7 @@ class SmartContractControls extends React.Component {
       if (this.props.account && this.BNify(amount).gt(this.BNify(this.props.accountBalanceDAI))) {
         return this.setState({
           disableLendButton: true,
-          genericError: 'The inserted amount exceeds your DAI balance'
+          genericError: 'The inserted amount exceeds your SAI balance'
         });
       } else {
         return this.setState({
@@ -463,6 +473,8 @@ class SmartContractControls extends React.Component {
       return console.log('No Web3 SmartContractControls')
     }
 
+    // window.disableERC20 = () => {this.disableERC20({preventDefault:()=>{}}, this.state.tokenName)};
+
     console.log('Web3 SmartContractControls initialized')
     this.props.initContract('iDAI', iDAIAddress, iDAIAbi, true);
     this.props.initContract('cDAI', cDAIAddress, cDAIAbi);
@@ -475,6 +487,16 @@ class SmartContractControls extends React.Component {
       ]);
     });
     this.props.initContract('DAI', DAIAddress, DAIAbi);
+
+    if (localStorage){
+      let showMigrationWarning = localStorage.getItem('showMigrationWarning');
+      if (showMigrationWarning !== null){
+        showMigrationWarning = JSON.parse(showMigrationWarning);
+        this.setState({
+          showMigrationWarning
+        });
+      }
+    }
   }
 
   async componentDidUpdate(prevProps, prevState) {
@@ -562,14 +584,14 @@ class SmartContractControls extends React.Component {
   }
 
   render() {
-    const reedemableFunds = !isNaN(this.trimEth(this.state.DAIToRedeem)) ? ( <>{this.trimEth(this.state.DAIToRedeem)} <Text.span fontSize={[1,3]}>DAI</Text.span></> ) : '-';
-    const oldReedemableFunds = !isNaN(this.trimEth(this.state.oldDAIToRedeem)) ? ( <>{this.trimEth(this.state.oldDAIToRedeem)} <Text.span fontSize={[1,3]}>DAI</Text.span></> ) : '-';
-    const currentEarnings = !isNaN(this.trimEth(this.state.earning)) ? ( <>{this.trimEth(this.state.earning)} <Text.span fontSize={[1,3]}>DAI</Text.span></> ) : '-';
-    const oldEarning = !isNaN(this.trimEth(this.state.oldEarning)) ? ( <>{this.trimEth(this.state.oldEarning)} <Text.span fontSize={[1,3]}>DAI</Text.span></> ) : '-';
-    const IdleDAIPrice = !isNaN(this.trimEth(this.state.IdleDAIPrice)) ? ( <>{this.trimEth(this.state.IdleDAIPrice)} <Text.span fontSize={[1,2]}>DAI</Text.span></> ) : '-';
-    const OldIdleDAIPrice = !isNaN(this.trimEth(this.state.OldIdleDAIPrice)) ? ( <>{this.trimEth(this.state.OldIdleDAIPrice)} <Text.span fontSize={[1,2]}>DAI</Text.span></> ) : '-';
-    const balanceOfIdleDAI = !isNaN(this.trimEth(this.state.balanceOfIdleDAI)) ? ( <>{this.trimEth(this.state.balanceOfIdleDAI)} <Text.span fontSize={[1,2]}>idleDAI</Text.span></> ) : '-';
-    const balanceOfOldIdleDAI = !isNaN(this.trimEth(this.state.balanceOfOldIdleDAI)) ? ( <>{this.trimEth(this.state.balanceOfOldIdleDAI)} <Text.span fontSize={[1,2]}>idleDAI (old version)</Text.span></> ) : '-';
+    const reedemableFunds = !isNaN(this.trimEth(this.state.DAIToRedeem)) ? ( <>{this.trimEth(this.state.DAIToRedeem)} <Text.span fontSize={[1,3]}>SAI</Text.span></> ) : '-';
+    const oldReedemableFunds = !isNaN(this.trimEth(this.state.oldDAIToRedeem)) ? ( <>{this.trimEth(this.state.oldDAIToRedeem)} <Text.span fontSize={[1,3]}>SAI</Text.span></> ) : '-';
+    const currentEarnings = !isNaN(this.trimEth(this.state.earning)) ? ( <>{this.trimEth(this.state.earning)} <Text.span fontSize={[1,3]}>SAI</Text.span></> ) : '-';
+    const oldEarning = !isNaN(this.trimEth(this.state.oldEarning)) ? ( <>{this.trimEth(this.state.oldEarning)} <Text.span fontSize={[1,3]}>SAI</Text.span></> ) : '-';
+    const IdleDAIPrice = !isNaN(this.trimEth(this.state.IdleDAIPrice)) ? ( <>{this.trimEth(this.state.IdleDAIPrice)} <Text.span fontSize={[1,2]}>SAI</Text.span></> ) : '-';
+    const OldIdleDAIPrice = !isNaN(this.trimEth(this.state.OldIdleDAIPrice)) ? ( <>{this.trimEth(this.state.OldIdleDAIPrice)} <Text.span fontSize={[1,2]}>SAI</Text.span></> ) : '-';
+    const balanceOfIdleDAI = !isNaN(this.trimEth(this.state.balanceOfIdleDAI)) ? ( <>{this.trimEth(this.state.balanceOfIdleDAI)} <Text.span fontSize={[1,2]}>idleSAI</Text.span></> ) : '-';
+    const balanceOfOldIdleDAI = !isNaN(this.trimEth(this.state.balanceOfOldIdleDAI)) ? ( <>{this.trimEth(this.state.balanceOfOldIdleDAI)} <Text.span fontSize={[1,2]}>idleSAI (old version)</Text.span></> ) : '-';
     const hasOldBalance = !isNaN(this.trimEth(this.state.oldDAIToRedeem)) && this.trimEth(this.state.oldDAIToRedeem) > 0;
     const hasBalance = !isNaN(this.trimEth(this.state.DAIToRedeem)) && this.trimEth(this.state.DAIToRedeem) > 0
 
@@ -595,14 +617,23 @@ class SmartContractControls extends React.Component {
           </Flex>
 
           <Box py={[2, 4]}>
+            { this.state.showMigrationWarning && this.props.account && this.state.DAIToRedeem && 
+              <Flash variant="warning" width={[1,9/10]} mx={'auto'} position={'relative'} className={styles.noOutline}>
+                <Text textAlign={'center'}>
+                  Since 18th of November 2019, existing Single-Collateral Dai will be referred to as "Sai", while Multi-Collateral Dai will be called "Dai". <Link size={'small'} href={'https://medium.com/@idlefinance/mcd-transition-update-on-idle-8d6dd75a156d'} target={'\_blank'} color={'blue'} hoverColor={'blue'}>Read more.</Link>
+                </Text>
+                <Link className={styles.closeCross} textAlign={'center'} color={'blue'} hoverColor={'blue'} onClick={ e => { this.closeMigrationWarning(e); } }>✕</Link>
+              </Flash>
+            }
+
             {this.props.selectedTab === '1' &&
               <Box textAlign={'text'}>
                 <Box px={[2,0]} py={[2, 4]}>
                   <Heading.h3 py={[3, 'initial']} fontFamily={'sansSerif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
-                    Earn {this.state.maxRate}% APR on your DAI
+                    Earn {this.state.maxRate}% APR on your SAI
                   </Heading.h3>
                   <Heading.h4 my={[2,3]} color={'black'} fontWeight={1} textAlign={'center'}>
-                    We offer the best available interest rate for your DAI through different lending platforms.
+                    We offer the best available interest rate for your SAI through different lending platforms.
                   </Heading.h4>
                 </Box>
 
@@ -618,7 +649,7 @@ class SmartContractControls extends React.Component {
                 {hasOldBalance ?
                   <Flash variant="warning" width={1}>
                     We have released a new version of the contract, with a small bug fix, please redeem
-                    your assets in the old contract, by heading to 'Funds' tab and clicking on `Redeem DAI`
+                    your assets in the old contract, by heading to 'Funds' tab and clicking on `Redeem SAI`
                     Once you have done that you will be able to mint and redeem with the new contract.
                     Sorry for the inconvenience.
                   </Flash> : !this.state.isApprovingDAI &&
@@ -632,7 +663,7 @@ class SmartContractControls extends React.Component {
                       BNify={this.BNify}
                       trimEth={this.trimEth}
                       color={'black'}
-                      selectedAsset='DAI'
+                      selectedAsset='SAI'
                       useEntireBalance={this.useEntireBalance}
                       handleChangeAmount={this.handleChangeAmount}
                       handleClick={e => this.mint(e)} />)
@@ -657,7 +688,7 @@ class SmartContractControls extends React.Component {
                       {!!hasOldBalance &&
                         <Flash variant="warning" width={1}>
                           We have released a new version of the contract, with a small bug fix, please redeem
-                          your assets in the old contract, by heading to 'Funds' tab and clicking on `Redeem DAI`
+                          your assets in the old contract, by heading to 'Funds' tab and clicking on `Redeem SAI`
                           Once you have done that you will be able to mint and redeem with the new contract.
                           Sorry for the inconvenience.
                         </Flash>
@@ -693,7 +724,7 @@ class SmartContractControls extends React.Component {
                         </Box>
                         <Box width={1/2}>
                           <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
-                            idleDAI Price
+                            idleSAI Price
                           </Text>
                           <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
                             { hasOldBalance ? OldIdleDAIPrice : IdleDAIPrice }
@@ -706,7 +737,7 @@ class SmartContractControls extends React.Component {
                         <Flex
                           textAlign='center'>
                           <Button onClick={e => this.redeem(e, 'IdleDAI')} borderRadius={4} size={this.props.isMobile ? 'medium' : 'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={2}>
-                            REDEEM DAI
+                            REDEEM SAI
                           </Button>
                         </Flex>
                       }
@@ -716,7 +747,7 @@ class SmartContractControls extends React.Component {
 
 
                           <Button onClick={e => this.redeem(e, 'OldIdleDAI')} borderRadius={4} size={this.props.isMobile ? 'medium' : 'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={2}>
-                            REDEEM DAI (old contract)
+                            REDEEM SAI (old contract)
                           </Button>
                         </Flex>
                       }
@@ -774,7 +805,7 @@ class SmartContractControls extends React.Component {
                 {!!hasOldBalance &&
                   <Flash variant="warning" width={1}>
                     We have released a new version of the contract, with a small bug fix, please redeem
-                    your assets in the old contract, by heading to 'Funds' tab and clicking on `Redeem DAI`
+                    your assets in the old contract, by heading to 'Funds' tab and clicking on `Redeem SAI`
                     Once you have done that you will be able to mint and redeem with the new contract.
                     Sorry for the inconvenience.
                   </Flash>

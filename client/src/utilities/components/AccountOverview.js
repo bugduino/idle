@@ -36,7 +36,7 @@ class AccountOverview extends React.Component {
                 color={this.props.accountBalanceLow ? 'white' : 'white'}
                 >
                 {isNaN(roundedBalance) ? '0' : roundedBalance} ETH
-                {roundedDAIBalance && !isNaN(roundedDAIBalance) ? `, ${roundedDAIBalance} DAI` : ', 0 DAI'}
+                {roundedDAIBalance && !isNaN(roundedDAIBalance) ? `, ${roundedDAIBalance} SAI` : ', 0 SAI'}
               </Text>
             </Box>
           </Box>
