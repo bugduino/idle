@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Flex, Box, Text, Card, Image, Heading, Link, Pill } from "rimble-ui";
+import { Flex, Box, Text, Card, Image, Heading, Link, Pill, Loader } from "rimble-ui";
 import { ResponsiveLine } from '@nivo/line';
 import axios from 'axios';
 import moment from 'moment';
@@ -707,7 +707,15 @@ class EquityChart extends Component {
 
       return MyResponsiveLine(graphData,interestBoxes/*,this.renderTxs(graphData)*/);
     } else {
-      return null;
+      return (
+        <Flex
+          justifyContent={'center'}
+          alignItems={'center'}
+          textAlign={'center'}
+          width={1}>
+          <Loader size="40px" /> <Text ml={2}>Loading graph data...</Text>
+        </Flex>
+      );
     }
   }
 }

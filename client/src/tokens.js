@@ -15,7 +15,7 @@ const availableTokens = {
     },
     idle:{
       abi:idleDAI.abi,
-      token:'idleDAI',
+      token:'idleSAI',
       address:'0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9'
     },
     protocols:[
@@ -32,7 +32,7 @@ const availableTokens = {
         address:'0x14094949152eddbfcd073717200da82fed8dc960'
       }
     ]
-  },
+  },/*
   USDC:{
     abi:ERC20.abi,
     address:'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
@@ -61,7 +61,7 @@ const availableTokens = {
         address:'0xf013406a0b1d544238083df0b93ad0d2cbe0f65f'
       }
     ]
-  }
+  }*/
 };
 
 export default availableTokens;
