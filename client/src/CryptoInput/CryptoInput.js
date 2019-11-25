@@ -6,7 +6,8 @@ class CryptoInput extends Component {
   render() {
     const convertedValueDecimals = this.props.isMobile ? 2 : 4;
     const convertedLabel = this.props.convertedLabel ? this.props.convertedLabel : 'idle'+this.props.selectedAsset;
-    const convertedValue = !isNaN(this.props.trimEth(this.props.idleTokenPrice)) && !!this.props.idleTokenPrice ? '~'+this.props.BNify(this.props.defaultValue/this.props.idleTokenPrice).toFixed(convertedValueDecimals)+' '+convertedLabel : '';
+    const showConvertedValue = !isNaN(this.props.trimEth(this.props.idleTokenPrice)) && !!this.props.idleTokenPrice && !this.props.isMobile;
+    const convertedValue = showConvertedValue ? '~'+this.props.BNify(this.props.defaultValue/this.props.idleTokenPrice).toFixed(convertedValueDecimals)+' '+convertedLabel : '';
     const showLendButton = typeof this.props.showLendButton === 'undefined' || !!this.props.showLendButton;
     const buttonLabel = typeof this.props.buttonLabel === 'undefined' ? 'LEND' : this.props.buttonLabel;
     return (
@@ -21,10 +22,10 @@ class CryptoInput extends Component {
             p={1}
             mx={'auto'}
             >
-              <Flex width={[2/10]}>
+              <Flex width={[2/10,3/20]}>
                 <Image src={this.props.icon ? this.props.icon : `images/tokens/${this.props.selectedAsset}.svg`} height={'32px'} ml={['0.5em','10px']} />
               </Flex>
-              <Box width={8/10}>
+              <Box width={ [8/10,(showConvertedValue ? 11/20 : 17/20)] }>
                 <Form.Input
                   placeholder={this.props.placeholder ? this.props.placeholder : `Enter ${this.props.selectedAsset} Amount`}
                   value={this.props.defaultValue}
@@ -45,7 +46,7 @@ class CryptoInput extends Component {
                 />
               </Box>
               {
-                !this.props.isMobile && (
+                showConvertedValue && (
                   <Box width={3/10}>
                     <Form.Input
                       style={{
@@ -146,7 +147,7 @@ class CryptoInput extends Component {
                       NEW
                     </Flex>
                     <Flex ml={2} mr={1} justifyContent={'center'}>
-                      <Text textAlign={'center'} fontWeight={2} fontSize={1}>Get more {this.props.selectedAsset} now</Text>
+                      <Text textAlign={'center'} fontWeight={2} fontSize={1}>Buy {this.props.selectedAsset} with your ETH</Text>
                     </Flex>
                   </Flex>
                 </Link>

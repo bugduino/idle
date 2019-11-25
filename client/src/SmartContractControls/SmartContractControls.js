@@ -71,27 +71,98 @@ class SmartContractControls extends React.Component {
     transactions:{}
   };
 
+  addJSDependences = () => {
+
+    const resources = [
+      'https://instant.0x.org/instant.js',
+      'https://verify.testwyre.com/js/widget-loader.js'
+      // 'https://code.jquery.com/jquery-3.3.1.slim.min.js',
+      // 'https://verify.testwyre.com/js/verify-module-init-beta.js',
+      // 'https://js.stripe.com/v3/' // Needed for wyre debit card
+    ];
+
+    resources.forEach((url,i) => {
+      const script = document.createElement("script");
+      script.src = url;
+      script.async = true;
+      document.body.appendChild(script);
+    });
+  }
+
+  renderWyre = () => {
+
+    /*
+    DIALOG TYPES
+      'debitcard-hosted-dialog', // debit card popup
+      'debitcard', // debit card embedded
+      'onramp' // ach
+    */
+
+    if (!document.getElementById('wyre-dropin-widget-container')){
+      const wyreWidget = document.createElement("div");
+      wyreWidget.id = 'wyre-dropin-widget-container';
+      document.body.appendChild(wyreWidget);
+    }
+
+    const widget = new window.Wyre({
+        accountId: 'AC_Q2Y4AARC3TP',
+        // apiKey: 'AK-W7LWVMED-7FDAB489-P67QQQH4-AGYCGVHC',
+        auth: {
+          type:'metamask'
+        },
+        env: 'test',
+        operation: {
+            type: 'debitcard',
+            dest: `ethereum:${this.props.account}`,
+            destCurrency: this.props.selectedToken,
+            // sourceAmount: 10.0,
+            // paymentMethod: 'google-pay'
+        }
+    });
+
+    widget.on("exit", function (e) {
+        console.log("Wyre exit", e);
+    })
+
+    widget.on("error", function (e) {
+        console.log("Wyre error", e);
+    });
+
+    widget.on("complete", function (e) {
+        console.log("Wyre complete", e );
+    });
+
+    widget.on('ready', function(e) {
+        console.log("Wyre ready", e );
+        // widget.open();
+    });
+
+    widget.open();
+  }
+
   renderZeroExInstant = (e,amount) => {
     if (e){
       e.preventDefault();
     }
     if (window.zeroExInstant){
       const params = {
-        orderSource: 'https://api.radarrelay.com/0x/v2/',
-        affiliateInfo: {
-            feeRecipient: '0xf1363d3d55d9e679cc6aa0a0496fd85bdfcf7464',
-            feePercentage: 0.0075
-        },
+        orderSource: this.props.tokenConfig.zeroExInstant.orderSource,
+        affiliateInfo: this.props.tokenConfig.zeroExInstant.affiliateInfo,
         defaultSelectedAssetData: this.props.tokenConfig.zeroExInstant.assetData,
         availableAssetDatas: [this.props.tokenConfig.zeroExInstant.assetData],
+        shouldDisableAnalyticsTracking: true,
         onSuccess: async (txHash) => {
-          await this.getTokenBalance();
-          this.useEntireBalance(this.state.tokenBalance);
-          customLog('Success! Transaction hash is: ' + txHash)
+          const tokenBalance = await this.getTokenBalance();
+          if (tokenBalance){
+            this.useEntireBalance(tokenBalance);
+          }
         },
-        onClose: () => {
-          customLog('Closed');
-          return true;
+        onClose: (e) => {
+          console.log(e);
+          if (e){
+            e.preventDefault();
+          }
+          // return false;
         }
       };
 
@@ -306,14 +377,16 @@ class SmartContractControls extends React.Component {
 
   getTokenBalance = async () => {
     if (this.props.account){
-      const tokenBalance = await this.genericContractCall(this.props.selectedToken,'balanceOf',[this.props.account]);
+      let tokenBalance = await this.genericContractCall(this.props.selectedToken,'balanceOf',[this.props.account]);
       const tokenDecimals = await this.getTokenDecimals();
       if (tokenBalance){
-        customLog('getTokenBalance',tokenBalance.toString(),tokenDecimals,this.BNify(tokenBalance).div(this.BNify(`1e${tokenDecimals}`)).toString());
-        return this.setState({
+        tokenBalance = this.BNify(tokenBalance.toString()).div(this.BNify(Math.pow(10,parseInt(tokenDecimals)).toString()));
+        customLog('getTokenBalance',tokenBalance.toString(),tokenDecimals,this.BNify(tokenBalance.toString()).div(this.BNify(Math.pow(10,parseInt(tokenDecimals)).toString())).toString());
+        this.setState({
           tokenDecimals,
-          tokenBalance: this.BNify(tokenBalance).div(this.BNify(`1e${tokenDecimals}`)).toString()
+          tokenBalance: tokenBalance.toString()
         });
+        return tokenBalance;
       } else {
         console.error('Error on getting balance');
       }
@@ -1002,10 +1075,7 @@ class SmartContractControls extends React.Component {
 
     customLog('SmartContractControls componentDidMount',this.state.accountBalanceToken);
 
-    const script = document.createElement("script");
-    script.src = "https://instant.0x.org/instant.js";
-    script.async = true;
-    document.body.appendChild(script);
+    this.addJSDependences();
 
     customLog('Smart contract didMount')
     // do not wait for each one just for the first who will guarantee web3 initialization
@@ -1028,6 +1098,7 @@ class SmartContractControls extends React.Component {
     // PUT TEMP FUNCTIONS HERE
     window.tempFunc = (tx) => {}
     */
+    window.renderWyre = this.renderWyre;
 
     this.props.initContract(this.props.selectedToken, this.props.tokenConfig.address, this.props.tokenConfig.abi);
   }

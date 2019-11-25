@@ -29,7 +29,7 @@
 
 .mainInput {
   padding-left: 0;
-  padding-right: 1em;
+  padding-right: 1em !important;
   background-color: transparent;
   &:focus {
     border-color: white !important;
@@ -76,6 +76,6 @@ input[type="number"] {
 @media (max-width: 30em){
   .mainInput {
     padding-left: 0;
-    padding-right: 1em;
+    padding-right: 1em !important;
   }
 }
