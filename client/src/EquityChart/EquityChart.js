@@ -10,10 +10,10 @@ const env = process.env;
 const IdleAddress = '0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9';
 const cDAIAddress = '0xf5dce57282a584d2746faf1593d3121fcac444dc';
 const iDAIAddress = '0x14094949152eddbfcd073717200da82fed8dc960';
+const secondsInYear = 31556952;
 
 class EquityChart extends Component {
   state = {
-    secondsInYear:31556952,
     initialBalance:1000,
     graphData: null,
     minValue: null,
@@ -108,7 +108,7 @@ class EquityChart extends Component {
           // Calculate earnings between 2 segments
           const apr = lastAprInfo.y;
           const earningPerYear = balance*(apr/100);
-          const earningPerSecond = earningPerYear/this.state.secondsInYear;
+          const earningPerSecond = earningPerYear/secondsInYear;
 
           // const aprTime = aprInfo.blockTime ? parseInt(aprInfo.blockTime) : parseInt(aprInfo.t);
           // const lastAprTime = lastAprInfo.blockTime ? parseInt(lastAprInfo.blockTime) : parseInt(lastAprInfo.t);
@@ -667,7 +667,7 @@ class EquityChart extends Component {
         const interestEarned = parseFloat(v.data[v.data.length-1].y);
         const secondsPassed = parseInt(v.data[v.data.length-1].t)-parseInt(v.data[0].t);
         const interestEarnedPerSecond = interestEarned/secondsPassed;
-        const finalBalanceAfterYear = this.state.initialBalance+(interestEarnedPerSecond*this.state.secondsInYear);
+        const finalBalanceAfterYear = this.state.initialBalance+(interestEarnedPerSecond*secondsInYear);
         const annualReturn = parseFloat((finalBalanceAfterYear/this.state.initialBalance-1)*100).toFixed(2);
         
         // const finalBalance = this.state.initialBalance+interestEarned;
