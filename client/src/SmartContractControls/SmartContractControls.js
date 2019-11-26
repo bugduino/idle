@@ -91,13 +91,6 @@ class SmartContractControls extends React.Component {
 
   renderWyre = () => {
 
-    /*
-    DIALOG TYPES
-      'debitcard-hosted-dialog', // debit card popup
-      'debitcard', // debit card embedded
-      'onramp' // ach
-    */
-
     if (!document.getElementById('wyre-dropin-widget-container')){
       const wyreWidget = document.createElement("div");
       wyreWidget.id = 'wyre-dropin-widget-container';
@@ -106,13 +99,12 @@ class SmartContractControls extends React.Component {
 
     const widget = new window.Wyre({
         accountId: 'AC_Q2Y4AARC3TP',
-        // apiKey: 'AK-W7LWVMED-7FDAB489-P67QQQH4-AGYCGVHC',
         auth: {
           type:'metamask'
         },
         env: 'test',
         operation: {
-            type: 'debitcard',
+            type: 'debitcard', // [debitcard-hosted-dialog, debitcardonramp]
             dest: `ethereum:${this.props.account}`,
             destCurrency: this.props.selectedToken,
             // sourceAmount: 10.0,
@@ -893,29 +885,53 @@ class SmartContractControls extends React.Component {
       https://api.etherscan.io/api?module=account&action=tokentx&address=${this.props.account}&startblock=8119247&endblock=999999999&sort=asc&apikey=${env.REACT_APP_ETHERSCAN_KEY}
     `).catch(err => {
       customLog('Error getting prev txs');
+      setTimeout(()=>{this.getPrevTxs();},1000);
     });
+
     if (!txs || !txs.data || !txs.data.result) {
       return;
     }
 
+    const filteredTxs = [];
+
     const results = txs.data.result;
     const prevTxs = results.filter(
         tx => {
+          const internalTxs = results.filter(r => r.hash === tx.hash);
+
+          const isDepositTx = tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
+          const isRedeemTx = tx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()).length && tx.to.toLowerCase() === this.props.account.toLowerCase();
+
+          return isDepositTx || isRedeemTx;
+
+          /*
+          const isIdleTx = internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()).length;
+          const isRightToken = internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase()).length;
+          const txToIdle = internalTxs.filter(iTx => iTx.to.toLowerCase() === this.props.tokenConfig.address.toLowerCase()).length;
+          const txFromIdle = internalTxs.filter(iTx => iTx.from.toLowerCase() === this.props.tokenConfig.address.toLowerCase()).length;
+
+          // console.log(tx.hash,tx.to,tx.contractAddress,isIdleTx);
+
+          return isIdleTx && isRightToken && (txToIdle || txFromIdle);
+          */
+          /*
           return (tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()) ||
               (tx.from.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()) ||
               (tx.from.toLowerCase() === iDAIAddress.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase()) ||
               (tx.from.toLowerCase() === cDAIAddress.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase())
           }
-      ).filter(tx => {
+          */
+      })/*.filter(tx => {
         const internalTxs = results.filter(r => r.hash === tx.hash);
+        console.log(tx.hash,internalTxs);
         // remove txs from old contract
         return !internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === OldIdleAddress.toLowerCase()).length;
-      }).map(tx => ({...tx, value: this.toEth(tx.value)}));
+      })*/.map(tx => ({...tx, value: this.toEth(tx.value)}));
 
     let amountLent = 0;
     let transactions = {};
 
-
+    console.log('prevTxs',prevTxs);
 
     prevTxs.forEach((tx,index) => {
       // Deposited
@@ -1238,12 +1254,6 @@ class SmartContractControls extends React.Component {
     let txs = txsIndexes.map((key, i) => {
 
       const tx = prevTxs[key];
-
-      // Skip other tokens
-      // customLog('renderPrevTxs',tx.tokenSymbol,this.props.selectedToken,tx.to.toLowerCase(),this.props.tokenConfig.idle.address.toLowerCase());
-      if (tx.contractAddress !== this.props.tokenConfig.address){
-        return null;
-      }
 
       const date = new Date(tx.timeStamp*1000);
       const status = tx.status ? tx.status : tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase() ? 'Deposited' : 'Redeemed';
