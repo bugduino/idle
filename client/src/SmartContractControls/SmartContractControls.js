@@ -75,7 +75,7 @@ class SmartContractControls extends React.Component {
 
     const resources = [
       'https://instant.0x.org/instant.js',
-      'https://verify.testwyre.com/js/widget-loader.js'
+      // 'https://verify.testwyre.com/js/widget-loader.js'
       // 'https://code.jquery.com/jquery-3.3.1.slim.min.js',
       // 'https://verify.testwyre.com/js/verify-module-init-beta.js',
       // 'https://js.stripe.com/v3/' // Needed for wyre debit card
@@ -89,6 +89,7 @@ class SmartContractControls extends React.Component {
     });
   }
 
+  /*
   renderWyre = () => {
 
     if (!document.getElementById('wyre-dropin-widget-container')){
@@ -131,6 +132,7 @@ class SmartContractControls extends React.Component {
 
     widget.open();
   }
+  */
 
   renderZeroExInstant = (e,amount) => {
     if (e){
