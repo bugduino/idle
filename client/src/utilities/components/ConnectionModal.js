@@ -82,7 +82,7 @@ class ConnectionModal extends React.Component {
           <ModalCard.Header title={'Select your Wallet'} subtitle={'And get started with Idle.'} icon={'images/idle-dai.png'}></ModalCard.Header>
           <ModalCard.Body>
             <Box width={1} px={[3,5]} justifyContent={'center'}>
-              <Web3ConnectionButtons width={1/2} size={'large'} />
+              <Web3ConnectionButtons width={1/2} size={ this.props.isMobile ? 'medium' : 'large' } />
             </Box>
           </ModalCard.Body>
         </>
@@ -104,7 +104,7 @@ class ConnectionModal extends React.Component {
             </Box>
             <Flex alignItems={"center"} flexDirection={['column','row']}>
               <Box width={[1,1/2]}>
-                <Web3ConnectionButtons size={'large'} onlyPortis={true} registerPage={true} />
+                <Web3ConnectionButtons size={this.props.isMobile ? 'medium' : 'large'} onlyPortis={true} registerPage={true} />
               </Box>
               <Box width={[1,1/2]}>
                 <Button.Outline
@@ -114,7 +114,7 @@ class ConnectionModal extends React.Component {
                   mb={[1, 3]}
                   width={1}
                   key={'Reset'}
-                  size={['medium','large']}
+                  size={ this.props.isMobile ? 'medium' : 'large' }
                   onClick={this.toggleShowConnectionButtons}>
                   <Flex alignItems={'center'}>
                     <Icon
@@ -122,7 +122,7 @@ class ConnectionModal extends React.Component {
                       color="copyColor"
                       size={'1.5em'}
                     />
-                    {'Choose another wallet'}
+                    Choose another wallet
                   </Flex>
                 </Button.Outline>
               </Box>
@@ -135,16 +135,6 @@ class ConnectionModal extends React.Component {
     return (
       <React.Fragment>
         {/* Start primary content */}
-        {
-          /*
-        <Box mt={4} mb={5}>
-          <Heading fontSize={[4, 5]}>Before you connect</Heading>
-          <Text fontSize={[2, 3]} my={3}>
-            Connecting lets you use Idle via your Ethereum account.
-          </Text>
-        </Box>
-        */
-        }
         <ModalCard.Header title={'Before you connect'} subtitle={'Connecting lets you use Idle via your Ethereum account.'}></ModalCard.Header>
         <ModalCard.Body>
           <Flex
@@ -229,7 +219,7 @@ class ConnectionModal extends React.Component {
               Read instructions
             </Link>
           ) : (
-            <Flex flexDirection={['column', 'row']} width={1} justifyContent={['space-around']}>
+            <Flex flexDirection={['column', 'row']} width={1} justifyContent={'center'}>
               <Button
                 className={styles.gradientButton}
                 borderRadius={4}
@@ -238,7 +228,7 @@ class ConnectionModal extends React.Component {
                 size={this.props.isMobile ? 'small' : 'medium'}
                 onClick={this.toggleShowConnectionButtons}
               >
-                CONNECT
+                I ALREADY HAVE A WALLET
               </Button>
               {
                 this.state.showTxFees ? (
@@ -258,10 +248,10 @@ class ConnectionModal extends React.Component {
                   my={2}
                   mr={[0, 4]}
                   size={this.props.isMobile ? 'small' : 'medium'}
-                  mainColor={'darkGray'}
+                  mainColor={'blue'}
                   onClick={this.toggleNewtoEthereum}
                 >
-                  I AM NEW TO ETHEREUM
+                  CREATE A NEW WALLET
                 </Button>
                 )
               }

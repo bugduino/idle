@@ -33,6 +33,7 @@ class ConnectionModalUtil extends React.Component {
         />
 
         <ConnectionModal
+          isMobile={this.props.isMobile}
           closeModal={this.props.modals.methods.closeConnectionModal}
           validateAccount={this.props.validateAccount}
           isOpen={

@@ -759,6 +759,7 @@ class RimbleTransaction extends React.Component {
       <div>
         <RimbleTransactionContext.Provider value={this.state} {...this.props} />
         <ConnectionModalUtil
+          isMobile={this.props.isMobile}
           initAccount={this.state.initAccount}
           account={this.state.account}
           validateAccount={this.state.validateAccount}

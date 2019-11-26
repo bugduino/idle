@@ -4,6 +4,14 @@ import Web3Provider from 'web3-react';
 import { Web3Consumer } from 'web3-react'
 import connectors from './connectors';
 
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link,
+  useParams
+} from "react-router-dom";
+
 import theme from "../theme";
 // import styles from './App.module.scss';
 
@@ -81,73 +89,55 @@ class App extends Component {
     const isMobile = this.state.width <= 768;
 
     return (
-      <ThemeProvider theme={theme}>
-        <Web3Provider
-          connectors={connectors}
-          libraryName={'web3.js'}
-          web3Api={Web3}
-        >
-          <Web3Consumer>
-            {context => {
-              return (
-                <RimbleWeb3 config={this.config} context={context} tokenConfig={this.state.tokenConfig} selectedToken={this.state.selectedToken}>
-                  <RimbleWeb3.Consumer>
-                    {({
-                      needsPreflight,
-                      web3,
-                      initWeb3,
-                      account,
-                      contracts,
-                      accountBalance,
-                      accountBalanceToken,
-                      accountBalanceLow,
-                      initAccount,
-                      initContract,
-                      rejectAccountConnect,
-                      userRejectedConnect,
-                      accountValidated,
-                      accountValidationPending,
-                      rejectValidation,
-                      userRejectedValidation,
-                      validateAccount,
-                      connectAndValidateAccount,
-                      modals,
-                      network,
-                      transaction
-                    }) => {
-                      return (
-                      <Box>
-                        <Header
-                          account={account}
-                          initWeb3={initWeb3}
-                          initContract={initContract}
-                          contracts={contracts}
-                          isMobile={isMobile}
-                          accountBalance={accountBalance}
-                          accountBalanceToken={accountBalanceToken}
-                          accountBalanceLow={accountBalanceLow}
-                          initAccount={initAccount}
-                          rejectAccountConnect={rejectAccountConnect}
-                          userRejectedConnect={userRejectedConnect}
-                          accountValidated={accountValidated}
-                          accountValidationPending={accountValidationPending}
-                          rejectValidation={rejectValidation}
-                          userRejectedValidation={userRejectedValidation}
-                          validateAccount={validateAccount}
-                          connectAndValidateAccount={connectAndValidateAccount}
-                          handleMenuClick={this.selectTab.bind(this)}
-                          availableTokens={availableTokens}
-                          tokenConfig={this.state.tokenConfig}
-                          selectedToken={this.state.selectedToken}
-                          setSelectedToken={ e => { this.setSelectedToken(e) } }
-                          modals={modals}
-                          network={network}
-                        />
-
-                        {this.state.route === "onboarding" ? (
-                          <Web3Debugger
-                            web3={web3}
+      <Router>
+        <ThemeProvider theme={theme}>
+          <Web3Provider
+            connectors={connectors}
+            libraryName={'web3.js'}
+            web3Api={Web3}
+          >
+            <Web3Consumer>
+              {context => {
+                return (
+                  <RimbleWeb3
+                    config={this.config}
+                    context={context}
+                    tokenConfig={this.state.tokenConfig}
+                    selectedToken={this.state.selectedToken}
+                    isMobile={isMobile}
+                  >
+                    <RimbleWeb3.Consumer>
+                      {({
+                        needsPreflight,
+                        web3,
+                        initWeb3,
+                        account,
+                        contracts,
+                        accountBalance,
+                        accountBalanceToken,
+                        accountBalanceLow,
+                        initAccount,
+                        initContract,
+                        rejectAccountConnect,
+                        userRejectedConnect,
+                        accountValidated,
+                        accountValidationPending,
+                        rejectValidation,
+                        userRejectedValidation,
+                        validateAccount,
+                        connectAndValidateAccount,
+                        modals,
+                        network,
+                        transaction
+                      }) => {
+                        return (
+                        <Box>
+                          <Header
                             account={account}
+                            initWeb3={initWeb3}
+                            initContract={initContract}
+                            contracts={contracts}
+                            isMobile={isMobile}
                             accountBalance={accountBalance}
                             accountBalanceToken={accountBalanceToken}
                             accountBalanceLow={accountBalanceLow}
@@ -160,38 +150,73 @@ class App extends Component {
                             userRejectedValidation={userRejectedValidation}
                             validateAccount={validateAccount}
                             connectAndValidateAccount={connectAndValidateAccount}
-                            modals={modals}
-                            network={network}
-                            transaction={transaction}
-                          />
-                        ) : null}
-
-                        {this.state.route === "default" ? (
-                          <Landing
-                            web3={web3}
-                            contracts={contracts}
-                            isMobile={isMobile}
-                            account={account}
-                            accountBalance={accountBalance}
-                            accountBalanceToken={accountBalanceToken}
-                            accountBalanceLow={accountBalanceLow}
-                            updateSelectedTab={this.selectTab.bind(this)}
-                            selectedTab={this.state.selectedTab}
-                            selectedToken={this.state.selectedToken}
+                            handleMenuClick={this.selectTab.bind(this)}
                             availableTokens={availableTokens}
                             tokenConfig={this.state.tokenConfig}
+                            selectedToken={this.state.selectedToken}
                             setSelectedToken={ e => { this.setSelectedToken(e) } }
-                            network={network} />
-                        ) : null}
-                      </Box>
-                    )}}
-                  </RimbleWeb3.Consumer>
-                </RimbleWeb3>
-              );
-            }}
-          </Web3Consumer>
-        </Web3Provider>
-      </ThemeProvider>
+                            modals={modals}
+                            network={network}
+                          />
+
+                          {this.state.route === "onboarding" ? (
+                            <Web3Debugger
+                              web3={web3}
+                              account={account}
+                              accountBalance={accountBalance}
+                              accountBalanceToken={accountBalanceToken}
+                              accountBalanceLow={accountBalanceLow}
+                              initAccount={initAccount}
+                              rejectAccountConnect={rejectAccountConnect}
+                              userRejectedConnect={userRejectedConnect}
+                              accountValidated={accountValidated}
+                              accountValidationPending={accountValidationPending}
+                              rejectValidation={rejectValidation}
+                              userRejectedValidation={userRejectedValidation}
+                              validateAccount={validateAccount}
+                              connectAndValidateAccount={connectAndValidateAccount}
+                              modals={modals}
+                              network={network}
+                              transaction={transaction}
+                            />
+                          ) : null}
+
+                          {this.state.route === "default" ? (
+                            <Switch>
+                              <Route exact path="/">
+                                <Landing
+                                  web3={web3}
+                                  contracts={contracts}
+                                  isMobile={isMobile}
+                                  account={account}
+                                  accountBalance={accountBalance}
+                                  accountBalanceToken={accountBalanceToken}
+                                  accountBalanceLow={accountBalanceLow}
+                                  updateSelectedTab={this.selectTab.bind(this)}
+                                  selectedTab={this.state.selectedTab}
+                                  selectedToken={this.state.selectedToken}
+                                  availableTokens={availableTokens}
+                                  tokenConfig={this.state.tokenConfig}
+                                  setSelectedToken={ e => { this.setSelectedToken(e) } }
+                                  network={network} />
+                              </Route>
+                              <Route path="/terms-of-service">
+                                <Box>
+                                  TOS
+                                </Box>
+                              </Route>
+                            </Switch>
+                          ) : null}
+                        </Box>
+                      )}}
+                    </RimbleWeb3.Consumer>
+                  </RimbleWeb3>
+                );
+              }}
+            </Web3Consumer>
+          </Web3Provider>
+        </ThemeProvider>
+      </Router>
     );
   }
 }
