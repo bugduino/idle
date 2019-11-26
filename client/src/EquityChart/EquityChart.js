@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import { Flex, Box, Text, Card, Image, Heading, Link, Pill, Loader } from "rimble-ui";
+import { Flex, Box, Text, Card, Image, Heading, Link, Pill, Loader, Button } from "rimble-ui";
 import { ResponsiveLine } from '@nivo/line';
 import axios from 'axios';
 import moment from 'moment';
 import styles from './EquityChart.module.scss';
+import SmartContractControls_styles from '../SmartContractControls/SmartContractControls.module.scss';
 
 const env = process.env;
 
@@ -18,7 +19,8 @@ class EquityChart extends Component {
     graphData: null,
     minValue: null,
     maxValue: null,
-    rebalanceTxs: null
+    rebalanceTxs: null,
+    graphError: false,
   };
   setSection(section) {
     this.setState(state => ({...state, selectedSection: section}));
@@ -40,6 +42,11 @@ class EquityChart extends Component {
       console.log('Error getting internal txs');
     });
     return txs ? txs.data.result : null;
+  }
+
+  reloadData = async(e) => {
+    e.preventDefault();
+    await this.getEquity();
   }
 
   filterGraphData(graphData,startTimestamp){
@@ -93,6 +100,12 @@ class EquityChart extends Component {
   }
 
   async getEquity(){
+
+    this.setState({
+      graphError:false,
+      graphData:null
+    })
+
     let graphData = await this.getAprs();
 
     let minValue = null;
@@ -193,7 +206,11 @@ class EquityChart extends Component {
       }
     }
 
-    const data = await axios.get(endpoint);
+    const data = await axios
+                        .get(endpoint)
+                        .catch(err => {
+                          console.error('Error getting request');
+                        });
     if (localStorage) {
       localStorage.setItem(endpoint,JSON.stringify({
         data,
@@ -271,6 +288,7 @@ class EquityChart extends Component {
     let maxLen = 0;
 
     const loadGraphData = async () => {
+      let graphError = false;
       await this.asyncForEach(graphData, async (info,key) => {
         if (info.endpoint){
           let t;
@@ -281,7 +299,8 @@ class EquityChart extends Component {
             let remote_data = await this.makeCachedRequest(endpoint,43200);
 
             if (!remote_data || !remote_data.data) {
-              return;
+              graphError = true;
+              return true;
             }
 
             remote_data = remote_data.data;
@@ -311,6 +330,10 @@ class EquityChart extends Component {
           return moment(a.x,'DD/MM/YYYY')._d - moment(b.x,'DD/MM/YYYY')._d;
         });
 
+      });
+
+      this.setState({
+        graphError
       });
     }
 
@@ -655,67 +678,97 @@ class EquityChart extends Component {
       </Flex>
     )
 
-    if (this.state.graphData){
-
-      const graphData = this.state.graphData;
-      graphData.sort(function(a,b){
-        return a.pos_box - b.pos_box;
-      });
-
-      const interestBoxes = graphData.map(v=>{
-        const isIdle = v.id==='Idle';
-        const interestEarned = parseFloat(v.data[v.data.length-1].y);
-        const secondsPassed = parseInt(v.data[v.data.length-1].t)-parseInt(v.data[0].t);
-        const interestEarnedPerSecond = interestEarned/secondsPassed;
-        const finalBalanceAfterYear = this.state.initialBalance+(interestEarnedPerSecond*secondsInYear);
-        const annualReturn = parseFloat((finalBalanceAfterYear/this.state.initialBalance-1)*100).toFixed(2);
-        
-        // const finalBalance = this.state.initialBalance+interestEarned;
-        // const percentageEarned = (finalBalance/this.state.initialBalance-1);
-        // const percentageEarnedPerSecond = percentageEarned/secondsPassed;
-        // console.log(v.id,moment(v.data[0].t*1000).format('DD/MM/YYYY'),moment(v.data[v.data.length-1].t*1000).format('DD/MM/YYYY'),interestEarned,finalBalance,percentageEarned,secondsPassed,interestEarnedPerSecond,finalBalanceAfterYear,annualReturn);
-
-        return (
-          <Flex key={'graph_'+v.id} width={[1,1/3]} mx={[0,2]} flexDirection={'column'}>
-            <Box>
-              <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={ isIdle ? 1 : 1 } className={isIdle ? styles.gradientBg : null}>
-                <Flex flexDirection={'row'} alignItems={'center'}>
-                  <Flex width={3/12} borderRight={'1px solid #eee'} justifyContent={'center'}>
-                    <Image src={`images/${v.icon}`} height={['1.7em', '2em']} verticalAlign={'middle'} />
-                  </Flex>
-                  <Box width={6/12} borderRight={'1px solid #eee'}>
-                    <Text color={isIdle ? 'white' : 'copyColor'} fontSize={[3,'28px']} fontWeight={4} textAlign={'center'}>
-                      {interestEarned.toFixed(2)} <Text.span color={isIdle ? 'white' : 'copyColor'} fontWeight={2} fontSize={['90%','60%']}>{this.props.selectedToken}</Text.span>
-                    </Text>
-                  </Box>
-                  <Flex alignItems={'center'} flexDirection={'column'} width={3/12}>
-                    <Text.span color={isIdle ? 'white' : 'copyColor'} fontWeight={[1,2]} fontSize={['90%','70%']}>AVG APR</Text.span>
-                    <Text lineHeight={1} pl={'10px'} color={isIdle ? 'white' : 'copyColor'} fontSize={[2,3]} fontWeight={3} textAlign={'center'}>
-                      {annualReturn}<Text.span color={isIdle ? 'white' : 'copyColor'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
-                    </Text>
-                  </Flex>
-                </Flex>
-              </Card>
-            </Box>
-          </Flex>
-        )
-      });
-
-      graphData.sort(function(a,b){
-        return a.pos - b.pos;
-      });
-
-      return MyResponsiveLine(graphData,interestBoxes/*,this.renderTxs(graphData)*/);
-    } else {
+    if (this.state.graphError){
       return (
         <Flex
+          flexDirection={'column'}
           justifyContent={'center'}
           alignItems={'center'}
           textAlign={'center'}
           width={1}>
-          <Loader size="40px" /> <Text ml={2}>Loading graph data...</Text>
+            <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontWeight={2} fontSize={[2,3]} color={'dark-gray'}>
+              Error while retrieving graph data...
+            </Heading.h3>
+            <Button
+              className={SmartContractControls_styles.gradientButton}
+              onClick={e => this.reloadData(e) }
+              size={'medium'}
+              borderRadius={4}
+              mainColor={'blue'}
+              contrastColor={'white'}
+              fontWeight={3}
+              fontSize={[2,2]}
+              mx={'auto'}
+              px={[4,5]}
+              mt={[3,4]}
+            >
+              TRY AGAIN
+            </Button>
         </Flex>
       );
+    } else {
+      if (this.state.graphData){
+
+        const graphData = this.state.graphData;
+        graphData.sort(function(a,b){
+          return a.pos_box - b.pos_box;
+        });
+
+        const interestBoxes = graphData.map(v=>{
+          const isIdle = v.id==='Idle';
+          const interestEarned = parseFloat(v.data[v.data.length-1].y);
+          const secondsPassed = parseInt(v.data[v.data.length-1].t)-parseInt(v.data[0].t);
+          const interestEarnedPerSecond = interestEarned/secondsPassed;
+          const finalBalanceAfterYear = this.state.initialBalance+(interestEarnedPerSecond*secondsInYear);
+          const annualReturn = parseFloat((finalBalanceAfterYear/this.state.initialBalance-1)*100).toFixed(2);
+          
+          // const finalBalance = this.state.initialBalance+interestEarned;
+          // const percentageEarned = (finalBalance/this.state.initialBalance-1);
+          // const percentageEarnedPerSecond = percentageEarned/secondsPassed;
+          // console.log(v.id,moment(v.data[0].t*1000).format('DD/MM/YYYY'),moment(v.data[v.data.length-1].t*1000).format('DD/MM/YYYY'),interestEarned,finalBalance,percentageEarned,secondsPassed,interestEarnedPerSecond,finalBalanceAfterYear,annualReturn);
+
+          return (
+            <Flex key={'graph_'+v.id} width={[1,1/3]} mx={[0,2]} flexDirection={'column'}>
+              <Box>
+                <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={ isIdle ? 1 : 1 } className={isIdle ? styles.gradientBg : null}>
+                  <Flex flexDirection={'row'} alignItems={'center'}>
+                    <Flex width={3/12} borderRight={'1px solid #eee'} justifyContent={'center'}>
+                      <Image src={`images/${v.icon}`} height={['1.7em', '2em']} verticalAlign={'middle'} />
+                    </Flex>
+                    <Box width={6/12} borderRight={'1px solid #eee'}>
+                      <Text color={isIdle ? 'white' : 'copyColor'} fontSize={[3,'28px']} fontWeight={4} textAlign={'center'}>
+                        {interestEarned.toFixed(2)} <Text.span color={isIdle ? 'white' : 'copyColor'} fontWeight={2} fontSize={['90%','60%']}>{this.props.selectedToken}</Text.span>
+                      </Text>
+                    </Box>
+                    <Flex alignItems={'center'} flexDirection={'column'} width={3/12}>
+                      <Text.span color={isIdle ? 'white' : 'copyColor'} fontWeight={[1,2]} fontSize={['90%','70%']}>AVG APR</Text.span>
+                      <Text lineHeight={1} pl={'10px'} color={isIdle ? 'white' : 'copyColor'} fontSize={[2,3]} fontWeight={3} textAlign={'center'}>
+                        {annualReturn}<Text.span color={isIdle ? 'white' : 'copyColor'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
+                      </Text>
+                    </Flex>
+                  </Flex>
+                </Card>
+              </Box>
+            </Flex>
+          )
+        });
+
+        graphData.sort(function(a,b){
+          return a.pos - b.pos;
+        });
+
+        return MyResponsiveLine(graphData,interestBoxes/*,this.renderTxs(graphData)*/);
+      } else {
+        return (
+          <Flex
+            justifyContent={'center'}
+            alignItems={'center'}
+            textAlign={'center'}
+            width={1}>
+            <Loader size="40px" /> <Text ml={2}>Loading graph data...</Text>
+          </Flex>
+        );
+      }
     }
   }
 }
