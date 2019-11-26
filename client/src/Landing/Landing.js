@@ -718,7 +718,7 @@ class Landing extends Component {
           </Flex>
         </Flex>
 
-        <Flex id="footer" className={styles.footer} backgroundColor={'white'} alignItems={'flex-start'} justifyContent={'center'} pl={0}>
+        <Flex id="footer" flexDirection={'column'} className={styles.footer} backgroundColor={'white'} alignItems={'center'} justifyContent={'flex-start'} pl={0}>
           <Flex flexDirection={['column','row']} justifyContent={'flex-start'} alignItems={'flex-start'} width={1} maxWidth={['35em','70em']} height={['auto','100%']}>
 
             <Flex width={[1,3/10]} flexDirection={'column'} height={['auto','100%']}>
@@ -754,24 +754,28 @@ class Landing extends Component {
               </Flex>
             </Flex>
 
-            <Flex width={[1,4/10]} flexDirection={'column'} height={['auto','100%']} justifyContent={'flex-end'} pb={[2,3]}>
+            <Flex width={[1,4/10]} flexDirection={'column'} height={['auto','100%']} justifyContent={'flex-end'}>
               <Flex flexDirection={['column']} mt={[2, 0]}>
                 <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={2} my={3} color={'white'}>
                   Built on
                 </Heading.h3>
                 <Flex flexDirection={['column','row']} alignItems={'center'} justifyContent={['center','flex-start']}>
                   <Link width={1/3} pr={[0,3]} href="https://www.ethereum.org/" target="_blank">
-                    <Image src="images/ethereum.png" height={['1.8em', '2.5em']} mr={[0,3]} my={[2,0]} />
+                    <Image src="images/ethereum.png" height={['1.8em', '2.5em']} maxWidth={'initial'} mr={[0,3]} my={[2,0]} />
                   </Link>
                   <Link width={1/3} pr={[0,3]} href="https://app.compound.finance" target="_blank">
-                    <Image src="images/compound-light.png" height={['1.8em', '2.5em']} mr={[0,3]} my={[2,0]} />
+                    <Image src="images/compound-light.png" height={['1.8em', '2.5em']} maxWidth={'initial'} mr={[0,3]} my={[2,0]} />
                   </Link>
                   <Link width={1/3} pr={[0,3]} href="https://fulcrum.trade" target="_blank">
-                    <Image src="images/fulcrum.svg" height={['1.8em', '2.5em']} mr={[0,3]} my={[2,0]} />
+                    <Image src="images/fulcrum.svg" height={['1.8em', '2.5em']} maxWidth={'initial'} mr={[0,3]} my={[2,0]} />
                   </Link>
                 </Flex>
               </Flex>
             </Flex>
+          </Flex>
+
+          <Flex width={1} flexDirection={'column'} justifyContent={'center'} align={'center'} py={2}>
+            <Text fontSize={1} textAlign={'center'} color={'white'}>&copy; 2019 - Idle Labs Inc.</Text>
           </Flex>
         </Flex>
       </Box>
