@@ -162,7 +162,7 @@ class RimbleTransaction extends React.Component {
         if (!hideModal) {
           this.closeConnectionPendingModal();
         }
-        this.setState({ account/*:'0x83Deb18dC5574dF9558ABF719b7e109fe050560e'*/ });
+        this.setState({ account/*:'0xa51ce0796d32e3cc932c9a9e01663f68f71d9cbf'*/ });
 
         console.log("wallet address:", this.state.account);
 

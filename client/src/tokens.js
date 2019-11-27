@@ -5,6 +5,7 @@ import idleDAI from './contracts/IdleDAI.json';
 
 const availableTokens = {
   SAI:{
+    enabled: true,
     abi:ERC20.abi,
     address:'0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359',
     zeroExInstant:{
@@ -37,8 +38,9 @@ const availableTokens = {
         address:'0x14094949152eddbfcd073717200da82fed8dc960'
       }
     ]
-  },/*
+  },
   USDC:{
+    enabled: false,
     abi:ERC20.abi,
     address:'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
     zeroExInstant:{
@@ -66,7 +68,7 @@ const availableTokens = {
         address:'0xf013406a0b1d544238083df0b93ad0d2cbe0f65f'
       }
     ]
-  }*/
+  }
 };
 
 export default availableTokens;

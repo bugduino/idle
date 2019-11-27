@@ -15,16 +15,21 @@ class TokenSelector extends Component {
   }
 
   selectToken(token){
-    this.props.setSelectedToken(token);
-    this.toggleOpen();
+    if (token.enabled){
+      this.props.setSelectedToken(token);
+      this.toggleOpen();
+      return true;
+    }
+    return false;
   }
 
   render() {
 
     const tokens = Object.keys(this.props.availableTokens).map((token,i) => {
                       if (token !== this.props.selectedToken){
+                        const tokenEnabled = token.enabled;
                         return (
-                          <TokenSelectorItem key={'token_selector_'+token} isChild={true} token={token} handleClick={ e => {this.selectToken(token) }} />
+                          <TokenSelectorItem disabled={!tokenEnabled} key={'token_selector_'+token} isChild={true} token={token} handleClick={ e => {this.selectToken(token) }} />
                         );
                       }
                       return null;

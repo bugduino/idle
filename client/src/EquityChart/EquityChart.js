@@ -264,7 +264,7 @@ class EquityChart extends Component {
         "id": "Fulcrum",
         'pos_box':3,
         'pos':2,
-        'fee':0.1,
+        'fee':0,
         'address' : iDAIAddress,
         'icon' : 'fulcrum-mark.png',
         "color": "hsl(197, 98%, 38%)",
@@ -410,6 +410,7 @@ class EquityChart extends Component {
         const blockTime = getDayTimestamp(txTimestamp);
 
         const apr = getClosestProtocolAprByTimestamp(v.to,blockTime,parseInt(blockTime)+secondsPerDay);
+        // const apr = getHighestAprByTimestamp(blockTime,parseInt(blockTime)+secondsPerDay);
 
         if (!idleBlocks[blockTime] || (apr && idleBlocks[blockTime].to !== v.to && parseFloat(apr.y)>idleBlocks[blockTime].apr)){
           idleBlocks[blockTime] = {
@@ -454,7 +455,7 @@ class EquityChart extends Component {
       const nextTx = nextBlockTime ? idleBlocksOrdered[nextBlockTime] : null;
       const maxTimestamp = nextTx ? nextTx.timeStamp : null;
       const apr = getClosestProtocolAprByTimestamp(tx.to,blockTime,maxTimestamp); // Use this to obtain the real APR
-      // const max_apr = getHighestAprByTimestamp(blockTime,maxTimestamp); // Use this to obtain always the best APR
+      // const apr = getHighestAprByTimestamp(blockTime,maxTimestamp); // Use this to obtain always the best APR
 
       if (apr){
         nextTimestamp = apr.t;
@@ -509,8 +510,8 @@ class EquityChart extends Component {
       for (timestamp;timestamp<=lastAprAvailable;timestamp+=secondsPerDay){
         const maxTimestamp = timestamp+secondsPerDay;
         const apr = getClosestProtocolAprByTimestamp(latestIdleApr.address,timestamp,maxTimestamp); // Use this to obtain the real APR
-        // console.log(latestIdleApr.address,timestamp,maxTimestamp,apr);
         // const apr = getHighestAprByTimestamp(blockTime,maxTimestamp); // Use this to obtain always the best APR
+        // console.log(latestIdleApr.address,timestamp,maxTimestamp,apr);
         if (apr){
           apr.blockTime = timestamp;
           idleData.push(apr);

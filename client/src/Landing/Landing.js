@@ -272,7 +272,7 @@ class Landing extends Component {
                 Best yield for your lending
               </Heading.h1>
               <Heading.h2 fontWeight={'400'} lineHeight={['1.4em', '2em']} fontSize={[2,3]} textAlign={'center'} color={'white'}>
-                Maximize your returns on different Ethereum lending protocol
+                Maximize your lending returns by investing in a single token
               </Heading.h2>
             </Flex>
             <Flex flexDirection={'column'} alignItems={'center'} maxWidth={["50em", "50em"]} mx={'auto'} textAlign={'center'}>
@@ -667,22 +667,6 @@ class Landing extends Component {
 
         {
         /*
-        <Flex position={'relative'} justifyContent={'center'} alignItems={'center'} height={['auto','600px']} mt={[4,3]} p={[4,6]}>
-          <Flex width={1} flexDirection={'column'} maxWidth={['35em','70em']}>
-            <Heading.h4 color={'dark-gray'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]} textAlign={'center'} alignItems={'center'}>
-              APRs performance comparison
-            </Heading.h4>
-            <Flex height={'500px'}>
-              <APRsChart
-                account={this.props.account}
-                web3={this.props.web3}
-              />
-            </Flex>
-          </Flex>
-        </Flex>
-        */
-        }
-
         <Flex position={'relative'} justifyContent={'center'} alignItems={'center'} height={['auto','700px']} pt={[4,6]} pb={[4,6]}>
           <Flex width={1} flexDirection={'column'} maxWidth={['35em','70em']} px={[3,5]}>
             <Heading.h4 color={'dark-gray'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]} textAlign={'center'} alignItems={'center'}>
@@ -699,6 +683,8 @@ class Landing extends Component {
             </Flex>
           </Flex>
         </Flex>
+        */
+        }
 
         <Box id="faq" pt={[4,6]} pb={[4,6]}>
           <Box maxWidth={['50em','60em']} mx={'auto'} px={[3,5]}>
