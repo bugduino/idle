@@ -45,8 +45,8 @@ class TokenSelector extends Component {
           mr={3}
           p={2}
           >
-            <TokenSelectorItem handleClick={ e => {this.toggleOpen(e)} } token={this.props.selectedToken} />
-            <Flex borderRadius={4} backgroundColor={'white'} overflow={'hidden'} className={[styles.selectorCurtain,this.state.opened ? styles.opened : null]} position={'absolute'} top={'60px'}>
+            <TokenSelectorItem disabled={false} handleClick={ e => {this.toggleOpen(e)} } token={this.props.selectedToken} />
+            <Flex flexDirection={'column'} borderRadius={4} backgroundColor={'white'} overflow={'hidden'} className={[styles.selectorCurtain,this.state.opened ? styles.opened : null]} position={'absolute'} top={'60px'}>
               { tokens }
             </Flex>
         </Flex>

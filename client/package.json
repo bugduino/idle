@@ -57,6 +57,7 @@
     "react-countup": "^4.2.2",
     "react-dev-utils": "^6.1.1",
     "react-dom": "^16.8.6",
+    "react-router-dom": "^5.1.2",
     "resolve": "1.8.1",
     "rimble-ui": "^0.10.0",
     "sass-loader": "7.1.0",
