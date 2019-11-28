@@ -15,8 +15,6 @@ const env = process.env;
 
 // mainnet
 const OldIdleAddress = '0x10cf8e1CDba9A2Bd98b87000BCAdb002b13eA525'; // v0.1 hackathon version
-const cDAIAddress = '0xf5dce57282a584d2746faf1593d3121fcac444dc';
-const iDAIAddress = '0x14094949152eddbfcd073717200da82fed8dc960';
 
 const daysInYear = 365.2422;
 
@@ -317,7 +315,7 @@ class SmartContractControls extends React.Component {
       return false;
     }
     const maxRate = this.toEth(Math.max(aprs[0],aprs[1]));
-    const currentRate = bestToken ? (bestToken.toString().toLowerCase() === cDAIAddress ? aprs[0] : aprs[1]) : null;
+    const currentRate = bestToken ? (bestToken.toString().toLowerCase() === this.props.tokenConfig.protocols[0].address ? aprs[0] : aprs[1]) : null;
     this.setState({
       [`compoundRate`]: aprs ? (+this.toEth(aprs[0])).toFixed(2) : '0.00',
       [`fulcrumRate`]: aprs ? (+this.toEth(aprs[1])).toFixed(2) : '0.00',
@@ -331,7 +329,7 @@ class SmartContractControls extends React.Component {
     bestToken = bestToken ? bestToken : await this.genericIdleCall('bestToken');
     // customLog('getCurrentProtocol',bestToken);
     if (bestToken){
-      return bestToken.toString().toLowerCase() === cDAIAddress ? 'Compound' : 'Fulcrum';
+      return bestToken.toString().toLowerCase() === this.props.tokenConfig.protocols[0].address ? 'Compound' : 'Fulcrum';
     }
     return false;
   }
@@ -894,8 +892,6 @@ class SmartContractControls extends React.Component {
       return;
     }
 
-    const filteredTxs = [];
-
     const results = txs.data.result;
     const prevTxs = results.filter(
         tx => {
@@ -905,30 +901,7 @@ class SmartContractControls extends React.Component {
           const isRedeemTx = tx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()).length && tx.to.toLowerCase() === this.props.account.toLowerCase();
 
           return isDepositTx || isRedeemTx;
-
-          /*
-          const isIdleTx = internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()).length;
-          const isRightToken = internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase()).length;
-          const txToIdle = internalTxs.filter(iTx => iTx.to.toLowerCase() === this.props.tokenConfig.address.toLowerCase()).length;
-          const txFromIdle = internalTxs.filter(iTx => iTx.from.toLowerCase() === this.props.tokenConfig.address.toLowerCase()).length;
-
-          // console.log(tx.hash,tx.to,tx.contractAddress,isIdleTx);
-
-          return isIdleTx && isRightToken && (txToIdle || txFromIdle);
-          */
-          /*
-          return (tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()) ||
-              (tx.from.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()) ||
-              (tx.from.toLowerCase() === iDAIAddress.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase()) ||
-              (tx.from.toLowerCase() === cDAIAddress.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase())
-          }
-          */
-      })/*.filter(tx => {
-        const internalTxs = results.filter(r => r.hash === tx.hash);
-        console.log(tx.hash,internalTxs);
-        // remove txs from old contract
-        return !internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === OldIdleAddress.toLowerCase()).length;
-      })*/.map(tx => ({...tx, value: this.toEth(tx.value)}));
+      }).map(tx => ({...tx, value: this.toEth(tx.value)}));
 
     let amountLent = 0;
     let transactions = {};

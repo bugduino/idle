@@ -5,7 +5,7 @@ import styles from './Landing.module.scss';
 import LandingForm from '../LandingForm/LandingForm';
 import Faq from '../Faq/Faq';
 import NewsletterForm from '../NewsletterForm/NewsletterForm';
-import EquityChart from '../EquityChart/EquityChart';
+// import EquityChart from '../EquityChart/EquityChart';
 
 let scrolling = false;
 
