@@ -306,14 +306,18 @@ class SmartContractControls extends React.Component {
 
   getAprs = async () => {
     const aprs = await this.genericIdleCall('getAPRs');
-    const bestToken = await this.genericIdleCall('bestToken');
-    const currentProtocol = await this.getCurrentProtocol(bestToken);
+
+    console.log('getAprs',aprs);
+
     if (!aprs){
       setTimeout(() => {
         this.getAprs();
       },5000);
       return false;
     }
+    
+    const bestToken = await this.genericIdleCall('bestToken');
+    const currentProtocol = await this.getCurrentProtocol(bestToken);
     const maxRate = this.toEth(Math.max(aprs[0],aprs[1]));
     const currentRate = bestToken ? (bestToken.toString().toLowerCase() === this.props.tokenConfig.protocols[0].address ? aprs[0] : aprs[1]) : null;
     this.setState({
@@ -1064,7 +1068,7 @@ class SmartContractControls extends React.Component {
 
   async componentDidMount() {
 
-    customLog('SmartContractControls componentDidMount',this.state.accountBalanceToken);
+    // customLog('SmartContractControls componentDidMount',this.state.accountBalanceToken);
 
     this.addJSDependences();
 
@@ -1077,13 +1081,12 @@ class SmartContractControls extends React.Component {
 
     customLog('Web3 SmartContractControls initialized')
 
-    this.props.initContract('OldIdleDAI', OldIdleAddress, this.props.tokenConfig.idle.abi);
-    this.props.initContract(this.props.tokenConfig.idle.token, this.props.tokenConfig.idle.address, this.props.tokenConfig.idle.abi).then(async () => {
-      await Promise.all([
-        this.getAprs(),
-        this.getPriceInToken(this.props.tokenConfig.idle.token)
-      ]);
-    });
+    await this.props.initContract('OldIdleDAI', OldIdleAddress, this.props.tokenConfig.idle.abi);
+    await this.props.initContract(this.props.tokenConfig.idle.token, this.props.tokenConfig.idle.address, this.props.tokenConfig.idle.abi);
+    await Promise.all([
+      this.getAprs(),
+      this.getPriceInToken(this.props.tokenConfig.idle.token)
+    ]);
 
     /*
     // PUT TEMP FUNCTIONS HERE
@@ -1092,6 +1095,12 @@ class SmartContractControls extends React.Component {
     window.renderWyre = this.renderWyre;
 
     this.props.initContract(this.props.selectedToken, this.props.tokenConfig.address, this.props.tokenConfig.abi);
+
+    if (this.props.account){
+      this.setState({
+        needsUpdate:true
+      });
+    }
   }
 
   async componentDidUpdate(prevProps, prevState) {
@@ -1101,6 +1110,8 @@ class SmartContractControls extends React.Component {
     if (selectedTokenChanged){
       await this.componentDidMount();
     }
+
+    // console.log('componentDidUpdate',prevProps,this.props,prevState,this.state);
 
     if (this.props.account && (accountChanged || this.state.needsUpdate || selectedTokenChanged)) {
 
@@ -1116,7 +1127,7 @@ class SmartContractControls extends React.Component {
 
       // this.getPendingTransactions();
 
-      customLog('componentDidUpdate needsUpdate');
+      // customLog('componentDidUpdate needsUpdate');
 
       await Promise.all([
         this.getTokenBalance(),

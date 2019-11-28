@@ -51,16 +51,12 @@ class NewsletterForm extends Component {
 
   render() {
 
-    const label = (
-      <>I've read and accepted the <Link color={'blue'} hoverColor={'blue'} target={'_blank'} href={"https://www.iubenda.com/privacy-policy/61211749"}>Privacy Policy</Link></>
-    );
-
     return (
         <Box mt={[2,3]} maxWidth={'100%'}>
           <Form onSubmit={this.handleSubmit}>
             <Flex flexDirection={['column','row']} alignItems={['center','flex-start']} justifyContent={'center'}>
               <Box width={[1,8/10]}>
-                <Form.Field width={1}>
+                <Form.Field width={1} label={''}>
                   <Form.Input
                     type="email"
                     name="EMAIL"
@@ -80,7 +76,8 @@ class NewsletterForm extends Component {
                   />
                 </Form.Field>
                 <Flex mb={[3,0]} flexDirection={'row'} alignItems={'center'}>
-                  <Checkbox onClick={ e => this.toggleCheckbox(e) } label={label} required />
+                  <Checkbox onClick={ e => this.toggleCheckbox(e) } label={'I\'ve read and accepted the'} required />
+                  <Link color={'blue'} hoverColor={'blue'} target={'_blank'} href={"https://www.iubenda.com/privacy-policy/61211749"}>Privacy Policy</Link>
                 </Flex>
                 {this.state.message && this.state.message.length &&
                   <Text.p py={0} mt={[2,3]} mb={3} textAlign={['center','left']} color={this.state.messageColor}>{this.state.message}</Text.p>

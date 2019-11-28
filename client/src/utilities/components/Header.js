@@ -5,6 +5,9 @@ import AccountModal from "./AccountModal";
 import styles from './Header.module.scss';
 import BigNumber from 'bignumber.js';
 import TokenSelector from '../../TokenSelector/TokenSelector';
+import {
+  Link as RouterLink,
+} from "react-router-dom";
 
 import IdleDAI from "../../contracts/IdleDAI.json";
 const IdleAbi = IdleDAI.abi;
@@ -84,9 +87,11 @@ class Header extends React.Component {
       >
         <Flex bg={"transparent"} pt={[3,4]} alignItems={'flex-end'}>
           <Box ml={[3, 5]} width={[1, 3/12]}>
-            <Image src="images/logo.png"
-              height={['35px','40px']}
-              position={'relative'} />
+            <RouterLink to="/">
+              <Image src="images/logo.png"
+                height={['35px','40px']}
+                position={'relative'} />
+            </RouterLink>
           </Box>
           <Box display={['inline-block', 'none']}>
             {this.props.account ? (

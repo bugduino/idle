@@ -8,8 +8,8 @@ import {
   BrowserRouter as Router,
   Switch,
   Route,
-  Link,
-  useParams
+  // Link,
+  // useParams
 } from "react-router-dom";
 
 import theme from "../theme";
@@ -19,6 +19,7 @@ import { ThemeProvider, Box } from 'rimble-ui';
 import RimbleWeb3 from "../utilities/RimbleWeb3";
 import Header from "../utilities/components/Header";
 import Landing from "../Landing/Landing";
+import Tos from "../Tos/Tos";
 import Web3Debugger from "../Web3Debugger/Web3Debugger";
 import availableTokens from '../tokens.js';
 
@@ -201,9 +202,7 @@ class App extends Component {
                                   network={network} />
                               </Route>
                               <Route path="/terms-of-service">
-                                <Box>
-                                  TOS
-                                </Box>
+                                <Tos />
                               </Route>
                             </Switch>
                           ) : null}
