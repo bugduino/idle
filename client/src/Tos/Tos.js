@@ -23,7 +23,7 @@ class Tos extends Component {
               <Box textAlign={'center'} alignItems={'center'} width={'100%'} minHeight={['auto','20em']} backgroundColor={'white'} color={'dark-gray'} p={4} boxShadow={'0 0 25px 5px rgba(102, 139, 255, 0.7)'} borderRadius={'15px'} style={{position:'relative'}}>
                 <Box id={'first-paragraph'} pb={3}>
                   <Text pb={3}>
-                    These terms of service, together with any documents and additional terms they expressly incorporate by reference (collectively, these “Terms”), are entered into between Idle, Inc. (“Idle,” “we,” “us” and “our”) and you or the company or other legal entity you represent (“you” or “your”), and constitute a binding legal agreement.
+                    These terms of service, together with any documents and additional terms they expressly incorporate by reference (collectively, these “Terms”), are entered into between Idle Labs Inc. (“Idle,” “we,” “us” and “our”) and you or the company or other legal entity you represent (“you” or “your”), and constitute a binding legal agreement.
                   </Text>
                   <Text pb={3}>
                     Please read these Terms carefully, as these Terms govern your use of our Portal and our Services, and expressly cover your rights and obligations, and our disclaimers and limitations of legal liability, relating to such use. By clicking “I agree” to these Terms or otherwise accessing or using our Services, you accept and agree to be bound by and to comply with these Terms, including the mandatory arbitration provision in Section 12. If you do not agree to these Terms, you must not access or use our Portal or the Services.
