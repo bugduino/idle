@@ -94,10 +94,9 @@ class SmartContractControls extends React.Component {
       const callback = resources[url];
 
       if (typeof callback==='function'){
-        console.log('addResources',url,callback);
-        if(script.readyState) {  // only required for IE <9
+        if (script.readyState) {  // only required for IE <9
           script.onreadystatechange = function() {
-            if ( script.readyState === "loaded" || script.readyState === "complete" ) {
+            if ( script.readyState === 'loaded' || script.readyState === 'complete' ) {
               script.onreadystatechange = null;
               callback();
             }
@@ -349,7 +348,7 @@ class SmartContractControls extends React.Component {
   getAprs = async () => {
     const aprs = await this.genericIdleCall('getAPRs');
 
-    console.log('getAprs',aprs);
+    // console.log('getAprs',aprs);
 
     if (!aprs){
       setTimeout(() => {
@@ -362,6 +361,7 @@ class SmartContractControls extends React.Component {
     const currentProtocol = await this.getCurrentProtocol(bestToken);
     const maxRate = this.toEth(Math.max(aprs[0],aprs[1]));
     const currentRate = bestToken ? (bestToken.toString().toLowerCase() === this.props.tokenConfig.protocols[0].address ? aprs[0] : aprs[1]) : null;
+
     this.setState({
       [`compoundRate`]: aprs ? (+this.toEth(aprs[0])).toFixed(2) : '0.00',
       [`fulcrumRate`]: aprs ? (+this.toEth(aprs[1])).toFixed(2) : '0.00',
@@ -502,57 +502,6 @@ class SmartContractControls extends React.Component {
     }
 
     return balance;
-  };
-
-  animateCurrentEarnings = (count) => {
-    count = !isNaN(count) ? count : 1;
-    if (!this.state.tokenToRedeem){
-      if (count<=3){
-        window.setTimeout(()=>{this.animateCurrentEarnings(count+1)},500);
-      }
-      return false;
-    }
-    const currentApr = this.BNify(this.state.maxRate).div(100);
-    const currentBalance = this.BNify(this.state.tokenToRedeem);
-    const earningPerYear = currentBalance.times(currentApr);
-    const secondsInYear = this.BNify(31536000); // Seconds in a Year
-    // const blocksPerYear = this.BNify(2336000); // Blocks per year
-    let minEarningPerInterval = this.BNify(0.000000001);
-    // let earningPerSecond = earningPerYear.div(secondsInYear);
-    let earningPerInterval = earningPerYear.div(secondsInYear);
-    let interval = 10;
-    if (interval<1000){
-      earningPerInterval = earningPerInterval.div((1000/interval));
-    }
-
-    if (earningPerInterval<minEarningPerInterval){
-      const times = minEarningPerInterval.div(earningPerInterval).toFixed(3);
-      earningPerInterval = minEarningPerInterval;
-      interval *= times;
-    }
-
-    interval = Math.floor(interval);
-
-    if (this.state.earningIntervalId){
-      window.clearInterval(this.state.earningIntervalId);
-    }
-
-    const earningIntervalId = window.setInterval(() => {
-      if (this.state.tokenToRedeem && this.state.earning && earningPerInterval){
-        const newTokenToRedeem = this.state.tokenToRedeem.plus(earningPerInterval);
-        const newEarning = this.state.earning.plus(earningPerInterval);
-        this.setState({
-          tokenToRedeemParsed:newTokenToRedeem.toString(),
-          tokenToRedeem:newTokenToRedeem,
-          earning:newEarning
-        });
-      }
-    },interval);
-
-    this.setState({
-      earningIntervalId,
-      earningPerYear
-    });
   };
 
   getOldBalanceOf = async contractName => {

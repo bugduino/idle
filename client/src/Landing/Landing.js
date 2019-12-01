@@ -20,8 +20,14 @@ class Landing extends Component {
     testPerformed:false
   };
 
+  // Clear all the timeouts
   async componentWillUnmount(){
-    window.clearTimeout(this.state.carouselIntervalID);
+    console.log('Landing.js componentWillUnmount');
+    var id = window.setTimeout(function() {}, 0);
+
+    while (id--) {
+        window.clearTimeout(id); // will do nothing if no timeout with id is present
+    }
   }
 
   async componentDidMount(){
@@ -62,13 +68,10 @@ class Landing extends Component {
 
   async componentDidUpdate(prevProps) {
 
-    let prevContract = (prevProps.contracts.find(c => c.name === 'idleDAI') || {}).contract;
-    let contract = (this.props.contracts.find(c => c.name === 'idleDAI') || {}).contract;
+    let prevContract = (prevProps.contracts.find(c => c.name === this.props.tokenConfig.idle.token) || {}).contract;
+    let contract = (this.props.contracts.find(c => c.name === this.props.tokenConfig.idle.token) || {}).contract;
 
-    // console.log(this.props.contracts,prevContract,contract);
-
-    if (contract && prevContract !== contract) {
-      console.log('Getting APR');
+    if (contract && (prevContract !== contract || (!this.state.maxRate && !this.state.updatingAprs))) {
       await this.getAprs();
     }
   }
@@ -123,12 +126,26 @@ class Landing extends Component {
 
   getAprs = async () => {
     const aprs = await this.genericIdleCall('getAPRs');
+
+    if (this.state.updatingAprs){
+      return false;
+    }
+
+    this.setState({
+      updatingAprs:true
+    });
+
     if (!aprs){
       setTimeout(() => {
         this.getAprs();
       },5000);
+      
+      this.setState({
+        updatingAprs:false
+      });
       return false;
     }
+
     const bestToken = await this.genericIdleCall('bestToken');
     const currentProtocol = await this.getCurrentProtocol(bestToken);
     const maxRate = this.toEth(Math.max(aprs[0],aprs[1]));
@@ -139,7 +156,8 @@ class Landing extends Component {
       fulcrumRate: aprs ? (+this.toEth(aprs[1])).toFixed(2) : '0.00',
       maxRate: aprs ? ((+maxRate).toFixed(2)) : '0.00',
       currentProtocol,
-      currentRate: currentRate ? (+this.toEth(currentRate)).toFixed(2) : null
+      currentRate: currentRate ? (+this.toEth(currentRate)).toFixed(2) : null,
+      updatingAprs: false
     };
     this.setState(state);
     return state;
