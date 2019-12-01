@@ -1279,7 +1279,7 @@ class SmartContractControls extends React.Component {
         return (
           <Link key={'tx_'+i} display={'block'} href={`https://etherscan.io/tx/${tx.hash}`} target={'_blank'}>
             <Flex alignItems={'center'} flexDirection={['row','row']} width={'100%'} p={[2,3]} borderBottom={'1px solid #D6D6D6'}>
-              <Box width={[1/12]} textAlign={'right'}>
+              <Box width={[1/12,1/12]} textAlign={'right'}>
                   <Icon name={icon} color={color} style={{float:'left'}}></Icon>
               </Box>
               <Box width={[2/12,2/12]} display={['none','block']} textAlign={'center'}>
@@ -1287,16 +1287,16 @@ class SmartContractControls extends React.Component {
                   {status}
                 </Pill>
               </Box>
-              <Box width={[3/12]}>
+              <Box width={[6/12,3/12]}>
                 <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>{value} {tx.tokenSymbol}</Text>
               </Box>
-              <Box width={[3/12]}>
-                <Text textAlign={'center'} display={['none','block']} fontSize={[2,2]} fontWeight={2}>
+              <Box width={3/12} display={['none','block']}>
+                <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>
                   {interest ? <Pill color={'green'}>{interest}</Pill> : '-'}
                 </Text>
               </Box>
-              <Box width={[3/12,3/12]} textAlign={'center'}>
-                <Text alt={formattedDateAlt} textAlign={'center'} fontSize={[2,2]} fontWeight={2}>{formattedDate}</Text>
+              <Box width={[5/12,3/12]} textAlign={'center'}>
+                <Text alt={formattedDateAlt} textAlign={'center'} fontSize={[1,2]} fontWeight={2}>{formattedDate}</Text>
               </Box>
             </Flex>
           </Link>
