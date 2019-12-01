@@ -71,21 +71,49 @@ class SmartContractControls extends React.Component {
 
   addResources = () => {
 
-    const resources = [
-      'https://instant.0x.org/instant.js',
+    const resources = {
+      'https://code.jquery.com/jquery-3.3.1.slim.min.js': () => {
+        const script_0x_overlay_click = document.createElement("script");
+        script_0x_overlay_click.type = 'text/javascript';
+        script_0x_overlay_click.innerHTML = `
+        jQuery(document).on('click', '.zeroExInstantOverlay', function () {
+            window.zeroExInstant.unrender();
+        });
+        `;
+        document.body.appendChild(script_0x_overlay_click);
+      },
+      'https://instant.0x.org/instant.js':{},
       // 'https://verify.testwyre.com/js/widget-loader.js'
-      // 'https://code.jquery.com/jquery-3.3.1.slim.min.js',
       // 'https://verify.testwyre.com/js/verify-module-init-beta.js',
       // 'https://js.stripe.com/v3/' // Needed for wyre debit card
-    ];
+    };
 
-    resources.forEach((url,i) => {
+    Object.keys(resources).forEach((url,i) => {
       const script = document.createElement("script");
+
+      const callback = resources[url];
+
+      if (typeof callback==='function'){
+        console.log('addResources',url,callback);
+        if(script.readyState) {  // only required for IE <9
+          script.onreadystatechange = function() {
+            if ( script.readyState === "loaded" || script.readyState === "complete" ) {
+              script.onreadystatechange = null;
+              callback();
+            }
+          };
+        } else {  //Others
+          script.onload = callback;
+        }
+      }
+
       script.src = url;
       script.async = true;
-      document.body.appendChild(script);
+
+      document.head.appendChild(script);
     });
 
+    // Add 0x Instant style (mobile)
     const style = document.createElement('style');
     style.id = 'zeroExInstant_style';
     style.innerHTML = `
