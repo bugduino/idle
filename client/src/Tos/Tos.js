@@ -9,7 +9,8 @@ class Tos extends Component {
   render() {
     return (
       <Box>
-        <Box className={[styles.headerContainer]} pb={[3,5]} px={[3,6]} pt={['2em', '3em']}>
+        <Box className={styles.headerContainer} pb={[3,5]} px={[3,6]} pt={['2em', '3em']}>
+          <Box className={styles.headerBgFiller}></Box>
           <Box position={'relative'} zIndex={10}>
             <Flex flexDirection={'column'} alignItems={'center'} maxWidth={["50em", "60em"]} mx={'auto'} pb={3} textAlign={'center'} pt={['8vh', '8vh']}>
               <Heading.h1 fontFamily={'sansSerif'} lineHeight={'1.1em'} mb={'0.2em'} fontSize={['2.5em',7]} textAlign={'center'} color={'white'}>
@@ -20,7 +21,7 @@ class Tos extends Component {
               </Heading.h2>
             </Flex>
             <Flex flexDirection={'column'} alignItems={'center'} maxWidth={["50em", "70em"]} mx={'auto'} textAlign={'center'}>
-              <Box textAlign={'center'} alignItems={'center'} width={'100%'} minHeight={['auto','20em']} backgroundColor={'white'} color={'dark-gray'} p={4} boxShadow={'0 0 25px 5px rgba(102, 139, 255, 0.7)'} borderRadius={'15px'} style={{position:'relative'}}>
+              <Box className={styles.textContainer} alignItems={'center'} width={'100%'} minHeight={['auto','20em']} backgroundColor={'white'} color={'dark-gray'} p={[3,4]} boxShadow={'0 0 25px 5px rgba(102, 139, 255, 0.7)'} borderRadius={'15px'} style={{position:'relative'}}>
                 <Box id={'first-paragraph'} pb={3}>
                   <Text pb={3}>
                     These terms of service, together with any documents and additional terms they expressly incorporate by reference (collectively, these “Terms”), are entered into between Idle Labs Inc. (“Idle,” “we,” “us” and “our”) and you or the company or other legal entity you represent (“you” or “your”), and constitute a binding legal agreement.
@@ -39,8 +40,8 @@ class Tos extends Component {
                   </Text>
                 </Box>
 
-                <Box id={'key-definitions'} py={3}>
-                  <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[4,4]}>
+                <Box id={'key-definitions'} py={[2,3]}>
+                  <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[3,4]}>
                     1. KEY DEFINITIONS
                   </Heading.h3>
 
@@ -82,8 +83,8 @@ class Tos extends Component {
                   </ul>
                 </Box>
 
-                <Box id={'key-definitions'} py={3}>
-                  <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[4,4]}>
+                <Box id={'modifications-terms'} py={[2,3]}>
+                  <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[3,4]}>
                     2. MODIFICATIONS TO THESE TERMS
                   </Heading.h3>
 
@@ -92,8 +93,8 @@ class Tos extends Component {
                   </Text>
                 </Box>
 
-                <Box id={'key-definitions'} py={3}>
-                  <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[4,4]}>
+                <Box id={'services'} py={[2,3]}>
+                  <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[3,4]}>
                     3. SERVICES
                   </Heading.h3>
                 </Box>
@@ -172,8 +173,8 @@ class Tos extends Component {
                   </li>
                 </ul>
 
-                <Box id={'privacy-policy'} py={3}>
-                  <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[4,4]}>
+                <Box id={'privacy-policy'} py={[2,3]}>
+                  <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[3,4]}>
                     4. PRIVACY POLICY
                   </Heading.h3>
                   <Text py={2}>
@@ -181,8 +182,8 @@ class Tos extends Component {
                   </Text>
                 </Box>
 
-                <Box id={'proprietary-rights'} py={3}>
-                  <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[4,4]}>
+                <Box id={'proprietary-rights'} py={[2,3]}>
+                  <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[3,4]}>
                     5. PROPRIETARY RIGHTS
                   </Heading.h3>
                   <ul className={styles.list}>
@@ -201,8 +202,8 @@ class Tos extends Component {
                   </ul>
                 </Box>
 
-                <Box id={'changes-suspension-termination'} py={3}>
-                  <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[4,4]}>
+                <Box id={'changes-suspension-termination'} py={[2,3]}>
+                  <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[3,4]}>
                     6. CHANGES; SUSPENSION; TERMINATION
                   </Heading.h3>
                   <ul className={styles.list}>
@@ -221,8 +222,8 @@ class Tos extends Component {
                   </ul>
                 </Box>
 
-                <Box id={'electronic-notices'} py={3}>
-                  <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[4,4]}>
+                <Box id={'electronic-notices'} py={[2,3]}>
+                  <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[3,4]}>
                     7. ELECTRONIC NOTICES
                   </Heading.h3>
                   <Text py={2}>
@@ -230,8 +231,8 @@ class Tos extends Component {
                   </Text>
                 </Box>
 
-                <Box id={'indemnification'} py={3}>
-                  <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[4,4]}>
+                <Box id={'indemnification'} py={[2,3]}>
+                  <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[3,4]}>
                     8. INDEMNIFICATION
                   </Heading.h3>
                   <Text py={2}>
@@ -239,8 +240,8 @@ class Tos extends Component {
                   </Text>
                 </Box>
 
-                <Box id={'disclosures-disclaimers'} py={3}>
-                  <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[4,4]}>
+                <Box id={'disclosures-disclaimers'} py={[2,3]}>
+                  <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[3,4]}>
                     9. Disclosures; DISCLAIMERS
                   </Heading.h3>
                   <Text py={2}>
@@ -269,8 +270,8 @@ class Tos extends Component {
                   </Text>
                 </Box>
 
-                <Box id={'exclusion-consequential-related-damages'} py={3}>
-                  <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[4,4]}>
+                <Box id={'exclusion-consequential-related-damages'} py={[2,3]}>
+                  <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[3,4]}>
                     10. EXCLUSION OF CONSEQUENTIAL AND RELATED DAMAGES
                   </Heading.h3>
                   <Text py={2}>
@@ -278,8 +279,8 @@ class Tos extends Component {
                   </Text>
                 </Box>
 
-                <Box id={'exclusion-consequential-related-damages'} py={3}>
-                  <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[4,4]}>
+                <Box id={'exclusion-consequential-related-damages'} py={[2,3]}>
+                  <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[3,4]}>
                     11. LIMITATION OF LIABILITY
                   </Heading.h3>
                   <Text py={2}>
@@ -287,8 +288,8 @@ class Tos extends Component {
                   </Text>
                 </Box>
 
-                <Box id={'dispute-resolution-arbitration'} py={3}>
-                  <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[4,4]}>
+                <Box id={'dispute-resolution-arbitration'} py={[2,3]}>
+                  <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[3,4]}>
                     12. DISPUTE RESOLUTION AND ARBITRATION
                   </Heading.h3>
                   <Text py={2}>
@@ -318,8 +319,8 @@ class Tos extends Component {
                   </Text>
                 </Box>
                 
-                <Box id={'governing-law'} py={3}>
-                  <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[4,4]}>
+                <Box id={'governing-law'} py={[2,3]}>
+                  <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[3,4]}>
                     13. GOVERNING LAW
                   </Heading.h3>
                   <Text py={2}>
@@ -327,8 +328,8 @@ class Tos extends Component {
                   </Text>
                 </Box>
 
-                <Box id={'miscellaneous'} py={3}>
-                  <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[4,4]}>
+                <Box id={'miscellaneous'} py={[2,3]}>
+                  <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[3,4]}>
                     14. MISCELLANEOUS
                   </Heading.h3>
                   <Text py={2}>
