@@ -31,7 +31,11 @@ class NewsletterForm extends Component {
     axios.post(`https://dev.lapisgroup.it/idle/newsletter.php`, {
       'email': this.state.email
     }).then(r => {
-      this.setState({message:'You have successfully subscribed to the newsletter', messageColor:'green' });
+      if (r.data.status === 'success'){
+        this.setState({message:'You have successfully subscribed to the newsletter', messageColor:'green' });
+      } else {
+        this.setState({message:'Error while sending your subscription... Please try again', messageColor:'red' });
+      }
     })
     .catch(err => {
       this.setState({message:'Error while sending your subscription... Please try again', messageColor:'red' });
