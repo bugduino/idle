@@ -69,7 +69,7 @@ class SmartContractControls extends React.Component {
     transactions:{}
   };
 
-  addJSDependences = () => {
+  addResources = () => {
 
     const resources = [
       'https://instant.0x.org/instant.js',
@@ -85,6 +85,20 @@ class SmartContractControls extends React.Component {
       script.async = true;
       document.body.appendChild(script);
     });
+
+    const style = document.createElement('style');
+    style.id = 'zeroExInstant_style';
+    style.innerHTML = `
+    @media (max-width: 40em){
+      .zeroExInstantOverlayCloseButton{
+        display: block !important;
+        z-index: 99999 !important;
+      }
+      .zeroExInstantOverlayCloseButton > div{
+        padding: 1.3em !important;
+      }
+    }`;
+    document.body.appendChild(style);
   }
 
   /*
@@ -315,7 +329,7 @@ class SmartContractControls extends React.Component {
       },5000);
       return false;
     }
-    
+
     const bestToken = await this.genericIdleCall('bestToken');
     const currentProtocol = await this.getCurrentProtocol(bestToken);
     const maxRate = this.toEth(Math.max(aprs[0],aprs[1]));
@@ -1070,7 +1084,7 @@ class SmartContractControls extends React.Component {
 
     // customLog('SmartContractControls componentDidMount',this.state.accountBalanceToken);
 
-    this.addJSDependences();
+    this.addResources();
 
     customLog('Smart contract didMount')
     // do not wait for each one just for the first who will guarantee web3 initialization
