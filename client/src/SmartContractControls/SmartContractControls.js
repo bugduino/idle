@@ -18,8 +18,8 @@ const OldIdleAddress = '0x10cf8e1CDba9A2Bd98b87000BCAdb002b13eA525'; // v0.1 hac
 
 const daysInYear = 365.2422;
 
-const customLog = (...props) => { console.log(moment().format('HH:mm:ss'),...props); }
-const customLogError = (...props) => { console.error(moment().format('HH:mm:ss'),...props); }
+const customLog = (...props) => { return false; console.log(moment().format('HH:mm:ss'),...props); }
+const customLogError = (...props) => { return false; console.error(moment().format('HH:mm:ss'),...props); }
 
 class SmartContractControls extends React.Component {
   state = {
@@ -191,7 +191,7 @@ class SmartContractControls extends React.Component {
           }
         },
         onClose: (e) => {
-          console.log(e);
+          customLog(e);
           if (e){
             e.preventDefault();
           }
@@ -901,7 +901,7 @@ class SmartContractControls extends React.Component {
     let amountLent = 0;
     let transactions = {};
 
-    console.log('prevTxs',prevTxs);
+    customLog('prevTxs',prevTxs);
 
     prevTxs.forEach((tx,index) => {
       // Deposited
@@ -919,7 +919,7 @@ class SmartContractControls extends React.Component {
     // Add missing executed transactions
     if (this.state.executedTxs){
 
-      console.log('getPrevTxs adding executedTxs',this.state.executedTxs);
+      customLog('getPrevTxs adding executedTxs',this.state.executedTxs);
 
       const asyncForEach = async(array, callback) => {
         for (let index = 0; index < array.length; index++) {
@@ -970,7 +970,7 @@ class SmartContractControls extends React.Component {
 
         transactions[realTx.hash] = realTx;
 
-        console.log('getPrevTxs inserted executed tx',transactions[realTx.hash]);
+        customLog('getPrevTxs inserted executed tx',transactions[realTx.hash]);
       });
     }
 
@@ -1163,7 +1163,7 @@ class SmartContractControls extends React.Component {
       if (localStorage){
         localStorage.setItem('transactions',JSON.stringify(this.props.transactions));
       }
-      console.log('Transactions changed from',prevProps.transactions,'to',this.props.transactions);
+      // console.log('Transactions changed from',prevProps.transactions,'to',this.props.transactions);
       this.processTransactionUpdates(prevProps.transactions);
     }
   }

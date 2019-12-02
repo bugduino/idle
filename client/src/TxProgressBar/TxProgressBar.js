@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import { Flex, Text, Progress, Loader } from 'rimble-ui'
 import axios from 'axios';
+import moment from 'moment';
+
+const customLog = (...props) => { return false; console.log(moment().format('HH:mm:ss'),...props); }
 
 class TxProgressBar extends Component {
   state = {
@@ -25,16 +28,16 @@ class TxProgressBar extends Component {
 
   async getTransactionReceipt() {
     return new Promise( async (resolve, reject) => {
-      console.log('getTransactionReceipt',this.props.hash);
+      customLog('getTransactionReceipt',this.props.hash);
       window.web3.eth.getTransactionReceipt(this.props.hash,(err,transactionReceipt) => {
         if (transactionReceipt){
-          console.log('getTransactionReceipt resolved',transactionReceipt);
+          customLog('getTransactionReceipt resolved',transactionReceipt);
           this.setState({
             transactionReceipt
           });
           return resolve(transactionReceipt);
         }
-        console.log('getTransactionReceipt rejected',err);
+        customLog('getTransactionReceipt rejected',err);
         return reject(false);
       });
     });
@@ -42,16 +45,16 @@ class TxProgressBar extends Component {
 
   async getTransaction() {
     return new Promise( async (resolve, reject) => {
-      console.log('getTransaction',this.props.hash);
+      customLog('getTransaction',this.props.hash);
       window.web3.eth.getTransaction(this.props.hash,(err,transaction) => {
         if (transaction){
-          console.log('getTransaction resolved',transaction);
+          customLog('getTransaction resolved',transaction);
           this.setState({
             transaction
           });
           return resolve(transaction);
         }
-        console.log('getTransaction rejected',err);
+        customLog('getTransaction rejected',err);
         return reject(false);
       });
     });
@@ -104,6 +107,13 @@ class TxProgressBar extends Component {
     return [expectedWait, prediction['hashpower_accepting'], prediction['tx_atabove'], minedProb];
   }
 
+  async getBlockTime() {
+    const pt = await axios.get('https://ethgasstation.info/json/ethgasAPI.json');
+    this.setState({
+      blockTime:pt.data
+    });
+  }
+
   async getPredictionTable() {
     const pt = await axios.get('https://ethgasstation.info/json/predictTable.json');
     this.setState({
@@ -116,13 +126,13 @@ class TxProgressBar extends Component {
       return null;
     }
     return new Promise( async (resolve, reject) => {
-      console.log('getTransactionTimestamp',this.state.transaction.blockNumber);
+      customLog('getTransactionTimestamp',this.state.transaction.blockNumber);
       window.web3.eth.getBlock(this.state.transaction.blockNumber,(err,block) => {
         if (block){
-          console.log('getTransactionTimestamp resolved',block);
+          customLog('getTransactionTimestamp resolved',block);
           return resolve(block.timestamp);
         }
-        console.log('getTransactionTimestamp rejected',err);
+        customLog('getTransactionTimestamp rejected',err);
         return reject(false);
       });
     });
@@ -140,11 +150,11 @@ class TxProgressBar extends Component {
     if (prediction){
       const pdValues = this._estimateWait(prediction,this.state.transaction.gas);
       const blocksWait = pdValues[0];
-      const blockInterval = 14.907407407407;
+      const blockInterval = this.state.blockTime.block_time;
       let txMeanSecs = blocksWait * blockInterval;
       txMeanSecs = parseInt(txMeanSecs.toFixed(0));
-      console.log('getTxEstimatedTime',prediction,this.state.transaction.gas,pdValues,txMeanSecs);
-      return txMeanSecs;
+      customLog('getTxEstimatedTime',prediction,this.state.transaction.gas,pdValues,txMeanSecs);
+      return txMeanSecs; // Customized
     }
 
     return null;
@@ -195,7 +205,8 @@ class TxProgressBar extends Component {
   async initProgressBar() {
     await Promise.all([
       this.getTransaction(),
-      this.getPredictionTable()
+      this.getPredictionTable(),
+      this.getBlockTime()
     ]);
 
     try{
