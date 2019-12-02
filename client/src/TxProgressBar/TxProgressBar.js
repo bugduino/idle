@@ -2,12 +2,12 @@ import React, { Component } from 'react';
 import { Flex, Text, Progress, Loader } from 'rimble-ui'
 import axios from 'axios';
 import Web3 from "web3";
-import moment from 'moment';
+// import moment from 'moment';
 import BigNumber from 'bignumber.js';
 require('dotenv').config();
 const INFURA_KEY = process.env["REACT_APP_INFURA_KEY"];
 
-const customLog = (...props) => { console.log(moment().format('HH:mm:ss'),...props); };
+const customLog = (...props) => { /*console.log(moment().format('HH:mm:ss'),...props);*/ };
 
 class TxProgressBar extends Component {
   state = {
