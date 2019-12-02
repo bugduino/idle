@@ -277,7 +277,7 @@ class Landing extends Component {
           <Flex flexDirection={['column','column']} alignItems={'center'} justifyContent={'center'}>
             <Flex alignItems={'center'} flexDirection={'column'} width={1} maxWidth={['24em','90em']}>
               <Flex flexDirection={['column','row']} height={['auto','275px']}>
-                <Flex width={[1,1/2]} justifyContent={['center','flex-end']} alignItems={['center','start']}>
+                <Flex position={'relative'} zIndex={'1'} width={[1,1/2]} justifyContent={['center','flex-end']} alignItems={['center','start']}>
                   <Flex flexDirection={['column','row']} position={'relative'} className={[styles.bulletCard,styles.bulletCardFirst,this.state.activeBullet>=1 ? styles.bulletCardActive :null]} width={[1,5/7]} p={[3,4]}>
                     {
                       !this.props.isMobile && (
@@ -304,7 +304,7 @@ class Landing extends Component {
                     </Box>
                   </Flex>
                 </Flex>
-                <Flex width={[1,1/2]} zIndex={'-1'}>
+                <Flex position={'relative'} width={[1,1/2]} zIndex={'-1'}>
                   <Flex width={[1,6/8]} alignItems={['center','flex-end']}>
                     <Box className={[styles.bentTube,styles.bentTubeRight,this.state.activeBullet>=2 ? styles.bentTubeActive : null]} position={'relative'} width={1/2} height={['120px','175px']} borderRadius={[0,'0 50px 0 0']} borderTop={[0,'15px solid rgba(0,54,255,0.1)']} borderRight={['10px solid rgba(0,54,255,0.1)','15px solid rgba(0,54,255,0.1)']}>
                       <Text position={'absolute'} display={'block'} className={[styles.bulletPoint,!this.props.isMobile ? styles.bulletLeft : styles.bulletTop]}></Text>
@@ -567,7 +567,7 @@ class Landing extends Component {
                       </Card>
                     </Box>
                   </Flex>
-                  <Box width={1/2} zIndex={'-1'} position={'relative'} height={'80px'} borderRadius={['0 0 0 30px','0 50px 0 0']} borderBottom={[`10px solid rgba(0,54,255,${compoundOpacity})`,0]} borderLeft={[`10px solid rgba(0,54,255,${compoundOpacity})`,0]}  borderTop={[0,`15px solid rgba(0,54,255,${compoundOpacity})`]} borderRight={[0,`15px solid rgba(0,54,255,${compoundOpacity})`]} top={['-10px','55%']} left={['48%',0]}>
+                  <Box width={1/2} zIndex={'-1'} position={'relative'} height={'80px'} borderRadius={['0 0 0 30px','0 50px 0 0']} borderBottom={[`10px solid rgba(0,54,255,${compoundOpacity})`,0]} borderLeft={[`10px solid rgba(0,54,255,${compoundOpacity})`,0]}  borderTop={[0,`15px solid rgba(0,54,255,${compoundOpacity})`]} borderRight={[0,`15px solid rgba(0,54,255,${compoundOpacity})`]} top={['-10px','75px']} left={['48%',0]}>
                     <Box position={'absolute'} display={'block'} className={[styles.bulletPoint,styles.bulletLeft,this.props.isMobile ? styles.bulletMobile : '']}></Box>
                   </Box>
                 </Flex>
@@ -587,7 +587,7 @@ class Landing extends Component {
                       </Card>
                     </Box>
                   </Flex>
-                  <Box width={1/2} zIndex={'-1'} position={'relative'} height={['80px','72px']} borderRadius={['0 0 30px 0','0 0 50px 0']} borderBottom={[`10px solid rgba(0,54,255,${fulcrumOpacity})`,`15px solid rgba(0,54,255,${fulcrumOpacity})`]} borderRight={[`10px solid rgba(0,54,255,${fulcrumOpacity})`,`15px solid rgba(0,54,255,${fulcrumOpacity})`]} top={['-10px','15%']} left={['0%',0]}>
+                  <Box width={1/2} zIndex={'-1'} position={'relative'} height={['80px','72px']} borderRadius={['0 0 30px 0','0 0 50px 0']} borderBottom={[`10px solid rgba(0,54,255,${fulcrumOpacity})`,`15px solid rgba(0,54,255,${fulcrumOpacity})`]} borderRight={[`10px solid rgba(0,54,255,${fulcrumOpacity})`,`15px solid rgba(0,54,255,${fulcrumOpacity})`]} top={['-10px','18px']} left={['0%',0]}>
                     <Box position={'absolute'} display={'block'} className={[styles.bulletPoint,styles.bulletBottomBottom,this.props.isMobile ? styles.bulletMobile : '']}></Box>
                   </Box>
                 </Flex>
