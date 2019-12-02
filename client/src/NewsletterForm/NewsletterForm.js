@@ -56,10 +56,10 @@ class NewsletterForm extends Component {
   render() {
 
     return (
-        <Box mt={[2,3]} maxWidth={'100%'}>
+        <Box mt={[2,3]} maxWidth={'45em'} width={1}>
           <Form onSubmit={this.handleSubmit}>
             <Flex flexDirection={['column','row']} alignItems={['center','flex-start']} justifyContent={'center'}>
-              <Box width={[1,8/10]}>
+              <Box width={[1,7/10]}>
                 <Form.Field width={1} label={''}>
                   <Form.Input
                     type="email"
@@ -87,7 +87,7 @@ class NewsletterForm extends Component {
                   <Text.p py={0} mt={[2,3]} mb={3} textAlign={['center','left']} color={this.state.messageColor}>{this.state.message}</Text.p>
                 }
               </Box>
-              <Box width={[1,2/10]} my={[0,'26px']}>
+              <Box width={[1,3/10]} my={[0,'26px']}>
                 <Button className={styles.gradientButton} type="submit" width={1}>
                   GET UPDATES
                 </Button>
