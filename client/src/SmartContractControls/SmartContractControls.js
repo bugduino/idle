@@ -66,7 +66,7 @@ class SmartContractControls extends React.Component {
     approveTx: null,
     fundsError: false,
     showEmptyWalletOverlay:true,
-    prevTxs : {},
+    prevTxs : null,
     transactions:{}
   };
 
@@ -1238,10 +1238,6 @@ class SmartContractControls extends React.Component {
   // TODO move in a separate component
   renderPrevTxs(prevTxs) {
     prevTxs = prevTxs ? prevTxs : (this.state.prevTxs || {});
-
-    if (!Object.keys(prevTxs).length) {
-      return null;
-    }
 
     const txsIndexes = Object.keys(prevTxs);
     const txsToShow = 99999999;

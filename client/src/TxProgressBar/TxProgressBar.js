@@ -1,9 +1,13 @@
 import React, { Component } from 'react';
 import { Flex, Text, Progress, Loader } from 'rimble-ui'
 import axios from 'axios';
-// import moment from 'moment';
+import Web3 from "web3";
+import moment from 'moment';
+import BigNumber from 'bignumber.js';
+require('dotenv').config();
+const INFURA_KEY = process.env["REACT_APP_INFURA_KEY"];
 
-const customLog = (...props) => { /*console.log(moment().format('HH:mm:ss'),...props);*/ };
+const customLog = (...props) => { console.log(moment().format('HH:mm:ss'),...props); };
 
 class TxProgressBar extends Component {
   state = {
@@ -11,7 +15,8 @@ class TxProgressBar extends Component {
     remainingTime:null,
     percentage:0,
     ended:false,
-    error:null
+    error:null,
+    web3:null
   };
 
   async componentWillUnmount(){
@@ -22,14 +27,45 @@ class TxProgressBar extends Component {
     }
   }
 
+  async initWeb3(){
+    let web3 = null;
+    customLog('initWeb3',window.ethereum,window.web3,this.props.web3);
+    if (!this.state.web3) { // safety web3 implementation
+      if (window.ethereum) {
+        customLog("Using modern web3 provider.");
+        web3 = new Web3(window.ethereum);
+      } else if (window.web3) {
+        customLog("Legacy web3 provider. Try updating.");
+        web3 = new Web3(window.web3.currentProvider);
+      } else {
+        customLog("Non-Ethereum browser detected. Using Infura fallback.");
+        const web3Provider = new Web3.providers.HttpProvider(
+          `https://mainnet.infura.io/v3/${INFURA_KEY}`
+        );
+        web3 = new Web3(web3Provider);
+      }
+    }
+
+    if (web3){
+      return this.setState({
+        web3
+      });
+    }
+
+    return null;
+  }
+
+  BNify = s => new BigNumber(String(s));
+
   async componentDidMount() {
+    await this.initWeb3();
     await this.initProgressBar();
   }
 
   async getTransactionReceipt() {
     return new Promise( async (resolve, reject) => {
       customLog('getTransactionReceipt',this.props.hash);
-      window.web3.eth.getTransactionReceipt(this.props.hash,(err,transactionReceipt) => {
+      this.state.web3.eth.getTransactionReceipt(this.props.hash,(err,transactionReceipt) => {
         if (transactionReceipt){
           customLog('getTransactionReceipt resolved',transactionReceipt);
           this.setState({
@@ -46,7 +82,7 @@ class TxProgressBar extends Component {
   async getTransaction() {
     return new Promise( async (resolve, reject) => {
       customLog('getTransaction',this.props.hash);
-      window.web3.eth.getTransaction(this.props.hash,(err,transaction) => {
+      this.state.web3.eth.getTransaction(this.props.hash,(err,transaction) => {
         if (transaction){
           customLog('getTransaction resolved',transaction);
           this.setState({
@@ -127,7 +163,7 @@ class TxProgressBar extends Component {
     }
     return new Promise( async (resolve, reject) => {
       customLog('getTransactionTimestamp',this.state.transaction.blockNumber);
-      window.web3.eth.getBlock(this.state.transaction.blockNumber,(err,block) => {
+      this.state.web3.eth.getBlock(this.state.transaction.blockNumber,(err,block) => {
         if (block){
           customLog('getTransactionTimestamp resolved',block);
           return resolve(block.timestamp);
@@ -163,8 +199,12 @@ class TxProgressBar extends Component {
   async calculateRemainingTime() {
     let remainingTime = 0;
 
+    if (!this.state.transaction){
+      return false;
+    }
+
     if (!this.state.transaction.blockNumber){
-      const gasPrice = parseFloat(this.state.transaction.gasPrice.div(1e9).toString());
+      const gasPrice = parseFloat(this.BNify(this.state.transaction.gasPrice).div(1e9).toString());
       remainingTime = this.getTxEstimatedTime(gasPrice);
     }
 
@@ -218,7 +258,19 @@ class TxProgressBar extends Component {
     }
   }
 
+  renderRemainingTime(){
+    // More than 60 seconds
+    if (this.state.remainingTime>60){
+      const minutes = Math.floor(this.state.remainingTime/60);
+      const seconds = this.state.remainingTime-(minutes*60);
+      return ('0'+minutes).substr(-2)+':'+('0'+seconds).substr(-2)+' min';
+    } else {
+      return this.state.remainingTime+'s';
+    }
+  }
+
   render() {
+
     return (
       <Flex flexDirection={'column'} alignItems={'center'}>
         {
@@ -234,7 +286,7 @@ class TxProgressBar extends Component {
                   </Flex>
                 ): (
                   <>
-                    <Text mb={2} color={'dark-gray'}>{ this.props.waitText ? this.props.waitText : 'Remaining time:' } <Text.span fontWeight={3}>{`${this.state.remainingTime}s`}</Text.span></Text>
+                    <Text mb={2} color={'dark-gray'}>{ this.props.waitText ? this.props.waitText : 'Remaining time:' } <Text.span fontWeight={3}>{ this.renderRemainingTime() }</Text.span></Text>
                     <Progress value={ this.state.percentage } />
                   </>
                 )
