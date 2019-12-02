@@ -52,13 +52,13 @@ class Footer extends Component {
                 Built on
               </Heading.h3>
               <Flex flexDirection={['column','row']} alignItems={['normal','center']} justifyContent={['center','flex-start']}>
-                <Link display={'flex'} style={{flexGrow:1,flexBasis:0}} pr={[0,3]} href="https://www.ethereum.org/" target="_blank">
+                <Link style={{flex:'1 1 0px'}} pr={[0,3]} href="https://www.ethereum.org/" target="_blank">
                   <Image src="images/ethereum.png" width={[1/2,1]} height={'auto'} maxWidth={'initial'} mr={['auto',3]} ml={['auto',0]} my={[3,0]} />
                 </Link>
-                <Link display={'flex'} style={{flexGrow:1,flexBasis:0}} pr={[0,3]} href="https://app.compound.finance" target="_blank">
+                <Link style={{flex:'1 1 0px'}} pr={[0,3]} href="https://app.compound.finance" target="_blank">
                   <Image src="images/compound-light.png" width={[1/2,1]} height={'auto'} maxWidth={'initial'} mr={['auto',3]} ml={['auto',0]} my={[3,0]} />
                 </Link>
-                <Link display={'flex'} style={{flexGrow:1,flexBasis:0}} href="https://fulcrum.trade" target="_blank">
+                <Link style={{flex:'1 1 0px'}} href="https://fulcrum.trade" target="_blank">
                   <Image src="images/fulcrum.svg" width={[1/2,1]} height={'auto'} maxWidth={'initial'} mr={['auto',3]} ml={['auto',0]} my={[3,0]} />
                 </Link>
               </Flex>
