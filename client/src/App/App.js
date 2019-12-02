@@ -5,7 +5,7 @@ import { Web3Consumer } from 'web3-react'
 import connectors from './connectors';
 
 import {
-  BrowserRouter as Router,
+  HashRouter as Router,
   Switch,
   Route,
   // useParams
