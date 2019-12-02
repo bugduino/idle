@@ -79,7 +79,7 @@
     "test": "node scripts/test.js",
     "predeploy": "yarn run build",
     "deploy": "gh-pages -b gh-pages -d build",
-    "deploy-beta": "gh-pages -b gh-pages-beta -d build --remote labs"
+    "deploy-beta": "gh-pages -b gh-pages -d build --remote labs"
   },
   "eslintConfig": {
     "extends": "react-app"
