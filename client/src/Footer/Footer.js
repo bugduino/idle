@@ -17,7 +17,7 @@ class Footer extends Component {
             <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} my={3} color={'dark-gray'}>
               Start a Conversation
             </Heading.h3>
-            <Link textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={2} color={'dark-gray'} hoverColor={'blue'}>info@idle.finance</Link>
+            <Link textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} color={'dark-gray'} hoverColor={'blue'}>info@idle.finance</Link>
           </Flex>
 
           <Flex width={[1,3/10]} flexDirection={'column'} height={['auto','100%']}>
@@ -48,29 +48,28 @@ class Footer extends Component {
 
           <Flex width={[1,4/10]} flexDirection={'column'} height={['auto','100%']} justifyContent={'flex-end'}>
             <Flex flexDirection={['column']} mt={[2, 0]}>
-              <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={2} my={3} color={'white'}>
+              <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} my={3} color={'white'}>
                 Built on
               </Heading.h3>
-              <Flex flexDirection={['column','row']} alignItems={'center'} justifyContent={['center','flex-start']}>
-                <Link width={1/3} pr={[0,3]} href="https://www.ethereum.org/" target="_blank">
-                  <Image src="images/ethereum.png" height={['1.8em', '2.5em']} maxWidth={'initial'} mr={[0,3]} my={[2,0]} />
+              <Flex flexDirection={['column','row']} alignItems={['normal','center']} justifyContent={['center','flex-start']}>
+                <Link display={'flex'} style={{flexGrow:1,flexBasis:0}} pr={[0,3]} href="https://www.ethereum.org/" target="_blank">
+                  <Image src="images/ethereum.png" width={[1/2,1]} height={'auto'} maxWidth={'initial'} mr={['auto',3]} ml={['auto',0]} my={[3,0]} />
                 </Link>
-                <Link width={1/3} pr={[0,3]} href="https://app.compound.finance" target="_blank">
-                  <Image src="images/compound-light.png" height={['1.8em', '2.5em']} maxWidth={'initial'} mr={[0,3]} my={[2,0]} />
+                <Link display={'flex'} style={{flexGrow:1,flexBasis:0}} pr={[0,3]} href="https://app.compound.finance" target="_blank">
+                  <Image src="images/compound-light.png" width={[1/2,1]} height={'auto'} maxWidth={'initial'} mr={['auto',3]} ml={['auto',0]} my={[3,0]} />
                 </Link>
-                <Link width={1/3} pr={[0,3]} href="https://fulcrum.trade" target="_blank">
-                  <Image src="images/fulcrum.svg" height={['1.8em', '2.5em']} maxWidth={'initial'} mr={[0,3]} my={[2,0]} />
+                <Link display={'flex'} style={{flexGrow:1,flexBasis:0}} href="https://fulcrum.trade" target="_blank">
+                  <Image src="images/fulcrum.svg" width={[1/2,1]} height={'auto'} maxWidth={'initial'} mr={['auto',3]} ml={['auto',0]} my={[3,0]} />
                 </Link>
+              </Flex>
+              <Flex width={1} flexDirection={['column','row']} justifyContent={['center','flex-end']} align={['center','flex-end']} py={3}>
+                <Text textAlign={['center','flex-end']} fontSize={[2,1]} py={[2,0]} color={'white'}>&copy; 2019 - Idle Labs Inc.</Text>
+                <RouterLink to="/terms-of-service" style={{textDecoration:'none'}}>
+                  <Text textAlign={['center','flex-end']} pl={2} fontSize={[2,1]} py={[2,0]} color={'#0df'}>Terms of Service</Text>
+                </RouterLink>
               </Flex>
             </Flex>
           </Flex>
-        </Flex>
-
-        <Flex width={1} flexDirection={'row'} justifyContent={'center'} align={'center'} py={2}>
-          <Text fontSize={1} textAlign={'center'} color={'white'}>&copy; 2019 - Idle Labs Inc.</Text>
-          <RouterLink to="/terms-of-service" style={{textDecoration:'none'}}>
-            <Text pl={2} fontSize={1} textAlign={'center'} color={'#0df'}>Terms of Service</Text>
-          </RouterLink>
         </Flex>
       </Flex>
     );
