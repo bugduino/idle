@@ -456,11 +456,11 @@ class SmartContractControls extends React.Component {
       // customLog('tokenToRedeem',tokenToRedeem.toString(),'amountLent',this.state.amountLent);
 
       if (this.state.amountLent && this.trimEth(this.state.amountLent.toString())>0 && this.trimEth(tokenToRedeem.toString())>0 && parseFloat(tokenToRedeem.toString())<parseFloat(this.state.amountLent.toString())){
-        customLogError('Balance '+this.trimEth(tokenToRedeem.toString())+' is less than AmountLent ('+this.trimEth(this.state.amountLent.toString())+').. wait 5 seconds and try again');
+        customLogError('Balance '+this.trimEth(tokenToRedeem.toString())+' is less than AmountLent ('+this.trimEth(this.state.amountLent.toString())+').. try again');
         setTimeout(async () => {
           await this.getPrevTxs();
           this.getBalanceOf(contractName,count+1);
-        },5000);
+        },10000);
         return false;
       }
 
