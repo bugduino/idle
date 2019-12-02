@@ -12,7 +12,7 @@ class TokenSelectorItem extends Component {
         <Flex className={styles.tokenSelectorItem} justifyContent={'flex-end'} width={'140px'} backgroundColor={'rgba(255,255,255,0.1)'} p={2} borderRadius={4} boxShadow={ this.props.isChild ? 0 : 1 } onClick={ this.props.handleClick ? (e) => { this.props.handleClick() } : null }>
           {
             this.props.disabled &&
-              <Text.span className={styles.comingSoon} borderRadius={4}>COMING SOON</Text.span>
+              <Text.span className={styles.comingSoon}>COMING SOON</Text.span>
           }
           <Flex opacity={ this.props.disabled ? '0.5' : '1' }>
             <Text color={ this.props.isChild ? 'dark-gray' : ( this.props.disabled ? '#666666' : 'white') } fontWeight={2} fontSize={[2,2]} lineHeight={'32px'}>{this.props.token}</Text>
