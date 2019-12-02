@@ -76,8 +76,13 @@ class SmartContractControls extends React.Component {
         const script_0x_overlay_click = document.createElement("script");
         script_0x_overlay_click.type = 'text/javascript';
         script_0x_overlay_click.innerHTML = `
-        jQuery(document).on('click', '.zeroExInstantOverlay', function () {
-            window.zeroExInstant.unrender();
+        jQuery(document).on('click', '.zeroExInstantOverlay', function (e) {
+            const $target = jQuery(e.target);
+            const isOverlay = jQuery($target.parents()[0]).hasClass('zeroExInstantOverlay');
+            const isCloseButton = jQuery($target.parents()[1]).hasClass('zeroExInstantOverlayCloseButton') || jQuery($target.parents()[0]).hasClass('zeroExInstantOverlayCloseButton');
+            if (isOverlay || isCloseButton){
+              window.zeroExInstant.unrender();
+            }
         });
         `;
         document.body.appendChild(script_0x_overlay_click);
