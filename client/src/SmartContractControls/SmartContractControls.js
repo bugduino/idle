@@ -903,7 +903,7 @@ class SmartContractControls extends React.Component {
           return isDepositTx || isRedeemTx;
       }).map(tx => ({...tx, value: this.toEth(tx.value)}));
 
-    let amountLent = 0;
+    let amountLent = this.BNify(0);
     let transactions = {};
 
     customLog('prevTxs',prevTxs);
@@ -911,11 +911,14 @@ class SmartContractControls extends React.Component {
     prevTxs.forEach((tx,index) => {
       // Deposited
       if (tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()){
-        amountLent += parseFloat(tx.value);
-        // console.log('Deposited '+parseFloat(tx.value),'AmountLent',amountLent);
+        amountLent = amountLent.plus(this.BNify(tx.value));
+        customLog('Deposited '+parseFloat(tx.value),'AmountLent',amountLent.toString());
       } else if (tx.to.toLowerCase() === this.props.account.toLowerCase()){
-        amountLent -= parseFloat(tx.value);
-        amountLent = Math.max(0,amountLent);
+        amountLent = amountLent.minus(this.BNify(tx.value));
+        if (amountLent.lt(0)){
+          amountLent = this.BNify(0);
+        }
+        customLog('Redeemed '+parseFloat(tx.value),'AmountLent',amountLent.toString());
         // console.log('Redeemed '+parseFloat(tx.value),'AmountLent',amountLent);
       }
       transactions[tx.hash] = tx;
@@ -965,12 +968,15 @@ class SmartContractControls extends React.Component {
         realTx.tokenSymbol = this.props.selectedToken;
         realTx.tx = tx;
 
-        // Deposited
         if (realTx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()){
-          amountLent += parseFloat(realTx.value);
+          amountLent = amountLent.plus(this.BNify(tx.value));
+          customLog('Deposited '+parseFloat(tx.value),'AmountLent',amountLent.toString());
         } else if (realTx.to.toLowerCase() === this.props.account.toLowerCase()){
-          amountLent -= parseFloat(realTx.value);
-          amountLent = Math.max(0,amountLent);
+          amountLent = amountLent.minus(this.BNify(tx.value));
+          if (amountLent.lt(0)){
+            amountLent = this.BNify(0);
+          }
+          customLog('Redeemed '+parseFloat(tx.value),'AmountLent',amountLent.toString());
         }
 
         transactions[realTx.hash] = realTx;
@@ -981,10 +987,12 @@ class SmartContractControls extends React.Component {
 
     let earning = this.state.earning;
     if (this.state.tokenToRedeem){
-      earning = this.state.tokenToRedeem.minus(this.BNify(amountLent));
+      earning = this.state.tokenToRedeem.minus(amountLent);
     }
 
-    amountLent = Math.max(0,amountLent);
+    if (amountLent.lt(0)){
+      amountLent = this.BNify(0);
+    }
 
     return this.setState({
       prevTxs: transactions,
