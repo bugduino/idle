@@ -1063,7 +1063,7 @@ class SmartContractControls extends React.Component {
 
   // Clear all the timeouts
   async componentWillUnmount(){
-    var id = window.setTimeout(function() {}, 0);
+    let id = window.setTimeout(function() {}, 0);
 
     while (id--) {
         window.clearTimeout(id); // will do nothing if no timeout with id is present
@@ -1217,7 +1217,7 @@ class SmartContractControls extends React.Component {
       }
     }
 
-    var transactions = {};
+    const transactions = {};
     await asyncForEach(txsHashes,async (txHash,i) => {
       await window.web3.eth.getTransaction(txHash,(err,tx)=>{
         transactions[tx.hash] = tx;

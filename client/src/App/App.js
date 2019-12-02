@@ -8,7 +8,6 @@ import {
   BrowserRouter as Router,
   Switch,
   Route,
-  // Link,
   // useParams
 } from "react-router-dom";
 
@@ -19,6 +18,7 @@ import { ThemeProvider, Box } from 'rimble-ui';
 import RimbleWeb3 from "../utilities/RimbleWeb3";
 import Header from "../utilities/components/Header";
 import Landing from "../Landing/Landing";
+import ScrollToTop from "../ScrollToTop/ScrollToTop";
 import Tos from "../Tos/Tos";
 import Web3Debugger from "../Web3Debugger/Web3Debugger";
 import availableTokens from '../tokens.js';
@@ -30,6 +30,7 @@ class App extends Component {
     genericError: null,
     width: window.innerWidth,
     route: "default", // or 'onboarding'
+    unsubscribeFromHistory:null,
     selectedTab: '1',
   };
 
@@ -38,6 +39,7 @@ class App extends Component {
   }
 
   componentWillMount() {
+
     let selectedToken = this.state.selectedToken;
     if (!selectedToken){
       selectedToken = localStorage ? localStorage.getItem('selectedToken') : null;
@@ -49,9 +51,11 @@ class App extends Component {
 
     window.addEventListener('resize', this.handleWindowSizeChange);
   }
+
   componentWillUnmount() {
     window.removeEventListener('resize', this.handleWindowSizeChange);
   }
+
   handleWindowSizeChange = () => {
     if (window.innerWidth !== this.state.width){
       this.setState({ width: window.innerWidth });
@@ -91,6 +95,7 @@ class App extends Component {
 
     return (
       <Router>
+        <ScrollToTop />
         <ThemeProvider theme={theme}>
           <Web3Provider
             connectors={connectors}
