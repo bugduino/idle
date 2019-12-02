@@ -14,6 +14,9 @@ import ModalCard from './ModalCard';
 import TransactionFeeModal from "./TransactionFeeModal";
 import Web3ConnectionButtons from "../../Web3ConnectionButtons/Web3ConnectionButtons";
 import Web3ConnectionButtons_styles from '../../Web3ConnectionButtons/Web3ConnectionButtons.module.scss';
+import {
+  Link as RouterLink,
+} from "react-router-dom";
 
 class ConnectionModal extends React.Component {
   // TODO save pref in localstorage and do not show 'Before connecting' info every time
@@ -74,6 +77,13 @@ class ConnectionModal extends React.Component {
   };
 
   renderModalContent = () => {
+
+    const TOSacceptance = (
+      <Box>
+        <Text textAlign={'center'} fontSize={1} py={[2,3]}>By connecting, I accept Idle's <RouterLink to="/terms-of-service" color={'blue'} style={{textDecoration:'underline'}} target={'_blank'}>Terms of Service</RouterLink></Text>
+      </Box>
+    );
+
     const showConnectionButtons = this.getShowConnectionButtons();
     const newToEthereum = this.state.newToEthereum;
     if (showConnectionButtons) {
@@ -84,6 +94,7 @@ class ConnectionModal extends React.Component {
             <Box width={1} px={[3,5]} justifyContent={'center'}>
               <Web3ConnectionButtons width={1/2} size={ this.props.isMobile ? 'medium' : 'large' } />
             </Box>
+            { TOSacceptance }
           </ModalCard.Body>
         </>
       );
@@ -127,6 +138,7 @@ class ConnectionModal extends React.Component {
                 </Button.Outline>
               </Box>
             </Flex>
+            { TOSacceptance }
           </ModalCard.Body>
         </React.Fragment>
       );
