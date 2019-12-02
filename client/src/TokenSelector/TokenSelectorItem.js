@@ -9,16 +9,22 @@ class TokenSelectorItem extends Component {
 
   render() {
     return (
-        <Flex opacity={ this.props.disabled ? '0.5' : '1' } className={styles.tokenSelectorItem} justifyContent={'flex-end'} width={'140px'} backgroundColor={'rgba(255,255,255,0.1)'} p={2} borderRadius={4} boxShadow={ this.props.isChild ? 0 : 1 } onClick={ this.props.handleClick ? (e) => { this.props.handleClick() } : null }>
-          <Text color={ this.props.isChild ? 'dark-gray' : ( this.props.disabled ? '#666666' : 'white') } fontWeight={2} fontSize={[2,2]} lineHeight={'32px'}>{this.props.token}</Text>
-          <Flex flexDirection={'row'} justifyContent={'stretch'} alignItems={'center'} ml={'8px'}>
-            <Image src={`images/tokens/${this.props.token}.svg`} height={'32px'} ml={'2px'} />
-            <Icon
-              align={'center'}
-              name={'KeyboardArrowDown'}
-              color={'white'}
-              size={"1.3em"}
-            />
+        <Flex className={styles.tokenSelectorItem} justifyContent={'flex-end'} width={'140px'} backgroundColor={'rgba(255,255,255,0.1)'} p={2} borderRadius={4} boxShadow={ this.props.isChild ? 0 : 1 } onClick={ this.props.handleClick ? (e) => { this.props.handleClick() } : null }>
+          {
+            this.props.disabled &&
+              <Text.span className={styles.comingSoon} borderRadius={4}>COMING SOON</Text.span>
+          }
+          <Flex opacity={ this.props.disabled ? '0.5' : '1' }>
+            <Text color={ this.props.isChild ? 'dark-gray' : ( this.props.disabled ? '#666666' : 'white') } fontWeight={2} fontSize={[2,2]} lineHeight={'32px'}>{this.props.token}</Text>
+            <Flex flexDirection={'row'} justifyContent={'stretch'} alignItems={'center'} ml={'8px'}>
+              <Image src={`images/tokens/${this.props.token}.svg`} height={'32px'} ml={'2px'} />
+              <Icon
+                align={'center'}
+                name={'KeyboardArrowDown'}
+                color={'white'}
+                size={"1.3em"}
+              />
+            </Flex>
           </Flex>
         </Flex>
     );
