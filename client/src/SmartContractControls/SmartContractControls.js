@@ -1543,7 +1543,7 @@ class SmartContractControls extends React.Component {
                   <>
                     {
                       this.state.lendingTx ? (
-                        <TxProgressBar waitText={'Lending in'} endMessage={'Finalizing lend request...'} hash={this.state.lendingTx.transactionHash} />
+                        <TxProgressBar waitText={'Lending estimated in'} endMessage={'Finalizing lend request...'} hash={this.state.lendingTx.transactionHash} />
                       ) : (
                         <Flex
                           justifyContent={'center'}
@@ -1560,7 +1560,7 @@ class SmartContractControls extends React.Component {
                   <>
                     {
                       this.state.approveTx ? (
-                        <TxProgressBar waitText={'Approving in'} endMessage={'Finalizing approve request...'} hash={this.state.approveTx.transactionHash} />
+                        <TxProgressBar waitText={'Approving estimated in'} endMessage={'Finalizing approve request...'} hash={this.state.approveTx.transactionHash} />
                       ) : (
                         <Flex
                           justifyContent={'center'}
@@ -1721,7 +1721,7 @@ class SmartContractControls extends React.Component {
                             <>
                               {
                                 this.state.redeemTx ? (
-                                  <TxProgressBar waitText={'Redeeming in'} endMessage={'Finalizing redeem request...'} hash={this.state.redeemTx.transactionHash} />
+                                  <TxProgressBar waitText={'Redeeming estimated in'} endMessage={'Finalizing redeem request...'} hash={this.state.redeemTx.transactionHash} />
                                 ) : (
                                   <Flex
                                     justifyContent={'center'}
