@@ -79,17 +79,18 @@ class Landing extends Component {
   processScrolling = () => {
     if (scrolling){
 
-      const bulletCards = document.getElementsByClassName('Landing_bulletCard__3num6');
+      const bulletCards = document.getElementsByClassName('bulletCard');
       let activeBullet = 0;
 
       for (let i=0;i<bulletCards.length;i++){
         const bulletCard = bulletCards[i];
-        const offsetY = bulletCard.offsetTop;
+        const offsetY = bulletCard.offsetTop ? bulletCard.offsetTop : bulletCard.offsetParent.offsetTop;
         if (window.scrollY >= offsetY-200){
           activeBullet = i+2;
         }
       }
       scrolling = false;
+      
       if (parseInt(activeBullet) !== parseInt(this.state.activeBullet)){
         this.setState({activeBullet});
       }
@@ -277,8 +278,8 @@ class Landing extends Component {
           <Flex flexDirection={['column','column']} alignItems={'center'} justifyContent={'center'}>
             <Flex alignItems={'center'} flexDirection={'column'} width={1} maxWidth={['24em','90em']}>
               <Flex flexDirection={['column','row']} height={['auto','275px']}>
-                <Flex position={'relative'} zIndex={'1'} width={[1,1/2]} justifyContent={['center','flex-end']} alignItems={['center','start']}>
-                  <Flex flexDirection={['column','row']} position={'relative'} className={[styles.bulletCard,styles.bulletCardFirst,this.state.activeBullet>=1 ? styles.bulletCardActive :null]} width={[1,5/7]} p={[3,4]}>
+                <Flex width={[1,1/2]} justifyContent={['center','flex-end']} alignItems={['center','start']}>
+                  <Flex flexDirection={['column','row']} position={'relative'} className={['bulletCard',styles.bulletCard,styles.bulletCardFirst,this.state.activeBullet>=1 ? styles.bulletCardActive :null]} width={[1,5/7]} p={[3,4]}>
                     {
                       !this.props.isMobile && (
                         <Flex width={1/4} p={[2,2]} alignItems={'center'} justifyContent={'center'}>
@@ -328,7 +329,7 @@ class Landing extends Component {
                   )
                 }
                 <Flex width={[1,1/2]} justifyContent={'flex-start'} alignItems={'start'}>
-                  <Flex flexDirection={['column','row']} position={'relative'} className={[styles.bulletCard,this.state.activeBullet>=2 ? styles.bulletCardActive :null]} width={[1,5/7]} p={[3,4]}>
+                  <Flex flexDirection={['column','row']} position={'relative'} className={['bulletCard',styles.bulletCard,this.state.activeBullet>=2 ? styles.bulletCardActive :null]} width={[1,5/7]} p={[3,4]}>
                     <Box width={[1,3/4]} pl={[0,2]}>
                       <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
                         Earn Interests
@@ -369,7 +370,7 @@ class Landing extends Component {
 
               <Flex flexDirection={['column','row']} height={['auto','275px']}>
                 <Flex width={[1,1/2]} justifyContent={['center','flex-end']} alignItems={['center','start']}>
-                  <Flex flexDirection={['column','row']} position={'relative'} className={[styles.bulletCard,this.state.activeBullet>=3 ? styles.bulletCardActive :null]} width={[1,5/7]} p={[3,4]}>
+                  <Flex flexDirection={['column','row']} position={'relative'} className={['bulletCard',styles.bulletCard,this.state.activeBullet>=3 ? styles.bulletCardActive :null]} width={[1,5/7]} p={[3,4]}>
                     {
                       !this.props.isMobile && (
                         <Flex width={1/4} p={[2,2]} alignItems={'center'} justifyContent={'center'}>
@@ -411,7 +412,7 @@ class Landing extends Component {
                   
                 </Flex>
                 <Flex width={[1,1/2]} justifyContent={['center','flex-start']} alignItems={['center','start']}>
-                  <Flex flexDirection={['column','row']} position={'relative'} className={[styles.bulletCard,this.state.activeBullet>=4 ? styles.bulletCardActive :null]} width={[1,5/7]} p={[3,4]}>
+                  <Flex flexDirection={['column','row']} position={'relative'} className={['bulletCard',styles.bulletCard,this.state.activeBullet>=4 ? styles.bulletCardActive :null]} width={[1,5/7]} p={[3,4]}>
                     <Box width={[1,3/4]} pl={[0,2]}>
                       <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
                         Easy Redeem

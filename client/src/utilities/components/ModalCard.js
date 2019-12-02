@@ -17,7 +17,7 @@ const ModalCard = ({children, closeFunc, ...props}) => (
     height={['100vh', 'auto']}
     width={['auto']}
     maxWidth={'960px'}
-    overflow={'hidden'}
+    overflow={'auto'}
     borderRadius={2}
   >
     <Box
