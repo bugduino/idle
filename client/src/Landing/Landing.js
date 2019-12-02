@@ -139,7 +139,7 @@ class Landing extends Component {
       setTimeout(() => {
         this.getAprs();
       },5000);
-      
+
       this.setState({
         updatingAprs:false
       });
@@ -190,83 +190,30 @@ class Landing extends Component {
     window.location.href = '#invest';
   }
 
-  scrollIt = (destination, duration = 200, easing = 'linear', callback) => {
+  // VanillaJS function for smooth scroll
+  scrollTo = (to, duration) => {
+      const start = window.scrollY;
+      const change = to - start;
+      const increment = 20;
+      let currentTime = 0;
 
-    const easings = {
-      linear(t) {
-        return t;
-      },
-      easeInQuad(t) {
-        return t * t;
-      },
-      easeOutQuad(t) {
-        return t * (2 - t);
-      },
-      easeInOutQuad(t) {
-        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-      },
-      easeInCubic(t) {
-        return t * t * t;
-      },
-      easeOutCubic(t) {
-        return (--t) * t * t + 1;
-      },
-      easeInOutCubic(t) {
-        return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
-      },
-      easeInQuart(t) {
-        return t * t * t * t;
-      },
-      easeOutQuart(t) {
-        return 1 - (--t) * t * t * t;
-      },
-      easeInOutQuart(t) {
-        return t < 0.5 ? 8 * t * t * t * t : 1 - 8 * (--t) * t * t * t;
-      },
-      easeInQuint(t) {
-        return t * t * t * t * t;
-      },
-      easeOutQuint(t) {
-        return 1 + (--t) * t * t * t * t;
-      },
-      easeInOutQuint(t) {
-        return t < 0.5 ? 16 * t * t * t * t * t : 1 + 16 * (--t) * t * t * t * t;
-      }
-    };
-
-    const start = window.pageYOffset;
-    const startTime = 'now' in window.performance ? performance.now() : new Date().getTime();
-
-    const documentHeight = Math.max(document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight);
-    const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.getElementsByTagName('body')[0].clientHeight;
-    const destinationOffset = typeof destination === 'number' ? destination : destination.offsetTop;
-    const destinationOffsetToScroll = Math.round(documentHeight - destinationOffset < windowHeight ? documentHeight - windowHeight : destinationOffset);
-
-    if ('requestAnimationFrame' in window === false) {
-      window.scroll(0, destinationOffsetToScroll);
-      if (callback) {
-        callback();
-      }
-      return;
-    }
-
-    function scroll() {
-      const now = 'now' in window.performance ? performance.now() : new Date().getTime();
-      const time = Math.min(1, ((now - startTime) / duration));
-      const timeFunction = easings[easing](time);
-      window.scroll(0, Math.ceil((timeFunction * (destinationOffsetToScroll - start)) + start));
-
-      if (window.pageYOffset === destinationOffsetToScroll) {
-        if (callback) {
-          callback();
-        }
-        return;
-      }
-
-      requestAnimationFrame(scroll);
-    }
-
-    scroll();
+      Math.easeInOutQuad = function (t, b, c, d) {
+        t /= d/2;
+        if (t < 1) return c/2*t*t + b;
+        t--;
+        return -c/2 * (t*(t-2) - 1) + b;
+      };
+          
+      const animateScroll = () => {
+          currentTime += increment;
+          var val = Math.easeInOutQuad(currentTime, start, change, duration);
+          window.scrollTo(0,val);
+          if(currentTime < duration) {
+            window.setTimeout(animateScroll, increment);
+          }
+      };
+      
+      animateScroll();
   }
 
   render() {
@@ -306,7 +253,7 @@ class Landing extends Component {
                 selectedTab={this.props.selectedTab} />
             </Flex>
             <Flex flexDirection={'column'} py={[3,4]} mb={[3,5]} alignItems={'center'}>
-              <Link onClick={(e) => {this.scrollIt(document.getElementById('how-it-works'))}} textAlign={'center'} color={'dark-gray'} hoverColor={'dark-gray'} fontSize={2} fontWeight={3}>
+              <Link onClick={(e) => {this.scrollTo(document.getElementById('how-it-works').offsetTop,300)}} textAlign={'center'} color={'dark-gray'} hoverColor={'dark-gray'} fontSize={2} fontWeight={3}>
                 <Flex flexDirection={'column'} py={[2,1]} alignItems={'center'}>
                   <Box>
                     How it works

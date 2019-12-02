@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { Flex, Text, Progress, Loader } from 'rimble-ui'
 import axios from 'axios';
-import moment from 'moment';
+// import moment from 'moment';
 
-const customLog = (...props) => { return false; console.log(moment().format('HH:mm:ss'),...props); }
+const customLog = (...props) => { /*console.log(moment().format('HH:mm:ss'),...props);*/ };
 
 class TxProgressBar extends Component {
   state = {
