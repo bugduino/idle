@@ -1236,7 +1236,7 @@ class SmartContractControls extends React.Component {
     }
 
     const txsIndexes = Object.keys(prevTxs);
-    const txsToShow = 10;
+    const txsToShow = 99999999;
     // let totalInterestsAccrued = 0;
     let depositedSinceLastRedeem = 0;
     let totalRedeemed = 0;
@@ -1330,6 +1330,7 @@ class SmartContractControls extends React.Component {
         <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'dark-gray'}>
           Last transactions
         </Heading.h3>
+        <Box maxHeight={'500px'} overflow={'scroll'}>
         {
           txs && txs.length ? txs : (
             <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontWeight={2} fontSize={[2]} color={'dark-gray'}>
@@ -1337,6 +1338,7 @@ class SmartContractControls extends React.Component {
             </Heading.h3>
           )
         }
+        </Box>
       </Flex>
     );
   }
