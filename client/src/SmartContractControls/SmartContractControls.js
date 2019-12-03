@@ -702,7 +702,7 @@ class SmartContractControls extends React.Component {
 
     e.preventDefault();
     if (this.props.account && !this.state.lendAmount) {
-      return this.setState({genericError: `Insert a ${this.props.selectedToken} amount to lend`});
+      return this.setState({genericError: `Please insert an amount of ${this.props.selectedToken} to lend`});
     }
 
     const value = this.props.web3.utils.toWei(
@@ -764,16 +764,27 @@ class SmartContractControls extends React.Component {
   redeem = async (e, contractName) => {
     e.preventDefault();
 
-    this.setState(state => ({
-      ...state,
-      [`isLoading${contractName}`]: true,
-      redeemProcessing: true
-    }));
-
     // let IdleDAIBalance = this.toWei('0');
     // if (this.props.account) {
     //   IdleDAIBalance = await this.genericContractCall(contractName, 'balanceOf', [this.props.account]);
     // }
+
+    // Check if amount is more than 0
+    let amount = document.getElementById('CryptoInput_Redeem').value;
+    if (!amount.toString().length || this.BNify(amount).lte(0)) {
+      return this.setState({
+        disableRedeemButton:true,
+        genericErrorRedeem:`Please insert an amount of ${this.props.selectedToken} to redeem`
+      });
+    }
+
+    this.setState(state => ({
+      ...state,
+      disableRedeemButton:false,
+      genericErrorRedeem:'',
+      [`isLoading${contractName}`]: true,
+      redeemProcessing: true
+    }));
 
     let idleTokenToRedeem = this.props.web3.utils.toWei(
       this.state.redeemAmount || '0',
@@ -835,7 +846,7 @@ class SmartContractControls extends React.Component {
           genericErrorRedeem = 'The inserted amount exceeds your redeemable balance';
         } else if (this.BNify(amount).lte(0)) {
           disableRedeemButton = true;
-          genericErrorRedeem = 'Please insert a positive amount';
+          genericErrorRedeem = `Please insert an amount of ${this.props.selectedToken} to redeem`;
         }
       }
 
@@ -864,7 +875,7 @@ class SmartContractControls extends React.Component {
           // genericError = `The inserted amount exceeds your ${this.props.selectedToken} balance`;
         } else if (this.BNify(amount).lte(0)) {
           disableLendButton = true;
-          genericError = `Please insert a positive amount of ${this.props.selectedToken}`;
+          genericError = `Please insert an amount of ${this.props.selectedToken} to lend`;
         }
       }
 
@@ -1673,49 +1684,27 @@ class SmartContractControls extends React.Component {
                                 <Heading.h3 fontWeight={2} textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
                                   Redeem your {this.props.selectedToken}
                                 </Heading.h3>
-                              {
-                                (this.state.partialRedeemEnabled || true) &&
-                                  <CryptoInput
-                                    genericError={this.state.genericErrorRedeem}
-                                    icon={'images/idle-dai.png'}
-                                    buttonLabel={`REDEEM ${this.props.tokenConfig.idle.token}`}
-                                    placeholder={`Enter ${this.props.tokenConfig.idle.token} amount`}
-                                    disableLendButton={this.state.disableRedeemButton}
-                                    isMobile={this.props.isMobile}
-                                    account={this.props.account}
-                                    action={'Redeem'}
-                                    defaultValue={this.state.redeemAmount}
-                                    idleTokenPrice={(1/this.state.idleTokenPrice)}
-                                    convertedLabel={this.props.selectedToken}
-                                    balanceLabel={this.props.tokenConfig.idle.token}
-                                    BNify={this.BNify}
-                                    trimEth={this.trimEth}
-                                    color={'black'}
-                                    balance={this.state.idleTokenBalance}
-                                    selectedAsset={this.props.selectedToken}
-                                    useEntireBalance={this.useEntireBalanceRedeem}
-                                    handleChangeAmount={this.handleChangeAmountRedeem}
-                                    handleClick={e => this.redeem(e, this.props.tokenConfig.idle.token)} />
-                              }
-
-                              {
-                                false && !this.state.partialRedeemEnabled &&
-                                  <Button
-                                    className={styles.gradientButton}
-                                    onClick={e => this.redeem(e, this.props.tokenConfig.idle.token)}
-                                    borderRadius={4}
-                                    size={this.props.isMobile ? 'medium' : 'medium'}
-                                    mainColor={'blue'}
-                                    contrastColor={'white'}
-                                    fontWeight={3}
-                                    fontSize={[2,2]}
-                                    mx={'auto'}
-                                    px={[4,5]}
-                                    mt={2}
-                                  >
-                                    REDEEM ALL
-                                  </Button>
-                              }
+                                <CryptoInput
+                                  genericError={this.state.genericErrorRedeem}
+                                  icon={'images/idle-dai.png'}
+                                  buttonLabel={`REDEEM ${this.props.tokenConfig.idle.token}`}
+                                  placeholder={`Enter ${this.props.tokenConfig.idle.token} amount`}
+                                  disableLendButton={this.state.disableRedeemButton}
+                                  isMobile={this.props.isMobile}
+                                  account={this.props.account}
+                                  action={'Redeem'}
+                                  defaultValue={this.state.redeemAmount}
+                                  idleTokenPrice={(1/this.state.idleTokenPrice)}
+                                  convertedLabel={this.props.selectedToken}
+                                  balanceLabel={this.props.tokenConfig.idle.token}
+                                  BNify={this.BNify}
+                                  trimEth={this.trimEth}
+                                  color={'black'}
+                                  balance={this.state.idleTokenBalance}
+                                  selectedAsset={this.props.selectedToken}
+                                  useEntireBalance={this.useEntireBalanceRedeem}
+                                  handleChangeAmount={this.handleChangeAmountRedeem}
+                                  handleClick={e => this.redeem(e, this.props.tokenConfig.idle.token)} />
                             </Flex>
                           }
                           {!hasBalance &&
@@ -1945,7 +1934,7 @@ class SmartContractControls extends React.Component {
                       </Heading.h3>
                       <Button
                         className={styles.gradientButton}
-                        onClick={e => this.redeem(e, this.props.tokenConfig.idle.token)}
+                        onClick={e => this.mint(e, this.props.tokenConfig.idle.token)}
                         size={this.props.isMobile ? 'medium' : 'medium'}
                         borderRadius={4}
                         mainColor={'blue'}

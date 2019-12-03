@@ -27,6 +27,7 @@ class CryptoInput extends Component {
               </Flex>
               <Box width={ [8/10,(showConvertedValue ? 11/20 : 17/20)] }>
                 <Form.Input
+                  id={'CryptoInput_'+this.props.action}
                   placeholder={this.props.placeholder ? this.props.placeholder : `Enter ${this.props.selectedAsset} Amount`}
                   value={this.props.defaultValue}
                   type="number"
