@@ -1402,8 +1402,6 @@ class SmartContractControls extends React.Component {
   render() {
     let hasBalance = !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && this.trimEth(this.state.tokenToRedeemParsed) > 0;
     const navPool = this.getFormattedBalance(this.state.navPool,this.props.selectedToken);
-    const reedemableFunds = this.getFormattedBalance(this.state.tokenToRedeemParsed,this.props.selectedToken,9,12);
-    const currentEarnings = this.getFormattedBalance(this.state.earning,this.props.selectedToken,9,12);
     const idleTokenPrice = this.getFormattedBalance(this.state.idleTokenPrice,this.props.selectedToken);
     const depositedFunds = this.getFormattedBalance(this.state.amountLent,this.props.selectedToken);
     const earningPerc = !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && this.trimEth(this.state.tokenToRedeemParsed)>0 ? this.getFormattedBalance(this.BNify(this.state.tokenToRedeemParsed).div(this.BNify(this.state.amountLent)).minus(1).times(100),'%',4) : '0%';
