@@ -18,8 +18,9 @@ const OldIdleAddress = '0x10cf8e1CDba9A2Bd98b87000BCAdb002b13eA525'; // v0.1 hac
 
 const daysInYear = 365.2422;
 
-const customLog = (...props) => { console.log(moment().format('HH:mm:ss'),...props); };
-const customLogError = (...props) => { console.error(moment().format('HH:mm:ss'),...props); };
+const LOG_ENABLED = false;
+const customLog = (...props) => { if (LOG_ENABLED) console.log(moment().format('HH:mm:ss'),...props); };
+const customLogError = (...props) => { if (LOG_ENABLED) console.error(moment().format('HH:mm:ss'),...props); };
 
 class SmartContractControls extends React.Component {
   state = {
