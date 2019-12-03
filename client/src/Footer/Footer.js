@@ -26,22 +26,22 @@ class Footer extends Component {
             </Heading.h3>
             <Flex flexDirection={'row'} justifyContent={['space-evenly','flex-start']}>
               <Link href="https://twitter.com/idlefinance" target="_blank">
-                <Image src="images/twitter-logo.png" height={'2.4em'} mr={[2,3]} my={[2,0]} className={styles.socialIcon} />
+                <Image src="images/twitter-logo.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} className={styles.socialIcon} />
               </Link>
               <Link href="https://t.me/idlefinance" target="_blank">
-                <Image src="images/telegram-logo.png" height={'2.4em'} mr={[2,3]} my={[2,0]} className={styles.socialIcon} />
+                <Image src="images/telegram-logo.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} className={styles.socialIcon} />
               </Link>
               <Link href="https://discord.gg/mpySAJp" target="_blank">
-                <Image src="images/discord-logo.png" height={'2.4em'} mr={[2,3]} my={[2,0]} className={styles.socialIcon} />
+                <Image src="images/discord-logo.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} className={styles.socialIcon} />
               </Link>
               <Link href="https://medium.com/@idlefinance" target="_blank">
-                <Image src="images/medium-logo.png" height={'2.4em'} mr={[2,3]} my={[2,0]} className={styles.socialIcon} />
+                <Image src="images/medium-logo.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} className={styles.socialIcon} />
               </Link>
               <Link href="https://github.com/bugduino/idle" target="_blank">
-                <Image src="images/github-logo.png" height={'2.4em'} mr={[2,3]} my={[2,0]} className={styles.socialIcon} />
+                <Image src="images/github-logo.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} className={styles.socialIcon} />
               </Link>
               <Link href="https://etherscan.io/address/0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9#code" target="_blank">
-                <Image src="images/etherscan.png" height={'2.4em'} mr={[2,3]} my={[2,0]} className={styles.socialIcon} />
+                <Image src="images/etherscan.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} className={styles.socialIcon} />
               </Link>
             </Flex>
           </Flex>
@@ -52,13 +52,13 @@ class Footer extends Component {
                 Built on
               </Heading.h3>
               <Flex flexDirection={['column','row']} alignItems={['normal','center']} justifyContent={['center','flex-start']}>
-                <Link style={{flex:'1 1 0px'}} pr={[0,3]} href="https://www.ethereum.org/" target="_blank">
+                <Link style={{flex:'1 1 0px'}} textAlign={['center','left']} pr={[0,3]} href="https://www.ethereum.org/" target="_blank">
                   <Image src="images/ethereum.png" width={[1/2,1]} height={'auto'} maxWidth={'initial'} mr={['auto',3]} ml={['auto',0]} my={[3,0]} />
                 </Link>
-                <Link style={{flex:'1 1 0px'}} pr={[0,3]} href="https://app.compound.finance" target="_blank">
+                <Link style={{flex:'1 1 0px'}} textAlign={['center','left']} pr={[0,3]} href="https://app.compound.finance" target="_blank">
                   <Image src="images/compound-light.png" width={[1/2,1]} height={'auto'} maxWidth={'initial'} mr={['auto',3]} ml={['auto',0]} my={[3,0]} />
                 </Link>
-                <Link style={{flex:'1 1 0px'}} href="https://fulcrum.trade" target="_blank">
+                <Link style={{flex:'1 1 0px'}} textAlign={['center','left']} href="https://fulcrum.trade" target="_blank">
                   <Image src="images/fulcrum.svg" width={[1/2,1]} height={'auto'} maxWidth={'initial'} mr={['auto',3]} ml={['auto',0]} my={[3,0]} />
                 </Link>
               </Flex>
