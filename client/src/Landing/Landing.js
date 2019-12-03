@@ -243,9 +243,9 @@ class Landing extends Component {
           paddingBottom: !network.isCorrectNetwork ? "8em" : "0"
         }}
       >
-        <Box className={[styles.headerContainer]} px={[3,6]} pt={['2em', '3em']}>
+        <Box className={[styles.headerContainer]} px={[3,5]} pt={['2em', '3em']}>
           <Box position={'relative'} zIndex={10}>
-            <Flex flexDirection={'column'} alignItems={'center'} maxWidth={["50em", "60em"]} mx={'auto'} pb={3} textAlign={'center'} pt={['8vh', '8vh']}>
+            <Flex flexDirection={'column'} alignItems={'center'} maxWidth={["50em", "70em"]} mx={'auto'} pb={3} textAlign={'center'} pt={['8vh', '8vh']}>
               <Heading.h1 fontFamily={'sansSerif'} lineHeight={'1.1em'} mb={'0.2em'} fontSize={['2.5em',7]} textAlign={'center'} color={'white'}>
                 Best yield for your lending
               </Heading.h1>

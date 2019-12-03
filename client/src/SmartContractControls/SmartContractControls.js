@@ -18,8 +18,8 @@ const OldIdleAddress = '0x10cf8e1CDba9A2Bd98b87000BCAdb002b13eA525'; // v0.1 hac
 
 const daysInYear = 365.2422;
 
-const customLog = (...props) => { /*console.log(moment().format('HH:mm:ss'),...props);*/ };
-const customLogError = (...props) => { /*console.error(moment().format('HH:mm:ss'),...props);*/ };
+const customLog = (...props) => { console.log(moment().format('HH:mm:ss'),...props); };
+const customLogError = (...props) => { console.error(moment().format('HH:mm:ss'),...props); };
 
 class SmartContractControls extends React.Component {
   state = {
@@ -453,13 +453,16 @@ class SmartContractControls extends React.Component {
 
     let price = await this.getPriceInToken(contractName);
     let balance = await this.genericContractCall(contractName, 'balanceOf', [this.props.account]);
+
+    console.log('getBalanceOf',balance.toString());
+
     if (balance) {
       balance = this.BNify(balance).div(1e18);
       price = this.BNify(price).div(1e18);
       const tokenToRedeem = balance.times(price);
       let earning = 0;
 
-      // customLog('tokenToRedeem',tokenToRedeem.toString(),'amountLent',this.state.amountLent);
+      customLog('BalanceOf','tokenToRedeem',tokenToRedeem.toString(),'amountLent',this.state.amountLent.toString());
 
       if (this.state.amountLent && this.trimEth(this.state.amountLent.toString())>0 && this.trimEth(tokenToRedeem.toString())>0 && parseFloat(tokenToRedeem.toString())<parseFloat(this.state.amountLent.toString())){
         customLogError('Balance '+this.trimEth(tokenToRedeem.toString())+' is less than AmountLent ('+this.trimEth(this.state.amountLent.toString())+').. try again');
@@ -908,7 +911,10 @@ class SmartContractControls extends React.Component {
     });
 
     if (!txs || !txs.data || !txs.data.result) {
-      return;
+      return this.setState({
+        amountLent:0,
+        earning:0
+      });
     }
 
     const results = txs.data.result;
@@ -938,15 +944,16 @@ class SmartContractControls extends React.Component {
           amountLent = this.BNify(0);
         }
         customLog('Redeemed '+parseFloat(tx.value),'AmountLent',amountLent.toString());
-        // console.log('Redeemed '+parseFloat(tx.value),'AmountLent',amountLent);
       }
       transactions[tx.hash] = tx;
     });
 
-    // Add missing executed transactions
-    if (this.state.executedTxs){
+    const minedTxs = localStorage ? JSON.parse(localStorage.getItem('transactions')) : this.props.transactions;
 
-      customLog('getPrevTxs adding executedTxs',this.state.executedTxs);
+    // Add missing executed transactions
+    if (minedTxs){
+
+      customLog('getPrevTxs adding minedTxs',minedTxs);
 
       const asyncForEach = async(array, callback) => {
         for (let index = 0; index < array.length; index++) {
@@ -954,20 +961,20 @@ class SmartContractControls extends React.Component {
         }
       }
 
-      await asyncForEach(Object.keys(this.state.executedTxs),async (key,i) => {
-        const tx = this.state.executedTxs[key];
+      await asyncForEach(Object.keys(minedTxs),async (key,i) => {
+        const tx = minedTxs[key];
 
-        if (transactions[tx.transactionHash]){
+        if (transactions[tx.transactionHash] || tx.status !== 'success'){
           return;
         }
 
         const realTx = await (new Promise( async (resolve, reject) => {
           window.web3.eth.getTransaction(tx.transactionHash,(err,tx)=>{
             if (err){
-              return reject(err);
+              reject(err);
             }
-              return resolve(tx);
-            });
+            resolve(tx);
+          });
         }));
         realTx.contractAddress = this.props.tokenConfig.address;
         realTx.timeStamp = parseInt(tx.created/1000);
@@ -988,10 +995,10 @@ class SmartContractControls extends React.Component {
         realTx.tx = tx;
 
         if (realTx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()){
-          amountLent = amountLent.plus(this.BNify(tx.value));
-          customLog('Deposited '+parseFloat(tx.value),'AmountLent',amountLent.toString());
+          amountLent = amountLent.plus(this.BNify(realTx.value));
+          customLog('Deposited '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
         } else if (realTx.to.toLowerCase() === this.props.account.toLowerCase()){
-          amountLent = amountLent.minus(this.BNify(tx.value));
+          amountLent = amountLent.minus(this.BNify(realTx.value));
           if (amountLent.lt(0)){
             amountLent = this.BNify(0);
           }
@@ -1012,6 +1019,8 @@ class SmartContractControls extends React.Component {
     if (amountLent.lt(0)){
       amountLent = this.BNify(0);
     }
+
+    customLog('getPrevTxs',amountLent,earning);
 
     return this.setState({
       prevTxs: transactions,
@@ -1419,12 +1428,14 @@ class SmartContractControls extends React.Component {
 
     const fundsAreReady = !this.state.fundsError && !this.state.updateInProgress && !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && !isNaN(this.trimEth(this.state.earning)) && !isNaN(this.trimEth(this.state.amountLent));
 
+    customLog('fundsAreReady',this.state.fundsError,this.state.updateInProgress,this.trimEth(this.state.tokenToRedeemParsed),this.trimEth(this.state.earning),this.trimEth(this.state.amountLent));
+
     const tokenNotApproved = (this.props.account && this.state.isTokenApproved===false && !this.state.isApprovingToken);
     const walletIsEmpty = this.props.account && this.state.showEmptyWalletOverlay && !tokenNotApproved && !this.state.isApprovingToken && this.state.tokenBalance !== null && !isNaN(this.state.tokenBalance) && !parseFloat(this.state.tokenBalance);
 
     return (
       <Box textAlign={'center'} alignItems={'center'} width={'100%'}>
-        <Form minHeight={['auto','20em']} backgroundColor={'white'} color={'blue'} boxShadow={'0 0 25px 5px rgba(102, 139, 255, 0.7)'} borderRadius={'15px'} style={{position:'relative'}}>
+        <Form minHeight={['auto','17em']} backgroundColor={'white'} color={'blue'} boxShadow={'0 0 25px 5px rgba(102, 139, 255, 0.7)'} borderRadius={'15px'} style={{position:'relative'}}>
           <Flex justifyContent={'center'} position={'relative'} zIndex={'999'} backgroundColor={'#fff'} borderRadius={'15px 15px 0 0'}>
             <Flex flexDirection={['row','row']} width={['100%','80%']} pt={[2,3]}>
               <Box className={[styles.tab,this.props.selectedTab==='1' ? styles.tabSelected : '']} width={[1/3]} textAlign={'center'}>
@@ -1621,130 +1632,130 @@ class SmartContractControls extends React.Component {
                     {
                       fundsAreReady ? (
                         <>
-                          <Box>
-                            <Flex flexDirection={['column','row']} py={[2,3]} width={[1,'70%']} m={'0 auto'}>
-                              <Box width={[1,1/2]}>
-                                <Heading.h3 fontWeight={2} textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
-                                  Redeemable Funds
-                                </Heading.h3>
-                                <Heading.h3 fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,0]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                  {
-                                    hasBalance ? (
-                                      <CountUp
-                                        start={currentReedemableFunds}
-                                        end={reedemableFundsAtEndOfYear}
-                                        duration={31536000}
-                                        delay={0}
-                                        separator=" "
-                                        decimals={9}
-                                        decimal="."
-                                        // formattingFn={(n)=>{ return this.formatCountUp(n); }}
-                                      >
-                                        {({ countUpRef, start }) => (
-                                          <><span ref={countUpRef} /> <span style={{fontSize:'16px',fontWeight:'400',lineHeight:'1.5',color:'#3F3D4B'}}>{this.props.selectedToken}</span></>
-                                        )}
-                                      </CountUp>
-                                    ) : reedemableFunds
-                                  }
-                                </Heading.h3>
-                              </Box>
-                              <Box width={[1,1/2]}>
-                                <Heading.h3 fontWeight={2} textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
-                                  Current earnings
-                                </Heading.h3>
-                                <Heading.h3 fontFamily={'sansSerif'} fontSize={[4,5]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                  {
-                                    hasBalance ? (
-                                      <CountUp
-                                        start={currentEarning}
-                                        end={earningAtEndOfYear}
-                                        duration={31536000}
-                                        delay={0}
-                                        separator=" "
-                                        decimals={9}
-                                        decimal="."
-                                        // formattingFn={(n)=>{ return this.formatCountUp(n); }}
-                                      >
-                                        {({ countUpRef, start }) => (
-                                          <><span ref={countUpRef} /> <span style={{fontSize:'16px',fontWeight:'400',lineHeight:'1.5',color:'#3F3D4B'}}>{this.props.selectedToken}</span></>
-                                        )}
-                                      </CountUp>
-                                    ) : currentEarnings
-                                  }
-                                </Heading.h3>
-                              </Box>
-                            </Flex>
-                        </Box>
-                        <Box pb={[3,4]} borderBottom={'1px solid #D6D6D6'}>
-                          {hasBalance && !this.state.redeemProcessing &&
-                            <Flex
-                              textAlign='center'
-                              flexDirection={'column'}
-                              alignItems={'center'}>
-                                <Heading.h3 fontWeight={2} textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
-                                  Redeem your {this.props.selectedToken}
-                                </Heading.h3>
-                                <CryptoInput
-                                  genericError={this.state.genericErrorRedeem}
-                                  icon={'images/idle-dai.png'}
-                                  buttonLabel={`REDEEM ${this.props.tokenConfig.idle.token}`}
-                                  placeholder={`Enter ${this.props.tokenConfig.idle.token} amount`}
-                                  disableLendButton={this.state.disableRedeemButton}
-                                  isMobile={this.props.isMobile}
-                                  account={this.props.account}
-                                  action={'Redeem'}
-                                  defaultValue={this.state.redeemAmount}
-                                  idleTokenPrice={(1/this.state.idleTokenPrice)}
-                                  convertedLabel={this.props.selectedToken}
-                                  balanceLabel={this.props.tokenConfig.idle.token}
-                                  BNify={this.BNify}
-                                  trimEth={this.trimEth}
-                                  color={'black'}
-                                  balance={this.state.idleTokenBalance}
-                                  selectedAsset={this.props.selectedToken}
-                                  useEntireBalance={this.useEntireBalanceRedeem}
-                                  handleChangeAmount={this.handleChangeAmountRedeem}
-                                  handleClick={e => this.redeem(e, this.props.tokenConfig.idle.token)} />
-                            </Flex>
-                          }
-                          {!hasBalance &&
-                            <Flex
-                              textAlign='center'>
-                              <Button
-                                className={styles.gradientButton}
-                                onClick={e => this.selectTab(e, '1')}
-                                borderRadius={4}
-                                size={this.props.isMobile ? 'medium' : 'medium'}
-                                mainColor={'blue'}
-                                contrastColor={'white'}
-                                fontWeight={3}
-                                fontSize={[2,2]}
-                                mx={'auto'}
-                                px={[4,5]}
-                                mt={2}
-                              >
-                                LEND NOW
-                              </Button>
-                            </Flex>
-                          }
-                          { this.state.redeemProcessing &&
+                          {hasBalance ? (
                             <>
-                              {
-                                this.state.redeemTx ? (
-                                  <TxProgressBar waitText={'Redeeming estimated in'} endMessage={'Finalizing redeem request...'} hash={this.state.redeemTx.transactionHash} />
-                                ) : (
+                              <Box>
+                                <Flex flexDirection={['column','row']} py={[2,3]} width={[1,'70%']} m={'0 auto'}>
+                                  <Box width={[1,1/2]}>
+                                    <Heading.h3 fontWeight={2} textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
+                                      Redeemable Funds
+                                    </Heading.h3>
+                                    <Heading.h3 fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,0]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                      {
+                                        <CountUp
+                                          start={currentReedemableFunds}
+                                          end={reedemableFundsAtEndOfYear}
+                                          duration={31536000}
+                                          delay={0}
+                                          separator=" "
+                                          decimals={9}
+                                          decimal="."
+                                          // formattingFn={(n)=>{ return this.formatCountUp(n); }}
+                                        >
+                                          {({ countUpRef, start }) => (
+                                            <><span ref={countUpRef} /> <span style={{fontSize:'16px',fontWeight:'400',lineHeight:'1.5',color:'#3F3D4B'}}>{this.props.selectedToken}</span></>
+                                          )}
+                                        </CountUp>
+                                      }
+                                    </Heading.h3>
+                                  </Box>
+                                  <Box width={[1,1/2]}>
+                                    <Heading.h3 fontWeight={2} textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
+                                      Current earnings
+                                    </Heading.h3>
+                                    <Heading.h3 fontFamily={'sansSerif'} fontSize={[4,5]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                      {
+                                        <CountUp
+                                          start={currentEarning}
+                                          end={earningAtEndOfYear}
+                                          duration={31536000}
+                                          delay={0}
+                                          separator=" "
+                                          decimals={9}
+                                          decimal="."
+                                          // formattingFn={(n)=>{ return this.formatCountUp(n); }}
+                                        >
+                                          {({ countUpRef, start }) => (
+                                            <><span ref={countUpRef} /> <span style={{fontSize:'16px',fontWeight:'400',lineHeight:'1.5',color:'#3F3D4B'}}>{this.props.selectedToken}</span></>
+                                          )}
+                                        </CountUp>
+                                      }
+                                    </Heading.h3>
+                                  </Box>
+                                </Flex>
+                              </Box>
+                              <Box pb={[3,4]} borderBottom={'1px solid #D6D6D6'}>
+                                {!this.state.redeemProcessing ? (
                                   <Flex
-                                    justifyContent={'center'}
-                                    alignItems={'center'}
-                                    textAlign={'center'}>
-                                    <Loader size="40px" /> <Text ml={2}>Sending redeem request...</Text>
+                                    textAlign='center'
+                                    flexDirection={'column'}
+                                    alignItems={'center'}>
+                                      <Heading.h3 fontWeight={2} textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
+                                        Redeem your {this.props.selectedToken}
+                                      </Heading.h3>
+                                      <CryptoInput
+                                        genericError={this.state.genericErrorRedeem}
+                                        icon={'images/idle-dai.png'}
+                                        buttonLabel={`REDEEM ${this.props.tokenConfig.idle.token}`}
+                                        placeholder={`Enter ${this.props.tokenConfig.idle.token} amount`}
+                                        disableLendButton={this.state.disableRedeemButton}
+                                        isMobile={this.props.isMobile}
+                                        account={this.props.account}
+                                        action={'Redeem'}
+                                        defaultValue={this.state.redeemAmount}
+                                        idleTokenPrice={(1/this.state.idleTokenPrice)}
+                                        convertedLabel={this.props.selectedToken}
+                                        balanceLabel={this.props.tokenConfig.idle.token}
+                                        BNify={this.BNify}
+                                        trimEth={this.trimEth}
+                                        color={'black'}
+                                        balance={this.state.idleTokenBalance}
+                                        selectedAsset={this.props.selectedToken}
+                                        useEntireBalance={this.useEntireBalanceRedeem}
+                                        handleChangeAmount={this.handleChangeAmountRedeem}
+                                        handleClick={e => this.redeem(e, this.props.tokenConfig.idle.token)} />
                                   </Flex>
-                                )
-                              }
+                                  ) : 
+                                    this.state.redeemTx ? (
+                                      <TxProgressBar waitText={'Redeeming estimated in'} endMessage={'Finalizing redeem request...'} hash={this.state.redeemTx.transactionHash} />
+                                    ) : (
+                                      <Flex
+                                        justifyContent={'center'}
+                                        alignItems={'center'}
+                                        textAlign={'center'}>
+                                        <Loader size="40px" /> <Text ml={2}>Sending redeem request...</Text>
+                                      </Flex>
+                                    )
+                                }
+                              </Box>
                             </>
+                            ) : (
+                              <Box pb={[3,4]} borderBottom={'1px solid #D6D6D6'}>
+                                <Flex
+                                  flexDirection={'column'}
+                                  textAlign='center'>
+                                  <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontWeight={2} fontSize={[2,3]} color={'dark-gray'} py={[2,3]}>
+                                    You don't have any <strong>{this.props.selectedToken}</strong> allocated yet!
+                                  </Heading.h3>
+                                  <Button
+                                    className={styles.gradientButton}
+                                    onClick={e => this.selectTab(e, '1')}
+                                    borderRadius={4}
+                                    size={this.props.isMobile ? 'medium' : 'medium'}
+                                    mainColor={'blue'}
+                                    contrastColor={'white'}
+                                    fontWeight={3}
+                                    fontSize={[2,2]}
+                                    mx={'auto'}
+                                    px={[4,5]}
+                                    mt={2}
+                                  >
+                                    LEND NOW
+                                  </Button>
+                                </Flex>
+                              </Box>
+                            )
                           }
-                        </Box>
-                        { true &&
                           <Flex flexDirection={'column'} pt={[3,3]} pb={[0,2]} alignItems={'center'}>
                             <Link
                               color={'primary'}
@@ -1757,8 +1768,7 @@ class SmartContractControls extends React.Component {
                               </Flex>
                             </Link>
                           </Flex>
-                        }
-                      </>
+                        </>
                       ) : (!this.state.updateInProgress && this.state.fundsError) ? (
                           <Flex
                             alignItems={'center'}
