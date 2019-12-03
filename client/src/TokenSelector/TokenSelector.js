@@ -14,6 +14,13 @@ class TokenSelector extends Component {
     })
   }
 
+  handleSelector(opened){
+    this.setState({
+      opened
+    });
+  }
+
+
   selectToken(token){
     if (token.enabled){
       this.props.setSelectedToken(token);
@@ -44,8 +51,10 @@ class TokenSelector extends Component {
           justifyContent={'flex-end'}
           mr={3}
           p={2}
+          onMouseEnter={ e => {this.handleSelector(true)} }
+          onMouseLeave={ e => {this.handleSelector(false)} }
           >
-            <TokenSelectorItem disabled={false} handleClick={ e => {this.toggleOpen(e)} } token={this.props.selectedToken} />
+            <TokenSelectorItem disabled={false} token={this.props.selectedToken} />
             <Flex flexDirection={'column'} borderRadius={4} backgroundColor={'white'} overflow={'hidden'} className={[styles.selectorCurtain,this.state.opened ? styles.opened : null]} position={'absolute'} top={'60px'}>
               { tokens }
             </Flex>
