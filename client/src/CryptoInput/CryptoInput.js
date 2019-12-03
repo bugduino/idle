@@ -102,7 +102,7 @@ class CryptoInput extends Component {
 
           {this.props.buyTokenMessage && (
             <Flex alignItems={'center'} justifyContent={'center'}>
-              <Link textAlign={'center'} color={'blue'} hoverColor={'blue'} fontWeight={1} fontSize={1} mb={[2,3]} onClick={ e => { this.props.renderZeroExInstant(e,this.props.defaultValue) } }>
+              <Link textAlign={'center'} color={'blue'} hoverColor={'blue'} fontWeight={2} fontSize={[1,2]} mb={[2,3]} onClick={ e => { this.props.renderZeroExInstant(e,this.props.defaultValue) } }>
                 {this.props.buyTokenMessage}
               </Link>
             </Flex>

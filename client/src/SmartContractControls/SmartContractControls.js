@@ -463,7 +463,7 @@ class SmartContractControls extends React.Component {
       const tokenToRedeem = balance.times(price);
       let earning = 0;
 
-      customLog('BalanceOf','tokenToRedeem',tokenToRedeem.toString(),'amountLent',this.state.amountLent.toString());
+      // customLog('BalanceOf','tokenToRedeem',tokenToRedeem.toString(),'amountLent',this.state.amountLent.toString());
 
       if (this.state.amountLent && this.trimEth(this.state.amountLent.toString())>0 && this.trimEth(tokenToRedeem.toString())>0 && parseFloat(tokenToRedeem.toString())<parseFloat(this.state.amountLent.toString())){
         customLogError('Balance '+this.trimEth(tokenToRedeem.toString())+' is less than AmountLent ('+this.trimEth(this.state.amountLent.toString())+').. try again');
@@ -873,7 +873,7 @@ class SmartContractControls extends React.Component {
       let buyTokenMessage = null;
 
       if (this.props.account) {
-        if (this.BNify(amount).gt(this.BNify(this.props.tokenBalance))){
+        if (this.BNify(amount).gt(this.BNify(this.state.tokenBalance))){
           disableLendButton = true;
           buyTokenMessage = `The inserted amount exceeds your balance. Click here to buy more ${this.props.selectedToken}`;
           // genericError = `The inserted amount exceeds your ${this.props.selectedToken} balance`;
