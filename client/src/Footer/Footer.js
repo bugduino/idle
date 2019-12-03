@@ -10,14 +10,14 @@ class Footer extends Component {
 
   render() {
     return (
-      <Flex id="footer" flexDirection={'column'} className={styles.footer} backgroundColor={'white'} alignItems={'center'} justifyContent={'flex-start'} pl={0}>
+      <Flex id="footer" flexDirection={'column'} className={styles.footer} backgroundColor={'white'} alignItems={'center'} justifyContent={'flex-start'} pl={0} px={[3,6]}>
         <Flex flexDirection={['column','row']} justifyContent={'flex-start'} alignItems={'flex-start'} width={1} maxWidth={['35em','70em']} height={['auto','100%']}>
 
           <Flex width={[1,3/10]} flexDirection={'column'} height={['auto','100%']}>
             <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} my={3} color={'dark-gray'}>
               Start a Conversation
             </Heading.h3>
-            <Link textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} color={'dark-gray'} hoverColor={'blue'}>info@idle.finance</Link>
+            <Link textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} color={'blue'} hoverColor={'blue'}>info@idle.finance</Link>
           </Flex>
 
           <Flex width={[1,3/10]} flexDirection={'column'} height={['auto','100%']}>
