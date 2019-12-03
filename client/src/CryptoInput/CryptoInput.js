@@ -31,7 +31,6 @@ class CryptoInput extends Component {
                   placeholder={this.props.placeholder ? this.props.placeholder : `Enter ${this.props.selectedAsset} Amount`}
                   value={this.props.defaultValue}
                   type="number"
-                  borderRadius='2rem'
                   border='0'
                   borderColor='transparent'
                   boxShadow='none !important'
