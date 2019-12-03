@@ -9,6 +9,8 @@ import NewsletterForm from '../NewsletterForm/NewsletterForm';
 import Footer from '../Footer/Footer';
 
 let scrolling = false;
+let scrollTimeoutID;
+let componendUnmounted;
 
 class Landing extends Component {
   state = {
@@ -22,18 +24,25 @@ class Landing extends Component {
 
   // Clear all the timeouts
   async componentWillUnmount(){
-    console.log('Landing.js componentWillUnmount');
+    componendUnmounted = true;
+    // console.log('Landing.js componentWillUnmount');
     var id = window.setTimeout(function() {}, 0);
 
     while (id--) {
+        // console.log('componentWillUnmount - Clear timeoutID',id);
         window.clearTimeout(id); // will do nothing if no timeout with id is present
     }
   }
 
   async componentDidMount(){
 
-    let scrollTimeoutID = null;
+    componendUnmounted = false;
+    scrollTimeoutID = null;
+
     window.onscroll = async () => {
+      if (componendUnmounted){
+        return false;
+      }
       if (scrollTimeoutID){
         window.clearTimeout(scrollTimeoutID);
       }
@@ -48,14 +57,16 @@ class Landing extends Component {
         if (this.state.carouselIntervalID){
           window.clearTimeout(this.state.carouselIntervalID);
         }
-        const intervalID = window.setTimeout( async () => setActiveCarousel(this.state.activeCarousel+1) ,6500);
-        this.setState({carouselIntervalID:intervalID});
+        const carouselIntervalID = window.setTimeout( async () => setActiveCarousel(this.state.activeCarousel+1) ,6500);
+        this.setState({
+          carouselIntervalID
+        });
       }
     }
 
-    const setActiveCarousel = (index) => {
-      index = index<=3 ? index : 1;
-      this.setState({activeCarousel:index});
+    const setActiveCarousel = (activeCarousel) => {
+      activeCarousel = activeCarousel<=3 ? activeCarousel : 1;
+      this.setState({activeCarousel});
       startCarousel();
     }
 
@@ -90,7 +101,7 @@ class Landing extends Component {
         }
       }
       scrolling = false;
-      
+
       if (parseInt(activeBullet) !== parseInt(this.state.activeBullet)){
         this.setState({activeBullet});
       }
