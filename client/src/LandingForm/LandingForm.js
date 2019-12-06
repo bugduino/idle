@@ -26,6 +26,7 @@ class LandingForm extends Component {
           <Box width={'100%'} mx={"auto"}>
             <SmartContractControls
               web3={web3}
+              openBuyModal={this.props.openBuyModal}
               selectedToken={this.props.selectedToken}
               tokenConfig={this.props.tokenConfig}
               setSelectedToken={this.props.setSelectedToken}

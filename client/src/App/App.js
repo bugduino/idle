@@ -32,6 +32,7 @@ class App extends Component {
     route: "default", // or 'onboarding'
     unsubscribeFromHistory:null,
     selectedTab: '1',
+    buyModalOpened: false,
   };
 
   async selectTab(e, tabIndex) {
@@ -72,7 +73,21 @@ class App extends Component {
 
   showRoute(route) {
     this.setState({ route });
-  };
+  }
+
+  closeBuyModal(e) {
+    e.preventDefault();
+    this.setState({
+      buyModalOpened:false
+    });
+  }
+
+  openBuyModal(e) {
+    e.preventDefault();
+    this.setState({
+      buyModalOpened:true
+    });
+  }
 
   setSelectedToken(selectedToken){
     // console.log('setSelectedToken',selectedToken);
@@ -82,6 +97,7 @@ class App extends Component {
         if (localStorage){
           localStorage.setItem('selectedToken',selectedToken);
         }
+        // console.log('Setting new token',selectedToken,tokenConfig);
         return this.setState({
           tokenConfig,
           selectedToken
@@ -144,6 +160,7 @@ class App extends Component {
                             initContract={initContract}
                             contracts={contracts}
                             isMobile={isMobile}
+                            buyModalOpened={this.state.buyModalOpened}
                             accountBalance={accountBalance}
                             accountBalanceToken={accountBalanceToken}
                             accountBalanceLow={accountBalanceLow}
@@ -156,6 +173,7 @@ class App extends Component {
                             userRejectedValidation={userRejectedValidation}
                             validateAccount={validateAccount}
                             connectAndValidateAccount={connectAndValidateAccount}
+                            closeBuyModal={this.closeBuyModal.bind(this)}
                             handleMenuClick={this.selectTab.bind(this)}
                             availableTokens={availableTokens}
                             tokenConfig={this.state.tokenConfig}
@@ -198,6 +216,7 @@ class App extends Component {
                                   accountBalance={accountBalance}
                                   accountBalanceToken={accountBalanceToken}
                                   accountBalanceLow={accountBalanceLow}
+                                  openBuyModal={this.openBuyModal.bind(this)}
                                   updateSelectedTab={this.selectTab.bind(this)}
                                   selectedTab={this.state.selectedTab}
                                   selectedToken={this.state.selectedToken}

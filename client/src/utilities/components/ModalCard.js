@@ -46,7 +46,7 @@ ModalCard.Header = (props) => (
   <Box width={1} borderBottom={'1px solid #eee'} pt={[5,3]} mb={[2,3]} pb={[2,2]}>
     <Flex flexDirection={'column'} alignItems={'center'} px={[1,2]}>
       { props.icon && <Image width={'50px'} src={props.icon} /> }
-      <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mt={props.icon ? [2,3] : 0} mb={0} color={'dark-gray'}>
+      <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mt={props.icon ? [2,3] : 0} mb={0} color={'copyColor'}>
         {props.title}
       </Heading.h3>
       {

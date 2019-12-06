@@ -90,9 +90,10 @@ class SmartContractControls extends React.Component {
         document.body.appendChild(script_0x_overlay_click);
       },
       'https://instant.0x.org/instant.js':{},
-      // 'https://verify.testwyre.com/js/widget-loader.js'
-      // 'https://verify.testwyre.com/js/verify-module-init-beta.js',
-      // 'https://js.stripe.com/v3/' // Needed for wyre debit card
+      'https://verify.testwyre.com/js/widget-loader.js':{}
+      // 'https://cdnjs.cloudflare.com/ajax/libs/fingerprintjs2/2.1.0/fingerprint2.min.js':{},
+      // 'https://verify.testwyre.com/js/verify-module-init-beta.js':{},
+      // 'https://js.stripe.com/v3/':{} // Needed for wyre debit card
     };
 
     Object.keys(resources).forEach((url,i) => {
@@ -134,51 +135,6 @@ class SmartContractControls extends React.Component {
     }`;
     document.body.appendChild(style);
   }
-
-  /*
-  renderWyre = () => {
-
-    if (!document.getElementById('wyre-dropin-widget-container')){
-      const wyreWidget = document.createElement("div");
-      wyreWidget.id = 'wyre-dropin-widget-container';
-      document.body.appendChild(wyreWidget);
-    }
-
-    const widget = new window.Wyre({
-        accountId: 'AC_Q2Y4AARC3TP',
-        auth: {
-          type:'metamask'
-        },
-        env: 'test',
-        operation: {
-            type: 'debitcard', // [debitcard-hosted-dialog, debitcardonramp]
-            dest: `ethereum:${this.props.account}`,
-            destCurrency: this.props.selectedToken,
-            // sourceAmount: 10.0,
-            // paymentMethod: 'google-pay'
-        }
-    });
-
-    widget.on("exit", function (e) {
-        console.log("Wyre exit", e);
-    })
-
-    widget.on("error", function (e) {
-        console.log("Wyre error", e);
-    });
-
-    widget.on("complete", function (e) {
-        console.log("Wyre complete", e );
-    });
-
-    widget.on('ready', function(e) {
-        console.log("Wyre ready", e );
-        // widget.open();
-    });
-
-    widget.open();
-  }
-  */
 
   renderZeroExInstant = (e,amount) => {
     if (e){
@@ -1140,6 +1096,7 @@ class SmartContractControls extends React.Component {
     const accountChanged = prevProps.account !== this.props.account;
     const selectedTokenChanged = prevProps.selectedToken !== this.props.selectedToken;
 
+    // Remount the component if token changed
     if (selectedTokenChanged){
       await this.componentDidMount();
     }
@@ -1482,13 +1439,17 @@ class SmartContractControls extends React.Component {
                   <Box pt={['50px','73px']} style={{position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'99'}}>
                     <Box style={{backgroundColor:'rgba(0,0,0,0.83)',position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'0',borderRadius:'15px'}}></Box>
                     <Flex style={{position:'relative',zIndex:'99',height:'100%'}} flexDirection={'column'} alignItems={'center'} justifyContent={'center'}>
-                      <Link onClick={e => this.hideEmptyWalletOverlay(e) } style={{position:'absolute',top:'0',right:'0',width:'35px',height:'28px',paddingTop:'7px'}}>
-                        <Icon
-                          name={'Close'}
-                          color={'white'}
-                          size={'28'}
-                        />
-                      </Link>
+                      {
+                        !this.props.isMobile && (
+                          <Link onClick={e => this.hideEmptyWalletOverlay(e) } style={{position:'absolute',top:'0',right:'0',width:'35px',height:'28px',paddingTop:'7px'}}>
+                            <Icon
+                              name={'Close'}
+                              color={'white'}
+                              size={'28'}
+                            />
+                          </Link>
+                        )
+                      }
                       <Flex flexDirection={'column'} alignItems={'center'} p={[2,4]}>
                         <Flex width={1} justifyContent={'center'} flexDirection={'row'}>
                           <Image src={`images/tokens/${this.props.selectedToken}.svg`} height={'38px'} />
@@ -1507,7 +1468,7 @@ class SmartContractControls extends React.Component {
                           You don't have any {this.props.selectedToken} in your wallet. Click the button below to buy some.
                         </Heading.h4>
                         <Button
-                          onClick={e => { this.renderZeroExInstant(e) }}
+                          onClick={e => { this.props.openBuyModal(e); }}
                           borderRadius={4}
                           size={'medium'}
                         >

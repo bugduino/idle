@@ -2,9 +2,11 @@ import React from "react";
 import { Box, Flex, Button, Image } from "rimble-ui";
 import AccountOverview from "./AccountOverview";
 import AccountModal from "./AccountModal";
+import BuyModal from "./BuyModal";
 import styles from './Header.module.scss';
 import BigNumber from 'bignumber.js';
 import TokenSelector from '../../TokenSelector/TokenSelector';
+import ButtonGroup from '../../ButtonGroup/ButtonGroup';
 import {
   Link as RouterLink,
 } from "react-router-dom";
@@ -16,11 +18,37 @@ const IdleAddress = '0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9';
 class Header extends React.Component {
   state = {
     idleTokenBalance: null,
-    isOpen: false
+    isModalOpen: null,
   }
 
-  toggleModal = () => {
-    this.setState(state => ({...state, isOpen: !state.isOpen}));
+  toggleModal = (modalName) => {
+    this.setState(state => ({...state, isModalOpen: (state.isModalOpen===modalName ? null : modalName) }));
+  }
+
+  setCurrentToken = () => {
+    this.setState({
+      buttonGroup: [
+        {
+          component:Button,
+          props:{
+            mainColor:'transparent',
+            color:'white',
+            icon:'AccountBalanceWallet',
+            iconpos:'right',
+            onClick: e => { this.props.account ? this.toggleModal('buy') : this.props.connectAndValidateAccount() }
+          },
+          value:'BUY '+this.props.selectedToken+' NOW'
+        },
+        {
+          component:TokenSelector,
+          props:{
+            setSelectedToken:this.props.setSelectedToken,
+            selectedToken:this.props.selectedToken,
+            availableTokens:this.props.availableTokens
+          }
+        },
+      ]
+    })
   }
 
   genericContractCall = async (contractName, methodName, params = []) => {
@@ -49,9 +77,19 @@ class Header extends React.Component {
     return await this.genericIdleCall('balanceOf', [this.props.account]);
   }
 
+  closeBuyModal = (e) => {
+    e.preventDefault();
+    this.toggleModal('buy');
+    this.props.closeBuyModal(e);
+  }
+
+  async componentWillMount() {
+    this.setCurrentToken();
+  }
+
   async componentDidMount() {
 
-    console.log('TokenConfig',this.props.tokenConfig);
+    console.log('componentDidMount TokenConfig',this.props.tokenConfig);
 
     // do not wait for each one just for the first who will guarantee web3 initialization
     const web3 = await this.props.initWeb3();
@@ -65,7 +103,21 @@ class Header extends React.Component {
   BNify = s => new BigNumber(String(s));
 
   async componentDidUpdate(prevProps, prevState) {
-    if (this.props.account && (prevProps.account !== this.props.account)) {
+    const accountUpdated = prevProps.account !== this.props.account;
+    const tokenUpdated = prevProps.selectedToken !== this.props.selectedToken;
+
+    if (tokenUpdated){
+      this.setCurrentToken();
+    }
+
+    if (this.props.buyModalOpened && this.state.isModalOpen !== 'buy'){
+      this.setState({
+        isModalOpen: 'buy'
+      });
+    }
+
+    if (this.props.account && accountUpdated) {
+
       let idleTokenBalance = await this.getIdleTokenBalance();
       if (idleTokenBalance){
         idleTokenBalance = this.BNify(idleTokenBalance).div(1e18);
@@ -93,38 +145,11 @@ class Header extends React.Component {
                 position={'relative'} />
             </RouterLink>
           </Box>
-          <Box display={['inline-block', 'none']}>
-            {this.props.account ? (
-              <Flex>
-                <AccountOverview
-                  account={this.props.account}
-                  hasQRCode={false}
-                  isMobile={this.props.isMobile}
-                  selectedToken={this.props.selectedToken}
-                  accountBalanceLow={this.props.accountBalanceLow}
-                  accountBalance={this.props.accountBalance}
-                  accountBalanceToken={this.props.accountBalanceToken}
-                  toggleModal={this.toggleModal}
-                />
-              </Flex>
-            ) : (
-              <Button
-                className={styles.gradientButton}
-                borderRadius={4}
-                my={2}
-                mr={[3, 4]}
-                onClick={this.props.connectAndValidateAccount}
-                size={this.props.isMobile ? 'small' : 'medium'}
-              >
-                CONNECT
-              </Button>
-            )}
-          </Box>
-          <Box display={['none','block']} width={[8/12]} justifyContent="flex-end">
+          <Box width={[1,8/12]} justifyContent="flex-end">
             <Flex alignItems={"center"} justifyContent="flex-end">
-              <>
-                <TokenSelector setSelectedToken={this.props.setSelectedToken} selectedToken={this.props.selectedToken} availableTokens={this.props.availableTokens} />
-                {this.props.account ? (
+              <ButtonGroup components={this.state.buttonGroup} />
+              {
+                this.props.account ? (
                   <AccountOverview
                     account={this.props.account}
                     hasQRCode={false}
@@ -133,33 +158,44 @@ class Header extends React.Component {
                     accountBalanceLow={this.props.accountBalanceLow}
                     accountBalance={this.props.accountBalance}
                     accountBalanceToken={this.props.accountBalanceToken}
-                    toggleModal={this.toggleModal}
+                    toggleModal={e => this.toggleModal('account') }
                   />
                 ) : (
                   <Button
                     className={styles.gradientButton}
                     borderRadius={4}
                     my={2}
-                    mr={[3, 4]}
+                    ml={[3, 3]}
                     onClick={this.props.connectAndValidateAccount}
                     size={this.props.isMobile ? 'small' : 'medium'}
                   >
                     CONNECT
                   </Button>
-                )}
-              </>
+                )
+              }
             </Flex>
           </Box>
         </Flex>
+        <BuyModal
+          account={this.props.account}
+          tokenConfig={this.props.tokenConfig}
+          selectedToken={this.props.selectedToken}
+          accountBalance={this.props.accountBalance}
+          accountBalanceToken={this.props.accountBalanceToken}
+          idleTokenBalance={this.state.idleTokenBalance}
+          isOpen={this.state.isModalOpen==='buy'}
+          isMobile={this.props.isMobile}
+          closeModal={ e => this.closeBuyModal(e) }
+          network={this.props.network.current} />
         <AccountModal
           account={this.props.account}
           selectedToken={this.props.selectedToken}
           accountBalance={this.props.accountBalance}
           accountBalanceToken={this.props.accountBalanceToken}
           idleTokenBalance={this.state.idleTokenBalance}
-          isOpen={this.state.isOpen}
+          isOpen={this.state.isModalOpen==='account'}
           isMobile={this.props.isMobile}
-          closeModal={this.toggleModal}
+          closeModal={e => this.toggleModal('account') }
           network={this.props.network.current} />
       </Box>
     );
