@@ -1361,7 +1361,7 @@ class SmartContractControls extends React.Component {
 
   render() {
     let hasBalance = !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && this.trimEth(this.state.tokenToRedeemParsed) > 0;
-    const navPool = this.getFormattedBalance(this.state.navPool,this.props.selectedToken);
+    // const navPool = this.getFormattedBalance(this.state.navPool,this.props.selectedToken);
     const idleTokenPrice = this.getFormattedBalance(this.state.idleTokenPrice,this.props.selectedToken);
     const depositedFunds = this.getFormattedBalance(this.state.amountLent,this.props.selectedToken);
     const earningPerc = !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && this.trimEth(this.state.tokenToRedeemParsed)>0 ? this.getFormattedBalance(this.BNify(this.state.tokenToRedeemParsed).div(this.BNify(this.state.amountLent)).minus(1).times(100),'%',4) : '0%';
@@ -1767,7 +1767,7 @@ class SmartContractControls extends React.Component {
                         ) 
                     }
                     {
-                      hasBalance && this.state.showFundsInfo &&
+                      this.props.selectedTab === '2' && hasBalance && this.state.showFundsInfo &&
                         <>
                           {
                           !isNaN(this.trimEth(this.state.earningPerYear)) ? (
@@ -1876,7 +1876,7 @@ class SmartContractControls extends React.Component {
                         </>
                     }
                     {
-                      this.state.showFundsInfo &&
+                      this.props.selectedTab === '2' && this.state.showFundsInfo &&
                         <Box my={[3,4]} pb={[3,4]}>
                           {
                             this.state.prevTxs ? (
@@ -1967,65 +1967,62 @@ class SmartContractControls extends React.Component {
                     </Box>
                   </Flex>
                 </Box>
-                <Box borderBottom={'1px solid #D6D6D6'}>
-                  <Flex flexDirection={'column'} width={[1,'90%']} m={'0 auto'}>
-                    {
-                    /*
-                    <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mt={[2,3]} mb={[2,2]} color={'dark-gray'}>
-                      Overall returns
-                    </Heading.h3>
-                    */
+                { this.props.selectedTab === '3' &&
+                  <>
+                    <Box borderBottom={'1px solid #D6D6D6'}>
+                      <Flex flexDirection={'column'} width={[1,'90%']} m={'0 auto'}>
+                        <Flex flexDirection={['column','row']} width={'100%'}>
+                          <Flex flexDirection={'row'} py={[2,3]} width={[1,'1/2']} m={'0 auto'}>
+                            <Box width={1/2}>
+                              <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
+                                Daily
+                              </Text>
+                              <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                {this.getFormattedBalance(navPoolEarningPerDay,this.props.selectedToken,4)}
+                              </Heading.h3>
+                            </Box>
+                            <Box width={1/2}>
+                              <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
+                                Weekly
+                              </Text>
+                              <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                {this.getFormattedBalance(navPoolEarningPerWeek,this.props.selectedToken,4)}
+                              </Heading.h3>
+                            </Box>
+                          </Flex>
+                          <Flex flexDirection={'row'} py={[2,3]} width={[1,'1/2']} m={'0 auto'}>
+                            <Box width={1/2}>
+                              <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
+                                Monthly
+                              </Text>
+                              <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                {this.getFormattedBalance(navPoolEarningPerMonth,this.props.selectedToken,4)}
+                              </Heading.h3>
+                            </Box>
+                            <Box width={1/2}>
+                              <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
+                                Yearly
+                              </Text>
+                              <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                {this.getFormattedBalance(navPoolEarningPerYear,this.props.selectedToken,4)}
+                              </Heading.h3>
+                            </Box>
+                          </Flex>
+                        </Flex>
+                      </Flex>
+                    </Box>
+                    { !!this.state.calculataingShouldRebalance && 
+                      <Box px={[2,0]} textAlign={'text'} py={[3,2]}>
+                        <Flex
+                          justifyContent={'center'}
+                          alignItems={'center'}
+                          textAlign={'center'}
+                          pt={3}>
+                              <Loader size="40px" /> <Text ml={2}>Checking rebalance status...</Text>
+                        </Flex>
+                      </Box>
                     }
-                    <Flex flexDirection={['column','row']} width={'100%'}>
-                      <Flex flexDirection={'row'} py={[2,3]} width={[1,'1/2']} m={'0 auto'}>
-                        <Box width={1/2}>
-                          <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
-                            Daily
-                          </Text>
-                          <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                            {this.getFormattedBalance(navPoolEarningPerDay,this.props.selectedToken,4)}
-                          </Heading.h3>
-                        </Box>
-                        <Box width={1/2}>
-                          <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
-                            Weekly
-                          </Text>
-                          <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                            {this.getFormattedBalance(navPoolEarningPerWeek,this.props.selectedToken,4)}
-                          </Heading.h3>
-                        </Box>
-                      </Flex>
-                      <Flex flexDirection={'row'} py={[2,3]} width={[1,'1/2']} m={'0 auto'}>
-                        <Box width={1/2}>
-                          <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
-                            Monthly
-                          </Text>
-                          <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                            {this.getFormattedBalance(navPoolEarningPerMonth,this.props.selectedToken,4)}
-                          </Heading.h3>
-                        </Box>
-                        <Box width={1/2}>
-                          <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
-                            Yearly
-                          </Text>
-                          <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                            {this.getFormattedBalance(navPoolEarningPerYear,this.props.selectedToken,4)}
-                          </Heading.h3>
-                        </Box>
-                      </Flex>
-                    </Flex>
-                  </Flex>
-                </Box>
-                { !!this.state.calculataingShouldRebalance && 
-                  <Box px={[2,0]} textAlign={'text'} py={[3,2]}>
-                    <Flex
-                      justifyContent={'center'}
-                      alignItems={'center'}
-                      textAlign={'center'}
-                      pt={3}>
-                          <Loader size="40px" /> <Text ml={2}>Checking rebalance status...</Text>
-                    </Flex>
-                  </Box>
+                  </>
                 }
               </Box>
 
