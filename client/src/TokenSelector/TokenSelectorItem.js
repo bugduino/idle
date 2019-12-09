@@ -9,7 +9,7 @@ class TokenSelectorItem extends Component {
 
   render() {
     return (
-        <Button className={styles.tokenSelectorItem} boxShadow={'none'} mainColor={'transparent'} color={'white'} width={'140px'} p={2} borderRadius={this.props.borderRadius} onClick={ this.props.handleClick ? (e) => { this.props.handleClick() } : null }>
+        <Button className={styles.tokenSelectorItem} boxShadow={'none'} mainColor={'transparent'} color={'transparent'} width={'140px'} p={2} borderRadius={this.props.borderRadius} onClick={ this.props.handleClick ? (e) => { this.props.handleClick() } : null }>
           {
             this.props.disabled &&
               <Text.span className={styles.comingSoon}>COMING SOON</Text.span>

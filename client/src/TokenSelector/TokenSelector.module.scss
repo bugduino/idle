@@ -1,26 +1,26 @@
 .tokenSelectorItem{
-  min-height:48px;
-  cursor:pointer;
-  background-color:transparent;
+  min-height:48px !important;
+  cursor:pointer !important;
+  background-color:transparent !important;
   span[class='button-text']{
-    position: static;
+    position: static !important;
   }
   &:hover{
-    background-color:rgba(255,255,255,0.2);
+    background-color:rgba(255,255,255,0.2) !important;
     .comingSoon{
-      opacity:1;
+      opacity:1 !important;
     }
   }
 }
 .selectorCurtain{
-  max-height:0;
-  transition:all 0.2s ease-in-out;
+  max-height:0 !important;
+  transition:all 0.2s ease-in-out !important;
   &.opened{
-    max-height:100px;
+    max-height:100px !important;
   }
 }
 .comingSoon{
-  opacity:0;
+  opacity:0 !important;
   position: absolute !important;
   top:0 !important;
   left:0 !important;
@@ -34,8 +34,8 @@
   background: rgba(255,255,255,.8) !important;
   border-radius: 2rem !important;
   z-index: 1 !important;
-  transition:opacity 0.2s ease-in-out;
+  transition:opacity 0.2s ease-in-out !important;
   &:hover{
-    opacity:1;
+    opacity:1 !important;
   }
 }

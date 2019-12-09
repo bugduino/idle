@@ -45,6 +45,39 @@ const availableTokens = {
       }
     ]
   },
+  DAI:{
+    enabled: false,
+    abi:ERC20.abi,
+    address:'0x6b175474e89094c44da98b954eedeac495271d0f',
+    zeroExInstant:{
+      assetData:'0xf47261b0000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+    },
+    wyre:{
+      destCurrency:'DAI'
+    },
+    defiPrime:{
+      token:'dai'
+    },
+    idle:{
+      abi:idleDAI.abi,
+      token:'idleDAI',
+      address:'0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9'
+    },
+    protocols:[
+      {
+        name:'compound',
+        abi:cDAI.abi,
+        token:'cDAI',
+        address:'0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643',
+      },
+      {
+        name:'fulcrum',
+        abi:iDAI.abi,
+        token:'iDAI',
+        address:'0x493c57c4763932315a328269e1adad09653b9081'
+      }
+    ]
+  },
   USDC:{
     enabled: false,
     abi:ERC20.abi,
