@@ -90,7 +90,7 @@ class SmartContractControls extends React.Component {
         document.body.appendChild(script_0x_overlay_click);
       },
       'https://instant.0x.org/instant.js':{},
-      // 'https://verify.testwyre.com/js/widget-loader.js':{}
+      'https://verify.testwyre.com/js/widget-loader.js':{}
       // 'https://cdnjs.cloudflare.com/ajax/libs/fingerprintjs2/2.1.0/fingerprint2.min.js':{},
       // 'https://verify.testwyre.com/js/verify-module-init-beta.js':{},
       // 'https://js.stripe.com/v3/':{} // Needed for wyre debit card

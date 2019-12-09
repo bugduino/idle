@@ -40,6 +40,7 @@ export default function (props) {
   const setConnector = async connectorName => {
     if (localStorage) {
       localStorage.setItem('walletProvider', '');
+      localStorage.setItem('connectorName', connectorName);
     }
     return await context.setConnector(connectorName);
   };
