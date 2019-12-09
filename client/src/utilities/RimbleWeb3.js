@@ -84,7 +84,7 @@ class RimbleTransaction extends React.Component {
 
     const context = this.props.context;
 
-    if (context !== window.RimbleWeb3_context){
+    if (!window.RimbleWeb3_context){
       window.RimbleWeb3_context = context;
     }
 

@@ -25,6 +25,9 @@ export default function Web3ConnectionButtons(props) {
         localStorage.setItem('walletProvider', connectorName);
       }
     }
+    if (context !== window.RimbleWeb3_context){
+      window.RimbleWeb3_context = context;
+    }
     return await context.setConnector(connectorName);
   };
   const unsetConnector = async () => {

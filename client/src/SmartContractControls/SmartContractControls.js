@@ -1387,7 +1387,7 @@ class SmartContractControls extends React.Component {
 
     const fundsAreReady = !this.state.fundsError && !this.state.updateInProgress && !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && !isNaN(this.trimEth(this.state.earning)) && !isNaN(this.trimEth(this.state.amountLent));
 
-    customLog('fundsAreReady',this.state.fundsError,this.state.updateInProgress,this.trimEth(this.state.tokenToRedeemParsed),this.trimEth(this.state.earning),this.trimEth(this.state.amountLent));
+    // customLog('fundsAreReady',this.state.fundsError,this.state.updateInProgress,this.trimEth(this.state.tokenToRedeemParsed),this.trimEth(this.state.earning),this.trimEth(this.state.amountLent));
 
     const tokenNotApproved = (this.props.account && this.state.isTokenApproved===false && !this.state.isApprovingToken);
     const walletIsEmpty = this.props.account && this.state.showEmptyWalletOverlay && !tokenNotApproved && !this.state.isApprovingToken && this.state.tokenBalance !== null && !isNaN(this.state.tokenBalance) && !parseFloat(this.state.tokenBalance);
@@ -1589,8 +1589,7 @@ class SmartContractControls extends React.Component {
               </Box>
             }
 
-            {this.props.selectedTab === '2' &&
-              <Box px={[2,0]} py={[3,0]} textAlign={'text'}>
+              <Box px={[2,0]} py={[3,0]} display={ this.props.selectedTab === '2' ? 'block' : 'none' } textAlign={'text'}>
                 {this.props.account &&
                   <>
                     {
@@ -1611,7 +1610,7 @@ class SmartContractControls extends React.Component {
                                           end={reedemableFundsAtEndOfYear}
                                           duration={31536000}
                                           delay={0}
-                                          separator=" "
+                                          separator=""
                                           decimals={8}
                                           decimal="."
                                         >
@@ -1633,7 +1632,7 @@ class SmartContractControls extends React.Component {
                                           end={earningAtEndOfYear}
                                           duration={31536000}
                                           delay={0}
-                                          separator=" "
+                                          separator=""
                                           decimals={8}
                                           decimal="."
                                           // formattingFn={(n)=>{ return this.formatCountUp(n); }}
@@ -1923,10 +1922,8 @@ class SmartContractControls extends React.Component {
                   </Flex>
                 }
               </Box>
-            }
 
-            { this.props.selectedTab === '3' && 
-              <>
+              <Box display={ this.props.selectedTab === '3' ? 'block' : 'none' }>
                 <Box width={'100%'} borderBottom={'1px solid #D6D6D6'}>
                   <Flex flexDirection={['column','row']} py={[2,3]} width={[1,'80%']} m={'0 auto'}>
                     <Box width={[1,1/3]}>
@@ -1934,16 +1931,15 @@ class SmartContractControls extends React.Component {
                         Allocated funds
                       </Text>
                       <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'} style={{whiteSpace:'nowrap'}}>
-                        {navPool ? 
+                        {currentNavPool && navPoolAtEndOfYear ? 
                           <CountUp
                             start={currentNavPool}
                             end={navPoolAtEndOfYear}
                             duration={315569260}
                             delay={0}
-                            separator=" "
+                            separator=""
                             decimals={6}
                             decimal="."
-                            formattingFn={(n)=>{ return this.formatCountUp(n); }}
                           >
                             {({ countUpRef, start }) => (
                               <><span ref={countUpRef} /> <span style={{fontSize:'16px',fontWeight:'400',lineHeight:'1.5',color:'#3F3D4B'}}>{this.props.selectedToken}</span></>
@@ -2031,8 +2027,7 @@ class SmartContractControls extends React.Component {
                     </Flex>
                   </Box>
                 }
-              </>
-            }
+              </Box>
 
             { this.props.selectedTab === '3' && !this.state.calculataingShouldRebalance && !!this.state.shouldRebalance && 
               <Box px={[2,0]} py={[3,2]}>
