@@ -33,7 +33,7 @@ class SmartContractControls extends React.Component {
     welcomeIsOpen: false,
     approveIsOpen: false,
     capReached: false,
-    showFundsInfo:false,
+    showFundsInfo:true,
     isApprovingToken:false,
     isApprovingDAITest: true,
     redeemProcessing: false,
