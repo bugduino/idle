@@ -80,9 +80,14 @@ class RimbleTransaction extends React.Component {
   // Initialize a web3 provider
   initWeb3 = async () => {
 
-    console.log(this.props);
+    // console.log('RimbleWeb3 initWeb3 props',this.props);
 
     const context = this.props.context;
+
+    if (context !== window.RimbleWeb3_context){
+      window.RimbleWeb3_context = context;
+    }
+
     // if (!context.active) {
     //   if (localStorage && localStorage.getItem('walletProvider') === 'Injected') {
     //     console.log('Already logged in with Injected web3');

@@ -141,7 +141,9 @@ class SmartContractControls extends React.Component {
       e.preventDefault();
     }
     if (window.zeroExInstant){
+      const connectorName = window.RimbleWeb3_context.connectorName;
       const params = {
+        provider: connectorName && connectorName!=='Injected' && window.RimbleWeb3_context.connector[connectorName.toLowerCase()] ? window.RimbleWeb3_context.connector[window.RimbleWeb3_context.connectorName.toLowerCase()].provider : window.ethereum,
         orderSource: this.props.tokenConfig.zeroExInstant.orderSource,
         affiliateInfo: this.props.tokenConfig.zeroExInstant.affiliateInfo,
         defaultSelectedAssetData: this.props.tokenConfig.zeroExInstant.assetData,
