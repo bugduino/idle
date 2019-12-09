@@ -25,7 +25,7 @@ class ButtonGroup extends Component {
               const isLastItem = i===this.props.components.length-1;
               const Component = c.component;
               return (
-                  <Component key={'component_'+i} borderRight={ isFirstItem ? '1px solid rgba(255,255,255,0.1)' : null } borderLeft={ isLastItem ? '1px solid rgba(255,255,255,0.1)' : null } boxShadow={'none'} borderRadius={ isFirstItem ? '2rem 0 0 2rem' : ( isLastItem ? '0 2rem 2rem 0' : '0' ) } style={{flex:'1 1 0px'}} className={styles.buttonGroupComponent} {...c.props}>{ c.value ? c.value : null }</Component>
+                  <Component key={'component_'+i} borderRight={ isFirstItem && !isLastItem ? '1px solid rgba(255,255,255,0.1)' : null } borderLeft={ isLastItem && !isFirstItem ? '1px solid rgba(255,255,255,0.1)' : null } boxShadow={'none'} borderRadius={ isFirstItem && !isLastItem ? '2rem 0 0 2rem' : ( isLastItem && !isFirstItem ? '0 2rem 2rem 0' : ( isLastItem && isFirstItem ? '2rem' : '0') ) } style={{flex:'1 1 0px'}} className={styles.buttonGroupComponent} {...c.props}>{ c.value ? c.value : null }</Component>
               );
             })
           }

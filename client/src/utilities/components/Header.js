@@ -28,6 +28,7 @@ class Header extends React.Component {
   setCurrentToken = () => {
     this.setState({
       buttonGroup: [
+        /*
         {
           component:Button,
           props:{
@@ -39,6 +40,7 @@ class Header extends React.Component {
           },
           value:'BUY '+this.props.selectedToken+' NOW'
         },
+        */
         {
           component:TokenSelector,
           props:{

@@ -267,6 +267,9 @@
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e4ebfe', endColorstr='#e4ebfe', GradientType=1 );
 }
 @media (min-width: 32em) {
+  .bulletCard{
+    min-width: 480px;
+  }
   .bentTube:before{
     top: -15px;
     width: 0%;

@@ -90,7 +90,7 @@ class SmartContractControls extends React.Component {
         document.body.appendChild(script_0x_overlay_click);
       },
       'https://instant.0x.org/instant.js':{},
-      'https://verify.testwyre.com/js/widget-loader.js':{}
+      // 'https://verify.testwyre.com/js/widget-loader.js':{}
       // 'https://cdnjs.cloudflare.com/ajax/libs/fingerprintjs2/2.1.0/fingerprint2.min.js':{},
       // 'https://verify.testwyre.com/js/verify-module-init-beta.js':{},
       // 'https://js.stripe.com/v3/':{} // Needed for wyre debit card
@@ -411,9 +411,10 @@ class SmartContractControls extends React.Component {
     let price = await this.getPriceInToken(contractName);
     let balance = await this.genericContractCall(contractName, 'balanceOf', [this.props.account]);
 
-    console.log('getBalanceOf',balance.toString());
+    console.log('getBalanceOf',balance);
 
-    if (balance) {
+    if (balance) {  
+
       balance = this.BNify(balance).div(1e18);
       price = this.BNify(price).div(1e18);
       const tokenToRedeem = balance.times(price);
@@ -1468,7 +1469,8 @@ class SmartContractControls extends React.Component {
                           You don't have any {this.props.selectedToken} in your wallet. Click the button below to buy some.
                         </Heading.h4>
                         <Button
-                          onClick={e => { this.props.openBuyModal(e); }}
+                          // onClick={e => { this.props.openBuyModal(e); }}
+                          onClick={ e => { this.renderZeroExInstant(e) } }
                           borderRadius={4}
                           size={'medium'}
                         >
