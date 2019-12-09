@@ -20,6 +20,7 @@ import Header from "../utilities/components/Header";
 import Landing from "../Landing/Landing";
 import ScrollToTop from "../ScrollToTop/ScrollToTop";
 import Tos from "../Tos/Tos";
+import PageNotFound from "../PageNotFound/PageNotFound";
 import Web3Debugger from "../Web3Debugger/Web3Debugger";
 import availableTokens from '../tokens.js';
 
@@ -227,6 +228,9 @@ class App extends Component {
                               </Route>
                               <Route path="/terms-of-service">
                                 <Tos />
+                              </Route>
+                              <Route>
+                                <PageNotFound />
                               </Route>
                             </Switch>
                           ) : null}

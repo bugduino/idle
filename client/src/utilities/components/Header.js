@@ -147,7 +147,10 @@ class Header extends React.Component {
           </Box>
           <Box width={[1,8/12]} justifyContent="flex-end">
             <Flex alignItems={"center"} justifyContent="flex-end">
-              <ButtonGroup components={this.state.buttonGroup} />
+              {
+                !this.props.isMobile && 
+                  <ButtonGroup components={this.state.buttonGroup} />
+              }
               {
                 this.props.account ? (
                   <AccountOverview
