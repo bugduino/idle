@@ -90,7 +90,7 @@ class RimbleTransaction extends React.Component {
 
     if (!context.active && localStorage) {
       const connectorName = localStorage.getItem('connectorName');
-      if (connectorName !== 'Infura'){
+      if (connectorName && connectorName !== 'Infura'){
         await context.setFirstValidConnector([connectorName, 'Infura']);
         return;
       }
