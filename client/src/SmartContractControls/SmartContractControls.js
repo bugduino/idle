@@ -924,18 +924,26 @@ class SmartContractControls extends React.Component {
       await asyncForEach(Object.keys(minedTxs),async (key,i) => {
         const tx = minedTxs[key];
 
-        if (transactions[tx.transactionHash] || tx.status !== 'success'){
+        // Skip invalid txs
+        if (transactions[tx.transactionHash] || tx.status !== 'success' || !tx.transactionHash || (tx.method !== 'mintIdleToken' && tx.method !== 'redeemIdleToken')){
           return;
         }
 
         const realTx = await (new Promise( async (resolve, reject) => {
           window.web3.eth.getTransaction(tx.transactionHash,(err,tx)=>{
+            console.log('realTx',tx);
             if (err){
               reject(err);
             }
             resolve(tx);
           });
         }));
+
+        // Skip txs from other wallets
+        if (realTx.from.toLowerCase() !== this.props.account.toLowerCase()){
+          return;
+        }
+
         realTx.contractAddress = this.props.tokenConfig.address;
         realTx.timeStamp = parseInt(tx.created/1000);
 
@@ -962,7 +970,7 @@ class SmartContractControls extends React.Component {
           if (amountLent.lt(0)){
             amountLent = this.BNify(0);
           }
-          customLog('Redeemed '+parseFloat(tx.value),'AmountLent',amountLent.toString());
+          customLog('Redeemed '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
         }
 
         transactions[realTx.hash] = realTx;
