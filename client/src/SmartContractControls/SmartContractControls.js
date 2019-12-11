@@ -1479,8 +1479,7 @@ class SmartContractControls extends React.Component {
                           You don't have any {this.props.selectedToken} in your wallet. Click the button below to buy some.
                         </Heading.h4>
                         <Button
-                          // onClick={e => { this.props.openBuyModal(e); }}
-                          onClick={ e => { this.renderZeroExInstant(e) } }
+                          onClick={e => { this.props.openBuyModal(e); }}
                           borderRadius={4}
                           size={'medium'}
                         >
