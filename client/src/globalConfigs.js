@@ -6,6 +6,7 @@ const globalConfigs = {
     'AUS':'Australia',
     'BRA':'Brazil',
     'CHN':'China',
+    'CAN':'Canada',
     'MEX':'Mexico',
     'EU':'Europe',
     'HKG':'Hong Kong',
@@ -43,6 +44,7 @@ const globalConfigs = {
         subcaption: '~ 0.75% fee ~',
         supportedMethods:['bank'],
         supportedCountries:['USA','GBR','AUS','BRA','CHN','MEX'],
+        supportedTokens:['USDC','DAI'],
         getInitParams: (props,globalConfigs) => {
           return {
             accountId: 'AC_Q2Y4AARC3TP',
@@ -79,6 +81,7 @@ const globalConfigs = {
         subcaption:`~ 2.5% fee ~\nGBP ONLY`,
         supportedMethods:['bank'],
         supportedCountries:['GBR','EU'],
+        supportedTokens:['SAI','DAI'],
         getInitParams: (props,globalConfigs) => {
         	return {
 	          hostAppName: 'Idle',
@@ -90,7 +93,8 @@ const globalConfigs = {
         }
       },
       moonpay: {
-        enabled:false,
+        enabled:true,
+        apiKey:'pk_test_xZO2dhqZb9gO65wHKCCFmMJ5fbSyHSI',
         imageSrc: 'images/payments/moonpay.svg',
         imageProps: {
           height: '35px',
@@ -100,7 +104,21 @@ const globalConfigs = {
         captionPos: 'top',
         subcaption: '~ 4.5% fee ~',
         supportedMethods:['bank'],
-        supportedCountries:['GBR','AUS','BRA','CHN','MEX','CAN','HKG','RUS','ZAF','KOR']
+        supportedCountries:['GBR','AUS','BRA','CHN','MEX','CAN','HKG','RUS','ZAF','KOR'],
+        supportedTokens:['USDC','DAI'],
+        getInitParams: (props,globalConfigs) => {
+          const connectorName = localStorage ? localStorage.getItem('connectorName') : 'Infura';
+          const params = {
+            apiKey:globalConfigs.payments.providers.moonpay.apiKey,
+            currencyCode:props.selectedToken.toLowerCase(),
+            walletAddress:props.account,
+            redirectURL:`${globalConfigs.baseURL}?connectorName=${connectorName}&currencyCode=${props.selectedToken}`
+          };
+
+          return Object.keys(params)
+              .map(k => encodeURIComponent(k) + '=' + encodeURIComponent(params[k]))
+              .join('&');
+        }
       },
       'zeroExInstant': {
           enabled:true,
@@ -113,6 +131,7 @@ const globalConfigs = {
           captionPos: 'top',
           subcaption: '~ 0.75% fee ~',
           supportedMethods:['wallet'],
+          supportedTokens:['USDC','DAI','SAI'],
           getInitParams: (props,globalConfigs) => {
             return {
               orderSource: props.tokenConfig.zeroExInstant.orderSource,

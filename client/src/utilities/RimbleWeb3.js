@@ -73,6 +73,8 @@ const RimbleTransactionContext = React.createContext({
   }
 });
 
+let setConnectorName = null;
+
 class RimbleTransaction extends React.Component {
   static Consumer = RimbleTransactionContext.Consumer;
 
@@ -83,26 +85,46 @@ class RimbleTransaction extends React.Component {
 
     const context = this.props.context;
 
+    // 0x Instant Wallet Provider Injection
     if (!window.RimbleWeb3_context || context.connectorName !== window.RimbleWeb3_context.connectorName){
       window.RimbleWeb3_context = context;
     }
 
-    if (!context.active && localStorage) {
-      const connectorName = localStorage.getItem('connectorName');
-      if (connectorName && connectorName !== 'Infura'){
+    if (!context.active) {
+      // Check localstorage
+      let connectorName = localStorage ? localStorage.getItem('connectorName') : null;
+
+      // Catch Moonpay url params
+      if (window.URL){
+        const Url = new window.URL(window.location.href);
+        const UrlParams = Url.searchParams;
+        const transactionId = UrlParams.get('transactionId');
+        const transactionStatus = UrlParams.get('transactionStatus');
+        if (transactionId && transactionStatus){
+          connectorName = UrlParams.get('connectorName');
+          const currencyCode = UrlParams.get('currencyCode');
+
+          // Show payment status on Toast
+          window.toastProvider.addMessage(`Moonpay payment pending`, {
+            secondaryMessage: `Your ${currencyCode} is on its way`,
+            colorTheme: 'light',
+            actionHref: "",
+            actionText: "",
+            variant: "processing",
+          });
+        }
+      }
+
+      // Select preferred web3 provider
+      if (connectorName && connectorName !== 'Infura' && connectorName !== setConnectorName){
+        setConnectorName = connectorName;
         await context.setFirstValidConnector([connectorName, 'Infura']);
         return;
       }
-      /*
-      if (localStorage && localStorage.getItem('walletProvider') === 'Injected') {
-        console.log('Already logged in with Injected web3');
-        await context.setFirstValidConnector(['Injected', 'Infura']);
-      } else {
-        console.log('Already logged in with Injected web3');
-        await context.setFirstValidConnector(['Infura']);
+
+      if (setConnectorName){
+        return;
       }
-      return;
-      */
     }
 
     let web3 = context.library;
@@ -128,6 +150,7 @@ class RimbleTransaction extends React.Component {
       // After setting the web3 provider, check network
       this.checkNetwork();
       await this.initializeContracts();
+
       if (context.account) {
         await this.initAccount(context.account);
       }
@@ -441,6 +464,7 @@ class RimbleTransaction extends React.Component {
       contract.methods[contractMethod](...params)
         .send(value ? { from: account, value, gas  } : { from: account, gas })
         .on("transactionHash", hash => {
+          console.log('txOnTransactionHash', hash);
           // Submitted to block and received transaction hash
           // Set properties on the current transaction
           transaction.transactionHash = hash;
@@ -453,6 +477,7 @@ class RimbleTransaction extends React.Component {
           }
         })
         .on("confirmation", (confirmationNumber, receipt) => {
+          console.log('txOnConfirmation', receipt);
           // Update confirmation count on each subsequent confirmation that's received
           transaction.confirmationCount += 1;
 
@@ -488,12 +513,13 @@ class RimbleTransaction extends React.Component {
           }
         })
         .on("receipt", receipt => {
-          console.log('onReceipt', receipt);
+          console.log('txOnReceipt', receipt);
           // Received receipt, met total number of confirmations
           transaction.recentEvent = "receipt";
           this.updateTransaction(transaction);
         })
         .on("error", error => {
+          console.log('txOnError',error);
           // Errored out
           transaction.status = "error";
           transaction.recentEvent = "error";
@@ -514,7 +540,7 @@ class RimbleTransaction extends React.Component {
           }
         });
     } catch (error) {
-      console.log(error);
+      console.error(error);
       transaction.status = "error";
       this.updateTransaction(transaction);
       // TODO: should this be a custom error? What is the error here?

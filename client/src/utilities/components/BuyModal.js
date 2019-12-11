@@ -16,7 +16,6 @@ import styles from './Header.module.scss';
 import globalConfigs from '../../globalConfigs';
 
 const BNify = s => new BigNumber(String(s));
-const MOONPAY_KEY = 'pk_test_xZO2dhqZb9gO65wHKCCFmMJ5fbSyHSI';
 
 class BuyModal extends React.Component {
 
@@ -97,7 +96,7 @@ class BuyModal extends React.Component {
           .show();
       break;
       case 'moonpay':
-        window.open(`https://buy-staging.moonpay.io?apiKey=${MOONPAY_KEY}&currencyCode=${this.props.selectedToken.toLowerCase()}&walletAddress=${this.props.account}&redirectURL=https://beta.idle.finance`);
+        window.open(`https://buy-staging.moonpay.io?${initParams}`);
       break;
       case 'zeroExInstant':
         if (window.zeroExInstant){
@@ -127,7 +126,7 @@ class BuyModal extends React.Component {
     const availableProviders = [];
     Object.keys(globalConfigs.payments.providers).forEach((provider,i) => {
       const providerInfo = globalConfigs.payments.providers[provider];
-      if (providerInfo.enabled && providerInfo.supportedMethods.indexOf(selectedMethod) !== -1 ){
+      if (providerInfo.enabled && providerInfo.supportedMethods.indexOf(selectedMethod) !== -1 && providerInfo.supportedTokens.indexOf(this.props.selectedToken) !== -1 ){
         availableProviders.push(provider);
       }
     });
@@ -158,8 +157,8 @@ class BuyModal extends React.Component {
     const availableCountries = {};
     Object.keys(globalConfigs.payments.providers).forEach((provider,i) => {
       const providerInfo = globalConfigs.payments.providers[provider];
-      // Skip disabled provider or not supported selected method
-      if (!providerInfo.enabled || providerInfo.supportedMethods.indexOf(this.state.selectedMethod) === -1 ){
+      // Skip disabled provider, not supported selected method or not supported token
+      if (!providerInfo.enabled || providerInfo.supportedMethods.indexOf(this.state.selectedMethod) === -1 || providerInfo.supportedTokens.indexOf(this.props.selectedToken) === -1 ){
         return;
       }
 

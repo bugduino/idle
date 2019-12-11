@@ -89,7 +89,7 @@ class Header extends React.Component {
 
   async componentDidMount() {
 
-    console.log('componentDidMount TokenConfig',this.props.tokenConfig);
+    // console.log('componentDidMount TokenConfig',this.props.tokenConfig);
 
     // do not wait for each one just for the first who will guarantee web3 initialization
     const web3 = await this.props.initWeb3();

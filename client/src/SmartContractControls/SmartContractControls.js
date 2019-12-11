@@ -91,6 +91,9 @@ class SmartContractControls extends React.Component {
       },
       'https://instant.0x.org/instant.js':{},
       'https://verify.testwyre.com/js/widget-loader.js':{}
+      // 'https://cdn.moonpay.io/moonpay-sdk.js':() => {
+      //   window.moonpay.initialize('pk_test_xZO2dhqZb9gO65wHKCCFmMJ5fbSyHSI');
+      // }
       // 'https://cdnjs.cloudflare.com/ajax/libs/fingerprintjs2/2.1.0/fingerprint2.min.js':{},
       // 'https://verify.testwyre.com/js/verify-module-init-beta.js':{},
       // 'https://js.stripe.com/v3/':{} // Needed for wyre debit card
