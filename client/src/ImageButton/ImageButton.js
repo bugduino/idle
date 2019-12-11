@@ -14,9 +14,15 @@ class ImageButton extends Component {
             { this.props.captionPos && this.props.captionPos === 'top' ? caption : image }
             { this.props.captionPos && this.props.captionPos === 'top' ? image : caption }
             {
-              this.props.subcaption && (
-                <Text lineHeight={'1.3'} textAlign={'center'} color={'darkGray'} fontWeight={1} fontSize={1}>{this.props.subcaption}</Text>
-              )
+              this.props.subcaption && this.props.subcaption.split('\n').map((v,i) => {
+                // Smaller caption for second line
+                if (i){
+                  v = (<small>{v}</small>);
+                }
+                return (
+                  <Text key={`subcaption_${i}`} lineHeight={'1.3'} textAlign={'center'} color={'darkGray'} fontWeight={1} fontSize={1}>{v}</Text>
+                );
+              })
             }
           </Flex>
         </Button>

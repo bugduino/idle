@@ -9,47 +9,30 @@ import {
 } from "rimble-ui";
 import Select from 'react-select';
 import ModalCard from './ModalCard';
+import BigNumber from 'bignumber.js';
 import ImageButton from '../../ImageButton/ImageButton';
 import { RampInstantSDK } from '@ramp-network/ramp-instant-sdk';
 import styles from './Header.module.scss';
+import globalConfigs from '../../globalConfigs';
 
-const allowedPaymentMethods = ['debit-card','ethereum'];
-const fiatPaymentMethods = {
-  'wyre':{
-    imageSrc:'images/payments/wyre.svg',
-    imageProps:{height:'35px',my:'8px'},
-    caption:'Buy with',
-    captionPos:'top',
-    subcaption:'~ 0.75% fee ~'
-  },
-  'ramp':{
-    imageSrc:'images/payments/ramp.png',
-    imageProps:{height:'35px',my:'8px'},
-    caption:'Buy with',
-    captionPos:'top',
-    subcaption:(<Text.span textAlign={'center'} color={'darkGray'} fontWeight={1} fontSize={1}>~ 2.5% fee ~<br /><small>GBP ONLY</small></Text.span>)
-  },
-  'moonpay':{
-    imageSrc:'images/payments/moonpay.svg',
-    imageProps:{height:'35px',my:'8px'},
-    caption:'Buy with',
-    captionPos:'top',
-    subcaption:'~ 4.5% fee ~'
-  }
-};
+const BNify = s => new BigNumber(String(s));
+const MOONPAY_KEY = 'pk_test_xZO2dhqZb9gO65wHKCCFmMJ5fbSyHSI';
 
 class BuyModal extends React.Component {
 
   state = {
+    availableProviders:null,
     selectedMethod:null,
     selectedCountry:null
   }
 
-  renderPaymentMethod = async (e,method) => {
+  renderPaymentMethod = async (e,provider) => {
 
     this.closeModal(e);
 
-    switch (method){
+    const initParams = globalConfigs.payments.providers[provider] && globalConfigs.payments.providers[provider].getInitParams ? globalConfigs.payments.providers[provider].getInitParams(this.props,globalConfigs) : null;
+
+    switch (provider){
       case 'wyre':
         if (!document.getElementById('wyre-dropin-widget-container')){
           const wyreWidget = document.createElement("div");
@@ -57,35 +40,7 @@ class BuyModal extends React.Component {
           document.body.appendChild(wyreWidget);
         }
 
-        // const secretKey = await this.getUniqueDeviceID();
-
-        const params = {
-            accountId: 'AC_Q2Y4AARC3TP',
-            auth: {
-              // type:'metamask'
-              type:'secretKey',
-              secretKey: this.props.account
-            },
-            env: 'prod',
-            operation: {
-                type: 'debitcard-hosted-dialog',
-                /*
-                  debitcard: Open JS widget with Apple Pay or Debit Card (Error while validating address)
-                  debitcard-hosted-dialog: Open a Popup (same as debitcard but hosted) (Error while validating address)
-                  debitcardonramp: INVALID TYPE
-                  debitcard-whitelabel: ERROR
-                  onramp: Attach Bank account, KYC, verifications, ...
-                */
-                dest: `ethereum:${this.props.account}`,
-                destCurrency: this.props.tokenConfig.wyre.destCurrency,
-                // sourceAmount: 10.0,
-                // paymentMethod: 'google-pay'
-            }
-        };
-
-        console.log('renderWyre',params);
-
-        const widget = new window.Wyre(params);
+        const widget = new window.Wyre(initParams);
 
         widget.on("exit", function (e) {
             console.log("Wyre exit", e);
@@ -108,40 +63,45 @@ class BuyModal extends React.Component {
         widget.open();
       break;
       case 'ramp':
-        new RampInstantSDK({
-          hostAppName: 'Idle',
-          hostLogoUrl: 'https://beta.idle.finance/images/idle-dai.png',
-          // swapAmount: '10000000000000000',
-          swapAsset: this.props.tokenConfig.ramp.swapAsset,
-          userAddress: this.props.account,
-          // url: 'https://ri-widget-staging.firebaseapp.com/', // only specify the url if you want to use testnet widget versions,
-          // use variant: 'auto' for automatic mobile / desktop handling,
-          // 'mobile' to force mobile version
-          // 'desktop' to force desktop version (default)
-          variant: this.props.isMobile ? 'mobile' : 'desktop',
-        })
-          .on('*', console.log)
+        new RampInstantSDK(initParams)
+          .on('*', async (event) => {
+            let tokenDecimals = null;
+            let tokenAmount = null;
+
+            console.log('Ramp event:',event);
+
+            switch (event.type){
+              case 'PURCHASE_SUCCESSFUL':
+                // Update balance
+                this.props.getAccountBalance();
+
+                tokenDecimals = await this.props.getTokenDecimals();
+
+                tokenAmount = event.payload.purchase.tokenAmount;
+                tokenAmount = BNify(tokenAmount.toString()).div(BNify(Math.pow(10,parseInt(tokenDecimals)).toString())).toString();
+
+                // Toast message
+                window.toastProvider.addMessage(`Payment completed`, {
+                  secondaryMessage: `${tokenAmount} ${this.props.selectedToken} are now in your wallet`,
+                  colorTheme: 'light',
+                  actionHref: "",
+                  actionText: "",
+                  variant: "success",
+                });
+
+              break;
+              default:
+              break;
+            }
+          })
           .show();
       break;
-      case 'ethereum':
+      case 'moonpay':
+        window.open(`https://buy-staging.moonpay.io?apiKey=${MOONPAY_KEY}&currencyCode=${this.props.selectedToken.toLowerCase()}&walletAddress=${this.props.account}&redirectURL=https://beta.idle.finance`);
+      break;
+      case 'zeroExInstant':
         if (window.zeroExInstant){
-          const params = {
-            orderSource: this.props.tokenConfig.zeroExInstant.orderSource,
-            affiliateInfo: this.props.tokenConfig.zeroExInstant.affiliateInfo,
-            defaultSelectedAssetData: this.props.tokenConfig.zeroExInstant.assetData,
-            availableAssetDatas: [this.props.tokenConfig.zeroExInstant.assetData],
-            shouldDisableAnalyticsTracking: true,
-            onSuccess: async (txHash) => {
-              
-            },
-            onClose: (e) => {
-              if (e){
-                e.preventDefault();
-              }
-            }
-          };
-
-          window.zeroExInstant.render(params, 'body');
+          window.zeroExInstant.render(initParams, 'body');
         }
       break;
       default:
@@ -152,6 +112,7 @@ class BuyModal extends React.Component {
   resetModal = (e) => {
     e.preventDefault();
     this.setState({
+      availableProviders:null,
       selectedMethod:null,
       selectedCountry:null
     });
@@ -162,55 +123,68 @@ class BuyModal extends React.Component {
     this.props.closeModal(e);
   }
 
+  getAvailablePaymentProviders = (selectedMethod) => {
+    const availableProviders = [];
+    Object.keys(globalConfigs.payments.providers).forEach((provider,i) => {
+      const providerInfo = globalConfigs.payments.providers[provider];
+      if (providerInfo.enabled && providerInfo.supportedMethods.indexOf(selectedMethod) !== -1 ){
+        availableProviders.push(provider);
+      }
+    });
+    return availableProviders;
+  }
+
   selectMethod = (e,selectedMethod) => {
     if (e){
       e.preventDefault();
     }
 
-    if (allowedPaymentMethods.indexOf(selectedMethod) !== -1){
+    if (Object.keys(globalConfigs.payments.methods).indexOf(selectedMethod) !== -1){
+      const availableProviders = this.getAvailablePaymentProviders(selectedMethod);
       this.setState({
+        availableProviders,
         selectedMethod
       });
     }
   }
 
   handleCountryChange = selectedCountry => {
-    // console.log(selectedCountry);
     this.setState({
       selectedCountry
     });
+  }
+
+  getAvailableCountries = () => {
+    const availableCountries = {};
+    Object.keys(globalConfigs.payments.providers).forEach((provider,i) => {
+      const providerInfo = globalConfigs.payments.providers[provider];
+      // Skip disabled provider or not supported selected method
+      if (!providerInfo.enabled || providerInfo.supportedMethods.indexOf(this.state.selectedMethod) === -1 ){
+        return;
+      }
+
+      // Get available providers and countries
+      providerInfo.supportedCountries.forEach((countryCode,j) => {
+        if (!availableCountries[countryCode]){
+          availableCountries[countryCode] = {
+            providers:[],
+            label:globalConfigs.countries[countryCode],
+            value:countryCode
+          };
+        }
+        availableCountries[countryCode].providers.push(provider);
+      });
+    });
+
+    return Object.values(availableCountries);
   }
 
   render() {
 
     let title = 'BUY '+this.props.selectedToken;
     if (this.state.selectedMethod !== null){
-      switch(this.state.selectedMethod){
-        case 'debit-card':
-          title += ' - DEBIT CARD';
-        break;
-        case 'ethereum':
-          title += ' - ETHEREUM WALLET';
-        break;
-        default:
-        break;
-      }
+      title += ' - '+globalConfigs.payments.methods[this.state.selectedMethod].props.caption;
     }
-
-    const countries_options = [
-      { methods: ['wyre'], label: 'United States of America', value:'usa'},
-      { methods: ['wyre','ramp','moonpay'], label: 'United Kingdom', value:'uk' },
-      { methods: ['ramp','moonpay'], label: 'Europe', value:'eu' },
-      { methods: ['wyre','moonpay'], label: 'Australia', value:'australia' },
-      { methods: ['wyre','moonpay'], label: 'Brazil', value:'brazil' },
-      { methods: ['wyre'], label: 'China', value:'china' },
-      { methods: ['wyre','moonpay'], label: 'Mexico', value:'mexico' },
-      { methods: ['moonpay'], label: 'Canada', value:'canada' },
-      { methods: ['moonpay'], label: 'Hong Kong', value:'hong-kong' },
-      { methods: ['moonpay'], label: 'Russia', value:'russia' },
-      { methods: ['moonpay'], label: 'South Africa', value:'south-africa' },
-      { methods: ['moonpay'], label: 'South Korea', value:'south-korea' },
-    ];
 
     return (
       <Modal isOpen={this.props.isOpen}>
@@ -229,12 +203,18 @@ class BuyModal extends React.Component {
                     </Text>
                   </Flex>
                   <Flex mb={4} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
-                    <ImageButton caption={'Bank / Debit Card'} imageSrc={'images/debit-card.png'} imageProps={{height:'70px'}} handleClick={ e => this.selectMethod(e,'debit-card') } />
-                    <ImageButton caption={'Ethereum Wallet'} imageSrc={'images/tokens/ETH.svg'} imageProps={{p:[2,3],height:'70px'}} handleClick={ e => {this.renderPaymentMethod(e,'ethereum') } } />
+                    {
+                      Object.keys(globalConfigs.payments.methods).map((method,i) => {
+                        const methodInfo = globalConfigs.payments.methods[method];
+                        return (
+                          <ImageButton key={`method_${method}`} {...methodInfo.props} handleClick={ e => this.selectMethod(e,method) } />
+                        );
+                      })
+                    }
                   </Flex>
                 </Box>
               ) :
-                this.state.selectedMethod === 'debit-card' ? (
+                this.state.selectedMethod === 'bank' ? (
                   <Box>
                     <Box mt={2} mb={3}>
                       <Text textAlign={'center'} fontWeight={3} fontSize={2} mb={2}>
@@ -243,40 +223,72 @@ class BuyModal extends React.Component {
                       <Select
                         value={this.state.selectedCountry}
                         onChange={this.handleCountryChange}
-                        options={countries_options}
+                        options={this.getAvailableCountries()}
                       />
                     </Box>
                     <Flex flexDirection={'column'} justifyContent={'center'} alignItems={'center'} minHeight={'200px'}>
                       {
                         this.state.selectedCountry !== null ? (
                           <Box width={'100%'}>
-                            <Text textAlign={'center'} fontWeight={2} fontSize={2} mb={2}>
-                              Choose your preferred payment method:
+                            <Text textAlign={'center'} fontWeight={2} fontSize={2} mb={[2,3]}>
+                              Choose your preferred payment provider:
                             </Text>
                             <Flex mb={4} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
                             {
-                              this.state.selectedCountry.methods.map((method,i) => {
-                                const methodInfo = fiatPaymentMethods[method];
-                                return (
-                                  <ImageButton key={`payment_${method}`} {...methodInfo} handleClick={ e => {this.renderPaymentMethod(e,method) } } />
-                                );
-                              })
+                              this.state.selectedCountry.providers.length ?
+                                this.state.selectedCountry.providers.map((provider,i) => {
+                                  const providerInfo = globalConfigs.payments.providers[provider];
+                                  return (
+                                    <ImageButton key={`payment_${provider}`} {...providerInfo} handleClick={ e => {this.renderPaymentMethod(e,provider) } } />
+                                  );
+                                })
+                              : (
+                                <Text textAlign={'center'} fontWeight={3} fontSize={2} mb={2}>
+                                  Sorry, there are no providers available for the selected method.
+                                </Text>
+                              )
                             }
                             </Flex>
                           </Box>
                         ) : (
                           <Text textAlign={'center'} fontWeight={2} fontSize={2} mb={2}>
-                            Select the country to load the payment methods.
+                            Select the country to load the payment providers.
                           </Text>
                         )
                       }
                     </Flex>
                   </Box>
                 ) :
-                  this.state.selectedMethod === 'ethereum' ? (
+                  this.state.selectedMethod === 'wallet' ? (
                     <Box mt={2} mb={3}>
                       <Text textAlign={'center'} fontWeight={3} fontSize={2} my={0}>
-                        Crypto
+                        <Box width={'100%'}>
+                            <Flex mb={4} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
+                            {
+                              this.state.availableProviders.length ?
+                                (
+                                  <Box>
+                                    <Text textAlign={'center'} fontWeight={2} fontSize={2} mb={[2,3]}>
+                                      Choose your preferred payment provider:
+                                    </Text>
+                                    {
+                                      this.state.availableProviders.map((provider,i) => {
+                                        const providerInfo = globalConfigs.payments.providers[provider];
+                                        return (
+                                          <ImageButton key={`payment_${provider}`} {...providerInfo} handleClick={ e => {this.renderPaymentMethod(e,provider) } } />
+                                        );
+                                      })
+                                    }
+                                  </Box>
+                                )
+                              : (
+                                <Text textAlign={'center'} fontWeight={3} fontSize={2} my={2}>
+                                  Sorry, there are no providers available for the selected method.
+                                </Text>
+                              )
+                            }
+                            </Flex>
+                          </Box>
                       </Text>
                     </Box>
                   ) : null

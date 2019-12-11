@@ -20,7 +20,7 @@ const availableTokens = {
       destCurrency:'DAI'
     },
     ramp:{
-      swapAsset:'DAI'
+      swapAsset:'SAI'
     },
     defiPrime:{
       token:'sai',
@@ -54,6 +54,9 @@ const availableTokens = {
     },
     wyre:{
       destCurrency:'DAI'
+    },
+    ramp:{
+      swapAsset:'DAI'
     },
     defiPrime:{
       token:'dai'

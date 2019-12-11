@@ -28,7 +28,6 @@ class Header extends React.Component {
   setCurrentToken = () => {
     this.setState({
       buttonGroup: [
-        /*
         {
           component:Button,
           props:{
@@ -38,9 +37,8 @@ class Header extends React.Component {
             iconpos:'right',
             onClick: e => { this.props.account ? this.toggleModal('buy') : this.props.connectAndValidateAccount() }
           },
-          value:'BUY '+this.props.selectedToken+' NOW'
+          value:`BUY ${this.props.selectedToken}`
         },
-        */
         {
           component:TokenSelector,
           props:{
@@ -184,6 +182,8 @@ class Header extends React.Component {
         <BuyModal
           account={this.props.account}
           tokenConfig={this.props.tokenConfig}
+          getAccountBalance={this.props.getAccountBalance}
+          getTokenDecimals={this.props.getTokenDecimals}
           selectedToken={this.props.selectedToken}
           accountBalance={this.props.accountBalance}
           accountBalanceToken={this.props.accountBalanceToken}

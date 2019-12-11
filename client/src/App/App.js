@@ -12,7 +12,6 @@ import {
 } from "react-router-dom";
 
 import theme from "../theme";
-// import styles from './App.module.scss';
 
 import { ThemeProvider, Box } from 'rimble-ui';
 import RimbleWeb3 from "../utilities/RimbleWeb3";
@@ -22,7 +21,7 @@ import ScrollToTop from "../ScrollToTop/ScrollToTop";
 import Tos from "../Tos/Tos";
 import PageNotFound from "../PageNotFound/PageNotFound";
 import Web3Debugger from "../Web3Debugger/Web3Debugger";
-import availableTokens from '../tokens.js';
+import availableTokens from '../availableTokens';
 
 class App extends Component {
   state = {
@@ -136,6 +135,8 @@ class App extends Component {
                         initWeb3,
                         account,
                         contracts,
+                        getAccountBalance,
+                        getTokenDecimals,
                         accountBalance,
                         accountBalanceToken,
                         accountBalanceLow,
@@ -162,6 +163,8 @@ class App extends Component {
                             contracts={contracts}
                             isMobile={isMobile}
                             buyModalOpened={this.state.buyModalOpened}
+                            getAccountBalance={getAccountBalance}
+                            getTokenDecimals={getTokenDecimals}
                             accountBalance={accountBalance}
                             accountBalanceToken={accountBalanceToken}
                             accountBalanceLow={accountBalanceLow}
