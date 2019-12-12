@@ -5,7 +5,8 @@ import {
   Box,
   Button,
   Flex,
-  Image
+  Image,
+  Link
 } from "rimble-ui";
 import Select from 'react-select';
 import ModalCard from './ModalCard';
@@ -22,14 +23,17 @@ class BuyModal extends React.Component {
   state = {
     availableProviders:null,
     selectedMethod:null,
+    selectedProvider:null,
     selectedCountry:null
   }
 
-  renderPaymentMethod = async (e,provider) => {
+  renderPaymentMethod = async (e,provider,token) => {
+
+    token = token ? token : this.props.selectedToken;
 
     this.closeModal(e);
 
-    const initParams = globalConfigs.payments.providers[provider] && globalConfigs.payments.providers[provider].getInitParams ? globalConfigs.payments.providers[provider].getInitParams(this.props,globalConfigs) : null;
+    const initParams = globalConfigs.payments.providers[provider] && globalConfigs.payments.providers[provider].getInitParams ? globalConfigs.payments.providers[provider].getInitParams(this.props,globalConfigs,token) : null;
 
     switch (provider){
       case 'wyre':
@@ -108,11 +112,29 @@ class BuyModal extends React.Component {
     }
   }
 
+  goBack = (e) => {
+    e.preventDefault();
+
+    if (this.state.selectedProvider){
+      this.setState({
+        selectedProvider:null
+      });
+    } else if (this.state.selectedMethod){
+      this.setState({
+        selectedCountry:null,
+        selectedMethod:null
+      });
+    } else {
+      this.resetModal(e);
+    }
+  }
+
   resetModal = (e) => {
     e.preventDefault();
     this.setState({
       availableProviders:null,
       selectedMethod:null,
+      selectedProvider:null,
       selectedCountry:null
     });
   }
@@ -126,11 +148,49 @@ class BuyModal extends React.Component {
     const availableProviders = [];
     Object.keys(globalConfigs.payments.providers).forEach((provider,i) => {
       const providerInfo = globalConfigs.payments.providers[provider];
-      if (providerInfo.enabled && providerInfo.supportedMethods.indexOf(selectedMethod) !== -1 && providerInfo.supportedTokens.indexOf(this.props.selectedToken) !== -1 ){
+      if (providerInfo.enabled && providerInfo.supportedMethods.indexOf(selectedMethod) !== -1 && (providerInfo.supportedTokens.indexOf(this.props.selectedToken) !== -1 || providerInfo.supportedTokens.indexOf(globalConfigs.baseToken) !== -1) ){
         availableProviders.push(provider);
       }
     });
     return availableProviders;
+  }
+
+  selectProvider = (e,selectedProvider) => {
+    if (e){
+      e.preventDefault();
+    }
+    
+    if (!selectedProvider || !globalConfigs.payments.providers[selectedProvider]){
+      this.setState({
+        selectedProvider:null
+      });
+    }
+
+    const providerInfo = globalConfigs.payments.providers[selectedProvider];
+    if (providerInfo){
+
+      const ethAvailable = providerInfo.supportedTokens.indexOf(globalConfigs.baseToken) !== -1;
+      const tokenAvailable = providerInfo.supportedTokens.indexOf(this.props.selectedToken) !== -1;
+
+      // Show tokens to buy if more are available or if the selected one is not
+      const availableTokens = [];
+      if ( (ethAvailable && tokenAvailable) || !tokenAvailable ){
+        if (ethAvailable){
+          availableTokens.push(globalConfigs.baseToken);
+        }
+        if (tokenAvailable){
+          availableTokens.push(this.props.selectedToken);
+        }
+      } else {
+        this.renderPaymentMethod(e,selectedProvider,this.props.selectedToken);
+        return;
+      }
+
+      this.setState({
+        availableTokens,
+        selectedProvider
+      });
+    }
   }
 
   selectMethod = (e,selectedMethod) => {
@@ -158,7 +218,7 @@ class BuyModal extends React.Component {
     Object.keys(globalConfigs.payments.providers).forEach((provider,i) => {
       const providerInfo = globalConfigs.payments.providers[provider];
       // Skip disabled provider, not supported selected method or not supported token
-      if (!providerInfo.enabled || providerInfo.supportedMethods.indexOf(this.state.selectedMethod) === -1 || providerInfo.supportedTokens.indexOf(this.props.selectedToken) === -1 ){
+      if (!providerInfo.enabled || providerInfo.supportedMethods.indexOf(this.state.selectedMethod) === -1 || (providerInfo.supportedTokens.indexOf(this.props.selectedToken) === -1 && providerInfo.supportedTokens.indexOf(globalConfigs.baseToken) === -1 ) ){
         return;
       }
 
@@ -215,44 +275,68 @@ class BuyModal extends React.Component {
               ) :
                 this.state.selectedMethod === 'bank' ? (
                   <Box>
-                    <Box mt={2} mb={3}>
-                      <Text textAlign={'center'} fontWeight={3} fontSize={2} mb={2}>
-                        Select your country:
-                      </Text>
-                      <Select
-                        value={this.state.selectedCountry}
-                        onChange={this.handleCountryChange}
-                        options={this.getAvailableCountries()}
-                      />
-                    </Box>
+                    {
+                      !this.state.selectedProvider &&
+                      <Box mt={2} mb={3}>
+                        <Text textAlign={'center'} fontWeight={3} fontSize={2} mb={2}>
+                          Select your country:
+                        </Text>
+                        <Select
+                          value={this.state.selectedCountry}
+                          onChange={this.handleCountryChange}
+                          options={this.getAvailableCountries()}
+                        />
+                      </Box>
+                    }
                     <Flex flexDirection={'column'} justifyContent={'center'} alignItems={'center'} minHeight={'200px'}>
                       {
-                        this.state.selectedCountry !== null ? (
-                          <Box width={'100%'}>
+                        !this.state.selectedProvider ?
+                          this.state.selectedCountry !== null ? (
+                            <Box width={'100%'}>
+                              <Text textAlign={'center'} fontWeight={2} fontSize={2} mb={[2,3]}>
+                                Choose your preferred payment provider:
+                              </Text>
+                              <Flex mb={4} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
+                              {
+                                this.state.selectedCountry.providers.length ?
+                                  this.state.selectedCountry.providers.map((provider,i) => {
+                                    const providerInfo = globalConfigs.payments.providers[provider];
+                                    return (
+                                      <ImageButton key={`payment_${provider}`} {...providerInfo} handleClick={ e => {this.selectProvider(e,provider) } } />
+                                    );
+                                  })
+                                : (
+                                  <Text textAlign={'center'} fontWeight={3} fontSize={2} mb={2}>
+                                    Sorry, there are no providers available for the selected method.
+                                  </Text>
+                                )
+                              }
+                              </Flex>
+                            </Box>
+                          ) : (
+                            <Text textAlign={'center'} fontWeight={2} fontSize={2} mb={2}>
+                              Select the country to load the payment providers.
+                            </Text>
+                          )
+                        :
+                        this.state.availableTokens && this.state.availableTokens.length && (
+                          <Box mb={2}>
+                            <Flex justifyContent={'center'} my={2}>
+                              <Image src={ globalConfigs.payments.providers[this.state.selectedProvider].imageSrc } height={'35px'} />
+                            </Flex>
                             <Text textAlign={'center'} fontWeight={2} fontSize={2} mb={[2,3]}>
-                              Choose your preferred payment provider:
+                              Choose which token do you want to buy with <strong style={{'textTransform':'capitalize'}}>{this.state.selectedProvider}</strong>:
                             </Text>
                             <Flex mb={4} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
                             {
-                              this.state.selectedCountry.providers.length ?
-                                this.state.selectedCountry.providers.map((provider,i) => {
-                                  const providerInfo = globalConfigs.payments.providers[provider];
-                                  return (
-                                    <ImageButton key={`payment_${provider}`} {...providerInfo} handleClick={ e => {this.renderPaymentMethod(e,provider) } } />
-                                  );
-                                })
-                              : (
-                                <Text textAlign={'center'} fontWeight={3} fontSize={2} mb={2}>
-                                  Sorry, there are no providers available for the selected method.
-                                </Text>
-                              )
+                              this.state.availableTokens.map((token,i) => {
+                                return (
+                                  <ImageButton key={`token_${token}`} imageSrc={`images/tokens/${token}.svg`} caption={token} imageProps={{p:[2,3],height:'70px'}} handleClick={ e => { this.renderPaymentMethod(e,this.state.selectedProvider,token); } } />
+                                );
+                              })
                             }
                             </Flex>
                           </Box>
-                        ) : (
-                          <Text textAlign={'center'} fontWeight={2} fontSize={2} mb={2}>
-                            Select the country to load the payment providers.
-                          </Text>
                         )
                       }
                     </Flex>
@@ -274,7 +358,7 @@ class BuyModal extends React.Component {
                                       this.state.availableProviders.map((provider,i) => {
                                         const providerInfo = globalConfigs.payments.providers[provider];
                                         return (
-                                          <ImageButton key={`payment_${provider}`} {...providerInfo} handleClick={ e => {this.renderPaymentMethod(e,provider) } } />
+                                          <ImageButton key={`payment_${provider}`} {...providerInfo} handleClick={ e => { this.renderPaymentMethod(e,provider); } } />
                                         );
                                       })
                                     }
@@ -313,7 +397,7 @@ class BuyModal extends React.Component {
                     my={2}
                     mx={[0, 2]}
                     size={this.props.isMobile ? 'small' : 'medium'}
-                    onClick={ e => this.resetModal(e) }
+                    onClick={ e => this.goBack(e) }
                   >
                     GO BACK
                   </Button>

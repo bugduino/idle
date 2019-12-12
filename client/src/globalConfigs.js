@@ -1,5 +1,6 @@
 const globalConfigs = {
   baseURL: 'https://beta.idle.finance',
+  baseToken: 'ETH',
   countries:{
     'USA':'United States of America',
     'GBR':'United Kingdom',
@@ -45,7 +46,7 @@ const globalConfigs = {
         supportedMethods:['bank'],
         supportedCountries:['USA','GBR','AUS','BRA','CHN','MEX'],
         supportedTokens:['USDC','DAI'],
-        getInitParams: (props,globalConfigs) => {
+        getInitParams: (props,globalConfigs,token) => {
           return {
             accountId: 'AC_Q2Y4AARC3TP',
             auth: {
@@ -64,7 +65,7 @@ const globalConfigs = {
                 onramp: Attach Bank account, KYC, verifications, ...
               */
               dest: `ethereum:${props.account}`,
-              destCurrency: props.tokenConfig.wyre.destCurrency,
+              destCurrency: token ? token :props.tokenConfig.wyre.destCurrency,
             }
           };
         }
@@ -81,12 +82,12 @@ const globalConfigs = {
         subcaption:`~ 2.5% fee ~\nGBP ONLY`,
         supportedMethods:['bank'],
         supportedCountries:['GBR','EU'],
-        supportedTokens:['SAI','DAI'],
-        getInitParams: (props,globalConfigs) => {
+        supportedTokens:['SAI','ETH'],
+        getInitParams: (props,globalConfigs,token) => {
         	return {
 	          hostAppName: 'Idle',
 	          hostLogoUrl: `${globalConfigs.baseURL}/images/idle-dai.png`,
-	          swapAsset: props.tokenConfig.ramp.swapAsset,
+	          swapAsset: token ? token : props.tokenConfig.ramp.swapAsset,
 	          userAddress: props.account,
 	          variant: props.isMobile ? 'mobile' : 'desktop',
         	};
@@ -105,12 +106,12 @@ const globalConfigs = {
         subcaption: '~ 4.5% fee ~',
         supportedMethods:['bank'],
         supportedCountries:['GBR','AUS','BRA','CHN','MEX','CAN','HKG','RUS','ZAF','KOR'],
-        supportedTokens:['USDC','DAI'],
-        getInitParams: (props,globalConfigs) => {
+        supportedTokens:['USDC','DAI','ETH'],
+        getInitParams: (props,globalConfigs,token) => {
           const connectorName = localStorage ? localStorage.getItem('connectorName') : 'Infura';
           const params = {
             apiKey:globalConfigs.payments.providers.moonpay.apiKey,
-            currencyCode:props.selectedToken.toLowerCase(),
+            currencyCode: token ? token.toLowerCase() : props.selectedToken.toLowerCase(),
             walletAddress:props.account,
             redirectURL:`${globalConfigs.baseURL}?connectorName=${connectorName}&currencyCode=${props.selectedToken}`
           };
