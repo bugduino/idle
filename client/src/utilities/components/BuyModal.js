@@ -5,8 +5,7 @@ import {
   Box,
   Button,
   Flex,
-  Image,
-  Link
+  Image
 } from "rimble-ui";
 import Select from 'react-select';
 import ModalCard from './ModalCard';
@@ -100,7 +99,30 @@ class BuyModal extends React.Component {
           .show();
       break;
       case 'moonpay':
-        window.open(`https://buy-staging.moonpay.io?${initParams}`);
+        const moonpayWidget = document.getElementById('moonpay-widget');
+        if (!moonpayWidget){
+          const iframeBox = document.createElement("div");
+          iframeBox.innerHTML = `
+            <div id="moonpay-widget" class="moonpay-widget" style="position:fixed;display:flex;justify-content:center;align-items:center;top:0;left:0;width:100%;height:100%;z-index:999">
+              <div id="moonpay-widget-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1"></div>
+                <div id="moonpay-widget-container" style="position:relative;z-index:2;width:500px;height:490px">
+                  <iframe
+                    frameborder="0"
+                    height="100%"
+                    src="https://buy-staging.moonpay.io?${initParams}"
+                    width="100%"
+                  >
+                    <p>Your browser does not support iframes.</p>
+                  </iframe>
+                </div>
+              </div>
+            </div>
+          `;
+          document.body.appendChild(iframeBox);
+        } else {
+          moonpayWidget.style.display = 'block';
+        }
+        // window.open(`https://buy-staging.moonpay.io?${initParams}`);
       break;
       case 'zeroExInstant':
         if (window.zeroExInstant){
@@ -325,13 +347,13 @@ class BuyModal extends React.Component {
                               <Image src={ globalConfigs.payments.providers[this.state.selectedProvider].imageSrc } height={'35px'} />
                             </Flex>
                             <Text textAlign={'center'} fontWeight={2} fontSize={2} mb={[2,3]}>
-                              Choose which token do you want to buy with <strong style={{'textTransform':'capitalize'}}>{this.state.selectedProvider}</strong>:
+                              Choose which token do you want to buy:
                             </Text>
                             <Flex mb={4} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
                             {
                               this.state.availableTokens.map((token,i) => {
                                 return (
-                                  <ImageButton key={`token_${token}`} imageSrc={`images/tokens/${token}.svg`} caption={token} imageProps={{p:[2,3],height:'70px'}} handleClick={ e => { this.renderPaymentMethod(e,this.state.selectedProvider,token); } } />
+                                  <ImageButton key={`token_${token}`} imageSrc={`images/tokens/${token}.svg`} caption={token} imageProps={{p:[2,3],height:'80px'}} handleClick={ e => { this.renderPaymentMethod(e,this.state.selectedProvider,token); } } />
                                 );
                               })
                             }

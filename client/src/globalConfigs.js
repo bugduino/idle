@@ -113,7 +113,7 @@ const globalConfigs = {
             apiKey:globalConfigs.payments.providers.moonpay.apiKey,
             currencyCode: token ? token.toLowerCase() : props.selectedToken.toLowerCase(),
             walletAddress:props.account,
-            redirectURL:`${globalConfigs.baseURL}?connectorName=${connectorName}&currencyCode=${props.selectedToken}`
+            // redirectURL:`${globalConfigs.baseURL}?connectorName=${connectorName}&currencyCode=${props.selectedToken}`
           };
 
           return Object.keys(params)
