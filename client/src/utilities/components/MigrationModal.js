@@ -5,11 +5,9 @@ import {
   Modal,
   Box,
   Flex,
-  Button,
   Flash
 } from "rimble-ui";
 import ModalCard from './ModalCard';
-import BigNumber from 'bignumber.js';
 import NewsletterForm from '../../NewsletterForm/NewsletterForm';
 
 export default function (props) {
