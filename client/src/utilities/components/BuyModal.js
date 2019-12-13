@@ -107,6 +107,7 @@ class BuyModal extends React.Component {
               <div id="moonpay-widget-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1"></div>
                 <div id="moonpay-widget-container" style="position:relative;z-index:2;width:500px;height:490px">
                   <iframe
+                    style="position:relative;z-index:2;"
                     frameborder="0"
                     height="100%"
                     src="https://buy-staging.moonpay.io?${initParams}"
@@ -114,15 +115,40 @@ class BuyModal extends React.Component {
                   >
                     <p>Your browser does not support iframes.</p>
                   </iframe>
+                  <div id="moonpay-widget-loading-placeholder" style="position:absolute;background:#fff;width:100%;height:100%;z-index:1;top:0;display:flex;justify-content:center;align-items:center;">
+                    <div style="display:flex;flex-direction:row;align-items:end">
+                      <img src="${globalConfigs.payments.providers.moonpay.imageSrc}" style="height:50px;" />
+                      <h3 style="padding-left:5px;font-weight:600;font-style:italic;">is loading...</h3>
+                    </div>
+                  </div>
+                  <div id="moonpay-widget-footer" style="position:relative;display:flex;justify-content:center;align-items:center;padding:8px 16px;width:100%;background:#fff;top:-20px;z-index:3">
+                    <button style="background:#000;color:#fff;text-align:center;border-radius:5px;width:100%;height:51px;line-height:51px;font-weight:500;border:0;cursor:pointer" onclick="document.getElementById('moonpay-widget').remove();">Close</button>
+                  </div>
                 </div>
               </div>
             </div>
           `;
           document.body.appendChild(iframeBox);
-        } else {
-          moonpayWidget.style.display = 'block';
+
+          // Add Moonpay Widget style (mobile)
+          if (!document.getElementById('moonpayWidget_style')){
+            const moonpayStyle = document.createElement('style');
+            moonpayStyle.id = 'moonpayWidget_style';
+            moonpayStyle.innerHTML = `
+            @media (max-width: 40em){
+              #moonpay-widget {
+                align-items: flex-start !important;
+              }
+              #moonpay-widget-overlay{
+                background:#fff !important;
+              }
+              #moonpay-widget-container{
+                min-height: calc( 100vh - 60px ) !important;
+              }
+            }`;
+            document.body.appendChild(moonpayStyle);
+          }
         }
-        // window.open(`https://buy-staging.moonpay.io?${initParams}`);
       break;
       case 'zeroExInstant':
         if (window.zeroExInstant){
