@@ -4,6 +4,7 @@ import { Form, Flex, Box, Heading, Text, Button, Link, Icon, Pill, Loader, Flash
 import BigNumber from 'bignumber.js';
 import CryptoInput from '../CryptoInput/CryptoInput.js';
 import ApproveModal from "../utilities/components/ApproveModal";
+import MigrationModal from "../utilities/components/MigrationModal";
 import MaxCapModal from "../utilities/components/MaxCapModal";
 import axios from 'axios';
 import moment from 'moment';
@@ -47,6 +48,7 @@ class SmartContractControls extends React.Component {
     IdleDAISupply: null,
     idleDAICap: 30000,
     earning: null,
+    isMigrationOpen: true,
     prevTxs : {}
   };
 
@@ -67,6 +69,11 @@ class SmartContractControls extends React.Component {
       "ether"
     );
   }
+
+  toggleMigrationModal = () => {
+    this.setState(state => ({...state, isMigrationOpen: !state.isMigrationOpen}));
+  }
+
   closeMigrationWarning = (e) => {
     e.preventDefault();
     if (localStorage){
@@ -596,275 +603,283 @@ class SmartContractControls extends React.Component {
     const hasBalance = !isNaN(this.trimEth(this.state.DAIToRedeem)) && this.trimEth(this.state.DAIToRedeem) > 0
 
     return (
-      <Box textAlign={'center'} alignItems={'center'}>
-        <Form pb={[5, 4]} minHeight={['auto','36em']} backgroundColor={'white'} color={'blue'} boxShadow={1}>
-          <Flex flexDirection={['row','row']} width={'100%'}>
-            <Box className={[styles.tab,this.props.selectedTab==='1' ? styles.tabSelected : '']} width={[1/3]} textAlign={'center'}>
-              <Link display={'block'} py={[3,4]} fontSize={[3,5]} fontWeight={2} onClick={e => this.selectTab(e, '1')}>
-                Lend
-              </Link>
-            </Box>
-            <Box className={[styles.tab,this.props.selectedTab==='2' ? styles.tabSelected : '']} width={[1/3]} textAlign={'center'} borderLeft={'1px solid #fff'} borderRight={'1px solid #fff'}>
-              <Link display={'block'} py={[3,4]} fontSize={[3,5]} fontWeight={2} onClick={e => this.selectTab(e, '2')}>
-                Funds
-              </Link>
-            </Box>
-            <Box className={[styles.tab,this.props.selectedTab==='3' ? styles.tabSelected : '']} width={[1/3]} textAlign={'center'} borderRight={'none'}>
-              <Link display={'block'} py={[3,4]} fontSize={[3,5]} fontWeight={2} onClick={e => this.selectTab(e, '3')}>
-                Rebalance
-              </Link>
-            </Box>
-          </Flex>
+      <>
+        <Box textAlign={'center'} alignItems={'center'}>
+          <Form pb={[5, 4]} minHeight={['auto','36em']} backgroundColor={'white'} color={'blue'} boxShadow={1}>
+            <Flex flexDirection={['row','row']} width={'100%'}>
+              <Box className={[styles.tab,this.props.selectedTab==='1' ? styles.tabSelected : '']} width={[1/3]} textAlign={'center'}>
+                <Link display={'block'} py={[3,4]} fontSize={[3,5]} fontWeight={2} onClick={e => this.selectTab(e, '1')}>
+                  Lend
+                </Link>
+              </Box>
+              <Box className={[styles.tab,this.props.selectedTab==='2' ? styles.tabSelected : '']} width={[1/3]} textAlign={'center'} borderLeft={'1px solid #fff'} borderRight={'1px solid #fff'}>
+                <Link display={'block'} py={[3,4]} fontSize={[3,5]} fontWeight={2} onClick={e => this.selectTab(e, '2')}>
+                  Funds
+                </Link>
+              </Box>
+              <Box className={[styles.tab,this.props.selectedTab==='3' ? styles.tabSelected : '']} width={[1/3]} textAlign={'center'} borderRight={'none'}>
+                <Link display={'block'} py={[3,4]} fontSize={[3,5]} fontWeight={2} onClick={e => this.selectTab(e, '3')}>
+                  Rebalance
+                </Link>
+              </Box>
+            </Flex>
 
-          <Box py={[2, 4]}>
-            { this.state.showMigrationWarning && this.props.account && this.state.DAIToRedeem && 
-              <Flash variant="warning" width={[1,9/10]} mx={'auto'} position={'relative'} className={styles.noOutline}>
-                <Text textAlign={'center'}>
-                  Since 18th of November 2019, existing Single-Collateral Dai will be referred to as "Sai", while Multi-Collateral Dai will be called "Dai". <Link size={'small'} href={'https://medium.com/@idlefinance/mcd-transition-update-on-idle-8d6dd75a156d'} target={'_blank'} color={'blue'} hoverColor={'blue'}>Read more.</Link>
-                </Text>
-                <Link className={styles.closeCross} textAlign={'center'} color={'blue'} hoverColor={'blue'} onClick={ e => { this.closeMigrationWarning(e); } }>✕</Link>
-              </Flash>
-            }
+            <Box py={[2, 4]}>
+              { this.state.showMigrationWarning && this.props.account && this.state.DAIToRedeem && 
+                <Flash variant="warning" width={[1,9/10]} mx={'auto'} position={'relative'} className={styles.noOutline}>
+                  <Text textAlign={'center'}>
+                    Since 18th of November 2019, existing Single-Collateral Dai will be referred to as "Sai", while Multi-Collateral Dai will be called "Dai". <Link size={'small'} href={'https://medium.com/@idlefinance/mcd-transition-update-on-idle-8d6dd75a156d'} target={'_blank'} color={'blue'} hoverColor={'blue'}>Read more.</Link>
+                  </Text>
+                  <Link className={styles.closeCross} textAlign={'center'} color={'blue'} hoverColor={'blue'} onClick={ e => { this.closeMigrationWarning(e); } }>✕</Link>
+                </Flash>
+              }
 
-            {this.props.selectedTab === '1' &&
-              <Box textAlign={'text'}>
-                <Box px={[2,0]} py={[2, 4]}>
-                  <Heading.h3 py={[3, 'initial']} fontFamily={'sansSerif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
-                    Earn {this.state.maxRate}% APR on your SAI
-                  </Heading.h3>
-                  <Heading.h4 my={[2,3]} color={'black'} fontWeight={1} textAlign={'center'}>
-                    We offer the best available interest rate for your SAI through different lending platforms.
-                  </Heading.h4>
+              {this.props.selectedTab === '1' &&
+                <Box textAlign={'text'}>
+                  <Box px={[2,0]} py={[2, 4]}>
+                    <Heading.h3 py={[3, 'initial']} fontFamily={'sansSerif'} fontSize={[5, 6]} fontWeight={2} color={'blue'} textAlign={'center'}>
+                      Earn {this.state.maxRate}% APR on your SAI
+                    </Heading.h3>
+                    <Heading.h4 my={[2,3]} color={'black'} fontWeight={1} textAlign={'center'}>
+                      We offer the best available interest rate for your SAI through different lending platforms.
+                    </Heading.h4>
+                  </Box>
+
+                  {this.state.isApprovingDAI && (
+                    <Flex
+                      justifyContent={'center'}
+                      alignItems={'center'}
+                      textAlign={'center'}>
+                      <Loader size="40px" /> <Text ml={2}>Wait for the approve transaction to be mined</Text>
+                    </Flex>
+                  )}
+
+                  {hasOldBalance ?
+                    <Flash variant="warning" width={1}>
+                      We have released a new version of the contract, with a small bug fix, please redeem
+                      your assets in the old contract, by heading to 'Funds' tab and clicking on `Redeem SAI`
+                      Once you have done that you will be able to mint and redeem with the new contract.
+                      Sorry for the inconvenience.
+                    </Flash> : !this.state.isApprovingDAI &&
+                      (<CryptoInput
+                        disableLendButton={this.state.disableLendButton}
+                        isMobile={this.props.isMobile}
+                        account={this.props.account}
+                        accountBalanceDAI={this.props.accountBalanceDAI}
+                        defaultValue={this.state.lendAmount}
+                        IdleDAIPrice={hasOldBalance ? this.state.OldIdleDAIPrice : this.state.IdleDAIPrice}
+                        BNify={this.BNify}
+                        trimEth={this.trimEth}
+                        color={'black'}
+                        selectedAsset='SAI'
+                        useEntireBalance={this.useEntireBalance}
+                        handleChangeAmount={this.handleChangeAmount}
+                        handleClick={e => this.mint(e)} />)
+                  }
+
+                  {this.state.genericError && (
+                    <Text textAlign='center' color={'red'} fontSize={2}>{this.state.genericError}</Text>
+                  )}
+
+                  <Box py={[2,3]} style={{textAlign:'center'}}>
+                    <Link textAlign={'center'} color={'blue'} hoverColor={'blue'} fontSize={3} fontWeight={1} className={[styles.link]} href="#how-it-works">How does it work?</Link>
+                  </Box>
+
                 </Box>
+              }
 
-                {this.state.isApprovingDAI && (
+              {this.props.selectedTab === '2' &&
+                <Box px={[2,0]} py={0} textAlign={'text'}>
+                  {this.props.account &&
+                    <>
+                      <Box borderBottom={'1px solid #D6D6D6'}>
+                        {!!hasOldBalance &&
+                          <Flash variant="warning" width={1}>
+                            We have released a new version of the contract, with a small bug fix, please redeem
+                            your assets in the old contract, by heading to 'Funds' tab and clicking on `Redeem SAI`
+                            Once you have done that you will be able to mint and redeem with the new contract.
+                            Sorry for the inconvenience.
+                          </Flash>
+                        }
+                        <Flex flexDirection={['column','row']} py={[2,3]} width={[1,'70%']} m={'0 auto'}>
+                          <Box width={[1,1/2]}>
+                            <Text fontFamily={'sansSerif'} fontSize={[2, 3]} fontWeight={2} color={'black'} textAlign={'center'}>
+                              Redeemable Funds
+                            </Text>
+                            <Heading.h3 fontFamily={'sansSerif'} fontSize={[5,6]} fontWeight={2} color={'black'} textAlign={'center'}>
+                              { hasOldBalance ? oldReedemableFunds : reedemableFunds }
+                            </Heading.h3>
+                          </Box>
+                          <Box width={[1,1/2]}>
+                            <Text fontFamily={'sansSerif'} fontSize={[2, 3]} fontWeight={2} color={'black'} textAlign={'center'}>
+                              Current earnings
+                            </Text>
+                            <Heading.h3 fontFamily={'sansSerif'} fontSize={[5,6]} fontWeight={2} color={'black'} textAlign={'center'}>
+                              { hasOldBalance ? oldEarning : currentEarnings }
+                            </Heading.h3>
+                          </Box>
+                        </Flex>
+                      </Box>
+                      <Box borderBottom={'1px solid #D6D6D6'}>
+                        <Flex flexDirection={'row'} py={[2,3]} width={[1,'70%']} m={'0 auto'}>
+                          <Box width={1/2}>
+                            <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
+                              Current holdings
+                            </Text>
+                            <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                              { hasOldBalance ? balanceOfOldIdleDAI : balanceOfIdleDAI }
+                            </Heading.h3>
+                          </Box>
+                          <Box width={1/2}>
+                            <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
+                              idleSAI Price
+                            </Text>
+                            <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                              { hasOldBalance ? OldIdleDAIPrice : IdleDAIPrice }
+                            </Heading.h3>
+                          </Box>
+                        </Flex>
+                      </Box>
+                      <Box my={[3,4]}>
+                        {hasBalance && !hasOldBalance && !this.state.redeemProcessing &&
+                          <Flex
+                            textAlign='center'>
+                            <Button onClick={e => this.redeem(e, 'IdleDAI')} borderRadius={4} size={this.props.isMobile ? 'medium' : 'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={2}>
+                              REDEEM SAI
+                            </Button>
+                          </Flex>
+                        }
+                        {hasOldBalance && !this.state.redeemProcessing &&
+                          <Flex
+                            textAlign='center'>
+
+
+                            <Button onClick={e => this.redeem(e, 'OldIdleDAI')} borderRadius={4} size={this.props.isMobile ? 'medium' : 'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={2}>
+                              REDEEM SAI (old contract)
+                            </Button>
+                          </Flex>
+                        }
+                        {!hasBalance && !hasOldBalance &&
+                          <Flex
+                            textAlign='center'>
+                            <Button onClick={e => this.selectTab(e, '1')} borderRadius={4} size={this.props.isMobile ? 'medium' : 'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={2}>
+                              LEND NOW
+                            </Button>
+                          </Flex>
+                        }
+                        {this.state.redeemProcessing &&
+                          <Flex
+                            justifyContent={'center'}
+                            alignItems={'center'}
+                            textAlign={'center'}>
+                            <Loader size="40px" /> <Text ml={2}>Processing redeem request...</Text>
+                          </Flex>
+                        }
+                      </Box>
+                      <Box my={[3,4]}>
+                        {this.renderPrevTxs()}
+                      </Box>
+                    </>
+                  }
+                  {!this.props.account &&
+                    <Flex
+                      alignItems={'center'}
+                      flexDirection={'column'}
+                      textAlign={'center'}>
+                        <Heading.h3 pt={[2, 4]} fontFamily={'sansSerif'} fontWeight={2} textAlign={'center'}>
+                          Please connect to view your available funds.
+                        </Heading.h3>
+                        <Button
+                          onClick={e => this.redeem(e, 'IdleDAI')}
+                          size={this.props.isMobile ? 'medium' : 'large'}
+                          borderRadius={4}
+                          mainColor={'blue'}
+                          contrastColor={'white'}
+                          fontWeight={2}
+                          fontSize={[2,3]}
+                          mx={'auto'}
+                          px={[4,5]}
+                          mt={[3,4]}
+                        >
+                          CONNECT
+                        </Button>
+                    </Flex>
+                  }
+                </Box>
+              }
+
+              {this.props.selectedTab === '3' && !!this.state.shouldRebalance &&
+                <Box px={[2,0]} py={[2, 4]} textAlign={'text'}>
+                  {!!hasOldBalance &&
+                    <Flash variant="warning" width={1}>
+                      We have released a new version of the contract, with a small bug fix, please redeem
+                      your assets in the old contract, by heading to 'Funds' tab and clicking on `Redeem SAI`
+                      Once you have done that you will be able to mint and redeem with the new contract.
+                      Sorry for the inconvenience.
+                    </Flash>
+                  }
+                  <Heading.h3 fontFamily={'sansSerif'} fontWeight={2} textAlign={'center'}>
+                    Rebalance the entire pool. All users will bless you.
+                  </Heading.h3>
+                  <Heading.h4 my={[2,3]} px={[2,0]} color={'black'} fontWeight={1} textAlign={'center'}>
+                    The whole pool is automatically rebalanced each time a user interacts with Idle.<br />
+                    But you can also trigger a rebalance anytime and this will benefit all users (included you).
+                  </Heading.h4>
                   <Flex
                     justifyContent={'center'}
                     alignItems={'center'}
-                    textAlign={'center'}>
-                    <Loader size="40px" /> <Text ml={2}>Wait for the approve transaction to be mined</Text>
-                  </Flex>
-                )}
-
-                {hasOldBalance ?
-                  <Flash variant="warning" width={1}>
-                    We have released a new version of the contract, with a small bug fix, please redeem
-                    your assets in the old contract, by heading to 'Funds' tab and clicking on `Redeem SAI`
-                    Once you have done that you will be able to mint and redeem with the new contract.
-                    Sorry for the inconvenience.
-                  </Flash> : !this.state.isApprovingDAI &&
-                    (<CryptoInput
-                      disableLendButton={this.state.disableLendButton}
-                      isMobile={this.props.isMobile}
-                      account={this.props.account}
-                      accountBalanceDAI={this.props.accountBalanceDAI}
-                      defaultValue={this.state.lendAmount}
-                      IdleDAIPrice={hasOldBalance ? this.state.OldIdleDAIPrice : this.state.IdleDAIPrice}
-                      BNify={this.BNify}
-                      trimEth={this.trimEth}
-                      color={'black'}
-                      selectedAsset='SAI'
-                      useEntireBalance={this.useEntireBalance}
-                      handleChangeAmount={this.handleChangeAmount}
-                      handleClick={e => this.mint(e)} />)
-                }
-
-                {this.state.genericError && (
-                  <Text textAlign='center' color={'red'} fontSize={2}>{this.state.genericError}</Text>
-                )}
-
-                <Box py={[2,3]} style={{textAlign:'center'}}>
-                  <Link textAlign={'center'} color={'blue'} hoverColor={'blue'} fontSize={3} fontWeight={1} className={[styles.link]} href="#how-it-works">How does it work?</Link>
-                </Box>
-
-              </Box>
-            }
-
-            {this.props.selectedTab === '2' &&
-              <Box px={[2,0]} py={0} textAlign={'text'}>
-                {this.props.account &&
-                  <>
-                    <Box borderBottom={'1px solid #D6D6D6'}>
-                      {!!hasOldBalance &&
-                        <Flash variant="warning" width={1}>
-                          We have released a new version of the contract, with a small bug fix, please redeem
-                          your assets in the old contract, by heading to 'Funds' tab and clicking on `Redeem SAI`
-                          Once you have done that you will be able to mint and redeem with the new contract.
-                          Sorry for the inconvenience.
-                        </Flash>
-                      }
-                      <Flex flexDirection={['column','row']} py={[2,3]} width={[1,'70%']} m={'0 auto'}>
-                        <Box width={[1,1/2]}>
-                          <Text fontFamily={'sansSerif'} fontSize={[2, 3]} fontWeight={2} color={'black'} textAlign={'center'}>
-                            Redeemable Funds
-                          </Text>
-                          <Heading.h3 fontFamily={'sansSerif'} fontSize={[5,6]} fontWeight={2} color={'black'} textAlign={'center'}>
-                            { hasOldBalance ? oldReedemableFunds : reedemableFunds }
-                          </Heading.h3>
-                        </Box>
-                        <Box width={[1,1/2]}>
-                          <Text fontFamily={'sansSerif'} fontSize={[2, 3]} fontWeight={2} color={'black'} textAlign={'center'}>
-                            Current earnings
-                          </Text>
-                          <Heading.h3 fontFamily={'sansSerif'} fontSize={[5,6]} fontWeight={2} color={'black'} textAlign={'center'}>
-                            { hasOldBalance ? oldEarning : currentEarnings }
-                          </Heading.h3>
-                        </Box>
-                      </Flex>
-                    </Box>
-                    <Box borderBottom={'1px solid #D6D6D6'}>
-                      <Flex flexDirection={'row'} py={[2,3]} width={[1,'70%']} m={'0 auto'}>
-                        <Box width={1/2}>
-                          <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
-                            Current holdings
-                          </Text>
-                          <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                            { hasOldBalance ? balanceOfOldIdleDAI : balanceOfIdleDAI }
-                          </Heading.h3>
-                        </Box>
-                        <Box width={1/2}>
-                          <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
-                            idleSAI Price
-                          </Text>
-                          <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                            { hasOldBalance ? OldIdleDAIPrice : IdleDAIPrice }
-                          </Heading.h3>
-                        </Box>
-                      </Flex>
-                    </Box>
-                    <Box my={[3,4]}>
-                      {hasBalance && !hasOldBalance && !this.state.redeemProcessing &&
-                        <Flex
-                          textAlign='center'>
-                          <Button onClick={e => this.redeem(e, 'IdleDAI')} borderRadius={4} size={this.props.isMobile ? 'medium' : 'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={2}>
-                            REDEEM SAI
-                          </Button>
-                        </Flex>
-                      }
-                      {hasOldBalance && !this.state.redeemProcessing &&
-                        <Flex
-                          textAlign='center'>
-
-
-                          <Button onClick={e => this.redeem(e, 'OldIdleDAI')} borderRadius={4} size={this.props.isMobile ? 'medium' : 'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={2}>
-                            REDEEM SAI (old contract)
-                          </Button>
-                        </Flex>
-                      }
-                      {!hasBalance && !hasOldBalance &&
-                        <Flex
-                          textAlign='center'>
-                          <Button onClick={e => this.selectTab(e, '1')} borderRadius={4} size={this.props.isMobile ? 'medium' : 'large'} mainColor={'blue'} contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={2}>
-                            LEND NOW
-                          </Button>
-                        </Flex>
-                      }
-                      {this.state.redeemProcessing &&
-                        <Flex
-                          justifyContent={'center'}
-                          alignItems={'center'}
-                          textAlign={'center'}>
-                          <Loader size="40px" /> <Text ml={2}>Processing redeem request...</Text>
-                        </Flex>
-                      }
-                    </Box>
-                    <Box my={[3,4]}>
-                      {this.renderPrevTxs()}
-                    </Box>
-                  </>
-                }
-                {!this.props.account &&
-                  <Flex
-                    alignItems={'center'}
-                    flexDirection={'column'}
-                    textAlign={'center'}>
-                      <Heading.h3 pt={[2, 4]} fontFamily={'sansSerif'} fontWeight={2} textAlign={'center'}>
-                        Please connect to view your available funds.
-                      </Heading.h3>
+                    textAlign={'center'}
+                    pt={2}>
+                    {this.state.rebalanceProcessing &&
+                      <>
+                        <Loader size="40px" /> <Text ml={2}>Processing rebalance request...</Text>
+                      </>
+                    }
+                    {!this.state.rebalanceProcessing &&
                       <Button
-                        onClick={e => this.redeem(e, 'IdleDAI')}
+                        onClick={this.rebalance}
                         size={this.props.isMobile ? 'medium' : 'large'}
                         borderRadius={4}
-                        mainColor={'blue'}
-                        contrastColor={'white'}
-                        fontWeight={2}
-                        fontSize={[2,3]}
-                        mx={'auto'}
-                        px={[4,5]}
-                        mt={[3,4]}
-                      >
-                        CONNECT
-                      </Button>
+                        contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={[2,3]}>REBALANCE NOW</Button>
+                    }
                   </Flex>
-                }
-              </Box>
-            }
+                </Box>
+              }
 
-            {this.props.selectedTab === '3' && !!this.state.shouldRebalance &&
-              <Box px={[2,0]} py={[2, 4]} textAlign={'text'}>
-                {!!hasOldBalance &&
-                  <Flash variant="warning" width={1}>
-                    We have released a new version of the contract, with a small bug fix, please redeem
-                    your assets in the old contract, by heading to 'Funds' tab and clicking on `Redeem SAI`
-                    Once you have done that you will be able to mint and redeem with the new contract.
-                    Sorry for the inconvenience.
-                  </Flash>
-                }
-                <Heading.h3 fontFamily={'sansSerif'} fontWeight={2} textAlign={'center'}>
-                  Rebalance the entire pool. All users will bless you.
-                </Heading.h3>
-                <Heading.h4 my={[2,3]} px={[2,0]} color={'black'} fontWeight={1} textAlign={'center'}>
-                  The whole pool is automatically rebalanced each time a user interacts with Idle.<br />
-                  But you can also trigger a rebalance anytime and this will benefit all users (included you).
-                </Heading.h4>
-                <Flex
-                  justifyContent={'center'}
-                  alignItems={'center'}
-                  textAlign={'center'}
-                  pt={2}>
-                  {this.state.rebalanceProcessing &&
-                    <>
-                      <Loader size="40px" /> <Text ml={2}>Processing rebalance request...</Text>
-                    </>
-                  }
-                  {!this.state.rebalanceProcessing &&
+              {
+                this.props.selectedTab === '3' && !this.state.shouldRebalance &&
+                <Box py={[2, 4]} textAlign={'center'}>
+                  <Heading.h3 fontFamily={'sansSerif'} fontWeight={2} textAlign={'center'}>
+                    The pool is already balanced.
+                  </Heading.h3>
+                  <Heading.h4 my={[2,3]} px={[2,0]} color={'black'} fontWeight={1} textAlign={'center'}>
+                    The current interest rate is already the best between the integrated protocols.<br />Sit back and enjoy your earnings.
+                  </Heading.h4>
+                  <Flex
+                    textAlign={'center'}>
                     <Button
-                      onClick={this.rebalance}
+                      disabled={'disabled'}
+                      onClick={e => {e.preventDefault()}}
                       size={this.props.isMobile ? 'medium' : 'large'}
                       borderRadius={4}
-                      contrastColor={'white'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={[2,3]}>REBALANCE NOW</Button>
-                  }
-                </Flex>
-              </Box>
-            }
+                      mainColor={'darkGray'}
+                      contrastColor={'black'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={[2,3]}
+                    >
+                      REBALANCE NOW
+                    </Button>
+                  </Flex>
+                </Box>
+              }
 
-            {
-              this.props.selectedTab === '3' && !this.state.shouldRebalance &&
-              <Box py={[2, 4]} textAlign={'center'}>
-                <Heading.h3 fontFamily={'sansSerif'} fontWeight={2} textAlign={'center'}>
-                  The pool is already balanced.
-                </Heading.h3>
-                <Heading.h4 my={[2,3]} px={[2,0]} color={'black'} fontWeight={1} textAlign={'center'}>
-                  The current interest rate is already the best between the integrated protocols.<br />Sit back and enjoy your earnings.
-                </Heading.h4>
-                <Flex
-                  textAlign={'center'}>
-                  <Button
-                    disabled={'disabled'}
-                    onClick={e => {e.preventDefault()}}
-                    size={this.props.isMobile ? 'medium' : 'large'}
-                    borderRadius={4}
-                    mainColor={'darkGray'}
-                    contrastColor={'black'} fontWeight={2} fontSize={[2,3]} mx={'auto'} px={[4,5]} mt={[2,3]}
-                  >
-                    REBALANCE NOW
-                  </Button>
-                </Flex>
               </Box>
-            }
-
-            </Box>
-        </Form>
+          </Form>
+        </Box>
+        {hasBalance && 
+          <MigrationModal
+            isOpen={this.state.isMigrationOpen}
+            closeModal={this.toggleMigrationModal}
+          />
+        }
 
         <ApproveModal
           account={this.props.account}
@@ -882,7 +897,7 @@ class SmartContractControls extends React.Component {
           currSupply={this.BNify(this.state.IdleDAISupply)}
           closeModal={this.toggleMaxCapModal}
           network={this.props.network.current} />
-      </Box>
+      </>
     );
   }
 }

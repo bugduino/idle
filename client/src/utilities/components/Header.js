@@ -5,7 +5,7 @@ import AccountModal from "./AccountModal";
 
 class Header extends React.Component {
   state = {
-    isOpen: false
+    isOpen: false,
   }
 
   toggleModal = () => {

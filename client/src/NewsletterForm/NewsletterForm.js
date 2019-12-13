@@ -40,10 +40,11 @@ class NewsletterForm extends Component {
 
   render() {
     return (
-        <Box>
+        <Box width={1}>
           <Form onSubmit={this.handleSubmit}>
-            <Form.Field label="Email" width={1}>
+            <Form.Field label={ this.props.label ? this.props.label : 'Email' } width={1}>
               <Form.Input
+                placeholder={this.props.placeholder}
                 type="email"
                 name="EMAIL"
                 required
@@ -55,7 +56,7 @@ class NewsletterForm extends Component {
               <Text.p py={0} mt={0} mb={3} textAlign={'center'} color={this.state.messageColor}>{this.state.message}</Text.p>
             }
             <Button type="submit" width={1}>
-              GET UPDATES
+              { this.props.buttonLabel ? this.props.buttonLabel : 'GET UPDATES' }
             </Button>
           </Form>
         </Box>
