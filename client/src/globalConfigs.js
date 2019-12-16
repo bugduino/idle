@@ -9,7 +9,7 @@ const globalConfigs = {
     'CHN':'China',
     'CAN':'Canada',
     'MEX':'Mexico',
-    'EU':'Europe',
+    'EUR':'Europe',
     'HKG':'Hong Kong',
     'RUS':'Russia',
     'ZAF':'South Africa',
@@ -19,8 +19,15 @@ const globalConfigs = {
     methods:{
       'bank':{
         props:{
+          imageSrc:'images/bank.png',
+          caption:'Bank Account',
+          imageProps:{height:'70px'}
+        }
+      },
+      'card':{
+        props:{
           imageSrc:'images/debit-card.png',
-          caption:'Bank / Debit Card',
+          caption:'Credit Card',
           imageProps:{height:'70px'}
         }
       },
@@ -34,7 +41,7 @@ const globalConfigs = {
     },
     providers: {
       wyre: {
-        enabled:false,
+        enabled:true,
         imageSrc: 'images/payments/wyre.svg',
         imageProps: {
           height: '35px',
@@ -43,12 +50,16 @@ const globalConfigs = {
         caption: 'Buy with',
         captionPos: 'top',
         subcaption: '~ 0.75% fee ~',
-        supportedMethods:['bank'],
+        supportedMethods:['bank','card'],
         supportedCountries:['USA','GBR','AUS','BRA','CHN','MEX'],
-        supportedTokens:['USDC','DAI'],
-        getInitParams: (props,globalConfigs,token) => {
+        supportedTokens:['USDC','DAI','SAI','ETH'],
+        getInitParams: (props,globalConfigs,buyParams) => {
+          const methods = {
+            'bank':'onramp',
+            'card':'debitcard-hosted-dialog'
+          };
           return {
-            accountId: 'AC_Q2Y4AARC3TP',
+            accountId: 'AC_PQQBX33XVEQ', // { TEST : 'AC_Q2Y4AARC3TP', PROD : 'AC_PQQBX33XVEQ' }
             auth: {
               // type:'metamask'
               type: 'secretKey',
@@ -56,16 +67,14 @@ const globalConfigs = {
             },
             env: 'prod',
             operation: {
-              type: 'debitcard-hosted-dialog',
+              type: methods[buyParams.selectedMethod],
               /*
                 debitcard: Open JS widget with Apple Pay or Debit Card (Error while validating address)
                 debitcard-hosted-dialog: Open a Popup (same as debitcard but hosted) (Error while validating address)
-                debitcardonramp: INVALID TYPE
-                debitcard-whitelabel: ERROR
                 onramp: Attach Bank account, KYC, verifications, ...
               */
               dest: `ethereum:${props.account}`,
-              destCurrency: token ? token :props.tokenConfig.wyre.destCurrency,
+              destCurrency: buyParams.token ? buyParams.token : ( props.tokenConfig.wyre.destCurrency ? props.tokenConfig.wyre.destCurrency : props.selectedToken ),
             }
           };
         }
@@ -81,13 +90,13 @@ const globalConfigs = {
         captionPos: 'top',
         subcaption:`~ 2.5% fee ~\nGBP ONLY`,
         supportedMethods:['bank'],
-        supportedCountries:['GBR','EU'],
+        supportedCountries:['GBR','EUR'],
         supportedTokens:['SAI','ETH'],
-        getInitParams: (props,globalConfigs,token) => {
+        getInitParams: (props,globalConfigs,buyParams) => {
         	return {
 	          hostAppName: 'Idle',
 	          hostLogoUrl: `${globalConfigs.baseURL}/images/idle-dai.png`,
-	          swapAsset: token ? token : props.tokenConfig.ramp.swapAsset,
+	          swapAsset: buyParams.token ? buyParams.token : ( props.tokenConfig.ramp.swapAsset ? props.tokenConfig.ramp.swapAsset : props.selectedToken ),
 	          userAddress: props.account,
 	          variant: props.isMobile ? 'mobile' : 'desktop',
         	};
@@ -104,13 +113,13 @@ const globalConfigs = {
         caption: 'Buy with',
         captionPos: 'top',
         subcaption: '~ 4.5% fee ~',
-        supportedMethods:['bank'],
+        supportedMethods:['bank','card'],
         supportedCountries:['GBR','AUS','BRA','CHN','MEX','CAN','HKG','RUS','ZAF','KOR'],
         supportedTokens:['USDC','DAI','ETH'],
-        getInitParams: (props,globalConfigs,token) => {
+        getInitParams: (props,globalConfigs,buyParams) => {
           const params = {
             apiKey:globalConfigs.payments.providers.moonpay.apiKey,
-            currencyCode: token ? token.toLowerCase() : props.selectedToken.toLowerCase(),
+            currencyCode: buyParams.token ? buyParams.token.toLowerCase() : ( props.tokenConfig.moonpay.currencyCode ? props.tokenConfig.moonpay.currencyCode : props.selectedToken.toLowerCase()),
             walletAddress:props.account
           };
 

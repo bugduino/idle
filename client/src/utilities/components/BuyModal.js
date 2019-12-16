@@ -26,13 +26,13 @@ class BuyModal extends React.Component {
     selectedCountry:null
   }
 
-  renderPaymentMethod = async (e,provider,token) => {
-
-    token = token ? token : this.props.selectedToken;
+  renderPaymentMethod = async (e,provider,buyParams) => {
 
     this.closeModal(e);
 
-    const initParams = globalConfigs.payments.providers[provider] && globalConfigs.payments.providers[provider].getInitParams ? globalConfigs.payments.providers[provider].getInitParams(this.props,globalConfigs,token) : null;
+    const initParams = globalConfigs.payments.providers[provider] && globalConfigs.payments.providers[provider].getInitParams ? globalConfigs.payments.providers[provider].getInitParams(this.props,globalConfigs,buyParams) : null;
+
+    console.log('renderPaymentMethod',initParams);
 
     switch (provider){
       case 'wyre':
@@ -230,7 +230,7 @@ class BuyModal extends React.Component {
           availableTokens.push(this.props.selectedToken);
         }
       } else {
-        this.renderPaymentMethod(e,selectedProvider,this.props.selectedToken);
+        this.renderPaymentMethod(e,selectedProvider,this.props.selectedToken,this.state);
         return;
       }
 
@@ -321,7 +321,39 @@ class BuyModal extends React.Component {
                   </Flex>
                 </Box>
               ) :
-                this.state.selectedMethod === 'bank' ? (
+                  this.state.selectedMethod === 'wallet' ? (
+                    <Box mt={2} mb={3}>
+                      <Text textAlign={'center'} fontWeight={3} fontSize={2} my={0}>
+                        <Box width={'100%'}>
+                            <Flex mb={4} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
+                            {
+                              this.state.availableProviders.length ?
+                                (
+                                  <Box>
+                                    <Text textAlign={'center'} fontWeight={2} fontSize={2} mb={[2,3]}>
+                                      Choose your preferred payment provider:
+                                    </Text>
+                                    {
+                                      this.state.availableProviders.map((provider,i) => {
+                                        const providerInfo = globalConfigs.payments.providers[provider];
+                                        return (
+                                          <ImageButton key={`payment_${provider}`} {...providerInfo} handleClick={ e => { this.renderPaymentMethod(e,provider); } } />
+                                        );
+                                      })
+                                    }
+                                  </Box>
+                                )
+                              : (
+                                <Text textAlign={'center'} fontWeight={3} fontSize={2} my={2}>
+                                  Sorry, there are no providers available for the selected method.
+                                </Text>
+                              )
+                            }
+                            </Flex>
+                          </Box>
+                      </Text>
+                    </Box>
+                  ) : (
                   <Box>
                     {
                       !this.state.selectedProvider &&
@@ -379,7 +411,7 @@ class BuyModal extends React.Component {
                             {
                               this.state.availableTokens.map((token,i) => {
                                 return (
-                                  <ImageButton key={`token_${token}`} imageSrc={`images/tokens/${token}.svg`} caption={token} imageProps={{p:[2,3],height:'80px'}} handleClick={ e => { this.renderPaymentMethod(e,this.state.selectedProvider,token); } } />
+                                  <ImageButton key={`token_${token}`} imageSrc={`images/tokens/${token}.svg`} caption={token} imageProps={{p:[2,3],height:'80px'}} handleClick={ e => { this.renderPaymentMethod(e,this.state.selectedProvider,this.state); } } />
                                 );
                               })
                             }
@@ -389,40 +421,7 @@ class BuyModal extends React.Component {
                       }
                     </Flex>
                   </Box>
-                ) :
-                  this.state.selectedMethod === 'wallet' ? (
-                    <Box mt={2} mb={3}>
-                      <Text textAlign={'center'} fontWeight={3} fontSize={2} my={0}>
-                        <Box width={'100%'}>
-                            <Flex mb={4} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
-                            {
-                              this.state.availableProviders.length ?
-                                (
-                                  <Box>
-                                    <Text textAlign={'center'} fontWeight={2} fontSize={2} mb={[2,3]}>
-                                      Choose your preferred payment provider:
-                                    </Text>
-                                    {
-                                      this.state.availableProviders.map((provider,i) => {
-                                        const providerInfo = globalConfigs.payments.providers[provider];
-                                        return (
-                                          <ImageButton key={`payment_${provider}`} {...providerInfo} handleClick={ e => { this.renderPaymentMethod(e,provider); } } />
-                                        );
-                                      })
-                                    }
-                                  </Box>
-                                )
-                              : (
-                                <Text textAlign={'center'} fontWeight={3} fontSize={2} my={2}>
-                                  Sorry, there are no providers available for the selected method.
-                                </Text>
-                              )
-                            }
-                            </Flex>
-                          </Box>
-                      </Text>
-                    </Box>
-                  ) : null
+                )
             }
             </Box>
           </ModalCard.Body>
