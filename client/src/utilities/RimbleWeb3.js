@@ -479,7 +479,7 @@ class RimbleTransaction extends React.Component {
           }
         })
         .on("confirmation", (confirmationNumber, receipt) => {
-          console.log('txOnConfirmation', receipt);
+          // console.log('txOnConfirmation', receipt);
           // Update confirmation count on each subsequent confirmation that's received
           transaction.confirmationCount += 1;
 

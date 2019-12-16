@@ -217,6 +217,7 @@ class App extends Component {
                                   contracts={contracts}
                                   isMobile={isMobile}
                                   account={account}
+                                  getAccountBalance={getAccountBalance}
                                   accountBalance={accountBalance}
                                   accountBalanceToken={accountBalanceToken}
                                   accountBalanceLow={accountBalanceLow}

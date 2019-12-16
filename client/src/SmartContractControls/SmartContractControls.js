@@ -226,79 +226,6 @@ class SmartContractControls extends React.Component {
     }));
   }
 
-  getPendingTransactions = () => {
-    const txs = localStorage ? JSON.parse(localStorage.getItem('transactions')) : this.props.transactions;
-    if (!txs){
-      return false;
-    }
-    const pendingTxHash = Object.keys(txs).filter((hash,i) => { return txs[hash].status==='pending' });
-    const pendingTransactions = Object.keys(txs)
-      .filter(key => pendingTxHash.includes(key))
-      .reduce((obj, key) => {
-        obj[key] = txs[key];
-        return obj;
-      }, {});
-
-    // const state = {};
-    Object.keys(pendingTransactions).forEach((txHash,i) => {
-      const tx = pendingTransactions[txHash];
-      // customLog('getPendingTransactions',tx);
-      switch (tx.method){
-        case 'mintIdleToken':
-          window.web3.eth.getTransaction(txHash,(err,transaction) => {
-            if (transaction.from.toLowerCase() === this.props.account.toLowerCase()){
-              this.setState({
-                lendingProcessing:true,
-                lendingTx:tx
-              });
-              this.listenTransaction(txHash,(tx) => {
-                this.setState({
-                  lendingProcessing:false,
-                  lendingTx:null,
-                  needsUpdate:true
-                });
-                // this.addTransaction(tx);
-              });
-            } else {
-              this.setState({
-                lendingProcessing:false,
-                lendingTx:null
-              });
-              // this.deleteTransaction(tx);
-            }
-          });
-        break;
-        case 'redeemIdleToken':
-          window.web3.eth.getTransaction(txHash,(err,transaction) => {
-            // customLog('redeemIdleToken',transaction.from,this.props.account);
-            if (transaction.from.toLowerCase() === this.props.account.toLowerCase()){
-              this.setState({
-                redeemProcessing:true,
-                redeemTx:tx
-              });
-              this.listenTransaction(txHash,(tx) => {
-                this.setState({
-                  redeemProcessing:false,
-                  redeemTx:null,
-                  needsUpdate:true
-                });
-                // this.addTransaction(tx);
-              });
-            } else {
-              this.setState({
-                redeemProcessing:false,
-                redeemTx:null
-              });
-              // this.deleteTransaction(tx);
-            }
-          });
-        break;
-        default:
-        break;
-      }
-    });
-  }
-
   listenTransaction = (hash,callback) => {
     window.web3.eth.getTransactionReceipt(hash,(err,tx) => {
       customLog('getTransactionReceipt',hash,tx);
@@ -1129,11 +1056,8 @@ class SmartContractControls extends React.Component {
         needsUpdate: false
       });
 
-      // this.getPendingTransactions();
-
-      // customLog('componentDidUpdate needsUpdate');
-
       await Promise.all([
+        this.props.getAccountBalance(),
         this.getTokenBalance(),
         this.checkTokenApproved(), // Check if the token is already approved
         this.getPrevTxs(),
@@ -1176,6 +1100,7 @@ class SmartContractControls extends React.Component {
       if (localStorage){
         localStorage.setItem('transactions',JSON.stringify(this.props.transactions));
       }
+
       // console.log('Transactions changed from',prevProps.transactions,'to',this.props.transactions);
       this.processTransactionUpdates(prevProps.transactions);
     }

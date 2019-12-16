@@ -261,6 +261,7 @@ class Landing extends Component {
                 tokenConfig={this.props.tokenConfig}
                 setSelectedToken={this.props.setSelectedToken}
                 accountBalanceToken={this.props.accountBalanceToken}
+                getAccountBalance={this.props.getAccountBalance}
                 isMobile={this.props.isMobile}
                 updateSelectedTab={this.props.updateSelectedTab}
                 selectedTab={this.props.selectedTab} />
