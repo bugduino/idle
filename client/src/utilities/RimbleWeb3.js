@@ -81,7 +81,10 @@ class RimbleTransaction extends React.Component {
   // Initialize a web3 provider
   initWeb3 = async () => {
 
-    // console.log('RimbleWeb3 initWeb3 props',this.props);
+    // Suppress console warning
+    if (window.ethereum && window.ethereum.autoRefreshOnNetworkChange) {
+      window.ethereum.autoRefreshOnNetworkChange = false;
+    }
 
     const context = this.props.context;
 
