@@ -50,7 +50,7 @@ class AccountOverview extends React.Component {
           </Box>
         }
         {
-          walletProvider ? (
+          walletProvider && walletProvider!=='Injected' ? (
             <Image
               display={'inline-flex'}
               mr={[0,'0.5rem']}

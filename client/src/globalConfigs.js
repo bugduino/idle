@@ -108,7 +108,6 @@ const globalConfigs = {
         supportedCountries:['GBR','AUS','BRA','CHN','MEX','CAN','HKG','RUS','ZAF','KOR'],
         supportedTokens:['USDC','DAI','ETH'],
         getInitParams: (props,globalConfigs,token) => {
-          const connectorName = localStorage ? localStorage.getItem('connectorName') : 'Infura';
           const params = {
             apiKey:globalConfigs.payments.providers.moonpay.apiKey,
             currencyCode: token ? token.toLowerCase() : props.selectedToken.toLowerCase(),
