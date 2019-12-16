@@ -268,19 +268,21 @@ class RimbleTransaction extends React.Component {
 
   initializeContracts = async () => {
 
-    console.log('initializeContracts',this.props);
+    // console.log('initializeContracts',this.props);
 
     const tokenConfig = this.props.tokenConfig;
 
     // Initialize Token Contract
     let foundTokenContract = this.state.contracts.find(c => c.name === this.props.selectedToken);
     if (!foundTokenContract) {
+      console.log('initializeContracts, init contract',this.props.selectedToken, tokenConfig.address);
       await this.initContract(this.props.selectedToken, tokenConfig.address, tokenConfig.abi);
     }
 
     // Initialize IdleToken Contract
     let foundIdleTokenContract = this.state.contracts.find(c => c.name === tokenConfig.idle.token);
     if (!foundIdleTokenContract) {
+      console.log('initializeContracts, init contract',tokenConfig.idle.token, tokenConfig.idle.address);
       await this.initContract(tokenConfig.idle.token, tokenConfig.idle.address, tokenConfig.idle.abi);
     }
   }

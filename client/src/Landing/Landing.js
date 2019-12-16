@@ -192,7 +192,7 @@ class Landing extends Component {
 
   // Idle
   genericIdleCall = async (methodName, params = []) => {
-    return await this.genericContractCall('idleDAI', methodName, params).catch(err => {
+    return await this.genericContractCall(this.props.tokenConfig.idle.token, methodName, params).catch(err => {
       console.error('Generic Idle call err:', err);
     });
   }

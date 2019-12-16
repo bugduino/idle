@@ -11,10 +11,6 @@ import {
   Link as RouterLink,
 } from "react-router-dom";
 
-import IdleDAI from "../../contracts/IdleDAI.json";
-const IdleAbi = IdleDAI.abi;
-const IdleAddress = '0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9';
-
 class Header extends React.Component {
   state = {
     idleTokenBalance: null,
@@ -68,7 +64,7 @@ class Header extends React.Component {
 
   // Idle
   genericIdleCall = async (methodName, params = []) => {
-    return await this.genericContractCall('idleDAI', methodName, params).catch(err => {
+    return await this.genericContractCall(this.props.tokenConfig.idle.token, methodName, params).catch(err => {
       console.error('Generic Idle call err:', err);
     });
   }
@@ -97,7 +93,7 @@ class Header extends React.Component {
       return console.log('No Web3 SmartContractControls')
     }
 
-    await this.props.initContract('idleDAI', IdleAddress, IdleAbi);
+    await this.props.initContract(this.props.tokenConfig.idle.token, this.props.tokenConfig.idle.address, this.props.tokenConfig.idle.abi);
   }
 
   BNify = s => new BigNumber(String(s));
