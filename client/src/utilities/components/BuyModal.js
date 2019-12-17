@@ -23,6 +23,7 @@ class BuyModal extends React.Component {
     availableProviders:null,
     selectedMethod:null,
     selectedProvider:null,
+    selectedToken:null,
     selectedCountry:null
   }
 
@@ -106,7 +107,7 @@ class BuyModal extends React.Component {
                     style="position:relative;z-index:2;"
                     frameborder="0"
                     height="100%"
-                    src="https://buy-staging.moonpay.io?${initParams}"
+                    src="${initParams}"
                     width="100%"
                   >
                     <p>Your browser does not support iframes.</p>
@@ -161,31 +162,33 @@ class BuyModal extends React.Component {
 
     if (this.state.selectedProvider){
       this.setState({
-        selectedProvider:null
+        selectedProvider:null,
+        selectedToken:null
       });
     } else if (this.state.selectedMethod){
       this.setState({
         selectedCountry:null,
+        selectedToken:null,
         selectedMethod:null
       });
     } else {
-      this.resetModal(e);
+      this.resetModal();
     }
   }
 
-  resetModal = (e) => {
-    e.preventDefault();
+  resetModal = () => {
     this.setState({
       availableProviders:null,
       selectedMethod:null,
       selectedProvider:null,
+      selectedToken:null,
       selectedCountry:null
     });
   }
 
   closeModal = (e) => {
-    this.resetModal(e);
-    this.props.closeModal(e);
+    this.resetModal();
+    this.props.closeModal();
   }
 
   getAvailablePaymentProviders = (selectedMethod) => {
@@ -249,6 +252,16 @@ class BuyModal extends React.Component {
         selectedMethod
       });
     }
+  }
+
+  selectToken = (e,selectedToken) => {
+    if (e){
+      e.preventDefault();
+    }
+
+    this.setState({ selectedToken }, async () => {
+      return this.renderPaymentMethod(e,this.state.selectedProvider,this.state);
+    });
   }
 
   handleCountryChange = selectedCountry => {
@@ -407,7 +420,7 @@ class BuyModal extends React.Component {
                             {
                               this.state.availableTokens.map((token,i) => {
                                 return (
-                                  <ImageButton key={`token_${token}`} imageSrc={`images/tokens/${token}.svg`} caption={token} imageProps={{p:[2,3],height:'80px'}} handleClick={ e => { this.renderPaymentMethod(e,this.state.selectedProvider,this.state); } } />
+                                  <ImageButton key={`token_${token}`} imageSrc={`images/tokens/${token}.svg`} caption={token} imageProps={{p:[2,3],height:'80px'}} handleClick={ e => { this.selectToken(e,token); } } />
                                 );
                               })
                             }

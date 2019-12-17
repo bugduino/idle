@@ -1,4 +1,3 @@
-
 const globalConfigs = {
   baseURL: 'https://beta.idle.finance',
   baseToken: 'ETH',
@@ -34,9 +33,9 @@ const globalConfigs = {
       },
       'wallet':{
         props:{
-          imageSrc:'images/tokens/ETH.svg',
+          imageSrc:'images/ethereum-wallet.png',
           caption:'Ethereum Wallet',
-          imageProps:{p:[2,3],height:'70px'}
+          imageProps:{height:'70px'}
         }
       },
     },
@@ -54,6 +53,15 @@ const globalConfigs = {
         supportedMethods:['bank','card'],
         supportedCountries:['USA','GBR','AUS','BRA','CHN','MEX'],
         supportedTokens:['USDC','DAI','SAI','ETH'],
+        env:'prod',
+        envParams:{
+          test:{
+            accountId:'AC_Q2Y4AARC3TP'
+          },
+          prod:{
+            accountId:'AC_PQQBX33XVEQ'
+          }
+        },
         getInitParams: (props,globalConfigs,buyParams) => {
 
           const generateSecretKey = () => {
@@ -61,7 +69,8 @@ const globalConfigs = {
             if (localStorage) {
               if (!(secretKey = localStorage.getItem('wyreSecretKey'))){
                 secretKey = 'xxxxxxxx-xxxx-yxxx-yxxx-xxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                  var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                  // eslint-disable-next-line
+                  var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
                   return v.toString(16);
                 });
                 localStorage.setItem('wyreSecretKey',secretKey);
@@ -70,20 +79,18 @@ const globalConfigs = {
             return secretKey;
           }
 
-          const env = 'test';
-          const env_accounts = {
-            'test':'AC_Q2Y4AARC3TP',
-            'prod':'AC_PQQBX33XVEQ'
-          };
           const methods = {
             'bank':'onramp',
             'card':'debitcard-hosted-dialog'
           };
 
           const secretKey = generateSecretKey();
+          const env = globalConfigs.payments.providers.wyre.env;
+          const envParams = globalConfigs.payments.providers.wyre.envParams[env];
+          const accountId = envParams.accountId;
 
           return {
-            accountId: env_accounts[env],
+            accountId,
             auth: {
               type: 'secretKey',
               secretKey
@@ -92,7 +99,7 @@ const globalConfigs = {
             operation: {
               type: methods[buyParams.selectedMethod],
               dest: `ethereum:${props.account}`,
-              destCurrency: buyParams.token ? buyParams.token : ( props.tokenConfig.wyre.destCurrency ? props.tokenConfig.wyre.destCurrency : props.selectedToken ),
+              destCurrency: buyParams.selectedToken ? buyParams.selectedToken : ( props.tokenConfig.wyre && props.tokenConfig.wyre.destCurrency ? props.tokenConfig.wyre.destCurrency : props.selectedToken ),
             }
           };
         }
@@ -114,7 +121,7 @@ const globalConfigs = {
         	return {
 	          hostAppName: 'Idle',
 	          hostLogoUrl: `${globalConfigs.baseURL}/images/idle-dai.png`,
-	          swapAsset: buyParams.token ? buyParams.token : ( props.tokenConfig.ramp.swapAsset ? props.tokenConfig.ramp.swapAsset : props.selectedToken ),
+	          swapAsset: buyParams.selectedToken ? buyParams.selectedToken : ( props.tokenConfig.ramp && props.tokenConfig.ramp.swapAsset ? props.tokenConfig.ramp.swapAsset : props.selectedToken ),
 	          userAddress: props.account,
 	          variant: props.isMobile ? 'mobile' : 'desktop',
         	};
@@ -122,7 +129,6 @@ const globalConfigs = {
       },
       moonpay: {
         enabled:true,
-        apiKey:'pk_test_xZO2dhqZb9gO65wHKCCFmMJ5fbSyHSI',
         imageSrc: 'images/payments/moonpay.svg',
         imageProps: {
           height: '35px',
@@ -131,17 +137,42 @@ const globalConfigs = {
         caption: 'Buy with',
         captionPos: 'top',
         subcaption: '~ 4.5% fee ~',
-        supportedMethods:['bank','card'],
+        supportedMethods:['card'],
         supportedCountries:['GBR','AUS','BRA','CHN','MEX','CAN','HKG','RUS','ZAF','KOR'],
         supportedTokens:['USDC','DAI','ETH'],
+        env:'prod',
+        envParams:{
+          test:{
+            url:'https://buy-staging.moonpay.io',
+            apiKey:'pk_test_xZO2dhqZb9gO65wHKCCFmMJ5fbSyHSI'
+          },
+          prod:{
+            url:'https://buy.moonpay.io',
+            apiKey:'pk_live_iPIpLBe5GGSL73fpAKtGBZTfshXfBwu'
+          }
+        },
         getInitParams: (props,globalConfigs,buyParams) => {
+          const env = globalConfigs.payments.providers.moonpay.env;
+          const envParams = globalConfigs.payments.providers.moonpay.envParams[env];
+          const apiKey = envParams.apiKey;
           const params = {
-            apiKey:globalConfigs.payments.providers.moonpay.apiKey,
-            currencyCode: buyParams.token ? buyParams.token.toLowerCase() : ( props.tokenConfig.moonpay.currencyCode ? props.tokenConfig.moonpay.currencyCode : props.selectedToken.toLowerCase()),
+            apiKey,
+            currencyCode: buyParams.selectedToken ? buyParams.selectedToken.toLowerCase() : ( props.tokenConfig.moonpay && props.tokenConfig.moonpay.currencyCode ? props.tokenConfig.moonpay.currencyCode : props.selectedToken.toLowerCase()),
             walletAddress:props.account
           };
 
-          return Object.keys(params)
+          let url = envParams.url;
+
+          // Safari Fix
+          var isSafari = navigator.userAgent.indexOf("Safari") > -1;
+          if (isSafari) {
+            if (!document.cookie.match(/^(.*;)?\s*moonpay-fixed\s*=\s*[^;]+(.*)?$/)) {
+              document.cookie = "moonpay-fixed=fixed; expires=Tue, 19 Jan 2038 03:14:07 UTC; path=/";
+              url += "/safari_fix";
+            }
+          }
+
+          return `${url}?`+Object.keys(params)
               .map(k => encodeURIComponent(k) + '=' + encodeURIComponent(params[k]))
               .join('&');
         }

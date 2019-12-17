@@ -78,7 +78,9 @@ class App extends Component {
   }
 
   closeBuyModal(e) {
-    e.preventDefault();
+    if (e){
+      e.preventDefault();
+    }
     return this.setState({
       buyModalOpened:false
     });

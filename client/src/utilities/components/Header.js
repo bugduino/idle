@@ -74,7 +74,9 @@ class Header extends React.Component {
   }
 
   closeBuyModal = (e) => {
-    e.preventDefault();
+    if (e){
+      e.preventDefault();
+    }
     this.toggleModal('buy');
     this.props.closeBuyModal(e);
   }
