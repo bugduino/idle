@@ -33,15 +33,15 @@ const globalConfigs = {
       },
       'wallet':{
         props:{
-          imageSrc:'images/ethereum-wallet.png',
+          imageSrc:'images/tokens/ETH.svg',
           caption:'Ethereum Wallet',
-          imageProps:{height:'70px'}
+          imageProps:{p:[2,3],height:'70px'}
         }
       },
     },
     providers: {
       wyre: {
-        enabled:true,
+        enabled:false,
         imageSrc: 'images/payments/wyre.svg',
         imageProps: {
           height: '35px',
