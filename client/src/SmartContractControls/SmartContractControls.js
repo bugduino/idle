@@ -18,6 +18,7 @@ const env = process.env;
 const OldIdleAddress = '0x10cf8e1CDba9A2Bd98b87000BCAdb002b13eA525'; // v0.1 hackathon version
 
 const daysInYear = 365.2422;
+let componendUnmounted;
 
 const LOG_ENABLED = false;
 const customLog = (...props) => { if (LOG_ENABLED) console.log(moment().format('HH:mm:ss'),...props); };
@@ -92,19 +93,21 @@ class SmartContractControls extends React.Component {
     }
 
     // Add 0x Instant style (mobile)
-    const style = document.createElement('style');
-    style.id = 'zeroExInstant_style';
-    style.innerHTML = `
-    @media (max-width: 40em){
-      .zeroExInstantOverlayCloseButton{
-        display: block !important;
-        z-index: 99999 !important;
-      }
-      .zeroExInstantOverlayCloseButton > div{
-        padding: 1.3em !important;
-      }
-    }`;
-    document.body.appendChild(style);
+    if (!document.getElementById('zeroExInstant_style')){
+      const style = document.createElement('style');
+      style.id = 'zeroExInstant_style';
+      style.innerHTML = `
+      @media (max-width: 40em){
+        .zeroExInstantOverlayCloseButton{
+          display: block !important;
+          z-index: 99999 !important;
+        }
+        .zeroExInstantOverlayCloseButton > div{
+          padding: 1.3em !important;
+        }
+      }`;
+      document.body.appendChild(style);
+    }
   }
 
   renderZeroExInstant = (e,amount) => {
@@ -211,7 +214,9 @@ class SmartContractControls extends React.Component {
   getAprs = async () => {
     const aprs = await this.genericIdleCall('getAPRs');
 
-    // console.log('getAprs',aprs);
+    if (componendUnmounted){
+      return false;
+    }
 
     if (!aprs){
       setTimeout(() => {
@@ -324,6 +329,9 @@ class SmartContractControls extends React.Component {
 
       if (this.state.amountLent && this.trimEth(this.state.amountLent.toString())>0 && this.trimEth(tokenToRedeem.toString())>0 && parseFloat(tokenToRedeem.toString())<parseFloat(this.state.amountLent.toString())){
         customLogError('Balance '+this.trimEth(tokenToRedeem.toString())+' is less than AmountLent ('+this.trimEth(this.state.amountLent.toString())+').. try again');
+        if (componendUnmounted){
+          return false;
+        }
         setTimeout(async () => {
           await this.getPrevTxs();
           this.getBalanceOf(contractName,count+1);
@@ -765,6 +773,9 @@ class SmartContractControls extends React.Component {
       https://api.etherscan.io/api?module=account&action=tokentx&address=${this.props.account}&startblock=8119247&endblock=999999999&sort=asc&apikey=${env.REACT_APP_ETHERSCAN_KEY}
     `).catch(err => {
       customLog('Error getting prev txs');
+      if (componendUnmounted){
+        return false;
+      }
       setTimeout(()=>{this.getPrevTxs();},1000);
     });
 
@@ -957,6 +968,8 @@ class SmartContractControls extends React.Component {
 
   // Clear all the timeouts
   async componentWillUnmount(){
+    componendUnmounted = true;
+
     let id = window.setTimeout(function() {}, 0);
 
     while (id--) {
@@ -965,6 +978,8 @@ class SmartContractControls extends React.Component {
   }
 
   async componentDidMount() {
+
+    componendUnmounted = false;
 
     window.jQuery = jQuery;
     // customLog('SmartContractControls componentDidMount',jQuery);

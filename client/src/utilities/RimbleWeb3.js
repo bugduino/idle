@@ -4,6 +4,7 @@ import ConnectionModalUtil from "./ConnectionModalsUtil";
 import NetworkUtil from "./NetworkUtil";
 import BigNumber from 'bignumber.js';
 import Web3 from "web3";
+import jQuery from 'jquery';
 
 require('dotenv').config();
 const INFURA_KEY = process.env["REACT_APP_INFURA_KEY"];
@@ -78,6 +79,10 @@ let setConnectorName = null;
 class RimbleTransaction extends React.Component {
   static Consumer = RimbleTransactionContext.Consumer;
 
+  async componentDidMount() {
+    window.jQuery = jQuery;
+  }
+
   componentDidUpdate = (prevProps, prevState) => {
     if (localStorage){
       const context = JSON.parse(localStorage.getItem('context'));
@@ -136,9 +141,22 @@ class RimbleTransaction extends React.Component {
       }
     } else if (context.connectorName === "WalletConnect") {
       if (!context.account) {
+
+        // WalletConnect already opened
+        if (document.getElementById('walletconnect-wrapper')){
+          return;
+        }
+
         WalletConnectQRCodeModal.open(
           context.connector.walletConnector.uri,
-          () => {}
+          async () => {
+            document.getElementById('walletconnect-wrapper').remove();
+            if (localStorage){
+              localStorage.removeItem('connectorName');
+              localStorage.removeItem('walletProvider');
+            }
+            await context.unsetConnector();
+          }
         );
       } else {
         try {
