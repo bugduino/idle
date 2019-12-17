@@ -1,3 +1,4 @@
+
 const globalConfigs = {
   baseURL: 'https://beta.idle.finance',
   baseToken: 'ETH',
@@ -54,25 +55,42 @@ const globalConfigs = {
         supportedCountries:['USA','GBR','AUS','BRA','CHN','MEX'],
         supportedTokens:['USDC','DAI','SAI','ETH'],
         getInitParams: (props,globalConfigs,buyParams) => {
+
+          const generateSecretKey = () => {
+            let secretKey = null;
+            if (localStorage) {
+              if (!(secretKey = localStorage.getItem('wyreSecretKey'))){
+                secretKey = 'xxxxxxxx-xxxx-yxxx-yxxx-xxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                  var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                  return v.toString(16);
+                });
+                localStorage.setItem('wyreSecretKey',secretKey);
+              }
+            }
+            return secretKey;
+          }
+
+          const env = 'test';
+          const env_accounts = {
+            'test':'AC_Q2Y4AARC3TP',
+            'prod':'AC_PQQBX33XVEQ'
+          };
           const methods = {
             'bank':'onramp',
             'card':'debitcard-hosted-dialog'
           };
+
+          const secretKey = generateSecretKey();
+
           return {
-            accountId: 'AC_PQQBX33XVEQ', // { TEST : 'AC_Q2Y4AARC3TP', PROD : 'AC_PQQBX33XVEQ' }
+            accountId: env_accounts[env],
             auth: {
-              // type:'metamask'
               type: 'secretKey',
-              secretKey: props.account
+              secretKey
             },
-            env: 'prod',
+            env,
             operation: {
               type: methods[buyParams.selectedMethod],
-              /*
-                debitcard: Open JS widget with Apple Pay or Debit Card (Error while validating address)
-                debitcard-hosted-dialog: Open a Popup (same as debitcard but hosted) (Error while validating address)
-                onramp: Attach Bank account, KYC, verifications, ...
-              */
               dest: `ethereum:${props.account}`,
               destCurrency: buyParams.token ? buyParams.token : ( props.tokenConfig.wyre.destCurrency ? props.tokenConfig.wyre.destCurrency : props.selectedToken ),
             }

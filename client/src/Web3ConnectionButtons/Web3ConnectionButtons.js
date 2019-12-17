@@ -18,14 +18,16 @@ export default function Web3ConnectionButtons(props) {
     console.log('context success', context);
   }
   const setConnector = async (connectorName,name) => {
+    let walletProvider = connectorName === 'Injected' ? name : connectorName;
     if (localStorage) {
-      if (connectorName === 'Injected'){
-        localStorage.setItem('walletProvider', name);
-      } else {
-        localStorage.setItem('walletProvider', connectorName);
-      }
+      localStorage.setItem('walletProvider', walletProvider);
       localStorage.setItem('connectorName', connectorName);
     }
+
+    if (props.setConnector && typeof props.setConnector === 'function'){
+      props.setConnector(connectorName,walletProvider);
+    }
+
     return await context.setConnector(connectorName);
   };
   const unsetConnector = async () => {

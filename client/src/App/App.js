@@ -33,10 +33,12 @@ class App extends Component {
     unsubscribeFromHistory:null,
     selectedTab: '1',
     buyModalOpened: false,
+    connectorName:null,
+    walletProvider:null
   };
 
   async selectTab(e, tabIndex) {
-    this.setState(state => ({...state, selectedTab: tabIndex}));
+    return this.setState(state => ({...state, selectedTab: tabIndex}));
   }
 
   componentWillMount() {
@@ -59,7 +61,7 @@ class App extends Component {
 
   handleWindowSizeChange = () => {
     if (window.innerWidth !== this.state.width){
-      this.setState({ width: window.innerWidth });
+      return this.setState({ width: window.innerWidth });
     }
   };
 
@@ -72,32 +74,38 @@ class App extends Component {
   };
 
   showRoute(route) {
-    this.setState({ route });
+    return this.setState({ route });
   }
 
   closeBuyModal(e) {
     e.preventDefault();
-    this.setState({
+    return this.setState({
       buyModalOpened:false
     });
   }
 
   openBuyModal(e) {
     e.preventDefault();
-    this.setState({
+    return this.setState({
       buyModalOpened:true
     });
   }
 
+  setConnector(connectorName,walletProvider){
+    console.log('setConnector',connectorName,walletProvider);
+    return this.setState({
+      connectorName,
+      walletProvider
+    });
+  }
+
   setSelectedToken(selectedToken){
-    // console.log('setSelectedToken',selectedToken);
     if (Object.keys(availableTokens).indexOf(selectedToken) !== -1){
       const tokenConfig = availableTokens[selectedToken];
       if (selectedToken !== this.state.selectedToken || tokenConfig !== this.state.tokenConfig){
         if (localStorage){
           localStorage.setItem('selectedToken',selectedToken);
         }
-        // console.log('Setting new token',selectedToken,tokenConfig);
         return this.setState({
           tokenConfig,
           selectedToken
@@ -126,6 +134,7 @@ class App extends Component {
                     context={context}
                     tokenConfig={this.state.tokenConfig}
                     selectedToken={this.state.selectedToken}
+                    setConnector={this.setConnector.bind(this)}
                     isMobile={isMobile}
                   >
                     <RimbleWeb3.Consumer>
@@ -162,6 +171,8 @@ class App extends Component {
                             initContract={initContract}
                             contracts={contracts}
                             isMobile={isMobile}
+                            walletProvider={this.state.walletProvider}
+                            connectorName={this.state.connectorName}
                             buyModalOpened={this.state.buyModalOpened}
                             getAccountBalance={getAccountBalance}
                             getTokenDecimals={getTokenDecimals}

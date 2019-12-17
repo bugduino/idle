@@ -92,7 +92,7 @@ class ConnectionModal extends React.Component {
           <ModalCard.Header title={'Select your Wallet'} subtitle={'And get started with Idle.'} icon={'images/idle-dai.png'}></ModalCard.Header>
           <ModalCard.Body>
             <Box width={1} px={[3,5]} justifyContent={'center'}>
-              <Web3ConnectionButtons width={1/2} size={ this.props.isMobile ? 'medium' : 'large' } />
+              <Web3ConnectionButtons setConnector={ this.props.setConnector } width={1/2} size={ this.props.isMobile ? 'medium' : 'large' } />
             </Box>
             { TOSacceptance }
           </ModalCard.Body>
@@ -115,7 +115,7 @@ class ConnectionModal extends React.Component {
             </Box>
             <Flex alignItems={"center"} flexDirection={['column','row']}>
               <Box width={[1,1/2]}>
-                <Web3ConnectionButtons size={this.props.isMobile ? 'medium' : 'large'} onlyPortis={true} registerPage={true} />
+                <Web3ConnectionButtons setConnector={ this.props.setConnector } size={this.props.isMobile ? 'medium' : 'large'} onlyPortis={true} registerPage={true} />
               </Box>
               <Box width={[1,1/2]}>
                 <Button.Outline

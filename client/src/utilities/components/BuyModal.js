@@ -32,8 +32,6 @@ class BuyModal extends React.Component {
 
     const initParams = globalConfigs.payments.providers[provider] && globalConfigs.payments.providers[provider].getInitParams ? globalConfigs.payments.providers[provider].getInitParams(this.props,globalConfigs,buyParams) : null;
 
-    console.log('renderPaymentMethod',initParams);
-
     switch (provider){
       case 'wyre':
         if (!document.getElementById('wyre-dropin-widget-container')){
@@ -69,8 +67,6 @@ class BuyModal extends React.Component {
           .on('*', async (event) => {
             let tokenDecimals = null;
             let tokenAmount = null;
-
-            console.log('Ramp event:',event);
 
             switch (event.type){
               case 'PURCHASE_SUCCESSFUL':

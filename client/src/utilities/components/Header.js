@@ -178,6 +178,8 @@ class Header extends React.Component {
         <BuyModal
           account={this.props.account}
           tokenConfig={this.props.tokenConfig}
+          walletProvider={this.props.walletProvider}
+          connectorName={this.props.connectorName}
           getAccountBalance={this.props.getAccountBalance}
           getTokenDecimals={this.props.getTokenDecimals}
           selectedToken={this.props.selectedToken}

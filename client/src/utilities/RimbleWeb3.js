@@ -96,6 +96,7 @@ class RimbleTransaction extends React.Component {
     if (!context.active) {
       // Check localstorage
       let connectorName = localStorage ? localStorage.getItem('connectorName') : null;
+      let walletProvider = localStorage ? localStorage.getItem('walletProvider') : null;
 
       // Catch Moonpay url params
       if (window.URL){
@@ -121,6 +122,7 @@ class RimbleTransaction extends React.Component {
       // Select preferred web3 provider
       if (connectorName && connectorName !== 'Infura' && connectorName !== setConnectorName){
         setConnectorName = connectorName;
+        this.props.setConnector(connectorName,walletProvider);
         await context.setFirstValidConnector([connectorName, 'Infura']);
         return;
       }
@@ -805,6 +807,7 @@ class RimbleTransaction extends React.Component {
       <div>
         <RimbleTransactionContext.Provider value={this.state} {...this.props} />
         <ConnectionModalUtil
+          setConnector={this.props.setConnector}
           isMobile={this.props.isMobile}
           initAccount={this.state.initAccount}
           account={this.state.account}
