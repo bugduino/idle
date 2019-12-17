@@ -29,11 +29,11 @@ class Header extends React.Component {
           props:{
             mainColor:'transparent',
             color:'white',
-            icon:'AccountBalanceWallet',
+            icon:'AddCircleOutline',
             iconpos:'right',
             onClick: e => { this.props.account ? this.toggleModal('buy') : this.props.connectAndValidateAccount() }
           },
-          value:`BUY ${this.props.selectedToken}`
+          value:'ADD FUNDS'//`BUY ${this.props.selectedToken}`
         },
         {
           component:TokenSelector,
