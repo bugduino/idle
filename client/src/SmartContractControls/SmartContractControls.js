@@ -10,6 +10,7 @@ import MaxCapModal from "../utilities/components/MaxCapModal";
 import axios from 'axios';
 import moment from 'moment';
 import CountUp from 'react-countup';
+import jQuery from 'jquery';
 
 const env = process.env;
 
@@ -73,55 +74,22 @@ class SmartContractControls extends React.Component {
 
   addResources = () => {
 
-    const resources = {
-      'https://code.jquery.com/jquery-3.3.1.slim.min.js': () => {
-        const script_0x_overlay_click = document.createElement("script");
-        script_0x_overlay_click.type = 'text/javascript';
-        script_0x_overlay_click.innerHTML = `
-        jQuery(document).on('click', '.zeroExInstantOverlay', function (e) {
-            const $target = jQuery(e.target);
-            const isOverlay = jQuery($target.parents()[0]).hasClass('zeroExInstantOverlay');
-            const isCloseButton = jQuery($target.parents()[1]).hasClass('zeroExInstantOverlayCloseButton') || jQuery($target.parents()[0]).hasClass('zeroExInstantOverlayCloseButton') || jQuery($target.parents()[2]).hasClass('zeroExInstantOverlayCloseButton');
-            if (isOverlay || isCloseButton){
-              window.zeroExInstant.unrender();
-            }
-        });
-        `;
-        document.body.appendChild(script_0x_overlay_click);
-      },
-      'https://instant.0x.org/instant.js':{},
-      'https://verify.testwyre.com/js/widget-loader.js':{}
-      // 'https://cdn.moonpay.io/moonpay-sdk.js':() => {
-      //   window.moonpay.initialize('pk_test_xZO2dhqZb9gO65wHKCCFmMJ5fbSyHSI');
-      // }
-      // 'https://cdnjs.cloudflare.com/ajax/libs/fingerprintjs2/2.1.0/fingerprint2.min.js':{},
-      // 'https://verify.testwyre.com/js/verify-module-init-beta.js':{},
-      // 'https://js.stripe.com/v3/':{} // Needed for wyre debit card
-    };
-
-    Object.keys(resources).forEach((url,i) => {
-      const script = document.createElement("script");
-
-      const callback = resources[url];
-
-      if (typeof callback==='function'){
-        if (script.readyState) {  // only required for IE <9
-          script.onreadystatechange = function() {
-            if ( script.readyState === 'loaded' || script.readyState === 'complete' ) {
-              script.onreadystatechange = null;
-              callback();
-            }
-          };
-        } else {  //Others
-          script.onload = callback;
-        }
-      }
-
-      script.src = url;
-      script.async = true;
-
-      document.head.appendChild(script);
-    });
+    if (!document.getElementById('script_0x_overlay_click')){
+      const script_0x_overlay_click = document.createElement("script");
+      script_0x_overlay_click.id = 'script_0x_overlay_click';
+      script_0x_overlay_click.type = 'text/javascript';
+      script_0x_overlay_click.innerHTML = `
+      window.jQuery(document).on('click', '.zeroExInstantOverlay', function (e) {
+          const $target = window.jQuery(e.target);
+          const isOverlay = window.jQuery($target.parents()[0]).hasClass('zeroExInstantOverlay');
+          const isCloseButton = window.jQuery($target.parents()[1]).hasClass('zeroExInstantOverlayCloseButton') || window.jQuery($target.parents()[0]).hasClass('zeroExInstantOverlayCloseButton') || window.jQuery($target.parents()[2]).hasClass('zeroExInstantOverlayCloseButton');
+          if (isOverlay || isCloseButton){
+            window.zeroExInstant.unrender();
+          }
+      });
+      `;
+      document.body.appendChild(script_0x_overlay_click);
+    }
 
     // Add 0x Instant style (mobile)
     const style = document.createElement('style');
@@ -998,7 +966,8 @@ class SmartContractControls extends React.Component {
 
   async componentDidMount() {
 
-    // customLog('SmartContractControls componentDidMount',this.state.accountBalanceToken);
+    window.jQuery = jQuery;
+    // customLog('SmartContractControls componentDidMount',jQuery);
 
     this.addResources();
 

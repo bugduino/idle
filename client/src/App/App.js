@@ -94,7 +94,6 @@ class App extends Component {
   }
 
   setConnector(connectorName,walletProvider){
-    console.log('setConnector',connectorName,walletProvider);
     return this.setState({
       connectorName,
       walletProvider

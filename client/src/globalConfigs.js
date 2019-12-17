@@ -41,7 +41,7 @@ const globalConfigs = {
     },
     providers: {
       wyre: {
-        enabled:false,
+        enabled: true,
         imageSrc: 'images/payments/wyre.svg',
         imageProps: {
           height: '35px',
@@ -53,6 +53,7 @@ const globalConfigs = {
         supportedMethods:['bank','card'],
         supportedCountries:['USA','GBR','AUS','BRA','CHN','MEX'],
         supportedTokens:['USDC','DAI','SAI','ETH'],
+        remoteResources:{'https://verify.testwyre.com/js/widget-loader.js':{}},
         env:'prod',
         envParams:{
           test:{
@@ -189,6 +190,7 @@ const globalConfigs = {
           subcaption: '~ 0.75% fee ~',
           supportedMethods:['wallet'],
           supportedTokens:['USDC','DAI','SAI'],
+          remoteResources:{'https://instant.0x.org/instant.js':{}},
           getInitParams: (props,globalConfigs) => {
             return {
               orderSource: props.tokenConfig.zeroExInstant.orderSource,

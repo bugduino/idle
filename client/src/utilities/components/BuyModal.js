@@ -27,6 +27,47 @@ class BuyModal extends React.Component {
     selectedCountry:null
   }
 
+  async componentDidMount() {
+
+    // Load payments providers external remote resources
+    Object.keys(globalConfigs.payments.providers).forEach((provider,i) => {
+
+      const providerInfo = globalConfigs.payments.providers[provider];
+      if (providerInfo.enabled && providerInfo.remoteResources && (providerInfo.supportedTokens.indexOf(this.props.selectedToken) !== -1 || providerInfo.supportedTokens.indexOf(globalConfigs.baseToken) !== -1) ){
+        
+        const remoteResources = providerInfo.remoteResources;
+
+        Object.keys(remoteResources).forEach((url,j) => {
+          const scriptID = `script_${provider}_${j}`;
+
+          if (!document.getElementById(scriptID)){
+            const script = document.createElement("script");
+            const callback = remoteResources[url];
+
+            if (typeof callback === 'function'){
+              if (script.readyState) {  // only required for IE <9
+                script.onreadystatechange = function() {
+                  if ( script.readyState === 'loaded' || script.readyState === 'complete' ) {
+                    script.onreadystatechange = null;
+                    callback();
+                  }
+                };
+              } else {  //Others
+                script.onload = callback;
+              }
+            }
+
+            script.id = scriptID;
+            script.src = url;
+            script.async = true;
+
+            document.head.appendChild(script);
+          }
+        });
+      }
+    });
+  }
+
   renderPaymentMethod = async (e,provider,buyParams) => {
 
     this.closeModal(e);
