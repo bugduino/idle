@@ -41,7 +41,7 @@ const globalConfigs = {
     },
     providers: {
       wyre: {
-        enabled: true,
+        enabled: false,
         imageSrc: 'images/payments/wyre.svg',
         imageProps: {
           height: '35px',
@@ -138,7 +138,7 @@ const globalConfigs = {
         caption: 'Buy with',
         captionPos: 'top',
         subcaption: '~ 4.5% fee ~',
-        supportedMethods:['card'],
+        supportedMethods:['card','bank'],
         supportedCountries:['GBR','AUS','BRA','CHN','MEX','CAN','HKG','RUS','ZAF','KOR'],
         supportedTokens:['USDC','DAI','ETH'],
         env:'prod',
