@@ -1,6 +1,6 @@
 import { Connectors } from "web3-react";
 import TrezorApi from "trezor-connect";
-// import WalletConnectApi from "@walletconnect/web3-subprovider";
+import WalletConnectApi from "@walletconnect/web3-subprovider";
 import FortmaticApi from "fortmatic";
 import PortisApi from "@portis/web3";
 
@@ -9,7 +9,7 @@ const {
   NetworkOnlyConnector,
   TrezorConnector,
   LedgerConnector,
-  // WalletConnectConnector,
+  WalletConnectConnector,
   FortmaticConnector,
   PortisConnector
 } = Connectors;
@@ -48,12 +48,12 @@ const Ledger = new LedgerConnector({
   defaultNetwork
 });
 
-// const WalletConnect = new WalletConnectConnector({
-//   api: WalletConnectApi,
-//   bridge: "https://bridge.walletconnect.org",
-//   supportedNetworkURLs,
-//   defaultNetwork
-// });
+const WalletConnect = new WalletConnectConnector({
+  api: WalletConnectApi,
+  bridge: "https://bridge.walletconnect.org",
+  supportedNetworkURLs,
+  defaultNetwork
+});
 
 const Fortmatic = new FortmaticConnector({
   api: FortmaticApi,
@@ -73,6 +73,6 @@ export default {
   Fortmatic,
   Trezor,
   Ledger,
-  // WalletConnect,
+  WalletConnect,
   Portis
 };

@@ -1882,50 +1882,49 @@
   dependencies:
     "@types/ethereum-protocol" "*"
 
-"@walletconnect/browser@^1.0.0-beta.25":
-  version "1.0.0-beta.25"
-  resolved "https://registry.yarnpkg.com/@walletconnect/browser/-/browser-1.0.0-beta.25.tgz#4dfc692237db84ca41729c7eea6c2dbb2a583a58"
+"@walletconnect/browser@^1.0.0-beta.39":
+  version "1.0.0-beta.39"
+  resolved "https://registry.yarnpkg.com/@walletconnect/browser/-/browser-1.0.0-beta.39.tgz#db46d57e78d7a5e0be75c349821ef7c873e87b61"
   dependencies:
-    "@walletconnect/core" "^1.0.0-beta.25"
-    "@walletconnect/types" "^1.0.0-beta.25"
-    "@walletconnect/utils" "^1.0.0-beta.25"
+    "@walletconnect/core" "^1.0.0-beta.39"
+    "@walletconnect/types" "^1.0.0-beta.39"
+    "@walletconnect/utils" "^1.0.0-beta.39"
 
-"@walletconnect/core@^1.0.0-beta.25":
-  version "1.0.0-beta.25"
-  resolved "https://registry.yarnpkg.com/@walletconnect/core/-/core-1.0.0-beta.25.tgz#a0e1f27df66da3ecb9693eac3672f40970c01083"
+"@walletconnect/core@^1.0.0-beta.39":
+  version "1.0.0-beta.39"
+  resolved "https://registry.yarnpkg.com/@walletconnect/core/-/core-1.0.0-beta.39.tgz#43d05dbabcaeea491c0ee213ed60d2236672010f"
   dependencies:
-    "@walletconnect/types" "^1.0.0-beta.25"
-    "@walletconnect/utils" "^1.0.0-beta.25"
+    "@walletconnect/types" "^1.0.0-beta.39"
+    "@walletconnect/utils" "^1.0.0-beta.39"
 
-"@walletconnect/qrcode-modal@^1.0.0-beta.25":
-  version "1.0.0-beta.25"
-  resolved "https://registry.yarnpkg.com/@walletconnect/qrcode-modal/-/qrcode-modal-1.0.0-beta.25.tgz#fbb813b9ad659edf60a91e521fe1c66a34b67cd5"
+"@walletconnect/qrcode-modal@^1.0.0-beta.39":
+  version "1.0.0-beta.39"
+  resolved "https://registry.yarnpkg.com/@walletconnect/qrcode-modal/-/qrcode-modal-1.0.0-beta.39.tgz#c1f1b73ead0a72fb77613c390e57634feafefff6"
   dependencies:
-    "@walletconnect/types" "^1.0.0-beta.25"
     qr-image "^3.2.0"
+    qrcode-terminal "^0.12.0"
 
-"@walletconnect/types@^1.0.0-beta.25":
-  version "1.0.0-beta.25"
-  resolved "https://registry.yarnpkg.com/@walletconnect/types/-/types-1.0.0-beta.25.tgz#18b6bcbd73d25f99023b5124c9d92900b3b71a46"
+"@walletconnect/types@^1.0.0-beta.39":
+  version "1.0.0-beta.39"
+  resolved "https://registry.yarnpkg.com/@walletconnect/types/-/types-1.0.0-beta.39.tgz#e84463f32d6c450376db3d0ce56f0ece6608bfa7"
 
-"@walletconnect/utils@^1.0.0-beta.25":
-  version "1.0.0-beta.25"
-  resolved "https://registry.yarnpkg.com/@walletconnect/utils/-/utils-1.0.0-beta.25.tgz#6ddffb9553e9c013ce4c62297a86b024f7afd250"
+"@walletconnect/utils@^1.0.0-beta.39":
+  version "1.0.0-beta.39"
+  resolved "https://registry.yarnpkg.com/@walletconnect/utils/-/utils-1.0.0-beta.39.tgz#8909b9cffa3999b046ce32cbb21b8ddca97b9183"
   dependencies:
     "@ethersproject/address" "^5.0.0-beta.125"
     "@ethersproject/bytes" "^5.0.0-beta.126"
     "@ethersproject/strings" "^5.0.0-beta.125"
-    "@walletconnect/types" "^1.0.0-beta.25"
+    "@walletconnect/types" "^1.0.0-beta.39"
     bignumber.js "^8.1.1"
 
-"@walletconnect/web3-subprovider@^1.0.0-beta.1":
-  version "1.0.0-beta.25"
-  resolved "https://registry.yarnpkg.com/@walletconnect/web3-subprovider/-/web3-subprovider-1.0.0-beta.25.tgz#8c36f3a0a2c75c2929bb76fffd02df862ebfb7f7"
+"@walletconnect/web3-subprovider@^1.0.0-beta.39":
+  version "1.0.0-beta.39"
+  resolved "https://registry.yarnpkg.com/@walletconnect/web3-subprovider/-/web3-subprovider-1.0.0-beta.39.tgz#88280a80c36d98a7f954410a530f49f6ed6cadc2"
   dependencies:
-    "@walletconnect/browser" "^1.0.0-beta.25"
-    "@walletconnect/qrcode-modal" "^1.0.0-beta.25"
-    "@walletconnect/types" "^1.0.0-beta.25"
-    "@walletconnect/utils" "^1.0.0-beta.25"
+    "@walletconnect/browser" "^1.0.0-beta.39"
+    "@walletconnect/qrcode-modal" "^1.0.0-beta.39"
+    "@walletconnect/types" "^1.0.0-beta.39"
     web3-provider-engine "github:walletconnect/web3-provider-engine"
 
 "@web3-js/scrypt-shim@^0.1.0":
@@ -10860,6 +10859,10 @@ qr-image@^3.2.0:
 qr.js@0.0.0:
   version "0.0.0"
   resolved "https://registry.yarnpkg.com/qr.js/-/qr.js-0.0.0.tgz#cace86386f59a0db8050fa90d9b6b0e88a1e364f"
+
+qrcode-terminal@^0.12.0:
+  version "0.12.0"
+  resolved "https://registry.yarnpkg.com/qrcode-terminal/-/qrcode-terminal-0.12.0.tgz#bb5b699ef7f9f0505092a3748be4464fe71b5819"
 
 qrcode.react@^0.9.3:
   version "0.9.3"
