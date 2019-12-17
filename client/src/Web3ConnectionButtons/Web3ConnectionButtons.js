@@ -32,10 +32,12 @@ export default function Web3ConnectionButtons(props) {
   };
   const unsetConnector = async () => {
     if (localStorage) {
-      localStorage.setItem('walletProvider', '');
+      localStorage.removeItem('connectorName');
+      localStorage.removeItem('walletProvider');
     }
     return await context.unsetConnector();
   };
+  
   const isMetamask = GeneralUtil.hasMetaMask();
   const isOpera = GeneralUtil.isOpera();
   const onlyPortis = props.onlyPortis;

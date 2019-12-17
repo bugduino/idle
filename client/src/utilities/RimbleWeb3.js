@@ -1,5 +1,5 @@
 import React from 'react';
-
+import WalletConnectQRCodeModal from "@walletconnect/qrcode-modal";
 import ConnectionModalUtil from "./ConnectionModalsUtil";
 import NetworkUtil from "./NetworkUtil";
 import BigNumber from 'bignumber.js';
@@ -78,6 +78,15 @@ let setConnectorName = null;
 class RimbleTransaction extends React.Component {
   static Consumer = RimbleTransactionContext.Consumer;
 
+  componentDidUpdate = (prevProps, prevState) => {
+    if (localStorage){
+      const context = JSON.parse(localStorage.getItem('context'));
+      if (!context || (this.props.context.active !== context.active || this.props.context.connectorName !== context.connectorName)){
+        localStorage.setItem('context',JSON.stringify({active:this.props.context.active,connectorName:this.props.context.connectorName}));
+      }
+    }
+  }
+
   // Initialize a web3 provider
   initWeb3 = async () => {
 
@@ -93,42 +102,48 @@ class RimbleTransaction extends React.Component {
       window.RimbleWeb3_context = context;
     }
 
+    // Check localstorage
+    const connectorName = localStorage ? localStorage.getItem('connectorName') : null;
+    const walletProvider = localStorage ? localStorage.getItem('walletProvider') : null;
+    const last_context = localStorage ? JSON.parse(localStorage.getItem('context')) : null;
+
+    console.log('initWeb3 context',connectorName,setConnectorName);
+
     if (!context.active) {
-      // Check localstorage
-      let connectorName = localStorage ? localStorage.getItem('connectorName') : null;
-      let walletProvider = localStorage ? localStorage.getItem('walletProvider') : null;
-
-      // Catch Moonpay url params
-      if (window.URL){
-        const Url = new window.URL(window.location.href);
-        const UrlParams = Url.searchParams;
-        const transactionId = UrlParams.get('transactionId');
-        const transactionStatus = UrlParams.get('transactionStatus');
-        if (transactionId && transactionStatus){
-          connectorName = UrlParams.get('connectorName');
-          const currencyCode = UrlParams.get('currencyCode');
-
-          // Show payment status on Toast
-          window.toastProvider.addMessage(`Moonpay payment pending`, {
-            secondaryMessage: `Your ${currencyCode} is on its way`,
-            colorTheme: 'light',
-            actionHref: "",
-            actionText: "",
-            variant: "processing",
-          });
-        }
-      }
-
       // Select preferred web3 provider
       if (connectorName && connectorName !== 'Infura' && connectorName !== setConnectorName){
+        console.log('initWeb3 set connector',connectorName);
         setConnectorName = connectorName;
         this.props.setConnector(connectorName,walletProvider);
         await context.setFirstValidConnector([connectorName, 'Infura']);
         return;
-      }
+      } else if (setConnectorName){
+        // Catch WalletConnect unexpected disconnect and fallback to Infura
+        if (connectorName === 'WalletConnect' && connectorName === setConnectorName && last_context && last_context.active && last_context.connectorName==='WalletConnect' && !context.connectorName){
+          console.log('WalletConnect disconnected! Set Infura connector');
+          this.props.setConnector('Infura',null);
+          if (localStorage){
+            localStorage.removeItem('walletProvider');
+            localStorage.removeItem('connectorName');
+            localStorage.setItem('context',JSON.stringify({active:context.active,connectorName:context.connectorName}));
+          }
+          await context.unsetConnector();
+          await context.setFirstValidConnector(['Infura']);
+        }
 
-      if (setConnectorName){
+        console.log('initWeb3 skip due to setConnectorName ('+setConnectorName+') already set');
         return;
+      }
+    } else if (context.connectorName === "WalletConnect") {
+      if (!context.account) {
+        WalletConnectQRCodeModal.open(
+          context.connector.walletConnector.uri,
+          () => {}
+        );
+      } else {
+        try {
+          WalletConnectQRCodeModal.close();
+        } catch {}
       }
     }
 
@@ -740,6 +755,7 @@ class RimbleTransaction extends React.Component {
     accountBalance: null,
     accountBalanceDAI: null,
     accountBalanceLow: null,
+    context:null,
     web3: null,
     transactions: {},
     checkPreflight: this.checkPreflight,

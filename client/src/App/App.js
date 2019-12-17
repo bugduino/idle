@@ -43,6 +43,10 @@ class App extends Component {
 
   componentWillMount() {
 
+    if (localStorage){
+      localStorage.removeItem('context');
+    }
+
     let selectedToken = this.state.selectedToken;
     if (!selectedToken){
       selectedToken = localStorage ? localStorage.getItem('selectedToken') : null;
@@ -131,6 +135,7 @@ class App extends Component {
               {context => {
                 return (
                   <RimbleWeb3
+                    connectors={connectors}
                     config={this.config}
                     context={context}
                     tokenConfig={this.state.tokenConfig}
