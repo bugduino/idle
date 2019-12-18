@@ -87,12 +87,10 @@ class Header extends React.Component {
 
   async componentDidMount() {
 
-    // console.log('componentDidMount TokenConfig',this.props.tokenConfig);
-
     // do not wait for each one just for the first who will guarantee web3 initialization
     const web3 = await this.props.initWeb3();
     if (!web3) {
-      return console.log('No Web3 SmartContractControls')
+      return false;
     }
 
     await this.props.initContract(this.props.tokenConfig.idle.token, this.props.tokenConfig.idle.address, this.props.tokenConfig.idle.abi);

@@ -6,9 +6,12 @@ import NetworkUtil from "./NetworkUtil";
 import BigNumber from 'bignumber.js';
 import Web3 from "web3";
 import jQuery from 'jquery';
+import moment from 'moment';
 
 require('dotenv').config();
 const INFURA_KEY = process.env["REACT_APP_INFURA_KEY"];
+const LOG_ENABLED = false;
+const customLog = (...props) => { if (LOG_ENABLED) console.log(moment().format('HH:mm:ss'),...props); };
 const BNify = s => new BigNumber(String(s));
 
 const RimbleTransactionContext = React.createContext({
@@ -115,12 +118,12 @@ class RimbleTransaction extends React.Component {
     const walletProvider = localStorage ? localStorage.getItem('walletProvider') : null;
     const last_context = localStorage ? JSON.parse(localStorage.getItem('context')) : null;
 
-    console.log('initWeb3 context',connectorName,setConnectorName);
+    customLog('initWeb3 context',connectorName,setConnectorName);
 
     if (!context.active) {
       // Select preferred web3 provider
       if (connectorName && connectorName !== 'Infura' && connectorName !== setConnectorName){
-        console.log('initWeb3 set connector',connectorName);
+        customLog('initWeb3 set connector',connectorName);
         setConnectorName = connectorName;
         this.props.setConnector(connectorName,walletProvider);
         await context.setFirstValidConnector([connectorName, 'Infura']);
@@ -128,7 +131,7 @@ class RimbleTransaction extends React.Component {
       } else if (setConnectorName){
         // Catch WalletConnect unexpected disconnect and fallback to Infura
         if (connectorName === 'WalletConnect' && connectorName === setConnectorName && last_context && last_context.active && last_context.connectorName==='WalletConnect' && !context.connectorName){
-          console.log('WalletConnect disconnected! Set Infura connector');
+          customLog('WalletConnect disconnected! Set Infura connector');
           this.props.setConnector('Infura',null);
           if (localStorage){
             localStorage.removeItem('walletProvider');
@@ -139,7 +142,7 @@ class RimbleTransaction extends React.Component {
           await context.setFirstValidConnector(['Infura']);
         }
 
-        console.log('initWeb3 skip due to setConnectorName ('+setConnectorName+') already set');
+        customLog('initWeb3 skip due to setConnectorName ('+setConnectorName+') already set');
         return web3;
       }
     } else if (context.connectorName === "WalletConnect") {
@@ -174,15 +177,15 @@ class RimbleTransaction extends React.Component {
     if (!web3) { // safety web3 implementation
 
       if (window.ethereum) {
-        console.log("Using modern web3 provider.");
+        customLog("Using modern web3 provider.");
         web3Provider = window.ethereum;
         // web3 = new Web3(window.ethereum);
       } else if (window.web3) {
-        console.log("Legacy web3 provider. Try updating.");
+        customLog("Legacy web3 provider. Try updating.");
         web3Provider = window.web3;
         // web3 = new Web3(window.web3.currentProvider);
       } else {
-        console.log("Non-Ethereum browser detected. Using Infura fallback.");
+        customLog("Non-Ethereum browser detected. Using Infura fallback.");
         web3Provider = new Web3.providers.HttpProvider(
           `https://mainnet.infura.io/v3/${INFURA_KEY}`
         );
@@ -193,7 +196,7 @@ class RimbleTransaction extends React.Component {
       web3Provider = web3.currentProvider;
     }
 
-    console.log('initWeb3 instantiate TerminalHttpProvider',web3);
+    customLog('initWeb3 instantiate TerminalHttpProvider',web3);
 
     web3 = new Web3(
       new TerminalHttpProvider({
@@ -220,13 +223,13 @@ class RimbleTransaction extends React.Component {
   }
 
   initContract = async (name, address, abi) => {
-    console.log(`Init contract: ${name}`);
+    customLog(`Init contract: ${name}`);
 
     return await this.createContract(name, address, abi);
   }
 
   createContract = async (name, address, abi) => {
-    console.log(`creating contract ${name} - addr: ${address}`);
+    customLog(`creating contract ${name} - addr: ${address}`);
     // Create contract on initialized web3 provider with given abi and address
     try {
       const contract = new this.state.web3.eth.Contract(abi, address);
@@ -236,8 +239,8 @@ class RimbleTransaction extends React.Component {
       }));
       return {name, contract};
     } catch (error) {
-      console.log("Could not create contract.");
-      console.log(error);
+      customLog("Could not create contract.");
+      customLog(error);
       window.toastProvider.addMessage("Contract creation failed.", {
         variant: "failure",
         colorTheme: 'light'
@@ -270,7 +273,7 @@ class RimbleTransaction extends React.Component {
       });
     } catch (error) {
       // User denied account access...
-      console.log("User cancelled connect request. Error:", error);
+      customLog("User cancelled connect request. Error:", error);
 
       // Reject Connect
       this.rejectAccountConnect(error);
@@ -293,7 +296,7 @@ class RimbleTransaction extends React.Component {
         this.getTokenDecimals()
       ]);
 
-      console.log('getAccountBalance',res[0],res[1].toString(),res[2].toString());
+      customLog('getAccountBalance',res[0],res[1].toString(),res[2].toString());
 
       let accountBalance = res[0];
       if (accountBalance) {
@@ -303,14 +306,14 @@ class RimbleTransaction extends React.Component {
         );
         accountBalance = BNify(accountBalance).toString();
         this.setState({ accountBalance });
-        console.log("account balance: ", accountBalance);
+        customLog("account balance: ", accountBalance);
         this.determineAccountLowBalance();
       }
 
       const tokenDecimals = res[2].toString();
       let accountBalanceToken = res[1];
 
-      // console.log('getAccountBalance',accountBalanceToken,accountBalanceToken.toString(),tokenDecimals,Math.pow(10,parseInt(tokenDecimals)));
+      // customLog('getAccountBalance',accountBalanceToken,accountBalanceToken.toString(),tokenDecimals,Math.pow(10,parseInt(tokenDecimals)));
       if (accountBalanceToken) {
         accountBalanceToken = BNify(accountBalanceToken.toString()).div(BNify(Math.pow(10,parseInt(tokenDecimals)).toString())).toString();
 
@@ -318,30 +321,30 @@ class RimbleTransaction extends React.Component {
           accountBalanceToken,
           [`accountBalance${this.props.selectedToken}`]:accountBalanceToken
         });
-        console.log(`account balance ${this.props.selectedToken}: `, accountBalanceToken);
+        customLog(`account balance ${this.props.selectedToken}: `, accountBalanceToken);
       }
     } catch (error) {
-      console.log("Failed to get account balance.", error);
+      customLog("Failed to get account balance.", error);
     }
   }
 
   initializeContracts = async () => {
 
-    // console.log('initializeContracts',this.props);
+    // customLog('initializeContracts',this.props);
 
     const tokenConfig = this.props.tokenConfig;
 
     // Initialize Token Contract
     let foundTokenContract = this.state.contracts.find(c => c.name === this.props.selectedToken);
     if (!foundTokenContract) {
-      console.log('initializeContracts, init contract',this.props.selectedToken, tokenConfig.address);
+      customLog('initializeContracts, init contract',this.props.selectedToken, tokenConfig.address);
       await this.initContract(this.props.selectedToken, tokenConfig.address, tokenConfig.abi);
     }
 
     // Initialize IdleToken Contract
     let foundIdleTokenContract = this.state.contracts.find(c => c.name === tokenConfig.idle.token);
     if (!foundIdleTokenContract) {
-      console.log('initializeContracts, init contract',tokenConfig.idle.token, tokenConfig.idle.address);
+      customLog('initializeContracts, init contract',tokenConfig.idle.token, tokenConfig.idle.address);
       await this.initContract(tokenConfig.idle.token, tokenConfig.idle.address, tokenConfig.idle.abi);
     }
   }
@@ -358,14 +361,14 @@ class RimbleTransaction extends React.Component {
   getTokenDecimals = async () => {
     const contract = await this.getContractByName(this.props.selectedToken);
     return await contract.methods.decimals().call().catch(error => {
-      console.log(`Failed to get ${this.props.selectedToken} decimals`, error);
+      customLog(`Failed to get ${this.props.selectedToken} decimals`, error);
     });
   }
 
   getTokenBalance = async (account) => {
     const contract = await this.getContractByName(this.props.selectedToken);
     return await contract.methods.balanceOf(account).call().catch(error => {
-      console.log(`Failed to get ${this.props.selectedToken} balance`, error);
+      customLog(`Failed to get ${this.props.selectedToken} balance`, error);
     });
   }
 
@@ -438,7 +441,7 @@ class RimbleTransaction extends React.Component {
         this.setState({ network });
       });
     } catch (error) {
-      console.log("Could not get network ID: ", error);
+      customLog("Could not get network ID: ", error);
     }
   }
 
@@ -452,7 +455,7 @@ class RimbleTransaction extends React.Component {
         this.setState({ network });
       });
     } catch (error) {
-      console.log("Could not get network Name: ", error);
+      customLog("Could not get network Name: ", error);
     }
   }
 
@@ -509,7 +512,7 @@ class RimbleTransaction extends React.Component {
     const { account, contracts } = this.state;
     let contract = contracts.find(c => c.name === contractName);
     if (!contract) {
-      return console.log(`No contract with name ${contractName}`);
+      return customLog(`No contract with name ${contractName}`);
     }
     contract = contract.contract;
     try {
@@ -525,7 +528,7 @@ class RimbleTransaction extends React.Component {
       contract.methods[contractMethod](...params)
         .send(value ? { from: account, value, gas  } : { from: account, gas })
         .on("transactionHash", hash => {
-          console.log('txOnTransactionHash', hash);
+          customLog('txOnTransactionHash', hash);
           // Submitted to block and received transaction hash
           // Set properties on the current transaction
           transaction.transactionHash = hash;
@@ -538,7 +541,7 @@ class RimbleTransaction extends React.Component {
           }
         })
         .on("confirmation", (confirmationNumber, receipt) => {
-          // console.log('txOnConfirmation', receipt);
+          // customLog('txOnConfirmation', receipt);
           // Update confirmation count on each subsequent confirmation that's received
           transaction.confirmationCount += 1;
 
@@ -546,7 +549,7 @@ class RimbleTransaction extends React.Component {
           const confidenceThreshold = this.props.config.requiredConfirmations || 1;
 
           if (transaction.confirmationCount === 1) {
-            console.log('Confirmed', receipt);
+            customLog('Confirmed', receipt);
             // Initial confirmation receipt
             transaction.status = "confirmed";
           } else if (transaction.confirmationCount < confidenceThreshold) {
@@ -574,13 +577,13 @@ class RimbleTransaction extends React.Component {
           }
         })
         .on("receipt", receipt => {
-          console.log('txOnReceipt', receipt);
+          customLog('txOnReceipt', receipt);
           // Received receipt, met total number of confirmations
           transaction.recentEvent = "receipt";
           this.updateTransaction(transaction);
         })
         .on("error", error => {
-          console.log('txOnError',error);
+          customLog('txOnError',error);
           // Errored out
           transaction.status = "error";
           transaction.recentEvent = "error";
@@ -651,7 +654,7 @@ class RimbleTransaction extends React.Component {
 
     let modals = { ...this.state.modals };
     modals.data.connectionModalIsOpen = false;
-    console.log("this.state", this.state);
+    customLog("this.state", this.state);
     this.setState({ modals });
   }
 

@@ -94,12 +94,10 @@ class BuyModal extends React.Component {
 
         widget.on("complete", function (e) {
             console.log("Wyre complete", e );
-
         });
 
         widget.on('ready', function(e) {
             console.log("Wyre ready", e );
-            // widget.open();
         });
 
         widget.open();

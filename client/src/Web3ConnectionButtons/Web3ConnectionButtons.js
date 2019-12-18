@@ -4,6 +4,10 @@ import { Button, Image, Box, Text, Flex, Icon, Link } from 'rimble-ui';
 import connectors from '../App/connectors';
 import GeneralUtil from "../utilities/GeneralUtil";
 import styles from './Web3ConnectionButtons.module.scss';
+import moment from 'moment';
+
+const LOG_ENABLED = false;
+const customLog = (...props) => { if (LOG_ENABLED) console.log(moment().format('HH:mm:ss'),...props); };
 
 export default function Web3ConnectionButtons(props) {
   const context = useWeb3Context()
@@ -11,11 +15,11 @@ export default function Web3ConnectionButtons(props) {
   const width = props.width || 1/2;
 
   if (!context.active && !context.error) {
-    console.log('context loading', context);
+    customLog('context loading', context);
   } else if (context.error) {
-    console.log('context error', context);
+    customLog('context error', context);
   } else {
-    console.log('context success', context);
+    customLog('context success', context);
   }
   const setConnector = async (connectorName,name) => {
     let walletProvider = connectorName === 'Injected' ? name : connectorName;
