@@ -316,7 +316,7 @@ class SmartContractControls extends React.Component {
     let price = await this.getPriceInToken(contractName);
     let balance = await this.genericContractCall(contractName, 'balanceOf', [this.props.account]);
 
-    console.log('getBalanceOf',balance);
+    customLog('getBalanceOf',balance);
 
     if (balance) {  
 
@@ -840,7 +840,7 @@ class SmartContractControls extends React.Component {
 
         const realTx = await (new Promise( async (resolve, reject) => {
           window.web3.eth.getTransaction(tx.transactionHash,(err,tx)=>{
-            console.log('realTx',tx);
+            customLog('realTx',tx);
             if (err){
               reject(err);
             }
@@ -949,8 +949,6 @@ class SmartContractControls extends React.Component {
         }
       });
 
-      // console.log('processTransactionUpdates',refresh,update_txs,prevTxs);
-
       if (refresh){
         this.setState({
           executedTxs,
@@ -1026,13 +1024,11 @@ class SmartContractControls extends React.Component {
       await this.componentDidMount();
     }
 
-    // console.log('componentDidUpdate',prevProps,this.props,prevState,this.state);
-
-    if (this.props.account && (accountChanged || this.state.needsUpdate || selectedTokenChanged)) {
+    if (this.props.account && !this.state.updateInProgress && (accountChanged || this.state.needsUpdate || selectedTokenChanged)) {
 
       // Reset funds and force loader
       this.setState({
-        'tokenBalance':null,
+        tokenBalance:null,
         tokenToRedeemParsed:null,
         amountLent:null,
         earning:null,
@@ -1040,20 +1036,25 @@ class SmartContractControls extends React.Component {
         needsUpdate: false
       });
 
+      customLog('Call async functions...');
       await Promise.all([
-        this.props.getAccountBalance(),
+        // this.props.getAccountBalance(),
         this.getTokenBalance(),
         this.checkTokenApproved(), // Check if the token is already approved
         this.getPrevTxs(),
-        this.getOldBalanceOf('OldIdleDAI'),
+        // this.getOldBalanceOf('OldIdleDAI'),
         this.getTotalSupply(this.props.tokenConfig.idle.token)
       ]);
+
+      customLog('Async functions completed...');
 
       // Keep this call seprated from others cause it needs getPrevTxs results
       await this.getBalanceOf(this.props.tokenConfig.idle.token);
 
+      customLog('getBalanceOf function completed...');
+
       if (this.props.selectedTab === '3') {
-        await this.rebalanceCheck();
+        this.rebalanceCheck();
       }
 
       /*
