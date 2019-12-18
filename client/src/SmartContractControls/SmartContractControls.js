@@ -20,7 +20,7 @@ const OldIdleAddress = '0x10cf8e1CDba9A2Bd98b87000BCAdb002b13eA525'; // v0.1 hac
 const daysInYear = 365.2422;
 let componendUnmounted;
 
-const LOG_ENABLED = false;
+const LOG_ENABLED = true;
 const customLog = (...props) => { if (LOG_ENABLED) console.log(moment().format('HH:mm:ss'),...props); };
 const customLogError = (...props) => { if (LOG_ENABLED) console.error(moment().format('HH:mm:ss'),...props); };
 
@@ -299,12 +299,15 @@ class SmartContractControls extends React.Component {
       return false;
     }
 
+    // Update balance in AccountOverview
+    await this.props.getAccountBalance();
+
     let price = await this.getPriceInToken(contractName);
     let balance = await this.genericContractCall(contractName, 'balanceOf', [this.props.account]);
 
     customLog('getBalanceOf',balance);
 
-    if (balance) {  
+    if (balance) {
 
       balance = this.BNify(balance).div(1e18);
       price = this.BNify(price).div(1e18);
@@ -897,6 +900,7 @@ class SmartContractControls extends React.Component {
     const transactions = this.state.prevTxs || {};
     let update_txs = false;
     let refresh = false;
+    let needsUpdate = false; 
     const executedTxs = {};
     if (Object.keys(this.props.transactions).length){
       Object.keys(this.props.transactions).forEach(key => {
@@ -904,12 +908,17 @@ class SmartContractControls extends React.Component {
         // Check if it is a new transaction OR status changed 
         if ((!prevTxs[key] || prevTxs[key].status !== newTx.status)){
 
+          needsUpdate = newTx.status === 'success';
+          refresh = needsUpdate || newTx.status === 'error';
+
           // Delete pending transaction if succeded or error
-          if (newTx.status === 'success' || newTx.status === 'error') {
-              refresh = true;
-              if (newTx.status === 'success'){
+          if (refresh) {
+              if (needsUpdate){
                 executedTxs[newTx.transactionHash] = newTx;
               }
+
+              // Delete pending transaction
+              delete transactions[key];
           // Transaction is pending add it in the list
           } else {
             let tx = {
@@ -939,12 +948,12 @@ class SmartContractControls extends React.Component {
         this.setState({
           executedTxs,
           prevTxs: transactions,
-          'needsUpdate':true
+          needsUpdate
         });
       } else if (update_txs){
         this.setState({
           prevTxs: transactions,
-          'needsUpdate':false
+          needsUpdate
         });
       }
     }
@@ -1025,8 +1034,8 @@ class SmartContractControls extends React.Component {
       });
 
       customLog('Call async functions...');
+
       await Promise.all([
-        // this.props.getAccountBalance(),
         this.getTokenBalance(),
         this.checkTokenApproved(), // Check if the token is already approved
         this.getPrevTxs(),
