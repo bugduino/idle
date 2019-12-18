@@ -1430,7 +1430,7 @@ class SmartContractControls extends React.Component {
                   <>
                     {
                       this.state.lendingTx ? (
-                        <TxProgressBar initWeb3={this.props.initWeb3} waitText={'Lending estimated in'} endMessage={'Finalizing lend request...'} hash={this.state.lendingTx.transactionHash} />
+                        <TxProgressBar web3={this.props.web3} waitText={'Lending estimated in'} endMessage={'Finalizing lend request...'} hash={this.state.lendingTx.transactionHash} />
                       ) : (
                         <Flex
                           justifyContent={'center'}
@@ -1447,7 +1447,7 @@ class SmartContractControls extends React.Component {
                   <>
                     {
                       this.state.approveTx ? (
-                        <TxProgressBar initWeb3={this.props.initWeb3} waitText={'Approving estimated in'} endMessage={'Finalizing approve request...'} hash={this.state.approveTx.transactionHash} />
+                        <TxProgressBar web3={this.props.web3} waitText={'Approving estimated in'} endMessage={'Finalizing approve request...'} hash={this.state.approveTx.transactionHash} />
                       ) : (
                         <Flex
                           justifyContent={'center'}
@@ -1559,7 +1559,7 @@ class SmartContractControls extends React.Component {
                                   </Flex>
                                   ) : 
                                     this.state.redeemTx ? (
-                                      <TxProgressBar initWeb3={this.props.initWeb3} waitText={'Redeeming estimated in'} endMessage={'Finalizing redeem request...'} hash={this.state.redeemTx.transactionHash} />
+                                      <TxProgressBar web3={this.props.web3} waitText={'Redeeming estimated in'} endMessage={'Finalizing redeem request...'} hash={this.state.redeemTx.transactionHash} />
                                     ) : (
                                       <Flex
                                         justifyContent={'center'}

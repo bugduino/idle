@@ -1,13 +1,16 @@
 import React, { Component } from 'react';
 import { Flex, Text, Progress, Loader } from 'rimble-ui'
 import axios from 'axios';
-// import moment from 'moment';
+import moment from 'moment';
 import BigNumber from 'bignumber.js';
 
-const customLog = (...props) => { /*console.log(moment().format('HH:mm:ss'),...props);*/ };
+const LOG_ENABLED = false;
+const customLog = (...props) => { if (LOG_ENABLED) console.log(moment().format('HH:mm:ss'),...props); };
+const BNify = s => new BigNumber(String(s));
 
 class TxProgressBar extends Component {
   state = {
+    initialized:false,
     estimatedTime:null,
     remainingTime:null,
     percentage:0,
@@ -24,30 +27,22 @@ class TxProgressBar extends Component {
     }
   }
 
-  async initWeb3(){
-    const web3 = await this.props.initWeb3();
-
-    if (!web3) {
-      customLog('No Web3 SmartContractControls');
-      return false;
-    } else {
-      this.setState({ web3 }, async () => {
-        await this.initProgressBar();
-      });
-      return web3;
+  async componentDidUpdate(prevProps){
+    if (!this.state.initialized && !prevProps.web3 && this.props.web3){
+      await this.initProgressBar();
     }
   }
 
-  BNify = s => new BigNumber(String(s));
-
   async componentDidMount() {
-    await this.initWeb3();
+    if (this.props.web3){
+      await this.initProgressBar();
+    }
   }
 
   async getTransactionReceipt() {
     return new Promise( async (resolve, reject) => {
       customLog('getTransactionReceipt',this.props.hash);
-      this.state.web3.eth.getTransactionReceipt(this.props.hash,(err,transactionReceipt) => {
+      this.props.web3.eth.getTransactionReceipt(this.props.hash,(err,transactionReceipt) => {
         if (transactionReceipt){
           customLog('getTransactionReceipt resolved',transactionReceipt);
           this.setState({
@@ -64,7 +59,7 @@ class TxProgressBar extends Component {
   async getTransaction() {
     return new Promise( async (resolve, reject) => {
       customLog('getTransaction',this.props.hash);
-      this.state.web3.eth.getTransaction(this.props.hash,(err,transaction) => {
+      this.props.web3.eth.getTransaction(this.props.hash,(err,transaction) => {
         if (transaction){
           customLog('getTransaction resolved',transaction);
           this.setState({
@@ -145,7 +140,7 @@ class TxProgressBar extends Component {
     }
     return new Promise( async (resolve, reject) => {
       customLog('getTransactionTimestamp',this.state.transaction.blockNumber);
-      this.state.web3.eth.getBlock(this.state.transaction.blockNumber,(err,block) => {
+      this.props.web3.eth.getBlock(this.state.transaction.blockNumber,(err,block) => {
         if (block){
           customLog('getTransactionTimestamp resolved',block);
           return resolve(block.timestamp);
@@ -186,7 +181,7 @@ class TxProgressBar extends Component {
     }
 
     if (!this.state.transaction.blockNumber){
-      const gasPrice = parseFloat(this.BNify(this.state.transaction.gasPrice).div(1e9).toString());
+      const gasPrice = parseFloat(BNify(this.state.transaction.gasPrice).div(1e9).toString());
       remainingTime = this.getTxEstimatedTime(gasPrice);
     }
 
@@ -230,6 +225,10 @@ class TxProgressBar extends Component {
       this.getPredictionTable(),
       this.getBlockTime()
     ]);
+
+    this.setState({
+      initialized:true
+    });
 
     try{
       this.calculateRemainingTime();
