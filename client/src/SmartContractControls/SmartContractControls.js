@@ -825,7 +825,7 @@ class SmartContractControls extends React.Component {
         }
 
         const realTx = await (new Promise( async (resolve, reject) => {
-          this.state.web3.eth.getTransaction(tx.transactionHash,(err,tx)=>{
+          this.props.web3.eth.getTransaction(tx.transactionHash,(err,tx)=>{
             customLog('realTx',tx);
             if (err){
               reject(err);
