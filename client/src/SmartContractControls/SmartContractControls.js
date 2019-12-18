@@ -197,20 +197,6 @@ class SmartContractControls extends React.Component {
     }));
   }
 
-  listenTransaction = (hash,callback) => {
-    window.web3.eth.getTransactionReceipt(hash,(err,tx) => {
-      customLog('getTransactionReceipt',hash,tx);
-      if (tx){
-        if (callback){
-          return callback(tx);
-        }
-        return tx;
-      }
-      setTimeout(() => { this.listenTransaction(hash,callback) },5000);
-      return err;
-    });
-  }
-
   getAprs = async () => {
     const aprs = await this.genericIdleCall('getAPRs');
 
@@ -806,13 +792,13 @@ class SmartContractControls extends React.Component {
       // Deposited
       if (tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()){
         amountLent = amountLent.plus(this.BNify(tx.value));
-        customLog('Deposited '+parseFloat(tx.value),'AmountLent',amountLent.toString());
+        // customLog('Deposited '+parseFloat(tx.value),'AmountLent',amountLent.toString());
       } else if (tx.to.toLowerCase() === this.props.account.toLowerCase()){
         amountLent = amountLent.minus(this.BNify(tx.value));
         if (amountLent.lt(0)){
           amountLent = this.BNify(0);
         }
-        customLog('Redeemed '+parseFloat(tx.value),'AmountLent',amountLent.toString());
+        // customLog('Redeemed '+parseFloat(tx.value),'AmountLent',amountLent.toString());
       }
       transactions[tx.hash] = tx;
     });
@@ -839,7 +825,7 @@ class SmartContractControls extends React.Component {
         }
 
         const realTx = await (new Promise( async (resolve, reject) => {
-          window.web3.eth.getTransaction(tx.transactionHash,(err,tx)=>{
+          this.state.web3.eth.getTransaction(tx.transactionHash,(err,tx)=>{
             customLog('realTx',tx);
             if (err){
               reject(err);
@@ -873,13 +859,13 @@ class SmartContractControls extends React.Component {
 
         if (realTx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()){
           amountLent = amountLent.plus(this.BNify(realTx.value));
-          customLog('Deposited '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
+          // customLog('Deposited '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
         } else if (realTx.to.toLowerCase() === this.props.account.toLowerCase()){
           amountLent = amountLent.minus(this.BNify(realTx.value));
           if (amountLent.lt(0)){
             amountLent = this.BNify(0);
           }
-          customLog('Redeemed '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
+          // customLog('Redeemed '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
         }
 
         transactions[realTx.hash] = realTx;
@@ -984,14 +970,16 @@ class SmartContractControls extends React.Component {
 
     this.addResources();
 
-    customLog('Smart contract didMount')
+    customLog('Smart contract didMount');
     // do not wait for each one just for the first who will guarantee web3 initialization
     const web3 = await this.props.initWeb3();
+
     if (!web3) {
-      return customLog('No Web3 SmartContractControls')
+      customLog('No Web3 SmartContractControls');
+      return false;
     }
 
-    customLog('Web3 SmartContractControls initialized')
+    customLog('Web3 SmartContractControls initialized');
 
     await this.props.initContract('OldIdleDAI', OldIdleAddress, this.props.tokenConfig.idle.abi);
     await this.props.initContract(this.props.tokenConfig.idle.token, this.props.tokenConfig.idle.address, this.props.tokenConfig.idle.abi);
@@ -1107,34 +1095,6 @@ class SmartContractControls extends React.Component {
       
     }
 
-  }
-
-  async getTransaction(hash) {
-    return new Promise( async (resolve, reject) => {
-      window.web3.eth.getTransaction(hash,(err,transaction) => {
-        if (transaction){
-          return resolve(transaction);
-        }
-        return reject(false);
-      });
-    });
-  }
-
-  async loadTxs_async(txsHashes) {
-    const asyncForEach = async(array, callback) => {
-      for (let index = 0; index < array.length; index++) {
-        await callback(array[index], index, array);
-      }
-    }
-
-    const transactions = {};
-    await asyncForEach(txsHashes,async (txHash,i) => {
-      await window.web3.eth.getTransaction(txHash,(err,tx)=>{
-        transactions[tx.hash] = tx;
-      });
-    });
-
-    return transactions;
   }
 
   // TODO move in a separate component
@@ -1470,7 +1430,7 @@ class SmartContractControls extends React.Component {
                   <>
                     {
                       this.state.lendingTx ? (
-                        <TxProgressBar waitText={'Lending estimated in'} endMessage={'Finalizing lend request...'} hash={this.state.lendingTx.transactionHash} />
+                        <TxProgressBar initWeb3={this.props.initWeb3} waitText={'Lending estimated in'} endMessage={'Finalizing lend request...'} hash={this.state.lendingTx.transactionHash} />
                       ) : (
                         <Flex
                           justifyContent={'center'}
@@ -1487,7 +1447,7 @@ class SmartContractControls extends React.Component {
                   <>
                     {
                       this.state.approveTx ? (
-                        <TxProgressBar waitText={'Approving estimated in'} endMessage={'Finalizing approve request...'} hash={this.state.approveTx.transactionHash} />
+                        <TxProgressBar initWeb3={this.props.initWeb3} waitText={'Approving estimated in'} endMessage={'Finalizing approve request...'} hash={this.state.approveTx.transactionHash} />
                       ) : (
                         <Flex
                           justifyContent={'center'}
@@ -1599,7 +1559,7 @@ class SmartContractControls extends React.Component {
                                   </Flex>
                                   ) : 
                                     this.state.redeemTx ? (
-                                      <TxProgressBar waitText={'Redeeming estimated in'} endMessage={'Finalizing redeem request...'} hash={this.state.redeemTx.transactionHash} />
+                                      <TxProgressBar initWeb3={this.props.initWeb3} waitText={'Redeeming estimated in'} endMessage={'Finalizing redeem request...'} hash={this.state.redeemTx.transactionHash} />
                                     ) : (
                                       <Flex
                                         justifyContent={'center'}

@@ -1,11 +1,8 @@
 import React, { Component } from 'react';
 import { Flex, Text, Progress, Loader } from 'rimble-ui'
 import axios from 'axios';
-import Web3 from "web3";
 // import moment from 'moment';
 import BigNumber from 'bignumber.js';
-require('dotenv').config();
-const INFURA_KEY = process.env["REACT_APP_INFURA_KEY"];
 
 const customLog = (...props) => { /*console.log(moment().format('HH:mm:ss'),...props);*/ };
 
@@ -28,38 +25,23 @@ class TxProgressBar extends Component {
   }
 
   async initWeb3(){
-    let web3 = null;
-    customLog('initWeb3',window.ethereum,window.web3,this.props.web3);
-    if (!this.state.web3) { // safety web3 implementation
-      if (window.ethereum) {
-        customLog("Using modern web3 provider.");
-        web3 = new Web3(window.ethereum);
-      } else if (window.web3) {
-        customLog("Legacy web3 provider. Try updating.");
-        web3 = new Web3(window.web3.currentProvider);
-      } else {
-        customLog("Non-Ethereum browser detected. Using Infura fallback.");
-        const web3Provider = new Web3.providers.HttpProvider(
-          `https://mainnet.infura.io/v3/${INFURA_KEY}`
-        );
-        web3 = new Web3(web3Provider);
-      }
-    }
+    const web3 = await this.props.initWeb3();
 
-    if (web3){
-      return this.setState({
-        web3
+    if (!web3) {
+      customLog('No Web3 SmartContractControls');
+      return false;
+    } else {
+      this.setState({ web3 }, async () => {
+        await this.initProgressBar();
       });
+      return web3;
     }
-
-    return null;
   }
 
   BNify = s => new BigNumber(String(s));
 
   async componentDidMount() {
     await this.initWeb3();
-    await this.initProgressBar();
   }
 
   async getTransactionReceipt() {
@@ -270,7 +252,6 @@ class TxProgressBar extends Component {
   }
 
   render() {
-
     return (
       <Flex flexDirection={'column'} alignItems={'center'}>
         {

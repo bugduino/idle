@@ -1,4 +1,5 @@
 import React from 'react';
+import { TerminalHttpProvider, SourceType, Web3Versions } from '@terminal-packages/sdk';
 import WalletConnectQRCodeModal from "@walletconnect/qrcode-modal";
 import ConnectionModalUtil from "./ConnectionModalsUtil";
 import NetworkUtil from "./NetworkUtil";
@@ -102,6 +103,8 @@ class RimbleTransaction extends React.Component {
 
     const context = this.props.context;
 
+    let web3 = context.library;
+
     // 0x Instant Wallet Provider Injection
     if (!window.RimbleWeb3_context || context.connectorName !== window.RimbleWeb3_context.connectorName){
       window.RimbleWeb3_context = context;
@@ -121,7 +124,7 @@ class RimbleTransaction extends React.Component {
         setConnectorName = connectorName;
         this.props.setConnector(connectorName,walletProvider);
         await context.setFirstValidConnector([connectorName, 'Infura']);
-        return;
+        return web3;
       } else if (setConnectorName){
         // Catch WalletConnect unexpected disconnect and fallback to Infura
         if (connectorName === 'WalletConnect' && connectorName === setConnectorName && last_context && last_context.active && last_context.connectorName==='WalletConnect' && !context.connectorName){
@@ -137,14 +140,14 @@ class RimbleTransaction extends React.Component {
         }
 
         console.log('initWeb3 skip due to setConnectorName ('+setConnectorName+') already set');
-        return;
+        return web3;
       }
     } else if (context.connectorName === "WalletConnect") {
       if (!context.account) {
 
         // WalletConnect already opened
         if (document.getElementById('walletconnect-wrapper')){
-          return;
+          return web3;
         }
 
         WalletConnectQRCodeModal.open(
@@ -165,23 +168,42 @@ class RimbleTransaction extends React.Component {
       }
     }
 
-    let web3 = context.library;
+
+    let web3Provider = null;
+
     if (!web3) { // safety web3 implementation
+
       if (window.ethereum) {
         console.log("Using modern web3 provider.");
-        web3 = new Web3(window.ethereum);
+        web3Provider = window.ethereum;
+        // web3 = new Web3(window.ethereum);
       } else if (window.web3) {
         console.log("Legacy web3 provider. Try updating.");
-        web3 = new Web3(window.web3.currentProvider);
+        web3Provider = window.web3;
+        // web3 = new Web3(window.web3.currentProvider);
       } else {
         console.log("Non-Ethereum browser detected. Using Infura fallback.");
-        const web3Provider = new Web3.providers.HttpProvider(
+        web3Provider = new Web3.providers.HttpProvider(
           `https://mainnet.infura.io/v3/${INFURA_KEY}`
         );
-        web3 = new Web3(web3Provider);
+        // web3 = new Web3(web3Provider);
       }
+
+    } else {
+      web3Provider = web3.currentProvider;
     }
 
+    console.log('initWeb3 instantiate TerminalHttpProvider',web3);
+
+    web3 = new Web3(
+      new TerminalHttpProvider({
+        apiKey: 'LonotCXiu7FEVd8Zl2W68A==',
+        projectId: 'DYLRXdlpqKVzPmZr',
+        source: localStorage && localStorage.getItem('walletProvider') ? localStorage.getItem('walletProvider') : SourceType.Infura,
+        customHttpProvider: web3Provider,
+        web3Version: Web3Versions.one,
+      })
+    );
 
     this.setState({ web3 }, async () => {
 
@@ -193,8 +215,7 @@ class RimbleTransaction extends React.Component {
         await this.initAccount(context.account);
       }
     });
-
-    console.log("Finished initWeb3");
+    
     return web3;
   }
 
