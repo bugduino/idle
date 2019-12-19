@@ -139,7 +139,7 @@ const globalConfigs = {
         captionPos: 'top',
         subcaption: '~ 4.5% fee ~',
         supportedMethods:['card','bank'],
-        supportedCountries:['GBR','EUR','AUS','BRA','CHN','MEX','CAN','HKG','RUS','ZAF','KOR'],
+        supportedCountries:['USA','GBR','EUR','AUS','BRA','CHN','MEX','CAN','HKG','RUS','ZAF','KOR'],
         supportedTokens:['USDC','DAI','ETH'],
         env:'prod',
         envParams:{
