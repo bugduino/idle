@@ -32,7 +32,7 @@ class NewsletterForm extends Component {
       'email': this.state.email
     }).then(r => {
       if (r.data.status === 'success'){
-        this.setState({message:'You have successfully subscribed to the newsletter', messageColor:'green' });
+        this.setState({message:'Thanks! Check your e-mail and confirm your subscription', messageColor:'green' });
       } else {
         this.setState({message:'Error while sending your subscription... Please try again', messageColor:'red' });
       }
