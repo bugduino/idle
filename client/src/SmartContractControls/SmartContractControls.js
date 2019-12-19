@@ -74,7 +74,7 @@ class SmartContractControls extends React.Component {
   };
 
   addResources = () => {
-
+    
     if (!document.getElementById('script_0x_overlay_click')){
       const script_0x_overlay_click = document.createElement("script");
       script_0x_overlay_click.id = 'script_0x_overlay_click';
