@@ -59,7 +59,7 @@ class Footer extends Component {
                   <Image src="images/compound-light.png" width={[1/2,1]} height={'auto'} maxWidth={'initial'} mr={['auto',3]} ml={['auto',0]} my={[3,0]} />
                 </Link>
                 <Link style={{flex:'1 1 0px'}} textAlign={['center','left']} href="https://fulcrum.trade" target="_blank">
-                  <Image src="images/fulcrum.svg" width={[1/2,1]} height={'auto'} maxWidth={'initial'} mr={['auto',3]} ml={['auto',0]} my={[3,0]} />
+                  <Image src="images/fulcrum.png" width={[1/2,1]} height={'auto'} maxWidth={'initial'} mr={['auto',3]} ml={['auto',0]} my={[3,0]} />
                 </Link>
               </Flex>
               <Flex width={1} flexDirection={['column','row']} justifyContent={['center','flex-end']} align={['center','flex-end']} py={3}>

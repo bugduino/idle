@@ -266,7 +266,7 @@ class EquityChart extends Component {
         'pos':2,
         'fee':0,
         'address' : iDAIAddress,
-        'icon' : 'fulcrum-mark.png',
+        'icon' : 'fulcrum-mark.svg',
         "color": "hsl(197, 98%, 38%)",
         "aprs": [],
         "data": [],

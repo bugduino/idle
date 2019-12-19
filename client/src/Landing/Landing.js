@@ -586,7 +586,7 @@ class Landing extends Component {
                 <Flex width={[1/2,1]} flexDirection={['column','row']} mt={[0,4]} ml={[1,0]}>
                   <Flex width={[1,1/2]} flexDirection={'column'}>
                     <Flex flexDirection={'row'} justifyContent={'center'} alignItems={'center'}>
-                      <Image src="images/fulcrum-mark.png" height={['1.3em', '2em']} mr={[1,2]} my={[2,0]} verticalAlign={['middle','bottom']} />
+                      <Image src="images/fulcrum-mark.svg" height={['1.3em', '2em']} mr={[1,2]} my={[2,0]} verticalAlign={['middle','bottom']} />
                       <Text.span fontSize={[2,3]} textAlign={['center','left']} fontWeight={3} color={'dark-gray'}>
                         {this.props.tokenConfig.protocols[1].token}
                       </Text.span>
