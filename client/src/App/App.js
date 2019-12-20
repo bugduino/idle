@@ -80,7 +80,8 @@ class App extends Component {
   config = {
     requiredConfirmations: 1,
     accountBalanceMinimum: 0, // in ETH for gas fees
-    requiredNetwork: 1 // Mainnet
+    // requiredNetwork: 1 // Mainnet
+    requiredNetwork: 42// Kovan
     // requiredNetwork: 3 // Ropsten
   };
 
