@@ -842,7 +842,7 @@ class SmartContractControls extends React.Component {
   getPrevTxs = async () => {
     // customLog('Call getPrevTxs');
     const txs = await axios.get(`
-      https://api.etherscan.io/api?module=account&action=tokentx&address=${this.props.account}&startblock=8119247&endblock=999999999&sort=asc&apikey=${env.REACT_APP_ETHERSCAN_KEY}
+      https://api-kovan.etherscan.io/api?module=account&action=tokentx&address=${this.props.account}&startblock=8119247&endblock=999999999&sort=asc&apikey=${env.REACT_APP_ETHERSCAN_KEY}
     `).catch(err => {
       customLog('Error getting prev txs');
       if (componendUnmounted){
@@ -1116,6 +1116,7 @@ class SmartContractControls extends React.Component {
       customLog('Call async functions...');
 
       await Promise.all([
+        this.getAllocations(),
         this.getTokenBalance(),
         this.checkTokenApproved(), // Check if the token is already approved
         this.getPrevTxs(),
@@ -1162,7 +1163,7 @@ class SmartContractControls extends React.Component {
       if (localStorage){
         localStorage.setItem('transactions',JSON.stringify(this.props.transactions));
       }
-      
+
       this.processTransactionUpdates(prevProps.transactions);
     }
   }
