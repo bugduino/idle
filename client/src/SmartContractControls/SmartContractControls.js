@@ -63,6 +63,7 @@ class SmartContractControls extends React.Component {
     calculataingShouldRebalance: true,
     fundsTimeoutID: null,
     idleTokenBalance: null,
+    allocations:null,
     executedTxs:null,
     lendingTx: null,
     redeemTx: null,
@@ -202,18 +203,30 @@ class SmartContractControls extends React.Component {
     }
   }
 
+  getProtocolInfoByAddress = (addr) => {
+    return this.props.tokenConfig.protocols.find(c => c.address === addr);
+  }
+
   getAllocations = async () => {
     const allocations = {};
 
+    await this.asyncForEach(this.props.tokenConfig.protocols,async (protocolInfo,i) => {
+      const contractName = protocolInfo.token;
+      const protocolAddr = protocolInfo.address;
 
-    await this.asyncForEach(this.props.tokenConfig.protocols,async (info,i) => {
-      const contractName = info.token;
-      const protocolAddr = info.address;
-      const protocolBalance = await this.getProtocolBalance(contractName);
-      allocations[protocolAddr] = protocolBalance;
+      let [protocolBalance, tokenDecimals, exchangeRate ] = await Promise.all([
+        this.getProtocolBalance(contractName),
+        this.getTokenDecimals(contractName),
+        ( protocolInfo.functions.exchangeRate ? this.genericContractCall(contractName,protocolInfo.functions.exchangeRate.name,protocolInfo.functions.exchangeRate.params) : null )
+      ]);
+
+      if (protocolInfo.functions.exchangeRate.decimals){
+        exchangeRate = this.fixTokenDecimals(exchangeRate,protocolInfo.functions.exchangeRate.decimals);
+      }
+      const protocolAllocation = this.fixTokenDecimals(protocolBalance,tokenDecimals,exchangeRate);
+
+      allocations[protocolAddr] = protocolAllocation;
     });
-
-    customLog('getAllocations',allocations);
 
     this.setState({
       allocations
@@ -234,19 +247,34 @@ class SmartContractControls extends React.Component {
       return false;
     }
 
+    const addresses = Aprs.addresses.map((addr,i) => { return addr.toString().toLowerCase() });
     const aprs = Aprs.aprs;
 
     const maxRate = Math.max(...aprs);
     const currentRate = maxRate;
     const currentProtocol = '';
 
+    this.props.tokenConfig.protocols.forEach((info,i) => {
+      const protocolName = info.name;
+      const protocolAddr = info.address.toString().toLowerCase();
+      const addrIndex = addresses.indexOf(protocolAddr);
+      if ( addrIndex !== -1 ) {
+        const protocolApr = aprs[addrIndex];
+        this.setState({
+          [`${protocolName}Apr`]: protocolApr,
+          [`${protocolName}Rate`]: (+this.toEth(protocolApr)).toFixed(2)
+        });
+      }
+    });
+
     this.setState({
+      aprs,
       maxRate: aprs ? ((+this.toEth(maxRate)).toFixed(2)) : '0.00',
       needsUpdate: false,
       currentProtocol,
       currentRate
     });
-  };
+  }
 
   getCurrentProtocol = async (bestToken) => {
     bestToken = bestToken ? bestToken : await this.genericIdleCall('bestToken');
@@ -255,18 +283,19 @@ class SmartContractControls extends React.Component {
     }
     return false;
   }
+
   getPriceInToken = async (contractName) => {
     const totalIdleSupply = await this.genericContractCall(contractName, 'totalSupply');
     let price = await this.genericContractCall(contractName, 'tokenPrice');
     const navPool = this.BNify(totalIdleSupply).div(1e18).times(this.BNify(price).div(1e18));
-    // customLog('getPriceInToken',totalIdleSupply.toString(),price.toString(),navPool.toString());
     this.setState({
       idleTokenPrice: (totalIdleSupply || totalIdleSupply === 0) && totalIdleSupply.toString() === '0' ? 0 : (+this.toEth(price)),
       navPool: navPool,
       needsUpdate: false
     });
     return price;
-  };
+  }
+
   getTotalSupply = async (contractName) => {
     const totalSupply = await this.genericContractCall(contractName, 'totalSupply');
     this.setState({
@@ -274,7 +303,8 @@ class SmartContractControls extends React.Component {
       needsUpdate: false
     });
     return totalSupply;
-  };
+  }
+
   getOldPriceInToken = async (contractName) => {
     const totalIdleSupply = await this.genericContractCall(contractName, 'totalSupply');
     let price = await this.genericContractCall(contractName, 'tokenPrice');
@@ -283,10 +313,19 @@ class SmartContractControls extends React.Component {
       needsUpdate: false
     });
     return price;
-  };
+  }
 
-  getTokenDecimals = async () => {
-    return await this.genericContractCall(this.props.selectedToken,'decimals');
+  getTokenDecimals = async (contractName) => {
+    contractName = contractName ? contractName : this.props.selectedToken;
+    return await this.genericContractCall(contractName,'decimals');
+  }
+
+  fixTokenDecimals = (tokenBalance,tokenDecimals,exchangeRate) => {
+    let balance = this.BNify(tokenBalance.toString()).div(this.BNify(Math.pow(10,parseInt(tokenDecimals)).toString()));
+    if (exchangeRate){
+      balance = balance.times(exchangeRate);
+    }
+    return balance;
   }
 
   getTokenBalance = async () => {
@@ -294,8 +333,8 @@ class SmartContractControls extends React.Component {
       let tokenBalance = await this.genericContractCall(this.props.selectedToken,'balanceOf',[this.props.account]);
       const tokenDecimals = await this.getTokenDecimals();
       if (tokenBalance){
-        tokenBalance = this.BNify(tokenBalance.toString()).div(this.BNify(Math.pow(10,parseInt(tokenDecimals)).toString()));
-        customLog('getTokenBalance',tokenBalance.toString(),tokenDecimals,this.BNify(tokenBalance.toString()).div(this.BNify(Math.pow(10,parseInt(tokenDecimals)).toString())).toString());
+        tokenBalance = this.fixTokenDecimals(tokenBalance,tokenDecimals);
+        // customLog('getTokenBalance',tokenBalance.toString(),tokenDecimals,this.BNify(tokenBalance.toString()).div(this.BNify(Math.pow(10,parseInt(tokenDecimals)).toString())).toString());
         this.setState({
           tokenDecimals,
           tokenBalance: tokenBalance.toString()
@@ -306,7 +345,8 @@ class SmartContractControls extends React.Component {
       }
     }
     return null;
-  };
+  }
+
   reloadFunds = async(e) => {
     e.preventDefault();
     this.getBalanceOf(this.props.tokenConfig.idle.token);
@@ -428,11 +468,19 @@ class SmartContractControls extends React.Component {
       });
     }
     return allowance;
-  };
+  }
+
+  getContractByName = (contractName) => {
+    const contract = this.props.contracts.find(c => c.name === contractName);
+    if (!contract) {
+      return false;
+    }
+    return contract.contract;
+  }
 
   genericContractCall = async (contractName, methodName, params = []) => {
-    let contract = this.props.contracts.find(c => c.name === contractName);
-    contract = contract && contract.contract;
+    let contract = this.getContractByName(contractName);
+
     if (!contract) {
       customLog('Wrong contract name', contractName);
       return;
@@ -447,7 +495,6 @@ class SmartContractControls extends React.Component {
 
   // Idle
   genericIdleCall = async (methodName, params = []) => {
-    // console.log('genericIdleCall',this.props.tokenConfig.idle.token, methodName, params);
     return await this.genericContractCall(this.props.tokenConfig.idle.token, methodName, params).catch(err => {
       customLogError('Generic Idle call err:', err);
     });
@@ -1005,6 +1052,8 @@ class SmartContractControls extends React.Component {
     componendUnmounted = false;
 
     window.jQuery = jQuery;
+    // window.BNify = this.BNify;
+    // window.toEth = this.toEth.bind(this);
     // customLog('SmartContractControls componentDidMount',jQuery);
 
     this.addResources();
@@ -1113,8 +1162,7 @@ class SmartContractControls extends React.Component {
       if (localStorage){
         localStorage.setItem('transactions',JSON.stringify(this.props.transactions));
       }
-
-      // console.log('Transactions changed from',prevProps.transactions,'to',this.props.transactions);
+      
       this.processTransactionUpdates(prevProps.transactions);
     }
   }
@@ -1845,46 +1893,52 @@ class SmartContractControls extends React.Component {
 
               <Box display={ this.props.selectedTab === '3' ? 'block' : 'none' }>
                 <Box width={'100%'} borderBottom={'1px solid #D6D6D6'}>
-                  <Flex flexDirection={['column','row']} py={[2,3]} width={[1,'80%']} m={'0 auto'}>
-                    <Box width={[1,1/3]}>
-                      <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
-                        Allocated funds
-                      </Text>
-                      <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'} style={{whiteSpace:'nowrap'}}>
-                        {currentNavPool && navPoolAtEndOfYear ? 
-                          <CountUp
-                            start={currentNavPool}
-                            end={navPoolAtEndOfYear}
-                            duration={315569260}
-                            delay={0}
-                            separator=""
-                            decimals={6}
-                            decimal="."
-                          >
-                            {({ countUpRef, start }) => (
-                              <><span ref={countUpRef} /> <span style={{fontSize:'16px',fontWeight:'400',lineHeight:'1.5',color:'#3F3D4B'}}>{this.props.selectedToken}</span></>
-                            )}
-                          </CountUp>
-                          : '-'
-                        }
-                      </Heading.h3>
-                    </Box>
-                    <Box width={[1,1/3]}>
-                      <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
-                        Current protocol
-                      </Text>
-                      <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'} style={{whiteSpace:'nowrap'}}>
-                        { this.state.currentProtocol ? this.state.currentProtocol : '-' }
-                      </Heading.h3>
-                    </Box>
-                    <Box width={[1,1/3]}>
-                      <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
-                        Current APR
-                      </Text>
-                      <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'} style={{whiteSpace:'nowrap'}}>
-                        { this.state.maxRate ? `${this.state.maxRate}%` : '-' }
-                      </Heading.h3>
-                    </Box>
+                  <Flex flexDirection={['column','row']} pb={[2,3]} width={[1,'80%']} m={'0 auto'}>
+                    {
+                      this.state.allocations ?
+                        Object.keys(this.state.allocations).map((protocolAddr,i)=>{
+                          const protocolInfo = this.getProtocolInfoByAddress(protocolAddr);
+                          const protocolName = protocolInfo.name;
+                          const protocolApr = parseFloat(this.toEth(this.state[`${protocolName}Apr`]));
+                          const protocolAllocation = parseFloat(this.state.allocations[protocolAddr]);
+                          const protocolEarningPerYear = parseFloat(this.BNify(protocolAllocation).times(this.BNify(protocolApr/100)));
+                          const protocolAllocationEndOfYear = parseFloat(this.BNify(protocolAllocation).plus(this.BNify(protocolEarningPerYear)));
+                          return (
+                            <Box key={`allocation_${protocolName}`} style={{flex:'1 1 0'}}>
+                              <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'} style={{textTransform:'capitalize'}}>
+                                {protocolName}
+                              </Text>
+                              <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'} style={{whiteSpace:'nowrap'}}>
+                                {protocolAllocation ? 
+                                  <CountUp
+                                    start={protocolAllocation}
+                                    end={protocolAllocationEndOfYear}
+                                    duration={315569260}
+                                    delay={0}
+                                    separator=""
+                                    decimals={6}
+                                    decimal="."
+                                  >
+                                    {({ countUpRef, start }) => (
+                                      <><span ref={countUpRef} /> <span style={{fontSize:'16px',fontWeight:'400',lineHeight:'1.5',color:'#3F3D4B'}}>{this.props.selectedToken}</span></>
+                                    )}
+                                  </CountUp>
+                                  : parseInt(0).toFixed(6)
+                                }
+                              </Heading.h3>
+                            </Box>
+                          )
+                        })
+                      : (
+                        <Flex
+                          justifyContent={'center'}
+                          alignItems={'center'}
+                          textAlign={'center'}>
+                          <Loader size="40px" /> <Text ml={2}>Loading pool information...</Text>
+                        </Flex>
+                      )
+                    }
+                    
                   </Flex>
                 </Box>
                 { this.props.selectedTab === '3' &&

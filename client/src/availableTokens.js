@@ -36,14 +36,28 @@ const availableTokens = {
       {
         name:'compound',
         abi:cDAI.abi,
-        token:'cSAI',
         address:'0x63c344bf8651222346dd870be254d4347c9359f7',
+        token:'cSAI',
+        functions:{
+          exchangeRate:{
+            name:'exchangeRateStored',
+            decimals:28,
+            params:[]
+          }
+        },
       },
       {
         name:'fulcrum',
         abi:iDAI,
+        address:'0xA1e58F3B1927743393b25f261471E1f2D3D9f0F6',
         token:'iSAI',
-        address:'0xA1e58F3B1927743393b25f261471E1f2D3D9f0F6'
+        functions:{
+          exchangeRate:{
+            name:'tokenPrice',
+            decimals:18,
+            params:[]
+          }
+        },
       }
     ]
   },
