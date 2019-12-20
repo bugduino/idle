@@ -1,9 +1,54 @@
 import ERC20 from './abis/tokens/DAI.js';
 import cDAI from './abis/compound/cDAI';
 import iDAI from './abis/fulcrum/iToken.json';
-import idleDAI from './contracts/IdleDAI.json';
+// import idleDAI from './contracts/IdleDAI.json'; // V1
+import idleDAI from './contracts/IdleToken.json'; // V2
 
 const availableTokens = {
+  // Kovan
+  SAI:{
+    enabled: true,
+    abi:ERC20.abi,
+    address:'0xC4375B7De8af5a38a93548eb8453a498222C4fF2',
+    zeroExInstant:{
+      orderSource: 'https://api.radarrelay.com/0x/v2/',
+      assetData:'0xf47261b000000000000000000000000089d24a6b4ccb1b6faa2625fe562bdd9a23260359',
+      affiliateInfo: {
+          feeRecipient: '0x4215606a720477178AdFCd5A59775C63138711e8',
+          feePercentage: 0.0075
+      },
+    },
+    wyre:{
+      destCurrency:'DAI'
+    },
+    ramp:{
+      swapAsset:'SAI'
+    },
+    defiPrime:{
+      token:'sai',
+    },
+    idle:{
+      abi:idleDAI.abi,
+      token:'idleSAI',
+      address:'0x17c5efC8dbd9b1b34457eE46c3C8e0F928e80dbE'
+    },
+    protocols:[
+      {
+        name:'compound',
+        abi:cDAI.abi,
+        token:'cSAI',
+        address:'0x63c344bf8651222346dd870be254d4347c9359f7',
+      },
+      {
+        name:'fulcrum',
+        abi:iDAI,
+        token:'iSAI',
+        address:'0xA1e58F3B1927743393b25f261471E1f2D3D9f0F6'
+      }
+    ]
+  },
+  /*
+  // Mainnet
   SAI:{
     enabled: true,
     abi:ERC20.abi,
@@ -45,6 +90,7 @@ const availableTokens = {
       }
     ]
   },
+  */
   DAI:{
     enabled: false,
     abi:ERC20.abi,

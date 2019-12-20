@@ -10,7 +10,7 @@ import moment from 'moment';
 
 require('dotenv').config();
 const INFURA_KEY = process.env["REACT_APP_INFURA_KEY"];
-const LOG_ENABLED = false;
+const LOG_ENABLED = true;
 const customLog = (...props) => { if (LOG_ENABLED) console.log(moment().format('HH:mm:ss'),...props); };
 const BNify = s => new BigNumber(String(s));
 
@@ -347,6 +347,12 @@ class RimbleTransaction extends React.Component {
       customLog('initializeContracts, init contract',tokenConfig.idle.token, tokenConfig.idle.address);
       await this.initContract(tokenConfig.idle.token, tokenConfig.idle.address, tokenConfig.idle.abi);
     }
+
+    // Initialize protocols contracts
+    this.props.tokenConfig.protocols.forEach(async (p,i) => {
+      customLog('initializeContracts, init '+p.name+' contract',p);
+      await this.initContract(p.token, p.address, p.abi);
+    });
   }
 
   getContractByName = async (contractName) => {

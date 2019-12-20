@@ -126,18 +126,8 @@ class Landing extends Component {
     );
   }
 
-  getCurrentProtocol = async (bestToken) => {
-    bestToken = bestToken ? bestToken : await this.genericIdleCall('bestToken');
-    if (bestToken){
-      // console.log('getCurrentProtocol',bestToken,this.props.tokenConfig.protocols);
-      const bestProtocol = this.props.tokenConfig.protocols.find(p => p.address.toString().toLowerCase() === bestToken.toString().toLowerCase());
-      return bestProtocol ? bestProtocol.name : null;
-    }
-    return false;
-  }
-
   getAprs = async () => {
-    const aprs = await this.genericIdleCall('getAPRs');
+    const Aprs = await this.genericIdleCall('getAPRs');
 
     if (this.state.updatingAprs){
       return false;
@@ -147,7 +137,7 @@ class Landing extends Component {
       updatingAprs:true
     });
 
-    if (!aprs){
+    if (!Aprs){
       setTimeout(() => {
         this.getAprs();
       },5000);
@@ -158,14 +148,27 @@ class Landing extends Component {
       return false;
     }
 
-    const bestToken = await this.genericIdleCall('bestToken');
-    const currentProtocol = await this.getCurrentProtocol(bestToken);
-    const maxRate = this.toEth(Math.max(aprs[0],aprs[1]));
-    const currentRate = bestToken ? (bestToken.toString().toLowerCase() === this.props.tokenConfig.protocols[0].address ? aprs[0] : aprs[1]) : null;
-    // console.log('Landing.js getAprs',bestToken,currentRate.toString());
+    const addresses = Aprs.addresses.map((addr,i) => { return addr.toString().toLowerCase() });
+    const aprs = Aprs.aprs;
+
+    // const bestToken = await this.genericIdleCall('bestToken');
+    const currentProtocol = '';
+    const maxRate = Math.max(...aprs);
+    const currentRate = maxRate;
+
+    this.props.tokenConfig.protocols.forEach((info,i) => {
+      const protocolName = info.name;
+      const protocolAddr = info.address.toString().toLowerCase();
+      const addrIndex = addresses.indexOf(protocolAddr);
+      if ( addrIndex !== -1 ) {
+        const protocolApr = aprs[addrIndex];
+        this.setState({
+          [`${protocolName}Rate`]: (+this.toEth(protocolApr)).toFixed(2)
+        });
+      }
+    });
+
     const state = {
-      compoundRate: aprs ? (+this.toEth(aprs[0])).toFixed(2) : '0.00',
-      fulcrumRate: aprs ? (+this.toEth(aprs[1])).toFixed(2) : '0.00',
       maxRate: aprs ? ((+maxRate).toFixed(2)) : '0.00',
       currentProtocol,
       currentRate: currentRate ? (+this.toEth(currentRate)).toFixed(2) : null,

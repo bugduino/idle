@@ -20,7 +20,7 @@ const OldIdleAddress = '0x10cf8e1CDba9A2Bd98b87000BCAdb002b13eA525'; // v0.1 hac
 const daysInYear = 365.2422;
 let componendUnmounted;
 
-const LOG_ENABLED = false;
+const LOG_ENABLED = true;
 const customLog = (...props) => { if (LOG_ENABLED) console.log(moment().format('HH:mm:ss'),...props); };
 const customLogError = (...props) => { if (LOG_ENABLED) console.error(moment().format('HH:mm:ss'),...props); };
 
@@ -170,14 +170,13 @@ class SmartContractControls extends React.Component {
   rebalanceCheck = async () => {
     this.setState({calculataingShouldRebalance:true});
 
-    const res = await this.genericIdleCall('rebalanceCheck');
-    if (!res || !Object.keys(res).length){
-      return false;
-    }
+    const _newAmount = 0;
+    const _clientProtocolAmounts = [];
+    const shouldRebalance = await this.genericIdleCall('rebalance',[_newAmount,_clientProtocolAmounts]);
 
     this.setState({
       calculataingShouldRebalance: false,
-      shouldRebalance: res[0],
+      shouldRebalance,
       needsUpdate: false
     });
   }
@@ -197,37 +196,60 @@ class SmartContractControls extends React.Component {
     }));
   }
 
+  asyncForEach = async(array, callback) => {
+    for (let index = 0; index < array.length; index++) {
+      await callback(array[index], index, array);
+    }
+  }
+
+  getAllocations = async () => {
+    const allocations = {};
+
+
+    await this.asyncForEach(this.props.tokenConfig.protocols,async (info,i) => {
+      const contractName = info.token;
+      const protocolAddr = info.address;
+      const protocolBalance = await this.getProtocolBalance(contractName);
+      allocations[protocolAddr] = protocolBalance;
+    });
+
+    customLog('getAllocations',allocations);
+
+    this.setState({
+      allocations
+    });
+  }
+
   getAprs = async () => {
-    const aprs = await this.genericIdleCall('getAPRs');
+    const Aprs = await this.genericIdleCall('getAPRs');
 
     if (componendUnmounted){
       return false;
     }
 
-    if (!aprs){
+    if (!Aprs){
       setTimeout(() => {
         this.getAprs();
       },5000);
       return false;
     }
 
-    const bestToken = await this.genericIdleCall('bestToken');
-    const currentProtocol = await this.getCurrentProtocol(bestToken);
-    const maxRate = this.toEth(Math.max(aprs[0],aprs[1]));
-    const currentRate = bestToken ? (bestToken.toString().toLowerCase() === this.props.tokenConfig.protocols[0].address ? aprs[0] : aprs[1]) : null;
+    const aprs = Aprs.aprs;
+
+    const maxRate = Math.max(...aprs);
+    const currentRate = maxRate;
+    const currentProtocol = '';
 
     this.setState({
-      [`compoundRate`]: aprs ? (+this.toEth(aprs[0])).toFixed(2) : '0.00',
-      [`fulcrumRate`]: aprs ? (+this.toEth(aprs[1])).toFixed(2) : '0.00',
-      [`maxRate`]: aprs ? ((+maxRate).toFixed(2)) : '0.00',
+      maxRate: aprs ? ((+this.toEth(maxRate)).toFixed(2)) : '0.00',
       needsUpdate: false,
       currentProtocol,
       currentRate
     });
   };
+
   getCurrentProtocol = async (bestToken) => {
     bestToken = bestToken ? bestToken : await this.genericIdleCall('bestToken');
-    // customLog('getCurrentProtocol',bestToken);
     if (bestToken){
       return bestToken.toString().toLowerCase() === this.props.tokenConfig.protocols[0].address ? 'Compound' : 'Fulcrum';
     }
@@ -289,6 +311,11 @@ class SmartContractControls extends React.Component {
     e.preventDefault();
     this.getBalanceOf(this.props.tokenConfig.idle.token);
   }
+
+  getProtocolBalance = async (contractName) => {
+    return await this.genericContractCall(contractName, 'balanceOf', [this.props.tokenConfig.idle.address]);
+  }
+
   getBalanceOf = async (contractName,count) => {
     count = count ? count : 0;
 
@@ -420,6 +447,7 @@ class SmartContractControls extends React.Component {
 
   // Idle
   genericIdleCall = async (methodName, params = []) => {
+    // console.log('genericIdleCall',this.props.tokenConfig.idle.token, methodName, params);
     return await this.genericContractCall(this.props.tokenConfig.idle.token, methodName, params).catch(err => {
       customLogError('Generic Idle call err:', err);
     });
@@ -530,7 +558,10 @@ class SmartContractControls extends React.Component {
       rebalanceProcessing: this.props.account ? true : false
     }));
 
-    this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'rebalance', [], null , (tx) => {
+    const _newAmount = 0;
+    const _clientProtocolAmounts = [];
+
+    this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'rebalance', [ _newAmount, _clientProtocolAmounts ], null , (tx) => {
       const needsUpdate = tx.status === 'success' && !this.checkTransactionMined(tx);
       this.setState({
         needsUpdate: needsUpdate,
@@ -588,9 +619,11 @@ class SmartContractControls extends React.Component {
       localStorage.setItem('redirectToFundsAfterLogged',0);
     }
 
+    const _clientProtocolAmounts = [];
+
     // No need for callback atm
     this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'mintIdleToken', [
-      value
+      value, _clientProtocolAmounts // _clientProtocolAmounts
     ], null, (tx) => {
       const txSucceeded = tx.status === 'success';
       const needsUpdate = txSucceeded && !this.checkTransactionMined(tx);
@@ -651,8 +684,11 @@ class SmartContractControls extends React.Component {
 
     customLog('redeem',idleTokenToRedeem);
 
+    const _skipRebalance = false;
+    const _clientProtocolAmounts = [];
+
     this.props.contractMethodSendWrapper(contractName, 'redeemIdleToken', [
-      idleTokenToRedeem
+      idleTokenToRedeem, _skipRebalance, _clientProtocolAmounts
     ], null, (tx) => {
       const needsUpdate = tx.status === 'success' && !this.checkTransactionMined(tx);
       customLog('redeemIdleToken_mined_callback needsUpdate:',tx.status,this.checkTransactionMined(tx),needsUpdate);
@@ -813,13 +849,7 @@ class SmartContractControls extends React.Component {
 
       customLog('getPrevTxs adding minedTxs',minedTxs);
 
-      const asyncForEach = async(array, callback) => {
-        for (let index = 0; index < array.length; index++) {
-          await callback(array[index], index, array);
-        }
-      }
-
-      await asyncForEach(Object.keys(minedTxs),async (key,i) => {
+      await this.asyncForEach(Object.keys(minedTxs),async (key,i) => {
         const tx = minedTxs[key];
 
         // Skip invalid txs
@@ -838,7 +868,7 @@ class SmartContractControls extends React.Component {
         }));
 
         // Skip txs from other wallets
-        if (realTx.from.toLowerCase() !== this.props.account.toLowerCase()){
+        if (!realTx || realTx.from.toLowerCase() !== this.props.account.toLowerCase()){
           return;
         }
 
@@ -993,6 +1023,7 @@ class SmartContractControls extends React.Component {
     await this.props.initContract('OldIdleDAI', OldIdleAddress, this.props.tokenConfig.idle.abi);
     await this.props.initContract(this.props.tokenConfig.idle.token, this.props.tokenConfig.idle.address, this.props.tokenConfig.idle.abi);
     await Promise.all([
+      this.getAllocations(),
       this.getAprs(),
       this.getPriceInToken(this.props.tokenConfig.idle.token)
     ]);
