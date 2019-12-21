@@ -361,6 +361,10 @@ class BuyModal extends React.Component {
                     {
                       Object.keys(globalConfigs.payments.methods).map((method,i) => {
                         const methodInfo = globalConfigs.payments.methods[method];
+                        const availableProviders = this.getAvailablePaymentProviders(method);
+                        if (!availableProviders || !availableProviders.length){
+                          return false;
+                        }
                         return (
                           <ImageButton key={`method_${method}`} {...methodInfo.props} handleClick={ e => this.selectMethod(e,method) } />
                         );
