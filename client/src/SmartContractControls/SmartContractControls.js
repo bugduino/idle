@@ -11,6 +11,7 @@ import axios from 'axios';
 import moment from 'moment';
 import CountUp from 'react-countup';
 import jQuery from 'jquery';
+import globalConfigs from '../configs/globalConfigs';
 
 const env = process.env;
 
@@ -1412,7 +1413,7 @@ class SmartContractControls extends React.Component {
 
                 { !this.state.isApprovingToken && !this.state.lendingProcessing &&
                   <CryptoInput
-                    renderZeroExInstant={this.renderZeroExInstant}
+                    renderZeroExInstant={ globalConfigs.payments.providers.zeroExInstant.enabled ? this.renderZeroExInstant : false }
                     genericError={this.state.genericError}
                     buyTokenMessage={this.state.buyTokenMessage}
                     disableLendButton={this.state.disableLendButton}

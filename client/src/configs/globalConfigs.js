@@ -178,8 +178,8 @@ const globalConfigs = {
               .join('&');
         }
       },
-      'zeroExInstant': {
-          enabled:true,
+      zeroExInstant: {
+          enabled:false,
           imageSrc: 'images/payments/zeroexinstant.svg',
           imageProps: {
             height: '35px',
