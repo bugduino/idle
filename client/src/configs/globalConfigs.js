@@ -15,6 +15,21 @@ const globalConfigs = {
     'ZAF':'South Africa',
     'KOR':'South Korea'
   },
+  network:{
+    requiredConfirmations: 1,
+    accountBalanceMinimum: 0, // in ETH for gas fees
+    requiredNetwork: 42, // { 1: Mainnet, 3: Ropsten, 42: Kovan }
+    providers:{
+      infura:{
+        1: 'https://mainnet.infura.io/v3/',
+        42: 'https://kovan.infura.io/v3/'
+      },
+      etherscan:{
+        1: 'https://api.etherscan.io/api',
+        42: 'https://api-kovan.etherscan.io/api'
+      }
+    }
+  },
   payments: {
     methods:{
       'bank':{

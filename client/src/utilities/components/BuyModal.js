@@ -13,7 +13,7 @@ import BigNumber from 'bignumber.js';
 import ImageButton from '../../ImageButton/ImageButton';
 import { RampInstantSDK } from '@ramp-network/ramp-instant-sdk';
 import styles from './Header.module.scss';
-import globalConfigs from '../../globalConfigs';
+import globalConfigs from '../../configs/globalConfigs';
 
 const BNify = s => new BigNumber(String(s));
 

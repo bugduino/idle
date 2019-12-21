@@ -7,6 +7,7 @@ import BigNumber from 'bignumber.js';
 import Web3 from "web3";
 import jQuery from 'jquery';
 import moment from 'moment';
+import globalConfigs from '../configs/globalConfigs';
 
 require('dotenv').config();
 const INFURA_KEY = process.env["REACT_APP_INFURA_KEY"];
@@ -403,11 +404,12 @@ class RimbleTransaction extends React.Component {
   }
 
   getRequiredNetwork = () => {
+
     const networkId =
       typeof this.props.config !== "undefined" &&
       typeof this.props.config.requiredNetwork !== "undefined"
         ? this.props.config.requiredNetwork
-        : 1;
+        : globalConfigs.network.requiredNetwork;
     let networkName = "";
     switch (networkId) {
       case 1:
@@ -660,7 +662,7 @@ class RimbleTransaction extends React.Component {
 
     let modals = { ...this.state.modals };
     modals.data.connectionModalIsOpen = false;
-    customLog("this.state", this.state);
+    // customLog("this.state", this.state);
     this.setState({ modals });
   }
 
