@@ -21,7 +21,7 @@ import ScrollToTop from "../ScrollToTop/ScrollToTop";
 import Tos from "../Tos/Tos";
 import PageNotFound from "../PageNotFound/PageNotFound";
 import Web3Debugger from "../Web3Debugger/Web3Debugger";
-import availableTokens from '../availableTokens';
+import availableTokens from '../configs/availableTokens';
 
 class App extends Component {
   state = {

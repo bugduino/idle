@@ -13,7 +13,7 @@ import BigNumber from 'bignumber.js';
 import ImageButton from '../../ImageButton/ImageButton';
 import { RampInstantSDK } from '@ramp-network/ramp-instant-sdk';
 import styles from './Header.module.scss';
-import globalConfigs from '../../globalConfigs';
+import globalConfigs from '../../configs/globalConfigs';
 
 const BNify = s => new BigNumber(String(s));
 
@@ -361,6 +361,10 @@ class BuyModal extends React.Component {
                     {
                       Object.keys(globalConfigs.payments.methods).map((method,i) => {
                         const methodInfo = globalConfigs.payments.methods[method];
+                        const availableProviders = this.getAvailablePaymentProviders(method);
+                        if (!availableProviders || !availableProviders.length){
+                          return false;
+                        }
                         return (
                           <ImageButton key={`method_${method}`} {...methodInfo.props} handleClick={ e => this.selectMethod(e,method) } />
                         );

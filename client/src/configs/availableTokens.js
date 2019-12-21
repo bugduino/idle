@@ -1,7 +1,7 @@
-import ERC20 from './abis/tokens/DAI.js';
-import cDAI from './abis/compound/cDAI';
-import iDAI from './abis/fulcrum/iToken.json';
-import idleDAI from './contracts/IdleDAI.json';
+import ERC20 from '../abis/tokens/DAI.js';
+import cDAI from '../abis/compound/cDAI';
+import iDAI from '../abis/fulcrum/iToken.json';
+import idleDAI from '../contracts/IdleDAI.json';
 
 const availableTokens = {
   SAI:{
@@ -23,6 +23,9 @@ const availableTokens = {
       swapAsset:'SAI'
     },
     defiPrime:{
+      token:'sai',
+    },
+    defiScore:{
       token:'sai',
     },
     idle:{

@@ -6,6 +6,7 @@ import LandingForm from '../LandingForm/LandingForm';
 import Faq from '../Faq/Faq';
 import NewsletterForm from '../NewsletterForm/NewsletterForm';
 // import EquityChart from '../EquityChart/EquityChart';
+// import DefiScoreTable from '../DefiScoreTable/DefiScoreTable';
 import Footer from '../Footer/Footer';
 
 let scrolling = false;
@@ -642,6 +643,21 @@ class Landing extends Component {
             </Flex>
           </Flex>
         </Flex>
+
+        {
+        /*
+        <Flex flexDirection={'column'} position={'relative'} justifyContent={'center'} alignItems={'center'} p={[3,5]} pb={[4,5]}>
+          <Flex position={'relative'} zIndex={'10'} flexDirection={'column'} justifyContent={'center'} alignItems={'center'} width={1} maxWidth={['35em','70em']}>
+            <Heading.h4 color={'dark-gray'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]} textAlign={'center'} alignItems={'center'}>
+              We just rely on the Best
+            </Heading.h4>
+            <Box width={1} mt={[3,4]}>
+              <DefiScoreTable tokenConfig={this.props.tokenConfig} />
+            </Box>
+          </Flex>
+        </Flex>
+        */
+        }
 
         {
         /*
