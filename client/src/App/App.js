@@ -21,10 +21,12 @@ import ScrollToTop from "../ScrollToTop/ScrollToTop";
 import Tos from "../Tos/Tos";
 import PageNotFound from "../PageNotFound/PageNotFound";
 import Web3Debugger from "../Web3Debugger/Web3Debugger";
+import globalConfigs from '../configs/globalConfigs';
 import availableTokens from '../configs/availableTokens';
 
 class App extends Component {
   state = {
+    availableTokens:null,
     selectedToken: null,
     tokenConfig: null,
     genericError: null,
@@ -41,11 +43,16 @@ class App extends Component {
     return this.setState(state => ({...state, selectedTab: tabIndex}));
   }
 
-  componentWillMount() {
+  async componentWillMount() {
 
     if (localStorage){
       localStorage.removeItem('context');
     }
+
+    const requiredNetwork = globalConfigs.network.requiredNetwork;
+    const availableTokensNetwork = availableTokens[requiredNetwork];
+
+    await this.setState({ availableTokens: availableTokensNetwork });
 
     let selectedToken = this.state.selectedToken;
     if (!selectedToken){
@@ -58,10 +65,12 @@ class App extends Component {
       }
 
       if (!selectedToken){
-        selectedToken = Object.keys(availableTokens)[0];
+        selectedToken = Object.keys(this.state.availableTokens)[0];
       }
     }
     this.setSelectedToken(selectedToken);
+
+    // console.log('componentWillMount',this.state);
 
     window.addEventListener('resize', this.handleWindowSizeChange);
   }
@@ -77,13 +86,7 @@ class App extends Component {
   };
 
   // Optional parameters to pass into RimbleWeb3
-  config = {
-    requiredConfirmations: 1,
-    accountBalanceMinimum: 0, // in ETH for gas fees
-    // requiredNetwork: 1 // Mainnet
-    requiredNetwork: 42// Kovan
-    // requiredNetwork: 3 // Ropsten
-  };
+  config = globalConfigs.network;
 
   showRoute(route) {
     return this.setState({ route });
@@ -113,8 +116,8 @@ class App extends Component {
   }
 
   setSelectedToken(selectedToken){
-    if (Object.keys(availableTokens).indexOf(selectedToken) !== -1){
-      const tokenConfig = availableTokens[selectedToken];
+    if (Object.keys(this.state.availableTokens).indexOf(selectedToken) !== -1){
+      const tokenConfig = this.state.availableTokens[selectedToken];
       if (selectedToken !== this.state.selectedToken || tokenConfig !== this.state.tokenConfig){
         if (localStorage){
           localStorage.setItem('selectedToken',selectedToken);
@@ -129,6 +132,10 @@ class App extends Component {
 
   render() {
     const isMobile = this.state.width <= 768;
+
+    if (!this.state.tokenConfig || !this.state.selectedToken){
+      return false;
+    }
 
     return (
       <Router>
@@ -204,7 +211,7 @@ class App extends Component {
                             connectAndValidateAccount={connectAndValidateAccount}
                             closeBuyModal={this.closeBuyModal.bind(this)}
                             handleMenuClick={this.selectTab.bind(this)}
-                            availableTokens={availableTokens}
+                            availableTokens={this.state.availableTokens}
                             tokenConfig={this.state.tokenConfig}
                             selectedToken={this.state.selectedToken}
                             setSelectedToken={ e => { this.setSelectedToken(e) } }
@@ -250,7 +257,7 @@ class App extends Component {
                                   updateSelectedTab={this.selectTab.bind(this)}
                                   selectedTab={this.state.selectedTab}
                                   selectedToken={this.state.selectedToken}
-                                  availableTokens={availableTokens}
+                                  availableTokens={this.state.availableTokens}
                                   tokenConfig={this.state.tokenConfig}
                                   setSelectedToken={ e => { this.setSelectedToken(e) } }
                                   network={network} />
