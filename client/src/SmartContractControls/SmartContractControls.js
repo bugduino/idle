@@ -287,6 +287,7 @@ class SmartContractControls extends React.Component {
     return null;
   };
   reloadFunds = async(e) => {
+    localStorage.removeItem('transactions');
     e.preventDefault();
     this.getBalanceOf(this.props.tokenConfig.idle.token);
   }
