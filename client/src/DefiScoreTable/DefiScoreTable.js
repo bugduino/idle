@@ -25,8 +25,6 @@ class DefiScoreTable extends React.Component {
       protocols[protocol].defiScore = defiScoreData.data;
     });
 
-    console.log(protocols);
-
     this.setState({
       dataLoaded:true
     });
