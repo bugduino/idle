@@ -171,42 +171,41 @@ class RimbleTransaction extends React.Component {
       }
     }
 
-
+    let web3Host = null;
     let web3Provider = null;
+    let terminalSourceType = localStorage && localStorage.getItem('walletProvider') ? localStorage.getItem('walletProvider') : SourceType.Infura;
 
     if (!web3) { // safety web3 implementation
-
       if (window.ethereum) {
         customLog("Using modern web3 provider.");
         web3Provider = window.ethereum;
-        // web3 = new Web3(window.ethereum);
       } else if (window.web3) {
         customLog("Legacy web3 provider. Try updating.");
         web3Provider = window.web3;
-        // web3 = new Web3(window.web3.currentProvider);
       } else {
         customLog("Non-Ethereum browser detected. Using Infura fallback.");
-        web3Provider = new Web3.providers.HttpProvider(
-          `https://mainnet.infura.io/v3/${INFURA_KEY}`
-        );
-        // web3 = new Web3(web3Provider);
+        web3Host = `https://mainnet.infura.io/v3/${INFURA_KEY}`;
       }
 
     } else {
       web3Provider = web3.currentProvider;
     }
+    
+    const TerminalHttpProviderParams = {
+      apiKey: 'LonotCXiu7FEVd8Zl2W68A==',
+      projectId: 'DYLRXdlpqKVzPmZr',
+      source: terminalSourceType,
+      web3Version: Web3Versions.one,
+    };
 
-    customLog('initWeb3 instantiate TerminalHttpProvider',web3);
-
-    web3 = new Web3(
-      new TerminalHttpProvider({
-        apiKey: 'LonotCXiu7FEVd8Zl2W68A==',
-        projectId: 'DYLRXdlpqKVzPmZr',
-        source: localStorage && localStorage.getItem('walletProvider') ? localStorage.getItem('walletProvider') : SourceType.Infura,
-        customHttpProvider: web3Provider,
-        web3Version: Web3Versions.one,
-      })
-    );
+    if (web3Provider){
+      TerminalHttpProviderParams['customHttpProvider'] = web3Provider;
+    } else if (web3Host){
+      TerminalHttpProviderParams['host'] = web3Host;
+    }
+      
+    const terminalHttpProvider = new TerminalHttpProvider(TerminalHttpProviderParams);
+    web3 = new Web3(terminalHttpProvider);
 
     this.setState({ web3 }, async () => {
 
