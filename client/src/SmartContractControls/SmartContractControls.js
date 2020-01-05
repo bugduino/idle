@@ -1563,7 +1563,7 @@ class SmartContractControls extends React.Component {
                                       <CryptoInput
                                         genericError={this.state.genericErrorRedeem}
                                         icon={'images/idle-dai.png'}
-                                        buttonLabel={`REDEEM ${this.props.tokenConfig.idle.token}`}
+                                        buttonLabel={`REDEEM ${this.props.selectedToken}`}
                                         placeholder={`Enter ${this.props.tokenConfig.idle.token} amount`}
                                         disableLendButton={this.state.disableRedeemButton}
                                         isMobile={this.props.isMobile}
@@ -1704,10 +1704,10 @@ class SmartContractControls extends React.Component {
                                   <Flex flexDirection={'row'} py={[2,3]} width={[1,'1/2']} m={'0 auto'}>
                                     <Box width={1/2}>
                                       <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                        Current holdings
+                                        Current APR
                                       </Text>
                                       <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                        { balanceOfIdleDAI }
+                                        { this.state.maxRate ? `${this.state.maxRate}%` : '-' }
                                       </Heading.h3>
                                     </Box>
                                     <Box width={1/2}>
