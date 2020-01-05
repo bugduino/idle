@@ -143,42 +143,6 @@ class SmartContractControls extends React.Component {
     return defaultProvider.render ? (amount) => defaultProvider.render(initParams,amount) : null;
   }
 
-  renderZeroExInstant = (e,amount) => {
-    if (e){
-      e.preventDefault();
-    }
-    
-    if (window.zeroExInstant){
-      const connectorName = window.RimbleWeb3_context.connectorName;
-      const params = {
-        provider: connectorName && connectorName!=='Injected' && window.RimbleWeb3_context.connector[connectorName.toLowerCase()] ? window.RimbleWeb3_context.connector[window.RimbleWeb3_context.connectorName.toLowerCase()].provider : window.ethereum,
-        orderSource: this.props.tokenConfig.zeroExInstant.orderSource,
-        affiliateInfo: this.props.tokenConfig.zeroExInstant.affiliateInfo,
-        defaultSelectedAssetData: this.props.tokenConfig.zeroExInstant.assetData,
-        availableAssetDatas: [this.props.tokenConfig.zeroExInstant.assetData],
-        shouldDisableAnalyticsTracking: true,
-        onSuccess: async (txHash) => {
-          const tokenBalance = await this.getTokenBalance();
-          if (tokenBalance){
-            this.useEntireBalance(tokenBalance);
-          }
-        },
-        onClose: (e) => {
-          customLog(e);
-          if (e){
-            e.preventDefault();
-          }
-          // return false;
-        }
-      };
-
-      if (amount){
-        params.defaultAssetBuyAmount = parseFloat(amount);
-      }
-      window.zeroExInstant.render(params, 'body');
-    }
-  }
-
   // utilities
   trimEth = (eth,decimals) => {
     decimals = !isNaN(decimals) ? decimals : 6;

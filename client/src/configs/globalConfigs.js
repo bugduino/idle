@@ -195,7 +195,9 @@ const globalConfigs = {
           supportedTokens:['USDC','DAI'],
           remoteResources:{'https://instant.0x.org/v3/instant.js':{}},
           getInitParams: (props,globalConfigs,onSuccess,onClose) => {
+            const connectorName = window.RimbleWeb3_context ? window.RimbleWeb3_context.connectorName : null;
             return {
+              provider: connectorName && connectorName!=='Injected' && window.RimbleWeb3_context.connector[connectorName.toLowerCase()] ? window.RimbleWeb3_context.connector[window.RimbleWeb3_context.connectorName.toLowerCase()].provider : window.ethereum,
               orderSource: props.tokenConfig.zeroExInstant.orderSource,
               affiliateInfo: props.tokenConfig.zeroExInstant.affiliateInfo,
               defaultSelectedAssetData: props.tokenConfig.zeroExInstant.assetData,
