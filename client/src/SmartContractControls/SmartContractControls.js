@@ -1270,7 +1270,7 @@ class SmartContractControls extends React.Component {
     const depositedFunds = this.getFormattedBalance(this.state.amountLent,this.props.selectedToken);
     const earningPerc = !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && this.trimEth(this.state.tokenToRedeemParsed)>0 ? this.getFormattedBalance(this.BNify(this.state.tokenToRedeemParsed).div(this.BNify(this.state.amountLent)).minus(1).times(100),'%',4) : '0%';
     const currentApr = !isNaN(this.state.maxRate) ? this.getFormattedBalance(this.state.maxRate,'%',2) : '-';
-    const balanceOfIdleDAI = this.getFormattedBalance(this.state.tokenBalanceBNify,this.props.tokenConfig.idle.token);
+    // const balanceOfIdleDAI = this.getFormattedBalance(this.state.tokenBalanceBNify,this.props.tokenConfig.idle.token);
 
     let earningPerDay = this.getFormattedBalance((this.state.earningPerYear/daysInYear),this.props.selectedToken,4);
     const earningPerWeek = this.getFormattedBalance((this.state.earningPerYear/daysInYear*7),this.props.selectedToken,4);
