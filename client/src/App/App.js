@@ -50,6 +50,13 @@ class App extends Component {
     let selectedToken = this.state.selectedToken;
     if (!selectedToken){
       selectedToken = localStorage ? localStorage.getItem('selectedToken') : null;
+
+      // Check if the stored token 
+      if (selectedToken && availableTokens[selectedToken] && !availableTokens[selectedToken].enabled){
+        selectedToken = null;
+        localStorage.removeItem('selectedToken');
+      }
+
       if (!selectedToken){
         selectedToken = Object.keys(availableTokens)[0];
       }
