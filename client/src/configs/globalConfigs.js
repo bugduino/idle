@@ -17,21 +17,24 @@ const globalConfigs = {
   },
   payments: {
     methods:{
-      'bank':{
+      bank:{
+        defaultProvider:null,
         props:{
           imageSrc:'images/bank.png',
           caption:'Bank Account',
           imageProps:{height:'70px'}
         }
       },
-      'card':{
+      card:{
+        defaultProvider:null,
         props:{
           imageSrc:'images/debit-card.png',
           caption:'Credit Card',
           imageProps:{height:'70px'}
         }
       },
-      'wallet':{
+      wallet:{
+        defaultProvider:'zeroExInstant',
         props:{
           imageSrc:'images/tokens/ETH.svg',
           caption:'Ethereum Wallet',
@@ -191,22 +194,57 @@ const globalConfigs = {
           supportedMethods:['wallet'],
           supportedTokens:['USDC','DAI'],
           remoteResources:{'https://instant.0x.org/v3/instant.js':{}},
-          getInitParams: (props,globalConfigs) => {
+          getInitParams: (props,globalConfigs,onSuccess,onClose) => {
             return {
               orderSource: props.tokenConfig.zeroExInstant.orderSource,
               affiliateInfo: props.tokenConfig.zeroExInstant.affiliateInfo,
               defaultSelectedAssetData: props.tokenConfig.zeroExInstant.assetData,
               availableAssetDatas: [props.tokenConfig.zeroExInstant.assetData],
               shouldDisableAnalyticsTracking: true,
-              onSuccess: async (txHash) => {
-                
-              },
-              onClose: (e) => {
-                if (e){
-                  e.preventDefault();
-                }
-              }
+              onSuccess: onSuccess ? onSuccess : () => {},
+              onClose: onClose ? onClose : () => {}
             };
+          },
+          render: (initParams,amount) => {
+            if (window.zeroExInstant){
+              if (amount){
+                initParams.defaultAssetBuyAmount = parseFloat(amount);
+              }
+              window.zeroExInstant.render(initParams, 'body');
+            }
+          }
+      },
+      airSwap: {
+          enabled: true,
+          imageSrc: 'images/payments/airswap.svg',
+          imageProps: {
+            height: '35px',
+            my: '8px'
+          },
+          caption: 'Buy with',
+          captionPos: 'top',
+          subcaption: '~ 0% fee ~',
+          supportedMethods:['wallet'],
+          supportedTokens:['USDC','DAI','SAI'],
+          env:'production',
+          remoteResources:{'https://cdn.airswap.io/airswap-instant-widget.js':{}},
+          getInitParams: (props,globalConfigs,onComplete,onClose) => {
+            return {
+              env: 'production',
+              mode: 'buy',
+              token: props.tokenConfig.address,
+              baseToken: 'ETH',
+              onComplete: onComplete ? onComplete : () => {},
+              onClose: onClose ? onClose : () => {}
+            };
+          },
+          render: (initParams,amount) => {
+            if (window.AirSwapInstant){
+              if (amount){
+                initParams.amount = amount.toString();
+              }
+              window.AirSwapInstant.render(initParams,'body');
+            }
           }
       }
     }

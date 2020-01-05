@@ -100,9 +100,9 @@ class CryptoInput extends Component {
             <Text textAlign='center' color={'red'} fontSize={2} mb={[2,3]}>{this.props.genericError}</Text>
           )}
 
-          {this.props.buyTokenMessage && (
+          {this.props.buyTokenMessage && this.props.renderTokenSwapper && (
             <Flex alignItems={'center'} justifyContent={'center'}>
-              <Link textAlign={'center'} color={'blue'} hoverColor={'blue'} fontWeight={2} fontSize={[1,2]} mb={[2,3]} onClick={ e => { this.props.renderZeroExInstant(e,this.props.defaultValue) } }>
+              <Link textAlign={'center'} color={'blue'} hoverColor={'blue'} fontWeight={2} fontSize={[1,2]} mb={[2,3]} onClick={ e => { this.props.renderTokenSwapper(this.props.defaultValue) } }>
                 {this.props.buyTokenMessage}
               </Link>
             </Flex>
@@ -138,16 +138,16 @@ class CryptoInput extends Component {
             </Flex>
           }
 
-          {this.props.renderZeroExInstant && (
+          {this.props.renderTokenSwapper && (
             <>
               <Flex justifyContent={'center'} mt={[3,3]} mb={[2,3]}>
-                <Link className={styles.newLink} display={'flex'} color={'dark-gray'} hoverColor={'blue'} justifyContent={'center'} onClick={ e => { this.props.renderZeroExInstant(e) } }>
-                  <Flex flexDirection={'row'} width={'auto'} justifyContent={'center'} borderRadius={3} className={styles.newPillContainer} p={'4px'}>
-                    <Flex width={'50px'} alignItems={'center'} justifyContent={'center'} className={styles.newPill} color={'white'} fontSize={2} fontWeight={3} borderRadius={3}>
+                <Link className={styles.newLink} display={'flex'} color={'dark-gray'} hoverColor={'blue'} justifyContent={'center'} onClick={ e => { this.props.renderTokenSwapper() } }>
+                  <Flex flexDirection={'row'} width={'auto'} justifyContent={'center'} borderRadius={3} p={'4px'}>
+                    <Flex width={'50px'} alignItems={'center'} justifyContent={'center'} className={styles.newPill} color={'white'} fontSize={2} fontWeight={2} borderRadius={1}>
                       NEW
                     </Flex>
                     <Flex ml={2} mr={1} justifyContent={'center'}>
-                      <Text textAlign={'center'} fontWeight={2} fontSize={1}>Buy {this.props.selectedAsset} with your ETH</Text>
+                      <Text textAlign={'center'} fontWeight={2} fontSize={1}><u>Buy {this.props.selectedAsset} with your ETH</u></Text>
                     </Flex>
                   </Flex>
                 </Link>

@@ -79,7 +79,8 @@ class BuyModal extends React.Component {
 
     this.closeModal(e);
 
-    const initParams = globalConfigs.payments.providers[provider] && globalConfigs.payments.providers[provider].getInitParams ? globalConfigs.payments.providers[provider].getInitParams(this.props,globalConfigs,buyParams) : null;
+    const paymentProvider = globalConfigs.payments.providers[provider];
+    const initParams = paymentProvider && paymentProvider.getInitParams ? paymentProvider.getInitParams(this.props,globalConfigs,buyParams) : null;
 
     switch (provider){
       case 'wyre':
@@ -194,9 +195,10 @@ class BuyModal extends React.Component {
         }
       break;
       case 'zeroExInstant':
-        if (window.zeroExInstant){
-          window.zeroExInstant.render(initParams, 'body');
-        }
+        paymentProvider.render(initParams);
+      break;
+      case 'airSwap':
+        paymentProvider.render(initParams);
       break;
       default:
       break;

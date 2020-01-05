@@ -9,10 +9,6 @@
   animation: newPillContainerAnim 0.5s ease infinite alternate;
 }
 */
-.newPillContainer:hover{
-  background-color:rgba(0, 54, 255, 0.15);
-  animation:none;
-}
 
 @-webkit-keyframes newPillContainerAnim {
     0%{
@@ -24,7 +20,7 @@
 }
 
 .newPill{
-  background:linear-gradient(180deg,#013aff,#6081ff);
+  background:linear-gradient(180deg,#01b5eb,#017ed4);
 }
 
 .mainInput {

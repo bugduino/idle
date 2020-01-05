@@ -19,7 +19,7 @@ const env = process.env;
 const OldIdleAddress = '0x10cf8e1CDba9A2Bd98b87000BCAdb002b13eA525'; // v0.1 hackathon version
 
 const daysInYear = 365.2422;
-let componendUnmounted;
+let componentUnmounted;
 
 const LOG_ENABLED = false;
 const customLog = (...props) => { if (LOG_ENABLED) console.log(moment().format('HH:mm:ss'),...props); };
@@ -111,8 +111,36 @@ class SmartContractControls extends React.Component {
     }
   }
 
-  checkZeroExInstantEnabled = () => {
-    return globalConfigs.payments.providers.zeroExInstant.enabled && globalConfigs.payments.providers.zeroExInstant.supportedTokens.indexOf(this.props.selectedToken) !== -1;
+  getDefaultTokenSwapper = () => {
+
+    const availableProviders = Object.keys(globalConfigs.payments.providers).filter((i) => { const p = globalConfigs.payments.providers[i]; return p.supportedMethods.indexOf('wallet') !== -1 && p.enabled && p.supportedTokens.indexOf(this.props.selectedToken) !== -1 });
+
+    if (!availableProviders || !availableProviders.length){
+      return false;
+    }
+
+    // Take the default token payment provider for the wallet method
+    const defaultProviderName = globalConfigs.payments.methods.wallet.defaultProvider;
+    let defaultProvider = null;
+    if (availableProviders.indexOf(defaultProviderName) !== -1){
+      defaultProvider = globalConfigs.payments.providers[defaultProviderName];
+    // If the default provider is not available pick up the first one available
+    } else {
+      defaultProvider = globalConfigs.payments.providers[availableProviders[0]];
+    }
+
+    const onSuccess = async (tx) => {
+      this.setState({
+        needsUpdate:true
+      });
+    };
+
+    const onClose = async (e) => {
+      return true;
+    }
+
+    const initParams = defaultProvider.getInitParams ? defaultProvider.getInitParams(this.props,globalConfigs,onSuccess,onClose) : null;
+    return defaultProvider.render ? (amount) => defaultProvider.render(initParams,amount) : null;
   }
 
   renderZeroExInstant = (e,amount) => {
@@ -120,7 +148,7 @@ class SmartContractControls extends React.Component {
       e.preventDefault();
     }
     
-    if (window.zeroExInstant && this.checkZeroExInstantEnabled()){
+    if (window.zeroExInstant){
       const connectorName = window.RimbleWeb3_context.connectorName;
       const params = {
         provider: connectorName && connectorName!=='Injected' && window.RimbleWeb3_context.connector[connectorName.toLowerCase()] ? window.RimbleWeb3_context.connector[window.RimbleWeb3_context.connectorName.toLowerCase()].provider : window.ethereum,
@@ -206,7 +234,7 @@ class SmartContractControls extends React.Component {
   getAprs = async () => {
     const aprs = await this.genericIdleCall('getAPRs');
 
-    if (componendUnmounted){
+    if (componentUnmounted){
       return false;
     }
 
@@ -325,7 +353,7 @@ class SmartContractControls extends React.Component {
 
       if (this.state.amountLent && this.trimEth(this.state.amountLent.toString())>0 && this.trimEth(tokenToRedeem.toString())>0 && parseFloat(tokenToRedeem.toString())<parseFloat(this.state.amountLent.toString())){
         customLogError('Balance '+this.trimEth(tokenToRedeem.toString())+' is less than AmountLent ('+this.trimEth(this.state.amountLent.toString())+').. try again');
-        if (componendUnmounted){
+        if (componentUnmounted){
           return false;
         }
         setTimeout(async () => {
@@ -735,9 +763,9 @@ class SmartContractControls extends React.Component {
 
       if (this.props.account) {
         if (this.BNify(amount).gt(this.BNify(this.state.tokenBalance))){
-          const zeroExInstantEnabled = this.checkZeroExInstantEnabled();
           disableLendButton = true;
-          if (zeroExInstantEnabled){
+          const defaultTokenSwapper = this.getDefaultTokenSwapper();
+          if (defaultTokenSwapper){
             buyTokenMessage = `The inserted amount exceeds your balance. Click here to buy more ${this.props.selectedToken}`;
           } else {
             genericError = `The inserted amount exceeds your ${this.props.selectedToken} balance`;
@@ -776,7 +804,7 @@ class SmartContractControls extends React.Component {
       https://api.etherscan.io/api?module=account&action=tokentx&address=${this.props.account}&startblock=8119247&endblock=999999999&sort=asc&apikey=${env.REACT_APP_ETHERSCAN_KEY}
     `).catch(err => {
       customLog('Error getting prev txs');
-      if (componendUnmounted){
+      if (componentUnmounted){
         return false;
       }
       setTimeout(()=>{this.getPrevTxs();},1000);
@@ -975,7 +1003,7 @@ class SmartContractControls extends React.Component {
 
   // Clear all the timeouts
   async componentWillUnmount(){
-    componendUnmounted = true;
+    componentUnmounted = true;
 
     let id = window.setTimeout(function() {}, 0);
 
@@ -986,7 +1014,7 @@ class SmartContractControls extends React.Component {
 
   async componentDidMount() {
 
-    componendUnmounted = false;
+    componentUnmounted = false;
 
     window.jQuery = jQuery;
     // customLog('SmartContractControls componentDidMount',jQuery);
@@ -1297,7 +1325,7 @@ class SmartContractControls extends React.Component {
     const tokenNotApproved = (this.props.account && this.state.isTokenApproved===false && !this.state.isApprovingToken);
     const walletIsEmpty = this.props.account && this.state.showEmptyWalletOverlay && !tokenNotApproved && !this.state.isApprovingToken && this.state.tokenBalance !== null && !isNaN(this.state.tokenBalance) && !parseFloat(this.state.tokenBalance);
 
-    const zeroExInstantEnabled = this.checkZeroExInstantEnabled();
+    const defaultTokenSwapper = this.getDefaultTokenSwapper();
 
     return (
       <Box textAlign={'center'} alignItems={'center'} width={'100%'}>
@@ -1429,7 +1457,7 @@ class SmartContractControls extends React.Component {
 
                 { !this.state.isApprovingToken && !this.state.lendingProcessing &&
                   <CryptoInput
-                    renderZeroExInstant={ zeroExInstantEnabled ? this.renderZeroExInstant : false }
+                    renderTokenSwapper={ defaultTokenSwapper ? defaultTokenSwapper : false }
                     genericError={this.state.genericError}
                     buyTokenMessage={this.state.buyTokenMessage}
                     disableLendButton={this.state.disableLendButton}
