@@ -1269,6 +1269,7 @@ class SmartContractControls extends React.Component {
     const idleTokenPrice = this.getFormattedBalance(this.state.idleTokenPrice,this.props.selectedToken);
     const depositedFunds = this.getFormattedBalance(this.state.amountLent,this.props.selectedToken);
     const earningPerc = !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && this.trimEth(this.state.tokenToRedeemParsed)>0 ? this.getFormattedBalance(this.BNify(this.state.tokenToRedeemParsed).div(this.BNify(this.state.amountLent)).minus(1).times(100),'%',4) : '0%';
+    const currentApr = !isNaN(this.state.maxRate) ? this.getFormattedBalance(this.state.maxRate,'%',2) : '-';
     const balanceOfIdleDAI = this.getFormattedBalance(this.state.tokenBalanceBNify,this.props.tokenConfig.idle.token);
 
     let earningPerDay = this.getFormattedBalance((this.state.earningPerYear/daysInYear),this.props.selectedToken,4);
@@ -1707,7 +1708,7 @@ class SmartContractControls extends React.Component {
                                         Current APR
                                       </Text>
                                       <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                        { this.state.maxRate ? `${this.state.maxRate}%` : '-' }
+                                        { currentApr }
                                       </Heading.h3>
                                     </Box>
                                     <Box width={1/2}>
