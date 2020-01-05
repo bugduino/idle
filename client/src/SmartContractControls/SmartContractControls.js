@@ -268,8 +268,8 @@ class SmartContractControls extends React.Component {
   getTokenBalance = async () => {
     if (this.props.account){
       let tokenBalance = await this.genericContractCall(this.props.selectedToken,'balanceOf',[this.props.account]);
-      const tokenDecimals = await this.getTokenDecimals();
       if (tokenBalance){
+        const tokenDecimals = await this.getTokenDecimals();
         tokenBalance = this.BNify(tokenBalance.toString()).div(this.BNify(Math.pow(10,parseInt(tokenDecimals)).toString()));
         customLog('getTokenBalance',tokenBalance.toString(),tokenDecimals,this.BNify(tokenBalance.toString()).div(this.BNify(Math.pow(10,parseInt(tokenDecimals)).toString())).toString());
         this.setState({
@@ -284,7 +284,7 @@ class SmartContractControls extends React.Component {
     return null;
   };
   reloadFunds = async(e) => {
-    localStorage.removeItem('transactions');
+    localStorage.removeItem(`transactions_${this.props.selectedToken}`);
     e.preventDefault();
     this.getBalanceOf(this.props.tokenConfig.idle.token);
   }
@@ -468,7 +468,7 @@ class SmartContractControls extends React.Component {
     if (transactions[tx.transactionHash]){
       delete transactions[tx.transactionHash];
       if (localStorage){
-        localStorage.setItem('transactions',JSON.stringify(transactions));
+        localStorage.setItem(`transactions_${this.props.selectedToken}`,JSON.stringify(transactions));
       }
       return this.setState({
         transactions
@@ -483,7 +483,7 @@ class SmartContractControls extends React.Component {
       // customLog('addTransaction',tx.transactionHash,tx.status);
       transactions[tx.transactionHash] = tx;
       if (localStorage){
-        localStorage.setItem('transactions',JSON.stringify(transactions));
+        localStorage.setItem(`transactions_${this.props.selectedToken}`,JSON.stringify(transactions));
       }
       return this.setState({
         transactions
@@ -782,20 +782,20 @@ class SmartContractControls extends React.Component {
     }
 
     const results = txs.data.result;
+
     const prevTxs = results.filter(
         tx => {
           const internalTxs = results.filter(r => r.hash === tx.hash);
-
           const isDepositTx = tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
           const isRedeemTx = tx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()).length && tx.to.toLowerCase() === this.props.account.toLowerCase();
 
-          return isDepositTx || isRedeemTx;
+          return tx.tokenSymbol===this.props.selectedToken && (isDepositTx || isRedeemTx);
       }).map(tx => ({...tx, value: this.toEth(tx.value)}));
 
     let amountLent = this.BNify(0);
     let transactions = {};
 
-    customLog('prevTxs',prevTxs);
+    // customLog('prevTxs',prevTxs);
 
     prevTxs.forEach((tx,index) => {
       // Deposited
@@ -812,7 +812,7 @@ class SmartContractControls extends React.Component {
       transactions[tx.hash] = tx;
     });
 
-    const minedTxs = localStorage ? JSON.parse(localStorage.getItem('transactions')) : this.props.transactions;
+    const minedTxs = localStorage ? JSON.parse(localStorage.getItem(`transactions_${this.props.selectedToken}`)) : this.props.transactions;
 
     // Add missing executed transactions
     if (minedTxs){
@@ -843,6 +843,8 @@ class SmartContractControls extends React.Component {
           });
         }));
 
+        // console.log('realTx',realTx);
+
         // Skip txs from other wallets
         if (realTx.from.toLowerCase() !== this.props.account.toLowerCase()){
           return;
@@ -866,15 +868,17 @@ class SmartContractControls extends React.Component {
         realTx.tokenSymbol = this.props.selectedToken;
         realTx.tx = tx;
 
-        if (realTx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()){
+        customLog('realTx from localStorage:',realTx);
+
+        if (tx.method==='mintIdleToken'){
           amountLent = amountLent.plus(this.BNify(realTx.value));
-          // customLog('Deposited '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
-        } else if (realTx.to.toLowerCase() === this.props.account.toLowerCase()){
+          customLog('Deposited (localStorage) '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
+        } else if (tx.method==='redeemIdleToken'){
           amountLent = amountLent.minus(this.BNify(realTx.value));
           if (amountLent.lt(0)){
             amountLent = this.BNify(0);
           }
-          // customLog('Redeemed '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
+          customLog('Redeemed (localStorage) '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
         }
 
         transactions[realTx.hash] = realTx;
@@ -1086,7 +1090,7 @@ class SmartContractControls extends React.Component {
     if (prevProps.transactions !== this.props.transactions){
       // Store transactions into Local Storage
       if (localStorage){
-        localStorage.setItem('transactions',JSON.stringify(this.props.transactions));
+        localStorage.setItem(`transactions_${this.props.selectedToken}`,JSON.stringify(this.props.transactions));
       }
 
       // console.log('Transactions changed from',prevProps.transactions,'to',this.props.transactions);
@@ -1260,7 +1264,7 @@ class SmartContractControls extends React.Component {
     // const navPool = this.getFormattedBalance(this.state.navPool,this.props.selectedToken);
     const idleTokenPrice = this.getFormattedBalance(this.state.idleTokenPrice,this.props.selectedToken);
     const depositedFunds = this.getFormattedBalance(this.state.amountLent,this.props.selectedToken);
-    const earningPerc = !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && this.trimEth(this.state.tokenToRedeemParsed)>0 ? this.getFormattedBalance(this.BNify(this.state.tokenToRedeemParsed).div(this.BNify(this.state.amountLent)).minus(1).times(100),'%',4) : '0%';
+    const earningPerc = !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && this.trimEth(this.state.tokenToRedeemParsed)>0 && this.state.amountLent>0 ? this.getFormattedBalance(this.BNify(this.state.tokenToRedeemParsed).div(this.BNify(this.state.amountLent)).minus(1).times(100),'%',4) : '0%';
     const currentApr = !isNaN(this.state.maxRate) ? this.getFormattedBalance(this.state.maxRate,'%',2) : '-';
     // const balanceOfIdleDAI = this.getFormattedBalance(this.state.tokenBalanceBNify,this.props.tokenConfig.idle.token);
 
