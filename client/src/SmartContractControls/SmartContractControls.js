@@ -111,11 +111,16 @@ class SmartContractControls extends React.Component {
     }
   }
 
+  checkZeroExInstantEnabled = () => {
+    return globalConfigs.payments.providers.zeroExInstant.enabled && globalConfigs.payments.providers.zeroExInstant.supportedTokens.indexOf(this.props.selectedToken) !== -1;
+  }
+
   renderZeroExInstant = (e,amount) => {
     if (e){
       e.preventDefault();
     }
-    if (window.zeroExInstant){
+    
+    if (window.zeroExInstant && this.checkZeroExInstantEnabled()){
       const connectorName = window.RimbleWeb3_context.connectorName;
       const params = {
         provider: connectorName && connectorName!=='Injected' && window.RimbleWeb3_context.connector[connectorName.toLowerCase()] ? window.RimbleWeb3_context.connector[window.RimbleWeb3_context.connectorName.toLowerCase()].provider : window.ethereum,
@@ -717,7 +722,7 @@ class SmartContractControls extends React.Component {
     } else {
       this.redeem(e);
     }
-  };
+  }
 
   handleChangeAmount = (e) => {
     if (this.props.account){
@@ -730,9 +735,13 @@ class SmartContractControls extends React.Component {
 
       if (this.props.account) {
         if (this.BNify(amount).gt(this.BNify(this.state.tokenBalance))){
+          const zeroExInstantEnabled = this.checkZeroExInstantEnabled();
           disableLendButton = true;
-          buyTokenMessage = `The inserted amount exceeds your balance. Click here to buy more ${this.props.selectedToken}`;
-          // genericError = `The inserted amount exceeds your ${this.props.selectedToken} balance`;
+          if (zeroExInstantEnabled){
+            buyTokenMessage = `The inserted amount exceeds your balance. Click here to buy more ${this.props.selectedToken}`;
+          } else {
+            genericError = `The inserted amount exceeds your ${this.props.selectedToken} balance`;
+          }
         } else if (this.BNify(amount).lte(0)) {
           disableLendButton = true;
           genericError = `Please insert an amount of ${this.props.selectedToken} to lend`;
@@ -747,16 +756,19 @@ class SmartContractControls extends React.Component {
     } else {
       this.mint(e);
     }
-  };
+  }
+
   toggleModal = (e) => {
     this.setState(state => ({...state, approveIsOpen: !state.approveIsOpen }));
-  };
+  }
+
   toggleMaxCapModal = (e) => {
     this.setState(state => ({...state, capReached: !state.capReached }));
-  };
+  }
+
   toggleWelcomeModal = (e) => {
     this.setState(state => ({...state, welcomeIsOpen: !state.welcomeIsOpen }));
-  };
+  }
 
   getPrevTxs = async () => {
     // customLog('Call getPrevTxs');
@@ -1284,6 +1296,8 @@ class SmartContractControls extends React.Component {
     const tokenNotApproved = (this.props.account && this.state.isTokenApproved===false && !this.state.isApprovingToken);
     const walletIsEmpty = this.props.account && this.state.showEmptyWalletOverlay && !tokenNotApproved && !this.state.isApprovingToken && this.state.tokenBalance !== null && !isNaN(this.state.tokenBalance) && !parseFloat(this.state.tokenBalance);
 
+    const zeroExInstantEnabled = this.checkZeroExInstantEnabled();
+
     return (
       <Box textAlign={'center'} alignItems={'center'} width={'100%'}>
         <Form minHeight={['auto','17em']} backgroundColor={'white'} color={'blue'} boxShadow={'0 0 25px 5px rgba(102, 139, 255, 0.7)'} borderRadius={'15px'} style={{position:'relative'}}>
@@ -1414,7 +1428,7 @@ class SmartContractControls extends React.Component {
 
                 { !this.state.isApprovingToken && !this.state.lendingProcessing &&
                   <CryptoInput
-                    renderZeroExInstant={ globalConfigs.payments.providers.zeroExInstant.enabled ? this.renderZeroExInstant : false }
+                    renderZeroExInstant={ zeroExInstantEnabled ? this.renderZeroExInstant : false }
                     genericError={this.state.genericError}
                     buyTokenMessage={this.state.buyTokenMessage}
                     disableLendButton={this.state.disableLendButton}

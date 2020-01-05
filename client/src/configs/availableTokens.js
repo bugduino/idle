@@ -9,7 +9,7 @@ const availableTokens = {
     abi:ERC20.abi,
     address:'0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359',
     zeroExInstant:{
-      orderSource: 'https://api.radarrelay.com/0x/v2/',
+      orderSource: 'https://api.0x.org/sra/',
       assetData:'0xf47261b000000000000000000000000089d24a6b4ccb1b6faa2625fe562bdd9a23260359',
       affiliateInfo: {
           feeRecipient: '0x4215606a720477178AdFCd5A59775C63138711e8',
@@ -49,11 +49,16 @@ const availableTokens = {
     ]
   },
   DAI:{
-    enabled: false,
+    enabled:false,
     abi:ERC20.abi,
     address:'0x6b175474e89094c44da98b954eedeac495271d0f',
     zeroExInstant:{
-      assetData:'0xf47261b0000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+      orderSource: 'https://api.0x.org/sra/',
+      assetData:'0xf47261b00000000000000000000000006b175474e89094c44da98b954eedeac495271d0f',
+      affiliateInfo: {
+          feeRecipient: '0x4215606a720477178AdFCd5A59775C63138711e8',
+          feePercentage: 0.0075
+      },
     },
     wyre:{
       destCurrency:'DAI'
@@ -85,11 +90,16 @@ const availableTokens = {
     ]
   },
   USDC:{
-    enabled: false,
+    enabled:false,
     abi:ERC20.abi,
     address:'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
     zeroExInstant:{
+      orderSource: 'https://api.0x.org/sra/',
       assetData:'0xf47261b0000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+      affiliateInfo: {
+          feeRecipient: '0x4215606a720477178AdFCd5A59775C63138711e8',
+          feePercentage: 0.0075
+      },
     },
     wyre:{
       destCurrency:'USDC'

@@ -179,7 +179,7 @@ const globalConfigs = {
         }
       },
       zeroExInstant: {
-          enabled:false,
+          enabled: true,
           imageSrc: 'images/payments/zeroexinstant.svg',
           imageProps: {
             height: '35px',
@@ -189,8 +189,8 @@ const globalConfigs = {
           captionPos: 'top',
           subcaption: '~ 0.75% fee ~',
           supportedMethods:['wallet'],
-          supportedTokens:['USDC','DAI','SAI'],
-          remoteResources:{'https://instant.0x.org/instant.js':{}},
+          supportedTokens:['USDC','DAI'],
+          remoteResources:{'https://instant.0x.org/v3/instant.js':{}},
           getInitParams: (props,globalConfigs) => {
             return {
               orderSource: props.tokenConfig.zeroExInstant.orderSource,

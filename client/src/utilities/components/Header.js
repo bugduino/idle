@@ -137,7 +137,7 @@ class Header extends React.Component {
           <Box ml={[3, 5]} width={[1, 3/12]}>
             <RouterLink to="/">
               <Image src="images/logo-lines-full.svg"
-                height={['35px','50px']}
+                height={['35px','48px']}
                 position={'relative'} />
             </RouterLink>
           </Box>

@@ -27,8 +27,7 @@ class BuyModal extends React.Component {
     selectedCountry:null
   }
 
-  async componentDidMount() {
-
+  async loadRemoteResources() {
     // Load payments providers external remote resources
     Object.keys(globalConfigs.payments.providers).forEach((provider,i) => {
 
@@ -66,6 +65,14 @@ class BuyModal extends React.Component {
         });
       }
     });
+  }
+
+  async componentDidMount() {
+    this.loadRemoteResources();
+  }
+
+  async componentDidUpdate() {
+    this.loadRemoteResources();
   }
 
   renderPaymentMethod = async (e,provider,buyParams) => {
