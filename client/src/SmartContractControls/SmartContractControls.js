@@ -1691,7 +1691,7 @@ class SmartContractControls extends React.Component {
                                     </Box>
                                     <Box width={1/2}>
                                       <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                        Earning
+                                        Total earned
                                       </Text>
                                       <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
                                         { earningPerc }
