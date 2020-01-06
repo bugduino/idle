@@ -28,7 +28,7 @@ export default function (props) {
       'amount':accountBalanceToken
     },
     {
-      'icon':'images/tokens/idleDAI.png',
+      'icon':'images/idle-round.png',
       'amount':idleTokenBalance
     }
   ];

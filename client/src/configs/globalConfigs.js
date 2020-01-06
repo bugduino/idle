@@ -124,7 +124,7 @@ const globalConfigs = {
         getInitParams: (props,globalConfigs,buyParams) => {
         	return {
 	          hostAppName: 'Idle',
-	          hostLogoUrl: `${globalConfigs.baseURL}/images/idle-dai.png`,
+	          hostLogoUrl: `${globalConfigs.baseURL}/images/idle-round.png`,
 	          swapAsset: buyParams.selectedToken ? buyParams.selectedToken : ( props.tokenConfig.ramp && props.tokenConfig.ramp.swapAsset ? props.tokenConfig.ramp.swapAsset : props.selectedToken ),
 	          userAddress: props.account,
 	          variant: props.isMobile ? 'mobile' : 'desktop',
