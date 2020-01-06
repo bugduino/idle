@@ -72,6 +72,7 @@ class SmartContractControls extends React.Component {
     fundsError: false,
     showEmptyWalletOverlay:true,
     prevTxs : null,
+    prevTxsError: false,
     transactions:{}
   };
 
@@ -244,6 +245,8 @@ class SmartContractControls extends React.Component {
       },5000);
       return false;
     }
+
+    customLog('getAprs',Aprs);
 
     const addresses = Aprs.addresses.map((addr,i) => { return addr.toString().toLowerCase() });
     const aprs = Aprs.aprs;
@@ -845,8 +848,8 @@ class SmartContractControls extends React.Component {
     this.setState(state => ({...state, welcomeIsOpen: !state.welcomeIsOpen }));
   }
 
-  getPrevTxs = async () => {
-    // customLog('Call getPrevTxs');
+  getPrevTxs = async (count) => {
+    count = count ? count : 0;
     const requiredNetwork = globalConfigs.network.requiredNetwork;
     const etherscanApiUrl = globalConfigs.network.providers.etherscan[requiredNetwork]
     const txs = await axios.get(`
@@ -856,11 +859,15 @@ class SmartContractControls extends React.Component {
       if (componentUnmounted){
         return false;
       }
-      setTimeout(()=>{this.getPrevTxs();},1000);
+      if (count<2){
+        setTimeout(()=>{this.getPrevTxs(count+1);},1000);
+        return false;
+      }
     });
 
     if (!txs || !txs.data || !txs.data.result) {
       return this.setState({
+        prevTxsError:true,
         amountLent:0,
         earning:0
       });
@@ -978,6 +985,7 @@ class SmartContractControls extends React.Component {
     customLog('getPrevTxs',amountLent,earning);
 
     return this.setState({
+      prevTxsError: false,
       prevTxs: transactions,
       amountLent,
       earning
@@ -1751,7 +1759,7 @@ class SmartContractControls extends React.Component {
                         ) 
                     }
                     {
-                      this.props.selectedTab === '2' && hasBalance && this.state.showFundsInfo &&
+                      this.props.selectedTab === '2' && hasBalance && this.state.showFundsInfo && !this.state.prevTxsError &&
                         <>
                           {
                           !isNaN(this.trimEth(this.state.earningPerYear)) ? (
@@ -1909,6 +1917,16 @@ class SmartContractControls extends React.Component {
                           {
                             this.state.prevTxs ? (
                               this.renderPrevTxs()
+                            ) : this.state.prevTxsError ? (
+                              <Flex
+                                alignItems={'center'}
+                                flexDirection={'column'}
+                                textAlign={'center'}
+                                >
+                                  <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontWeight={2} fontSize={[2,3]} color={'dark-gray'}>
+                                  Ops! Something went wrong while loading your transactions...
+                                  </Heading.h3>
+                              </Flex>
                             ) : (
                               <Flex
                                 justifyContent={'center'}
