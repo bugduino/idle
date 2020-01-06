@@ -1686,7 +1686,7 @@ class SmartContractControls extends React.Component {
                                         <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
                                           Deposited funds
                                         </Text>
-                                        <Tooltip message={`The total amount of ${this.props.selectedToken} you have deposited.`} placement="right">
+                                        <Tooltip message={`The total amount of ${this.props.selectedToken} you have deposited.`} placement="top">
                                           <Icon
                                             style={{cursor:'pointer'}}
                                             ml={1}
@@ -1705,7 +1705,7 @@ class SmartContractControls extends React.Component {
                                         <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
                                           Total earned
                                         </Text>
-                                        <Tooltip message="The percentage of interests you have earned so far." placement="right">
+                                        <Tooltip message="The percentage of interests you have earned so far." placement="top">
                                           <Icon
                                             style={{cursor:'pointer'}}
                                             ml={1}
@@ -1726,7 +1726,7 @@ class SmartContractControls extends React.Component {
                                         <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
                                           Current APR
                                         </Text>
-                                        <Tooltip message="The Annual Percentage Rate for your funds." placement="right">
+                                        <Tooltip message="The Annual Percentage Rate for your funds." placement="top">
                                           <Icon
                                             style={{cursor:'pointer'}}
                                             ml={1}
@@ -1745,7 +1745,7 @@ class SmartContractControls extends React.Component {
                                         <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
                                           {this.props.tokenConfig.idle.token} price
                                         </Text>
-                                        <Tooltip message={`The conversion rate between ${this.props.tokenConfig.idle.token} and ${this.props.selectedToken}.`} placement="right">
+                                        <Tooltip message={`The conversion rate between ${this.props.tokenConfig.idle.token} and ${this.props.selectedToken}.`} placement="top">
                                           <Icon
                                             style={{cursor:'pointer'}}
                                             ml={1}
