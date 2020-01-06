@@ -1,6 +1,6 @@
 import styles from './SmartContractControls.module.scss';
 import React from "react";
-import { Form, Flex, Box, Heading, Text, Button, Link, Icon, Pill, Loader, Image } from "rimble-ui";
+import { Form, Flex, Box, Heading, Text, Button, Link, Icon, Pill, Loader, Image, Tooltip } from "rimble-ui";
 import BigNumber from 'bignumber.js';
 import TxProgressBar from '../TxProgressBar/TxProgressBar.js';
 import CryptoInput from '../CryptoInput/CryptoInput.js';
@@ -1682,17 +1682,39 @@ class SmartContractControls extends React.Component {
                                 <Flex flexDirection={['column','row']} width={'100%'}>
                                   <Flex flexDirection={'row'} py={[2,3]} width={[1,'1/2']} m={'0 auto'}>
                                     <Box width={1/2}>
-                                      <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                        Deposited funds
-                                      </Text>
+                                      <Flex flexDirection={'row'} alignItems={'center'} justifyContent={'center'}>
+                                        <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                          Deposited funds
+                                        </Text>
+                                        <Tooltip message={`The total amount of ${this.props.selectedToken} you have deposited.`} placement="right">
+                                          <Icon
+                                            style={{cursor:'pointer'}}
+                                            ml={1}
+                                            name={'InfoOutline'}
+                                            size={'1.1em'}
+                                            color={'dark-gray'}
+                                          />
+                                        </Tooltip>
+                                      </Flex>
                                       <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
                                         { depositedFunds }
                                       </Heading.h3>
                                     </Box>
                                     <Box width={1/2}>
-                                      <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                        Total earned
-                                      </Text>
+                                      <Flex flexDirection={'row'} alignItems={'center'} justifyContent={'center'}>
+                                        <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                          Total earned
+                                        </Text>
+                                        <Tooltip message="The percentage of interests you have earned so far." placement="right">
+                                          <Icon
+                                            style={{cursor:'pointer'}}
+                                            ml={1}
+                                            name={'InfoOutline'}
+                                            size={'1.1em'}
+                                            color={'dark-gray'}
+                                          />
+                                        </Tooltip>
+                                      </Flex>
                                       <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
                                         { earningPerc }
                                       </Heading.h3>
@@ -1700,17 +1722,39 @@ class SmartContractControls extends React.Component {
                                   </Flex>
                                   <Flex flexDirection={'row'} py={[2,3]} width={[1,'1/2']} m={'0 auto'}>
                                     <Box width={1/2}>
-                                      <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                        Current APR
-                                      </Text>
+                                      <Flex flexDirection={'row'} alignItems={'center'} justifyContent={'center'}>
+                                        <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                          Current APR
+                                        </Text>
+                                        <Tooltip message="The Annual Percentage Rate for your funds." placement="right">
+                                          <Icon
+                                            style={{cursor:'pointer'}}
+                                            ml={1}
+                                            name={'InfoOutline'}
+                                            size={'1.1em'}
+                                            color={'dark-gray'}
+                                          />
+                                        </Tooltip>
+                                      </Flex>
                                       <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
                                         { currentApr }
                                       </Heading.h3>
                                     </Box>
                                     <Box width={1/2}>
-                                      <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                        {this.props.tokenConfig.idle.token} price
-                                      </Text>
+                                      <Flex flexDirection={'row'} alignItems={'center'} justifyContent={'center'}>
+                                        <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                          {this.props.tokenConfig.idle.token} price
+                                        </Text>
+                                        <Tooltip message={`The conversion rate between ${this.props.tokenConfig.idle.token} and ${this.props.selectedToken}.`} placement="right">
+                                          <Icon
+                                            style={{cursor:'pointer'}}
+                                            ml={1}
+                                            name={'InfoOutline'}
+                                            size={'1.1em'}
+                                            color={'dark-gray'}
+                                          />
+                                        </Tooltip>
+                                      </Flex>
                                       <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
                                         { idleTokenPrice }
                                       </Heading.h3>
