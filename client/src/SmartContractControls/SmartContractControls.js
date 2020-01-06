@@ -335,7 +335,7 @@ class SmartContractControls extends React.Component {
       if (tokenBalance){
         const tokenDecimals = await this.getTokenDecimals();
         tokenBalance = this.fixTokenDecimals(tokenBalance,tokenDecimals);
-        // customLog('getTokenBalance',tokenBalance.toString(),tokenDecimals,this.BNify(tokenBalance.toString()).div(this.BNify(Math.pow(10,parseInt(tokenDecimals)).toString())).toString());
+        customLog('getTokenBalance',tokenBalance.toString(),tokenDecimals,this.BNify(tokenBalance.toString()).div(this.BNify(Math.pow(10,parseInt(tokenDecimals)).toString())).toString());
         this.setState({
           tokenDecimals,
           tokenBalance: tokenBalance.toString()
@@ -368,8 +368,11 @@ class SmartContractControls extends React.Component {
       return false;
     }
 
-    // Update balance in AccountOverview
-    await this.props.getAccountBalance();
+    // Update balance in header (AccountOverview) and CryptoInput
+    await Promise.all([
+      this.props.getAccountBalance(),
+      this.getTokenBalance()
+    ]);
 
     let price = await this.getPriceInToken(contractName);
     let balance = await this.genericContractCall(contractName, 'balanceOf', [this.props.account]);
@@ -859,7 +862,7 @@ class SmartContractControls extends React.Component {
       if (componentUnmounted){
         return false;
       }
-      if (count<2){
+      if (!count){
         setTimeout(()=>{this.getPrevTxs(count+1);},1000);
         return false;
       }
@@ -1136,8 +1139,8 @@ class SmartContractControls extends React.Component {
       customLog('Call async functions...');
 
       await Promise.all([
-        this.getAllocations(),
         this.getTokenBalance(),
+        this.getAllocations(),
         this.checkTokenApproved(), // Check if the token is already approved
         this.getPrevTxs(),
         // this.getOldBalanceOf('OldIdleDAI'),
