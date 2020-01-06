@@ -1745,7 +1745,7 @@ class SmartContractControls extends React.Component {
                                         <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'black'} textAlign={'center'}>
                                           {this.props.tokenConfig.idle.token} price
                                         </Text>
-                                        <Tooltip message={`The conversion rate between ${this.props.tokenConfig.idle.token} and ${this.props.selectedToken}.`} placement="top">
+                                        <Tooltip message={`The exchange rate between ${this.props.tokenConfig.idle.token} and ${this.props.selectedToken}.`} placement="top">
                                           <Icon
                                             style={{cursor:'pointer'}}
                                             ml={1}
