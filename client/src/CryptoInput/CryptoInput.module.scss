@@ -24,7 +24,7 @@
 }
 
 .mainInput {
-  padding-left: 0;
+  padding-left: 0 !important;
   padding-right: 1em !important;
   background-color: transparent;
   &:focus {
