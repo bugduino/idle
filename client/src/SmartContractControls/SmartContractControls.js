@@ -873,10 +873,11 @@ class SmartContractControls extends React.Component {
     const prevTxs = results.filter(
         tx => {
           const internalTxs = results.filter(r => r.hash === tx.hash);
-          const isDepositTx = tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()).length;
+          const isRightToken = internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase()).length;
+          const isDepositTx = tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
           const isRedeemTx = tx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()).length && tx.to.toLowerCase() === this.props.account.toLowerCase();
 
-          return (isDepositTx || isRedeemTx);
+          return isRightToken && (isDepositTx || isRedeemTx);
       }).map(tx => ({...tx, value: this.toEth(tx.value)}));
 
     let amountLent = this.BNify(0);
