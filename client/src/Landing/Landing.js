@@ -4,7 +4,6 @@ import styles from './Landing.module.scss';
 import LandingForm from '../LandingForm/LandingForm';
 import Faq from '../Faq/Faq';
 import NewsletterForm from '../NewsletterForm/NewsletterForm';
-import CountUp from 'react-countup';
 // import EquityChart from '../EquityChart/EquityChart';
 // import DefiScoreTable from '../DefiScoreTable/DefiScoreTable';
 import Footer from '../Footer/Footer';
@@ -42,7 +41,11 @@ class Landing extends Component {
   // Utils
   functionsUtil = null;
   loadUtils(){
-    this.functionsUtil = new FunctionsUtil(this.props);
+    if (this.functionsUtil){
+      this.functionsUtil.setProps(this.props);
+    } else {
+      this.functionsUtil = new FunctionsUtil(this.props);
+    }
   }
 
   async componentDidMount(){
@@ -198,7 +201,7 @@ class Landing extends Component {
     const protocolsAprs = {};
 
     this.props.tokenConfig.protocols.forEach((info,i) => {
-      const protocolName = info.name;
+      // const protocolName = info.name;
       const protocolAddr = info.address.toString().toLowerCase();
       const addrIndex = addresses.indexOf(protocolAddr);
       if ( addrIndex !== -1 ) {
@@ -253,11 +256,7 @@ class Landing extends Component {
     const { network } = this.props;
     const maxOpacity = 0.5;
     const minOpacity = 0.1;
-    const fulcrumIsBest = this.state.currentProtocol==='fulcrum';
-    const compoundIsBest = this.state.currentProtocol==='compound';
-    const compoundOpacity = compoundIsBest ? maxOpacity : minOpacity;
-    const fulcrumOpacity = fulcrumIsBest ? maxOpacity : minOpacity;
-    const idleOpacity = (this.state.maxRate && (fulcrumIsBest || compoundIsBest)) ? maxOpacity : minOpacity;
+    const idleOpacity = maxOpacity;
 
     return (
       <Box
@@ -592,12 +591,12 @@ class Landing extends Component {
                     const protocolName = protocolInfo.name;
                     const protocolToken = protocolInfo.token;
                     const protocolLoaded = this.state.protocolsAprs && this.state.protocolsAprs[protocolAddr] && this.state.protocolsAllocations && this.state.protocolsAllocations[protocolAddr];
-                    const protocolApr = protocolLoaded ? parseFloat(this.state.protocolsAprs[protocolAddr]) : 0;
                     const protocolAllocation = protocolLoaded ? parseFloat(this.state.protocolsAllocations[protocolAddr]) : null;
                     const protocolAllocationPerc = protocolAllocation ? parseFloat(protocolAllocation)/parseFloat(this.state.totalAllocation) : 0;
                     const protocolOpacity = protocolAllocationPerc>maxOpacity ? maxOpacity : (protocolAllocationPerc<minOpacity) ? minOpacity : protocolAllocationPerc;
-                    const protocolEarningPerYear = protocolAllocation ? parseFloat(this.functionsUtil.BNify(protocolAllocation).times(this.functionsUtil.BNify(protocolApr/100))) : 0;
-                    const protocolAllocationEndOfYear = protocolAllocation ? parseFloat(this.functionsUtil.BNify(protocolAllocation).plus(this.functionsUtil.BNify(protocolEarningPerYear))) : 0;
+                    // const protocolApr = protocolLoaded ? parseFloat(this.state.protocolsAprs[protocolAddr]) : 0;
+                    // const protocolEarningPerYear = protocolAllocation ? parseFloat(this.functionsUtil.BNify(protocolAllocation).times(this.functionsUtil.BNify(protocolApr/100))) : 0;
+                    // const protocolAllocationEndOfYear = protocolAllocation ? parseFloat(this.functionsUtil.BNify(protocolAllocation).plus(this.functionsUtil.BNify(protocolEarningPerYear))) : 0;
                     return (
                       <Flex key={`allocation_${protocolName}`} width={[1/2,1]} flexDirection={['column','row']} mr={ !i ? [1,0] : null} mt={ i ? [0,4] : null} ml={ i ? [1,0] : null}>
                         <Flex width={[1,1/2]} flexDirection={'column'}>
@@ -628,51 +627,6 @@ class Landing extends Component {
                       </Flex>
                     )
                   })
-                }
-
-                {
-                /*
-                <Flex width={[1/2,1]} flexDirection={['column','row']} mr={[1,0]}>
-                  <Flex width={[1,1/2]} flexDirection={'column'}>
-                    <Flex flexDirection={'row'} justifyContent={'center'} alignItems={'center'}>
-                      <Image src="images/compound-mark-green.png" height={['1.3em', '2em']} mr={[1,2]} my={[2,0]} verticalAlign={['middle','bottom']} />
-                      <Text.span fontSize={[2,3]} textAlign={['center','left']} fontWeight={3} color={'dark-gray'}>
-                        {this.props.tokenConfig.protocols[0].token}
-                      </Text.span>
-                    </Flex>
-                    <Box>
-                      <Card my={[2,2]} p={3} borderRadius={'10px'} boxShadow={compoundIsBest ? 4 : 1}>
-                        <Text fontSize={[4,5]} fontWeight={4} textAlign={'center'}>
-                          {this.state.compoundRate}<Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
-                        </Text>
-                      </Card>
-                    </Box>
-                  </Flex>
-                  <Box width={1/2} zIndex={'-1'} position={'relative'} height={'80px'} borderRadius={['0 0 0 30px','0 50px 0 0']} borderBottom={[`10px solid rgba(0,54,255,${compoundOpacity})`,0]} borderLeft={[`10px solid rgba(0,54,255,${compoundOpacity})`,0]}  borderTop={[0,`15px solid rgba(0,54,255,${compoundOpacity})`]} borderRight={[0,`15px solid rgba(0,54,255,${compoundOpacity})`]} top={['-10px','75px']} left={['48%',0]}>
-                    <Box position={'absolute'} display={'block'} className={[styles.bulletPoint,styles.bulletLeft,this.props.isMobile ? styles.bulletMobile : '']}></Box>
-                  </Box>
-                </Flex>
-                <Flex width={[1/2,1]} flexDirection={['column','row']} mt={[0,4]} ml={[1,0]}>
-                  <Flex width={[1,1/2]} flexDirection={'column'}>
-                    <Flex flexDirection={'row'} justifyContent={'center'} alignItems={'center'}>
-                      <Image src="images/fulcrum-mark.svg" height={['1.3em', '2em']} mr={[1,2]} my={[2,0]} verticalAlign={['middle','bottom']} />
-                      <Text.span fontSize={[2,3]} textAlign={['center','left']} fontWeight={3} color={'dark-gray'}>
-                        {this.props.tokenConfig.protocols[1].token}
-                      </Text.span>
-                    </Flex>
-                    <Box>
-                      <Card my={[2,2]} p={3} borderRadius={'10px'} boxShadow={fulcrumIsBest ? 4 : 1}>
-                        <Text fontSize={[4,5]} fontWeight={4} textAlign={'center'}>
-                          {this.state.fulcrumRate}<Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
-                        </Text>
-                      </Card>
-                    </Box>
-                  </Flex>
-                  <Box width={1/2} zIndex={'-1'} position={'relative'} height={['80px','72px']} borderRadius={['0 0 30px 0','0 0 50px 0']} borderBottom={[`10px solid rgba(0,54,255,${fulcrumOpacity})`,`15px solid rgba(0,54,255,${fulcrumOpacity})`]} borderRight={[`10px solid rgba(0,54,255,${fulcrumOpacity})`,`15px solid rgba(0,54,255,${fulcrumOpacity})`]} top={['-10px','18px']} left={['0%',0]}>
-                    <Box position={'absolute'} display={'block'} className={[styles.bulletPoint,styles.bulletBottomBottom,this.props.isMobile ? styles.bulletMobile : '']}></Box>
-                  </Box>
-                </Flex>
-                */
                 }
               </Flex>
 

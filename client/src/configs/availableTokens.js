@@ -10,6 +10,7 @@ const availableTokens = {
       enabled: true,
       abi:ERC20.abi,
       address:'0xC4375B7De8af5a38a93548eb8453a498222C4fF2',
+
       zeroExInstant:{
         orderSource: 'https://api.radarrelay.com/0x/v2/',
         assetData:'0xf47261b000000000000000000000000089d24a6b4ccb1b6faa2625fe562bdd9a23260359',
@@ -31,6 +32,29 @@ const availableTokens = {
         abi:idleToken.abi,
         token:'idleSAI',
         address:'0x17c5efC8dbd9b1b34457eE46c3C8e0F928e80dbE'
+      },
+      migration:{
+        enabled:true,
+        oldContract:{
+          abi:idleDAI.abi,
+          token:'idleSAI',
+          name:'oldContract',
+          address:'0x4Cc31d87E658504a9db6c9337102c408A3bdE90d',
+        },
+        migrationContract:{
+          abi:idleDAI.abi,
+          token:'idleSAI',
+          name:'migrationContract',
+          address:'0x4Cc31d87E658504a9db6c9337102c408A3bdE90d',
+          functions:{
+            migrateToSAI:{
+              label:'MIGRATE TO idleSAI v2'
+            },
+            migrateToDAI:{
+              label:'MIGRATE TO idleDAI v2'
+            }
+          }
+        }
       },
       protocols:[
         {

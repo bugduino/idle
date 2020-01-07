@@ -262,11 +262,11 @@ class TxProgressBar extends Component {
                     justifyContent={'center'}
                     alignItems={'center'}
                     textAlign={'center'}>
-                    <Loader size="40px" /> <Text ml={2}>{this.props.endMessage ? this.props.endMessage : 'Finalizing transaction...'}</Text>
+                    <Loader size="40px" /> <Text ml={2} color={ this.props.textColor ? this.props.textColor : 'dark-gray'}>{this.props.endMessage ? this.props.endMessage : 'Finalizing transaction...'}</Text>
                   </Flex>
                 ): (
                   <>
-                    <Text mb={2} color={'dark-gray'}>{ this.props.waitText ? this.props.waitText : 'Remaining time:' } <Text.span fontWeight={3}>{ this.renderRemainingTime() }</Text.span></Text>
+                    <Text mb={2} color={ this.props.textColor ? this.props.textColor : 'dark-gray'}>{ this.props.waitText ? this.props.waitText : 'Remaining time:' } <Text.span color={ this.props.textColor ? this.props.textColor : 'dark-gray'} fontWeight={3}>{ this.renderRemainingTime() }</Text.span></Text>
                     <Progress value={ this.state.percentage } />
                   </>
                 )
@@ -278,7 +278,7 @@ class TxProgressBar extends Component {
               alignItems={'center'}
               textAlign={'center'}>
               <Loader size="40px" />
-              <Text ml={2}>
+              <Text color={ this.props.textColor ? this.props.textColor : 'dark-gray'} ml={2}>
                 { this.state.error ? this.state.error : (this.props.loadingMessage ? this.props.loadingMessage : 'Calculating estimated time...') }
               </Text>
             </Flex>

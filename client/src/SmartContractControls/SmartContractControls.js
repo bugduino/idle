@@ -12,6 +12,7 @@ import moment from 'moment';
 import CountUp from 'react-countup';
 import jQuery from 'jquery';
 import globalConfigs from '../configs/globalConfigs';
+import FunctionsUtil from '../utilities/FunctionsUtil';
 
 const env = process.env;
 
@@ -42,10 +43,12 @@ class SmartContractControls extends React.Component {
     redeemProcessing: false,
     lendingProcessing: false,
     tokenBalance: this.props.accountBalanceToken,
-    tokenName: 'DAI',
-    baseTokenName: 'DAI',
     lendAmount: '',
     redeemAmount: '',
+    isApprovingMigrationContract: false,
+    migrationContractBalance: null,
+    migrationContractApproved: false,
+    migrationApproveTx: null,
     updateInProgress: false,
     needsUpdate: false,
     genericError: null,
@@ -75,6 +78,16 @@ class SmartContractControls extends React.Component {
     prevTxsError: false,
     transactions:{}
   };
+
+  // Utils
+  functionsUtil = null;
+  loadUtils(){
+    if (this.functionsUtil){
+      this.functionsUtil.setProps(this.props);
+    } else {
+      this.functionsUtil = new FunctionsUtil(this.props);
+    }
+  }
 
   addResources = () => {
     
@@ -172,7 +185,7 @@ class SmartContractControls extends React.Component {
 
     const _newAmount = 0;
     const _clientProtocolAmounts = [];
-    const shouldRebalance = await this.genericIdleCall('rebalance',[_newAmount,_clientProtocolAmounts]);
+    const shouldRebalance = await this.functionsUtil.genericIdleCall('rebalance',[_newAmount,_clientProtocolAmounts]);
 
     this.setState({
       calculataingShouldRebalance: false,
@@ -216,7 +229,7 @@ class SmartContractControls extends React.Component {
       let [protocolBalance, tokenDecimals, exchangeRate ] = await Promise.all([
         this.getProtocolBalance(contractName),
         this.getTokenDecimals(contractName),
-        ( protocolInfo.functions.exchangeRate ? this.genericContractCall(contractName,protocolInfo.functions.exchangeRate.name,protocolInfo.functions.exchangeRate.params) : null )
+        ( protocolInfo.functions.exchangeRate ? this.functionsUtil.genericContractCall(contractName,protocolInfo.functions.exchangeRate.name,protocolInfo.functions.exchangeRate.params) : null )
       ]);
 
       if (protocolInfo.functions.exchangeRate.decimals){
@@ -233,7 +246,7 @@ class SmartContractControls extends React.Component {
   }
 
   getAprs = async () => {
-    const Aprs = await this.genericIdleCall('getAPRs');
+    const Aprs = await this.functionsUtil.genericIdleCall('getAPRs');
 
     if (componentUnmounted){
       return false;
@@ -278,8 +291,8 @@ class SmartContractControls extends React.Component {
   }
 
   getPriceInToken = async (contractName) => {
-    const totalIdleSupply = await this.genericContractCall(contractName, 'totalSupply');
-    let price = await this.genericContractCall(contractName, 'tokenPrice');
+    const totalIdleSupply = await this.functionsUtil.genericContractCall(contractName, 'totalSupply');
+    let price = await this.functionsUtil.genericContractCall(contractName, 'tokenPrice');
     const navPool = this.BNify(totalIdleSupply).div(1e18).times(this.BNify(price).div(1e18));
     this.setState({
       idleTokenPrice: (totalIdleSupply || totalIdleSupply === 0) && totalIdleSupply.toString() === '0' ? 0 : (+this.toEth(price)),
@@ -290,7 +303,7 @@ class SmartContractControls extends React.Component {
   }
 
   getTotalSupply = async (contractName) => {
-    const totalSupply = await this.genericContractCall(contractName, 'totalSupply');
+    const totalSupply = await this.functionsUtil.genericContractCall(contractName, 'totalSupply');
     this.setState({
       [`${contractName}Supply`]: totalSupply,
       needsUpdate: false
@@ -299,8 +312,8 @@ class SmartContractControls extends React.Component {
   }
 
   getOldPriceInToken = async (contractName) => {
-    const totalIdleSupply = await this.genericContractCall(contractName, 'totalSupply');
-    let price = await this.genericContractCall(contractName, 'tokenPrice');
+    const totalIdleSupply = await this.functionsUtil.genericContractCall(contractName, 'totalSupply');
+    let price = await this.functionsUtil.genericContractCall(contractName, 'tokenPrice');
     this.setState({
       [`OldIdleDAIPrice`]: (totalIdleSupply || totalIdleSupply === 0) && totalIdleSupply.toString() === '0' ? 0 : (+this.toEth(price)),
       needsUpdate: false
@@ -310,7 +323,7 @@ class SmartContractControls extends React.Component {
 
   getTokenDecimals = async (contractName) => {
     contractName = contractName ? contractName : this.props.selectedToken;
-    return await this.genericContractCall(contractName,'decimals');
+    return await this.functionsUtil.genericContractCall(contractName,'decimals');
   }
 
   fixTokenDecimals = (tokenBalance,tokenDecimals,exchangeRate) => {
@@ -323,7 +336,7 @@ class SmartContractControls extends React.Component {
 
   getTokenBalance = async () => {
     if (this.props.account){
-      let tokenBalance = await this.genericContractCall(this.props.selectedToken,'balanceOf',[this.props.account]);
+      let tokenBalance = await this.functionsUtil.genericContractCall(this.props.selectedToken,'balanceOf',[this.props.account]);
       if (tokenBalance){
         const tokenDecimals = await this.getTokenDecimals();
         tokenBalance = this.fixTokenDecimals(tokenBalance,tokenDecimals);
@@ -347,7 +360,7 @@ class SmartContractControls extends React.Component {
   }
 
   getProtocolBalance = async (contractName) => {
-    return await this.genericContractCall(contractName, 'balanceOf', [this.props.tokenConfig.idle.address]);
+    return await this.functionsUtil.genericContractCall(contractName, 'balanceOf', [this.props.tokenConfig.idle.address]);
   }
 
   getBalanceOf = async (contractName,count) => {
@@ -367,7 +380,7 @@ class SmartContractControls extends React.Component {
     ]);
 
     let price = await this.getPriceInToken(contractName);
-    let balance = await this.genericContractCall(contractName, 'balanceOf', [this.props.account]);
+    let balance = await this.functionsUtil.genericContractCall(contractName, 'balanceOf', [this.props.account]);
 
     customLog('getBalanceOf',balance);
 
@@ -434,7 +447,7 @@ class SmartContractControls extends React.Component {
 
   getOldBalanceOf = async contractName => {
     let price = await this.getOldPriceInToken(contractName);
-    let balance = await this.genericContractCall(contractName, 'balanceOf', [this.props.account]);
+    let balance = await this.functionsUtil.genericContractCall(contractName, 'balanceOf', [this.props.account]);
     if (balance) {
       balance = this.BNify(balance).div(1e18);
       price = this.BNify(price).div(1e18);
@@ -454,48 +467,6 @@ class SmartContractControls extends React.Component {
     return balance;
   };
 
-  // should be called with DAI contract as params
-  getAllowance = async contractName => {
-    let allowance = await this.genericContractCall(
-      contractName, 'allowance', [this.props.account, this.props.tokenConfig.idle.address]
-    );
-    if (allowance) {
-      this.setState({
-        [`${contractName}Allowance`]: allowance
-      });
-    }
-    return allowance;
-  }
-
-  getContractByName = (contractName) => {
-    const contract = this.props.contracts.find(c => c.name === contractName);
-    if (!contract) {
-      return false;
-    }
-    return contract.contract;
-  }
-
-  genericContractCall = async (contractName, methodName, params = []) => {
-    let contract = this.getContractByName(contractName);
-
-    if (!contract) {
-      customLog('Wrong contract name', contractName);
-      return;
-    }
-
-    const value = await contract.methods[methodName](...params).call().catch(error => {
-      customLog(`${contractName} contract method ${methodName} error: `, error);
-      this.setState({ error });
-    });
-    return value;
-  }
-
-  // Idle
-  genericIdleCall = async (methodName, params = []) => {
-    return await this.genericContractCall(this.props.tokenConfig.idle.token, methodName, params).catch(err => {
-      customLogError('Generic Idle call err:', err);
-    });
-  }
 
   hideEmptyWalletOverlay = e => {
     e.preventDefault();
@@ -617,10 +588,11 @@ class SmartContractControls extends React.Component {
   checkTokenApproved = async () => {
     if (this.props.account) {
       const value = this.props.web3.utils.toWei('0','ether');
-      const allowance = await this.getAllowance(this.props.selectedToken); // DAI
+      const allowance = await this.functionsUtil.getAllowance(this.props.selectedToken,this.props.tokenConfig.idle.address,this.props.account);
       const tokenApproved = this.BNify(allowance).gt(this.BNify(value.toString()));
-      customLog('checkTokenApproved',value,allowance.toString(),tokenApproved);
+      // customLog('checkTokenApproved',value,allowance.toString(),tokenApproved);
       return this.setState({
+        [`${this.props.selectedToken}Allowance`]: allowance,
         isTokenApproved: tokenApproved,
         [`is${this.props.selectedToken}Approved`]: tokenApproved
       });
@@ -701,7 +673,7 @@ class SmartContractControls extends React.Component {
 
     // let IdleDAIBalance = this.toWei('0');
     // if (this.props.account) {
-    //   IdleDAIBalance = await this.genericContractCall(contractName, 'balanceOf', [this.props.account]);
+    //   IdleDAIBalance = await this.functionsUtil.genericContractCall(contractName, 'balanceOf', [this.props.account]);
     // }
 
     // Check if amount is more than 0
@@ -1065,6 +1037,8 @@ class SmartContractControls extends React.Component {
 
   async componentDidMount() {
 
+    this.loadUtils();
+
     componentUnmounted = false;
 
     window.jQuery = jQuery;
@@ -1108,7 +1082,89 @@ class SmartContractControls extends React.Component {
     }
   }
 
+  async checkMigrationContractApproved() {
+    const migrationContractInfo = this.props.tokenConfig.migration.migrationContract;
+    const migrationContractName = migrationContractInfo.name;
+    const migrationContract = this.functionsUtil.getContractByName(migrationContractName);
+    if (migrationContract){
+      return await this.functionsUtil.checkTokenApproved(migrationContractInfo.token,migrationContractInfo.address,this.props.account);
+    }
+    return false;
+  }
+
+  async migrate (e,migrationMethod) {
+    e.preventDefault();
+
+    const migrationContractInfo = this.props.tokenConfig.migration.migrationContract;
+    const migrationContract = this.functionsUtil.getContractByName(migrationContractInfo.name);
+    if (migrationContract){
+
+      // Check if the migration contract is approved
+      const migrationContractApproved = await this.checkMigrationContractApproved();
+
+      if (!migrationContractApproved){
+
+        const callback = tx => {
+          this.setState({
+            isApprovingMigrationContract: false,
+            needsUpdate: true,
+            migrationApproveTx: null
+          });
+        }
+
+        const callback_receipt = tx => {
+          this.setState({
+            migrationApproveTx: tx
+          });
+        }
+
+        this.setState({
+          isApprovingMigrationContract: true
+        });
+
+        this.functionsUtil.enableERC20(migrationContractInfo.token,migrationContractInfo.address,callback,callback_receipt);
+      } else {
+        // Call migration contract function to migrate funds
+        this.functionsUtil.genericContractCall(migrationContract.name,migrationMethod,[this.props.account]);
+      }
+    }
+  }
+
+  async checkMigration() {
+    let migrationContractBalance = null;
+    let migrationContractApproved = false;
+
+    // Check migration contract enabled and balance
+    if (this.props.tokenConfig.migration && this.props.tokenConfig.migration.enabled){
+      const oldContractName = this.props.tokenConfig.migration.oldContract.name;
+      const oldContract = this.functionsUtil.getContractByName(oldContractName);
+      const migrationContract = this.functionsUtil.getContractByName(this.props.tokenConfig.migration.migrationContract.name);
+
+      if (oldContract && migrationContract){
+        // Check migration contract approval
+        migrationContractApproved = await this.checkMigrationContractApproved();
+        // Check old contractBalance
+        const migrationContractBalance = await this.functionsUtil.getTokenBalance(oldContractName,this.props.account);
+        if (migrationContractBalance && migrationContractBalance.gt(0)){
+          this.functionsUtil.customLog('migrationContractBalance',migrationContractBalance.toString());
+        } else {
+          this.functionsUtil.customLog('migrationContractBalance - NO BALANCE');
+        }
+      }
+    }
+    
+    // Set migration contract balance
+    return this.setState({
+      migrationContractApproved,
+      migrationContractBalance
+    });
+  }
+
   async componentDidUpdate(prevProps, prevState) {
+
+    // Update util functions props
+    this.loadUtils();
+
     const accountChanged = prevProps.account !== this.props.account;
     const selectedTokenChanged = prevProps.selectedToken !== this.props.selectedToken;
 
@@ -1136,9 +1192,12 @@ class SmartContractControls extends React.Component {
         this.getAllocations(),
         this.checkTokenApproved(), // Check if the token is already approved
         this.getPrevTxs(),
+        this.checkMigration(),
         // this.getOldBalanceOf('OldIdleDAI'),
         this.getTotalSupply(this.props.tokenConfig.idle.token)
       ]);
+
+      
 
       customLog('Async functions completed...');
 
@@ -1379,6 +1438,9 @@ class SmartContractControls extends React.Component {
     const tokenNotApproved = (this.props.account && this.state.isTokenApproved===false && !this.state.isApprovingToken);
     const walletIsEmpty = this.props.account && this.state.showEmptyWalletOverlay && !tokenNotApproved && !this.state.isApprovingToken && this.state.tokenBalance !== null && !isNaN(this.state.tokenBalance) && !parseFloat(this.state.tokenBalance);
 
+    // Check migration enabled and balance
+    const migrationEnabled = this.props.account && this.state.migrationContractBalance && this.state.migrationContractBalance.gt(0);
+
     const defaultTokenSwapper = this.getDefaultTokenSwapper();
 
     return (
@@ -1427,7 +1489,90 @@ class SmartContractControls extends React.Component {
                 }
 
                 {
-                  walletIsEmpty &&
+                  migrationEnabled ? (
+                    <Box pt={['50px','73px']} style={{position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'99'}}>
+                      <Box style={{backgroundColor:'rgba(0,0,0,0.83)',position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'0',borderRadius:'15px'}}></Box>
+                      <Flex style={{position:'relative',zIndex:'99',height:'100%'}} flexDirection={'column'} alignItems={'center'} justifyContent={'center'}>
+                        <Flex flexDirection={'column'} alignItems={'center'} p={[2,4]}>
+                          <Flex width={1} justifyContent={'center'} alignItems={'center'} flexDirection={'row'}>
+                            <Image src={`images/idle-mark-old.png`} height={'42px'} />
+                            <Icon
+                              name={'KeyboardArrowRight'}
+                              color={'white'}
+                              size={'38'}
+                            />
+                            <Image src={`images/idle-mark.png`} height={'42px'} />
+                          </Flex>
+
+                          {
+                            this.state.isApprovingMigrationContract ? (
+                              <Box mt={2}>
+                                {
+                                  this.state.migrationApproveTx ? (
+                                    <TxProgressBar textColor={'white'} web3={this.props.web3} waitText={'Approving estimated in'} endMessage={'Finalizing approve request...'} hash={this.state.migrationApproveTx.transactionHash} />
+                                  ) : (
+                                    <Flex
+                                      justifyContent={'center'}
+                                      alignItems={'center'}
+                                      textAlign={'center'}>
+                                      <Loader size="40px" /> <Text ml={2} color={'white'}>Sending approve request...</Text>
+                                    </Flex>
+                                  )
+                                }
+                              </Box>
+                            ) : (
+                              <>
+                                { !this.state.migrationContractApproved ? (
+                                  <>
+                                    <Heading.h4 my={[3,'15px']} color={'white'} fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
+                                      You still have some funds in the old contract.<br />
+                                      Click the button below to approve the migration contract.
+                                    </Heading.h4>
+                                    <Button
+                                      onClick={e => { this.migrate(e); }}
+                                      borderRadius={4}
+                                      size={ this.props.isMobile ? 'small' : 'medium' }
+                                    >
+                                      APPROVE MIGRATION CONTRACT
+                                    </Button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Heading.h4 my={[3,'15px']} color={'white'} fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
+                                      You still have some funds in the old contract.<br />
+                                      Choose the way you want to migrate your funds.
+                                    </Heading.h4>
+                                    <Flex flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
+                                      {
+                                        Object.keys(this.props.tokenConfig.migration.migrationContract.functions).map((functionName,i) => {
+                                          const functionInfo = this.props.tokenConfig.migration.migrationContract.functions[functionName];
+                                          return (
+                                            <Button
+                                              key={`migrate_${functionName}`}
+                                              mx={ this.props.isMobile ? 0 : 2 }
+                                              my={ this.props.isMobile ? 2 : 0 }
+                                              onClick={e => { this.migrate(e,functionName); }}
+                                              borderRadius={4}
+                                              size={ this.props.isMobile ? 'small' : 'medium' }
+                                            >
+                                              { functionInfo.label }
+                                            </Button>
+                                          )
+                                        })
+                                      }
+                                    </Flex>
+                                  </>
+                                ) }
+                              </>
+                            )
+                          }
+                          <Text mt={3} color={'#ccc'} fontSize={1} textAlign={'center'} fontWeight={1} lineHeight={1}>
+                            Powered by <Link fontSize={1} fontWeight={1} lineHeight={1} color={'white'} activeColor={'white'} hoverColor={'white'} href={'https://recipes.dexwallet.io/'} style={{textDecoration:'underline'}} target={'_blank'}>Dexwallet Recipes</Link>
+                          </Text>
+                        </Flex>
+                      </Flex>
+                    </Box>
+                  ) : walletIsEmpty &&
                   <Box pt={['50px','73px']} style={{position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'99'}}>
                     <Box style={{backgroundColor:'rgba(0,0,0,0.83)',position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'0',borderRadius:'15px'}}></Box>
                     <Flex style={{position:'relative',zIndex:'99',height:'100%'}} flexDirection={'column'} alignItems={'center'} justifyContent={'center'}>
@@ -1530,7 +1675,7 @@ class SmartContractControls extends React.Component {
                     showTokenApproved={false}
                     isAssetApproved={this.state.isDAIApproved}
                     showApproveModal={this.toggleModal}
-                    showLendButton={!walletIsEmpty && !tokenNotApproved}
+                    showLendButton={!walletIsEmpty && !migrationEnabled && !tokenNotApproved}
                     handleClick={e => this.mint(e)} />
                 }
 
