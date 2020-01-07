@@ -277,14 +277,6 @@ class SmartContractControls extends React.Component {
     });
   }
 
-  getCurrentProtocol = async (bestToken) => {
-    bestToken = bestToken ? bestToken : await this.genericIdleCall('bestToken');
-    if (bestToken){
-      return bestToken.toString().toLowerCase() === this.props.tokenConfig.protocols[0].address ? 'Compound' : 'Fulcrum';
-    }
-    return false;
-  }
-
   getPriceInToken = async (contractName) => {
     const totalIdleSupply = await this.genericContractCall(contractName, 'totalSupply');
     let price = await this.genericContractCall(contractName, 'tokenPrice');
@@ -881,10 +873,10 @@ class SmartContractControls extends React.Component {
     const prevTxs = results.filter(
         tx => {
           const internalTxs = results.filter(r => r.hash === tx.hash);
-          const isDepositTx = tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
+          const isDepositTx = tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()).length;
           const isRedeemTx = tx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()).length && tx.to.toLowerCase() === this.props.account.toLowerCase();
 
-          return tx.tokenSymbol===this.props.selectedToken && (isDepositTx || isRedeemTx);
+          return (isDepositTx || isRedeemTx);
       }).map(tx => ({...tx, value: this.toEth(tx.value)}));
 
     let amountLent = this.BNify(0);

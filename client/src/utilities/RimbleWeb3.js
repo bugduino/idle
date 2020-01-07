@@ -330,8 +330,6 @@ class RimbleTransaction extends React.Component {
 
   initializeContracts = async () => {
 
-    // customLog('initializeContracts',this.props);
-
     const tokenConfig = this.props.tokenConfig;
 
     // Initialize Token Contract

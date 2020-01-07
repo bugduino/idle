@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
 import { Image, Flex, Box, Heading, Link, Text, Card, Icon } from 'rimble-ui'
-import BigNumber from 'bignumber.js';
 import styles from './Landing.module.scss';
 import LandingForm from '../LandingForm/LandingForm';
 import Faq from '../Faq/Faq';
 import NewsletterForm from '../NewsletterForm/NewsletterForm';
+import CountUp from 'react-countup';
 // import EquityChart from '../EquityChart/EquityChart';
 // import DefiScoreTable from '../DefiScoreTable/DefiScoreTable';
 import Footer from '../Footer/Footer';
+import FunctionsUtil from '../utilities/FunctionsUtil';
 
 let scrolling = false;
 let scrollTimeoutID;
@@ -20,7 +21,10 @@ class Landing extends Component {
     startCarousel:null,
     setActiveCarousel:null,
     activeBullet:null,
-    testPerformed:false
+    updatingAllocations:false,
+    testPerformed:false,
+    protocolsAprs:null,
+    protocolsAllocations:null
   };
 
   // Clear all the timeouts
@@ -35,7 +39,15 @@ class Landing extends Component {
     }
   }
 
+  // Utils
+  functionsUtil = null;
+  loadUtils(){
+    this.functionsUtil = new FunctionsUtil(this.props);
+  }
+
   async componentDidMount(){
+
+    this.loadUtils();
 
     componendUnmounted = false;
     scrollTimeoutID = null;
@@ -80,11 +92,14 @@ class Landing extends Component {
 
   async componentDidUpdate(prevProps) {
 
+    this.loadUtils();
+
     let prevContract = (prevProps.contracts.find(c => c.name === this.props.tokenConfig.idle.token) || {}).contract;
     let contract = (this.props.contracts.find(c => c.name === this.props.tokenConfig.idle.token) || {}).contract;
 
-    if (contract && (prevContract !== contract || (!this.state.maxRate && !this.state.updatingAprs))) {
+    if (contract && prevContract !== contract && !this.state.updatingAllocations) {
       await this.getAprs();
+      await this.getAllocations();
     }
   }
 
@@ -109,26 +124,52 @@ class Landing extends Component {
     }
   };
 
-  // utilities
-  trimEth = eth => {
-    return this.BNify(eth).toFixed(6);
-  };
-  BNify = s => new BigNumber(String(s));
-  toEth(wei) {
-    return this.props.web3.utils.fromWei(
-      (wei || 0).toString(),
-      "ether"
-    );
-  }
-  toWei(eth) {
-    return this.props.web3.utils.toWei(
-      (eth || 0).toString(),
-      "ether"
-    );
+  getAllocations = async () => {
+    const protocolsAllocations = {};
+    let totalAllocation = 0;
+
+    this.setState({
+      updatingAllocations:true
+    });
+
+    await this.functionsUtil.asyncForEach(this.props.tokenConfig.protocols,async (protocolInfo,i) => {
+      const contractName = protocolInfo.token;
+      const protocolAddr = protocolInfo.address;
+
+      const contractLoaded = this.functionsUtil.getContractByName(contractName);
+      if (!contractLoaded){
+        return;
+      }
+
+      let [protocolBalance, tokenDecimals, exchangeRate] = await Promise.all([
+        this.functionsUtil.getProtocolBalance(contractName),
+        this.functionsUtil.getTokenDecimals(contractName),
+        ( protocolInfo.functions.exchangeRate ? this.functionsUtil.genericContractCall(contractName,protocolInfo.functions.exchangeRate.name,protocolInfo.functions.exchangeRate.params) : null )
+      ]);
+
+      if (exchangeRate && protocolInfo.functions.exchangeRate.decimals){
+        exchangeRate = this.functionsUtil.fixTokenDecimals(exchangeRate,protocolInfo.functions.exchangeRate.decimals);
+      }
+
+      console.log('getAllocations',contractName,protocolBalance ? protocolBalance.toString() : null, tokenDecimals ? tokenDecimals.toString() : null, exchangeRate ? exchangeRate.toString() : null);
+
+      const protocolAllocation = this.functionsUtil.fixTokenDecimals(protocolBalance,tokenDecimals,exchangeRate);
+      totalAllocation += protocolAllocation;
+
+      protocolsAllocations[protocolAddr] = protocolAllocation;
+    });
+
+    console.log('getAllocations',protocolsAllocations);
+
+    this.setState({
+      protocolsAllocations,
+      totalAllocation,
+      updatingAllocations: false
+    });
   }
 
   getAprs = async () => {
-    const Aprs = await this.genericIdleCall('getAPRs');
+    const Aprs = await this.functionsUtil.genericIdleCall('getAPRs');
 
     if (this.state.updatingAprs){
       return false;
@@ -151,11 +192,10 @@ class Landing extends Component {
 
     const addresses = Aprs.addresses.map((addr,i) => { return addr.toString().toLowerCase() });
     const aprs = Aprs.aprs;
-
-    // const bestToken = await this.genericIdleCall('bestToken');
     const currentProtocol = '';
     const maxRate = Math.max(...aprs);
     const currentRate = maxRate;
+    const protocolsAprs = {};
 
     this.props.tokenConfig.protocols.forEach((info,i) => {
       const protocolName = info.name;
@@ -163,43 +203,20 @@ class Landing extends Component {
       const addrIndex = addresses.indexOf(protocolAddr);
       if ( addrIndex !== -1 ) {
         const protocolApr = aprs[addrIndex];
-        this.setState({
-          [`${protocolName}Rate`]: (+this.toEth(protocolApr)).toFixed(2)
-        });
+        protocolsAprs[protocolAddr] = (+this.functionsUtil.toEth(protocolApr)).toFixed(2);
       }
     });
 
     const state = {
+      protocolsAprs,
       maxRate: aprs ? ((+maxRate).toFixed(2)) : '0.00',
       currentProtocol,
-      currentRate: currentRate ? (+this.toEth(currentRate)).toFixed(2) : null,
+      currentRate: currentRate ? (+this.functionsUtil.toEth(currentRate)).toFixed(2) : null,
       updatingAprs: false
     };
     this.setState(state);
     return state;
   };
-
-  genericContractCall = async (contractName, methodName, params = []) => {
-    let contract = this.props.contracts.find(c => c.name === contractName);
-    contract = contract && contract.contract;
-    if (!contract) {
-      console.log('Wrong contract name', contractName);
-      return;
-    }
-
-    const value = await contract.methods[methodName](...params).call().catch(error => {
-      console.log(`${contractName} contract method ${methodName} error: `, error);
-      this.setState({ error });
-    });
-    return value;
-  }
-
-  // Idle
-  genericIdleCall = async (methodName, params = []) => {
-    return await this.genericContractCall(this.props.tokenConfig.idle.token, methodName, params).catch(err => {
-      console.error('Generic Idle call err:', err);
-    });
-  }
 
   startLending = async e => {
     this.props.updateSelectedTab(e, '1');
@@ -241,6 +258,7 @@ class Landing extends Component {
     const compoundOpacity = compoundIsBest ? maxOpacity : minOpacity;
     const fulcrumOpacity = fulcrumIsBest ? maxOpacity : minOpacity;
     const idleOpacity = (this.state.maxRate && (fulcrumIsBest || compoundIsBest)) ? maxOpacity : minOpacity;
+
     return (
       <Box
         style={{
@@ -554,7 +572,7 @@ class Landing extends Component {
                 !this.props.isMobile && (
                 <Box width={1/2}>
                     <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[4,4]}>
-                      Single-protocol performance
+                      Underlying protocol allocation
                     </Heading.h3>
                 </Box>
                 )
@@ -567,6 +585,53 @@ class Landing extends Component {
             </Flex>
             <Flex flexDirection={['column','row']} width={[1,7/8]} mt={4}>
               <Flex width={[1,1/2]} flexDirection={['row','column']}>
+
+                {
+                  this.props.tokenConfig.protocols.map((protocolInfo,i)=>{
+                    const protocolAddr = protocolInfo.address;
+                    const protocolName = protocolInfo.name;
+                    const protocolToken = protocolInfo.token;
+                    const protocolLoaded = this.state.protocolsAprs && this.state.protocolsAprs[protocolAddr] && this.state.protocolsAllocations && this.state.protocolsAllocations[protocolAddr];
+                    const protocolApr = protocolLoaded ? parseFloat(this.state.protocolsAprs[protocolAddr]) : 0;
+                    const protocolAllocation = protocolLoaded ? parseFloat(this.state.protocolsAllocations[protocolAddr]) : null;
+                    const protocolAllocationPerc = protocolAllocation ? parseFloat(protocolAllocation)/parseFloat(this.state.totalAllocation) : 0;
+                    const protocolOpacity = protocolAllocationPerc>maxOpacity ? maxOpacity : (protocolAllocationPerc<minOpacity) ? minOpacity : protocolAllocationPerc;
+                    const protocolEarningPerYear = protocolAllocation ? parseFloat(this.functionsUtil.BNify(protocolAllocation).times(this.functionsUtil.BNify(protocolApr/100))) : 0;
+                    const protocolAllocationEndOfYear = protocolAllocation ? parseFloat(this.functionsUtil.BNify(protocolAllocation).plus(this.functionsUtil.BNify(protocolEarningPerYear))) : 0;
+                    return (
+                      <Flex key={`allocation_${protocolName}`} width={[1/2,1]} flexDirection={['column','row']} mr={ !i ? [1,0] : null} mt={ i ? [0,4] : null} ml={ i ? [1,0] : null}>
+                        <Flex width={[1,1/2]} flexDirection={'column'}>
+                          <Flex flexDirection={'row'} justifyContent={'center'} alignItems={'center'}>
+                            <Image src={`images/tokens/${protocolToken}.svg`} height={['1.3em', '2em']} mr={[1,2]} my={[2,0]} verticalAlign={['middle','bottom']} />
+                            <Text.span fontSize={[2,3]} textAlign={['center','left']} fontWeight={3} color={'dark-gray'}>
+                              {protocolToken}
+                            </Text.span>
+                          </Flex>
+                          <Box>
+                            <Card my={[2,2]} p={3} borderRadius={'10px'} boxShadow={protocolAllocationPerc>0 ? 4 : 1}>
+                              <Text fontSize={[4,5]} fontWeight={4} textAlign={'center'}>{(protocolAllocationPerc*100).toFixed(2)}<Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span></Text>
+                            </Card>
+                          </Box>
+                        </Flex>
+
+                        {
+                          !i ? (
+                            <Box width={1/2} zIndex={'-1'} position={'relative'} height={'80px'} borderRadius={['0 0 0 30px','0 50px 0 0']} borderBottom={[`10px solid rgba(0,54,255,${protocolOpacity})`,0]} borderLeft={[`10px solid rgba(0,54,255,${protocolOpacity})`,0]}  borderTop={[0,`15px solid rgba(0,54,255,${protocolOpacity})`]} borderRight={[0,`15px solid rgba(0,54,255,${protocolOpacity})`]} top={['-10px','75px']} left={['48%',0]}>
+                              <Box position={'absolute'} display={'block'} className={[styles.bulletPoint,styles.bulletLeft,this.props.isMobile ? styles.bulletMobile : '']}></Box>
+                            </Box>
+                          ) : (
+                            <Box width={1/2} zIndex={'-1'} position={'relative'} height={['80px','72px']} borderRadius={['0 0 30px 0','0 0 50px 0']} borderBottom={[`10px solid rgba(0,54,255,${protocolOpacity})`,`15px solid rgba(0,54,255,${protocolOpacity})`]} borderRight={[`10px solid rgba(0,54,255,${protocolOpacity})`,`15px solid rgba(0,54,255,${protocolOpacity})`]} top={['-10px','18px']} left={['0%',0]}>
+                              <Box position={'absolute'} display={'block'} className={[styles.bulletPoint,styles.bulletBottomBottom,this.props.isMobile ? styles.bulletMobile : '']}></Box>
+                            </Box>
+                          )
+                        }
+                      </Flex>
+                    )
+                  })
+                }
+
+                {
+                /*
                 <Flex width={[1/2,1]} flexDirection={['column','row']} mr={[1,0]}>
                   <Flex width={[1,1/2]} flexDirection={'column'}>
                     <Flex flexDirection={'row'} justifyContent={'center'} alignItems={'center'}>
@@ -607,6 +672,8 @@ class Landing extends Component {
                     <Box position={'absolute'} display={'block'} className={[styles.bulletPoint,styles.bulletBottomBottom,this.props.isMobile ? styles.bulletMobile : '']}></Box>
                   </Box>
                 </Flex>
+                */
+                }
               </Flex>
 
               <Flex width={[1,1/2]} flexDirection={['column','row']}>
@@ -618,7 +685,7 @@ class Landing extends Component {
                 <Flex width={[1,3/5]} flexDirection={'column'} position={'relative'}>
                   <Flex width={1} flexDirection={'column'} height={'100%'} justifyContent={'center'}>
                     <Flex justifyContent={'center'} alignItems={'center'}>
-                      <Image src="images/idle-mark.png" height={['1.3em', '2em']} mr={[1,2]} verticalAlign={'middle'} />
+                      <Image src={`images/tokens/${this.props.tokenConfig.idle.token}.png`} height={['1.3em', '2em']} mr={[1,2]} verticalAlign={'middle'} />
                       <Text.span fontSize={[4,5]} textAlign={'center'} fontWeight={3} color={'dark-gray'}>
                         {this.props.tokenConfig.idle.token}
                       </Text.span>
