@@ -45,9 +45,12 @@ class SmartContractControls extends React.Component {
     tokenBalance: this.props.accountBalanceToken,
     lendAmount: '',
     redeemAmount: '',
+    isMigrating: false,
+    migrationError: false,
     isApprovingMigrationContract: false,
     migrationContractBalance: null,
     migrationContractApproved: false,
+    migrationTx:false,
     migrationApproveTx: null,
     updateInProgress: false,
     needsUpdate: false,
@@ -897,8 +900,6 @@ class SmartContractControls extends React.Component {
           });
         }));
 
-        // console.log('realTx',realTx);
-
         // Skip txs from other wallets
         if (!realTx || realTx.from.toLowerCase() !== this.props.account.toLowerCase()){
           return;
@@ -1092,7 +1093,7 @@ class SmartContractControls extends React.Component {
     return false;
   }
 
-  async migrate (e,migrationMethod) {
+  async migrate(e,migrationMethod) {
     e.preventDefault();
 
     const migrationContractInfo = this.props.tokenConfig.migration.migrationContract;
@@ -1125,7 +1126,39 @@ class SmartContractControls extends React.Component {
         this.functionsUtil.enableERC20(migrationContractInfo.token,migrationContractInfo.address,callback,callback_receipt);
       } else {
         // Call migration contract function to migrate funds
-        this.functionsUtil.genericContractCall(migrationContract.name,migrationMethod,[this.props.account]);
+
+        let res = null;
+        try {
+          const callback = tx => {
+            this.setState({
+              isMigrating: false,
+              needsUpdate: true,
+              migrationTx: null
+            });
+          }
+
+          const callback_receipt = tx => {
+            this.setState({
+              migrationTx: tx
+            });
+          }
+
+          this.setState({
+            migrationError: false,
+            isMigrating: true
+          });
+
+          res = await this.functionsUtil.genericContractCall(migrationContractInfo.name,migrationMethod,[this.props.account]);
+        } catch (e) {
+
+        }
+
+        if (res === null){
+          this.setState({
+            migrationError:true,
+            isMigrating: false
+          });
+        }
       }
     }
   }
@@ -1445,7 +1478,7 @@ class SmartContractControls extends React.Component {
 
     return (
       <Box textAlign={'center'} alignItems={'center'} width={'100%'}>
-        <Form minHeight={['auto','17em']} backgroundColor={'white'} color={'blue'} boxShadow={'0 0 25px 5px rgba(102, 139, 255, 0.7)'} borderRadius={'15px'} style={{position:'relative'}}>
+        <Form minHeight={['auto','22em']} backgroundColor={'white'} color={'blue'} boxShadow={'0 0 25px 5px rgba(102, 139, 255, 0.7)'} borderRadius={'15px'} style={{position:'relative'}}>
           <Flex justifyContent={'center'} position={'relative'} zIndex={'999'} backgroundColor={'#fff'} borderRadius={'15px 15px 0 0'}>
             <Flex flexDirection={['row','row']} width={['100%','80%']} pt={[2,3]}>
               <Box className={[styles.tab,this.props.selectedTab==='1' ? styles.tabSelected : '']} width={[1/3]} textAlign={'center'}>
@@ -1520,6 +1553,21 @@ class SmartContractControls extends React.Component {
                                   )
                                 }
                               </Box>
+                            ) : this.state.isMigrating ? (
+                              <Box mt={2}>
+                                {
+                                  this.state.migrationTx ? (
+                                    <TxProgressBar textColor={'white'} web3={this.props.web3} waitText={'Migration estimated in'} endMessage={'Finalizing migration request...'} hash={this.state.migrationTx.transactionHash} />
+                                  ) : (
+                                    <Flex
+                                      justifyContent={'center'}
+                                      alignItems={'center'}
+                                      textAlign={'center'}>
+                                      <Loader size="40px" /> <Text ml={2} color={'white'}>Sending migration request...</Text>
+                                    </Flex>
+                                  )
+                                }
+                              </Box>
                             ) : (
                               <>
                                 { !this.state.migrationContractApproved ? (
@@ -1538,11 +1586,18 @@ class SmartContractControls extends React.Component {
                                   </>
                                 ) : (
                                   <>
-                                    <Heading.h4 my={[3,'15px']} color={'white'} fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
+                                    <Heading.h4 mt={[3,'15px']} color={'white'} fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
                                       You still have some funds in the old contract.<br />
                                       Choose the way you want to migrate your funds.
                                     </Heading.h4>
-                                    <Flex flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
+                                    {
+                                      this.state.migrationError && (
+                                        <Heading.h4 color={'red'} fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
+                                          Seems like there are some problems with the migration contract...
+                                        </Heading.h4>
+                                      )
+                                    }
+                                    <Flex mt={[3,'15px']} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
                                       {
                                         Object.keys(this.props.tokenConfig.migration.migrationContract.functions).map((functionName,i) => {
                                           const functionInfo = this.props.tokenConfig.migration.migrationContract.functions[functionName];
