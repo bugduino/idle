@@ -133,7 +133,13 @@ class Header extends React.Component {
         'zIndex': 99
         }}
       >
-        <Flex bg={"transparent"} pt={[3,4]} alignItems={'flex-end'}>
+        <Flex
+          width={['98%','100%']}
+          ml={['1%',0]}
+          bg={"transparent"}
+          pt={[3,4]}
+          alignItems={['center','flex-end']}
+        >
           <Box ml={[3, 5]} width={[1, 3/12]}>
             <RouterLink to="/">
               <Image src="images/logo.svg"
@@ -145,7 +151,7 @@ class Header extends React.Component {
             <Flex alignItems={"center"} justifyContent="flex-end">
               {
                 !this.props.isMobile && 
-                  <ButtonGroup components={this.state.buttonGroup} />
+                  <ButtonGroup isMobile={this.props.isMobile} components={this.state.buttonGroup} />
               }
               {
                 this.props.account ? (
@@ -171,6 +177,10 @@ class Header extends React.Component {
                     CONNECT
                   </Button>
                 )
+              }
+              {
+                this.props.isMobile && 
+                  <ButtonGroup isMobile={this.props.isMobile} components={this.state.buttonGroup} />
               }
             </Flex>
           </Box>
