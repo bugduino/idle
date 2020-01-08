@@ -1,7 +1,7 @@
 import moment from 'moment';
 import BigNumber from 'bignumber.js';
 class FunctionsUtil {
-  
+
   // Attributes
   props = {};
   LOG_ENABLED = true;
@@ -67,6 +67,20 @@ class FunctionsUtil {
     return await this.genericContractCall(
       token, 'allowance', [walletAddr, contractAddr]
     );
+  }
+  contractMethodSendWrapper = (contractName,methodName,contractAddr,params,callback,callback_receipt) => {
+    this.props.contractMethodSendWrapper(contractName, methodName, [
+      contractAddr,
+      ...params
+    ],null,(tx)=>{
+      if (typeof callback === 'function'){
+        callback(tx);
+      }
+    }, (tx) => {
+      if (typeof callback_receipt === 'function'){
+        callback_receipt(tx);
+      }
+    });
   }
   enableERC20 = (token,address,callback,callback_receipt) => {
     this.props.contractMethodSendWrapper(token, 'approve', [

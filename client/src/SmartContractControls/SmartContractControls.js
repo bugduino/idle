@@ -6,7 +6,6 @@ import TxProgressBar from '../TxProgressBar/TxProgressBar.js';
 import CryptoInput from '../CryptoInput/CryptoInput.js';
 import ApproveModal from "../utilities/components/ApproveModal";
 import WelcomeModal from "../utilities/components/WelcomeModal";
-import MaxCapModal from "../utilities/components/MaxCapModal";
 import axios from 'axios';
 import moment from 'moment';
 import CountUp from 'react-countup';
@@ -36,7 +35,6 @@ class SmartContractControls extends React.Component {
     disableRedeemButton: false,
     welcomeIsOpen: false,
     approveIsOpen: false,
-    capReached: false,
     showFundsInfo:true,
     isApprovingToken:false,
     isApprovingDAITest: true,
@@ -618,17 +616,6 @@ class SmartContractControls extends React.Component {
       "ether"
     );
 
-    const IdleDAISupply = this.BNify(this.state.IdleDAISupply).div(1e18);
-    const idleTokenPrice = this.BNify(this.state.idleTokenPrice);
-    const toMint = this.BNify(value).div(1e18).div(idleTokenPrice);
-    const newTotalSupply = toMint.plus(IdleDAISupply);
-    const idleDAICap = this.BNify(this.state.idleDAICap);
-
-    if (this.props.account && newTotalSupply.gt(idleDAICap)) {
-      this.setState({capReached: true});
-      return;
-    }
-
     // check if Idle is approved for DAI
     if (this.props.account && !this.state.isTokenApproved) {
       return this.setState({approveIsOpen: true});
@@ -808,10 +795,6 @@ class SmartContractControls extends React.Component {
 
   toggleModal = (e) => {
     this.setState(state => ({...state, approveIsOpen: !state.approveIsOpen }));
-  }
-
-  toggleMaxCapModal = (e) => {
-    this.setState(state => ({...state, capReached: !state.capReached }));
   }
 
   toggleWelcomeModal = (e) => {
@@ -1148,12 +1131,13 @@ class SmartContractControls extends React.Component {
             isMigrating: true
           });
 
-          res = await this.functionsUtil.genericContractCall(migrationContractInfo.name,migrationMethod,[this.props.account]);
+          res = await this.functionsUtil.contractMethodSendWrapper(migrationContractInfo.name,migrationMethod,migrationContractInfo.address,[],callback,callback_receipt);
+          // res = await this.functionsUtil.genericContractCall(migrationContractInfo.name,migrationMethod,[this.props.account]);
         } catch (e) {
 
         }
 
-        if (res === null){
+        if (res === null || res === undefined){
           this.setState({
             migrationError:true,
             isMigrating: false
@@ -2348,14 +2332,6 @@ class SmartContractControls extends React.Component {
           onClick={e => this.enableERC20(e, this.props.selectedToken)}
           tokenName={this.props.selectedToken}
           baseTokenName={this.props.selectedToken}
-          network={this.props.network.current} />
-
-        <MaxCapModal
-          account={this.props.account}
-          isOpen={this.state.capReached}
-          maxCap={this.BNify(this.state.idleDAICap)}
-          currSupply={this.BNify(this.state.IdleDAISupply)}
-          closeModal={this.toggleMaxCapModal}
           network={this.props.network.current} />
       </Box>
     );
