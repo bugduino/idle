@@ -1131,8 +1131,7 @@ class SmartContractControls extends React.Component {
             isMigrating: true
           });
 
-          res = await this.functionsUtil.contractMethodSendWrapper(migrationContractInfo.name,migrationMethod,migrationContractInfo.address,[],callback,callback_receipt);
-          // res = await this.functionsUtil.genericContractCall(migrationContractInfo.name,migrationMethod,[this.props.account]);
+          res = await this.functionsUtil.contractMethodSendWrapper(migrationContractInfo.name,migrationMethod,[],callback,callback_receipt);
         } catch (e) {
 
         }
@@ -1462,7 +1461,7 @@ class SmartContractControls extends React.Component {
 
     return (
       <Box textAlign={'center'} alignItems={'center'} width={'100%'}>
-        <Form minHeight={['auto','22em']} backgroundColor={'white'} color={'blue'} boxShadow={'0 0 25px 5px rgba(102, 139, 255, 0.7)'} borderRadius={'15px'} style={{position:'relative'}}>
+        <Form minHeight={ migrationEnabled ? ['25em','22em'] : ['auto','22em'] } backgroundColor={'white'} color={'blue'} boxShadow={'0 0 25px 5px rgba(102, 139, 255, 0.7)'} borderRadius={'15px'} style={{position:'relative'}}>
           <Flex justifyContent={'center'} position={'relative'} zIndex={'999'} backgroundColor={'#fff'} borderRadius={'15px 15px 0 0'}>
             <Flex flexDirection={['row','row']} width={['100%','80%']} pt={[2,3]}>
               <Box className={[styles.tab,this.props.selectedTab==='1' ? styles.tabSelected : '']} width={[1/3]} textAlign={'center'}>
@@ -1557,8 +1556,8 @@ class SmartContractControls extends React.Component {
                                 { !this.state.migrationContractApproved ? (
                                   <>
                                     <Heading.h4 my={[3,'15px']} color={'white'} fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
-                                      You still have some funds in the old contract.<br />
-                                      Click the button below to approve the migration contract.
+                                      A new version of <strong>{this.props.tokenConfig.idle.token}</strong> has been released.<br />
+                                      Click the button below to approve the migration contract:
                                     </Heading.h4>
                                     <Button
                                       onClick={e => { this.migrate(e); }}
@@ -1571,8 +1570,8 @@ class SmartContractControls extends React.Component {
                                 ) : (
                                   <>
                                     <Heading.h4 mt={[3,'15px']} color={'white'} fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
-                                      You still have some funds in the old contract.<br />
-                                      Choose the way you want to migrate your funds.
+                                      A new version of <strong>{this.props.tokenConfig.idle.token}</strong> has been released.<br />
+                                      Choose the way you want to migrate your funds:
                                     </Heading.h4>
                                     {
                                       this.state.migrationError && (

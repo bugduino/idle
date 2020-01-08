@@ -10,7 +10,6 @@ const availableTokens = {
       enabled: true,
       abi:ERC20.abi,
       address:'0xC4375B7De8af5a38a93548eb8453a498222C4fF2',
-
       zeroExInstant:{
         orderSource: 'https://api.radarrelay.com/0x/v2/',
         assetData:'0xf47261b000000000000000000000000089d24a6b4ccb1b6faa2625fe562bdd9a23260359',
@@ -85,6 +84,113 @@ const availableTokens = {
         }
       ]
     },
+    DAI:{
+      enabled:true,
+      abi:ERC20.abi,
+      address:'0xC4375B7De8af5a38a93548eb8453a498222C4fF2',
+      zeroExInstant:{
+        orderSource: 'https://api.0x.org/sra/',
+        assetData:'0xf47261b00000000000000000000000006b175474e89094c44da98b954eedeac495271d0f',
+        affiliateInfo: {
+            feeRecipient: '0x4215606a720477178AdFCd5A59775C63138711e8',
+            feePercentage: 0.0075
+        },
+      },
+      wyre:{
+        destCurrency:'DAI'
+      },
+      ramp:{
+        swapAsset:'DAI'
+      },
+      defiPrime:{
+        token:'dai'
+      },
+      idle:{
+        abi:idleToken.abi,
+        token:'idleDAI',
+        address:'0x17c5efC8dbd9b1b34457eE46c3C8e0F928e80dbE'
+      },
+      protocols:[
+        {
+          name:'compound',
+          abi:cDAI.abi,
+          address:'0x63c344bf8651222346dd870be254d4347c9359f7',
+          token:'cDAI',
+          functions:{
+            exchangeRate:{
+              name:'exchangeRateStored',
+              decimals:28,
+              params:[]
+            }
+          },
+        },
+        {
+          name:'fulcrum',
+          abi:iDAI,
+          address:'0xA1e58F3B1927743393b25f261471E1f2D3D9f0F6',
+          token:'iDAI',
+          functions:{
+            exchangeRate:{
+              name:'tokenPrice',
+              decimals:18,
+              params:[]
+            }
+          },
+        }
+      ]
+    },
+    USDC:{
+      enabled:false,
+      abi:ERC20.abi,
+      address:'0xC4375B7De8af5a38a93548eb8453a498222C4fF2',
+      zeroExInstant:{
+        orderSource: 'https://api.0x.org/sra/',
+        assetData:'0xf47261b0000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+        affiliateInfo: {
+            feeRecipient: '0x4215606a720477178AdFCd5A59775C63138711e8',
+            feePercentage: 0.0075
+        },
+      },
+      wyre:{
+        destCurrency:'USDC'
+      },
+      defiPrime:{
+        token:'usdc'
+      },
+      idle:{
+        abi:idleToken.abi,
+        token:'idleUSDC',
+        address:'0x17c5efC8dbd9b1b34457eE46c3C8e0F928e80dbE'
+      },
+      protocols:[
+        {
+          name:'compound',
+          abi:cDAI.abi,
+          address:'0x63c344bf8651222346dd870be254d4347c9359f7',
+          token:'cUSDC',
+          functions:{
+            exchangeRate:{
+              name:'exchangeRateStored',
+              decimals:28,
+              params:[]
+            }
+          },
+        },
+        {
+          name:'fulcrum',
+          abi:iDAI,
+          address:'0xA1e58F3B1927743393b25f261471E1f2D3D9f0F6',
+          token:'iUSDC',
+          functions:{
+            exchangeRate:{
+              name:'tokenPrice',
+              decimals:18,
+              params:[]
+            }
+          },
+        }
+      ]
+    }
   },
   1:{ // Mainnet
     SAI:{

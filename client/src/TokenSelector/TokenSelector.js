@@ -36,9 +36,11 @@ class TokenSelector extends Component {
                       if (token !== this.props.selectedToken){
                         const tokenInfo = this.props.availableTokens[token];
                         const tokenEnabled = tokenInfo.enabled;
-                        return (
-                          <TokenSelectorItem disabled={!tokenEnabled} key={'token_selector_'+token} borderRadius={4} isChild={true} token={token} handleClick={ e => {this.selectToken(token,tokenInfo) }} />
-                        );
+                        if (!this.props.isMobile || tokenEnabled){
+                          return (
+                            <TokenSelectorItem isMobile={this.props.isMobile} disabled={!tokenEnabled} key={'token_selector_'+token} borderRadius={4} isChild={true} token={token} handleClick={ e => {this.selectToken(token,tokenInfo) }} />
+                          );
+                        }
                       }
                       return null;
                     });
@@ -47,19 +49,18 @@ class TokenSelector extends Component {
         <Flex
           position={'relative'}
           flexDirection={'column'}
-          width={['90%','auto']}
+          width={['100%','auto']}
           alignItems={'center'}
           justifyContent={'flex-end'}
-          /*mr={3}*/
-          /*p={2}*/
-          onMouseEnter={ e => {this.handleSelector(true)} }
-          onMouseLeave={ e => {this.handleSelector(false)} }
+          onClick={ this.props.isMobile ? e => { this.toggleOpen() } : null }
+          onMouseEnter={ this.props.isMobile ? null : e => {this.handleSelector(true)} }
+          onMouseLeave={ this.props.isMobile ? null : e => {this.handleSelector(false)} }
           borderRadius={this.props.borderRadius}
           borderLeft={this.props.borderLeft}
           borderRight={this.props.borderRight}
           >
-            <TokenSelectorItem borderRadius={this.props.borderRadius} disabled={false} token={this.props.selectedToken} />
-            <Flex flexDirection={'column'} borderRadius={4} backgroundColor={'white'} overflow={'hidden'} className={[styles.selectorCurtain,this.state.opened ? styles.opened : null]} position={'absolute'} top={'100%'}>
+            <TokenSelectorItem isMobile={this.props.isMobile} borderRadius={this.props.borderRadius} disabled={false} token={this.props.selectedToken} />
+            <Flex flexDirection={'column'} borderRadius={4} backgroundColor={ this.props.isMobile ? 'transparent' : 'white' } overflow={'hidden'} className={[styles.selectorCurtain,this.state.opened ? styles.opened : null]} position={['static','absolute']} top={'100%'}>
               { tokens }
             </Flex>
         </Flex>

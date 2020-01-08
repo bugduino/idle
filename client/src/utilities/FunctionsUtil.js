@@ -68,11 +68,8 @@ class FunctionsUtil {
       token, 'allowance', [walletAddr, contractAddr]
     );
   }
-  contractMethodSendWrapper = (contractName,methodName,contractAddr,params,callback,callback_receipt) => {
-    this.props.contractMethodSendWrapper(contractName, methodName, [
-      contractAddr,
-      ...params
-    ],null,(tx)=>{
+  contractMethodSendWrapper = (contractName,methodName,params,callback,callback_receipt) => {
+    this.props.contractMethodSendWrapper(contractName, methodName, params, null, (tx)=>{
       if (typeof callback === 'function'){
         callback(tx);
       }
