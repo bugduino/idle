@@ -530,8 +530,12 @@ class RimbleTransaction extends React.Component {
     if (!contract) {
       return customLog(`No contract with name ${contractName}`);
     }
+    
     contract = contract.contract;
+
     try {
+      console.log('contractMethodSendWrapper',contractName,contract._address,account,contractMethod,params,(value ? { from: account, value } : { from: account }));
+
       // estimate gas price
       let gas = await contract.methods[contractMethod](...params)
         .estimateGas(value ? { from: account, value } : { from: account })

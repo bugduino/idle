@@ -11,7 +11,7 @@ import FunctionsUtil from '../utilities/FunctionsUtil';
 
 let scrolling = false;
 let scrollTimeoutID;
-let componendUnmounted;
+let componentUnmounted;
 
 class Landing extends Component {
   state = {
@@ -28,7 +28,7 @@ class Landing extends Component {
 
   // Clear all the timeouts
   async componentWillUnmount(){
-    componendUnmounted = true;
+    componentUnmounted = true;
     // console.log('Landing.js componentWillUnmount');
     var id = window.setTimeout(function() {}, 0);
 
@@ -52,11 +52,11 @@ class Landing extends Component {
 
     this.loadUtils();
 
-    componendUnmounted = false;
+    componentUnmounted = false;
     scrollTimeoutID = null;
 
     window.onscroll = async () => {
-      if (componendUnmounted){
+      if (componentUnmounted){
         return false;
       }
       if (scrollTimeoutID){
@@ -93,14 +93,17 @@ class Landing extends Component {
     }
   }
 
-  async componentDidUpdate(prevProps) {
+  async componentDidUpdate(prevProps, prevState) {
 
     this.loadUtils();
 
-    let prevContract = (prevProps.contracts.find(c => c.name === this.props.tokenConfig.idle.token) || {}).contract;
-    let contract = (this.props.contracts.find(c => c.name === this.props.tokenConfig.idle.token) || {}).contract;
-
-    if (contract && prevContract !== contract && !this.state.updatingAllocations) {
+    const accountChanged = prevProps.account !== this.props.account;
+    const selectedTokenChanged = prevProps.selectedToken !== this.props.selectedToken;
+    const prevContract = (prevProps.contracts.find(c => c.name === this.props.tokenConfig.idle.token) || {}).contract;
+    const contract = (this.props.contracts.find(c => c.name === this.props.tokenConfig.idle.token) || {}).contract;
+    const contractChanged = contract && prevContract !== contract;
+    
+    if (!this.state.updatingAllocations && (contractChanged || selectedTokenChanged)) {
       await this.getAprs();
       await this.getAllocations();
     }

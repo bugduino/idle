@@ -26,59 +26,7 @@ const customLog = (...props) => { if (LOG_ENABLED) console.log(moment().format('
 const customLogError = (...props) => { if (LOG_ENABLED) console.error(moment().format('HH:mm:ss'),...props); };
 
 class SmartContractControls extends React.Component {
-  state = {
-    iDAIRate: 0,
-    cDAIRate: 0,
-    cDAIToRedeem: 0,
-    partialRedeemEnabled: false,
-    disableLendButton: false,
-    disableRedeemButton: false,
-    welcomeIsOpen: false,
-    approveIsOpen: false,
-    showFundsInfo:true,
-    isApprovingToken:false,
-    isApprovingDAITest: true,
-    redeemProcessing: false,
-    lendingProcessing: false,
-    tokenBalance: this.props.accountBalanceToken,
-    lendAmount: '',
-    redeemAmount: '',
-    isMigrating: false,
-    migrationError: false,
-    isApprovingMigrationContract: false,
-    migrationContractBalance: null,
-    migrationContractApproved: false,
-    migrationTx:false,
-    migrationApproveTx: null,
-    updateInProgress: false,
-    needsUpdate: false,
-    genericError: null,
-    genericErrorRedeem: null,
-    buyTokenMessage:null,
-    selectedTab: '1',
-    amountLent: null,
-    IdleDAISupply: null,
-    idleDAICap: 30000,
-    earning: null,
-    earningIntervalId: null,
-    earningPerDay: null,
-    earningPerYear: null,
-    tokenBalanceBNify: null,
-    maxRate: '-',
-    calculataingShouldRebalance: true,
-    fundsTimeoutID: null,
-    idleTokenBalance: null,
-    allocations:null,
-    executedTxs:null,
-    lendingTx: null,
-    redeemTx: null,
-    approveTx: null,
-    fundsError: false,
-    showEmptyWalletOverlay:true,
-    prevTxs : null,
-    prevTxsError: false,
-    transactions:{}
-  };
+  state = {};
 
   // Utils
   functionsUtil = null;
@@ -240,6 +188,8 @@ class SmartContractControls extends React.Component {
 
       allocations[protocolAddr] = protocolAllocation;
     });
+
+    this.functionsUtil.customLog('getAllocations',allocations);
 
     this.setState({
       allocations
@@ -1008,6 +958,10 @@ class SmartContractControls extends React.Component {
     }
   };
 
+  async componentWillMount() {
+    this.initState();
+  }
+
   // Clear all the timeouts
   async componentWillUnmount(){
     componentUnmounted = true;
@@ -1019,9 +973,74 @@ class SmartContractControls extends React.Component {
     }
   }
 
-  async componentDidMount() {
+  async initState(){
+    // Init state
+    return this.setState({
+      iDAIRate: 0,
+      cDAIRate: 0,
+      cDAIToRedeem: 0,
+      partialRedeemEnabled: false,
+      disableLendButton: false,
+      disableRedeemButton: false,
+      welcomeIsOpen: false,
+      approveIsOpen: false,
+      showFundsInfo:true,
+      isApprovingToken:false,
+      isApprovingDAITest: true,
+      redeemProcessing: false,
+      lendingProcessing: false,
+      tokenBalance: this.props.accountBalanceToken,
+      lendAmount: '',
+      redeemAmount: '',
+      isMigrating: false,
+      migrationEnabled: false,
+      migrationError: false,
+      isApprovingMigrationContract: false,
+      oldContractBalance: null,
+      oldContractBalanceFormatted:null,
+      migrationContractApproved: false,
+      migrationTx:false,
+      migrationApproveTx: null,
+      updateInProgress: false,
+      needsUpdate: false,
+      genericError: null,
+      genericErrorRedeem: null,
+      buyTokenMessage:null,
+      selectedTab: '1',
+      amountLent: null,
+      IdleDAISupply: null,
+      idleDAICap: 30000,
+      earning: null,
+      earningIntervalId: null,
+      earningPerDay: null,
+      earningPerYear: null,
+      tokenBalanceBNify: null,
+      maxRate: '-',
+      calculataingShouldRebalance: true,
+      fundsTimeoutID: null,
+      idleTokenBalance: null,
+      allocations:null,
+      executedTxs:null,
+      lendingTx: null,
+      redeemTx: null,
+      approveTx: null,
+      fundsError: false,
+      showEmptyWalletOverlay:true,
+      prevTxs : null,
+      prevTxsError: false,
+      transactions:{}
+    });
+  }
+
+  async componentDidMount(needsUpdateEnabled) {
+
+    if (needsUpdateEnabled === undefined){
+      needsUpdateEnabled = true;
+    }
 
     this.loadUtils();
+
+    await this.initState();
 
     componentUnmounted = false;
 
@@ -1059,7 +1078,7 @@ class SmartContractControls extends React.Component {
 
     this.props.initContract(this.props.selectedToken, this.props.tokenConfig.address, this.props.tokenConfig.abi);
 
-    if (this.props.account){
+    if (this.props.account && needsUpdateEnabled){
       this.setState({
         needsUpdate:true
       });
@@ -1071,14 +1090,15 @@ class SmartContractControls extends React.Component {
     const migrationContractName = migrationContractInfo.name;
     const migrationContract = this.functionsUtil.getContractByName(migrationContractName);
     if (migrationContract){
-      return await this.functionsUtil.checkTokenApproved(migrationContractInfo.token,migrationContractInfo.address,this.props.account);
+      return await this.functionsUtil.checkTokenApproved(this.props.tokenConfig.migration.oldContract.name,migrationContractInfo.address,this.props.account);
     }
     return false;
   }
 
-  async migrate(e,migrationMethod) {
-    e.preventDefault();
-
+  async approveMigration(e) {
+    if (e){
+      e.preventDefault();
+    }
     const migrationContractInfo = this.props.tokenConfig.migration.migrationContract;
     const migrationContract = this.functionsUtil.getContractByName(migrationContractInfo.name);
     if (migrationContract){
@@ -1089,11 +1109,15 @@ class SmartContractControls extends React.Component {
       if (!migrationContractApproved){
 
         const callback = tx => {
-          this.setState({
+          const newState = {
             isApprovingMigrationContract: false,
             needsUpdate: true,
             migrationApproveTx: null
-          });
+          };
+          if (tx.status === 'success'){
+            newState.migrationContractApproved = true;
+          }
+          this.setState(newState);
         }
 
         const callback_receipt = tx => {
@@ -1106,49 +1130,92 @@ class SmartContractControls extends React.Component {
           isApprovingMigrationContract: true
         });
 
-        this.functionsUtil.enableERC20(migrationContractInfo.token,migrationContractInfo.address,callback,callback_receipt);
+        this.functionsUtil.enableERC20(this.props.tokenConfig.migration.oldContract.name,migrationContractInfo.address,callback,callback_receipt);
+      } else {
+        this.setState({
+          migrationContractApproved:true
+        });
+      }
+    }
+  }
+
+  async migrate(e,migrationMethod,params) {
+    e.preventDefault();
+
+    const migrationContractInfo = this.props.tokenConfig.migration.migrationContract;
+    const migrationContract = this.functionsUtil.getContractByName(migrationContractInfo.name);
+    if (migrationContract){
+
+      // Check if the migration contract is approved
+      const migrationContractApproved = await this.checkMigrationContractApproved();
+
+      if (!migrationContractApproved){
+        return this.approveMigration();
       } else {
         // Call migration contract function to migrate funds
 
         let res = null;
-        try {
-          const callback = tx => {
-            this.setState({
-              isMigrating: false,
-              needsUpdate: true,
-              migrationTx: null
-            });
-          }
 
-          const callback_receipt = tx => {
-            this.setState({
-              migrationTx: tx
-            });
-          }
+        const callback = tx => {
+          this.functionsUtil.customLog('Migration TX COMPLETED',tx);
 
-          this.setState({
+          const newState = {
             migrationError: false,
-            isMigrating: true
-          });
+            isMigrating: false,
+            migrationTx: null
+          };
 
-          res = await this.functionsUtil.contractMethodSendWrapper(migrationContractInfo.name,migrationMethod,[],callback,callback_receipt);
-        } catch (e) {
+          if (tx.status === 'success'){
+            newState.migrationEnabled = false;
+            newState.needsUpdate = true;
+          }
 
+          this.setState(newState);
         }
 
+        const callback_receipt = tx => {
+          this.functionsUtil.customLog('Migration tx RECEIPT',tx);
+          this.setState({
+            migrationTx: tx
+          });
+        }
+
+        this.setState({
+          migrationError: false,
+          isMigrating: true
+        });
+
+        const toMigrate = this.state.oldContractBalance;
+
+        const migrationParams = [...params];
+        // migrationParams.push(this.props.web3.utils.toWei('1','ether'));
+        migrationParams.push(toMigrate);
+
+        // Call getParamsForMintIdleToken and pass second result
+        migrationParams.push([]);
+
+        console.log('migrate',migrationContractInfo.name,migrationMethod,migrationParams,callback,callback_receipt);
+
+        // No need for callback atm
+        res = await this.functionsUtil.contractMethodSendWrapper(migrationContractInfo.name, migrationMethod, migrationParams, callback, callback_receipt);
+
+        /*
         if (res === null || res === undefined){
           this.setState({
             migrationError:true,
             isMigrating: false
           });
         }
+        */
       }
     }
   }
 
   async checkMigration() {
-    let migrationContractBalance = null;
+    let oldContractBalance = null;
+    let oldContractBalanceFormatted = null;
     let migrationContractApproved = false;
+    let migrationEnabled = false;
 
     // Check migration contract enabled and balance
     if (this.props.tokenConfig.migration && this.props.tokenConfig.migration.enabled){
@@ -1160,19 +1227,22 @@ class SmartContractControls extends React.Component {
         // Check migration contract approval
         migrationContractApproved = await this.checkMigrationContractApproved();
         // Check old contractBalance
-        const migrationContractBalance = await this.functionsUtil.getTokenBalance(oldContractName,this.props.account);
-        if (migrationContractBalance && migrationContractBalance.gt(0)){
-          this.functionsUtil.customLog('migrationContractBalance',migrationContractBalance.toString());
-        } else {
-          this.functionsUtil.customLog('migrationContractBalance - NO BALANCE');
+        oldContractBalance = await this.functionsUtil.getContractBalance(oldContractName,this.props.account);
+        if (oldContractBalance){
+          oldContractBalanceFormatted = await this.functionsUtil.getTokenBalance(oldContractName,this.props.account);
+          migrationEnabled = this.functionsUtil.BNify(oldContractBalance).gt(0);
         }
       }
     }
+
+    this.functionsUtil.customLog('oldContractBalanceFormatted',oldContractBalance ? oldContractBalanceFormatted.toString() : null);
     
     // Set migration contract balance
     return this.setState({
+      migrationEnabled,
       migrationContractApproved,
-      migrationContractBalance
+      oldContractBalanceFormatted,
+      oldContractBalance
     });
   }
 
@@ -1186,7 +1256,9 @@ class SmartContractControls extends React.Component {
 
     // Remount the component if token changed
     if (selectedTokenChanged){
-      await this.componentDidMount();
+      const needsUpdateEnabled = false;
+      // Mount the component and initialize the state
+      await this.componentDidMount(needsUpdateEnabled);
     }
 
     if (this.props.account && !this.state.updateInProgress && (accountChanged || this.state.needsUpdate || selectedTokenChanged)) {
@@ -1455,13 +1527,15 @@ class SmartContractControls extends React.Component {
     const walletIsEmpty = this.props.account && this.state.showEmptyWalletOverlay && !tokenNotApproved && !this.state.isApprovingToken && this.state.tokenBalance !== null && !isNaN(this.state.tokenBalance) && !parseFloat(this.state.tokenBalance);
 
     // Check migration enabled and balance
-    const migrationEnabled = this.props.account && this.state.migrationContractBalance && this.state.migrationContractBalance.gt(0);
+    const migrationEnabled = this.props.account && this.props.tokenConfig.migration && this.props.tokenConfig.migration.enabled && this.state.migrationEnabled;
 
     const defaultTokenSwapper = this.getDefaultTokenSwapper();
 
+    // console.log('allocations',this.state.allocations);
+
     return (
       <Box textAlign={'center'} alignItems={'center'} width={'100%'}>
-        <Form minHeight={ migrationEnabled ? ['25em','22em'] : ['auto','22em'] } backgroundColor={'white'} color={'blue'} boxShadow={'0 0 25px 5px rgba(102, 139, 255, 0.7)'} borderRadius={'15px'} style={{position:'relative'}}>
+        <Form minHeight={ migrationEnabled ? ['25em','24em'] : ['auto','22em'] } backgroundColor={'white'} color={'blue'} boxShadow={'0 0 25px 5px rgba(102, 139, 255, 0.7)'} borderRadius={'15px'} style={{position:'relative'}}>
           <Flex justifyContent={'center'} position={'relative'} zIndex={'999'} backgroundColor={'#fff'} borderRadius={'15px 15px 0 0'}>
             <Flex flexDirection={['row','row']} width={['100%','80%']} pt={[2,3]}>
               <Box className={[styles.tab,this.props.selectedTab==='1' ? styles.tabSelected : '']} width={[1/3]} textAlign={'center'}>
@@ -1510,12 +1584,21 @@ class SmartContractControls extends React.Component {
                       <Box style={{backgroundColor:'rgba(0,0,0,0.83)',position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'0',borderRadius:'15px'}}></Box>
                       <Flex style={{position:'relative',zIndex:'99',height:'100%'}} flexDirection={'column'} alignItems={'center'} justifyContent={'center'}>
                         <Flex flexDirection={'column'} alignItems={'center'} p={[2,4]}>
+                          <Heading.h4 mb={[3,'15px']} color={'white'} fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
+                            A new version of <strong>{globalConfigs.appName}</strong> has been released
+                          </Heading.h4>
                           <Flex width={1} justifyContent={'center'} alignItems={'center'} flexDirection={'row'}>
                             <Image src={`images/idle-mark-old.png`} height={'42px'} />
                             <Icon
                               name={'KeyboardArrowRight'}
                               color={'white'}
-                              size={'38'}
+                              size={'28'}
+                            />
+                            <Image src={`images/tokens/${this.props.selectedToken}.svg`} height={'42px'} />
+                            <Icon
+                              name={'KeyboardArrowRight'}
+                              color={'white'}
+                              size={'28'}
                             />
                             <Image src={`images/idle-mark.png`} height={'42px'} />
                           </Flex>
@@ -1553,14 +1636,16 @@ class SmartContractControls extends React.Component {
                               </Box>
                             ) : (
                               <>
+                                <Heading.h4 mt={[3,'15px']} color={'white'} fontSize={2} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
+                                  You still have <strong>{ this.state.oldContractBalanceFormatted.toFixed(4) } {this.props.tokenConfig.migration.oldContract.token}</strong> in the old contract.
+                                </Heading.h4>
                                 { !this.state.migrationContractApproved ? (
                                   <>
-                                    <Heading.h4 my={[3,'15px']} color={'white'} fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
-                                      A new version of <strong>{this.props.tokenConfig.idle.token}</strong> has been released.<br />
+                                    <Heading.h4 mb={[3,'15px']} color={'white'} fontSize={2} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
                                       Click the button below to approve the migration contract:
                                     </Heading.h4>
                                     <Button
-                                      onClick={e => { this.migrate(e); }}
+                                      onClick={e => { this.approveMigration(e); }}
                                       borderRadius={4}
                                       size={ this.props.isMobile ? 'small' : 'medium' }
                                     >
@@ -1569,27 +1654,26 @@ class SmartContractControls extends React.Component {
                                   </>
                                 ) : (
                                   <>
-                                    <Heading.h4 mt={[3,'15px']} color={'white'} fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
-                                      A new version of <strong>{this.props.tokenConfig.idle.token}</strong> has been released.<br />
+                                    <Heading.h4 color={'white'} fontSize={2} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
                                       Choose the way you want to migrate your funds:
                                     </Heading.h4>
                                     {
                                       this.state.migrationError && (
-                                        <Heading.h4 color={'red'} fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
+                                        <Heading.h4 color={'red'} fontSize={2} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
                                           Seems like there are some problems with the migration contract...
                                         </Heading.h4>
                                       )
                                     }
                                     <Flex mt={[3,'15px']} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
                                       {
-                                        Object.keys(this.props.tokenConfig.migration.migrationContract.functions).map((functionName,i) => {
-                                          const functionInfo = this.props.tokenConfig.migration.migrationContract.functions[functionName];
+                                        this.props.tokenConfig.migration.migrationContract.functions.map((functionInfo,i) => {
+                                          const functionName = functionInfo.name;
                                           return (
                                             <Button
-                                              key={`migrate_${functionName}`}
+                                              key={`migrate_${i}`}
                                               mx={ this.props.isMobile ? 0 : 2 }
                                               my={ this.props.isMobile ? 2 : 0 }
-                                              onClick={e => { this.migrate(e,functionName); }}
+                                              onClick={e => { this.migrate(e,functionName,functionInfo.params); }}
                                               borderRadius={4}
                                               size={ this.props.isMobile ? 'small' : 'medium' }
                                             >
@@ -1610,6 +1694,37 @@ class SmartContractControls extends React.Component {
                         </Flex>
                       </Flex>
                     </Box>
+                  ) : tokenNotApproved ? (
+                  <Box pt={['50px','73px']} style={{position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'99'}}>
+                    <Box style={{backgroundColor:'rgba(0,0,0,0.83)',position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'0',borderRadius:'15px'}}></Box>
+                    <Flex style={{position:'relative',zIndex:'99',height:'100%'}} flexDirection={'column'} alignItems={'center'} justifyContent={'center'}>
+                      <Flex flexDirection={'column'} alignItems={'center'} p={[2,4]}>
+                        <Flex width={1} justifyContent={'center'} flexDirection={'row'}>
+                          <Image src={`images/tokens/${this.props.selectedToken}.svg`} height={'38px'} />
+                          <Icon
+                            name={'KeyboardArrowRight'}
+                            color={'white'}
+                            size={'38'}
+                          />
+                          <Icon
+                            name={'LockOpen'}
+                            color={'white'}
+                            size={'38'}
+                          />
+                        </Flex>
+                        <Heading.h4 my={[2,'15px']} color={'white'} fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
+                          By clicking on ENABLE you are allowing Idle smart contract to actually move {this.props.selectedToken} on your behalf so we can forward them on various lending protocols.
+                        </Heading.h4>
+                        <Button
+                          onClick={e => this.enableERC20(e, this.props.selectedToken)}
+                          borderRadius={4}
+                          size={'medium'}
+                        >
+                          ENABLE {this.props.selectedToken}
+                        </Button>
+                      </Flex>
+                    </Flex>
+                  </Box>
                   ) : walletIsEmpty &&
                   <Box pt={['50px','73px']} style={{position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'99'}}>
                     <Box style={{backgroundColor:'rgba(0,0,0,0.83)',position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'0',borderRadius:'15px'}}></Box>
@@ -1648,40 +1763,6 @@ class SmartContractControls extends React.Component {
                           size={'medium'}
                         >
                           BUY {this.props.selectedToken}
-                        </Button>
-                      </Flex>
-                    </Flex>
-                  </Box>
-                }
-
-                {
-                  tokenNotApproved &&
-                  <Box pt={['50px','73px']} style={{position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'99'}}>
-                    <Box style={{backgroundColor:'rgba(0,0,0,0.83)',position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'0',borderRadius:'15px'}}></Box>
-                    <Flex style={{position:'relative',zIndex:'99',height:'100%'}} flexDirection={'column'} alignItems={'center'} justifyContent={'center'}>
-                      <Flex flexDirection={'column'} alignItems={'center'} p={[2,4]}>
-                        <Flex width={1} justifyContent={'center'} flexDirection={'row'}>
-                          <Image src={`images/tokens/${this.props.selectedToken}.svg`} height={'38px'} />
-                          <Icon
-                            name={'KeyboardArrowRight'}
-                            color={'white'}
-                            size={'38'}
-                          />
-                          <Icon
-                            name={'LockOpen'}
-                            color={'white'}
-                            size={'38'}
-                          />
-                        </Flex>
-                        <Heading.h4 my={[2,'15px']} color={'white'} fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
-                          By clicking on ENABLE you are allowing Idle smart contract to actually move {this.props.selectedToken} on your behalf so we can forward them on various lending protocols.
-                        </Heading.h4>
-                        <Button
-                          onClick={e => this.enableERC20(e, this.props.selectedToken)}
-                          borderRadius={4}
-                          size={'medium'}
-                        >
-                          ENABLE {this.props.selectedToken}
                         </Button>
                       </Flex>
                     </Flex>
@@ -2155,6 +2236,9 @@ class SmartContractControls extends React.Component {
                       this.state.allocations ?
                         Object.keys(this.state.allocations).map((protocolAddr,i)=>{
                           const protocolInfo = this.getProtocolInfoByAddress(protocolAddr);
+                          if (!protocolInfo){
+                            return;
+                          }
                           const protocolName = protocolInfo.name;
                           const protocolApr = parseFloat(this.toEth(this.state[`${protocolName}Apr`]));
                           const protocolAllocation = parseFloat(this.state.allocations[protocolAddr]);

@@ -79,8 +79,10 @@ class FunctionsUtil {
       }
     });
   }
-  enableERC20 = (token,address,callback,callback_receipt) => {
-    this.props.contractMethodSendWrapper(token, 'approve', [
+  enableERC20 = (contractName,address,callback,callback_receipt) => {
+    // const contract = this.getContractByName(contractName);
+    // this.customLog('enableERC20',contractName,contract,address);
+    this.props.contractMethodSendWrapper(contractName, 'approve', [
       address,
       this.props.web3.utils.toTwosComplement('-1') // max uint solidity
     ],null,(tx)=>{
@@ -98,7 +100,7 @@ class FunctionsUtil {
     if (tokenBalance){
       const tokenDecimals = await this.getTokenDecimals(contractName);
       tokenBalance = this.fixTokenDecimals(tokenBalance,tokenDecimals);
-      this.customLog('getTokenBalance',tokenBalance.toString(),tokenDecimals,this.BNify(tokenBalance.toString()).div(this.BNify(Math.pow(10,parseInt(tokenDecimals)).toString())).toString());
+      this.customLog('getTokenBalance',tokenBalance.toString(),tokenDecimals);
       return tokenBalance;
     } else {
       this.customLogError('Error on getting balance');

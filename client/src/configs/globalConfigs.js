@@ -1,4 +1,5 @@
 const globalConfigs = {
+  appName: 'Idle',
   baseURL: 'https://beta.idle.finance',
   baseToken: 'ETH',
   countries:{

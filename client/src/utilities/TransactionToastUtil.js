@@ -140,6 +140,9 @@ class TransactionToastUtil extends React.Component {
       case 'mintIdleToken':
         transactionAction = 'Lending';
         break;
+      case 'bridgeIdleV1ToIdleV2':
+        transactionAction = 'Migration';
+        break;
       case 'approve':
         transactionAction = 'Approve';
         break;
