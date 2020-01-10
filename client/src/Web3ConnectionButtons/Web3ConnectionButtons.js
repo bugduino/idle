@@ -32,6 +32,13 @@ export default function Web3ConnectionButtons(props) {
       props.setConnector(connectorName,walletProvider);
     }
 
+    /*
+    // Close modal
+    if (typeof props.closeModal === 'function'){
+      props.closeModal();
+    }
+    */
+
     return await context.setConnector(connectorName);
   };
   const unsetConnector = async () => {
@@ -44,7 +51,8 @@ export default function Web3ConnectionButtons(props) {
   
   const isMetamask = GeneralUtil.hasMetaMask();
   const isOpera = GeneralUtil.isOpera();
-  const onlyPortis = props.onlyPortis;
+  // const onlyPortis = props.onlyPortis;
+  const allowedConnectors = props.allowedConnectors;
   const registerPage = props.registerPage;
 
   if (connectors.Portis) {
@@ -58,8 +66,9 @@ export default function Web3ConnectionButtons(props) {
   }
 
   let basicConnectorsName = Object.keys(connectors).filter(c => c !== 'Infura');
-  if (onlyPortis) {
-    basicConnectorsName = basicConnectorsName.filter(n => n === 'Portis');
+
+  if (allowedConnectors) {
+    basicConnectorsName = basicConnectorsName.filter(n => allowedConnectors.map((v) => { return v.toLowerCase(); }).indexOf(n.toLowerCase()) !== -1 );
   }
 
   const buttons = basicConnectorsName.map(connectorName => {

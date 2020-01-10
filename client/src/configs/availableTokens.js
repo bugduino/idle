@@ -31,7 +31,34 @@ const availableTokens = {
       idle:{
         abi:idleToken.abi,
         token:'idleSAI',
-        address:'0x17c5efC8dbd9b1b34457eE46c3C8e0F928e80dbE'
+        address:'0x5266C66FC100d2FBE5dbCfE8a8789568D2d2F720'
+      },
+      migration:{
+        enabled:true,
+        oldContract:{
+          abi:idleDAI.abi,
+          token:'idleSAI',
+          name:'oldContract',
+          address:'0x4Cc31d87E658504a9db6c9337102c408A3bdE90d',
+        },
+        migrationContract:{
+          abi:IdleMcdBridge,
+          token:'idleSAI',
+          name:'migrationContract',
+          address:'0xabeCf002a48969C2be92150ae27B1F75cBf6EA6e',
+          functions:[
+            {
+              name:'bridgeIdleV1ToIdleV2',
+              label:'MIGRATE TO idleSAI v2',
+              params:['0x4Cc31d87E658504a9db6c9337102c408A3bdE90d','0x5266C66FC100d2FBE5dbCfE8a8789568D2d2F720']
+            },
+            {
+              name:'bridgeIdleV1ToIdleV2',
+              label:'MIGRATE TO idleDAI v2',
+              params:['0x4Cc31d87E658504a9db6c9337102c408A3bdE90d','0x199e7c55B44fFBD2934bFC3bDeE05F6EC2b547CF']
+            },
+          ]
+        }
       },
       protocols:[
         {
@@ -65,7 +92,7 @@ const availableTokens = {
     DAI:{
       enabled:true,
       abi:ERC20.abi,
-      address:'0xC4375B7De8af5a38a93548eb8453a498222C4fF2',
+      address:'0x4F96Fe3b7A6Cf9725f59d353F723c1bDb64CA6Aa',
       zeroExInstant:{
         orderSource: 'https://api.0x.org/sra/',
         assetData:'0xf47261b00000000000000000000000006b175474e89094c44da98b954eedeac495271d0f',
@@ -86,13 +113,40 @@ const availableTokens = {
       idle:{
         abi:idleToken.abi,
         token:'idleDAI',
-        address:'0x17c5efC8dbd9b1b34457eE46c3C8e0F928e80dbE'
+        address:'0x199e7c55B44fFBD2934bFC3bDeE05F6EC2b547CF'
+      },
+      migration:{
+        enabled:true,
+        oldContract:{
+          abi:idleDAI.abi,
+          token:'idleSAI',
+          name:'oldContract',
+          address:'0x4Cc31d87E658504a9db6c9337102c408A3bdE90d',
+        },
+        migrationContract:{
+          abi:IdleMcdBridge,
+          token:'idleSAI',
+          name:'migrationContract',
+          address:'0xabeCf002a48969C2be92150ae27B1F75cBf6EA6e',
+          functions:[
+            {
+              name:'bridgeIdleV1ToIdleV2',
+              label:'MIGRATE TO idleSAI v2',
+              params:['0x4Cc31d87E658504a9db6c9337102c408A3bdE90d','0x5266C66FC100d2FBE5dbCfE8a8789568D2d2F720']
+            },
+            {
+              name:'bridgeIdleV1ToIdleV2',
+              label:'MIGRATE TO idleDAI v2',
+              params:['0x4Cc31d87E658504a9db6c9337102c408A3bdE90d','0x199e7c55B44fFBD2934bFC3bDeE05F6EC2b547CF']
+            },
+          ]
+        }
       },
       protocols:[
         {
           name:'compound',
           abi:cDAI.abi,
-          address:'0x63c344bf8651222346dd870be254d4347c9359f7',
+          address:'0xe7bc397dbd069fc7d0109c0636d06888bb50668c',
           token:'cDAI',
           functions:{
             exchangeRate:{
@@ -105,7 +159,7 @@ const availableTokens = {
         {
           name:'fulcrum',
           abi:iDAI,
-          address:'0xA1e58F3B1927743393b25f261471E1f2D3D9f0F6',
+          address:'0x6c1e2b0f67e00c06c8e2be7dc681ab785163ff4d',
           token:'iDAI',
           functions:{
             exchangeRate:{
