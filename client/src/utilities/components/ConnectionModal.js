@@ -92,7 +92,6 @@ class ConnectionModal extends React.Component {
 
   closeCountdown = () => {
     const closeRemainingTime = this.state.closeRemainingTime ? this.state.closeRemainingTime-1 : 5;
-    console.log('closeCountdown',closeRemainingTime);
     if (!closeRemainingTime){
       this.closeModal();
     } else {

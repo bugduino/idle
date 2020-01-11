@@ -763,7 +763,7 @@ class SmartContractControls extends React.Component {
     const prevTxs = results.filter(
         tx => {
           const internalTxs = results.filter(r => r.hash === tx.hash);
-          const isMigrationTx = migrationContractAddr && tx.from.toLowerCase() === migrationContractAddr.toLowerCase();
+          const isMigrationTx = migrationContractAddr && tx.from.toLowerCase() === migrationContractAddr.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
           const isRightToken = internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase()).length;
           const isDepositTx = isRightToken && !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
           const isRedeemTx = isRightToken && !isMigrationTx && tx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()).length && tx.to.toLowerCase() === this.props.account.toLowerCase();
@@ -778,7 +778,7 @@ class SmartContractControls extends React.Component {
 
     await this.functionsUtil.asyncForEach(prevTxs,async (tx,index) => {
 
-      const isMigrationTx = migrationContractAddr && tx.from.toLowerCase() === migrationContractAddr.toLowerCase();
+      const isMigrationTx = migrationContractAddr && tx.from.toLowerCase() === migrationContractAddr.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
       const isDepositTx = !isMigrationTx && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
       const isRedeemTx = !isMigrationTx && tx.to.toLowerCase() === this.props.account.toLowerCase();
 
@@ -1382,7 +1382,7 @@ class SmartContractControls extends React.Component {
 
       const tx = prevTxs[key];
 
-      const isMigrationTx = migrationContractAddr && tx.from.toLowerCase() === migrationContractAddr.toLowerCase();
+      const isMigrationTx = migrationContractAddr && tx.from.toLowerCase() === migrationContractAddr.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
       const isDepositTx = !isMigrationTx && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
       const isRedeemTx = !isMigrationTx && tx.to.toLowerCase() === this.props.account.toLowerCase();
 
