@@ -7,13 +7,15 @@ import {
   Flex,
   Box,
   Link,
-  Button
+  Button,
+  Loader
 } from "rimble-ui";
 import styles from './Header.module.scss';
 import ModalCard from './ModalCard';
+import ImageButton from '../../ImageButton/ImageButton';
 import TransactionFeeModal from "./TransactionFeeModal";
 import Web3ConnectionButtons from "../../Web3ConnectionButtons/Web3ConnectionButtons";
-import Web3ConnectionButtons_styles from '../../Web3ConnectionButtons/Web3ConnectionButtons.module.scss';
+// import Web3ConnectionButtons_styles from '../../Web3ConnectionButtons/Web3ConnectionButtons.module.scss';
 import {
   Link as RouterLink,
 } from "react-router-dom";
@@ -23,7 +25,9 @@ class ConnectionModal extends React.Component {
   state = {
     showTxFees: false,
     showConnectionButtons: false,
-    newToEthereum: false
+    newToEthereum: false,
+    closeRemainingTime:null,
+    newToEthereumChoice: null
   };
 
   toggleShowTxFees = e => {
@@ -39,6 +43,7 @@ class ConnectionModal extends React.Component {
     e.preventDefault();
 
     this.setState({
+      newToEthereumChoice:null,
       showTxFees: false,
       showConnectionButtons: !this.state.showConnectionButtons
     });
@@ -59,12 +64,63 @@ class ConnectionModal extends React.Component {
     this.setState({
       showTxFees: false,
       showConnectionButtons: false,
-      newToEthereum: false
+      newToEthereum: false,
+      newToEthereumChoice:null
     });
-  };
+  }
+
+  setConnector = async (connectorName,name) => {
+    let walletProvider = connectorName === 'Injected' ? name : connectorName;
+    if (localStorage) {
+      localStorage.setItem('walletProvider', walletProvider);
+      localStorage.setItem('connectorName', connectorName);
+    }
+
+    if (this.props.setConnector && typeof this.props.setConnector === 'function'){
+      this.props.setConnector(connectorName,walletProvider);
+    }
+
+    // Set Wallet choice
+    this.setState({
+      newToEthereumChoice: connectorName
+    });
+
+    this.closeCountdown();
+
+    return await window.RimbleWeb3_context.setConnector(connectorName);
+  }
+
+  closeCountdown = () => {
+    const closeRemainingTime = this.state.closeRemainingTime ? this.state.closeRemainingTime-1 : 5;
+    console.log('closeCountdown',closeRemainingTime);
+    if (!closeRemainingTime){
+      this.closeModal();
+    } else {
+      setTimeout(() => { this.closeCountdown() },1000);
+    }
+    this.setState({
+      closeRemainingTime
+    });
+  }
 
   getShowConnectionButtons = () => {
     return localStorage ? localStorage.getItem('showConnectionButtons') : this.state.showConnectionButtons;
+  }
+
+  setWalletChoice = (e,choice) => {
+    e.preventDefault();
+    this.setState({
+      newToEthereumChoice: choice
+    });
+  }
+
+  closeModal = () => {
+    this.setState({
+      showTxFees: false,
+      showConnectionButtons: false,
+      newToEthereum: false
+    });
+    this.props.closeModal();
   }
 
   toggleNewtoEthereum = e => {
@@ -72,7 +128,8 @@ class ConnectionModal extends React.Component {
 
     this.setState({
       showTxFees: false,
-      newToEthereum: !this.state.newToEthereum
+      newToEthereum: !this.state.newToEthereum,
+      newToEthereumChoice: null
     });
   };
 
@@ -92,7 +149,7 @@ class ConnectionModal extends React.Component {
           <ModalCard.Header title={'Select your Wallet'} subtitle={'And get started with Idle.'} icon={'images/idle-mark.png'}></ModalCard.Header>
           <ModalCard.Body>
             <Box width={1} px={[3,5]} justifyContent={'center'}>
-              <Web3ConnectionButtons setConnector={ this.props.setConnector } width={1/2} size={ this.props.isMobile ? 'medium' : 'large' } />
+              <Web3ConnectionButtons closeModal={ this.closeModal } setConnector={ this.props.setConnector } width={1/2} size={ this.props.isMobile ? 'medium' : 'large' } />
             </Box>
             { TOSacceptance }
           </ModalCard.Body>
@@ -105,39 +162,34 @@ class ConnectionModal extends React.Component {
         <React.Fragment>
           <ModalCard.Header title={'Let\'s create your first Ethereum wallet'}></ModalCard.Header>
           <ModalCard.Body>
-            <Box mb={[3,4]}>
-              <Text fontSize={[2,2]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5}>
-                Managing ethereum wallet could be intimidating, but we are making it
-                seamless by integrating the Portis wallet provider.
-                After clicking the button below you will create you first Ethereum wallet
-                and you'll be ready to start your journey into Idle.
-              </Text>
-            </Box>
-            <Flex alignItems={"center"} flexDirection={['column','row']}>
-              <Box width={[1,1/2]}>
-                <Web3ConnectionButtons setConnector={ this.props.setConnector } size={this.props.isMobile ? 'medium' : 'large'} onlyPortis={true} registerPage={true} />
-              </Box>
-              <Box width={[1,1/2]}>
-                <Button.Outline
-                  className={[Web3ConnectionButtons_styles.button]}
-                  display={'flex'}
-                  alignItems={'center'}
-                  mb={[1, 3]}
-                  width={1}
-                  key={'Reset'}
-                  size={ this.props.isMobile ? 'medium' : 'large' }
-                  onClick={this.toggleShowConnectionButtons}>
-                  <Flex alignItems={'center'}>
-                    <Icon
-                      name="Replay"
-                      color="copyColor"
-                      size={'1.5em'}
-                    />
-                    Choose another wallet
+            {
+              !this.state.newToEthereumChoice ? (
+                <>
+                  <Box mb={[3,4]}>
+                    <Text fontSize={3} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
+                      Choose the way you want to connect to Idle:
+                    </Text>
+                  </Box>
+                  <Flex mb={4} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
+                    <ImageButton imageSrc={'images/email.png'} imageProps={{mb:'3px',height:'70px'}} caption={'E-mail'} handleClick={ e => this.setConnector('Portis','Portis') } />
+                    <ImageButton imageSrc={'images/mobile.png'} imageProps={{mb:'3px',height:'70px'}} caption={'Phone number'} handleClick={ e => this.setConnector('Fortmatic','Fortmatic') }/>
                   </Flex>
-                </Button.Outline>
-              </Box>
-            </Flex>
+                </>
+              ) : (
+                <Box>
+                  <Text fontSize={3} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
+                    We are connecting you to {this.state.newToEthereumChoice} wallet provider...
+                  </Text>
+                  <Flex
+                    mt={2}
+                    justifyContent={'center'}
+                    alignItems={'center'}
+                    textAlign={'center'}>
+                    <Loader size="40px" /> <Text ml={2} color={'dark-gray'}>Closing in {this.state.closeRemainingTime} seconds...</Text>
+                  </Flex>
+                </Box>
+              )
+            }
             { TOSacceptance }
           </ModalCard.Body>
         </React.Fragment>
@@ -272,15 +324,6 @@ class ConnectionModal extends React.Component {
         }
       </ModalCard.Footer>
     );
-  }
-
-  closeModal = () => {
-    this.setState({
-      showTxFees: false,
-      showConnectionButtons: false,
-      newToEthereum: false
-    });
-    this.props.closeModal();
   }
 
   render() {

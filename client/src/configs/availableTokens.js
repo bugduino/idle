@@ -45,7 +45,7 @@ const availableTokens = {
           abi:IdleMcdBridge,
           token:'idleSAI',
           name:'migrationContract',
-          address:'0xabeCf002a48969C2be92150ae27B1F75cBf6EA6e',
+          address:'0x556659f45381dEE8BA429C295363E39645abE834',
           functions:[
             {
               name:'bridgeIdleV1ToIdleV2',
@@ -127,7 +127,7 @@ const availableTokens = {
           abi:IdleMcdBridge,
           token:'idleSAI',
           name:'migrationContract',
-          address:'0xabeCf002a48969C2be92150ae27B1F75cBf6EA6e',
+          address:'0x556659f45381dEE8BA429C295363E39645abE834',
           functions:[
             {
               name:'bridgeIdleV1ToIdleV2',
@@ -249,7 +249,7 @@ const availableTokens = {
       idle:{
         abi:idleToken.abi,
         token:'idleSAI',
-        address:'0x6A4dA0bb905DE997A53D38Fe84cA4cCc55b54Fa9'
+        address:'0xD6d3CD5FA58Cf76fBCC720E18d629cEdcf79F903'
       },
       migration:{
         enabled:true,
@@ -263,17 +263,17 @@ const availableTokens = {
           abi:IdleMcdBridge,
           token:'idleSAI',
           name:'migrationContract',
-          address:'0xE500Cd8840cb88F11DCb4a9597d627A2a02094Ff',
+          address:'0x656FB5e4351889bc627F8DBa234Ab43e2Bbe9996',
           functions:[
             {
               name:'bridgeIdleV1ToIdleV2',
               label:'MIGRATE TO idleSAI v2',
-              params:['0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9','0x6A4dA0bb905DE997A53D38Fe84cA4cCc55b54Fa9']
+              params:['0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9','0xD6d3CD5FA58Cf76fBCC720E18d629cEdcf79F903']
             },
             {
               name:'bridgeIdleV1ToIdleV2',
               label:'MIGRATE TO idleDAI v2',
-              params:['0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9','0x4216c2086FFc048aE456332e28b3076cE12A192B']
+              params:['0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9','0xDBe86305665E4ac4ae7cC2B94c62F5b69334F2ad']
             },
           ]
         }
@@ -331,7 +331,7 @@ const availableTokens = {
       idle:{
         abi:idleToken.abi,
         token:'idleDAI',
-        address:'0x4216c2086FFc048aE456332e28b3076cE12A192B'
+        address:'0xDBe86305665E4ac4ae7cC2B94c62F5b69334F2ad'
       },
       migration:{
         enabled:true,
@@ -345,17 +345,17 @@ const availableTokens = {
           abi:IdleMcdBridge,
           token:'idleSAI',
           name:'migrationContract',
-          address:'0xE500Cd8840cb88F11DCb4a9597d627A2a02094Ff',
+          address:'0x656FB5e4351889bc627F8DBa234Ab43e2Bbe9996',
           functions:[
             {
               name:'bridgeIdleV1ToIdleV2',
               label:'MIGRATE TO idleSAI v2',
-              params:['0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9','0x6A4dA0bb905DE997A53D38Fe84cA4cCc55b54Fa9']
+              params:['0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9','0xD6d3CD5FA58Cf76fBCC720E18d629cEdcf79F903']
             },
             {
               name:'bridgeIdleV1ToIdleV2',
               label:'MIGRATE TO idleDAI v2',
-              params:['0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9','0x4216c2086FFc048aE456332e28b3076cE12A192B']
+              params:['0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9','0xDBe86305665E4ac4ae7cC2B94c62F5b69334F2ad']
             },
           ]
         }
@@ -365,7 +365,7 @@ const availableTokens = {
           name:'compound',
           abi:cDAI.abi,
           address:'0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643',
-          token:'cSAI',
+          token:'cDAI',
           functions:{
             exchangeRate:{
               name:'exchangeRateStored',
@@ -378,7 +378,7 @@ const availableTokens = {
           name:'fulcrum',
           abi:iDAI,
           address:'0x493c57c4763932315a328269e1adad09653b9081',
-          token:'iSAI',
+          token:'iDAI',
           functions:{
             exchangeRate:{
               name:'tokenPrice',

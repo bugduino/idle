@@ -169,28 +169,7 @@ class SmartContractControls extends React.Component {
   }
 
   getAllocations = async () => {
-    const allocations = {};
-
-    await this.asyncForEach(this.props.tokenConfig.protocols,async (protocolInfo,i) => {
-      const contractName = protocolInfo.token;
-      const protocolAddr = protocolInfo.address;
-
-      let [protocolBalance, tokenDecimals, exchangeRate ] = await Promise.all([
-        this.getProtocolBalance(contractName),
-        this.getTokenDecimals(contractName),
-        ( protocolInfo.functions.exchangeRate ? this.functionsUtil.genericContractCall(contractName,protocolInfo.functions.exchangeRate.name,protocolInfo.functions.exchangeRate.params) : null )
-      ]);
-
-      if (protocolInfo.functions.exchangeRate.decimals){
-        exchangeRate = this.fixTokenDecimals(exchangeRate,protocolInfo.functions.exchangeRate.decimals);
-      }
-      const protocolAllocation = this.fixTokenDecimals(protocolBalance,tokenDecimals,exchangeRate);
-
-      allocations[protocolAddr] = protocolAllocation;
-    });
-
-    this.functionsUtil.customLog('getAllocations',allocations);
-
+    const allocations = await this.props.getAllocations();
     this.setState({
       allocations
     });
@@ -778,32 +757,65 @@ class SmartContractControls extends React.Component {
 
     const results = txs.data.result;
 
+    const migrationContractAddr = this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract ? this.props.tokenConfig.migration.migrationContract.address : null;
+    const oldContractAddr = this.props.tokenConfig.migration && this.props.tokenConfig.migration.oldContract ? this.props.tokenConfig.migration.oldContract.address.replace('x','').toLowerCase() : null;
+
     const prevTxs = results.filter(
         tx => {
           const internalTxs = results.filter(r => r.hash === tx.hash);
+          const isMigrationTx = migrationContractAddr && tx.from.toLowerCase() === migrationContractAddr.toLowerCase();
           const isRightToken = internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase()).length;
-          const isDepositTx = tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-          const isRedeemTx = tx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()).length && tx.to.toLowerCase() === this.props.account.toLowerCase();
+          const isDepositTx = isRightToken && !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
+          const isRedeemTx = isRightToken && !isMigrationTx && tx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()).length && tx.to.toLowerCase() === this.props.account.toLowerCase();
 
-          return isRightToken && (isDepositTx || isRedeemTx);
+          return isMigrationTx || isDepositTx || isRedeemTx;
       }).map(tx => ({...tx, value: this.toEth(tx.value)}));
 
     let amountLent = this.BNify(0);
     let transactions = {};
 
-    // customLog('prevTxs',prevTxs);
+    console.log('prevTxs',prevTxs,prevTxs.length);
 
-    prevTxs.forEach((tx,index) => {
+    await this.functionsUtil.asyncForEach(prevTxs,async (tx,index) => {
+
+      const isMigrationTx = migrationContractAddr && tx.from.toLowerCase() === migrationContractAddr.toLowerCase();
+      const isDepositTx = !isMigrationTx && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
+      const isRedeemTx = !isMigrationTx && tx.to.toLowerCase() === this.props.account.toLowerCase();
+
       // Deposited
-      if (tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()){
+      if (isDepositTx){
         amountLent = amountLent.plus(this.BNify(tx.value));
-        // customLog('Deposited '+parseFloat(tx.value),'AmountLent',amountLent.toString());
-      } else if (tx.to.toLowerCase() === this.props.account.toLowerCase()){
+      // Redeemed
+      } else if (isRedeemTx){
         amountLent = amountLent.minus(this.BNify(tx.value));
         if (amountLent.lt(0)){
           amountLent = this.BNify(0);
         }
-        // customLog('Redeemed '+parseFloat(tx.value),'AmountLent',amountLent.toString());
+      // Migrated
+      } else if (isMigrationTx){
+
+        const migrationTxReceipt = await (new Promise( async (resolve, reject) => {
+          this.props.web3.eth.getTransactionReceipt(tx.hash,(err,tx)=>{
+            if (err){
+              reject(err);
+            }
+            resolve(tx);
+          });
+        }));
+
+        const internalTransfers = migrationTxReceipt.logs.filter((tx) => { return tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${oldContractAddr}`; });
+
+        if (!internalTransfers.length){
+          return;
+        }
+
+        const internalTransfer = internalTransfers[0];
+
+        let migrationValue = parseInt(internalTransfer.data,16);
+        const tokenDecimals = await this.functionsUtil.getTokenDecimals(this.props.tokenConfig.migration.oldContract.name);
+        migrationValue = this.functionsUtil.fixTokenDecimals(migrationValue,tokenDecimals);
+
+        amountLent = amountLent.plus(this.BNify(migrationValue));
       }
       transactions[tx.hash] = tx;
     });
@@ -1154,20 +1166,37 @@ class SmartContractControls extends React.Component {
       } else {
         // Call migration contract function to migrate funds
 
-        let res = null;
-
         const callback = tx => {
           this.functionsUtil.customLog('Migration TX COMPLETED',tx);
 
           const newState = {
-            migrationError: false,
+            migrationError: true, // Throw error by default
             isMigrating: false,
             migrationTx: null
           };
 
           if (tx.status === 'success'){
+            newState.migrationError = false; // Reset error
             newState.migrationEnabled = false;
             newState.needsUpdate = true;
+
+            // Toast message
+            window.toastProvider.addMessage(`Migration completed`, {
+              secondaryMessage: `Your funds has been migrated`,
+              colorTheme: 'light',
+              actionHref: "",
+              actionText: "",
+              variant: "success",
+            });
+          } else {
+            // Toast message
+            window.toastProvider.addMessage(`Migration error`, {
+              secondaryMessage: `The migration has failed, try again...`,
+              colorTheme: 'light',
+              actionHref: "",
+              actionText: "",
+              variant: "failure",
+            });
           }
 
           this.setState(newState);
@@ -1188,25 +1217,13 @@ class SmartContractControls extends React.Component {
         const toMigrate = this.state.oldContractBalance;
 
         const migrationParams = [...params];
-        // migrationParams.push(this.props.web3.utils.toWei('1','ether'));
         migrationParams.push(toMigrate);
 
         // Call getParamsForMintIdleToken and pass second result
         migrationParams.push([]);
 
-        console.log('migrate',migrationContractInfo.name,migrationMethod,migrationParams,callback,callback_receipt);
-
-        // No need for callback atm
-        res = await this.functionsUtil.contractMethodSendWrapper(migrationContractInfo.name, migrationMethod, migrationParams, callback, callback_receipt);
-
-        /*
-        if (res === null || res === undefined){
-          this.setState({
-            migrationError:true,
-            isMigrating: false
-          });
-        }
-        */
+        // Send migration tx
+        await this.functionsUtil.contractMethodSendWrapper(migrationContractInfo.name, migrationMethod, migrationParams, callback, callback_receipt);
       }
     }
   }
@@ -1359,12 +1376,29 @@ class SmartContractControls extends React.Component {
     let depositedSinceLastRedeem = 0;
     let totalRedeemed = 0;
 
+    const migrationContractAddr = this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract ? this.props.tokenConfig.migration.migrationContract.address : null;
+
     let txs = txsIndexes.map((key, i) => {
 
       const tx = prevTxs[key];
 
+      const isMigrationTx = migrationContractAddr && tx.from.toLowerCase() === migrationContractAddr.toLowerCase();
+      const isDepositTx = !isMigrationTx && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
+      const isRedeemTx = !isMigrationTx && tx.to.toLowerCase() === this.props.account.toLowerCase();
+
       const date = new Date(tx.timeStamp*1000);
-      const status = tx.status ? tx.status : tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase() ? 'Deposited' : 'Redeemed';
+      let status = tx.status ? tx.status : null;
+      if (!status){
+        if (isDepositTx){
+          status = 'Deposited';
+        } else if (isRedeemTx){
+          status = 'Redeemed';
+        } else if (isMigrationTx){
+          status = 'Migrated';
+        }
+      }
+
+      let tokenSymbol = tx.tokenSymbol;
       const parsedValue = parseFloat(tx.value);
       const value = parsedValue ? (this.props.isMobile ? parsedValue.toFixed(4) : parsedValue.toFixed(8)) : '-';
       const momentDate = moment(date);
@@ -1390,15 +1424,17 @@ class SmartContractControls extends React.Component {
             interest = null;
           } else {
             interest = totalRedeemed-depositedSinceLastRedeem;
-            interest = interest>0 ? '+'+(this.props.isMobile ? parseFloat(interest).toFixed(4) : parseFloat(interest).toFixed(8))+' DAI' : null;
+            interest = interest>0 ? '+'+(this.props.isMobile ? parseFloat(interest).toFixed(4) : parseFloat(interest).toFixed(8))+' '+this.props.selectedToken : null;
             depositedSinceLastRedeem -= totalRedeemed;
             depositedSinceLastRedeem = Math.max(0,depositedSinceLastRedeem);
             totalRedeemed = 0;
           }
-
-          // if (interest){
-          //   totalInterestsAccrued += interest;
-          // }
+        break;
+        case 'Migrated':
+          color = 'red';
+          icon = "Sync";
+          depositedSinceLastRedeem+=parsedValue;
+          tokenSymbol = this.props.selectedToken;
         break;
         default:
           color = 'grey';
@@ -1419,7 +1455,7 @@ class SmartContractControls extends React.Component {
                 </Pill>
               </Box>
               <Box width={[6/12,3/12]}>
-                <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>{value} {tx.tokenSymbol}</Text>
+                <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>{value} {tokenSymbol}</Text>
               </Box>
               <Box width={3/12} display={['none','block']}>
                 <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>
@@ -1531,8 +1567,6 @@ class SmartContractControls extends React.Component {
 
     const defaultTokenSwapper = this.getDefaultTokenSwapper();
 
-    // console.log('allocations',this.state.allocations);
-
     return (
       <Box textAlign={'center'} alignItems={'center'} width={'100%'}>
         <Form minHeight={ migrationEnabled ? ['25em','24em'] : ['auto','22em'] } backgroundColor={'white'} color={'blue'} boxShadow={'0 0 25px 5px rgba(102, 139, 255, 0.7)'} borderRadius={'15px'} style={{position:'relative'}}>
@@ -1629,7 +1663,7 @@ class SmartContractControls extends React.Component {
                                       justifyContent={'center'}
                                       alignItems={'center'}
                                       textAlign={'center'}>
-                                      <Loader size="40px" /> <Text ml={2} color={'white'}>Sending migration request...</Text>
+                                      <Loader size="40px" /> <Text ml={2} color={'white'}>Starting migration process...</Text>
                                     </Flex>
                                   )
                                 }
@@ -1660,7 +1694,7 @@ class SmartContractControls extends React.Component {
                                     {
                                       this.state.migrationError && (
                                         <Heading.h4 color={'red'} fontSize={2} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
-                                          Seems like there are some problems with the migration contract...
+                                          An error occured during the migration, please try again...
                                         </Heading.h4>
                                       )
                                     }
@@ -2231,13 +2265,13 @@ class SmartContractControls extends React.Component {
 
               <Box display={ this.props.selectedTab === '3' ? 'block' : 'none' }>
                 <Box width={'100%'} borderBottom={'1px solid #D6D6D6'}>
-                  <Flex flexDirection={['column','row']} pb={[2,3]} width={[1,'80%']} m={'0 auto'}>
+                  <Flex flexDirection={['column','row']} justifyContent={'center'} alignItems={'center'} pb={[2,3]} width={[1,'80%']} m={'0 auto'}>
                     {
                       this.state.allocations ?
                         Object.keys(this.state.allocations).map((protocolAddr,i)=>{
                           const protocolInfo = this.getProtocolInfoByAddress(protocolAddr);
                           if (!protocolInfo){
-                            return;
+                            return false;
                           }
                           const protocolName = protocolInfo.name;
                           const protocolApr = parseFloat(this.toEth(this.state[`${protocolName}Apr`]));
@@ -2279,7 +2313,6 @@ class SmartContractControls extends React.Component {
                         </Flex>
                       )
                     }
-                    
                   </Flex>
                 </Box>
                 { this.props.selectedTab === '3' &&

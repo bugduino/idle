@@ -97,7 +97,6 @@ class Landing extends Component {
 
     this.loadUtils();
 
-    const accountChanged = prevProps.account !== this.props.account;
     const selectedTokenChanged = prevProps.selectedToken !== this.props.selectedToken;
     const prevContract = (prevProps.contracts.find(c => c.name === this.props.tokenConfig.idle.token) || {}).contract;
     const contract = (this.props.contracts.find(c => c.name === this.props.tokenConfig.idle.token) || {}).contract;
@@ -157,21 +156,19 @@ class Landing extends Component {
         exchangeRate = this.functionsUtil.fixTokenDecimals(exchangeRate,protocolInfo.functions.exchangeRate.decimals);
       }
 
-      console.log('getAllocations',contractName,protocolBalance ? protocolBalance.toString() : null, tokenDecimals ? tokenDecimals.toString() : null, exchangeRate ? exchangeRate.toString() : null);
-
       const protocolAllocation = this.functionsUtil.fixTokenDecimals(protocolBalance,tokenDecimals,exchangeRate);
       totalAllocation += protocolAllocation;
 
       protocolsAllocations[protocolAddr] = protocolAllocation;
     });
 
-    console.log('getAllocations',protocolsAllocations);
-
     this.setState({
       protocolsAllocations,
       totalAllocation,
       updatingAllocations: false
     });
+
+    return protocolsAllocations;
   }
 
   getAprs = async () => {
@@ -279,6 +276,7 @@ class Landing extends Component {
             </Flex>
             <Flex flexDirection={'column'} alignItems={'center'} maxWidth={["50em", "50em"]} mx={'auto'} textAlign={'center'}>
               <LandingForm
+                getAllocations={this.getAllocations}
                 openBuyModal={this.props.openBuyModal}
                 getAprs={this.getAprs}
                 selectedToken={this.props.selectedToken}
@@ -650,7 +648,7 @@ class Landing extends Component {
                     <Box>
                       <Card my={[2,2]} p={4} borderRadius={'10px'} boxShadow={this.state.currentRate ? 4 : 0}>
                         <Text fontSize={[5,7]} fontWeight={4} textAlign={'center'}>
-                          {this.state.currentRate}<Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
+                          {this.state.currentRate ? this.state.currentRate : '0.00' }<Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
                         </Text>
                       </Card>
                     </Box>
