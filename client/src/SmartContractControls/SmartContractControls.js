@@ -292,11 +292,15 @@ class SmartContractControls extends React.Component {
   getBalanceOf = async (contractName,count) => {
     count = count ? count : 0;
 
-    if (count===3){
+    if (count){
       this.setState({
         fundsError:true
       });
       return false;
+    } else {
+      this.setState({
+        fundsError:false
+      });
     }
 
     // Update balance in header (AccountOverview) and CryptoInput
@@ -317,6 +321,14 @@ class SmartContractControls extends React.Component {
       const tokenToRedeem = balance.times(price);
       let earning = 0;
 
+      // Updateing balance
+      this.setState({
+        tokenToRedeemParsed: tokenToRedeem ? tokenToRedeem.toString() : null,
+        tokenBalanceBNify:balance,
+        idleTokenBalance:balance ? balance.toString() : null,
+        tokenToRedeem
+      });
+
       // customLog('BalanceOf','tokenToRedeem',tokenToRedeem.toString(),'amountLent',this.state.amountLent.toString());
 
       if (this.state.amountLent && this.trimEth(this.state.amountLent.toString())>0 && this.trimEth(tokenToRedeem.toString())>0 && parseFloat(this.trimEth(tokenToRedeem.toString()))<parseFloat(this.trimEth(this.state.amountLent.toString()))){
@@ -324,6 +336,11 @@ class SmartContractControls extends React.Component {
         if (componentUnmounted){
           return false;
         }
+
+        this.setState({
+          fundsError:true
+        });
+
         // Clear local storage
         localStorage.removeItem(`transactions_${this.props.selectedToken}`);
         setTimeout(async () => {
@@ -1528,7 +1545,8 @@ class SmartContractControls extends React.Component {
   }
 
   render() {
-    let hasBalance = !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && this.trimEth(this.state.tokenToRedeemParsed) > 0;
+    const hasBalance = !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && this.trimEth(this.state.tokenToRedeemParsed) > 0;
+    const hasDepositedFunds = !isNaN(this.trimEth(this.state.amountLent)) && this.trimEth(this.state.amountLent) > 0;
     // const navPool = this.getFormattedBalance(this.state.navPool,this.props.selectedToken);
     const idleTokenPrice = this.getFormattedBalance(this.state.idleTokenPrice,this.props.selectedToken);
     const depositedFunds = this.getFormattedBalance(this.state.amountLent,this.props.selectedToken);
@@ -1554,7 +1572,7 @@ class SmartContractControls extends React.Component {
     const currentEarning = !isNaN(this.trimEth(this.state.earning)) ? parseFloat(this.trimEth(this.state.earning,8)) : 0;
     const earningAtEndOfYear = !isNaN(this.trimEth(this.state.earning)) ? parseFloat(this.trimEth(this.BNify(this.state.earning).plus(this.BNify(this.state.earningPerYear)),8)) : 0;
 
-    const fundsAreReady = !this.state.fundsError && !this.state.updateInProgress && !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && !isNaN(this.trimEth(this.state.earning)) && !isNaN(this.trimEth(this.state.amountLent));
+    const fundsAreReady = this.state.fundsError || (!this.state.updateInProgress && !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && !isNaN(this.trimEth(this.state.earning)) && !isNaN(this.trimEth(this.state.amountLent)));
 
     // customLog('fundsAreReady',this.state.fundsError,this.state.updateInProgress,this.trimEth(this.state.tokenToRedeemParsed),this.trimEth(this.state.earning),this.trimEth(this.state.amountLent));
 
@@ -1880,57 +1898,89 @@ class SmartContractControls extends React.Component {
                     {
                       fundsAreReady ? (
                         <>
-                          {hasBalance ? (
+                          {
+                            hasBalance ? (
                             <>
-                              <Box>
-                                <Flex flexDirection={['column','row']} py={[2,3]} width={[1,'70%']} m={'0 auto'}>
-                                  <Box width={[1,1/2]}>
-                                    <Heading.h3 fontWeight={2} textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
-                                      Redeemable Funds
-                                    </Heading.h3>
-                                    <Heading.h3 fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,0]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                      {
-                                        <CountUp
-                                          start={currentReedemableFunds}
-                                          end={reedemableFundsAtEndOfYear}
-                                          duration={31536000}
-                                          delay={0}
-                                          separator=""
-                                          decimals={8}
-                                          decimal="."
-                                        >
-                                          {({ countUpRef, start }) => (
-                                            <><span ref={countUpRef} /> <span style={{fontSize:'16px',fontWeight:'400',lineHeight:'1.5',color:'#3F3D4B'}}>{this.props.selectedToken}</span></>
-                                          )}
-                                        </CountUp>
-                                      }
-                                    </Heading.h3>
+                              {
+                                !this.state.fundsError ? (
+                                  <Box>
+                                    <Flex flexDirection={['column','row']} py={[2,3]} width={[1,'70%']} m={'0 auto'}>
+                                      <Box width={[1,1/2]}>
+                                        <Heading.h3 fontWeight={2} textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
+                                          Redeemable Funds
+                                        </Heading.h3>
+                                        <Heading.h3 fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,0]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                          {
+                                            <CountUp
+                                              start={currentReedemableFunds}
+                                              end={reedemableFundsAtEndOfYear}
+                                              duration={31536000}
+                                              delay={0}
+                                              separator=""
+                                              decimals={8}
+                                              decimal="."
+                                            >
+                                              {({ countUpRef, start }) => (
+                                                <><span ref={countUpRef} /> <span style={{fontSize:'16px',fontWeight:'400',lineHeight:'1.5',color:'#3F3D4B'}}>{this.props.selectedToken}</span></>
+                                              )}
+                                            </CountUp>
+                                          }
+                                        </Heading.h3>
+                                      </Box>
+                                      <Box width={[1,1/2]}>
+                                        <Heading.h3 fontWeight={2} textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
+                                          Current earnings
+                                        </Heading.h3>
+                                        <Heading.h3 fontFamily={'sansSerif'} fontSize={[4,5]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                          {
+                                            <CountUp
+                                              start={currentEarning}
+                                              end={earningAtEndOfYear}
+                                              duration={31536000}
+                                              delay={0}
+                                              separator=""
+                                              decimals={8}
+                                              decimal="."
+                                              // formattingFn={(n)=>{ return this.formatCountUp(n); }}
+                                            >
+                                              {({ countUpRef, start }) => (
+                                                <><span ref={countUpRef} /> <span style={{fontSize:'16px',fontWeight:'400',lineHeight:'1.5',color:'#3F3D4B'}}>{this.props.selectedToken}</span></>
+                                              )}
+                                            </CountUp>
+                                          }
+                                        </Heading.h3>
+                                      </Box>
+                                    </Flex>
                                   </Box>
-                                  <Box width={[1,1/2]}>
-                                    <Heading.h3 fontWeight={2} textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
-                                      Current earnings
-                                    </Heading.h3>
-                                    <Heading.h3 fontFamily={'sansSerif'} fontSize={[4,5]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                      {
-                                        <CountUp
-                                          start={currentEarning}
-                                          end={earningAtEndOfYear}
-                                          duration={31536000}
-                                          delay={0}
-                                          separator=""
-                                          decimals={8}
-                                          decimal="."
-                                          // formattingFn={(n)=>{ return this.formatCountUp(n); }}
-                                        >
-                                          {({ countUpRef, start }) => (
-                                            <><span ref={countUpRef} /> <span style={{fontSize:'16px',fontWeight:'400',lineHeight:'1.5',color:'#3F3D4B'}}>{this.props.selectedToken}</span></>
-                                          )}
-                                        </CountUp>
-                                      }
-                                    </Heading.h3>
-                                  </Box>
-                                </Flex>
-                              </Box>
+                                ) : this.state.fundsError && (
+                                  <Flex
+                                    alignItems={'center'}
+                                    flexDirection={'column'}
+                                    textAlign={'center'}
+                                    py={[1,3]}
+                                    mb={2}>
+                                      <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontWeight={2} fontSize={[2,3]} color={'dark-gray'}>
+                                        Something went wrong while loading your funds...
+                                      </Heading.h3>
+                                      <Button
+                                        className={styles.gradientButton}
+                                        onClick={e => this.reloadFunds(e) }
+                                        size={this.props.isMobile ? 'medium' : 'medium'}
+                                        borderRadius={4}
+                                        mainColor={'blue'}
+                                        contrastColor={'white'}
+                                        fontWeight={3}
+                                        fontSize={[2,2]}
+                                        mx={'auto'}
+                                        px={[4,5]}
+                                        mt={[3,4]}
+                                      >
+                                        TRY AGAIN
+                                      </Button>
+                                  </Flex>
+                                )
+                              }
+                              
                               <Box pb={[3,4]} borderBottom={'1px solid #D6D6D6'}>
                                 {!this.state.redeemProcessing ? (
                                   <Flex
@@ -1962,17 +2012,16 @@ class SmartContractControls extends React.Component {
                                         handleChangeAmount={this.handleChangeAmountRedeem}
                                         handleClick={e => this.redeem(e, this.props.tokenConfig.idle.token)} />
                                   </Flex>
-                                  ) : 
-                                    this.state.redeemTx ? (
-                                      <TxProgressBar web3={this.props.web3} waitText={'Redeeming estimated in'} endMessage={'Finalizing redeem request...'} hash={this.state.redeemTx.transactionHash} />
-                                    ) : (
-                                      <Flex
-                                        justifyContent={'center'}
-                                        alignItems={'center'}
-                                        textAlign={'center'}>
-                                        <Loader size="40px" /> <Text ml={2}>Sending redeem request...</Text>
-                                      </Flex>
-                                    )
+                                  ) : this.state.redeemTx ? (
+                                    <TxProgressBar web3={this.props.web3} waitText={'Redeeming estimated in'} endMessage={'Finalizing redeem request...'} hash={this.state.redeemTx.transactionHash} />
+                                  ) : (
+                                    <Flex
+                                      justifyContent={'center'}
+                                      alignItems={'center'}
+                                      textAlign={'center'}>
+                                      <Loader size="40px" /> <Text ml={2}>Sending redeem request...</Text>
+                                    </Flex>
+                                  )
                                 }
                               </Box>
                             </>
@@ -2016,40 +2065,15 @@ class SmartContractControls extends React.Component {
                             </Link>
                           </Flex>
                         </>
-                      ) : (!this.state.updateInProgress && this.state.fundsError) ? (
-                          <Flex
-                            alignItems={'center'}
-                            flexDirection={'column'}
-                            textAlign={'center'}
-                            py={[1,3]}>
-                              <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontWeight={2} fontSize={[2,3]} color={'dark-gray'}>
-                                We were not able to load your funds...
-                              </Heading.h3>
-                              <Button
-                                className={styles.gradientButton}
-                                onClick={e => this.reloadFunds(e) }
-                                size={this.props.isMobile ? 'medium' : 'medium'}
-                                borderRadius={4}
-                                mainColor={'blue'}
-                                contrastColor={'white'}
-                                fontWeight={3}
-                                fontSize={[2,2]}
-                                mx={'auto'}
-                                px={[4,5]}
-                                mt={[3,4]}
-                              >
-                                TRY AGAIN
-                              </Button>
-                          </Flex>
-                        ) : (
-                          <Flex
-                            py={[2,3]}
-                            justifyContent={'center'}
-                            alignItems={'center'}
-                            textAlign={'center'}>
-                            <Loader size="40px" /> <Text ml={2}>Processing funds...</Text>
-                          </Flex>
-                        ) 
+                      ) : (
+                        <Flex
+                          py={[2,3]}
+                          justifyContent={'center'}
+                          alignItems={'center'}
+                          textAlign={'center'}>
+                          <Loader size="40px" /> <Text ml={2}>Processing funds...</Text>
+                        </Flex>
+                      )
                     }
                     {
                       this.props.selectedTab === '2' && hasBalance && this.state.showFundsInfo && !this.state.prevTxsError &&
@@ -2192,7 +2216,7 @@ class SmartContractControls extends React.Component {
                               </Flex>
                             </Box>
                           </>
-                          ) : (
+                          ) : fundsAreReady && !this.state.fundsError && this.state.showFundsInfo && (
                             <Flex
                               py={[2,3]}
                               justifyContent={'center'}
