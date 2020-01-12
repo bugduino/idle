@@ -1546,7 +1546,6 @@ class SmartContractControls extends React.Component {
 
   render() {
     const hasBalance = !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && this.trimEth(this.state.tokenToRedeemParsed) > 0;
-    const hasDepositedFunds = !isNaN(this.trimEth(this.state.amountLent)) && this.trimEth(this.state.amountLent) > 0;
     // const navPool = this.getFormattedBalance(this.state.navPool,this.props.selectedToken);
     const idleTokenPrice = this.getFormattedBalance(this.state.idleTokenPrice,this.props.selectedToken);
     const depositedFunds = this.getFormattedBalance(this.state.amountLent,this.props.selectedToken);
@@ -1980,7 +1979,7 @@ class SmartContractControls extends React.Component {
                                   </Flex>
                                 )
                               }
-                              
+
                               <Box pb={[3,4]} borderBottom={'1px solid #D6D6D6'}>
                                 {!this.state.redeemProcessing ? (
                                   <Flex
