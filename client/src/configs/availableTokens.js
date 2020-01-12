@@ -45,7 +45,8 @@ const availableTokens = {
           abi:IdleMcdBridge,
           token:'idleSAI',
           name:'migrationContract',
-          address:'0x556659f45381dEE8BA429C295363E39645abE834',
+          address:'0xE293a3576f22A6BAF841Ed6bb80953F445e1b22a',
+          oldAddresses:['0x556659f45381dEE8BA429C295363E39645abE834'/*,'0xabeCf002a48969C2be92150ae27B1F75cBf6EA6e'*/],
           functions:[
             {
               name:'bridgeIdleV1ToIdleV2',
@@ -127,7 +128,8 @@ const availableTokens = {
           abi:IdleMcdBridge,
           token:'idleSAI',
           name:'migrationContract',
-          address:'0x556659f45381dEE8BA429C295363E39645abE834',
+          address:'0xE293a3576f22A6BAF841Ed6bb80953F445e1b22a',
+          oldAddresses:['0x556659f45381dEE8BA429C295363E39645abE834'/*,'0xabeCf002a48969C2be92150ae27B1F75cBf6EA6e'*/],
           functions:[
             {
               name:'bridgeIdleV1ToIdleV2',

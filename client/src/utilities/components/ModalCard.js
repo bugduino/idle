@@ -86,7 +86,8 @@ ModalCard.Footer = ({children, ...props}) => (
     justifyContent={'center'}
     borderTop={1}
     borderColor={'light-gray'}
-    p={3}
+    px={[0,3]}
+    py={3}
   >
     {children}
   </Flex>

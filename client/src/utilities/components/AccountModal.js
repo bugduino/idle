@@ -110,7 +110,7 @@ export default function (props) {
             {(context.active || (context.error && context.connectorName)) && (
               <Button
                 mt={[1, 2]}
-                size={'medium'}
+                size={['auto','medium']}
                 px={'80px'}
                 borderRadius={4}
                 onClick={async () => await setConnector('Infura')}>

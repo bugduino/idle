@@ -21,10 +21,6 @@ const OldIdleAddress = '0x10cf8e1CDba9A2Bd98b87000BCAdb002b13eA525'; // v0.1 hac
 const daysInYear = 365.2422;
 let componentUnmounted;
 
-const LOG_ENABLED = true;
-const customLog = (...props) => { if (LOG_ENABLED) console.log(moment().format('HH:mm:ss'),...props); };
-const customLogError = (...props) => { if (LOG_ENABLED) console.error(moment().format('HH:mm:ss'),...props); };
-
 class SmartContractControls extends React.Component {
   state = {};
 
@@ -189,7 +185,7 @@ class SmartContractControls extends React.Component {
       return false;
     }
 
-    customLog('getAprs',Aprs);
+    this.functionsUtil.customLog('getAprs',Aprs);
 
     const addresses = Aprs.addresses.map((addr,i) => { return addr.toString().toLowerCase() });
     const aprs = Aprs.aprs;
@@ -270,7 +266,7 @@ class SmartContractControls extends React.Component {
       if (tokenBalance){
         const tokenDecimals = await this.getTokenDecimals();
         tokenBalance = this.fixTokenDecimals(tokenBalance,tokenDecimals);
-        customLog('getTokenBalance',tokenBalance.toString(),tokenDecimals,this.BNify(tokenBalance.toString()).div(this.BNify(Math.pow(10,parseInt(tokenDecimals)).toString())).toString());
+        this.functionsUtil.customLog('getTokenBalance',tokenBalance.toString(),tokenDecimals,this.BNify(tokenBalance.toString()).div(this.BNify(Math.pow(10,parseInt(tokenDecimals)).toString())).toString());
         this.setState({
           tokenDecimals,
           tokenBalance: tokenBalance.toString()
@@ -312,7 +308,7 @@ class SmartContractControls extends React.Component {
     let price = await this.getPriceInToken(contractName);
     let balance = await this.functionsUtil.genericContractCall(contractName, 'balanceOf', [this.props.account]);
 
-    customLog('getBalanceOf',balance);
+    this.functionsUtil.customLog('getBalanceOf',balance);
 
     if (balance) {
 
@@ -324,10 +320,12 @@ class SmartContractControls extends React.Component {
       // customLog('BalanceOf','tokenToRedeem',tokenToRedeem.toString(),'amountLent',this.state.amountLent.toString());
 
       if (this.state.amountLent && this.trimEth(this.state.amountLent.toString())>0 && this.trimEth(tokenToRedeem.toString())>0 && parseFloat(this.trimEth(tokenToRedeem.toString()))<parseFloat(this.trimEth(this.state.amountLent.toString()))){
-        customLogError('Balance '+this.trimEth(tokenToRedeem.toString())+' is less than AmountLent ('+this.trimEth(this.state.amountLent.toString())+').. try again');
+        this.functionsUtil.customLogError('Balance '+this.trimEth(tokenToRedeem.toString())+' ('+price.toString()+') is less than AmountLent ('+this.trimEth(this.state.amountLent.toString())+').. try again');
         if (componentUnmounted){
           return false;
         }
+        // Clear local storage
+        localStorage.removeItem(`transactions_${this.props.selectedToken}`);
         setTimeout(async () => {
           await this.getPrevTxs();
           this.getBalanceOf(contractName,count+1);
@@ -356,7 +354,7 @@ class SmartContractControls extends React.Component {
       const earningPerYear = tokenToRedeem.times(currentApr);
       const earningPerDay = earningPerYear.div(365);
 
-      customLog('getBalanceOf',balance.toString(),tokenToRedeem.toString(),this.state.amountLent,earning,currentApr,earningPerYear);
+      this.functionsUtil.customLog('getBalanceOf',balance.toString(),tokenToRedeem.toString(),this.state.amountLent,earning,currentApr,earningPerYear);
 
       return this.setState({
         fundsError:false,
@@ -562,7 +560,7 @@ class SmartContractControls extends React.Component {
     ], null, (tx) => {
       const txSucceeded = tx.status === 'success';
       const needsUpdate = txSucceeded && !this.checkTransactionMined(tx);
-      customLog('mintIdleToken_callback needsUpdate:',tx.status,this.checkTransactionMined(tx),needsUpdate);
+      this.functionsUtil.customLog('mintIdleToken_callback needsUpdate:',tx.status,this.checkTransactionMined(tx),needsUpdate);
       if (txSucceeded){
         this.selectTab({ preventDefault:()=>{} },'2');
       }
@@ -617,7 +615,7 @@ class SmartContractControls extends React.Component {
       "ether"
     );
 
-    customLog('redeem',idleTokenToRedeem);
+    this.functionsUtil.customLog('redeem',idleTokenToRedeem);
 
     const _skipRebalance = false;
     const _clientProtocolAmounts = [];
@@ -626,7 +624,7 @@ class SmartContractControls extends React.Component {
       idleTokenToRedeem, _skipRebalance, _clientProtocolAmounts
     ], null, (tx) => {
       const needsUpdate = tx.status === 'success' && !this.checkTransactionMined(tx);
-      customLog('redeemIdleToken_mined_callback needsUpdate:',tx.status,this.checkTransactionMined(tx),needsUpdate);
+      this.functionsUtil.customLog('redeemIdleToken_mined_callback needsUpdate:',tx.status,this.checkTransactionMined(tx),needsUpdate);
       this.setState({
         [`isLoading${contractName}`]: false,
         redeemProcessing: false,
@@ -634,7 +632,7 @@ class SmartContractControls extends React.Component {
         needsUpdate
       });
     }, (tx) => {
-      customLog('redeemIdleToken_receipt_callback',tx.transactionHash,tx.status);
+      this.functionsUtil.customLog('redeemIdleToken_receipt_callback',tx.transactionHash,tx.status);
       // this.addTransaction(tx);
       this.setState({
         redeemTx: tx
@@ -737,7 +735,7 @@ class SmartContractControls extends React.Component {
     const txs = await axios.get(`
       ${etherscanApiUrl}?module=account&action=tokentx&address=${this.props.account}&startblock=8119247&endblock=999999999&sort=asc&apikey=${env.REACT_APP_ETHERSCAN_KEY}
     `).catch(err => {
-      customLog('Error getting prev txs');
+      this.functionsUtil.customLog('Error getting prev txs');
       if (componentUnmounted){
         return false;
       }
@@ -758,12 +756,13 @@ class SmartContractControls extends React.Component {
     const results = txs.data.result;
 
     const migrationContractAddr = this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract ? this.props.tokenConfig.migration.migrationContract.address : null;
+    const migrationContractOldAddrs = this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract ? this.props.tokenConfig.migration.migrationContract.oldAddresses : [];
     const oldContractAddr = this.props.tokenConfig.migration && this.props.tokenConfig.migration.oldContract ? this.props.tokenConfig.migration.oldContract.address.replace('x','').toLowerCase() : null;
 
     const prevTxs = results.filter(
         tx => {
           const internalTxs = results.filter(r => r.hash === tx.hash);
-          const isMigrationTx = migrationContractAddr && tx.from.toLowerCase() === migrationContractAddr.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
+          const isMigrationTx = migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).indexOf(tx.from.toLowerCase()) !== -1 ) && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
           const isRightToken = internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase()).length;
           const isDepositTx = isRightToken && !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
           const isRedeemTx = isRightToken && !isMigrationTx && tx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()).length && tx.to.toLowerCase() === this.props.account.toLowerCase();
@@ -778,7 +777,7 @@ class SmartContractControls extends React.Component {
 
     await this.functionsUtil.asyncForEach(prevTxs,async (tx,index) => {
 
-      const isMigrationTx = migrationContractAddr && tx.from.toLowerCase() === migrationContractAddr.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
+      const isMigrationTx = migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).indexOf(tx.from.toLowerCase()) !== -1 ) && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
       const isDepositTx = !isMigrationTx && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
       const isRedeemTx = !isMigrationTx && tx.to.toLowerCase() === this.props.account.toLowerCase();
 
@@ -810,12 +809,13 @@ class SmartContractControls extends React.Component {
         }
 
         const internalTransfer = internalTransfers[0];
-
-        let migrationValue = parseInt(internalTransfer.data,16);
+        const migrationValue = parseInt(internalTransfer.data,16);
         const tokenDecimals = await this.functionsUtil.getTokenDecimals(this.props.tokenConfig.migration.oldContract.name);
-        migrationValue = this.functionsUtil.fixTokenDecimals(migrationValue,tokenDecimals);
+        const migrationValueFixed = this.functionsUtil.fixTokenDecimals(migrationValue,tokenDecimals);
 
-        amountLent = amountLent.plus(this.BNify(migrationValue));
+        this.functionsUtil.customLog('Add migrated value',migrationValue,tokenDecimals,migrationValueFixed.toString());
+
+        amountLent = amountLent.plus(this.BNify(migrationValueFixed));
       }
       transactions[tx.hash] = tx;
     });
@@ -825,7 +825,7 @@ class SmartContractControls extends React.Component {
     // Add missing executed transactions
     if (minedTxs){
 
-      customLog('getPrevTxs adding minedTxs',minedTxs);
+      this.functionsUtil.customLog('getPrevTxs adding minedTxs',minedTxs);
 
       await this.asyncForEach(Object.keys(minedTxs),async (key,i) => {
         const tx = minedTxs[key];
@@ -837,7 +837,7 @@ class SmartContractControls extends React.Component {
 
         const realTx = await (new Promise( async (resolve, reject) => {
           this.props.web3.eth.getTransaction(tx.transactionHash,(err,tx)=>{
-            customLog('realTx',tx);
+            this.functionsUtil.customLog('realTx',tx);
             if (err){
               reject(err);
             }
@@ -868,22 +868,22 @@ class SmartContractControls extends React.Component {
         realTx.tokenSymbol = this.props.selectedToken;
         realTx.tx = tx;
 
-        customLog('realTx from localStorage:',realTx);
+        this.functionsUtil.customLog('realTx from localStorage:',realTx);
 
         if (tx.method==='mintIdleToken'){
           amountLent = amountLent.plus(this.BNify(realTx.value));
-          customLog('Deposited (localStorage) '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
+          this.functionsUtil.customLog('Deposited (localStorage) '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
         } else if (tx.method==='redeemIdleToken'){
           amountLent = amountLent.minus(this.BNify(realTx.value));
           if (amountLent.lt(0)){
             amountLent = this.BNify(0);
           }
-          customLog('Redeemed (localStorage) '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
+          this.functionsUtil.customLog('Redeemed (localStorage) '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
         }
 
         transactions[realTx.hash] = realTx;
 
-        customLog('getPrevTxs inserted executed tx',transactions[realTx.hash]);
+        this.functionsUtil.customLog('getPrevTxs inserted executed tx',transactions[realTx.hash]);
       });
     }
 
@@ -896,7 +896,7 @@ class SmartContractControls extends React.Component {
       amountLent = this.BNify(0);
     }
 
-    customLog('getPrevTxs',amountLent,earning);
+    this.functionsUtil.customLog('getPrevTxs',amountLent,earning);
 
     return this.setState({
       prevTxsError: false,
@@ -1063,16 +1063,16 @@ class SmartContractControls extends React.Component {
 
     this.addResources();
 
-    customLog('Smart contract didMount');
+    this.functionsUtil.customLog('Smart contract didMount');
     // do not wait for each one just for the first who will guarantee web3 initialization
     const web3 = await this.props.initWeb3();
 
     if (!web3) {
-      customLog('No Web3 SmartContractControls');
+      this.functionsUtil.customLog('No Web3 SmartContractControls');
       return false;
     }
 
-    customLog('Web3 SmartContractControls initialized');
+    this.functionsUtil.customLog('Web3 SmartContractControls initialized');
 
     await this.props.initContract('OldIdleDAI', OldIdleAddress, this.props.tokenConfig.idle.abi);
     await this.props.initContract(this.props.tokenConfig.idle.token, this.props.tokenConfig.idle.address, this.props.tokenConfig.idle.abi);
@@ -1214,7 +1214,7 @@ class SmartContractControls extends React.Component {
           isMigrating: true
         });
 
-        const toMigrate = this.state.oldContractBalance;
+        const toMigrate = this.functionsUtil.BNify(this.state.oldContractBalance).toString();
 
         const migrationParams = [...params];
         migrationParams.push(toMigrate);
@@ -1290,7 +1290,7 @@ class SmartContractControls extends React.Component {
         needsUpdate: false
       });
 
-      customLog('Call async functions...');
+      this.functionsUtil.customLog('Call async functions...');
 
       await Promise.all([
         this.getTokenBalance(),
@@ -1304,12 +1304,12 @@ class SmartContractControls extends React.Component {
 
       
 
-      customLog('Async functions completed...');
+      this.functionsUtil.customLog('Async functions completed...');
 
       // Keep this call seprated from others cause it needs getPrevTxs results
       await this.getBalanceOf(this.props.tokenConfig.idle.token);
 
-      customLog('getBalanceOf function completed...');
+      this.functionsUtil.customLog('getBalanceOf function completed...');
 
       if (this.props.selectedTab === '3') {
         this.rebalanceCheck();
@@ -1332,7 +1332,7 @@ class SmartContractControls extends React.Component {
     }
 
     if (this.props.selectedTab !== '2' && this.state.fundsTimeoutID){
-      customLog("Clear funds timeout "+this.state.fundsTimeoutID);
+      this.functionsUtil.customLog("Clear funds timeout "+this.state.fundsTimeoutID);
       clearTimeout(this.state.fundsTimeoutID);
       this.setState({fundsTimeoutID:null});
     }
@@ -1377,12 +1377,13 @@ class SmartContractControls extends React.Component {
     let totalRedeemed = 0;
 
     const migrationContractAddr = this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract ? this.props.tokenConfig.migration.migrationContract.address : null;
+    const migrationContractOldAddrs = this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract ? this.props.tokenConfig.migration.migrationContract.oldAddresses : [];
 
     let txs = txsIndexes.map((key, i) => {
 
       const tx = prevTxs[key];
 
-      const isMigrationTx = migrationContractAddr && tx.from.toLowerCase() === migrationContractAddr.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
+      const isMigrationTx = migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).indexOf(tx.from.toLowerCase()) !== -1 ) && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
       const isDepositTx = !isMigrationTx && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
       const isRedeemTx = !isMigrationTx && tx.to.toLowerCase() === this.props.account.toLowerCase();
 
@@ -1418,8 +1419,6 @@ class SmartContractControls extends React.Component {
           color = 'green';
           icon = "ArrowUpward";
           totalRedeemed += Math.abs(parsedValue);
-
-          // customLog(formattedDateAlt,totalRedeemed,depositedSinceLastRedeem,totalRedeemed-depositedSinceLastRedeem);
           if (totalRedeemed<depositedSinceLastRedeem){
             interest = null;
           } else {
@@ -1569,7 +1568,7 @@ class SmartContractControls extends React.Component {
 
     return (
       <Box textAlign={'center'} alignItems={'center'} width={'100%'}>
-        <Form minHeight={ migrationEnabled ? ['25em','24em'] : ['auto','22em'] } backgroundColor={'white'} color={'blue'} boxShadow={'0 0 25px 5px rgba(102, 139, 255, 0.7)'} borderRadius={'15px'} style={{position:'relative'}}>
+        <Form minHeight={ migrationEnabled ? ['28em','24em'] : ['auto','22em'] } backgroundColor={'white'} color={'blue'} boxShadow={'0 0 25px 5px rgba(102, 139, 255, 0.7)'} borderRadius={'15px'} style={{position:'relative'}}>
           <Flex justifyContent={'center'} position={'relative'} zIndex={'999'} backgroundColor={'#fff'} borderRadius={'15px 15px 0 0'}>
             <Flex flexDirection={['row','row']} width={['100%','80%']} pt={[2,3]}>
               <Box className={[styles.tab,this.props.selectedTab==='1' ? styles.tabSelected : '']} width={[1/3]} textAlign={'center'}>
