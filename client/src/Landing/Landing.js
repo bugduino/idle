@@ -152,6 +152,10 @@ class Landing extends Component {
         ( protocolInfo.functions.exchangeRate ? this.functionsUtil.genericContractCall(contractName,protocolInfo.functions.exchangeRate.name,protocolInfo.functions.exchangeRate.params) : null )
       ]);
 
+      if (!protocolBalance){
+        return false;
+      }
+
       if (exchangeRate && protocolInfo.functions.exchangeRate.decimals){
         exchangeRate = this.functionsUtil.fixTokenDecimals(exchangeRate,protocolInfo.functions.exchangeRate.decimals);
       }
