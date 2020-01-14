@@ -10,9 +10,10 @@ const globalConfigs = {
     'BRA':'Brazil',
     'CHN':'China',
     'CAN':'Canada',
-    'MEX':'Mexico',
     'EUR':'Europe',
     'HKG':'Hong Kong',
+    'IND':'India',
+    'MEX':'Mexico',
     'RUS':'Russia',
     'ZAF':'South Africa',
     'KOR':'South Korea'
@@ -182,6 +183,22 @@ const globalConfigs = {
             apiKey:'pk_live_iPIpLBe5GGSL73fpAKtGBZTfshXfBwu'
           }
         },
+        getInfo: (props) => {
+          const info = {};
+          if (props.selectedMethod && props.selectedMethod){
+            switch (props.selectedMethod){
+              case 'bank':
+                info.subcaption = `~ 1.5% fee ~\nSEPA ONLY`;
+              break;
+              case 'card':
+                info.subcaption = `~ 5% fee ~`;
+              break;
+              default:
+              break;
+            }
+          }
+          return info;
+        },
         getInitParams: (props,globalConfigs,buyParams) => {
           const env = globalConfigs.payments.providers.moonpay.env;
           const envParams = globalConfigs.payments.providers.moonpay.envParams[env];
@@ -191,6 +208,20 @@ const globalConfigs = {
             currencyCode: buyParams.selectedToken ? buyParams.selectedToken.toLowerCase() : ( props.tokenConfig.moonpay && props.tokenConfig.moonpay.currencyCode ? props.tokenConfig.moonpay.currencyCode : props.selectedToken.toLowerCase()),
             walletAddress:props.account
           };
+
+          // Set right payment methods
+          if (buyParams.selectedMethod){
+            switch (buyParams.selectedMethod){
+              case 'bank':
+                params.enabledPaymentMethods = 'sepa_bank_transfer';
+              break;
+              case 'card':
+                params.enabledPaymentMethods = 'credit_debit_card';
+              break;
+              default:
+              break;
+            }
+          }
 
           let url = envParams.url;
 
@@ -202,6 +233,59 @@ const globalConfigs = {
               url += "/safari_fix";
             }
           }
+
+          return `${url}?`+Object.keys(params)
+              .map(k => encodeURIComponent(k) + '=' + encodeURIComponent(params[k]))
+              .join('&');
+        }
+      },
+      transak: {
+        enabled:false,
+        imageSrc: 'images/payments/transak.png',
+        imageProps: {
+          height: '35px',
+          my: '8px'
+        },
+        caption: 'Buy with',
+        captionPos: 'top',
+        subcaption:`~ 2.5% fee ~\nGBP ONLY`,
+        supportedMethods:['bank'],
+        supportedCountries:['GBR','IND'],
+        supportedTokens:['DAI','SAI','USDC'],
+        env:'prod',
+        envParams:{
+          test:{
+            url:'https://global.transak.com'
+          },
+          prod:{
+            url:'https://global.transak.com'
+          }
+        },
+        getInfo: (props) => {
+          const info = {};
+          if (props.selectedCountry && props.selectedCountry.value){
+            switch (props.selectedCountry.value.toUpperCase()){
+              case 'GBR':
+                info.subcaption = `~ 2.5% fee ~\nGBP ONLY`;
+              break;
+              case 'IND':
+                info.subcaption = `~ 2.5% fee ~\nINR ONLY`;
+              break;
+              default:
+              break;
+            }
+          }
+          return info;
+        },
+        getInitParams: (props,globalConfigs,buyParams) => {
+          const env = globalConfigs.payments.providers.transak.env;
+          const envParams = globalConfigs.payments.providers.transak.envParams[env];
+          const params = {
+            currencyCode: buyParams.selectedToken ? buyParams.selectedToken.toLowerCase() : ( props.tokenConfig.transak && props.tokenConfig.transak.currencyCode ? props.tokenConfig.transak.currencyCode : props.selectedToken.toLowerCase()),
+            walletAddress: props.account,
+          };
+
+          let url = envParams.url;
 
           return `${url}?`+Object.keys(params)
               .map(k => encodeURIComponent(k) + '=' + encodeURIComponent(params[k]))

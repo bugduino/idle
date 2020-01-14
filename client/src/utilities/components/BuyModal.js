@@ -194,6 +194,58 @@ class BuyModal extends React.Component {
           }
         }
       break;
+      case 'transak':
+        const transakWidget = document.getElementById('transak-widget');
+        if (!transakWidget){
+          const iframeBox = document.createElement("div");
+          iframeBox.innerHTML = `
+            <div id="transak-widget" class="transak-widget" style="position:fixed;display:flex;justify-content:center;align-items:center;top:0;left:0;width:100%;height:100%;z-index:999">
+              <div id="transak-widget-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1"></div>
+                <div id="transak-widget-container" style="position:relative;z-index:2;width:500px;height:495px">
+                  <iframe
+                    style="position:relative;z-index:2;"
+                    frameborder="0"
+                    height="100%"
+                    src="${initParams}"
+                    width="100%"
+                  >
+                    <p>Your browser does not support iframes.</p>
+                  </iframe>
+                  <div id="transak-widget-loading-placeholder" style="position:absolute;background:#fff;width:100%;height:100%;z-index:1;top:0;display:flex;justify-content:center;align-items:center;">
+                    <div style="display:flex;flex-direction:row;align-items:center">
+                      <img src="${globalConfigs.payments.providers.transak.imageSrc}" style="height:50px;" />
+                      <h3 style="font-weight:600;font-style:italic;color:#0040ca">is loading...</h3>
+                    </div>
+                  </div>
+                  <div id="transak-widget-footer" style="position:relative;display:flex;justify-content:center;align-items:center;padding:16px;width:100%;background:#fff;top:-20px;z-index:3">
+                    <button style="box-shadow: 0 0.125rem 0.625rem rgba(58,196,125,.4), 0 0.0625rem 0.125rem rgba(58,196,125,.5);font-size: 1.1rem;line-height: 1.5;border-radius:.3rem;width:100%!important;max-width: 300px!important;padding: .7rem!important;position: relative;color: #fff;background-color: #3ac47d;border-color: #3ac47d;font-weight: 500;outline: none!important;display: inline-block;text-align: center;vertical-align: middle;border: 1px solid transparent;" onclick="document.getElementById('transak-widget').remove();">Close</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          document.body.appendChild(iframeBox);
+
+          // Add transak Widget style (mobile)
+          if (!document.getElementById('transakWidget_style')){
+            const transakStyle = document.createElement('style');
+            transakStyle.id = 'transakWidget_style';
+            transakStyle.innerHTML = `
+            @media (max-width: 40em){
+              #transak-widget {
+                align-items: flex-start !important;
+              }
+              #transak-widget-overlay{
+                background:#fff !important;
+              }
+              #transak-widget-container{
+                min-height: calc( 100vh - 60px ) !important;
+              }
+            }`;
+            document.body.appendChild(transakStyle);
+          }
+        }
+      break;
       case 'zeroExInstant':
         paymentProvider.render(initParams);
       break;
@@ -239,6 +291,20 @@ class BuyModal extends React.Component {
     this.props.closeModal();
   }
 
+  getProviderInfo = (provider) => {
+    if (!globalConfigs.payments.providers[provider]){
+      return false;
+    }
+    let providerInfo = globalConfigs.payments.providers[provider];
+    if (typeof providerInfo.getInfo === 'function'){
+      const newProviderInfo = providerInfo.getInfo(this.state);
+      if (newProviderInfo && Object.keys(newProviderInfo).length){
+        providerInfo = Object.assign(providerInfo,newProviderInfo);
+      }
+    }
+    return providerInfo;
+  }
+
   getAvailablePaymentProviders = (selectedMethod) => {
     const availableProviders = [];
     Object.keys(globalConfigs.payments.providers).forEach((provider,i) => {
@@ -277,7 +343,7 @@ class BuyModal extends React.Component {
           availableTokens.push(this.props.selectedToken);
         }
       } else {
-        this.renderPaymentMethod(e,selectedProvider,this.props.selectedToken,this.state);
+        this.renderPaymentMethod(e,selectedProvider,this.state);
         return;
       }
 
@@ -396,9 +462,9 @@ class BuyModal extends React.Component {
                                     </Text>
                                     {
                                       this.state.availableProviders.map((provider,i) => {
-                                        const providerInfo = globalConfigs.payments.providers[provider];
+                                        const providerInfo = this.getProviderInfo(provider);
                                         return (
-                                          <ImageButton key={`payment_${provider}`} {...providerInfo} handleClick={ e => { this.renderPaymentMethod(e,provider); } } />
+                                          <ImageButton key={`payment_provider_${provider}`} {...providerInfo} handleClick={ e => { this.renderPaymentMethod(e,provider); } } />
                                         );
                                       })
                                     }
@@ -441,9 +507,9 @@ class BuyModal extends React.Component {
                               {
                                 this.state.selectedCountry.providers.length ?
                                   this.state.selectedCountry.providers.map((provider,i) => {
-                                    const providerInfo = globalConfigs.payments.providers[provider];
+                                    const providerInfo = this.getProviderInfo(provider);
                                     return (
-                                      <ImageButton key={`payment_${provider}`} {...providerInfo} handleClick={ e => {this.selectProvider(e,provider) } } />
+                                      <ImageButton key={`payment_provider_${provider}`} {...providerInfo} handleClick={ e => {this.selectProvider(e,provider) } } />
                                     );
                                   })
                                 : (
