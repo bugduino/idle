@@ -72,7 +72,7 @@ const globalConfigs = {
     },
     providers: {
       wyre: {
-        enabled: false,
+        enabled: true,
         imageSrc: 'images/payments/wyre.svg',
         imageProps: {
           height: '35px',
@@ -209,18 +209,14 @@ const globalConfigs = {
             walletAddress:props.account
           };
 
+          const methods = {
+            'bank':'sepa_bank_transfer',
+            'card':'credit_debit_card'
+          };
+
           // Set right payment methods
           if (buyParams.selectedMethod){
-            switch (buyParams.selectedMethod){
-              case 'bank':
-                params.enabledPaymentMethods = 'sepa_bank_transfer';
-              break;
-              case 'card':
-                params.enabledPaymentMethods = 'credit_debit_card';
-              break;
-              default:
-              break;
-            }
+            params.enabledPaymentMethods = methods[buyParams.selectedMethod];
           }
 
           let url = envParams.url;
@@ -240,7 +236,7 @@ const globalConfigs = {
         }
       },
       transak: {
-        enabled:false,
+        enabled:true,
         imageSrc: 'images/payments/transak.png',
         imageProps: {
           height: '35px',
