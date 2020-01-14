@@ -1,3 +1,4 @@
+import { Web3Versions } from '@terminal-packages/sdk';
 const globalConfigs = {
   appName: 'Idle',
   baseURL: 'https://beta.idle.finance',
@@ -20,6 +21,7 @@ const globalConfigs = {
     requiredConfirmations: 1,
     accountBalanceMinimum: 0, // in ETH for gas fees
     requiredNetwork: 42, // { 1: Mainnet, 3: Ropsten, 42: Kovan }
+    isForked: false, // Set to true only if the mainnet has been forked
     providers:{
       infura:{
         1: 'https://mainnet.infura.io/v3/',
@@ -28,6 +30,15 @@ const globalConfigs = {
       etherscan:{
         1: 'https://api.etherscan.io/api',
         42: 'https://api-kovan.etherscan.io/api'
+      },
+      terminal:{
+        enabled:false,
+        params:{
+          apiKey: 'LonotCXiu7FEVd8Zl2W68A==',
+          projectId: 'DYLRXdlpqKVzPmZr',
+          source: null,
+          web3Version: Web3Versions.one
+        }
       }
     }
   },

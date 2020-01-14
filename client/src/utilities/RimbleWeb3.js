@@ -1,5 +1,5 @@
 import React from 'react';
-import { TerminalHttpProvider, SourceType, Web3Versions } from '@terminal-packages/sdk';
+import { TerminalHttpProvider, SourceType } from '@terminal-packages/sdk';
 import WalletConnectQRCodeModal from "@walletconnect/qrcode-modal";
 import ConnectionModalUtil from "./ConnectionModalsUtil";
 import NetworkUtil from "./NetworkUtil";
@@ -192,21 +192,21 @@ class RimbleTransaction extends React.Component {
       web3Provider = web3.currentProvider;
     }
     
-    const TerminalHttpProviderParams = {
-      apiKey: 'LonotCXiu7FEVd8Zl2W68A==',
-      projectId: 'DYLRXdlpqKVzPmZr',
-      source: terminalSourceType,
-      web3Version: Web3Versions.one,
-    };
+    if (globalConfigs.network.providers.terminal && globalConfigs.network.providers.terminal.enabled){
+      const TerminalHttpProviderParams = globalConfigs.network.providers.terminal.params;
+      TerminalHttpProviderParams.source = terminalSourceType;
 
-    if (web3Provider){
-      TerminalHttpProviderParams['customHttpProvider'] = web3Provider;
-    } else if (web3Host){
-      TerminalHttpProviderParams['host'] = web3Host;
+      if (web3Provider){
+        TerminalHttpProviderParams.customHttpProvider = web3Provider;
+      } else if (web3Host){
+        TerminalHttpProviderParams.host = web3Host;
+      }
+          
+      const terminalHttpProvider = new TerminalHttpProvider(TerminalHttpProviderParams);
+      web3 = new Web3(terminalHttpProvider);
+    } else {
+      web3 = new Web3(web3Provider);
     }
-      
-    const terminalHttpProvider = new TerminalHttpProvider(TerminalHttpProviderParams);
-    web3 = new Web3(terminalHttpProvider);
 
     this.setState({ web3 }, async () => {
 
@@ -353,14 +353,19 @@ class RimbleTransaction extends React.Component {
     });
 
     // Check migration contract
-    if (this.props.tokenConfig.migration && this.props.tokenConfig.migration.enabled){
-      const oldContract = this.props.tokenConfig.migration.oldContract;
-      customLog('initializeContracts, init '+oldContract.name+' contract',oldContract);
-      await this.initContract(oldContract.name, oldContract.address, oldContract.abi);
+    if (this.props.tokenConfig.migration){
 
-      const migrationContract = this.props.tokenConfig.migration.migrationContract;
-      customLog('initializeContracts, init '+migrationContract.name+' contract',migrationContract);
-      await this.initContract(migrationContract.name, migrationContract.address, migrationContract.abi);
+      if (this.props.tokenConfig.migration.oldContract){
+        const oldContract = this.props.tokenConfig.migration.oldContract;
+        customLog('initializeContracts, init '+oldContract.name+' contract',oldContract);
+        await this.initContract(oldContract.name, oldContract.address, oldContract.abi);
+      }
+
+      if (this.props.tokenConfig.migration.migrationContract){
+        const migrationContract = this.props.tokenConfig.migration.migrationContract;
+        customLog('initializeContracts, init '+migrationContract.name+' contract',migrationContract);
+        await this.initContract(migrationContract.name, migrationContract.address, migrationContract.abi);
+      }
     }
   }
 
@@ -569,7 +574,6 @@ class RimbleTransaction extends React.Component {
           const confidenceThreshold = this.props.config.requiredConfirmations || 1;
 
           if (transaction.confirmationCount === 1) {
-            customLog('Confirmed', receipt);
             // Initial confirmation receipt
             transaction.status = "confirmed";
           } else if (transaction.confirmationCount < confidenceThreshold) {
@@ -594,6 +598,7 @@ class RimbleTransaction extends React.Component {
 
           if (callback && transaction.confirmationCount<2) {
             callback(transaction);
+            customLog('Confirmed', confirmationNumber, receipt, transaction);
           }
         })
         .on("receipt", receipt => {
@@ -601,6 +606,11 @@ class RimbleTransaction extends React.Component {
           // Received receipt, met total number of confirmations
           transaction.recentEvent = "receipt";
           this.updateTransaction(transaction);
+
+          if (globalConfigs.network.isForked){
+            transaction.status = "success";
+            callback(transaction);
+          }
         })
         .on("error", error => {
           customLog('txOnError',error);

@@ -91,7 +91,7 @@ class SmartContractControls extends React.Component {
 
     const onSuccess = async (tx) => {
       this.setState({
-        needsUpdate:true
+        needsUpdate: true
       });
     };
 
@@ -126,15 +126,15 @@ class SmartContractControls extends React.Component {
   }
 
   rebalanceCheck = async () => {
-    this.setState({calculataingShouldRebalance:true});
+    this.setState({calculatingShouldRebalance:true});
 
     const _newAmount = 0;
     const _clientProtocolAmounts = [];
     const shouldRebalance = await this.functionsUtil.genericIdleCall('rebalance',[_newAmount,_clientProtocolAmounts]);
 
     this.setState({
-      calculataingShouldRebalance: false,
       shouldRebalance,
+      calculatingShouldRebalance: false,
       needsUpdate: false
     });
   }
@@ -166,6 +166,9 @@ class SmartContractControls extends React.Component {
 
   getAllocations = async () => {
     const allocations = await this.props.getAllocations();
+
+    this.functionsUtil.customLog('getAllocations',allocations);
+
     this.setState({
       allocations
     });
@@ -247,26 +250,13 @@ class SmartContractControls extends React.Component {
     return price;
   }
 
-  getTokenDecimals = async (contractName) => {
-    contractName = contractName ? contractName : this.props.selectedToken;
-    return await this.functionsUtil.genericContractCall(contractName,'decimals');
-  }
-
-  fixTokenDecimals = (tokenBalance,tokenDecimals,exchangeRate) => {
-    let balance = this.BNify(tokenBalance.toString()).div(this.BNify(Math.pow(10,parseInt(tokenDecimals)).toString()));
-    if (exchangeRate){
-      balance = balance.times(exchangeRate);
-    }
-    return balance;
-  }
-
   getTokenBalance = async () => {
     if (this.props.account){
       let tokenBalance = await this.functionsUtil.genericContractCall(this.props.selectedToken,'balanceOf',[this.props.account]);
       if (tokenBalance){
-        const tokenDecimals = await this.getTokenDecimals();
-        tokenBalance = this.fixTokenDecimals(tokenBalance,tokenDecimals);
-        this.functionsUtil.customLog('getTokenBalance',tokenBalance.toString(),tokenDecimals,this.BNify(tokenBalance.toString()).div(this.BNify(Math.pow(10,parseInt(tokenDecimals)).toString())).toString());
+        const tokenDecimals = await this.functionsUtil.getTokenDecimals();
+        tokenBalance = this.functionsUtil.fixTokenDecimals(tokenBalance,tokenDecimals);
+        this.functionsUtil.customLog('getTokenBalance',tokenBalance.toString(),tokenDecimals);
         this.setState({
           tokenDecimals,
           tokenBalance: tokenBalance.toString()
@@ -310,14 +300,13 @@ class SmartContractControls extends React.Component {
     ]);
 
     let price = await this.getPriceInToken(contractName);
-    let balance = await this.functionsUtil.genericContractCall(contractName, 'balanceOf', [this.props.account]);
+    price = this.functionsUtil.fixTokenDecimals(price,18);
 
-    this.functionsUtil.customLog('getBalanceOf',balance);
+    const balance = await this.functionsUtil.getTokenBalance(contractName,this.props.account);
+
+    this.functionsUtil.customLog('getBalanceOf',contractName,price,balance ? balance.toString() : balance);
 
     if (balance) {
-
-      balance = this.BNify(balance).div(1e18);
-      price = this.BNify(price).div(1e18);
       const tokenToRedeem = balance.times(price);
       let earning = 0;
 
@@ -329,7 +318,7 @@ class SmartContractControls extends React.Component {
         tokenToRedeem
       });
 
-      // customLog('BalanceOf','tokenToRedeem',tokenToRedeem.toString(),'amountLent',this.state.amountLent.toString());
+      // this.functionsUtil.customLog('BalanceOf','tokenToRedeem',tokenToRedeem.toString(),'amountLent',this.state.amountLent.toString());
 
       if (this.state.amountLent && this.trimEth(this.state.amountLent.toString())>0 && this.trimEth(tokenToRedeem.toString())>0 && parseFloat(this.trimEth(tokenToRedeem.toString()))<parseFloat(this.trimEth(this.state.amountLent.toString()))){
         this.functionsUtil.customLogError('Balance '+this.trimEth(tokenToRedeem.toString())+' ('+price.toString()+') is less than AmountLent ('+this.trimEth(this.state.amountLent.toString())+').. try again');
@@ -490,12 +479,22 @@ class SmartContractControls extends React.Component {
       this.props.web3.utils.toTwosComplement('-1') // max uint solidity
       // this.props.web3.utils.BN(0) // Disapprova
     ],null,(tx)=>{
-      this.setState({
+
+      const newState = {
+        isTokenApproved: false,
         isApprovingToken: false,
         [`isApproving${token}`]: false, // TODO when set to false?
         'needsUpdate': true,
         approveTx:null,
-      });
+      };
+
+      if (tx.status === 'success'){
+        newState.isTokenApproved = true;
+      }
+
+      this.functionsUtil.customLog('enableERC20',tx,tx.status,newState);
+
+      this.setState(newState);
     }, (tx) => {
       // this.addTransaction(tx);
       this.setState({
@@ -510,7 +509,7 @@ class SmartContractControls extends React.Component {
     });
   };
 
-  rebalance = e => {
+  rebalance = async (e) => {
     e.preventDefault();
 
     this.setState(state => ({
@@ -519,7 +518,13 @@ class SmartContractControls extends React.Component {
     }));
 
     const _newAmount = 0;
-    const _clientProtocolAmounts = [];
+
+    // Get amounts for best allocations
+    const callParams = { from: this.props.account, gas: this.props.web3.utils.toBN(5000000) };
+    const paramsForRebalance = await this.functionsUtil.genericIdleCall('getParamsForRebalance',[_newAmount],callParams);
+    this.functionsUtil.customLog('getParamsForRebalance',_newAmount,paramsForRebalance);
+    
+    const _clientProtocolAmounts = paramsForRebalance ? paramsForRebalance[1] : [];
 
     this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'rebalance', [ _newAmount, _clientProtocolAmounts ], null , (tx) => {
       const needsUpdate = tx.status === 'success' && !this.checkTransactionMined(tx);
@@ -546,19 +551,19 @@ class SmartContractControls extends React.Component {
   }
 
   mint = async (e, contractName) => {
+    e.preventDefault();
+
+    contractName = contractName ? contractName : this.props.tokenConfig.idle.token;
+
     if (this.state[`isApprovingDAI`]){
       return false;
     }
 
-    e.preventDefault();
     if (this.props.account && !this.state.lendAmount) {
       return this.setState({genericError: `Please insert an amount of ${this.props.selectedToken} to lend`});
     }
 
-    const value = this.props.web3.utils.toWei(
-      this.state.lendAmount || '0',
-      "ether"
-    );
+    const value = this.functionsUtil.normalizeTokenAmount(this.state.lendAmount,this.state.tokenDecimals).toString();
 
     // check if Idle is approved for DAI
     if (this.props.account && !this.state.isTokenApproved) {
@@ -569,10 +574,22 @@ class SmartContractControls extends React.Component {
       localStorage.setItem('redirectToFundsAfterLogged',0);
     }
 
-    const _clientProtocolAmounts = [];
+    this.setState({
+      [`isLoading${contractName}`]: false,
+      lendingProcessing: this.props.account,
+      lendAmount: '',
+      genericError: '',
+    });
+
+    // Get amounts for best allocations
+    const callParams = { from: this.props.account, gas: this.props.web3.utils.toBN(5000000) };
+    const paramsForMint = await this.functionsUtil.genericIdleCall('getParamsForMintIdleToken',[value],callParams);
+    this.functionsUtil.customLog('getParamsForMintIdleToken',value,paramsForMint);
+
+    const _clientProtocolAmounts = paramsForMint ? paramsForMint[1] : [];
 
     // No need for callback atm
-    this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'mintIdleToken', [
+    this.props.contractMethodSendWrapper(contractName, 'mintIdleToken', [
       value, _clientProtocolAmounts // _clientProtocolAmounts
     ], null, (tx) => {
       const txSucceeded = tx.status === 'success';
@@ -592,13 +609,6 @@ class SmartContractControls extends React.Component {
       this.setState({
         lendingTx: tx
       });
-    });
-
-    this.setState({
-      [`isLoading${contractName}`]: false,
-      lendingProcessing: this.props.account,
-      lendAmount: '',
-      genericError: '',
     });
   };
 
@@ -627,15 +637,18 @@ class SmartContractControls extends React.Component {
       redeemProcessing: true
     }));
 
-    let idleTokenToRedeem = this.props.web3.utils.toWei(
-      this.state.redeemAmount || '0',
-      "ether"
-    );
+    const idleTokenToRedeem = this.functionsUtil.normalizeTokenAmount(this.state.redeemAmount,this.state.tokenDecimals).toString();
 
     this.functionsUtil.customLog('redeem',idleTokenToRedeem);
 
+
+    // Get amounts for best allocations
     const _skipRebalance = false;
-    const _clientProtocolAmounts = [];
+    const callParams = { from: this.props.account, gas: this.props.web3.utils.toBN(5000000) };
+    const paramsForRedeem = await this.functionsUtil.genericIdleCall('getParamsForRedeemIdleToken',[idleTokenToRedeem, _skipRebalance],callParams);
+    this.functionsUtil.customLog('getParamsForRedeemIdleToken',idleTokenToRedeem,paramsForRedeem);
+
+    const _clientProtocolAmounts = paramsForRedeem ? paramsForRedeem[1] : [];
 
     this.props.contractMethodSendWrapper(contractName, 'redeemIdleToken', [
       idleTokenToRedeem, _skipRebalance, _clientProtocolAmounts
@@ -773,7 +786,7 @@ class SmartContractControls extends React.Component {
     const results = txs.data.result;
 
     const migrationContractAddr = this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract ? this.props.tokenConfig.migration.migrationContract.address : null;
-    const migrationContractOldAddrs = this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract ? this.props.tokenConfig.migration.migrationContract.oldAddresses : [];
+    const migrationContractOldAddrs = this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract && this.props.tokenConfig.migration.migrationContract.oldAddresses ? this.props.tokenConfig.migration.migrationContract.oldAddresses : [];
     const oldContractAddr = this.props.tokenConfig.migration && this.props.tokenConfig.migration.oldContract ? this.props.tokenConfig.migration.oldContract.address.replace('x','').toLowerCase() : null;
 
     const prevTxs = results.filter(
@@ -870,14 +883,23 @@ class SmartContractControls extends React.Component {
         realTx.contractAddress = this.props.tokenConfig.address;
         realTx.timeStamp = parseInt(tx.created/1000);
 
+        let txValue;
         switch (tx.method){
           case 'mintIdleToken':
+            txValue = tx.params ? this.toEth(tx.params[0]).toString() : 0;
+            if (!txValue){
+              return;
+            }
             realTx.status = 'Deposited';
-            realTx.value = tx.params ? this.toEth(tx.params[0]).toString() : 0;
+            realTx.value = txValue;
           break;
           case 'redeemIdleToken':
+            txValue = tx.params && this.state.idleTokenPrice ? (+this.toEth(tx.params[0])*parseFloat(this.state.idleTokenPrice)).toString() : 0;
+            if (!txValue){
+              return;
+            }
             realTx.status = 'Redeemed';
-            realTx.value = tx.params ? (+this.toEth(tx.params[0])*parseFloat(this.state.idleTokenPrice)).toString() : 0;
+            realTx.value = txValue;
           break;
           default:
           break;
@@ -1014,6 +1036,7 @@ class SmartContractControls extends React.Component {
       welcomeIsOpen: false,
       approveIsOpen: false,
       showFundsInfo:true,
+      isTokenApproved:false,
       isApprovingToken:false,
       isApprovingDAITest: true,
       redeemProcessing: false,
@@ -1045,7 +1068,7 @@ class SmartContractControls extends React.Component {
       earningPerYear: null,
       tokenBalanceBNify: null,
       maxRate: '-',
-      calculataingShouldRebalance: true,
+      calculatingShouldRebalance: true,
       fundsTimeoutID: null,
       idleTokenBalance: null,
       allocations:null,
@@ -1109,7 +1132,7 @@ class SmartContractControls extends React.Component {
 
     if (this.props.account && needsUpdateEnabled){
       this.setState({
-        needsUpdate:true
+        needsUpdate: true
       });
     }
   }
@@ -1394,7 +1417,7 @@ class SmartContractControls extends React.Component {
     let totalRedeemed = 0;
 
     const migrationContractAddr = this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract ? this.props.tokenConfig.migration.migrationContract.address : null;
-    const migrationContractOldAddrs = this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract ? this.props.tokenConfig.migration.migrationContract.oldAddresses : [];
+    const migrationContractOldAddrs = this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract && this.props.tokenConfig.migration.migrationContract.oldAddresses ? this.props.tokenConfig.migration.migrationContract.oldAddresses : [];
 
     let txs = txsIndexes.map((key, i) => {
 
@@ -1575,7 +1598,7 @@ class SmartContractControls extends React.Component {
 
     // customLog('fundsAreReady',this.state.fundsError,this.state.updateInProgress,this.trimEth(this.state.tokenToRedeemParsed),this.trimEth(this.state.earning),this.trimEth(this.state.amountLent));
 
-    const tokenNotApproved = (this.props.account && this.state.isTokenApproved===false && !this.state.isApprovingToken);
+    const tokenNotApproved = this.props.account && !this.state.isTokenApproved && !this.state.isApprovingToken && !this.state.updateInProgress;
     const walletIsEmpty = this.props.account && this.state.showEmptyWalletOverlay && !tokenNotApproved && !this.state.isApprovingToken && this.state.tokenBalance !== null && !isNaN(this.state.tokenBalance) && !parseFloat(this.state.tokenBalance);
 
     // Check migration enabled and balance
@@ -1585,7 +1608,7 @@ class SmartContractControls extends React.Component {
 
     return (
       <Box textAlign={'center'} alignItems={'center'} width={'100%'}>
-        <Form minHeight={ migrationEnabled ? ['28em','24em'] : ['auto','22em'] } backgroundColor={'white'} color={'blue'} boxShadow={'0 0 25px 5px rgba(102, 139, 255, 0.7)'} borderRadius={'15px'} style={{position:'relative'}}>
+        <Form minHeight={ migrationEnabled ? ['28em','24em'] : ['auto','17em'] } backgroundColor={'white'} color={'blue'} boxShadow={'0 0 25px 5px rgba(102, 139, 255, 0.7)'} borderRadius={'15px'} style={{position:'relative'}}>
           <Flex justifyContent={'center'} position={'relative'} zIndex={'999'} backgroundColor={'#fff'} borderRadius={'15px 15px 0 0'}>
             <Flex flexDirection={['row','row']} width={['100%','80%']} pt={[2,3]}>
               <Box className={[styles.tab,this.props.selectedTab==='1' ? styles.tabSelected : '']} width={[1/3]} textAlign={'center'}>
@@ -2381,7 +2404,7 @@ class SmartContractControls extends React.Component {
                         </Flex>
                       </Flex>
                     </Box>
-                    { !!this.state.calculataingShouldRebalance && 
+                    { !!this.state.calculatingShouldRebalance && 
                       <Box px={[2,0]} textAlign={'text'} py={[3,2]}>
                         <Flex
                           justifyContent={'center'}
@@ -2396,14 +2419,19 @@ class SmartContractControls extends React.Component {
                 }
               </Box>
 
-            { this.props.selectedTab === '3' && !this.state.calculataingShouldRebalance && !!this.state.shouldRebalance && 
+            { this.props.selectedTab === '3' && !this.state.calculatingShouldRebalance && !!this.state.shouldRebalance && 
               <Box px={[2,0]} py={[3,2]}>
                 {this.state.rebalanceProcessing ? (
                     <>
                       <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} pt={[0,3]} pb={[2,2]} color={'blue'}>
                         Thanks for rebalancing!
                       </Heading.h3>
-                      <Loader size="40px" /> <Text ml={2}>Processing rebalance request...</Text>
+                      <Flex
+                        justifyContent={'center'}
+                        alignItems={'center'}
+                        textAlign={'center'}>
+                        <Loader size="40px" /> <Text ml={2} color={'dark-gray'}>Processing rebalance request...</Text>
+                      </Flex>
                     </>
                   ) : (
                     <>
@@ -2441,7 +2469,7 @@ class SmartContractControls extends React.Component {
             }
 
             {
-              this.props.selectedTab === '3' && !this.state.calculataingShouldRebalance && !this.state.shouldRebalance &&
+              this.props.selectedTab === '3' && !this.state.calculatingShouldRebalance && !this.state.shouldRebalance &&
               <Box px={[2,0]} textAlign={'center'} py={[3,2]}>
                 <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} pt={[0,3]} pb={[2,2]} color={'blue'}>
                   The pool is already balanced.

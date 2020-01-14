@@ -15,6 +15,7 @@ const secondsInYear = 31556952;
 
 class EquityChart extends Component {
   state = {
+    equityMode:'best',
     initialBalance:1000,
     graphData: null,
     minValue: null,
@@ -112,6 +113,8 @@ class EquityChart extends Component {
     let maxValue = null;
     let minDataLength = null;
 
+    // console.log('graphData',graphData);
+
     graphData.forEach((v,i) => {
       let balance = this.state.initialBalance;
       let lastAprInfo = null;
@@ -142,6 +145,7 @@ class EquityChart extends Component {
 
           balance += totalEarned;
         }
+
         graphData[i].data.push({
           a:aprInfo,
           t:aprInfo.t,
@@ -409,8 +413,15 @@ class EquityChart extends Component {
         const blockDate = m.format('DD/MM/YYYY');
         const blockTime = getDayTimestamp(txTimestamp);
 
-        const apr = getClosestProtocolAprByTimestamp(v.to,blockTime,parseInt(blockTime)+secondsPerDay);
-        // const apr = getHighestAprByTimestamp(blockTime,parseInt(blockTime)+secondsPerDay);
+        let apr = null;
+        switch (this.state.equityMode){
+          case 'best':
+            apr = getHighestAprByTimestamp(blockTime,parseInt(blockTime)+secondsPerDay);
+          break;
+          case 'real':
+            apr = getClosestProtocolAprByTimestamp(v.to,blockTime,parseInt(blockTime)+secondsPerDay);
+          break;
+        }
 
         if (!idleBlocks[blockTime] || (apr && idleBlocks[blockTime].to !== v.to && parseFloat(apr.y)>idleBlocks[blockTime].apr)){
           idleBlocks[blockTime] = {
@@ -454,8 +465,15 @@ class EquityChart extends Component {
       const nextBlockTime = blockTimes[i+1];
       const nextTx = nextBlockTime ? idleBlocksOrdered[nextBlockTime] : null;
       const maxTimestamp = nextTx ? nextTx.timeStamp : null;
-      const apr = getClosestProtocolAprByTimestamp(tx.to,blockTime,maxTimestamp); // Use this to obtain the real APR
-      // const apr = getHighestAprByTimestamp(blockTime,maxTimestamp); // Use this to obtain always the best APR
+      let apr = null;
+      switch (this.state.equityMode){
+        case 'best':
+          apr = getHighestAprByTimestamp(blockTime,maxTimestamp); // Use this to obtain always the best APR
+        break;
+        case 'real':
+          apr = getClosestProtocolAprByTimestamp(tx.to,blockTime,maxTimestamp); // Use this to obtain the real APR
+        break;
+      }
 
       if (apr){
         nextTimestamp = apr.t;
@@ -478,8 +496,15 @@ class EquityChart extends Component {
             let timestamp = lastTimestamp+secondsPerDay;
             for (timestamp;timestamp<blockTime;timestamp+=secondsPerDay){
               const maxTimestamp = timestamp+secondsPerDay;
-              const apr = getClosestProtocolAprByTimestamp(latestIdleApr.address,timestamp,maxTimestamp); // Use this to obtain the real APR
-              // const apr = getHighestAprByTimestamp(blockTime,maxTimestamp); // Use this to obtain always the best APR
+              let apr = null;
+              switch (this.state.equityMode){
+                case 'best':
+                  apr = getHighestAprByTimestamp(blockTime,maxTimestamp); // Use this to obtain always the best APR
+                break;
+                case 'real':
+                  apr = getClosestProtocolAprByTimestamp(latestIdleApr.address,timestamp,maxTimestamp); // Use this to obtain the real APR
+                break;
+              }
               if (apr){
                 // console.log('Filling skipped day',this.getProtocolByAddress(graphData,latestIdleApr.address).id,moment(timestamp*1000).format('DD/MM/YYYY'),' => ',moment(apr.t*1000).format('DD/MM/YYYY'),this.getProtocolByAddress(graphData,latestIdleApr.address).id,apr.y);
                 apr.blockTime = timestamp;
@@ -509,8 +534,15 @@ class EquityChart extends Component {
       // console.log(timestamp,lastAprAvailable);
       for (timestamp;timestamp<=lastAprAvailable;timestamp+=secondsPerDay){
         const maxTimestamp = timestamp+secondsPerDay;
-        const apr = getClosestProtocolAprByTimestamp(latestIdleApr.address,timestamp,maxTimestamp); // Use this to obtain the real APR
-        // const apr = getHighestAprByTimestamp(blockTime,maxTimestamp); // Use this to obtain always the best APR
+        let apr = null;
+        switch (this.state.equityMode){
+          case 'best':
+            apr = getHighestAprByTimestamp(timestamp,maxTimestamp); // Use this to obtain always the best APR
+          break;
+          case 'real':
+            apr = getClosestProtocolAprByTimestamp(latestIdleApr.address,timestamp,maxTimestamp); // Use this to obtain the real APR
+          break;
+        }
         // console.log(latestIdleApr.address,timestamp,maxTimestamp,apr);
         if (apr){
           apr.blockTime = timestamp;
@@ -525,7 +557,7 @@ class EquityChart extends Component {
         "id": "Idle",
         'pos_box':2,
         'pos':3,
-        'icon' : 'idle-mark.png',
+        'icon' : 'idle-mark-white.png',
         "color": "hsl(227, 100%, 50%)",
         "aprs": idleData,
         "data": []

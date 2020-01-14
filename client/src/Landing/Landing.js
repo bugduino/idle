@@ -152,6 +152,8 @@ class Landing extends Component {
         ( protocolInfo.functions.exchangeRate ? this.functionsUtil.genericContractCall(contractName,protocolInfo.functions.exchangeRate.name,protocolInfo.functions.exchangeRate.params) : null )
       ]);
 
+      this.functionsUtil.customLog('getAllocations', contractName, protocolAddr, protocolBalance, tokenDecimals, exchangeRate);
+
       if (!protocolBalance){
         return false;
       }
@@ -685,11 +687,7 @@ class Landing extends Component {
             </Box>
           </Flex>
         </Flex>
-        */
-        }
 
-        {
-        /*
         <Flex position={'relative'} justifyContent={'center'} alignItems={'center'} height={['auto','700px']} pt={[4,6]} pb={[4,6]}>
           <Flex width={1} flexDirection={'column'} maxWidth={['35em','70em']} px={[3,5]}>
             <Heading.h4 color={'dark-gray'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]} textAlign={'center'} alignItems={'center'}>

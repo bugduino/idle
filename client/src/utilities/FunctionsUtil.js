@@ -47,6 +47,9 @@ class FunctionsUtil {
   getProtocolInfoByAddress = (addr) => {
     return this.props.tokenConfig.protocols.find(c => c.address === addr);
   }
+  normalizeTokenAmount = (tokenBalance,tokenDecimals) => {
+    return this.BNify(tokenBalance.toString()).times(this.BNify(Math.pow(10,parseInt(tokenDecimals)).toString()));
+  }
   fixTokenDecimals = (tokenBalance,tokenDecimals,exchangeRate) => {
     let balance = this.BNify(tokenBalance.toString()).div(this.BNify(Math.pow(10,parseInt(tokenDecimals)).toString()));
     if (exchangeRate){
@@ -96,11 +99,11 @@ class FunctionsUtil {
     });
   }
   getTokenBalance = async (contractName,address) => {
-    let tokenBalance = await this.getContractBalance(contractName,address);
-    if (tokenBalance){
+    let tokenBalanceOrig = await this.getContractBalance(contractName,address);
+    if (tokenBalanceOrig){
       const tokenDecimals = await this.getTokenDecimals(contractName);
-      tokenBalance = this.fixTokenDecimals(tokenBalance,tokenDecimals);
-      this.customLog('getTokenBalance',tokenBalance.toString(),tokenDecimals);
+      const tokenBalance = this.fixTokenDecimals(tokenBalanceOrig,tokenDecimals);
+      this.customLog('getTokenBalance',contractName,tokenBalanceOrig,tokenBalance.toString(),tokenDecimals);
       return tokenBalance;
     } else {
       this.customLogError('Error on getting balance');
@@ -114,12 +117,12 @@ class FunctionsUtil {
     address = address ? address : this.props.tokenConfig.idle.address;
     return await this.genericContractCall(contractName, 'balanceOf', [address]);
   }
-  genericIdleCall = async (methodName, params = []) => {
-    return await this.genericContractCall(this.props.tokenConfig.idle.token, methodName, params).catch(err => {
+  genericIdleCall = async (methodName, params = [], callParams = {}) => {
+    return await this.genericContractCall(this.props.tokenConfig.idle.token, methodName, params, callParams).catch(err => {
       this.customLogError('Generic Idle call err:', err);
     });
   }
-  genericContractCall = async (contractName, methodName, params = []) => {
+  genericContractCall = async (contractName, methodName, params = [], callParams = {}) => {
     let contract = this.getContractByName(contractName);
 
     if (!contract) {
@@ -127,7 +130,7 @@ class FunctionsUtil {
       return null;
     }
 
-    const value = await contract.methods[methodName](...params).call().catch(error => {
+    const value = await contract.methods[methodName](...params).call(callParams).catch(error => {
       this.customLogError(`${contractName} contract method ${methodName} error: `, error);
     });
 
