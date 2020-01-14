@@ -128,7 +128,7 @@ class BuyModal extends React.Component {
 
                 // Toast message
                 window.toastProvider.addMessage(`Payment completed`, {
-                  secondaryMessage: `${tokenAmount} ${this.props.selectedToken} are now in your wallet`,
+                  secondaryMessage: `${tokenAmount} ${this.state.selectedToken} are now in your wallet`,
                   colorTheme: 'light',
                   actionHref: "",
                   actionText: "",
@@ -263,13 +263,19 @@ class BuyModal extends React.Component {
     if (this.state.selectedProvider){
       this.setState({
         selectedProvider:null,
-        selectedToken:null
       });
     } else if (this.state.selectedMethod){
       this.setState({
+        selectedProvider:null,
         selectedCountry:null,
-        selectedToken:null,
         selectedMethod:null
+      });
+    } else if (this.state.selectedToken){
+      this.setState({
+        selectedProvider:null,
+        selectedCountry:null,
+        selectedMethod:null,
+        selectedToken:null
       });
     } else {
       this.resetModal();
@@ -305,11 +311,14 @@ class BuyModal extends React.Component {
     return providerInfo;
   }
 
-  getAvailablePaymentProviders = (selectedMethod) => {
+  getAvailablePaymentProviders = (selectedMethod,selectedToken) => {
+    selectedToken = selectedToken ? selectedToken : null;
     const availableProviders = [];
     Object.keys(globalConfigs.payments.providers).forEach((provider,i) => {
       const providerInfo = globalConfigs.payments.providers[provider];
-      if (providerInfo.enabled && providerInfo.supportedMethods.indexOf(selectedMethod) !== -1 && (providerInfo.supportedTokens.indexOf(this.props.selectedToken) !== -1 || providerInfo.supportedTokens.indexOf(globalConfigs.baseToken) !== -1) ){
+      const providerSupportMethod = providerInfo.supportedMethods.indexOf(selectedMethod) !== -1;
+      const providerSupportToken = selectedToken ? providerInfo.supportedTokens.indexOf(selectedToken) !== -1 : (providerInfo.supportedTokens.indexOf(this.props.selectedToken) !== -1 || providerInfo.supportedTokens.indexOf(globalConfigs.baseToken) !== -1);
+      if (providerInfo.enabled && providerSupportMethod && providerSupportToken ){
         availableProviders.push(provider);
       }
     });
@@ -329,6 +338,10 @@ class BuyModal extends React.Component {
 
     const providerInfo = globalConfigs.payments.providers[selectedProvider];
     if (providerInfo){
+      if (this.state.selectedToken){
+        this.renderPaymentMethod(e,selectedProvider,this.state);
+        return;
+      }
 
       const ethAvailable = providerInfo.supportedTokens.indexOf(globalConfigs.baseToken) !== -1;
       const tokenAvailable = providerInfo.supportedTokens.indexOf(this.props.selectedToken) !== -1;
@@ -360,7 +373,7 @@ class BuyModal extends React.Component {
     }
 
     if (Object.keys(globalConfigs.payments.methods).indexOf(selectedMethod) !== -1){
-      const availableProviders = this.getAvailablePaymentProviders(selectedMethod);
+      const availableProviders = this.getAvailablePaymentProviders(selectedMethod,this.state.selectedToken);
       this.setState({
         availableProviders,
         selectedMethod
@@ -374,7 +387,9 @@ class BuyModal extends React.Component {
     }
 
     this.setState({ selectedToken }, async () => {
-      return this.renderPaymentMethod(e,this.state.selectedProvider,this.state);
+      if (this.state.selectedProvider){
+        return this.renderPaymentMethod(e,this.state.selectedProvider,this.state);
+      }
     });
   }
 
@@ -386,10 +401,13 @@ class BuyModal extends React.Component {
 
   getAvailableCountries = () => {
     const availableCountries = {};
-    Object.keys(globalConfigs.payments.providers).forEach((provider,i) => {
+    this.state.availableProviders.forEach((provider,i) => {
       const providerInfo = globalConfigs.payments.providers[provider];
+      const providerSupportMethod = providerInfo.supportedMethods.indexOf(this.state.selectedMethod) !== -1;
+      const providerSupportToken = this.state.selectedToken ? providerInfo.supportedTokens.indexOf(this.state.selectedToken) !== -1 : (providerInfo.supportedTokens.indexOf(this.props.selectedToken) !== -1 || providerInfo.supportedTokens.indexOf(globalConfigs.baseToken) !== -1);
+
       // Skip disabled provider, not supported selected method or not supported token
-      if (!providerInfo.enabled || providerInfo.supportedMethods.indexOf(this.state.selectedMethod) === -1 || (providerInfo.supportedTokens.indexOf(this.props.selectedToken) === -1 && providerInfo.supportedTokens.indexOf(globalConfigs.baseToken) === -1 ) ){
+      if (!providerInfo.enabled || !providerSupportMethod || !providerSupportToken ){
         return;
       }
 
@@ -411,9 +429,14 @@ class BuyModal extends React.Component {
 
   render() {
 
-    let title = 'BUY '+this.props.selectedToken;
-    if (this.state.selectedMethod !== null){
-      title += ' - '+globalConfigs.payments.methods[this.state.selectedMethod].props.caption;
+    let title = null;
+    if (this.state.selectedToken === null){
+      title = 'CHOOSE YOUR TOKEN';
+    } else {
+      title = 'BUY '+this.state.selectedToken;
+      if (this.state.selectedMethod !== null){
+        title += ' - '+globalConfigs.payments.methods[this.state.selectedMethod].props.caption;
+      }
     }
 
     return (
@@ -424,19 +447,34 @@ class BuyModal extends React.Component {
           <ModalCard.Body>
             <Box minWidth={['auto','35em']}>
             {
-              this.state.selectedMethod === null ? (
+              this.state.selectedToken === null ? (
+                <Box mb={2}>
+                  <Text textAlign={'center'} fontWeight={3} fontSize={2} mb={[2,3]}>
+                    Choose which token do you want to buy:
+                  </Text>
+                  <Flex mb={4} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
+                  {
+                    ['ETH',this.props.selectedToken].map((token,i) => {
+                      return (
+                        <ImageButton key={`token_${token}`} imageSrc={`images/tokens/${token}.svg`} caption={token} imageProps={{p:[2,3],height:'80px'}} handleClick={ e => { this.selectToken(e,token); } } />
+                      );
+                    })
+                  }
+                  </Flex>
+                </Box>
+              ) : this.state.selectedMethod === null ? (
                 <Box>
                   <Flex mb={3} flexDirection={'column'} justifyContent={'center'} alignItems={'center'}>
-                    <Image height={2} mb={2} src={`images/tokens/${this.props.selectedToken}.svg`} />
+                    <Image height={2} mb={2} src={`images/tokens/${this.state.selectedToken}.svg`} />
                     <Text textAlign={'center'} fontWeight={3} fontSize={2} my={0}>
-                      Choose which way you want to buy {this.props.selectedToken}:
+                      Choose which way you want to buy {this.state.selectedToken}:
                     </Text>
                   </Flex>
                   <Flex mb={4} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
                     {
                       Object.keys(globalConfigs.payments.methods).map((method,i) => {
                         const methodInfo = globalConfigs.payments.methods[method];
-                        const availableProviders = this.getAvailablePaymentProviders(method);
+                        const availableProviders = this.getAvailablePaymentProviders(method,this.state.selectedToken);
                         if (!availableProviders || !availableProviders.length){
                           return false;
                         }
@@ -447,8 +485,7 @@ class BuyModal extends React.Component {
                     }
                   </Flex>
                 </Box>
-              ) :
-                  this.state.selectedMethod === 'wallet' ? (
+              ) : this.state.selectedMethod === 'wallet' ? (
                     <Box mt={2} mb={3}>
                       <Text textAlign={'center'} fontWeight={3} fontSize={2} my={0}>
                         <Box width={'100%'}>
@@ -525,8 +562,7 @@ class BuyModal extends React.Component {
                               Select the country to load the payment providers.
                             </Text>
                           )
-                        :
-                        this.state.availableTokens && this.state.availableTokens.length && (
+                        : false && this.state.availableTokens && this.state.availableTokens.length && (
                           <Box mb={2}>
                             <Flex justifyContent={'center'} my={2}>
                               <Image src={ globalConfigs.payments.providers[this.state.selectedProvider].imageSrc } height={'35px'} />
@@ -564,7 +600,7 @@ class BuyModal extends React.Component {
               CLOSE
               </Button>
               {
-                this.state.selectedMethod !== null && (
+                this.state.selectedToken !== null && (
                   <Button
                     className={styles.gradientButton}
                     borderRadius={4}
