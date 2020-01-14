@@ -523,7 +523,7 @@ class SmartContractControls extends React.Component {
     const callParams = { from: this.props.account, gas: this.props.web3.utils.toBN(5000000) };
     const paramsForRebalance = await this.functionsUtil.genericIdleCall('getParamsForRebalance',[_newAmount],callParams);
     this.functionsUtil.customLog('getParamsForRebalance',_newAmount,paramsForRebalance);
-    
+
     const _clientProtocolAmounts = paramsForRebalance ? paramsForRebalance[1] : [];
 
     this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'rebalance', [ _newAmount, _clientProtocolAmounts ], null , (tx) => {
@@ -1030,6 +1030,7 @@ class SmartContractControls extends React.Component {
       iDAIRate: 0,
       cDAIRate: 0,
       cDAIToRedeem: 0,
+      componentMounted:false, // this trigger the general loading
       partialRedeemEnabled: false,
       disableLendButton: false,
       disableRedeemButton: false,
@@ -1130,11 +1131,14 @@ class SmartContractControls extends React.Component {
 
     this.props.initContract(this.props.selectedToken, this.props.tokenConfig.address, this.props.tokenConfig.abi);
 
+    const newState = {
+      componentMounted: true
+    };
     if (this.props.account && needsUpdateEnabled){
-      this.setState({
-        needsUpdate: true
-      });
+      newState.needsUpdate = true;
     }
+
+    this.setState(newState);
   }
 
   async checkMigrationContractApproved() {
@@ -1341,8 +1345,6 @@ class SmartContractControls extends React.Component {
         // this.getOldBalanceOf('OldIdleDAI'),
         this.getTotalSupply(this.props.tokenConfig.idle.token)
       ]);
-
-      
 
       this.functionsUtil.customLog('Async functions completed...');
 
@@ -1652,7 +1654,23 @@ class SmartContractControls extends React.Component {
                 }
 
                 {
-                  migrationEnabled ? (
+                  !this.state.componentMounted ? (
+                    <Box pt={['50px','73px']} style={{position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'99'}}>
+                      <Box style={{backgroundColor:'rgba(0,0,0,0.83)',position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'0',borderRadius:'15px'}}></Box>
+                      <Flex style={{position:'relative',zIndex:'99',height:'100%'}} flexDirection={'column'} alignItems={'center'} justifyContent={'center'}>
+                        <Flex
+                          flexDirection={'column'}
+                          justifyContent={'center'}
+                          alignItems={'center'}
+                          textAlign={'center'}>
+                          <Loader size="80px" />
+                          <Heading.h4 my={[2,'15px']} color={'white'} fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
+                            Loading data, please wait...
+                          </Heading.h4>
+                        </Flex>
+                      </Flex>
+                    </Box>
+                  ) : migrationEnabled ? (
                     <Box pt={['50px','73px']} style={{position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'99'}}>
                       <Box style={{backgroundColor:'rgba(0,0,0,0.83)',position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'0',borderRadius:'15px'}}></Box>
                       <Flex style={{position:'relative',zIndex:'99',height:'100%'}} flexDirection={'column'} alignItems={'center'} justifyContent={'center'}>

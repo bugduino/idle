@@ -185,7 +185,7 @@ class RimbleTransaction extends React.Component {
         web3Provider = window.web3;
       } else {
         customLog("Non-Ethereum browser detected. Using Infura fallback.");
-        web3Host = `https://mainnet.infura.io/v3/${INFURA_KEY}`;
+        web3Host = globalConfigs.network.providers.infura[globalConfigs.network.requiredNetwork]+INFURA_KEY;
       }
 
     } else {
@@ -205,7 +205,13 @@ class RimbleTransaction extends React.Component {
       const terminalHttpProvider = new TerminalHttpProvider(TerminalHttpProviderParams);
       web3 = new Web3(terminalHttpProvider);
     } else {
-      web3 = new Web3(web3Provider);
+      // Injected web3 provider
+      if (web3Provider){
+        web3 = new Web3(web3Provider);
+      // Infura
+      } else if (web3Host) {
+        web3 = new Web3(new Web3.providers.HttpProvider(web3Host));
+      }
     }
 
     this.setState({ web3 }, async () => {
