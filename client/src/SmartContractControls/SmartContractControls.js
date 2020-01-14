@@ -221,11 +221,14 @@ class SmartContractControls extends React.Component {
 
   getPriceInToken = async (contractName) => {
     const totalIdleSupply = await this.functionsUtil.genericContractCall(contractName, 'totalSupply');
+    const tokenDecimals = this.state.tokenDecimals ? this.state.tokenDecimals : await this.functionsUtil.getTokenDecimals();
     let price = await this.functionsUtil.genericContractCall(contractName, 'tokenPrice');
-    const navPool = this.BNify(totalIdleSupply).div(1e18).times(this.BNify(price).div(1e18));
+    price = this.functionsUtil.fixTokenDecimals(price,tokenDecimals);
+    const navPool = this.BNify(totalIdleSupply).div(1e18).times(price);
+    const idleTokenPrice = (totalIdleSupply || totalIdleSupply === 0) && totalIdleSupply.toString() === '0' ? 0 : price.toString();
     this.setState({
-      idleTokenPrice: (totalIdleSupply || totalIdleSupply === 0) && totalIdleSupply.toString() === '0' ? 0 : (+this.toEth(price)),
-      navPool: navPool,
+      idleTokenPrice,
+      navPool,
       needsUpdate: false
     });
     return price;
@@ -299,12 +302,10 @@ class SmartContractControls extends React.Component {
       this.getTokenBalance()
     ]);
 
-    let price = await this.getPriceInToken(contractName);
-    price = this.functionsUtil.fixTokenDecimals(price,18);
-
+    const price = await this.getPriceInToken(contractName);
     const balance = await this.functionsUtil.getTokenBalance(contractName,this.props.account);
 
-    this.functionsUtil.customLog('getBalanceOf',contractName,price,balance ? balance.toString() : balance);
+    this.functionsUtil.customLog('getBalanceOf 1',contractName,'price',price.toString(),'balance',(balance ? balance.toString() : balance));
 
     if (balance) {
       const tokenToRedeem = balance.times(price);
@@ -318,7 +319,7 @@ class SmartContractControls extends React.Component {
         tokenToRedeem
       });
 
-      // this.functionsUtil.customLog('BalanceOf','tokenToRedeem',tokenToRedeem.toString(),'amountLent',this.state.amountLent.toString());
+      this.functionsUtil.customLog('getBalanceOf 2','tokenToRedeem',tokenToRedeem.toString(),'amountLent',this.state.amountLent.toString());
 
       if (this.state.amountLent && this.trimEth(this.state.amountLent.toString())>0 && this.trimEth(tokenToRedeem.toString())>0 && parseFloat(this.trimEth(tokenToRedeem.toString()))<parseFloat(this.trimEth(this.state.amountLent.toString()))){
         this.functionsUtil.customLogError('Balance '+this.trimEth(tokenToRedeem.toString())+' ('+price.toString()+') is less than AmountLent ('+this.trimEth(this.state.amountLent.toString())+').. try again');
@@ -360,7 +361,7 @@ class SmartContractControls extends React.Component {
       const earningPerYear = tokenToRedeem.times(currentApr);
       const earningPerDay = earningPerYear.div(365);
 
-      this.functionsUtil.customLog('getBalanceOf',balance.toString(),tokenToRedeem.toString(),this.state.amountLent,earning,currentApr,earningPerYear);
+      this.functionsUtil.customLog('getBalanceOf 3',balance.toString(),tokenToRedeem.toString(),this.state.amountLent,earning,currentApr,earningPerYear);
 
       return this.setState({
         fundsError:false,
@@ -637,10 +638,9 @@ class SmartContractControls extends React.Component {
       redeemProcessing: true
     }));
 
-    const idleTokenToRedeem = this.functionsUtil.normalizeTokenAmount(this.state.redeemAmount,this.state.tokenDecimals).toString();
+    const idleTokenToRedeem = this.functionsUtil.normalizeTokenAmount(this.state.redeemAmount,18).toString();
 
     this.functionsUtil.customLog('redeem',idleTokenToRedeem);
-
 
     // Get amounts for best allocations
     const _skipRebalance = false;

@@ -153,12 +153,14 @@ class TxProgressBar extends Component {
 
   getTxEstimatedTime(gasPrice) {
     let prediction = null;
-    this.state.predictTable.forEach((p,i) => {
-      if (!prediction && parseFloat(p.gasprice)>=parseFloat(gasPrice)){
-        prediction = p;
-        return true;
-      }
-    });
+    if (this.state.predictTable){
+      this.state.predictTable.forEach((p,i) => {
+        if (!prediction && parseFloat(p.gasprice)>=parseFloat(gasPrice)){
+          prediction = p;
+          return true;
+        }
+      });
+    }
 
     if (prediction){
       const pdValues = this._estimateWait(prediction,this.state.transaction.gas);

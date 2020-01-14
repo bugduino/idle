@@ -152,8 +152,6 @@ class Landing extends Component {
         ( protocolInfo.functions.exchangeRate ? this.functionsUtil.genericContractCall(contractName,protocolInfo.functions.exchangeRate.name,protocolInfo.functions.exchangeRate.params) : null )
       ]);
 
-      this.functionsUtil.customLog('getAllocations', contractName, protocolAddr, protocolBalance, tokenDecimals, exchangeRate);
-
       if (!protocolBalance){
         return false;
       }
@@ -164,6 +162,8 @@ class Landing extends Component {
 
       const protocolAllocation = this.functionsUtil.fixTokenDecimals(protocolBalance,tokenDecimals,exchangeRate);
       totalAllocation += protocolAllocation;
+
+      this.functionsUtil.customLog('getAllocations', contractName, protocolBalance, tokenDecimals, protocolAllocation.toString());
 
       protocolsAllocations[protocolAddr] = protocolAllocation;
     });

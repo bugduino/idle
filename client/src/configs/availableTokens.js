@@ -251,7 +251,7 @@ const availableTokens = {
       idle:{
         abi:idleToken,
         token:'idleDAI',
-        address:'0x998433EdDCceef79B0FDFafFEBDE1D939A5e9170'
+        address:'0x9dC96548a0c917bCB144E4315aE7F6E180FF7BD1'
       },
       migration:{
         enabled:false,
@@ -265,17 +265,17 @@ const availableTokens = {
           abi:IdleMcdBridge,
           token:'idleSAI',
           name:'migrationContract',
-          address:'0x7744d000404f8945AbE19A8E437cF1948bB842aa',
+          address:'0x3FAdA85c80bbb1712c69345367B658992DAf6F18',
           functions:[
             {
               name:'bridgeIdleV1ToIdleV2',
               label:'MIGRATE TO idleSAI v2',
-              params:['0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9','0x20E0D9Abd7a8b296306B8B44F74bA1853592CB24']
+              params:['0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9','0x75C5B0a5Df7395e4EfbD904Dbe4f1B6fcB858341']
             },
             {
               name:'bridgeIdleV1ToIdleV2',
               label:'MIGRATE TO idleDAI v2',
-              params:['0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9','0x998433EdDCceef79B0FDFafFEBDE1D939A5e9170']
+              params:['0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9','0x9dC96548a0c917bCB144E4315aE7F6E180FF7BD1']
             },
           ]
         }
@@ -333,7 +333,7 @@ const availableTokens = {
       idle:{
         abi:idleToken,
         token:'idleSAI',
-        address:'0x20E0D9Abd7a8b296306B8B44F74bA1853592CB24'
+        address:'0x75C5B0a5Df7395e4EfbD904Dbe4f1B6fcB858341'
       },
       migration:{
         enabled:false,
@@ -347,17 +347,17 @@ const availableTokens = {
           abi:IdleMcdBridge,
           token:'idleSAI',
           name:'migrationContract',
-          address:'0x7744d000404f8945AbE19A8E437cF1948bB842aa',
+          address:'0x3FAdA85c80bbb1712c69345367B658992DAf6F18',
           functions:[
             {
               name:'bridgeIdleV1ToIdleV2',
               label:'MIGRATE TO idleSAI v2',
-              params:['0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9','0x20E0D9Abd7a8b296306B8B44F74bA1853592CB24']
+              params:['0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9','0x75C5B0a5Df7395e4EfbD904Dbe4f1B6fcB858341']
             },
             {
               name:'bridgeIdleV1ToIdleV2',
               label:'MIGRATE TO idleDAI v2',
-              params:['0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9','0x998433EdDCceef79B0FDFafFEBDE1D939A5e9170']
+              params:['0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9','0x9dC96548a0c917bCB144E4315aE7F6E180FF7BD1']
             },
           ]
         }
@@ -412,7 +412,7 @@ const availableTokens = {
       idle:{
         abi:idleToken,
         token:'idleUSDC',
-        address:'0x29975516AbD6f6D9a5f9aFA99dDFA5FAa9BC43e4'
+        address:'0x1B6513bba5eC27Dc977cDA89CF2A709fbAD9F4FB'
       },
       protocols:[
         {
