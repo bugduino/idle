@@ -148,7 +148,7 @@ const globalConfigs = {
         subcaption:`~ 2.5% fee ~\nGBP ONLY`,
         supportedMethods:['bank'],
         supportedCountries:['GBR','EUR'],
-        supportedTokens:['SAI','ETH','DAI'],
+        supportedTokens:['ETH','DAI'],
         getInitParams: (props,globalConfigs,buyParams) => {
         	return {
 	          hostAppName: 'Idle',

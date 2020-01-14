@@ -254,7 +254,7 @@ const availableTokens = {
         address:'0x9dC96548a0c917bCB144E4315aE7F6E180FF7BD1'
       },
       migration:{
-        enabled:false,
+        enabled:true,
         oldContract:{
           abi:idleDAI.abi,
           token:'idleSAI',
@@ -336,7 +336,7 @@ const availableTokens = {
         address:'0x75C5B0a5Df7395e4EfbD904Dbe4f1B6fcB858341'
       },
       migration:{
-        enabled:false,
+        enabled:true,
         oldContract:{
           abi:idleDAI.abi,
           token:'idleSAI',
