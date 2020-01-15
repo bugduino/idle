@@ -3,14 +3,12 @@ import { Flex, Text, Progress, Loader } from 'rimble-ui'
 import axios from 'axios';
 import moment from 'moment';
 import BigNumber from 'bignumber.js';
-
-const LOG_ENABLED = false;
-const customLog = (...props) => { if (LOG_ENABLED) console.log(moment().format('HH:mm:ss'),...props); };
-const BNify = s => new BigNumber(String(s));
+import FunctionsUtil from '../utilities/FunctionsUtil';
 
 class TxProgressBar extends Component {
   state = {
     initialized:false,
+    txTimestamp:null,
     estimatedTime:null,
     remainingTime:null,
     percentage:0,
@@ -18,6 +16,16 @@ class TxProgressBar extends Component {
     error:null,
     web3:null
   };
+
+  // Utils
+  functionsUtil = null;
+  loadUtils(){
+    if (this.functionsUtil){
+      this.functionsUtil.setProps(this.props);
+    } else {
+      this.functionsUtil = new FunctionsUtil(this.props);
+    }
+  }
 
   async componentWillUnmount(){
     var id = window.setTimeout(function() {}, 0);
@@ -28,12 +36,18 @@ class TxProgressBar extends Component {
   }
 
   async componentDidUpdate(prevProps){
+
+    this.loadUtils();
+
     if (!this.state.initialized && !prevProps.web3 && this.props.web3){
       await this.initProgressBar();
     }
   }
 
   async componentDidMount() {
+
+    this.loadUtils();
+
     if (this.props.web3){
       await this.initProgressBar();
     }
@@ -41,16 +55,16 @@ class TxProgressBar extends Component {
 
   async getTransactionReceipt() {
     return new Promise( async (resolve, reject) => {
-      customLog('getTransactionReceipt',this.props.hash);
+      this.functionsUtil.customLog('getTransactionReceipt',this.props.hash);
       this.props.web3.eth.getTransactionReceipt(this.props.hash,(err,transactionReceipt) => {
         if (transactionReceipt){
-          customLog('getTransactionReceipt resolved',transactionReceipt);
+          this.functionsUtil.customLog('getTransactionReceipt resolved',transactionReceipt);
           this.setState({
             transactionReceipt
           });
           return resolve(transactionReceipt);
         }
-        customLog('getTransactionReceipt rejected',err);
+        this.functionsUtil.customLog('getTransactionReceipt rejected',err);
         return reject(false);
       });
     });
@@ -58,16 +72,16 @@ class TxProgressBar extends Component {
 
   async getTransaction() {
     return new Promise( async (resolve, reject) => {
-      customLog('getTransaction',this.props.hash);
+      this.functionsUtil.customLog('getTransaction',this.props.hash);
       this.props.web3.eth.getTransaction(this.props.hash,(err,transaction) => {
         if (transaction){
-          customLog('getTransaction resolved',transaction);
+          this.functionsUtil.customLog('getTransaction resolved',transaction);
           this.setState({
             transaction
           });
           return resolve(transaction);
         }
-        customLog('getTransaction rejected',err);
+        this.functionsUtil.customLog('getTransaction rejected',err);
         return reject(false);
       });
     });
@@ -122,16 +136,26 @@ class TxProgressBar extends Component {
 
   async getBlockTime() {
     const pt = await axios.get('https://ethgasstation.info/json/ethgasAPI.json');
-    this.setState({
-      blockTime:pt.data
-    });
+    if (pt){
+      const blockTime = pt.data;
+      this.setState({
+        blockTime
+      });
+      return blockTime;
+    }
+    return null;
   }
 
   async getPredictionTable() {
     const pt = await axios.get('https://ethgasstation.info/json/predictTable.json');
-    this.setState({
-      predictTable:pt.data
-    });
+    if (pt){
+      const predictTable = pt.data;
+      this.setState({
+        predictTable
+      });
+      return predictTable;
+    }
+    return null;
   }
 
   async getTransactionTimestamp(){
@@ -139,13 +163,13 @@ class TxProgressBar extends Component {
       return null;
     }
     return new Promise( async (resolve, reject) => {
-      customLog('getTransactionTimestamp',this.state.transaction.blockNumber);
+      this.functionsUtil.customLog('getTransactionTimestamp',this.state.transaction.blockNumber);
       this.props.web3.eth.getBlock(this.state.transaction.blockNumber,(err,block) => {
         if (block){
-          customLog('getTransactionTimestamp resolved',block);
+          this.functionsUtil.customLog('getTransactionTimestamp resolved',block);
           return resolve(block.timestamp);
         }
-        customLog('getTransactionTimestamp rejected',err);
+        this.functionsUtil.customLog('getTransactionTimestamp rejected',err);
         return reject(false);
       });
     });
@@ -168,7 +192,7 @@ class TxProgressBar extends Component {
       const blockInterval = this.state.blockTime.block_time;
       let txMeanSecs = blocksWait * blockInterval;
       txMeanSecs = parseInt(txMeanSecs.toFixed(0));
-      customLog('getTxEstimatedTime',prediction,this.state.transaction.gas,pdValues,txMeanSecs);
+      this.functionsUtil.customLog('getTxEstimatedTime',prediction,this.state.transaction.gas,pdValues,txMeanSecs);
       return txMeanSecs; // Customized
     }
 
@@ -177,19 +201,37 @@ class TxProgressBar extends Component {
 
   async calculateRemainingTime() {
     let remainingTime = 0;
+    let estimatedTime = 0;
 
     if (!this.state.transaction){
       return false;
     }
 
     if (!this.state.transaction.blockNumber){
-      const gasPrice = parseFloat(BNify(this.state.transaction.gasPrice).div(1e9).toString());
+      const gasPrice = parseFloat(this.functionsUtil.BNify(this.state.transaction.gasPrice).div(1e9).toString());
       remainingTime = this.getTxEstimatedTime(gasPrice);
     }
 
+    estimatedTime = remainingTime;
+
+    if (this.state.txTimestamp){
+      const currTimestamp = new Date().getTime();
+      const secondsPassed = parseInt((currTimestamp-parseInt(this.state.txTimestamp))/1000);
+      
+      // Calculate new remaining time
+      remainingTime -= secondsPassed;
+      remainingTime = Math.max(remainingTime,0);
+
+      this.functionsUtil.customLog('Estimated time',estimatedTime,'secondsPassed',secondsPassed,'New remaining time',remainingTime);
+    }
+
+    const timePassed = estimatedTime-remainingTime;
+    const percentage = parseFloat(timePassed/estimatedTime);
+
     this.setState({
-      estimatedTime:remainingTime,
-      remainingTime
+      estimatedTime,
+      remainingTime,
+      percentage
     });
 
     setTimeout(()=>{this.updateProgressBar()},1000);
@@ -221,11 +263,48 @@ class TxProgressBar extends Component {
     }
   }
 
+  async getTxInfo() {
+
+    // Get tx timestamp
+    const txProgressBarKey = `txProgressBarData`;
+    const txHash = this.props.hash.toLowerCase();
+
+    let txProgressBarData = null;
+    let txTimestamp = null;
+    let predictTable = null;
+    let blockTime = null;
+
+    if (localStorage){
+      txProgressBarData = localStorage.getItem(txProgressBarKey);
+      if (txProgressBarData){
+        txProgressBarData = JSON.parse(txProgressBarData);
+      }
+    }
+
+    if (!txProgressBarData || !txProgressBarData[txHash]){
+      txTimestamp = new Date().getTime();
+      predictTable = await this.getPredictionTable();
+      blockTime = await this.getBlockTime();
+
+      txProgressBarData = {};
+      txProgressBarData[txHash] = {
+        txTimestamp,
+        blockTime,
+        predictTable
+      };
+
+      if (localStorage){
+        localStorage.setItem(txProgressBarKey,JSON.stringify(txProgressBarData));
+      }
+    }
+
+    this.setState(txProgressBarData[txHash]);
+  }
+
   async initProgressBar() {
     await Promise.all([
       this.getTransaction(),
-      this.getPredictionTable(),
-      this.getBlockTime()
+      this.getTxInfo()
     ]);
 
     this.setState({
