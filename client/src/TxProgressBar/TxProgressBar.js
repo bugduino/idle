@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import { Flex, Text, Progress, Loader } from 'rimble-ui'
 import axios from 'axios';
-import moment from 'moment';
-import BigNumber from 'bignumber.js';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 
 class TxProgressBar extends Component {
@@ -226,7 +224,7 @@ class TxProgressBar extends Component {
     }
 
     const timePassed = estimatedTime-remainingTime;
-    const percentage = parseFloat(timePassed/estimatedTime);
+    const percentage = estimatedTime>0 ? parseFloat(timePassed/estimatedTime) : 1;
 
     this.setState({
       estimatedTime,

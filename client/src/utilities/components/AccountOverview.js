@@ -52,6 +52,8 @@ class AccountOverview extends React.Component {
         {
           walletProvider && walletProvider!=='Injected' ? (
             <Image
+              width={'42px'}
+              height={'42px'}
               display={'inline-flex'}
               mr={[0,'0.5rem']}
               src={`images/${walletProvider.toLowerCase()}.svg`}

@@ -688,8 +688,6 @@ class Landing extends Component {
           </Flex>
         </Flex>
 
-        */
-        }
         <Flex position={'relative'} justifyContent={'center'} alignItems={'center'} height={['auto','700px']} pt={[4,6]} pb={[4,6]}>
           <Flex width={1} flexDirection={'column'} maxWidth={['35em','70em']} px={[3,5]}>
             <Heading.h4 color={'dark-gray'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]} textAlign={'center'} alignItems={'center'}>
@@ -706,6 +704,8 @@ class Landing extends Component {
             </Flex>
           </Flex>
         </Flex>
+        */
+        }
 
         <Box id="faq" pt={[4,6]} pb={[4,6]}>
           <Box maxWidth={['50em','60em']} mx={'auto'} px={[3,5]}>

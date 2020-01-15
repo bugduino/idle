@@ -1357,18 +1357,32 @@ class SmartContractControls extends React.Component {
         this.rebalanceCheck();
       }
 
-      /*
       // Check if first time entered
-      let welcomeIsOpen = prevProps.account !== this.props.account;
-      if (localStorage){
-        welcomeIsOpen = welcomeIsOpen && !localStorage.getItem('firstLogin');
-        localStorage.setItem('firstLogin',new Date().getTime().toString());
-      } else {
-        welcomeIsOpen = false;
+      let welcomeIsOpen = false;
+      if (false && localStorage && prevProps.account !== this.props.account){
+        // Check the last login of the wallet
+        const currTime = new Date().getTime();
+        const walletAddress = this.props.account.toLowerCase();
+        let lastLogin = localStorage.getItem('lastLogin');
+
+        if (lastLogin){
+          lastLogin = JSON.parse(lastLogin);
+        }
+
+        if (!lastLogin || !lastLogin[walletAddress]){
+          lastLogin = {};
+          lastLogin[walletAddress] = currTime;
+          welcomeIsOpen = true;
+        } else {
+          const timeFromLastLogin = (currTime-parseInt(lastLogin[walletAddress]))/1000;
+          welcomeIsOpen = timeFromLastLogin>=86400; // 1 day since last login
+        }
+
+        localStorage.setItem('lastLogin',JSON.stringify(lastLogin));
       }
-      */
 
       this.setState({
+        welcomeIsOpen,
         updateInProgress: false
       });
     }

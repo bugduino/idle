@@ -421,6 +421,8 @@ class EquityChart extends Component {
           case 'real':
             apr = getClosestProtocolAprByTimestamp(v.to,blockTime,parseInt(blockTime)+secondsPerDay);
           break;
+          default:
+          break;
         }
 
         if (!idleBlocks[blockTime] || (apr && idleBlocks[blockTime].to !== v.to && parseFloat(apr.y)>idleBlocks[blockTime].apr)){
@@ -473,6 +475,8 @@ class EquityChart extends Component {
         case 'real':
           apr = getClosestProtocolAprByTimestamp(tx.to,blockTime,maxTimestamp); // Use this to obtain the real APR
         break;
+        default:
+        break;
       }
 
       if (apr){
@@ -503,6 +507,8 @@ class EquityChart extends Component {
                 break;
                 case 'real':
                   apr = getClosestProtocolAprByTimestamp(latestIdleApr.address,timestamp,maxTimestamp); // Use this to obtain the real APR
+                break;
+                default:
                 break;
               }
               if (apr){
@@ -541,6 +547,8 @@ class EquityChart extends Component {
           break;
           case 'real':
             apr = getClosestProtocolAprByTimestamp(latestIdleApr.address,timestamp,maxTimestamp); // Use this to obtain the real APR
+          break;
+          default:
           break;
         }
         // console.log(latestIdleApr.address,timestamp,maxTimestamp,apr);
