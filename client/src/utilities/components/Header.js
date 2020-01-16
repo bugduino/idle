@@ -101,6 +101,7 @@ class Header extends React.Component {
   async componentDidUpdate(prevProps, prevState) {
     const accountUpdated = prevProps.account !== this.props.account;
     const tokenUpdated = prevProps.selectedToken !== this.props.selectedToken;
+    const accountBalanceUpdated = prevProps.accountBalanceToken !== this.props.accountBalanceToken;
 
     if (tokenUpdated){
       this.setCurrentToken();
@@ -112,7 +113,7 @@ class Header extends React.Component {
       });
     }
 
-    if (this.props.account && accountUpdated) {
+    if (this.props.account && (accountUpdated || accountBalanceUpdated)) {
 
       let idleTokenBalance = await this.getIdleTokenBalance();
       if (idleTokenBalance){
