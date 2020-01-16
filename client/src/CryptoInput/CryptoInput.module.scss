@@ -1,15 +1,6 @@
 .newLink{
   text-decoration:none !important;
 }
-/*
-.newPillContainer{
-  -webkit-animation: newPillContainerAnim 0.5s ease infinite alternate;
-  -moz-animation: newPillContainerAnim 0.5s ease infinite alternate;
-  -o-animation: newPillContainerAnim 0.5s ease infinite alternate;
-  animation: newPillContainerAnim 0.5s ease infinite alternate;
-}
-*/
-
 @-webkit-keyframes newPillContainerAnim {
     0%{
       background-color:rgba(0, 54, 255, 0.05);
@@ -18,11 +9,9 @@
       background-color:rgba(0, 54, 255, 0.15);
     }
 }
-
 .newPill{
   background:linear-gradient(180deg,#01b5eb,#017ed4);
 }
-
 .mainInput {
   padding-left: 0 !important;
   padding-right: 1em !important;
@@ -46,7 +35,6 @@
 .button{
   border-radius: 0 2rem 2rem 0 !important;
 }
-
 /* Hide HTML5 Up and Down arrows. */
 input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button {
     -webkit-appearance: none;

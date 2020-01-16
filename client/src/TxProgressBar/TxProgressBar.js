@@ -15,6 +15,8 @@ class TxProgressBar extends Component {
     web3:null
   };
 
+  componentUnmounted = false;
+
   // Utils
   functionsUtil = null;
   loadUtils(){
@@ -26,6 +28,9 @@ class TxProgressBar extends Component {
   }
 
   async componentWillUnmount(){
+
+    this.componentUnmounted = true;
+
     var id = window.setTimeout(function() {}, 0);
 
     while (id--) {
@@ -201,7 +206,7 @@ class TxProgressBar extends Component {
     let remainingTime = 0;
     let estimatedTime = 0;
 
-    if (!this.state.transaction){
+    if (!this.state.transaction || this.componentUnmounted){
       return false;
     }
 
@@ -236,6 +241,11 @@ class TxProgressBar extends Component {
   }
 
   updateProgressBar() {
+
+    if (this.componentUnmounted){
+      return false;
+    }
+
     let remainingTime = this.state.remainingTime;
     if (remainingTime){
       remainingTime--;

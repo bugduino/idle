@@ -8,6 +8,7 @@ import EquityChart from '../EquityChart/EquityChart';
 // import DefiScoreTable from '../DefiScoreTable/DefiScoreTable';
 import Footer from '../Footer/Footer';
 import FunctionsUtil from '../utilities/FunctionsUtil';
+import availableTokens from '../configs/availableTokens';
 
 let scrolling = false;
 let scrollTimeoutID;
@@ -482,6 +483,24 @@ class Landing extends Component {
           </Flex>
         </Box>
 
+
+        <Flex position={'relative'} justifyContent={'center'} alignItems={'center'} height={['auto','850px']} pt={0} pb={[4,6]}>
+          <Flex width={1} flexDirection={'column'} maxWidth={['35em','70em']} px={[3,5]}>
+            <Heading.h4 color={'dark-gray'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]} textAlign={'center'} alignItems={'center'}>
+              Maximize interest return
+            </Heading.h4>
+            <Flex height={['auto','500px']}>
+              <EquityChart
+                tokenConfig={availableTokens[1].SAI}
+                selectedToken={'SAI'}
+                isMobile={this.props.isMobile}
+                account={this.props.account}
+                web3={this.props.web3}
+              />
+            </Flex>
+          </Flex>
+        </Flex>
+
         <Flex className={styles.gradientBackground} position={'relative'} justifyContent={'center'} alignItems={'center'} height={['auto','600px']} mt={[4,3]} p={[4,6]}>
           <Flex width={1} flexDirection={['column','row']} maxWidth={['35em','70em']}>
             <Flex width={[1,1/2]} justifyContent={'center'} flexDirection={'column'}>
@@ -688,22 +707,6 @@ class Landing extends Component {
           </Flex>
         </Flex>
 
-        <Flex position={'relative'} justifyContent={'center'} alignItems={'center'} height={['auto','700px']} pt={[4,6]} pb={[4,6]}>
-          <Flex width={1} flexDirection={'column'} maxWidth={['35em','70em']} px={[3,5]}>
-            <Heading.h4 color={'dark-gray'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]} textAlign={'center'} alignItems={'center'}>
-              Maximize interest return
-            </Heading.h4>
-            <Flex height={['auto','500px']}>
-              <EquityChart
-                tokenConfig={this.props.tokenConfig}
-                selectedToken={this.props.selectedToken}
-                isMobile={this.props.isMobile}
-                account={this.props.account}
-                web3={this.props.web3}
-              />
-            </Flex>
-          </Flex>
-        </Flex>
         */
         }
 

@@ -21,7 +21,7 @@ const globalConfigs = {
   network:{
     requiredConfirmations: 1,
     accountBalanceMinimum: 0, // in ETH for gas fees
-    requiredNetwork: 1, // { 1: Mainnet, 3: Ropsten, 42: Kovan }
+    requiredNetwork: 42, // { 1: Mainnet, 3: Ropsten, 42: Kovan }
     isForked: true, // Set to true only if the mainnet has been forked
     providers:{
       infura:{

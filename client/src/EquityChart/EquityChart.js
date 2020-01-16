@@ -15,7 +15,7 @@ const secondsInYear = 31556952;
 
 class EquityChart extends Component {
   state = {
-    equityMode:'real',
+    equityMode:'best',
     initialBalance:1000,
     graphData: null,
     minValue: null,

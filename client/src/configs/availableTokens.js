@@ -7,89 +7,6 @@ import IdleMcdBridge from '../contracts/IdleMcdBridge.json';
 
 const availableTokens = {
   42:{ // Kovan
-    DAI:{
-      enabled:true,
-      abi:ERC20.abi,
-      address:'0x4F96Fe3b7A6Cf9725f59d353F723c1bDb64CA6Aa',
-      zeroExInstant:{
-        orderSource: 'https://api.0x.org/sra/',
-        assetData:'0xf47261b00000000000000000000000006b175474e89094c44da98b954eedeac495271d0f',
-        affiliateInfo: {
-            feeRecipient: '0x4215606a720477178AdFCd5A59775C63138711e8',
-            feePercentage: 0.0075
-        },
-      },
-      wyre:{
-        destCurrency:'DAI'
-      },
-      ramp:{
-        swapAsset:'DAI'
-      },
-      defiPrime:{
-        token:'dai'
-      },
-      idle:{
-        abi:idleToken,
-        token:'idleDAI',
-        address:'0x199e7c55B44fFBD2934bFC3bDeE05F6EC2b547CF'
-      },
-      migration:{
-        enabled:false,
-        oldContract:{
-          abi:idleDAI.abi,
-          token:'idleSAI',
-          name:'oldContract',
-          address:'0x4Cc31d87E658504a9db6c9337102c408A3bdE90d',
-        },
-        migrationContract:{
-          abi:IdleMcdBridge,
-          token:'idleSAI',
-          name:'migrationContract',
-          address:'0xE293a3576f22A6BAF841Ed6bb80953F445e1b22a',
-          oldAddresses:['0x556659f45381dEE8BA429C295363E39645abE834'/*,'0xabeCf002a48969C2be92150ae27B1F75cBf6EA6e'*/],
-          functions:[
-            {
-              name:'bridgeIdleV1ToIdleV2',
-              label:'MIGRATE TO idleSAI v2',
-              params:['0x4Cc31d87E658504a9db6c9337102c408A3bdE90d','0x5266C66FC100d2FBE5dbCfE8a8789568D2d2F720']
-            },
-            {
-              name:'bridgeIdleV1ToIdleV2',
-              label:'MIGRATE TO idleDAI v2',
-              params:['0x4Cc31d87E658504a9db6c9337102c408A3bdE90d','0x199e7c55B44fFBD2934bFC3bDeE05F6EC2b547CF']
-            },
-          ]
-        }
-      },
-      protocols:[
-        {
-          name:'compound',
-          abi:cDAI.abi,
-          address:'0xe7bc397dbd069fc7d0109c0636d06888bb50668c',
-          token:'cDAI',
-          functions:{
-            exchangeRate:{
-              name:'exchangeRateStored',
-              decimals:28,
-              params:[]
-            }
-          },
-        },
-        {
-          name:'fulcrum',
-          abi:iDAI,
-          address:'0x6c1e2b0f67e00c06c8e2be7dc681ab785163ff4d',
-          token:'iDAI',
-          functions:{
-            exchangeRate:{
-              name:'tokenPrice',
-              decimals:18,
-              params:[]
-            }
-          },
-        }
-      ]
-    },
     SAI:{
       enabled: true,
       abi:ERC20.abi,
@@ -163,6 +80,89 @@ const availableTokens = {
           abi:iDAI,
           address:'0xA1e58F3B1927743393b25f261471E1f2D3D9f0F6',
           token:'iSAI',
+          functions:{
+            exchangeRate:{
+              name:'tokenPrice',
+              decimals:18,
+              params:[]
+            }
+          },
+        }
+      ]
+    },
+    DAI:{
+      enabled:true,
+      abi:ERC20.abi,
+      address:'0x4F96Fe3b7A6Cf9725f59d353F723c1bDb64CA6Aa',
+      zeroExInstant:{
+        orderSource: 'https://api.0x.org/sra/',
+        assetData:'0xf47261b00000000000000000000000006b175474e89094c44da98b954eedeac495271d0f',
+        affiliateInfo: {
+            feeRecipient: '0x4215606a720477178AdFCd5A59775C63138711e8',
+            feePercentage: 0.0075
+        },
+      },
+      wyre:{
+        destCurrency:'DAI'
+      },
+      ramp:{
+        swapAsset:'DAI'
+      },
+      defiPrime:{
+        token:'dai'
+      },
+      idle:{
+        abi:idleToken,
+        token:'idleDAI',
+        address:'0x199e7c55B44fFBD2934bFC3bDeE05F6EC2b547CF'
+      },
+      migration:{
+        enabled:false,
+        oldContract:{
+          abi:idleDAI.abi,
+          token:'idleSAI',
+          name:'oldContract',
+          address:'0x4Cc31d87E658504a9db6c9337102c408A3bdE90d',
+        },
+        migrationContract:{
+          abi:IdleMcdBridge,
+          token:'idleSAI',
+          name:'migrationContract',
+          address:'0xE293a3576f22A6BAF841Ed6bb80953F445e1b22a',
+          oldAddresses:['0x556659f45381dEE8BA429C295363E39645abE834'/*,'0xabeCf002a48969C2be92150ae27B1F75cBf6EA6e'*/],
+          functions:[
+            {
+              name:'bridgeIdleV1ToIdleV2',
+              label:'MIGRATE TO idleSAI v2',
+              params:['0x4Cc31d87E658504a9db6c9337102c408A3bdE90d','0x5266C66FC100d2FBE5dbCfE8a8789568D2d2F720']
+            },
+            {
+              name:'bridgeIdleV1ToIdleV2',
+              label:'MIGRATE TO idleDAI v2',
+              params:['0x4Cc31d87E658504a9db6c9337102c408A3bdE90d','0x199e7c55B44fFBD2934bFC3bDeE05F6EC2b547CF']
+            },
+          ]
+        }
+      },
+      protocols:[
+        {
+          name:'compound',
+          abi:cDAI.abi,
+          address:'0xe7bc397dbd069fc7d0109c0636d06888bb50668c',
+          token:'cDAI',
+          functions:{
+            exchangeRate:{
+              name:'exchangeRateStored',
+              decimals:28,
+              params:[]
+            }
+          },
+        },
+        {
+          name:'fulcrum',
+          abi:iDAI,
+          address:'0x6c1e2b0f67e00c06c8e2be7dc681ab785163ff4d',
+          token:'iDAI',
           functions:{
             exchangeRate:{
               name:'tokenPrice',
@@ -251,10 +251,10 @@ const availableTokens = {
       idle:{
         abi:idleToken,
         token:'idleDAI',
-        address:'0x9dC96548a0c917bCB144E4315aE7F6E180FF7BD1'
+        address:'0x93462CD28072A284E9334737878C13B29EdF727e'
       },
       migration:{
-        enabled:true,
+        enabled:false,
         oldContract:{
           abi:idleDAI.abi,
           token:'idleSAI',
@@ -333,10 +333,10 @@ const availableTokens = {
       idle:{
         abi:idleToken,
         token:'idleSAI',
-        address:'0x75C5B0a5Df7395e4EfbD904Dbe4f1B6fcB858341'
+        address:'0xaA3d8c2dafD435536dde34D8015B2bd3480Bc796'
       },
       migration:{
-        enabled:true,
+        enabled:false,
         oldContract:{
           abi:idleDAI.abi,
           token:'idleSAI',

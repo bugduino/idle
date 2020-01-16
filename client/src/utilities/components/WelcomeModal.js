@@ -2,7 +2,6 @@ import React from "react";
 import {
   Text,
   Modal,
-  Box,
   Button,
   Form,
   Icon,
@@ -13,7 +12,7 @@ import colors from '../../colors';
 
 export default function WelcomeModal(props) {
   const { isOpen, closeModal } = props;
-  const walletProvider = localStorage ? ' '+localStorage.getItem('walletProvider')+' ' : null;
+  // const walletProvider = localStorage ? ' '+localStorage.getItem('walletProvider')+' ' : null;
   // const icon = walletProvider ? walletProvider.trim().toLowerCase()+'.svg' : 'idle-dai.png';
   const icon = 'idle-mark.png';
 

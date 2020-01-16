@@ -4,7 +4,7 @@ class FunctionsUtil {
 
   // Attributes
   props = {};
-  LOG_ENABLED = true;
+  LOG_ENABLED = false;
 
   // Constructor
   constructor(props){
@@ -62,12 +62,12 @@ class FunctionsUtil {
     const value = this.props.web3.utils.toWei('0','ether');
     const allowance = await this.getAllowance(token,contractAddr,walletAddr);
     if (allowance){
-      console.log('checkTokenApproved',token,contractAddr,walletAddr,allowance);
+      this.customLog('checkTokenApproved',token,contractAddr,walletAddr,allowance);
     }
     return allowance && this.BNify(allowance).gt(this.BNify(value.toString()));
   }
   getAllowance = async (token,contractAddr,walletAddr) => {
-    console.log('getAllowance',token,contractAddr,walletAddr);
+    this.customLog('getAllowance',token,contractAddr,walletAddr);
     return await this.genericContractCall(
       token, 'allowance', [walletAddr, contractAddr]
     );

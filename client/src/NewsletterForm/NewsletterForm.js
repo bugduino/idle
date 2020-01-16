@@ -73,7 +73,7 @@ class NewsletterForm extends Component {
                     pl={0}
                     pb={3}
                     textAlign={['center','left']}
-                    placeholder={'yourbestmail@whatever.com'}
+                    placeholder={'Enter your e-mail'}
                     boxShadow={'none !important'}
                     borderBottom={'1px solid #a6a6a6'}
                     onChange={this.handleValidation}
