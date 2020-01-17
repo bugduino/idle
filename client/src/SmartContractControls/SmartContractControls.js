@@ -379,7 +379,7 @@ class SmartContractControls extends React.Component {
       const earningPerYear = tokenToRedeem.times(currentApr);
       const earningPerDay = earningPerYear.div(365);
 
-      console.log('getBalanceOf 3',balance.toString(),tokenToRedeem.toString(),this.state.amountLent,earning,currentApr,earningPerYear);
+      this.functionsUtil.customLog('getBalanceOf 3',balance.toString(),tokenToRedeem.toString(),this.state.amountLent,earning,currentApr,earningPerYear);
 
       return this.setState({
         fundsError:false,
@@ -821,11 +821,15 @@ class SmartContractControls extends React.Component {
 
   getPrevTxs = async (count) => {
     count = count ? count : 0;
-    const requiredNetwork = globalConfigs.network.requiredNetwork;
-    const etherscanApiUrl = globalConfigs.network.providers.etherscan[requiredNetwork]
 
     let results = [];
-    if (!globalConfigs.network.isForked){
+    
+    const requiredNetwork = globalConfigs.network.requiredNetwork;
+    const etherscanInfo = globalConfigs.network.providers.etherscan;
+
+    // Check if etherscan is enabled for the required network
+    if (etherscanInfo.enabled && etherscanInfo.api[requiredNetwork]){
+      const etherscanApiUrl = etherscanInfo.api[requiredNetwork];
       const txs = await axios.get(`
         ${etherscanApiUrl}?module=account&action=tokentx&address=${this.props.account}&startblock=8119247&endblock=999999999&sort=asc&apikey=${env.REACT_APP_ETHERSCAN_KEY}
       `).catch(err => {

@@ -1,10 +1,11 @@
 import moment from 'moment';
 import BigNumber from 'bignumber.js';
+import globalConfigs from '../configs/globalConfigs';
+
 class FunctionsUtil {
 
   // Attributes
   props = {};
-  LOG_ENABLED = false;
 
   // Constructor
   constructor(props){
@@ -31,8 +32,8 @@ class FunctionsUtil {
     );
   }
   BNify = s => new BigNumber(String(s))
-  customLog = (...props) => { if (this.LOG_ENABLED) console.log(moment().format('HH:mm:ss'),...props); }
-  customLogError = (...props) => { if (this.LOG_ENABLED) console.error(moment().format('HH:mm:ss'),...props); }
+  customLog = (...props) => { if (globalConfigs.logs.messagesEnabled) console.log(moment().format('HH:mm:ss'),...props); }
+  customLogError = (...props) => { if (globalConfigs.logs.errorsEnabled) console.error(moment().format('HH:mm:ss'),...props); }
   getContractByName = (contractName) => {
     const contract = this.props.contracts.find(c => c.name === contractName);
     if (!contract) {
