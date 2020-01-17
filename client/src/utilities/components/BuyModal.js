@@ -252,6 +252,9 @@ class BuyModal extends React.Component {
       case 'airSwap':
         paymentProvider.render(initParams);
       break;
+      case 'totle':
+        paymentProvider.render(initParams);
+      break;
       default:
       break;
     }

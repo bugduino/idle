@@ -74,9 +74,9 @@ class SmartContractControls extends React.Component {
   getDefaultTokenSwapper = () => {
 
     // Disable token swapper for testnet
-    if (globalConfigs.network.requiredNetwork !== 1){
-      return false;
-    }
+    // if (globalConfigs.network.requiredNetwork !== 1){
+    //   return false;
+    // }
 
     const availableProviders = Object.keys(globalConfigs.payments.providers).filter((i) => { const p = globalConfigs.payments.providers[i]; return p.supportedMethods.indexOf('wallet') !== -1 && p.enabled && p.supportedTokens.indexOf(this.props.selectedToken) !== -1 });
 

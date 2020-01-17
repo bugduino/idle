@@ -446,6 +446,7 @@ class RimbleTransaction extends React.Component {
       typeof this.props.config.requiredNetwork !== "undefined"
         ? this.props.config.requiredNetwork
         : globalConfigs.network.requiredNetwork;
+
     let networkName = "";
     switch (networkId) {
       case 1:
@@ -491,6 +492,7 @@ class RimbleTransaction extends React.Component {
 
   getNetworkName = async () => {
     try {
+      // console.log('networkVersion',this.state.web3.currentProvider.networkVersion);
       return this.state.web3.eth.net.getNetworkType((error, networkName) => {
         let current = { ...this.state.network.current };
         current.name = networkName;
@@ -509,8 +511,9 @@ class RimbleTransaction extends React.Component {
     await this.getNetworkName();
 
     let network = { ...this.state.network };
-    network.isCorrectNetwork =
-      this.state.network.current.id === this.state.network.required.id;
+    network.isCorrectNetwork = this.state.network.current.id === this.state.network.required.id;
+
+    // To do, check window.web3.currentProvider.networkVersion to see if Metamask is in the requiredNetwork
 
     this.setState({ network });
   }
@@ -630,10 +633,10 @@ class RimbleTransaction extends React.Component {
           transaction.recentEvent = "receipt";
 
           // If the network is forked use the receipt for confirmation
-          // if (globalConfigs.network.isForked){
-          //   transaction.status = "success";
-          //   callback(transaction);
-          // }
+          if (globalConfigs.network.isForked){
+            transaction.status = "success";
+            callback(transaction);
+          }
 
           this.updateTransaction(transaction);
         })

@@ -26,7 +26,7 @@ const globalConfigs = {
     requiredConfirmations: 1,
     accountBalanceMinimum: 0, // in ETH for gas fees
     requiredNetwork: 42, // { 1: Mainnet, 3: Ropsten, 42: Kovan }
-    isForked: false, // If TRUE the tx confirmation callback is fired on the receipt
+    isForked: true, // If TRUE the tx confirmation callback is fired on the receipt
     providers:{
       infura:{
         1: 'https://mainnet.infura.io/v3/',
@@ -296,72 +296,109 @@ const globalConfigs = {
         }
       },
       zeroExInstant: {
-          enabled: true,
-          imageSrc: 'images/payments/zeroexinstant.svg',
-          imageProps: {
-            height: '35px',
-            my: '8px'
-          },
-          caption: 'Buy with',
-          captionPos: 'top',
-          subcaption: '~ 0.75% fee ~',
-          supportedMethods:['wallet'],
-          supportedTokens:['USDC','DAI'],
-          remoteResources:{'https://instant.0x.org/v3/instant.js':{}},
-          getInitParams: (props,globalConfigs,onSuccess,onClose) => {
-            const connectorName = window.RimbleWeb3_context ? window.RimbleWeb3_context.connectorName : null;
-            return {
-              provider: connectorName && connectorName!=='Injected' && window.RimbleWeb3_context.connector[connectorName.toLowerCase()] ? window.RimbleWeb3_context.connector[window.RimbleWeb3_context.connectorName.toLowerCase()].provider : window.ethereum,
-              orderSource: props.tokenConfig.zeroExInstant.orderSource,
-              affiliateInfo: props.tokenConfig.zeroExInstant.affiliateInfo,
-              defaultSelectedAssetData: props.tokenConfig.zeroExInstant.assetData,
-              availableAssetDatas: [props.tokenConfig.zeroExInstant.assetData],
-              shouldDisableAnalyticsTracking: true,
-              onSuccess: onSuccess ? onSuccess : () => {},
-              onClose: onClose ? onClose : () => {}
-            };
-          },
-          render: (initParams,amount) => {
-            if (window.zeroExInstant){
-              if (amount){
-                initParams.defaultAssetBuyAmount = parseFloat(amount);
-              }
-              window.zeroExInstant.render(initParams, 'body');
+        enabled: true,
+        imageSrc: 'images/payments/zeroexinstant.svg',
+        imageProps: {
+          height: '35px',
+          my: '8px'
+        },
+        caption: 'Buy with',
+        captionPos: 'top',
+        subcaption: '~ 0.75% fee ~',
+        supportedMethods:['wallet'],
+        supportedTokens:['USDC','DAI'],
+        remoteResources:{'https://instant.0x.org/v3/instant.js':{}},
+        getInitParams: (props,globalConfigs,onSuccess,onClose) => {
+          const connectorName = window.RimbleWeb3_context ? window.RimbleWeb3_context.connectorName : null;
+          return {
+            provider: connectorName && connectorName!=='Injected' && window.RimbleWeb3_context.connector[connectorName.toLowerCase()] ? window.RimbleWeb3_context.connector[window.RimbleWeb3_context.connectorName.toLowerCase()].provider : window.ethereum,
+            orderSource: props.tokenConfig.zeroExInstant.orderSource,
+            affiliateInfo: props.tokenConfig.zeroExInstant.affiliateInfo,
+            defaultSelectedAssetData: props.tokenConfig.zeroExInstant.assetData,
+            availableAssetDatas: [props.tokenConfig.zeroExInstant.assetData],
+            shouldDisableAnalyticsTracking: true,
+            onSuccess: onSuccess ? onSuccess : () => {},
+            onClose: onClose ? onClose : () => {}
+          };
+        },
+        render: (initParams,amount) => {
+          if (window.zeroExInstant){
+            if (amount){
+              initParams.defaultAssetBuyAmount = parseFloat(amount);
             }
+            window.zeroExInstant.render(initParams, 'body');
           }
+        }
       },
       airSwap: {
-          enabled: true,
-          imageSrc: 'images/payments/airswap.svg',
-          imageProps: {
-            height: '35px',
-            my: '8px'
-          },
-          caption: 'Buy with',
-          captionPos: 'top',
-          subcaption: '~ 0% fee ~',
-          supportedMethods:['wallet'],
-          supportedTokens:['USDC','DAI','SAI'],
-          env:'production',
-          remoteResources:{'https://cdn.airswap.io/airswap-instant-widget.js':{}},
-          getInitParams: (props,globalConfigs,onComplete,onClose) => {
-            return {
-              env: 'production',
-              mode: 'buy',
-              token: props.tokenConfig.address,
-              baseToken: 'ETH',
-              onComplete: onComplete ? onComplete : () => {},
-              onClose: onClose ? onClose : () => {}
-            };
-          },
-          render: (initParams,amount) => {
-            if (window.AirSwapInstant){
-              if (amount){
-                initParams.amount = amount.toString();
-              }
-              window.AirSwapInstant.render(initParams,'body');
+        enabled: false,
+        imageSrc: 'images/payments/airswap.svg',
+        imageProps: {
+          height: '35px',
+          my: '8px'
+        },
+        caption: 'Buy with',
+        captionPos: 'top',
+        subcaption: '~ 0% fee ~',
+        supportedMethods:['wallet'],
+        supportedTokens:['USDC','DAI','SAI'],
+        env:'production',
+        remoteResources:{'https://cdn.airswap.io/airswap-instant-widget.js':{}},
+        getInitParams: (props,globalConfigs,onComplete,onClose) => {
+          return {
+            env: 'production',
+            mode: 'buy',
+            token: props.tokenConfig.address,
+            baseToken: 'ETH',
+            onComplete: onComplete ? onComplete : () => {},
+            onClose: onClose ? onClose : () => {}
+          };
+        },
+        render: (initParams,amount) => {
+          if (window.AirSwapInstant){
+            if (amount){
+              initParams.amount = amount.toString();
             }
+            window.AirSwapInstant.render(initParams,'body');
           }
+        }
+      },
+      totle: {
+        enabled: true,
+        imageSrc: 'images/payments/totle.svg',
+        imageProps: {
+          height: '35px',
+          my: '8px'
+        },
+        caption: 'Buy with',
+        captionPos: 'top',
+        subcaption: '~ 0% fee ~',
+        supportedMethods:['wallet'],
+        supportedTokens:['USDC','DAI','SAI'],
+        env:'production',
+        remoteResources:{'https://widget.totle.com/latest/dist.js':{}},
+        getInitParams: (props,globalConfigs,onComplete,onClose) => {
+          return {
+            sourceAssetAddress: null,
+            sourceAmountDecimal: null,
+            destinationAssetAddress: null,
+            destinationAmountDecimal: null,
+            apiKey: null,
+            partnerContractAddress: null,
+          };
+        },
+        render: (initParams,amount) => {
+          if (window.TotleWidget){
+            const nodeId = 'totle-widget';
+            if (!document.getElementById(nodeId)){
+              const totleWidgetContainer = document.createElement("div");
+              totleWidgetContainer.id = nodeId;
+              document.body.appendChild(totleWidgetContainer);
+            }
+
+            window.TotleWidget.default.run(initParams,document.getElementById(nodeId));
+          }
+        }
       }
     }
   }

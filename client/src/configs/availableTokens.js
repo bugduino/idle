@@ -251,7 +251,7 @@ const availableTokens = {
       idle:{
         abi:idleToken,
         token:'idleDAI',
-        address:'0x93462CD28072A284E9334737878C13B29EdF727e'
+        address:'0x715e5FeF8C20a084a7178CE3a4c29a9430c551E6'
       },
       migration:{
         enabled:false,
@@ -333,7 +333,7 @@ const availableTokens = {
       idle:{
         abi:idleToken,
         token:'idleSAI',
-        address:'0xaA3d8c2dafD435536dde34D8015B2bd3480Bc796'
+        address:'0xdA94BB71caB7bc38F6a6eb3F67a407f6D8eD223F'
       },
       migration:{
         enabled:false,
