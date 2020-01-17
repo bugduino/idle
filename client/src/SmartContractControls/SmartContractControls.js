@@ -540,7 +540,7 @@ class SmartContractControls extends React.Component {
     let paramsForRebalance = null;
 
     // Get amounts for best allocations
-    if (this.props.account && false){
+    if (this.props.account){
       const callParams = { from: this.props.account, gas: this.props.web3.utils.toBN(5000000) };
       paramsForRebalance = await this.functionsUtil.genericIdleCall('getParamsForRebalance',[_newAmount],callParams);
       this.functionsUtil.customLog('getParamsForRebalance',_newAmount,paramsForRebalance);
@@ -605,7 +605,7 @@ class SmartContractControls extends React.Component {
 
     let paramsForMint = null;
 
-    if (this.props.account && false){
+    if (this.props.account){
       // Get amounts for best allocations
       const callParams = { from: this.props.account, gas: this.props.web3.utils.toBN(5000000) };
       paramsForMint = await this.functionsUtil.genericIdleCall('getParamsForMintIdleToken',[value],callParams);
@@ -681,7 +681,7 @@ class SmartContractControls extends React.Component {
     const _skipRebalance = false;
     let paramsForRedeem = null;
 
-    if (this.props.account && false){
+    if (this.props.account){
       const callParams = { from: this.props.account, gas: this.props.web3.utils.toBN(5000000) };
       paramsForRedeem = await this.functionsUtil.genericIdleCall('getParamsForRedeemIdleToken',[idleTokenToRedeem, _skipRebalance],callParams);
       this.functionsUtil.customLog('getParamsForRedeemIdleToken',idleTokenToRedeem,paramsForRedeem);
@@ -1137,6 +1137,7 @@ class SmartContractControls extends React.Component {
       isApprovingMigrationContract: false,
       oldContractBalance: null,
       oldContractBalanceFormatted:null,
+      oldContractTokenDecimals:null,
       migrationContractApproved: false,
       migrationTx:false,
       migrationApproveTx: null,
@@ -1299,7 +1300,6 @@ class SmartContractControls extends React.Component {
         // Call migration contract function to migrate funds
 
         const callback = tx => {
-          this.functionsUtil.customLog('Migration TX COMPLETED',tx);
 
           const newState = {
             migrationError: true, // Throw error by default
@@ -1311,6 +1311,8 @@ class SmartContractControls extends React.Component {
             newState.migrationError = false; // Reset error
             newState.migrationEnabled = false;
             newState.needsUpdate = true;
+
+            // console.log('Migration TX COMPLETED - into the success callback');
 
             // Toast message
             window.toastProvider.addMessage(`Migration completed`, {
@@ -1331,6 +1333,8 @@ class SmartContractControls extends React.Component {
             });
           }
 
+          // console.log('Migration TX COMPLETED',tx,newState);
+
           this.setState(newState);
         }
 
@@ -1346,13 +1350,24 @@ class SmartContractControls extends React.Component {
           isMigrating: true
         });
 
-        const toMigrate = this.functionsUtil.BNify(this.state.oldContractBalance).toString();
+        const toMigrate = this.functionsUtil.BNify(this.state.oldContractBalance).div(10).toString();
+        const value = this.functionsUtil.normalizeTokenAmount(this.state.oldContractBalanceFormatted,this.state.oldContractTokenDecimals).toString();
 
         const migrationParams = [...params];
         migrationParams.push(toMigrate);
 
-        // Call getParamsForMintIdleToken and pass second result
-        migrationParams.push([]);
+        let _clientProtocolAmounts = [];
+        if (this.props.account){
+          // Get amounts for best allocations
+          const callParams = { from: this.props.account, gas: this.props.web3.utils.toBN(5000000) };
+          const paramsForMint = await this.functionsUtil.genericIdleCall('getParamsForMintIdleToken',[value],callParams);
+          if (paramsForMint){
+            _clientProtocolAmounts = paramsForMint[1];
+          }
+          this.functionsUtil.customLog('getParamsForMintIdleToken',value,paramsForMint);
+        }
+
+        migrationParams.push(_clientProtocolAmounts);
 
         // Send migration tx
         await this.functionsUtil.contractMethodSendWrapper(migrationContractInfo.name, migrationMethod, migrationParams, callback, callback_receipt);
@@ -1361,6 +1376,7 @@ class SmartContractControls extends React.Component {
   }
 
   async checkMigration() {
+    let oldContractTokenDecimals = null;
     let oldContractBalance = null;
     let oldContractBalanceFormatted = null;
     let migrationContractApproved = false;
@@ -1373,12 +1389,15 @@ class SmartContractControls extends React.Component {
       const migrationContract = this.functionsUtil.getContractByName(this.props.tokenConfig.migration.migrationContract.name);
 
       if (oldContract && migrationContract){
+        // Get old contract token decimals
+        oldContractTokenDecimals = await this.functionsUtil.getTokenDecimals(oldContractName);
         // Check migration contract approval
         migrationContractApproved = await this.checkMigrationContractApproved();
         // Check old contractBalance
         oldContractBalance = await this.functionsUtil.getContractBalance(oldContractName,this.props.account);
         if (oldContractBalance){
-          oldContractBalanceFormatted = await this.functionsUtil.getTokenBalance(oldContractName,this.props.account);
+          oldContractBalanceFormatted = this.functionsUtil.fixTokenDecimals(oldContractBalance,oldContractTokenDecimals);
+          // Enable migration if old contract balance if greater than 0
           migrationEnabled = this.functionsUtil.BNify(oldContractBalance).gt(0);
         }
       }
@@ -1391,7 +1410,8 @@ class SmartContractControls extends React.Component {
       migrationEnabled,
       migrationContractApproved,
       oldContractBalanceFormatted,
-      oldContractBalance
+      oldContractBalance,
+      oldContractTokenDecimals
     });
   }
 
@@ -1722,7 +1742,7 @@ class SmartContractControls extends React.Component {
 
     const fundsAreReady = this.state.fundsError || (!this.state.updateInProgress && !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && !isNaN(this.trimEth(this.state.earning)) && !isNaN(this.trimEth(this.state.amountLent)));
 
-    // customLog('fundsAreReady',this.state.fundsError,this.state.updateInProgress,this.trimEth(this.state.tokenToRedeemParsed),this.trimEth(this.state.earning),this.trimEth(this.state.amountLent));
+    // console.log('fundsAreReady',this.state.fundsError,this.state.updateInProgress,this.trimEth(this.state.tokenToRedeemParsed),this.trimEth(this.state.earning),this.trimEth(this.state.amountLent));
 
     const tokenNotApproved = this.props.account && !this.state.isTokenApproved && !this.state.isApprovingToken && !this.state.updateInProgress;
     const walletIsEmpty = this.props.account && this.state.showEmptyWalletOverlay && !tokenNotApproved && !this.state.isApprovingToken && this.state.tokenBalance !== null && !isNaN(this.state.tokenBalance) && !parseFloat(this.state.tokenBalance);
@@ -1809,7 +1829,7 @@ class SmartContractControls extends React.Component {
                               color={'white'}
                               size={'28'}
                             />
-                            <Image src={`images/tokens/${this.props.selectedToken}.svg`} height={'42px'} />
+                            <Image src={`images/tokens/${this.props.selectedToken}.svg`} height={'32px'} />
                             <Icon
                               name={'KeyboardArrowRight'}
                               color={'white'}
