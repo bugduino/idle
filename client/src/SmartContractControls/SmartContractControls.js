@@ -899,6 +899,10 @@ class SmartContractControls extends React.Component {
           });
         }));
 
+        if (!migrationTxReceipt){
+          return;
+        }
+
         const internalTransfers = migrationTxReceipt.logs.filter((tx) => { return tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${oldContractAddr}`; });
 
         if (!internalTransfers.length){

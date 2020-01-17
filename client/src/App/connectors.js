@@ -19,15 +19,17 @@ const env = process.env;
 
 const manifestEmail = env.REACT_APP_TREZOR_MANIFEST_EMAIL; // trezor
 const manifestAppUrl = env.REACT_APP_TREZOR_MANIFEST_URL; // trezor
-// const defaultNetwork = 1; // mainnet
-const defaultNetwork = globalConfigs.network.requiredNetwork; // Kovan
-// const defaultNetwork = 4; // rinkeby
+const defaultNetwork = globalConfigs.network.requiredNetwork;
 const fortmaticApiKey = env.REACT_APP_FORTMATIC_KEY_RINKEBY;
 const portisDAppId = env.REACT_APP_PORTIS_DAPP_ID;
 const portisNetwork = env.REACT_APP_PORTIS_NETWORK;
 
 const supportedNetworkURLs = {};
-supportedNetworkURLs[defaultNetwork] = globalConfigs.network.providers.infura[defaultNetwork]+env.REACT_APP_INFURA_KEY;
+  
+Object.keys(globalConfigs.network.providers.infura).forEach((networkId,index) => {
+  supportedNetworkURLs[networkId] = globalConfigs.network.providers.infura[networkId]+env.REACT_APP_INFURA_KEY;
+});
+
 
 const Injected = new InjectedConnector({
   supportedNetworks: [defaultNetwork]

@@ -364,7 +364,7 @@ const globalConfigs = {
         }
       },
       totle: {
-        enabled: true,
+        enabled: false,
         imageSrc: 'images/payments/totle.svg',
         imageProps: {
           height: '35px',

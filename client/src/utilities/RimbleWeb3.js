@@ -186,11 +186,13 @@ class RimbleTransaction extends React.Component {
           WalletConnectQRCodeModal.close();
         } catch {}
       }
+    // Reset web3 if Infura
+    } else if (context.active && context.connectorName === "Infura"){
+      web3 = null;
     }
 
     let web3Host = null;
     let web3Provider = null;
-    let terminalSourceType = localStorage && localStorage.getItem('walletProvider') ? localStorage.getItem('walletProvider') : SourceType.Infura;
 
     if (!web3) { // safety web3 implementation
       if (window.ethereum) {
@@ -201,7 +203,7 @@ class RimbleTransaction extends React.Component {
         web3Provider = window.web3;
       } else {
         this.functionsUtil.customLog("Non-Ethereum browser detected. Using Infura fallback.");
-        web3Host = globalConfigs.network.providers.infura[globalConfigs.network.requiredNetwork]+INFURA_KEY;
+        web3Host = globalConfigs.network.providers.infura[globalConfigs.network.defaultNetwork]+INFURA_KEY;
       }
 
     } else {
@@ -210,6 +212,7 @@ class RimbleTransaction extends React.Component {
     
     if (globalConfigs.network.providers.terminal && globalConfigs.network.providers.terminal.enabled){
       const TerminalHttpProviderParams = globalConfigs.network.providers.terminal.params;
+      const terminalSourceType = localStorage && localStorage.getItem('walletProvider') ? localStorage.getItem('walletProvider') : SourceType.Infura;
       TerminalHttpProviderParams.source = terminalSourceType;
 
       if (web3Provider){
@@ -492,7 +495,6 @@ class RimbleTransaction extends React.Component {
 
   getNetworkName = async () => {
     try {
-      // console.log('networkVersion',this.state.web3.currentProvider.networkVersion);
       return this.state.web3.eth.net.getNetworkType((error, networkName) => {
         let current = { ...this.state.network.current };
         current.name = networkName;
