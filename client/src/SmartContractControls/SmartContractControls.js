@@ -1208,7 +1208,8 @@ class SmartContractControls extends React.Component {
     await Promise.all([
       this.getAllocations(),
       this.getAprs(),
-      this.getPriceInToken()
+      this.getPriceInToken(),
+      this.checkMigration()
     ]);
 
     /*
