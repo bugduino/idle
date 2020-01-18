@@ -40,7 +40,8 @@ const globalConfigs = {
         }
       },
       terminal:{
-        enabled:false,
+        enabled:true,
+        supportedNetworks:[1,42],
         params:{
           apiKey: 'LonotCXiu7FEVd8Zl2W68A==',
           projectId: 'DYLRXdlpqKVzPmZr',
@@ -120,7 +121,7 @@ const globalConfigs = {
 
           const methods = {
             'bank':'onramp',
-            'card':'debitcard-hosted-dialog'
+            'card':'debitcard'
           };
 
           const secretKey = generateSecretKey();
