@@ -356,6 +356,8 @@ class SmartContractControls extends React.Component {
           this.getBalanceOf(contractName,count+1);
         },10000);
         return false;
+      } else if (this.state.amountLent.lte(0) && tokenToRedeem){
+        this.state.amountLent = tokenToRedeem.div(this.state.tokenPrice);
       }
 
       if (this.BNify(tokenToRedeem).gt(this.BNify(this.state.amountLent))){
@@ -881,12 +883,44 @@ class SmartContractControls extends React.Component {
       // Deposited
       if (isDepositTx){
         amountLent = amountLent.plus(this.BNify(tx.value));
+
+        this.functionsUtil.customLog('Add deposited value',this.BNify(tx.value).toString(),amountLent.toString());
+
       // Redeemed
       } else if (isRedeemTx){
-        amountLent = amountLent.minus(this.BNify(tx.value));
-        if (amountLent.lt(0)){
-          amountLent = this.BNify(0);
+
+        const redeemTxReceipt = await (new Promise( async (resolve, reject) => {
+          this.props.web3.eth.getTransactionReceipt(tx.hash,(err,tx)=>{
+            if (err){
+              reject(err);
+            }
+            resolve(tx);
+          });
+        }));
+
+        if (!redeemTxReceipt){
+          return;
         }
+
+        const walletAddress = this.props.account.replace('x','').toLowerCase();
+
+        const internalTransfers = redeemTxReceipt.logs.filter((tx) => { return tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${walletAddress}`; });
+
+        if (!internalTransfers.length){
+          return;
+        }
+
+        const internalTransfer = internalTransfers[0];
+        const redeemedValue = parseInt(internalTransfer.data,16);
+        const tokenDecimals = this.state.tokenDecimals ? this.state.tokenDecimals : await this.functionsUtil.getTokenDecimals();
+        const redeemedValueFixed = this.functionsUtil.fixTokenDecimals(redeemedValue,tokenDecimals);
+        
+        amountLent = amountLent.minus(this.BNify(redeemedValueFixed));
+
+        this.functionsUtil.customLog('Add redeemed value',redeemedValueFixed.toString(),amountLent.toString());
+
+        tx.value = redeemedValueFixed;
+
       // Migrated
       } else if (isMigrationTx){
 
@@ -911,13 +945,16 @@ class SmartContractControls extends React.Component {
 
         const internalTransfer = internalTransfers[0];
         const migrationValue = parseInt(internalTransfer.data,16);
-        const tokenDecimals = await this.functionsUtil.getTokenDecimals(this.props.tokenConfig.migration.oldContract.name);
+        const tokenDecimals = this.state.oldContractTokenDecimals ? this.state.oldContractTokenDecimals : await this.functionsUtil.getTokenDecimals(this.props.tokenConfig.migration.oldContract.name);
         const migrationValueFixed = this.functionsUtil.fixTokenDecimals(migrationValue,tokenDecimals);
 
-        this.functionsUtil.customLog('Add migrated value',migrationValue,tokenDecimals,migrationValueFixed.toString());
-
         amountLent = amountLent.plus(this.BNify(migrationValueFixed));
+
+        this.functionsUtil.customLog('Add migrated value',migrationValueFixed.toString(),amountLent.toString());
+
+        tx.value = migrationValueFixed;
       }
+
       transactions[tx.hash] = tx;
     });
 
@@ -968,26 +1005,38 @@ class SmartContractControls extends React.Component {
           break;
           case 'redeemIdleToken':
 
-            let tokenPrice = parseFloat(this.state.tokenPrice.toString());
-
-            // Take stored redeem tx price
-            if (localStorage){
-              let redeemTxsPrices = localStorage.getItem('redeemTxsPrices');
-              if (redeemTxsPrices){
-                redeemTxsPrices = JSON.parse(redeemTxsPrices);
-                if (redeemTxsPrices && redeemTxsPrices[tx.transactionHash]){
-                  tokenPrice = parseFloat(redeemTxsPrices[tx.transactionHash]);
+            const redeemTxReceipt = await (new Promise( async (resolve, reject) => {
+              this.props.web3.eth.getTransactionReceipt(tx.transactionHash,(err,tx)=>{
+                if (err){
+                  reject(err);
                 }
-              }
-            }
+                resolve(tx);
+              });
+            }));
 
-            txValue = tx.params && tokenPrice ? (+this.toEth(tx.params[0])*tokenPrice).toString() : this.toEth(tx.params[0]).toString();
-            if (!txValue){
-              this.functionsUtil.customLog('Skipped tx '+tx.transactionHash+' - value is zero ('+txValue+')');
+            if (!redeemTxReceipt){
               return;
             }
+
+            const walletAddress = this.props.account.replace('x','').toLowerCase();
+
+            const internalTransfers = redeemTxReceipt.logs.filter((tx) => { return tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${walletAddress}`; });
+
+            if (!internalTransfers.length){
+              return;
+            }
+
+            const internalTransfer = internalTransfers[0];
+            const redeemedValue = parseInt(internalTransfer.data,16);
+            const tokenDecimals = this.state.tokenDecimals ? this.state.tokenDecimals : await this.functionsUtil.getTokenDecimals();
+            const redeemedValueFixed = this.functionsUtil.fixTokenDecimals(redeemedValue,tokenDecimals);
+            
+            amountLent = amountLent.minus(this.BNify(redeemedValueFixed));
+
+            this.functionsUtil.customLog('Add redeemed value',redeemedValueFixed.toString(),amountLent.toString());
+
             realTx.status = 'Redeemed';
-            realTx.value = txValue;
+            realTx.value = redeemedValueFixed.toString();
           break;
           default:
           break;
@@ -1021,7 +1070,7 @@ class SmartContractControls extends React.Component {
     }
 
     if (amountLent.lt(0)){
-      amountLent = this.BNify(0);
+      amountLent = this.functionsUtil.BNify(0);
     }
 
     this.functionsUtil.customLog('getPrevTxs',amountLent,earning);
