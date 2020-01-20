@@ -12,15 +12,27 @@ class Footer extends Component {
     return (
       <Flex id="footer" flexDirection={'column'} className={styles.footer} backgroundColor={'white'} alignItems={'center'} justifyContent={'flex-start'} pl={0} px={[3,6]}>
         <Flex flexDirection={['column','row']} justifyContent={'flex-start'} alignItems={'flex-start'} width={1} maxWidth={['35em','70em']} height={['auto','100%']}>
-
-          <Flex width={[1,3/10]} flexDirection={'column'} height={['auto','100%']}>
+          <Flex width={[1,1/3]} flexDirection={'column'} height={['auto','100%']}>
             <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} my={3} color={'dark-gray'}>
               Start a Conversation
             </Heading.h3>
             <Link textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} color={'blue'} hoverColor={'blue'}>info@idle.finance</Link>
           </Flex>
-
-          <Flex width={[1,3/10]} flexDirection={'column'} height={['auto','100%']}>
+          <Flex width={[1,1/3]} flexDirection={'column'} height={['auto','100%']}>
+            <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} my={3} color={'dark-gray'}>
+              Resources
+            </Heading.h3>
+            <Flex width={1} flexDirection={'column'}>
+              <Link pb={[3,2]} href={'http://developers.idle.finance'} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} color={'blue'} hoverColor={'blue'}>Developers</Link>
+              <Flex pb={[3,2]} width={1} justifyContent={['center','flex-start']}>
+                <RouterLink to="/terms-of-service" style={{textDecoration:'none'}}>
+                  <Text href={'#'} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} fontWeight={3} color={'blue'} hoverColor={'blue'}>Terms of Service</Text>
+                </RouterLink>
+              </Flex>
+              <Link pb={[3,2]} href={'https://www.iubenda.com/privacy-policy/61211749'} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} color={'blue'} hoverColor={'blue'}>Privacy Policy</Link>
+            </Flex>
+          </Flex>
+          <Flex width={[1,1/3]} flexDirection={'column'}>
             <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} my={3} color={'dark-gray'}>
               Explore
             </Heading.h3>
@@ -45,7 +57,12 @@ class Footer extends Component {
               </Link>
             </Flex>
           </Flex>
-
+        </Flex>
+        <Flex flexDirection={['column','row']} justifyContent={'flex-start'} alignItems={'flex-start'} width={1} maxWidth={['35em','70em']} height={['auto','100%']}>
+          <Flex width={[1,3/10]} flexDirection={'column'} height={['auto','100%']}>
+          </Flex>
+          <Flex width={[1,3/10]} flexDirection={'column'} height={['auto','100%']}>
+          </Flex>
           <Flex width={[1,4/10]} flexDirection={'column'} height={['auto','100%']} justifyContent={'flex-end'}>
             <Flex flexDirection={['column']} mt={[2, 0]}>
               <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} my={3} color={'white'}>
