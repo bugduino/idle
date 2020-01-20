@@ -40,7 +40,7 @@ const globalConfigs = {
         }
       },
       terminal:{
-        enabled:true,
+        enabled:false,
         supportedNetworks:[1,42],
         params:{
           apiKey: 'LonotCXiu7FEVd8Zl2W68A==',

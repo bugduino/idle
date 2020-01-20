@@ -356,7 +356,7 @@ class SmartContractControls extends React.Component {
           this.getBalanceOf(contractName,count+1);
         },10000);
         return false;
-      } else if (this.state.amountLent.lte(0) && tokenToRedeem){
+      } else if (this.state.amountLent && this.state.amountLent.lte(0) && tokenToRedeem){
         this.state.amountLent = tokenToRedeem.div(this.state.tokenPrice);
       }
 
@@ -884,7 +884,7 @@ class SmartContractControls extends React.Component {
       if (isDepositTx){
         amountLent = amountLent.plus(this.BNify(tx.value));
 
-        this.functionsUtil.customLog('Add deposited value',this.BNify(tx.value).toString(),amountLent.toString());
+        console.log('Add deposited value',this.BNify(tx.value).toString(),amountLent.toString());
 
       // Redeemed
       } else if (isRedeemTx){
@@ -917,7 +917,7 @@ class SmartContractControls extends React.Component {
         
         amountLent = amountLent.minus(this.BNify(redeemedValueFixed));
 
-        this.functionsUtil.customLog('Add redeemed value',redeemedValueFixed.toString(),amountLent.toString());
+        console.log('Add redeemed value',redeemedValueFixed.toString(),amountLent.toString());
 
         tx.value = redeemedValueFixed;
 
@@ -950,7 +950,7 @@ class SmartContractControls extends React.Component {
 
         amountLent = amountLent.plus(this.BNify(migrationValueFixed));
 
-        this.functionsUtil.customLog('Add migrated value',migrationValueFixed.toString(),amountLent.toString());
+        console.log('Add migrated value',migrationValueFixed.toString(),amountLent.toString());
 
         tx.value = migrationValueFixed;
       }

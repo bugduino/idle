@@ -91,6 +91,7 @@ class EquityChart extends Component {
     let minValue;
     let maxValue;
     let days = this.getGraphDays(graphData);
+    
     [minValue,maxValue] = this.getGraphDataMinMax(graphData);
     this.setState({
       graphData,
