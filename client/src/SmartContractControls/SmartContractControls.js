@@ -380,7 +380,7 @@ class SmartContractControls extends React.Component {
 
       const currentApr = this.BNify(this.state.maxRate).div(100);
       const earningPerYear = tokenToRedeem.times(currentApr);
-      const earningPerDay = earningPerYear.div(365);
+      const earningPerDay = earningPerYear.div(this.functionsUtil.BNify(365.242199));
 
       this.functionsUtil.customLog('getBalanceOf 3',balance.toString(),tokenToRedeem.toString(),this.state.amountLent,earning,currentApr,earningPerYear);
 
@@ -699,6 +699,7 @@ class SmartContractControls extends React.Component {
       this.functionsUtil.customLog('redeemIdleToken_mined_callback needsUpdate:',tx.status,this.checkTransactionMined(tx),needsUpdate);
 
       // Save tokenPrice for redeem tx
+      /*
       if (localStorage && tx.status === 'success'){
           
         // Load the current tokenPrice
@@ -718,6 +719,7 @@ class SmartContractControls extends React.Component {
 
         localStorage.setItem('redeemTxsPrices',JSON.stringify(redeemTxsPrices));
       }
+      */
 
       this.setState({
         [`isLoading${contractName}`]: false,
@@ -1797,7 +1799,7 @@ class SmartContractControls extends React.Component {
 
     const fundsAreReady = this.state.fundsError || (!this.state.updateInProgress && !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && !isNaN(this.trimEth(this.state.earning)) && !isNaN(this.trimEth(this.state.amountLent)));
 
-    // console.log('fundsAreReady',this.state.fundsError,this.state.updateInProgress,this.trimEth(this.state.tokenToRedeemParsed),this.trimEth(this.state.earning),this.trimEth(this.state.amountLent));
+    // console.log('currentReedemableFunds',currentReedemableFunds,'reedemableFundsAtEndOfYear',reedemableFundsAtEndOfYear,'currentEarning',currentEarning,'earningAtEndOfYear',earningAtEndOfYear);
 
     const tokenNotApproved = this.props.account && !this.state.isTokenApproved && !this.state.isApprovingToken && !this.state.updateInProgress;
     const walletIsEmpty = this.props.account && this.state.showEmptyWalletOverlay && !tokenNotApproved && !this.state.isApprovingToken && this.state.tokenBalance !== null && !isNaN(this.state.tokenBalance) && !parseFloat(this.state.tokenBalance);
@@ -2153,6 +2155,7 @@ class SmartContractControls extends React.Component {
                                             <CountUp
                                               start={currentReedemableFunds}
                                               end={reedemableFundsAtEndOfYear}
+                                              useEasing={false}
                                               duration={31536000}
                                               delay={0}
                                               separator=""
@@ -2175,6 +2178,7 @@ class SmartContractControls extends React.Component {
                                             <CountUp
                                               start={currentEarning}
                                               end={earningAtEndOfYear}
+                                              useEasing={false}
                                               duration={31536000}
                                               delay={0}
                                               separator=""
@@ -2596,6 +2600,7 @@ class SmartContractControls extends React.Component {
                                   <CountUp
                                     start={protocolAllocation}
                                     end={protocolAllocationEndOfYear}
+                                    useEasing={false}
                                     duration={31536000}
                                     delay={0}
                                     separator=""
