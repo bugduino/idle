@@ -152,7 +152,8 @@ class SmartContractControls extends React.Component {
     }));
   }
 
-  togglePartialRedeem = () => {
+  togglePartialRedeem = (e) => {
+    e.preventDefault();
     this.setState(state => ({
       ...state,
       partialRedeemEnabled: !state.partialRedeemEnabled
@@ -884,7 +885,7 @@ class SmartContractControls extends React.Component {
       if (isDepositTx){
         amountLent = amountLent.plus(this.BNify(tx.value));
 
-        console.log('Add deposited value',this.BNify(tx.value).toString(),amountLent.toString());
+        this.functionsUtil.customLog('Add deposited value',this.BNify(tx.value).toString(),amountLent.toString());
 
       // Redeemed
       } else if (isRedeemTx){
@@ -917,7 +918,7 @@ class SmartContractControls extends React.Component {
         
         amountLent = amountLent.minus(this.BNify(redeemedValueFixed));
 
-        console.log('Add redeemed value',redeemedValueFixed.toString(),amountLent.toString());
+        this.functionsUtil.customLog('Add redeemed value',redeemedValueFixed.toString(),amountLent.toString());
 
         tx.value = redeemedValueFixed;
 
@@ -950,7 +951,7 @@ class SmartContractControls extends React.Component {
 
         amountLent = amountLent.plus(this.BNify(migrationValueFixed));
 
-        console.log('Add migrated value',migrationValueFixed.toString(),amountLent.toString());
+        this.functionsUtil.customLog('Add migrated value',migrationValueFixed.toString(),amountLent.toString());
 
         tx.value = migrationValueFixed;
       }
@@ -2201,83 +2202,102 @@ class SmartContractControls extends React.Component {
                                         Something went wrong while loading your funds...
                                       </Heading.h3>
                                       <Button
-                                        className={styles.gradientButton}
+                                        className={[styles.gradientButton,styles.empty]}
                                         onClick={e => this.reloadFunds(e) }
                                         size={this.props.isMobile ? 'medium' : 'medium'}
                                         borderRadius={4}
-                                        mainColor={'blue'}
-                                        contrastColor={'white'}
+                                        contrastColor={'blue'}
                                         fontWeight={3}
                                         fontSize={[2,2]}
                                         mx={'auto'}
                                         px={[4,5]}
-                                        mt={[3,4]}
+                                        mt={3}
                                       >
-                                        TRY AGAIN
+                                        RELOAD FUNDS
                                       </Button>
                                   </Flex>
                                 )
                               }
 
                               <Box pb={[3,4]} borderBottom={'1px solid #D6D6D6'}>
-                                {!this.state.redeemProcessing ? (
-                                  <>
-                                  <Flex
-                                    textAlign='center'
-                                    flexDirection={'column'}
-                                    alignItems={'center'}
-                                    >
-                                      <Flex width={1} alignItems={'center'} justifyContent={'center'} mb={0} mx={'auto'}>
-                                        <Button
-                                          onClick={e => this.redeemAll(e, this.props.tokenConfig.idle.token)}
-                                          className={styles.gradientButton}
-                                          size={this.props.isMobile ? 'medium' : 'medium'}
-                                          mainColor={'blue'}
-                                          fontWeight={3}
-                                          fontSize={2}
-                                          px={4}
-                                          my={0}
-                                          width={[1/2,1/4]}
-                                        >
-                                          REDEEM ALL {this.props.selectedToken}
-                                        </Button>
-                                      </Flex>
-                                  </Flex>
-                                  {
-                                    false &&
-                                      <Flex
-                                        textAlign='center'
-                                        flexDirection={'column'}
-                                        alignItems={'center'}>
-                                          <Heading.h3 fontWeight={2} textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
-                                            Redeem your {this.props.selectedToken}
-                                          </Heading.h3>
-                                          <CryptoInput
-                                            genericError={this.state.genericErrorRedeem}
-                                            icon={'images/idle-round.png'}
-                                            buttonLabel={`REDEEM ${this.props.selectedToken}`}
-                                            placeholder={`Enter ${this.props.tokenConfig.idle.token} amount`}
-                                            disableLendButton={this.state.disableRedeemButton}
-                                            isMobile={this.props.isMobile}
-                                            account={this.props.account}
-                                            action={'Redeem'}
-                                            defaultValue={this.state.redeemAmount}
-                                            idleTokenPrice={(1/this.state.idleTokenPrice)}
-                                            convertedLabel={this.props.selectedToken}
-                                            balanceLabel={this.props.tokenConfig.idle.token}
-                                            BNify={this.BNify}
-                                            trimEth={this.trimEth}
-                                            color={'black'}
-                                            balance={this.state.idleTokenBalance}
-                                            selectedAsset={this.props.selectedToken}
-                                            useEntireBalance={this.useEntireBalanceRedeem}
-                                            handleChangeAmount={this.handleChangeAmountRedeem}
-                                            handleClick={e => this.redeem(e, this.props.tokenConfig.idle.token)} />
-                                      </Flex>
-                                  }
-                                  </>
-
-                                  ) : this.state.redeemTx ? (
+                                {
+                                  !this.state.redeemProcessing ?
+                                      !this.state.partialRedeemEnabled ? (
+                                        <Flex
+                                          textAlign='center'
+                                          flexDirection={'column'}
+                                          alignItems={'center'}
+                                          >
+                                            <Flex width={1} alignItems={'center'} justifyContent={'center'} mb={0} mx={'auto'}>
+                                              <Button
+                                                className={[styles.gradientButton]}
+                                                onClick={e => this.redeemAll(e, this.props.tokenConfig.idle.token)}
+                                                size={this.props.isMobile ? 'medium' : 'medium'}
+                                                borderRadius={4}
+                                                mainColor={'blue'}
+                                                fontWeight={3}
+                                                fontSize={[2,2]}
+                                                mx={'auto'}
+                                                px={[4,5]}
+                                                mt={3}
+                                              >
+                                                REDEEM ALL {this.props.selectedToken}
+                                              </Button>
+                                            </Flex>
+                                            <Flex mt={2} alignItems={'center'} justifyContent={'center'}>
+                                              <Link
+                                                color={'primary'}
+                                                hoverColor={'primary'}
+                                                href="#"
+                                                onClick={ e => this.togglePartialRedeem(e) }
+                                              >
+                                                Redeem partial amount
+                                              </Link>
+                                            </Flex>
+                                        </Flex>
+                                      ) : (
+                                        <Flex
+                                          textAlign='center'
+                                          flexDirection={'column'}
+                                          alignItems={'center'}>
+                                            <Heading.h3 fontWeight={2} textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
+                                              Redeem your {this.props.selectedToken}
+                                            </Heading.h3>
+                                            <CryptoInput
+                                              genericError={this.state.genericErrorRedeem}
+                                              icon={'images/idle-round.png'}
+                                              buttonLabel={`REDEEM ${this.props.selectedToken}`}
+                                              placeholder={`Enter ${this.props.tokenConfig.idle.token} amount`}
+                                              disableLendButton={this.state.disableRedeemButton}
+                                              isMobile={this.props.isMobile}
+                                              account={this.props.account}
+                                              action={'Redeem'}
+                                              defaultValue={this.state.redeemAmount}
+                                              idleTokenPrice={(1/this.state.idleTokenPrice)}
+                                              convertedLabel={this.props.selectedToken}
+                                              balanceLabel={this.props.tokenConfig.idle.token}
+                                              BNify={this.BNify}
+                                              trimEth={this.trimEth}
+                                              color={'black'}
+                                              balance={this.state.idleTokenBalance}
+                                              selectedAsset={this.props.selectedToken}
+                                              useEntireBalance={this.useEntireBalanceRedeem}
+                                              handleChangeAmount={this.handleChangeAmountRedeem}
+                                              handleClick={e => this.redeem(e, this.props.tokenConfig.idle.token)}
+                                            />
+                                            <Flex mt={2} alignItems={'center'} justifyContent={'center'}>
+                                              <Link
+                                                color={'primary'}
+                                                hoverColor={'primary'}
+                                                href="#"
+                                                onClick={ e => this.togglePartialRedeem(e) }
+                                              >
+                                                Redeem entire amount
+                                              </Link>
+                                            </Flex>
+                                        </Flex>
+                                      )
+                                   : this.state.redeemTx ? (
                                     <TxProgressBar web3={this.props.web3} waitText={'Redeeming estimated in'} endMessage={'Finalizing redeem request...'} hash={this.state.redeemTx.transactionHash} />
                                   ) : (
                                     <Flex
