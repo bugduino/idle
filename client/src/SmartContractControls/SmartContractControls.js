@@ -2128,10 +2128,10 @@ class SmartContractControls extends React.Component {
                   </>
                 )}
 
-                <Flex justifyContent={'center'} mt={[0,3]}>
-                  <Heading.h5 mt={2} color={'darkGray'} fontWeight={1} fontSize={1} textAlign={'center'}>
-                    *This is beta software. Use at your own risk.
-                  </Heading.h5>
+                <Flex alignItems={'center'} justifyContent={'center'}>
+                  <Link href={'https://certificate.quantstamp.com/view/idle'} target={'_blank'}>
+                    <Image src={`images/quantstamp-badge.svg`} height={'40px'} />
+                  </Link>
                 </Flex>
 
               </Box>
