@@ -642,15 +642,19 @@ class SmartContractControls extends React.Component {
   };
 
   redeemAll = async (e,contractName) => {
+    e.preventDefault();
+
     const redeemAmount = this.state.idleTokenBalance;
 
     this.setState({ redeemAmount }, async () => {
-      this.redeem(e,contractName);
+      this.redeem(null,contractName);
     });
   }
 
   redeem = async (e, contractName) => {
-    e.preventDefault();
+    if (e){
+      e.preventDefault();
+    }
 
     // let IdleDAIBalance = this.toWei('0');
     // if (this.props.account) {
@@ -1864,7 +1868,7 @@ class SmartContractControls extends React.Component {
                           justifyContent={'center'}
                           alignItems={'center'}
                           textAlign={'center'}>
-                          <Loader size="80px" />
+                          <Loader size="80px" color={'white'} />
                           <Heading.h4 my={[2,'15px']} color={'white'} fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
                             Loading data, please wait...
                           </Heading.h4>
