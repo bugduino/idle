@@ -105,7 +105,7 @@ class SmartContractControls extends React.Component {
     }
 
     const initParams = defaultProvider.getInitParams ? defaultProvider.getInitParams(this.props,globalConfigs,onSuccess,onClose) : null;
-    return defaultProvider.render ? (amount) => defaultProvider.render(initParams,amount) : null;
+    return defaultProvider.render ? (amount) => defaultProvider.render(initParams,amount,this.props) : null;
   }
 
   // utilities

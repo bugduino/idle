@@ -37,30 +37,63 @@ class BuyModal extends React.Component {
         const remoteResources = providerInfo.remoteResources;
 
         Object.keys(remoteResources).forEach((url,j) => {
-          const scriptID = `script_${provider}_${j}`;
 
-          if (!document.getElementById(scriptID)){
-            const script = document.createElement("script");
-            const callback = remoteResources[url];
+          const resourceType = url.split('.').pop().toLowerCase();
 
-            if (typeof callback === 'function'){
-              if (script.readyState) {  // only required for IE <9
-                script.onreadystatechange = function() {
-                  if ( script.readyState === 'loaded' || script.readyState === 'complete' ) {
-                    script.onreadystatechange = null;
-                    callback();
+          switch (resourceType){
+            case 'js':
+              const scriptID = `script_${provider}_${j}_${this.props.selectedToken}`;
+
+              if (!document.getElementById(scriptID)){
+                const script = document.createElement("script");
+                const remoteResourceParams = remoteResources[url];
+                const callback = remoteResourceParams && remoteResourceParams.callback ? remoteResourceParams.callback : null;
+                const precall = remoteResourceParams && remoteResourceParams.precall ? remoteResourceParams.precall : null;
+
+                if (precall && typeof precall === 'function'){
+                  precall(this.props,globalConfigs,providerInfo);
+                }
+
+                if (callback && typeof callback === 'function'){
+                  if (script.readyState) {  // only required for IE <9
+                    script.onreadystatechange = function() {
+                      if ( script.readyState === 'loaded' || script.readyState === 'complete' ) {
+                        script.onreadystatechange = null;
+                        callback();
+                      }
+                    };
+                  } else {  //Others
+                    script.onload = callback;
                   }
-                };
-              } else {  //Others
-                script.onload = callback;
+                }
+
+                script.id = scriptID;
+                script.className = `script_${provider}`;
+                script.src = url;
+                script.async = true;
+
+                if (remoteResourceParams && remoteResourceParams.parentElement){
+                  remoteResourceParams.parentElement.appendChild(script)
+                } else {
+                  document.head.appendChild(script);
+                }
               }
-            }
+            break;
+            case 'css':
+              const stylesheetId = `stylesheet_${provider}_${j}`;
 
-            script.id = scriptID;
-            script.src = url;
-            script.async = true;
+              if (!document.getElementById(stylesheetId)){
+                const style = document.createElement("link");
 
-            document.head.appendChild(script);
+                style.id = stylesheetId;
+                style.rel = 'stylesheet';
+                style.href = url;
+
+                document.head.appendChild(style);
+              }
+            break;
+            default:
+            break;
           }
         });
       }
@@ -246,16 +279,10 @@ class BuyModal extends React.Component {
           }
         }
       break;
-      case 'zeroExInstant':
-        paymentProvider.render(initParams);
-      break;
-      case 'airSwap':
-        paymentProvider.render(initParams);
-      break;
-      case 'totle':
-        paymentProvider.render(initParams);
-      break;
       default:
+        if (typeof paymentProvider.render === 'function'){
+          paymentProvider.render(initParams,null,this.state);
+        }
       break;
     }
   }
@@ -504,7 +531,7 @@ class BuyModal extends React.Component {
                                       this.state.availableProviders.map((provider,i) => {
                                         const providerInfo = this.getProviderInfo(provider);
                                         return (
-                                          <ImageButton key={`payment_provider_${provider}`} {...providerInfo} handleClick={ e => { this.renderPaymentMethod(e,provider); } } />
+                                          <ImageButton key={`payment_provider_${provider}`} {...providerInfo} handleClick={ e => { this.renderPaymentMethod(e,provider,this.state); } } />
                                         );
                                       })
                                     }

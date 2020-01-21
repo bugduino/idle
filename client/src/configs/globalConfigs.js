@@ -33,7 +33,7 @@ const globalConfigs = {
         42: 'https://kovan.infura.io/v3/'
       },
       etherscan:{
-        enabled:true,
+        enabled:false, // Enable txs request
         api:{
           1: 'https://api.etherscan.io/api',
           42: 'https://api-kovan.etherscan.io/api'
@@ -331,6 +331,77 @@ const globalConfigs = {
           }
         }
       },
+      kyberSwap: {
+        enabled: true,
+        imageSrc: 'images/payments/kyber.svg',
+        imageProps: {
+          height: '35px',
+          my: '8px'
+        },
+        caption: 'Swap with',
+        captionPos: 'top',
+        subcaption: '~ 0.075% fee ~',
+        supportedMethods:['wallet'],
+        supportedTokens:['USDC','DAI','SAI'],
+        remoteResources:{
+          'https://widget.kyber.network/v0.7.4/widget.css':{},
+          'https://widget.kyber.network/v0.7.4/widget.js':{
+            parentElement:document.body,
+            precall: (props,globalConfigs,providerInfo) => {
+
+              // Remove previous elements
+              const buttons = document.querySelectorAll('.kyber-widget-button');
+              for (let i=0;i<buttons.length;i++){
+                buttons[i].remove();
+              }
+              const scripts = document.querySelectorAll('.script_kyberSwap');
+              for (let i=0;i<scripts.length;i++){
+                scripts[i].remove();
+              }
+
+              const buttonId = `kyber-swapper-${props.selectedToken}`;
+              if (!document.getElementById(buttonId)){
+                const a = document.createElement('a');
+                a.id = buttonId;
+                a.href = providerInfo.getInitParams(props,globalConfigs);
+                a.target = '_blank';
+                a.className = 'kyber-widget-button theme-ocean theme-supported';
+                a.title = 'Swap with Kyber';
+                a.style = 'display:none;';
+                document.body.appendChild(a);
+              }
+            }
+          }
+        },
+        getInitParams: (props,globalConfigs) => {
+          const params = {
+            type:'swap',
+            mode:'popup',
+            title:`Swap token for ${props.selectedToken}`,
+            lang:'en',
+            pinnedTokens:props.selectedToken,
+            defaultPair:`ETH_${props.selectedToken}`,
+            callback:'https://kyberpay-sample.knstats.com/callback',
+            paramForwarding:true,
+            network: 'mainnet',
+            commissionId:'0x4215606a720477178AdFCd5A59775C63138711e8',
+            theme:'theme-ocean'
+          };
+
+          const url  = 'https://widget.kyber.network/v0.7.4/';
+
+          return `${url}?`+Object.keys(params)
+              .map(k => encodeURIComponent(k) + '=' + encodeURIComponent(params[k]))
+              .join('&');
+        },
+        render: (initParams,amount,props) => {
+          const buttonId = `kyber-swapper-${props.selectedToken}`;
+          const a = document.getElementById(buttonId);
+          if (a){
+            a.click();
+          }
+        }
+      },
       airSwap: {
         enabled: false,
         imageSrc: 'images/payments/airswap.svg',
@@ -355,7 +426,7 @@ const globalConfigs = {
             onClose: onClose ? onClose : () => {}
           };
         },
-        render: (initParams,amount) => {
+        render: (initParams,amount,props) => {
           if (window.AirSwapInstant){
             if (amount){
               initParams.amount = amount.toString();
@@ -388,7 +459,7 @@ const globalConfigs = {
             partnerContractAddress: null,
           };
         },
-        render: (initParams,amount) => {
+        render: (initParams,amount,props) => {
           if (window.TotleWidget){
             const nodeId = 'totle-widget';
             if (!document.getElementById(nodeId)){
