@@ -15,9 +15,6 @@ import FunctionsUtil from '../utilities/FunctionsUtil';
 
 const env = process.env;
 
-// mainnet
-const OldIdleAddress = '0x10cf8e1CDba9A2Bd98b87000BCAdb002b13eA525'; // v0.1 hackathon version
-
 const daysInYear = 365.2422;
 let componentUnmounted;
 
@@ -240,8 +237,6 @@ class SmartContractControls extends React.Component {
     tokenPrice = this.functionsUtil.fixTokenDecimals(tokenPrice,tokenDecimals);
     const navPool = this.BNify(totalIdleSupply).div(1e18).times(tokenPrice);
     const idleTokenPrice = (totalIdleSupply || totalIdleSupply === 0) && totalIdleSupply.toString() === '0' ? 0 : tokenPrice.toString();
-
-    // console.log('getPriceInToken',idleTokenPrice,tokenPrice ? tokenPrice.toString() : tokenPrice);
 
     this.setState({
       idleTokenPrice,
@@ -550,14 +545,19 @@ class SmartContractControls extends React.Component {
     }
 
     const _clientProtocolAmounts = paramsForRebalance ? paramsForRebalance[1] : [];
+    const gasLimit = _clientProtocolAmounts.length && _clientProtocolAmounts.indexOf('0') === -1 ? this.functionsUtil.BNify(1500000) : 0;
 
-    this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'rebalance', [ _newAmount, _clientProtocolAmounts ], null , (tx) => {
+    const callback = (tx) => {
       const needsUpdate = tx.status === 'success' && !this.checkTransactionMined(tx);
       this.setState({
         needsUpdate: needsUpdate,
         rebalanceProcessing: false
       });
-    });
+    };
+
+    const callback_receipt = null;
+
+    this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'rebalance', [ _newAmount, _clientProtocolAmounts ], null , callback, callback_receipt, gasLimit);
   };
 
   checkTokenApproved = async () => {
@@ -616,11 +616,9 @@ class SmartContractControls extends React.Component {
     }
 
     const _clientProtocolAmounts = paramsForMint ? paramsForMint[1] : [];
+    const gasLimit = _clientProtocolAmounts.length && _clientProtocolAmounts.indexOf('0') === -1 ? this.functionsUtil.BNify(1500000) : 0;
 
-    // No need for callback atm
-    this.props.contractMethodSendWrapper(contractName, 'mintIdleToken', [
-      value, _clientProtocolAmounts // _clientProtocolAmounts
-    ], null, (tx) => {
+    const callback = (tx) => {
       const txSucceeded = tx.status === 'success';
       const needsUpdate = txSucceeded && !this.checkTransactionMined(tx);
       this.functionsUtil.customLog('mintIdleToken_callback needsUpdate:',tx.status,this.checkTransactionMined(tx),needsUpdate);
@@ -633,12 +631,18 @@ class SmartContractControls extends React.Component {
         lendingTx:null,
         needsUpdate
       });
-    }, (tx) => {
-      // this.addTransaction(tx);
+    };
+
+    const callback_receipt = (tx) => {
       this.setState({
         lendingTx: tx
       });
-    });
+    };
+
+    // No need for callback atm
+    this.props.contractMethodSendWrapper(contractName, 'mintIdleToken', [
+      value, _clientProtocolAmounts
+    ], null, callback, callback_receipt, gasLimit);
   };
 
   redeemAll = async (e,contractName) => {
@@ -656,21 +660,16 @@ class SmartContractControls extends React.Component {
       e.preventDefault();
     }
 
-    // let IdleDAIBalance = this.toWei('0');
-    // if (this.props.account) {
-    //   IdleDAIBalance = await this.functionsUtil.genericContractCall(contractName, 'balanceOf', [this.props.account]);
-    // }
-
     // Check if amount is more than 0
-    /*
-    let amount = document.getElementById('CryptoInput_Redeem').value;
-    if (!amount.toString().length || this.BNify(amount).lte(0)) {
-      return this.setState({
-        disableRedeemButton:true,
-        genericErrorRedeem:`Please insert an amount of ${this.props.selectedToken} to redeem`
-      });
+    if (this.state.partialRedeemEnabled){
+      let amount = document.getElementById('CryptoInput_Redeem').value;
+      if (!amount.toString().length || this.BNify(amount).lte(0)) {
+        return this.setState({
+          disableRedeemButton:true,
+          genericErrorRedeem:`Please insert an amount of ${this.props.selectedToken} to redeem`
+        });
+      }
     }
-    */
 
     this.setState(state => ({
       ...state,
@@ -695,49 +694,29 @@ class SmartContractControls extends React.Component {
     }
 
     const _clientProtocolAmounts = paramsForRedeem ? paramsForRedeem[1] : [];
+    const gasLimit = _clientProtocolAmounts.length && _clientProtocolAmounts.indexOf('0') === -1 ? this.functionsUtil.BNify(1500000) : 0;
 
-    this.props.contractMethodSendWrapper(contractName, 'redeemIdleToken', [
-      idleTokenToRedeem, _skipRebalance, _clientProtocolAmounts
-    ], null, async (tx) => {
+    const callback = (tx) => {
       const needsUpdate = tx.status === 'success' && !this.checkTransactionMined(tx);
       this.functionsUtil.customLog('redeemIdleToken_mined_callback needsUpdate:',tx.status,this.checkTransactionMined(tx),needsUpdate);
-
-      // Save tokenPrice for redeem tx
-      /*
-      if (localStorage && tx.status === 'success'){
-          
-        // Load the current tokenPrice
-        const tokenPrice = await this.getPriceInToken();
-
-        let redeemTxsPrices = localStorage.getItem('redeemTxsPrices');
-        if (redeemTxsPrices){
-          redeemTxsPrices = JSON.parse(redeemTxsPrices);
-        }
-
-        // Initialize object if null
-        if (!redeemTxsPrices){
-          redeemTxsPrices = {};
-        }
-
-        redeemTxsPrices[tx.transactionHash] = tokenPrice.toString();
-
-        localStorage.setItem('redeemTxsPrices',JSON.stringify(redeemTxsPrices));
-      }
-      */
-
       this.setState({
         [`isLoading${contractName}`]: false,
         redeemProcessing: false,
         redeemTx:null,
         needsUpdate
       });
-    }, (tx) => {
+    };
+
+    const callback_receipt = (tx) => {
       this.functionsUtil.customLog('redeemIdleToken_receipt_callback',tx.transactionHash,tx.status);
-      // this.addTransaction(tx);
       this.setState({
         redeemTx: tx
       });
-    });
+    };
+
+    this.props.contractMethodSendWrapper(contractName, 'redeemIdleToken', [
+      idleTokenToRedeem, _skipRebalance, _clientProtocolAmounts
+    ], null, callback, callback_receipt, gasLimit);
   };
 
   useEntireBalanceRedeem = (balance) => {
@@ -1263,7 +1242,6 @@ class SmartContractControls extends React.Component {
 
     this.functionsUtil.customLog('Web3 SmartContractControls initialized');
 
-    await this.props.initContract('OldIdleDAI', OldIdleAddress, this.props.tokenConfig.idle.abi);
     await this.props.initContract(this.props.tokenConfig.idle.token, this.props.tokenConfig.idle.address, this.props.tokenConfig.idle.abi);
     await Promise.all([
       this.getAllocations(),
@@ -1373,8 +1351,6 @@ class SmartContractControls extends React.Component {
             newState.migrationEnabled = false;
             newState.needsUpdate = true;
 
-            // console.log('Migration TX COMPLETED - into the success callback');
-
             // Toast message
             window.toastProvider.addMessage(`Migration completed`, {
               secondaryMessage: `Your funds has been migrated`,
@@ -1393,8 +1369,6 @@ class SmartContractControls extends React.Component {
               variant: "failure",
             });
           }
-
-          // console.log('Migration TX COMPLETED',tx,newState);
 
           this.setState(newState);
         }
@@ -1521,7 +1495,6 @@ class SmartContractControls extends React.Component {
         this.checkTokenApproved(), // Check if the token is already approved
         this.getPrevTxs(),
         this.checkMigration(),
-        // this.getOldBalanceOf('OldIdleDAI'),
         this.getTotalSupply(this.props.tokenConfig.idle.token)
       ]);
 

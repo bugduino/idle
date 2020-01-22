@@ -8,8 +8,6 @@ import styles from './Web3ConnectionButtons.module.scss';
 import moment from 'moment';
 import globalConfigs from '../configs/globalConfigs';
 
-console.log('connectors',connectors);
-
 const LOG_ENABLED = false;
 const customLog = (...props) => { if (LOG_ENABLED) console.log(moment().format('HH:mm:ss'),...props); };
 

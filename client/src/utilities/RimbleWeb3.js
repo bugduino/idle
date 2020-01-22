@@ -522,7 +522,7 @@ class RimbleTransaction extends React.Component {
     this.setState({ network });
   }
 
-  contractMethodSendWrapper = async (contractName, contractMethod, params = [], value = null, callback = null, callback_receipt = null) => {
+  contractMethodSendWrapper = async (contractName, contractMethod, params = [], value = null, callback = null, callback_receipt = null, gasLimit = null) => {
     // Is it on the correct network?
     if (!this.state.network.isCorrectNetwork) {
       // wrong network modal
@@ -578,8 +578,16 @@ class RimbleTransaction extends React.Component {
 
       if (gas) {
         gas = this.functionsUtil.BNify(gas);
-        gas = this.state.web3.utils.toBN(gas.plus(gas.times(this.functionsUtil.BNify('0.3'))).integerValue(BigNumber.ROUND_FLOOR)); // 30% more
+        gas = gas.plus(gas.times(this.functionsUtil.BNify('0.3'))); // Increase 30% of enstimation
+
+        // Check if gas is under the gasLimit param
+        if (gasLimit && gas.lt(this.functionsUtil.BNify(gasLimit))){
+          gas = this.functionsUtil.BNify(gasLimit);
+        }
+        // Convert gasLimit toBN with web3 utils
+        gas = this.state.web3.utils.toBN(gas.integerValue(BigNumber.ROUND_FLOOR));
       }
+
       contract.methods[contractMethod](...params)
         .send(value ? { from: account, value, gas  } : { from: account, gas })
         .on("transactionHash", hash => {
