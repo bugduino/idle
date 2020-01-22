@@ -91,7 +91,10 @@ const globalConfigs = {
         defaultProvider:'zeroExInstant',
         props:{
           imageSrc:'images/ethereum-wallet.svg',
-          caption:'Ethereum Wallet'
+          caption:'Ethereum Wallet',
+          imageProps:{
+            padding:['0','5px']
+          }
         }
       },
     },

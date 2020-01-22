@@ -505,8 +505,13 @@ class BuyModal extends React.Component {
                         if (!availableProviders || !availableProviders.length){
                           return false;
                         }
+
+                        let imageProps = methodInfo.props && methodInfo.props.imageProps ? methodInfo.props.imageProps : {};
+                        const imagePropsExtended = this.props.isMobile ? {height:'42px'} : {height:'70px'};
+                        imageProps = Object.assign(imageProps,imagePropsExtended);
+
                         return (
-                          <ImageButton isMobile={ this.props.isMobile } key={`method_${method}`} {...methodInfo.props} imageProps={ this.props.isMobile ? {height:'42px'} : {height:'70px'}} handleClick={ e => this.selectMethod(e,method) } />
+                          <ImageButton isMobile={ this.props.isMobile } key={`method_${method}`} {...methodInfo.props} imageProps={ imageProps } handleClick={ e => this.selectMethod(e,method) } />
                         );
                       })
                     }
