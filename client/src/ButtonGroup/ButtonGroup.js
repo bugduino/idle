@@ -59,7 +59,7 @@ class ButtonGroup extends Component {
                   const isLastItem = i===this.props.components.length-1;
                   const Component = c.component;
                   return (
-                      <Component key={'component_'+i} isMobile={this.props.isMobile} borderRight={  !this.props.isMobile && isFirstItem && !isLastItem ? '1px solid rgba(255,255,255,0.1)' : null } borderLeft={ !this.props.isMobile && isLastItem && !isFirstItem ? '1px solid rgba(255,255,255,0.1)' : null } boxShadow={'none'} borderRadius={ this.props.isMobile ? '8px' : (isFirstItem && !isLastItem ? '2rem 0 0 2rem' : ( !this.props.isMobile && isLastItem && !isFirstItem ? '0 2rem 2rem 0' : ( !this.props.isMobile && isLastItem && isFirstItem ? '2rem' : '0') )) } style={ !this.props.isMobile ? {flex:'1 1 0px'} : {}} className={styles.buttonGroupComponent} {...c.props}>{ c.value ? c.value : null }</Component>
+                      <Component key={'component_'+i} isMobile={this.props.isMobile} borderRight={  !this.props.isMobile && isFirstItem && !isLastItem ? '1px solid rgba(255,255,255,0.1)' : null } borderLeft={ !this.props.isMobile && (isLastItem && this.props.components.length>2 ) && !isFirstItem ? '1px solid rgba(255,255,255,0.1)' : null } boxShadow={'none'} borderRadius={ this.props.isMobile ? '8px' : (isFirstItem && !isLastItem ? '2rem 0 0 2rem' : ( !this.props.isMobile && isLastItem && !isFirstItem ? '0 2rem 2rem 0' : ( !this.props.isMobile && isLastItem && isFirstItem ? '2rem' : '0') )) } style={ !this.props.isMobile ? {flex:'1 1 0px'} : {}} className={styles.buttonGroupComponent} {...c.props}>{ c.value ? c.value : null }</Component>
                   );
                 })
               }
