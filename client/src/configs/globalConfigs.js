@@ -57,24 +57,21 @@ const globalConfigs = {
         defaultProvider:null,
         props:{
           imageSrc:'images/bank.png',
-          caption:'Bank Account',
-          imageProps:{height:'70px'}
+          caption:'Bank Account'
         }
       },
       card:{
         defaultProvider:null,
         props:{
           imageSrc:'images/debit-card.png',
-          caption:'Credit Card',
-          imageProps:{height:'70px'}
+          caption:'Credit Card'
         }
       },
       wallet:{
         defaultProvider:'zeroExInstant',
         props:{
           imageSrc:'images/ethereum-wallet.svg',
-          caption:'Ethereum Wallet',
-          imageProps:{p:[2,3],height:'70px'}
+          caption:'Ethereum Wallet'
         }
       },
     },
@@ -83,7 +80,8 @@ const globalConfigs = {
         enabled: true,
         imageSrc: 'images/payments/wyre.svg',
         imageProps: {
-          height: '35px',
+          width: ['100%','auto'],
+          height: ['auto','35px'],
           my: '8px'
         },
         caption: 'Buy with',
@@ -101,6 +99,22 @@ const globalConfigs = {
           prod:{
             accountId:'AC_PQQBX33XVEQ'
           }
+        },
+        getInfo: (props) => {
+          const info = {};
+          if (props.selectedMethod && props.selectedMethod){
+            switch (props.selectedMethod){
+              case 'bank':
+                info.subcaption = `~ 0.75% fee ~\nKYC REQUIRED`;
+              break;
+              case 'card':
+                info.subcaption = `~ 0.75% fee ~\nSSN REQUIRED`;
+              break;
+              default:
+              break;
+            }
+          }
+          return info;
         },
         getInitParams: (props,globalConfigs,buyParams) => {
 
@@ -148,7 +162,8 @@ const globalConfigs = {
         enabled:true,
         imageSrc: 'images/payments/ramp.png',
         imageProps: {
-          height: '35px',
+          width: ['100%','auto'],
+          height: ['auto','35px'],
           my: '8px'
         },
         caption: 'Buy with',
@@ -171,7 +186,8 @@ const globalConfigs = {
         enabled:true,
         imageSrc: 'images/payments/moonpay.svg',
         imageProps: {
-          height: '35px',
+          width: ['100%','auto'],
+          height: ['auto','35px'],
           my: '8px'
         },
         caption: 'Buy with',
@@ -247,7 +263,8 @@ const globalConfigs = {
         enabled:true,
         imageSrc: 'images/payments/transak.png',
         imageProps: {
-          height: '35px',
+          width: ['100%','auto'],
+          height: ['auto','35px'],
           my: '8px'
         },
         caption: 'Buy with',
@@ -300,7 +317,8 @@ const globalConfigs = {
         enabled: true,
         imageSrc: 'images/payments/zeroexinstant.svg',
         imageProps: {
-          height: '35px',
+          width: ['100%','auto'],
+          height: ['auto','35px'],
           my: '8px'
         },
         caption: 'Buy with',
@@ -335,7 +353,8 @@ const globalConfigs = {
         enabled: true,
         imageSrc: 'images/payments/kyber.svg',
         imageProps: {
-          height: '35px',
+          width: ['100%','auto'],
+          height: ['auto','35px'],
           my: '8px'
         },
         caption: 'Swap with',
@@ -406,7 +425,8 @@ const globalConfigs = {
         enabled: false,
         imageSrc: 'images/payments/airswap.svg',
         imageProps: {
-          height: '35px',
+          width: ['100%','auto'],
+          height: ['auto','35px'],
           my: '8px'
         },
         caption: 'Buy with',
@@ -439,7 +459,8 @@ const globalConfigs = {
         enabled: false,
         imageSrc: 'images/payments/totle.svg',
         imageProps: {
-          height: '35px',
+          width: ['100%','auto'],
+          height: ['auto','35px'],
           my: '8px'
         },
         caption: 'Buy with',

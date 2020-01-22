@@ -20,7 +20,7 @@ export default function (props) {
 
   const balances = [
     {
-      'icon':'images/ether.png',
+      'icon':'images/tokens/ETH.svg',
       'amount':accountBalance
     },
     {

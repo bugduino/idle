@@ -25,15 +25,12 @@ class ConnectionModal extends React.Component {
   state = {
     currentSection:null,
     showTxFees: false,
-    showConnectionButtons: false,
-    newToEthereum: false,
     closeRemainingTime:null,
     newToEthereumChoice: null,
     showInstructions: false
   };
 
   toggleShowTxFees = e => {
-    console.log("showTxFees", this.state.showTxFees);
     e.preventDefault();
 
     this.setState({
@@ -41,51 +38,20 @@ class ConnectionModal extends React.Component {
     });
   }
 
-  getShowConnectionButtons = () => {
-    return (localStorage && localStorage.getItem('showConnectionButtons')) || this.state.showConnectionButtons;
-  }
-
-  toggleShowConnectionButtons = (e,showConnectionButtons) => {
-    e.preventDefault();
-
-    if (typeof showConnectionButtons === 'undefined'){
-      showConnectionButtons = !this.state.showConnectionButtons;
-    }
-
-    this.setState({
-      newToEthereumChoice:null,
-      showTxFees: false,
-      showConnectionButtons,
-      showInstructions: false
-    });
-
-    if (localStorage) {
-      if (this.getShowConnectionButtons()){
-        localStorage.removeItem('showConnectionButtons');
-      } else {
-        localStorage.setItem('showConnectionButtons', true);
+  componentDidMount = () => {
+    if (localStorage){
+      const currentSection = localStorage.getItem('currentSection');
+      if (currentSection){
+        this.setState({
+          currentSection
+        });
       }
     }
   }
 
-  showInstructions = e => {
-    this.setState({
-      showTxFees: false,
-      showConnectionButtons: false,
-      newToEthereum: false,
-      newToEthereumChoice:null,
-      showInstructions: true,
-    });
-  }
-
   resetModal = e => {
-    if (localStorage) {
-      localStorage.removeItem('showConnectionButtons');
-    }
     this.setState({
       showTxFees: false,
-      showConnectionButtons: false,
-      newToEthereum: false,
       newToEthereumChoice:null,
       showInstructions: false,
       currentSection:null
@@ -134,26 +100,9 @@ class ConnectionModal extends React.Component {
 
   closeModal = () => {
     this.setState({
-      showTxFees: false,
-      showConnectionButtons: false,
-      newToEthereum: false
+      showTxFees: false
     });
     this.props.closeModal();
-  }
-
-  toggleNewtoEthereum = (e,newToEthereum) => {
-    e.preventDefault();
-
-    if (typeof newToEthereum === 'undefined'){
-      newToEthereum = !this.state.newToEthereum;
-    }
-
-    this.setState({
-      showTxFees: false,
-      newToEthereum,
-      newToEthereumChoice: null,
-      showInstructions: false
-    });
   }
 
   setCurrentSection = (e,currentSection) => {
@@ -161,6 +110,10 @@ class ConnectionModal extends React.Component {
     this.setState({
       currentSection
     });
+
+    if (localStorage){
+      localStorage.setItem('currentSection',currentSection);
+    }
   }
 
   renderModalContent = () => {
@@ -267,17 +220,17 @@ class ConnectionModal extends React.Component {
           <ModalCard.Body>
             {
               !this.state.newToEthereumChoice ? (
-                <Box>
-                  <Box mb={[3,4]}>
+                <Flex width={1} px={[0,4]} flexDirection={'column'} justifyContent={'center'}>
+                  <Box mb={3}>
                     <Text fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
                       Connect with e-mail or phone number?
                     </Text>
                   </Box>
                   <Flex mb={3} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
-                    <ImageButton isMobile={this.props.isMobile} imageSrc={'images/email.svg'} imageProps={ this.props.isMobile ? {width:'auto',height:'42px'} : {mb:'3px',width:'auto',height:'55px'}} caption={'Use e-mail'} subcaption={'Connect w/ Portis'} handleClick={ e => this.setConnector('Portis','Portis') } />
-                    <ImageButton isMobile={this.props.isMobile} imageSrc={'images/mobile.svg'} imageProps={ this.props.isMobile ? {width:'auto',height:'42px'} : {mb:'3px',width:'auto',height:'55px'}} caption={'Use phone number'} subcaption={'Connect w/ Fortmatic'} handleClick={ e => this.setConnector('Fortmatic','Fortmatic') }/>
+                    <ImageButton isMobile={this.props.isMobile} imageSrc={'images/email.svg'} imageProps={ this.props.isMobile ? {width:'auto',height:'42px'} : {mb:'3px',width:'auto',height:'55px'}} caption={'Use e-mail'} subcaption={'Powered by Portis'} handleClick={ e => this.setConnector('Portis','Portis') } />
+                    <ImageButton isMobile={this.props.isMobile} imageSrc={'images/mobile.svg'} imageProps={ this.props.isMobile ? {width:'auto',height:'42px'} : {mb:'3px',width:'auto',height:'55px'}} caption={'Use phone number'} subcaption={'Powered by Fortmatic'} handleClick={ e => this.setConnector('Fortmatic','Fortmatic') }/>
                   </Flex>
-                </Box>
+                </Flex>
               ) : (
                 <Box>
                   <Text fontSize={3} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
@@ -304,17 +257,17 @@ class ConnectionModal extends React.Component {
         <ModalCard.Header title={'Connect to Idle'} icon={'images/idle-mark.png'}></ModalCard.Header>
         <ModalCard.Body>
           {
-            <Box>
-              <Box mb={[3,4]}>
+            <Flex width={1} px={[0,4]} flexDirection={'column'} justifyContent={'center'}>
+              <Box mb={3}>
                 <Text fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
                   How do you want to connect to Idle?
                 </Text>
               </Box>
               <Flex mb={[2,3]} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
                 <ImageButton isMobile={ this.props.isMobile } imageSrc={'images/ethereum-wallet.svg'} imageProps={ this.props.isMobile ? {width:'auto',height:'42px'} : {width:'auto',height:'55px',marginBottom:'5px'} } caption={`Ethereum wallet`} subcaption={'Choose your favourite'} handleClick={ e => this.setCurrentSection(e,'wallet') } />
-                <ImageButton isMobile={ this.props.isMobile } imageSrc={'images/mobile.svg'} imageProps={ this.props.isMobile ? {width:'auto',height:'42px'} : {width:'auto',height:'55px',marginBottom:'5px'} } caption={`New wallet`} subcaption={'Use email / phone'} handleClick={ e => this.setCurrentSection(e,'new') } />
+                <ImageButton isMobile={ this.props.isMobile } imageSrc={'images/new-wallet.png'} imageProps={ this.props.isMobile ? {width:'auto',height:'42px'} : {width:'auto',height:'55px',marginBottom:'5px'} } caption={`New wallet`} subcaption={'Use email / phone'} handleClick={ e => this.setCurrentSection(e,'new') } />
               </Flex>
-            </Box>
+            </Flex>
           }
           { TOSacceptance }
         </ModalCard.Body>
@@ -323,9 +276,11 @@ class ConnectionModal extends React.Component {
   }
 
   renderFooter = () => {
-    // const showConnectionButtons = this.state.currentSection === 'wallet';
-    // const newToEthereum = this.state.currentSection === 'new';
-    // const showInstructions = this.state.currentSection === 'instructions';
+
+    if (this.state.newToEthereumChoice){
+      return null;
+    }
+
     return (
       <ModalCard.Footer>
         { (!this.state.currentSection) ? (

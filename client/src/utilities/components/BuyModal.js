@@ -234,24 +234,21 @@ class BuyModal extends React.Component {
           iframeBox.innerHTML = `
             <div id="transak-widget" class="transak-widget" style="position:fixed;display:flex;justify-content:center;align-items:center;top:0;left:0;width:100%;height:100%;z-index:999">
               <div id="transak-widget-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1"></div>
-                <div id="transak-widget-container" style="position:relative;z-index:2;width:500px;height:495px">
-                  <iframe
-                    style="position:relative;z-index:2;"
-                    frameborder="0"
-                    height="100%"
-                    src="${initParams}"
-                    width="100%"
-                  >
-                    <p>Your browser does not support iframes.</p>
-                  </iframe>
-                  <div id="transak-widget-loading-placeholder" style="position:absolute;background:#fff;width:100%;height:100%;z-index:1;top:0;display:flex;justify-content:center;align-items:center;">
-                    <div style="display:flex;flex-direction:row;align-items:center">
-                      <img src="${globalConfigs.payments.providers.transak.imageSrc}" style="height:50px;" />
-                      <h3 style="font-weight:600;font-style:italic;color:#0040ca">is loading...</h3>
-                    </div>
-                  </div>
-                  <div id="transak-widget-footer" style="position:relative;display:flex;justify-content:center;align-items:center;padding:16px;width:100%;background:#fff;top:-20px;z-index:3">
-                    <button style="box-shadow: 0 0.125rem 0.625rem rgba(58,196,125,.4), 0 0.0625rem 0.125rem rgba(58,196,125,.5);font-size: 1.1rem;line-height: 1.5;border-radius:.3rem;width:100%!important;max-width: 300px!important;padding: .7rem!important;position: relative;color: #fff;background-color: #3ac47d;border-color: #3ac47d;font-weight: 500;outline: none!important;display: inline-block;text-align: center;vertical-align: middle;border: 1px solid transparent;" onclick="document.getElementById('transak-widget').remove();">Close</button>
+              <a class="transak-close-button" href="javascript:void(0);" onclick="document.getElementById('transak-widget').remove();" style="position:absolute;width:30px;height:30px;top:10px;right:10px;font-size:22px;line-height:30px;text-align:center;color:#fff;font-weight:bold;z-index:10;text-decoration:none">✕</a>
+              <div id="transak-widget-container" style="position:relative;z-index:2;width:500px;height:550px">
+                <iframe
+                  style="position:relative;z-index:2;"
+                  frameborder="0"
+                  height="100%"
+                  src="${initParams}"
+                  width="100%"
+                >
+                  <p>Your browser does not support iframes.</p>
+                </iframe>
+                <div id="transak-widget-loading-placeholder" style="position:absolute;background:#fff;width:100%;height:100%;z-index:1;top:0;display:flex;justify-content:center;align-items:center;">
+                  <div style="display:flex;flex-direction:row;align-items:center">
+                    <img src="${globalConfigs.payments.providers.transak.imageSrc}" style="height:50px;" />
+                    <h3 style="font-weight:600;font-style:italic;color:#0040ca">is loading...</h3>
                   </div>
                 </div>
               </div>
@@ -461,7 +458,7 @@ class BuyModal extends React.Component {
 
     let title = null;
     if (this.state.selectedToken === null){
-      title = 'CHOOSE YOUR TOKEN';
+      title = 'BUY TOKEN';
     } else {
       title = 'BUY '+this.state.selectedToken;
       if (this.state.selectedMethod !== null){
@@ -479,14 +476,14 @@ class BuyModal extends React.Component {
             {
               this.state.selectedToken === null ? (
                 <Box mb={2}>
-                  <Text textAlign={'center'} fontWeight={3} fontSize={2} mb={[2,3]}>
-                    Choose which token do you want to buy:
+                  <Text textAlign={'center'} fontWeight={2} fontSize={[2,3]} mb={[2,3]}>
+                    Which token do you want to buy?
                   </Text>
                   <Flex mb={4} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
                   {
-                    ['ETH',this.props.selectedToken].map((token,i) => {
+                    [globalConfigs.baseToken,this.props.selectedToken].map((token,i) => {
                       return (
-                        <ImageButton key={`token_${token}`} imageSrc={`images/tokens/${token}.svg`} caption={token} imageProps={{p:[2,3],height:'80px'}} handleClick={ e => { this.selectToken(e,token); } } />
+                        <ImageButton key={`token_${token}`} isMobile={this.props.isMobile} imageSrc={`images/tokens/${token}.svg`} imageProps={ this.props.isMobile ? {height:'42px'} : {p:[2,3],height:'80px'}} caption={token} handleClick={ e => { this.selectToken(e,token); } } />
                       );
                     })
                   }
@@ -496,8 +493,8 @@ class BuyModal extends React.Component {
                 <Box>
                   <Flex mb={3} flexDirection={'column'} justifyContent={'center'} alignItems={'center'}>
                     <Image height={2} mb={2} src={`images/tokens/${this.state.selectedToken}.svg`} />
-                    <Text textAlign={'center'} fontWeight={3} fontSize={2} my={0}>
-                      Choose which way you want to buy {this.state.selectedToken}:
+                    <Text textAlign={'center'} fontWeight={2} fontSize={[2,3]} my={0}>
+                      How do you prefer do buy {this.state.selectedToken}?
                     </Text>
                   </Flex>
                   <Flex mb={4} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
@@ -509,7 +506,7 @@ class BuyModal extends React.Component {
                           return false;
                         }
                         return (
-                          <ImageButton key={`method_${method}`} {...methodInfo.props} handleClick={ e => this.selectMethod(e,method) } />
+                          <ImageButton isMobile={ this.props.isMobile } key={`method_${method}`} {...methodInfo.props} imageProps={ this.props.isMobile ? {height:'42px'} : {height:'70px'}} handleClick={ e => this.selectMethod(e,method) } />
                         );
                       })
                     }
@@ -551,7 +548,10 @@ class BuyModal extends React.Component {
                   <Box>
                     {
                       !this.state.selectedProvider &&
-                      <Box mt={2} mb={3}>
+                      <Box mb={3}>
+                        <Flex flexDirection={'column'} justifyContent={'center'} alignItems={'center'}>
+                          <Image height={2} mb={2} src={`images/tokens/${this.state.selectedToken}.svg`} />
+                        </Flex>
                         <Text textAlign={'center'} fontWeight={3} fontSize={2} mb={2}>
                           Select your country:
                         </Text>
@@ -619,7 +619,7 @@ class BuyModal extends React.Component {
             </Box>
           </ModalCard.Body>
           <ModalCard.Footer>
-            <Flex flexDirection={['column', 'row']} width={1} justifyContent={'center'}>
+            <Flex px={[2,0]} flexDirection={['column', 'row']} width={1} justifyContent={'center'}>
               <Button
                 borderRadius={4}
                 my={2}
