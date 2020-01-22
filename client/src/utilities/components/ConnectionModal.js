@@ -15,7 +15,7 @@ import ModalCard from './ModalCard';
 import ImageButton from '../../ImageButton/ImageButton';
 import TransactionFeeModal from "./TransactionFeeModal";
 import Web3ConnectionButtons from "../../Web3ConnectionButtons/Web3ConnectionButtons";
-// import Web3ConnectionButtons_styles from '../../Web3ConnectionButtons/Web3ConnectionButtons.module.scss';
+
 import {
   Link as RouterLink,
 } from "react-router-dom";
@@ -23,11 +23,13 @@ import {
 class ConnectionModal extends React.Component {
   // TODO save pref in localstorage and do not show 'Before connecting' info every time
   state = {
+    currentSection:null,
     showTxFees: false,
     showConnectionButtons: false,
     newToEthereum: false,
     closeRemainingTime:null,
-    newToEthereumChoice: null
+    newToEthereumChoice: null,
+    showInstructions: false
   };
 
   toggleShowTxFees = e => {
@@ -37,26 +39,45 @@ class ConnectionModal extends React.Component {
     this.setState({
       showTxFees: !this.state.showTxFees
     });
-  };
+  }
 
-  toggleShowConnectionButtons = e => {
+  getShowConnectionButtons = () => {
+    return (localStorage && localStorage.getItem('showConnectionButtons')) || this.state.showConnectionButtons;
+  }
+
+  toggleShowConnectionButtons = (e,showConnectionButtons) => {
     e.preventDefault();
+
+    if (typeof showConnectionButtons === 'undefined'){
+      showConnectionButtons = !this.state.showConnectionButtons;
+    }
 
     this.setState({
       newToEthereumChoice:null,
       showTxFees: false,
-      showConnectionButtons: !this.state.showConnectionButtons
+      showConnectionButtons,
+      showInstructions: false
     });
 
-    const showConnectionButtons = this.getShowConnectionButtons();
     if (localStorage) {
-      if (showConnectionButtons){
+      if (this.getShowConnectionButtons()){
         localStorage.removeItem('showConnectionButtons');
       } else {
         localStorage.setItem('showConnectionButtons', true);
       }
     }
-  };
+  }
+
+  showInstructions = e => {
+    this.setState({
+      showTxFees: false,
+      showConnectionButtons: false,
+      newToEthereum: false,
+      newToEthereumChoice:null,
+      showInstructions: true,
+    });
+  }
+
   resetModal = e => {
     if (localStorage) {
       localStorage.removeItem('showConnectionButtons');
@@ -65,7 +86,9 @@ class ConnectionModal extends React.Component {
       showTxFees: false,
       showConnectionButtons: false,
       newToEthereum: false,
-      newToEthereumChoice:null
+      newToEthereumChoice:null,
+      showInstructions: false,
+      currentSection:null
     });
   }
 
@@ -102,10 +125,6 @@ class ConnectionModal extends React.Component {
     });
   }
 
-  getShowConnectionButtons = () => {
-    return localStorage ? localStorage.getItem('showConnectionButtons') : this.state.showConnectionButtons;
-  }
-
   setWalletChoice = (e,choice) => {
     e.preventDefault();
     this.setState({
@@ -122,15 +141,27 @@ class ConnectionModal extends React.Component {
     this.props.closeModal();
   }
 
-  toggleNewtoEthereum = e => {
+  toggleNewtoEthereum = (e,newToEthereum) => {
     e.preventDefault();
+
+    if (typeof newToEthereum === 'undefined'){
+      newToEthereum = !this.state.newToEthereum;
+    }
 
     this.setState({
       showTxFees: false,
-      newToEthereum: !this.state.newToEthereum,
-      newToEthereumChoice: null
+      newToEthereum,
+      newToEthereumChoice: null,
+      showInstructions: false
     });
-  };
+  }
+
+  setCurrentSection = (e,currentSection) => {
+    e.preventDefault();
+    this.setState({
+      currentSection
+    });
+  }
 
   renderModalContent = () => {
 
@@ -140,40 +171,113 @@ class ConnectionModal extends React.Component {
       </Box>
     );
 
-    const showConnectionButtons = this.getShowConnectionButtons();
-    const newToEthereum = this.state.newToEthereum;
+    const showConnectionButtons = this.state.currentSection === 'wallet';
+    const newToEthereum = this.state.currentSection === 'new';
+    const showInstructions = this.state.currentSection === 'instructions';
+
+    if (showInstructions){
+      return (
+        <React.Fragment>
+          <ModalCard.Header title={'Before you connect'} subtitle={'Connecting lets you use Idle via your Ethereum account.'}></ModalCard.Header>
+          <ModalCard.Body>
+            <Flex
+              flexDirection={['column', 'row']}
+              justifyContent={"space-between"}
+              my={[0, 3]}
+            >
+              <Box flex={'1 1'} width={1} mt={[0, 0]} mb={[4, 0]} mr={4}>
+                <Flex justifyContent={"center"} mb={3}>
+                  <Icon
+                    name="Public"
+                    color="skyBlue"
+                    size="4em"
+                  />
+                </Flex>
+                <Heading fontSize={2} textAlign={'center'}>The blockchain is public</Heading>
+                <Text fontSize={1} textAlign={'center'}>
+                  Your Ethereum account activity is public on the
+                  blockchain. Choose an account you don’t mind being
+                  linked with your activity here.
+                </Text>
+              </Box>
+              <Box flex={'1 1'} width={1} mt={[0, 0]} mb={[4, 0]} mr={4}>
+                <Flex justifyContent={"center"} mb={3}>
+                  <Icon
+                    name="AccountBalanceWallet"
+                    color="skyBlue"
+                    size="4em"
+                  />
+                </Flex>
+                <Heading fontSize={2} textAlign={'center'}>Have some Ether for fees</Heading>
+                <Text fontSize={1} mb={3} textAlign={'center'}>
+                  You’ll need Ether to pay transaction fees. Buy Ether
+                  from exchanges like Coinbase or directly via enabled wallet
+                  such as Portis or Dapper.<br />
+                  <Link
+                    title="Learn about Ethereum transaction fees"
+                    fontWeight={'0'}
+                    color={'blue'}
+                    textAlign={'center'}
+                    hoverColor={'blue'}
+                    href="#"
+                    onClick={this.toggleShowTxFees}
+                  >
+                    What are transaction fees?
+                  </Link>
+                </Text>
+              </Box>
+              <Box flex={'1 1'} width={1} mt={[0, 0]} mb={[4, 0]}>
+                <Flex justifyContent={"center"} mb={3}>
+                  <Icon
+                    name="People"
+                    color="skyBlue"
+                    size="4em"
+                  />
+                </Flex>
+                <Heading fontSize={2} textAlign={'center'}>Have the right account ready</Heading>
+                <Text fontSize={1} textAlign={'center'}>
+                  If you have multiple Ethereum accounts, check that the
+                  one you want to use is active in your browser.
+                </Text>
+              </Box>
+            </Flex>
+          </ModalCard.Body>
+        </React.Fragment>
+      );
+    }
+
     if (showConnectionButtons) {
       return (
-        <>
+        <Box>
           <ModalCard.Header title={'Select your Wallet'} subtitle={'And get started with Idle.'} icon={'images/idle-mark.png'}></ModalCard.Header>
           <ModalCard.Body>
-            <Box width={1} px={[3,5]} justifyContent={'center'}>
-              <Web3ConnectionButtons closeModal={ this.closeModal } setConnector={ this.props.setConnector } width={1/2} size={ this.props.isMobile ? 'medium' : 'large' } />
-            </Box>
+            <Flex width={1} px={[0,5]} flexDirection={'column'} justifyContent={'center'}>
+              <Web3ConnectionButtons isMobile={this.props.isMobile} closeModal={ this.closeModal } setConnector={ this.props.setConnector } width={1/2} size={ this.props.isMobile ? 'medium' : 'large' } />
+            </Flex>
             { TOSacceptance }
           </ModalCard.Body>
-        </>
+        </Box>
       );
     }
 
     if (newToEthereum) {
       return (
         <React.Fragment>
-          <ModalCard.Header title={'Let\'s create your first Ethereum wallet'}></ModalCard.Header>
+          <ModalCard.Header title={'Let\'s create your first Ethereum wallet'} icon={'images/idle-mark.png'}></ModalCard.Header>
           <ModalCard.Body>
             {
               !this.state.newToEthereumChoice ? (
-                <>
+                <Box>
                   <Box mb={[3,4]}>
-                    <Text fontSize={3} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
-                      Choose the way you want to connect to Idle:
+                    <Text fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
+                      Connect with e-mail or phone number?
                     </Text>
                   </Box>
-                  <Flex mb={4} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
-                    <ImageButton imageSrc={'images/email.png'} imageProps={{mb:'3px',height:'70px'}} caption={'E-mail'} handleClick={ e => this.setConnector('Portis','Portis') } />
-                    <ImageButton imageSrc={'images/mobile.png'} imageProps={{mb:'3px',height:'70px'}} caption={'Phone number'} handleClick={ e => this.setConnector('Fortmatic','Fortmatic') }/>
+                  <Flex mb={3} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
+                    <ImageButton isMobile={this.props.isMobile} imageSrc={'images/email.svg'} imageProps={ this.props.isMobile ? {width:'auto',height:'42px'} : {mb:'3px',width:'auto',height:'55px'}} caption={'Use e-mail'} subcaption={'Connect w/ Portis'} handleClick={ e => this.setConnector('Portis','Portis') } />
+                    <ImageButton isMobile={this.props.isMobile} imageSrc={'images/mobile.svg'} imageProps={ this.props.isMobile ? {width:'auto',height:'42px'} : {mb:'3px',width:'auto',height:'55px'}} caption={'Use phone number'} subcaption={'Connect w/ Fortmatic'} handleClick={ e => this.setConnector('Fortmatic','Fortmatic') }/>
                   </Flex>
-                </>
+                </Box>
               ) : (
                 <Box>
                   <Text fontSize={3} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
@@ -197,128 +301,61 @@ class ConnectionModal extends React.Component {
 
     return (
       <React.Fragment>
-        {/* Start primary content */}
-        <ModalCard.Header title={'Before you connect'} subtitle={'Connecting lets you use Idle via your Ethereum account.'}></ModalCard.Header>
+        <ModalCard.Header title={'Connect to Idle'} icon={'images/idle-mark.png'}></ModalCard.Header>
         <ModalCard.Body>
-          <Flex
-            flexDirection={['column', 'row']}
-            justifyContent={"space-between"}
-            my={[0, 3]}
-          >
-            <Box flex={'1 1'} width={1} mt={[0, 0]} mb={[4, 0]} mr={4}>
-              <Flex justifyContent={"center"} mb={3}>
-                <Icon
-                  name="Public"
-                  color="skyBlue"
-                  size="4em"
-                />
+          {
+            <Box>
+              <Box mb={[3,4]}>
+                <Text fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
+                  How do you want to connect to Idle?
+                </Text>
+              </Box>
+              <Flex mb={[2,3]} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
+                <ImageButton isMobile={ this.props.isMobile } imageSrc={'images/ethereum-wallet.svg'} imageProps={ this.props.isMobile ? {width:'auto',height:'42px'} : {width:'auto',height:'55px',marginBottom:'5px'} } caption={`Ethereum wallet`} subcaption={'Choose your favourite'} handleClick={ e => this.setCurrentSection(e,'wallet') } />
+                <ImageButton isMobile={ this.props.isMobile } imageSrc={'images/mobile.svg'} imageProps={ this.props.isMobile ? {width:'auto',height:'42px'} : {width:'auto',height:'55px',marginBottom:'5px'} } caption={`New wallet`} subcaption={'Use email / phone'} handleClick={ e => this.setCurrentSection(e,'new') } />
               </Flex>
-              <Heading fontSize={2} textAlign={'center'}>The blockchain is public</Heading>
-              <Text fontSize={1} textAlign={'center'}>
-                Your Ethereum account activity is public on the
-                blockchain. Choose an account you don’t mind being
-                linked with your activity here.
-              </Text>
             </Box>
-            <Box flex={'1 1'} width={1} mt={[0, 0]} mb={[4, 0]} mr={4}>
-              <Flex justifyContent={"center"} mb={3}>
-                <Icon
-                  name="AccountBalanceWallet"
-                  color="skyBlue"
-                  size="4em"
-                />
-              </Flex>
-              <Heading fontSize={2} textAlign={'center'}>Have some Ether for fees</Heading>
-              <Text fontSize={1} mb={3} textAlign={'center'}>
-                You’ll need Ether to pay transaction fees. Buy Ether
-                from exchanges like Coinbase or directly via enabled wallet
-                such as Portis or Dapper.<br />
-                <Link
-                  title="Learn about Ethereum transaction fees"
-                  fontWeight={'0'}
-                  color={'blue'}
-                  textAlign={'center'}
-                  hoverColor={'blue'}
-                  href="#"
-                  onClick={this.toggleShowTxFees}
-                >
-                  What are transaction fees?
-                </Link>
-              </Text>
-            </Box>
-            <Box flex={'1 1'} width={1} mt={[0, 0]} mb={[4, 0]}>
-              <Flex justifyContent={"center"} mb={3}>
-                <Icon
-                  name="People"
-                  color="skyBlue"
-                  size="4em"
-                />
-              </Flex>
-              <Heading fontSize={2} textAlign={'center'}>Have the right account ready</Heading>
-              <Text fontSize={1} textAlign={'center'}>
-                If you have multiple Ethereum accounts, check that the
-                one you want to use is active in your browser.
-              </Text>
-            </Box>
-          </Flex>
+          }
+          { TOSacceptance }
         </ModalCard.Body>
       </React.Fragment>
     );
   }
 
   renderFooter = () => {
-    const showConnectionButtons = this.getShowConnectionButtons();
-    const newToEthereum = this.state.newToEthereum;
+    // const showConnectionButtons = this.state.currentSection === 'wallet';
+    // const newToEthereum = this.state.currentSection === 'new';
+    // const showInstructions = this.state.currentSection === 'instructions';
     return (
       <ModalCard.Footer>
-        { showConnectionButtons || newToEthereum ? (
-            <Link
-              title="Read instructions"
-              color={'primary'}
-              hoverColor={'primary'}
-              href="#"
-              onClick={this.resetModal}
+        { (!this.state.currentSection) ? (
+            <Button
+              className={[styles.gradientButton,styles.empty]}
+              onClick={ e => this.setCurrentSection(e,'instructions') }
+              size={'medium'}
+              borderRadius={4}
+              contrastColor={'blue'}
+              fontWeight={3}
+              fontSize={[2,2]}
+              mx={'auto'}
+              px={[4,5]}
             >
-              Read instructions
-            </Link>
+              READ INSTRUCTIONS
+            </Button>
           ) : (
-            <Flex flexDirection={['column', 'row']} width={1} justifyContent={'center'}>
-              <Button
-                className={styles.gradientButton}
-                borderRadius={4}
-                my={2}
-                mr={[0, 4]}
-                size={this.props.isMobile ? 'small' : 'medium'}
-                onClick={this.toggleShowConnectionButtons}
-              >
-                I ALREADY HAVE A WALLET
-              </Button>
-              {
-                this.state.showTxFees ? (
-                  <Button
-                    borderRadius={4}
-                    my={2}
-                    mr={[0, 4]}
-                    size={this.props.isMobile ? 'small' : 'medium'}
-                    mainColor={'darkGray'}
-                    onClick={this.resetModal}
-                  >
-                    BACK TO INSTRUCTIONS
-                  </Button>
-                ) : (
-                <Button
-                  borderRadius={4}  
-                  my={2}
-                  mr={[0, 4]}
-                  size={this.props.isMobile ? 'small' : 'medium'}
-                  mainColor={'blue'}
-                  onClick={this.toggleNewtoEthereum}
-                >
-                  CREATE A NEW WALLET
-                </Button>
-                )
-              }
-            </Flex>
+            <Button
+              className={[styles.gradientButton,styles.empty]}
+              onClick={this.resetModal}
+              size={'medium'}
+              borderRadius={4}
+              contrastColor={'blue'}
+              fontWeight={3}
+              fontSize={[2,2]}
+              mx={'auto'}
+              px={[4,5]}
+            >
+              BACK
+            </Button>
           )
         }
       </ModalCard.Footer>
@@ -335,10 +372,10 @@ class ConnectionModal extends React.Component {
               {this.renderFooter()}
             </React.Fragment>
           ) : (
-            <>
+            <Box>
               <TransactionFeeModal />
               {this.renderFooter()}
-            </>
+            </Box>
           )}
 
         </ModalCard>

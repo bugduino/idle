@@ -1,8 +1,9 @@
 import React from 'react'
 import { useWeb3Context } from 'web3-react'
-import { Button, Image, Box, Text, Flex, Icon, Link } from 'rimble-ui';
+import { Button, Box, Text, Flex, Icon, Link } from 'rimble-ui';
 import connectors from '../App/connectors';
 import GeneralUtil from "../utilities/GeneralUtil";
+import ImageButton from '../ImageButton/ImageButton';
 import styles from './Web3ConnectionButtons.module.scss';
 import moment from 'moment';
 
@@ -79,30 +80,8 @@ export default function Web3ConnectionButtons(props) {
           if (isOpera) {
             name = 'Opera';
           }
-
           return (
-            <Button.Outline
-              className={[styles.button]}
-              display={'flex'}
-              alignItems={'center'}
-              mb={[1, 3]}
-              width={basicConnectorsName.length>1 ? [1,width] : 1}
-              key={connectorName}
-              disabled={context.connectorName === connectorName}
-              size={size}
-              onClick={async () => await setConnector(connectorName,name)}>
-              <Flex alignItems={'center'}>
-                <Image
-                  display={'inline-flex'}
-                  mr={'0.5rem'}
-                  src={`images/${name.toLowerCase()}.svg`}
-                  alt={name.toLowerCase()}
-                  width={'2em'}
-                  height={'2em'}
-                />
-                {name}
-              </Flex>
-            </Button.Outline>
+            <ImageButton key={`wallet_${name}`} isMobile={true} buttonStyle={ props.isMobile ? {justifyContent:'flex-start',flex:'0 100%'} : {justifyContent:'flex-start',flex:'0 48%'} } imageSrc={`images/${name.toLowerCase()}.svg`} imageProps={{width:'auto',height:'42px'}} caption={name} subcaption={`Connect using ${name}`} handleClick={ async () => await setConnector(connectorName,name)} />
           )
         } else {
           return (
@@ -128,27 +107,7 @@ export default function Web3ConnectionButtons(props) {
         }
       default:
         return (
-          <Button.Outline
-            className={[styles.button]}
-            mb={[1, 3]}
-            width={basicConnectorsName.length>1 ? [1,width] : 1}
-            size={size}
-            key={connectorName}
-            disabled={context.connectorName === connectorName}
-            onClick={async () => await setConnector(connectorName)}
-          >
-            <Flex alignItems={'center'}>
-              <Image
-                display={'inline-flex'}
-                mr={[0,'0.5rem']}
-                src={`images/${connectorName.toLowerCase()}.svg`}
-                alt={connectorName.toLowerCase()}
-                width={'2em'}
-                height={'2em'}
-              />
-              {connectorName}
-            </Flex>
-          </Button.Outline>
+          <ImageButton key={`wallet_${connectorName}`} isMobile={true} buttonStyle={ props.isMobile ? {justifyContent:'flex-start',flex:'0 100%'} : {justifyContent:'flex-start',flex:'0 48%'} } imageSrc={`images/${connectorName.toLowerCase()}.svg`} imageProps={{width:'auto',height:'42px'}} caption={connectorName} subcaption={`Connect using ${connectorName}`} handleClick={ async () => await setConnector(connectorName) } />
         );
     }
   });
@@ -186,7 +145,9 @@ export default function Web3ConnectionButtons(props) {
           </Button.Outline>
         )}
       </Flex>
-      {buttons}
+      <Flex flexDirection={'row'} flexWrap={'wrap'} justifyContent={'space-between'}>
+        {buttons}
+      </Flex>
     </Box>
   );
 }

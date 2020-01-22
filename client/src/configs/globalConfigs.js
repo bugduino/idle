@@ -72,7 +72,7 @@ const globalConfigs = {
       wallet:{
         defaultProvider:'zeroExInstant',
         props:{
-          imageSrc:'images/tokens/ETH.svg',
+          imageSrc:'images/ethereum-wallet.svg',
           caption:'Ethereum Wallet',
           imageProps:{p:[2,3],height:'70px'}
         }
