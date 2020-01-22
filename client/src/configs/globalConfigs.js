@@ -22,6 +22,26 @@ const globalConfigs = {
     messagesEnabled:false,
     errorsEnabled:false
   },
+  connectors:{
+    metamask:{
+      subcaption:'Browser extension'
+    },
+    walletconnect:{
+      subcaption:'Connect with Walletconnect'
+    },
+    fortmatic:{
+      subcaption:'Login with phone-number'
+    },
+    portis:{
+      subcaption:'Login with e-mail'
+    },
+    trezor:{
+      subcaption:'Hardware wallet'
+    },
+    ledger:{
+      subcaption:'Hardware wallet'
+    },
+  },
   network:{
     requiredConfirmations: 1,
     accountBalanceMinimum: 0, // in ETH for gas fees

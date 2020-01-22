@@ -74,9 +74,9 @@ const Portis = new PortisConnector({
 export default {
   Injected,
   Infura,
-  Fortmatic,
-  Trezor,
-  Ledger,
   WalletConnect,
-  Portis
+  Fortmatic,
+  Portis,
+  Trezor,
+  Ledger
 };

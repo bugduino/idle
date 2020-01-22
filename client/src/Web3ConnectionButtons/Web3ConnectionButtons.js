@@ -6,6 +6,9 @@ import GeneralUtil from "../utilities/GeneralUtil";
 import ImageButton from '../ImageButton/ImageButton';
 import styles from './Web3ConnectionButtons.module.scss';
 import moment from 'moment';
+import globalConfigs from '../configs/globalConfigs';
+
+console.log('connectors',connectors);
 
 const LOG_ENABLED = false;
 const customLog = (...props) => { if (LOG_ENABLED) console.log(moment().format('HH:mm:ss'),...props); };
@@ -52,7 +55,6 @@ export default function Web3ConnectionButtons(props) {
   
   const isMetamask = GeneralUtil.hasMetaMask();
   const isOpera = GeneralUtil.isOpera();
-  // const onlyPortis = props.onlyPortis;
   const allowedConnectors = props.allowedConnectors;
   const registerPage = props.registerPage;
 
@@ -73,6 +75,7 @@ export default function Web3ConnectionButtons(props) {
   }
 
   const buttons = basicConnectorsName.map(connectorName => {
+
     switch (connectorName) {
       case 'Injected':
         if (isMetamask || isOpera) {
@@ -80,8 +83,10 @@ export default function Web3ConnectionButtons(props) {
           if (isOpera) {
             name = 'Opera';
           }
+
+          const connectorInfo = globalConfigs.connectors[name.toLowerCase()];
           return (
-            <ImageButton key={`wallet_${name}`} isMobile={true} buttonStyle={ props.isMobile ? {justifyContent:'flex-start',flex:'0 100%'} : {justifyContent:'flex-start',flex:'0 48%'} } imageSrc={`images/${name.toLowerCase()}.svg`} imageProps={{width:'auto',height:'42px'}} caption={name} subcaption={`Connect using ${name}`} handleClick={ async () => await setConnector(connectorName,name)} />
+            <ImageButton key={`wallet_${name}`} isMobile={true} buttonStyle={ props.isMobile ? {justifyContent:'flex-start',flex:'0 100%'} : {justifyContent:'flex-start',flex:'0 48%'} } imageSrc={`images/${name.toLowerCase()}.svg`} imageProps={{width:'auto',height:'42px'}} caption={name} subcaption={ connectorInfo && connectorInfo.subcaption ? connectorInfo.subcaption : `Connect using ${name}` } handleClick={ async () => await setConnector(connectorName,name)} />
           )
         } else {
           return (
@@ -106,8 +111,9 @@ export default function Web3ConnectionButtons(props) {
           )
         }
       default:
+        const connectorInfo = globalConfigs.connectors[connectorName.toLowerCase()];
         return (
-          <ImageButton key={`wallet_${connectorName}`} isMobile={true} buttonStyle={ props.isMobile ? {justifyContent:'flex-start',flex:'0 100%'} : {justifyContent:'flex-start',flex:'0 48%'} } imageSrc={`images/${connectorName.toLowerCase()}.svg`} imageProps={{width:'auto',height:'42px'}} caption={connectorName} subcaption={`Connect using ${connectorName}`} handleClick={ async () => await setConnector(connectorName) } />
+          <ImageButton key={`wallet_${connectorName}`} isMobile={true} buttonStyle={ props.isMobile ? {justifyContent:'flex-start',flex:'0 100%'} : {justifyContent:'flex-start',flex:'0 48%'} } imageSrc={`images/${connectorName.toLowerCase()}.svg`} imageProps={{width:'auto',height:'42px'}} caption={connectorName} subcaption={ connectorInfo && connectorInfo.subcaption ? connectorInfo.subcaption : `Connect using ${connectorName}`} handleClick={ async () => await setConnector(connectorName) } />
         );
     }
   });

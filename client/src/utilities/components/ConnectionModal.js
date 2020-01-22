@@ -207,6 +207,9 @@ class ConnectionModal extends React.Component {
             <Flex width={1} px={[0,5]} flexDirection={'column'} justifyContent={'center'}>
               <Web3ConnectionButtons isMobile={this.props.isMobile} closeModal={ this.closeModal } setConnector={ this.props.setConnector } width={1/2} size={ this.props.isMobile ? 'medium' : 'large' } />
             </Flex>
+            <Flex pt={3} alignItems={'center'} justifyContent={'center'}>
+              <Link textAlign={'center'} hoverColor={'blue'} onClick={ e => this.setCurrentSection(e,'new') }>I don't have a wallet</Link>
+            </Flex>
             { TOSacceptance }
           </ModalCard.Body>
         </Box>
@@ -229,6 +232,9 @@ class ConnectionModal extends React.Component {
                   <Flex mb={3} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
                     <ImageButton isMobile={this.props.isMobile} imageSrc={'images/email.svg'} imageProps={ this.props.isMobile ? {width:'auto',height:'42px'} : {mb:'3px',width:'auto',height:'55px'}} caption={'Use e-mail'} subcaption={'Powered by Portis'} handleClick={ e => this.setConnector('Portis','Portis') } />
                     <ImageButton isMobile={this.props.isMobile} imageSrc={'images/mobile.svg'} imageProps={ this.props.isMobile ? {width:'auto',height:'42px'} : {mb:'3px',width:'auto',height:'55px'}} caption={'Use phone number'} subcaption={'Powered by Fortmatic'} handleClick={ e => this.setConnector('Fortmatic','Fortmatic') }/>
+                  </Flex>
+                  <Flex alignItems={'center'} justifyContent={'center'}>
+                    <Link textAlign={'center'} hoverColor={'blue'} onClick={ e => this.setCurrentSection(e,'wallet') }>I already have a wallet</Link>
                   </Flex>
                 </Flex>
               ) : (
