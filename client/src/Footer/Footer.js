@@ -23,13 +23,13 @@ class Footer extends Component {
               Resources
             </Heading.h3>
             <Flex width={1} flexDirection={'column'}>
-              <Link pb={[3,2]} href={'http://developers.idle.finance'} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} color={'blue'} hoverColor={'blue'}>Developers</Link>
+              <Link pb={[3,2]} href={'http://developers.idle.finance'} target={'_blank'} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} color={'blue'} hoverColor={'blue'}>Developers</Link>
               <Flex pb={[3,2]} width={1} justifyContent={['center','flex-start']}>
                 <RouterLink to="/terms-of-service" style={{textDecoration:'none'}}>
                   <Text href={'#'} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} fontWeight={3} color={'blue'} hoverColor={'blue'}>Terms of Service</Text>
                 </RouterLink>
               </Flex>
-              <Link pb={[3,2]} href={'https://www.iubenda.com/privacy-policy/61211749'} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} color={'blue'} hoverColor={'blue'}>Privacy Policy</Link>
+              <Link pb={[3,2]} href={'https://www.iubenda.com/privacy-policy/61211749'} target={'_blank'} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} color={'blue'} hoverColor={'blue'}>Privacy Policy</Link>
             </Flex>
           </Flex>
           <Flex width={[1,1/3]} flexDirection={'column'}>
