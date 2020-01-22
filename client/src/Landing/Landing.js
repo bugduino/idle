@@ -92,6 +92,12 @@ class Landing extends Component {
     if (!this.props.isMobile && !this.state.carouselIntervalID){
       startCarousel();
     }
+
+    // Load aprs and allocations
+    if (!this.state.protocolAllocation && !this.state.updatingAllocations){
+      await this.getAprs();
+      await this.getAllocations();
+    }
   }
 
   async componentDidUpdate(prevProps, prevState) {
