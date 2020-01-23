@@ -15,7 +15,7 @@ const secondsInYear = 31556952;
 
 class EquityChart extends Component {
   state = {
-    equityMode:'real',
+    equityMode:'best',
     initialBalance:1000,
     graphData: null,
     minValue: null,
@@ -163,6 +163,8 @@ class EquityChart extends Component {
       // maxValue = maxValue ? Math.max(maxValue,balance) : balance;
     });
 
+    
+    // CSV estraction
     /*
     const super_log = [];
     const log_headers = ['Date'];
@@ -213,16 +215,15 @@ class EquityChart extends Component {
 
   async makeCachedRequest(endpoint,TTL){
     const timestamp = parseInt(new Date().getTime()/1000);
-    if (localStorage) {
-      // Check if already exists
-      let res = localStorage.getItem(endpoint);
 
-      if (res){
-        res = JSON.parse(res);
-        // Check if it's not expired
-        if (res.timestamp && timestamp-res.timestamp<TTL){
-          return res.data;
-        }
+    let cachedRequests = {};
+    
+    // Check if already exists
+    if (localStorage && localStorage.getItem('cachedRequests')){
+      cachedRequests = JSON.parse(localStorage.getItem('cachedRequests'));
+      // Check if it's not expired
+      if (cachedRequests && cachedRequests[endpoint] && cachedRequests[endpoint].timestamp && timestamp-cachedRequests[endpoint].timestamp<TTL){
+        return cachedRequests[endpoint].data;
       }
     }
 
@@ -232,10 +233,11 @@ class EquityChart extends Component {
                           console.error('Error getting request');
                         });
     if (localStorage) {
-      localStorage.setItem(endpoint,JSON.stringify({
+      cachedRequests[endpoint] = {
         data,
         timestamp
-      }));
+      };
+      localStorage.setItem('cachedRequests',JSON.stringify(cachedRequests));
     }
     return data;
   }
@@ -291,7 +293,7 @@ class EquityChart extends Component {
         "aprs": [],
         "data": [],
         'endpoint':'https://defiportfolio-backend.herokuapp.com/api/v1/markets/fulcrum/'
-      }/*
+      }/*,
       {
         "id": "DyDx",
         'pos_box':4,
@@ -301,7 +303,7 @@ class EquityChart extends Component {
         "color": "hsl(210, 13%, 18%)",
         "aprs": [],
         "data": [],
-        'endpoint':'https://defiportfolio-backend.herokuapp.com/api/v1/markets/dydx/dai'
+        'endpoint':'https://defiportfolio-backend.herokuapp.com/api/v1/markets/dydx/'
       }*/
     ];
 

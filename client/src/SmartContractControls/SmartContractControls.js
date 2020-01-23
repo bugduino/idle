@@ -382,12 +382,17 @@ class SmartContractControls extends React.Component {
 
       this.functionsUtil.customLog('getBalanceOf 3',balance.toString(),tokenToRedeem.toString(),this.state.amountLent,earning,currentApr,earningPerYear);
 
+      if (this.state.callMintCallback){
+        this.props.mintCallback();
+      }
+
       return this.setState({
         fundsError:false,
         [`balanceOf${contractName}`]: balance,
         tokenToRedeemParsed: tokenToRedeem.toString(),
         tokenBalanceBNify:balance,
         idleTokenBalance:balance.toString(),
+        callMintCallback:false,
         currentApr,
         tokenToRedeem,
         earning,
@@ -625,19 +630,22 @@ class SmartContractControls extends React.Component {
       const txSucceeded = tx.status === 'success';
       const needsUpdate = txSucceeded && !this.checkTransactionMined(tx);
       this.functionsUtil.customLog('mintIdleToken_callback needsUpdate:',tx.status,this.checkTransactionMined(tx),needsUpdate);
-      if (txSucceeded){
-        this.selectTab({ preventDefault:()=>{} },'2');
-        if (typeof this.props.mintCallback === 'function'){
-          this.props.mintCallback();
-        }
-      }
-      this.setState({
+
+      const newState = {
         lendingProcessing: false,
         [`isLoading${contractName}`]: false,
         lendingTx:null,
+        callMintCallback:false,
         needsUpdate
-      });
+      };
 
+      if (txSucceeded){
+        this.selectTab({ preventDefault:()=>{} },'2');
+        
+        // Call mint callback after loading funds
+        newState.callMintCallback = typeof this.props.mintCallback === 'function';
+      }
+      this.setState(newState);
     };
 
     const callback_receipt = (tx) => {
@@ -1209,6 +1217,7 @@ class SmartContractControls extends React.Component {
       allocations:null,
       executedTxs:null,
       lendingTx: null,
+      callMintCallback: false,
       redeemTx: null,
       approveTx: null,
       fundsError: false,

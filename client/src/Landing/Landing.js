@@ -55,6 +55,8 @@ class Landing extends Component {
 
     this.loadUtils();
 
+    window.setConfetti = this.setConfetti;
+
     componentUnmounted = false;
     scrollTimeoutID = null;
 
@@ -286,9 +288,10 @@ class Landing extends Component {
         }}
       >
         <Confetti
-          style={{ position: 'fixed' }}
+          style={{ position: 'fixed','zIndex':9999 }}
           run={this.state.runConfetti}
           recycle={false}
+          numberOfPieces={500}
           width={window.innerWidth}
           height={window.innerHeight}
           onConfettiComplete={confetti => {
