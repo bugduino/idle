@@ -2256,7 +2256,7 @@ class SmartContractControls extends React.Component {
                                             </Heading.h3>
                                             <CryptoInput
                                               genericError={this.state.genericErrorRedeem}
-                                              icon={'images/idle-round.png'}
+                                              icon={`images/tokens/${this.props.tokenConfig.idle.token}.png`}
                                               buttonLabel={`REDEEM ${this.props.selectedToken}`}
                                               placeholder={`Enter ${this.props.tokenConfig.idle.token} amount`}
                                               disableLendButton={this.state.disableRedeemButton}
