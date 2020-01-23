@@ -336,6 +336,7 @@ class SmartContractControls extends React.Component {
       // this.functionsUtil.customLog('getBalanceOf 2','tokenToRedeem',tokenToRedeem.toString(),'amountLent',this.state.amountLent.toString());
 
       if (this.state.amountLent && this.trimEth(this.state.amountLent.toString())>0 && this.trimEth(tokenToRedeem.toString())>0 && parseFloat(this.trimEth(tokenToRedeem.toString()))<parseFloat(this.trimEth(this.state.amountLent.toString()))){
+        /*
         this.functionsUtil.customLogError('Balance '+this.trimEth(tokenToRedeem.toString())+' ('+price.toString()+') is less than AmountLent ('+this.trimEth(this.state.amountLent.toString())+').. try again');
         if (componentUnmounted){
           return false;
@@ -352,6 +353,8 @@ class SmartContractControls extends React.Component {
           this.getBalanceOf(contractName,count+1);
         },10000);
         return false;
+        */
+        this.state.amountLent = tokenToRedeem.div(this.state.tokenPrice);
       } else if (this.state.amountLent && this.state.amountLent.lte(0) && tokenToRedeem){
         this.state.amountLent = tokenToRedeem.div(this.state.tokenPrice);
       }
@@ -624,6 +627,9 @@ class SmartContractControls extends React.Component {
       this.functionsUtil.customLog('mintIdleToken_callback needsUpdate:',tx.status,this.checkTransactionMined(tx),needsUpdate);
       if (txSucceeded){
         this.selectTab({ preventDefault:()=>{} },'2');
+        if (typeof this.props.mintCallback === 'function'){
+          this.props.mintCallback();
+        }
       }
       this.setState({
         lendingProcessing: false,
@@ -631,6 +637,7 @@ class SmartContractControls extends React.Component {
         lendingTx:null,
         needsUpdate
       });
+
     };
 
     const callback_receipt = (tx) => {
@@ -1786,6 +1793,9 @@ class SmartContractControls extends React.Component {
 
     const defaultTokenSwapper = this.getDefaultTokenSwapper();
 
+    const counterMaxDigits = 11;
+    const counterDecimals = Math.min(Math.max(0,counterMaxDigits-parseInt(currentReedemableFunds).toString().length),Math.max(0,counterMaxDigits-parseInt(currentEarning).toString().length));
+
     return (
       <Box textAlign={'center'} alignItems={'center'} width={'100%'}>
         <Form minHeight={ migrationEnabled ? ['28em','24em'] : ['auto','17em'] } backgroundColor={'white'} color={'blue'} boxShadow={'0 0 25px 5px rgba(102, 139, 255, 0.7)'} borderRadius={'15px'} style={{position:'relative'}}>
@@ -2101,7 +2111,7 @@ class SmartContractControls extends React.Component {
                   </>
                 )}
 
-                <Flex alignItems={'center'} justifyContent={'center'}>
+                <Flex mt={3} alignItems={'center'} justifyContent={'center'}>
                   <Link href={'https://certificate.quantstamp.com/view/idle'} target={'_blank'}>
                     <Image src={`images/quantstamp-badge.svg`} height={'40px'} />
                   </Link>
@@ -2136,7 +2146,7 @@ class SmartContractControls extends React.Component {
                                               duration={31536000}
                                               delay={0}
                                               separator=""
-                                              decimals={8}
+                                              decimals={ counterDecimals }
                                               decimal="."
                                             >
                                               {({ countUpRef, start }) => (
@@ -2159,7 +2169,7 @@ class SmartContractControls extends React.Component {
                                               duration={31536000}
                                               delay={0}
                                               separator=""
-                                              decimals={8}
+                                              decimals={ counterDecimals }
                                               decimal="."
                                               // formattingFn={(n)=>{ return this.formatCountUp(n); }}
                                             >

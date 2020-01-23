@@ -9,6 +9,7 @@ import EquityChart from '../EquityChart/EquityChart';
 import Footer from '../Footer/Footer';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import availableTokens from '../configs/availableTokens';
+import Confetti from 'react-confetti';
 
 let scrolling = false;
 let scrollTimeoutID;
@@ -24,7 +25,8 @@ class Landing extends Component {
     updatingAllocations:false,
     testPerformed:false,
     protocolsAprs:null,
-    protocolsAllocations:null
+    protocolsAllocations:null,
+    runConfetti:false
   };
 
   // Clear all the timeouts
@@ -265,6 +267,12 @@ class Landing extends Component {
       animateScroll();
   }
 
+  setConfetti = (runConfetti) => {
+    this.setState({
+      runConfetti
+    })
+  }
+
   render() {
     const { network } = this.props;
     const maxOpacity = 0.5;
@@ -277,6 +285,17 @@ class Landing extends Component {
           paddingBottom: !network.isCorrectNetwork ? "8em" : "0"
         }}
       >
+        <Confetti
+          style={{ position: 'fixed' }}
+          run={this.state.runConfetti}
+          recycle={false}
+          width={window.innerWidth}
+          height={window.innerHeight}
+          onConfettiComplete={confetti => {
+            this.setConfetti(false);
+            confetti.reset()
+          }}
+        />
         <Box className={[styles.headerContainer]} px={[3,5]} pt={['2.5em', '3em']}>
           <Box position={'relative'} zIndex={10}>
             <Flex flexDirection={'column'} alignItems={'center'} maxWidth={["50em", "70em"]} mx={'auto'} pb={3} textAlign={'center'} pt={['8vh', '8vh']}>
@@ -289,6 +308,7 @@ class Landing extends Component {
             </Flex>
             <Flex flexDirection={'column'} alignItems={'center'} maxWidth={["50em", "50em"]} mx={'auto'} textAlign={'center'}>
               <LandingForm
+                mintCallback={ () => this.setConfetti(true) }
                 getAllocations={this.getAllocations}
                 openBuyModal={this.props.openBuyModal}
                 getAprs={this.getAprs}
