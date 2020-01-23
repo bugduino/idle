@@ -15,7 +15,7 @@ const secondsInYear = 31556952;
 
 class EquityChart extends Component {
   state = {
-    equityMode:'best',
+    equityMode:'real',
     initialBalance:1000,
     graphData: null,
     minValue: null,
@@ -91,7 +91,7 @@ class EquityChart extends Component {
     let minValue;
     let maxValue;
     let days = this.getGraphDays(graphData);
-    
+
     [minValue,maxValue] = this.getGraphDataMinMax(graphData);
     this.setState({
       graphData,
@@ -163,30 +163,45 @@ class EquityChart extends Component {
       // maxValue = maxValue ? Math.max(maxValue,balance) : balance;
     });
 
+    /*
     const super_log = [];
+    const log_headers = ['Date'];
+    for (var z=0;z<graphData.length;z++){
+      log_headers.push(graphData[z].id+' Apr');
+      log_headers.push(graphData[z].id+' Balance');
+    }
+    super_log.push(log_headers.join("\t"));
+
+    // Loop through data
     for (var j=0;j<minDataLength;j++){
+
+      // Push date first
       let log = [graphData[0].data[j].x];
+
+      // Loop through protocols
       for (var i=0;i<graphData.length;i++){
-        log.push(graphData[i].data[j].b);
-        log.push(parseFloat(graphData[i].data[j].a.y).toFixed(4)+'%');
-        if (i===graphData.length-1){
-          log.push(this.getProtocolByAddress(graphData,graphData[i].data[j].a.address).id);
-        }
+        const protocolData = graphData[i].data[j];
+        const protocolApr = protocolData.a.y.toString().replace('.',',');
+        const protocolBalance = protocolData.b.toString().replace('.',',');
+
+        log.push(protocolApr,protocolBalance);
       }
       super_log.push(log.join("\t"));
     }
 
-    // console.log(super_log.join("\n"));
+    console.log(super_log.join("\n"));
+    */
 
     // const startTimestamp = parseInt(moment('01/09/2019','DD/MM/YYYY')._d.getTime()/1000);
     // graphData = this.filterGraphData(graphData,startTimestamp);
     [minValue,maxValue] = this.getGraphDataMinMax(graphData);
     let days = this.getGraphDays(graphData);
 
-    // console.log(graphData);
     graphData.sort(function(a,b){
       return a.pos - b.pos;
     });
+
+    // console.log('graphData',graphData);
 
     this.setState({
       graphData,
