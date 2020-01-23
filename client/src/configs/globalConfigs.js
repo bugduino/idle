@@ -53,7 +53,7 @@ const globalConfigs = {
         42: 'https://kovan.infura.io/v3/'
       },
       etherscan:{
-        enabled:false, // Enable txs request
+        enabled:true, // Enable txs request
         api:{
           1: 'https://api.etherscan.io/api',
           42: 'https://api-kovan.etherscan.io/api'
