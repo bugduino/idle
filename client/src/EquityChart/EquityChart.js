@@ -15,7 +15,7 @@ const secondsInYear = 31556952;
 
 class EquityChart extends Component {
   state = {
-    equityMode:'best',
+    equityMode:'real',
     initialBalance:1000,
     graphData: null,
     minValue: null,
@@ -40,7 +40,7 @@ class EquityChart extends Component {
 
   async getContractTransactions(){
     const txs = await this.makeCachedRequest(`https://api.etherscan.io/api?module=account&action=tokentx&address=${IdleAddress}&startblock=8119247&endblock=999999999&sort=asc&apikey=${env.REACT_APP_ETHERSCAN_KEY}`,43200).catch(err => {
-      console.log('Error getting internal txs');
+      // console.log('Error getting internal txs');
     });
     return txs ? txs.data.result : null;
   }
@@ -183,15 +183,19 @@ class EquityChart extends Component {
       // Loop through protocols
       for (var i=0;i<graphData.length;i++){
         const protocolData = graphData[i].data[j];
+        // if (protocolData.x === log[0]){
         const protocolApr = protocolData.a.y.toString().replace('.',',');
         const protocolBalance = protocolData.b.toString().replace('.',',');
-
         log.push(protocolApr,protocolBalance);
+        // } else {
+        //   log.push('','');
+        // }
       }
       super_log.push(log.join("\t"));
     }
 
     console.log(super_log.join("\n"));
+    console.log('graphData',graphData);
     */
 
     // const startTimestamp = parseInt(moment('01/09/2019','DD/MM/YYYY')._d.getTime()/1000);
@@ -202,8 +206,6 @@ class EquityChart extends Component {
     graphData.sort(function(a,b){
       return a.pos - b.pos;
     });
-
-    // console.log('graphData',graphData);
 
     this.setState({
       graphData,
@@ -424,6 +426,7 @@ class EquityChart extends Component {
     const secondsPerDay = 60*60*24;
     const rebalancesTxs = [];
     const idleBlocks = {};
+
     internalTxs.forEach((v,i) => {
       if (v.to === cDAIAddress || v.to === iDAIAddress){
         const txTimestamp = parseInt(v.timeStamp)*1000;
@@ -474,8 +477,12 @@ class EquityChart extends Component {
     // Get Aprs based by rebalancing 
     const blockTimes = Object.keys(idleBlocksOrdered);
     let nextTimestamp = null;
+
     blockTimes.forEach((blockTime,i) => {
+    // let blockTime = null;
+    // for (blockTime=blockTimes[0];blockTime<=blockTimes[blockTimes.length];blockTime+=secondsPerDay){
       if (blockTime<=nextTimestamp){
+        // console.log(moment(blockTime*1000).format('DD/MM/YYYY'),'SKIP TO ',moment(nextTimestamp*1000).format('DD/MM/YYYY'));
         return;
       }
 
@@ -503,37 +510,45 @@ class EquityChart extends Component {
         apr.blockTime = blockTime;
         idleData.push(apr);
 
-        const latestIdleApr = idleData.length>1 ? idleData[idleData.length-2] : null;
+        const prevIdleApr = idleData.length>1 ? idleData[idleData.length-2] : null;
 
         // const protocolID = this.getProtocolByAddress(graphData,apr.address).id;
         // console.log(moment(blockTime*1000).format('DD/MM/YYYY'),moment(apr.t*1000).format('DD/MM/YYYY'),protocolID,apr.y,moment(max_apr.t*1000).format('DD/MM/YYYY'),max_apr.y);
+        // console.log(moment(blockTime*1000).format('DD/MM/YYYY'),apr,moment(nextTimestamp*1000).format('DD/MM/YYYY'));
 
         // Check if skipped some days between last and current apr
-        if (latestIdleApr){
-          const lastTimestamp = latestIdleApr.t;
-          const timestampDiff = apr.t-latestIdleApr.t;
+        if (prevIdleApr){
+          const lastTimestamp = prevIdleApr.t;
+          const timestampDiff = apr.t-prevIdleApr.t;
           const daysBetweenTimestamps = parseInt(timestampDiff/secondsPerDay)-1;
 
-          if (daysBetweenTimestamps>1){
+          // console.log('Check skipped days:',moment(apr.t*1000).format('DD/MM/YYYY'),moment(prevIdleApr.t*1000).format('DD/MM/YYYY'),daysBetweenTimestamps);
+
+          if (daysBetweenTimestamps){
             let timestamp = lastTimestamp+secondsPerDay;
             for (timestamp;timestamp<blockTime;timestamp+=secondsPerDay){
               const maxTimestamp = timestamp+secondsPerDay;
               let apr = null;
               switch (this.state.equityMode){
                 case 'best':
-                  apr = getHighestAprByTimestamp(blockTime,maxTimestamp); // Use this to obtain always the best APR
+                  apr = getHighestAprByTimestamp(timestamp,maxTimestamp); // Use this to obtain always the best APR
                 break;
                 case 'real':
-                  apr = getClosestProtocolAprByTimestamp(latestIdleApr.address,timestamp,maxTimestamp); // Use this to obtain the real APR
+                  apr = getClosestProtocolAprByTimestamp(prevIdleApr.address,timestamp,maxTimestamp); // Use this to obtain the real APR
                 break;
                 default:
                 break;
               }
+
+              // console.log('Checking skipped day ',moment(timestamp*1000).format('DD/MM/YYYY'),moment(maxTimestamp*1000).format('DD/MM/YYYY'),apr);
+
               if (apr){
-                // console.log('Filling skipped day',this.getProtocolByAddress(graphData,latestIdleApr.address).id,moment(timestamp*1000).format('DD/MM/YYYY'),' => ',moment(apr.t*1000).format('DD/MM/YYYY'),this.getProtocolByAddress(graphData,latestIdleApr.address).id,apr.y);
+                // console.log('Filling skipped day',moment(timestamp*1000).format('DD/MM/YYYY'),' => ',moment(apr.t*1000).format('DD/MM/YYYY'),this.getProtocolByAddress(graphData,prevIdleApr.address).id,apr.y);
                 apr.blockTime = timestamp;
                 idleData.push(apr);
                 timestamp = apr.t;
+              } else {
+                // console.log('Skipped day not found',moment(timestamp*1000).format('DD/MM/YYYY'));
               }
             }
           }
@@ -549,14 +564,18 @@ class EquityChart extends Component {
     // Take missing days
     const latestIdleApr = idleData[idleData.length-1];
     // Take the last available time
-    const lastAprAvailable = Math.max(parseInt(graphData[0].aprs[graphData[0].aprs.length-1].t),parseInt(graphData[1].aprs[graphData[1].aprs.length-1].t));
+    // window.graphData = graphData;
 
-    if (latestIdleApr.t<lastAprAvailable){
-      const lastTimestamp = latestIdleApr.t;
-      
-      let timestamp = lastTimestamp+secondsPerDay;
-      // console.log(timestamp,lastAprAvailable);
-      for (timestamp;timestamp<=lastAprAvailable;timestamp+=secondsPerDay){
+    const lastTimestampAvailable = Math.max(...graphData.map((v,i) => { return v.aprs.pop().t; }));
+    // Math.max(parseInt(graphData[0].aprs[graphData[0].aprs.length-1].t),parseInt(graphData[1].aprs[graphData[1].aprs.length-1].t));
+
+    // console.log('Taking missing days:',moment(latestIdleApr.t*1000).format('DD/MM/YYYY'),moment(lastTimestampAvailable*1000).format('DD/MM/YYYY'));
+
+    if (latestIdleApr.t<lastTimestampAvailable){
+      const lastTimestamp = parseInt(latestIdleApr.t);
+      let timestamp = parseInt(lastTimestamp)+secondsPerDay;
+
+      for (timestamp;timestamp<=lastTimestampAvailable;timestamp+=secondsPerDay){
         const maxTimestamp = timestamp+secondsPerDay;
         let apr = null;
         switch (this.state.equityMode){
@@ -569,7 +588,7 @@ class EquityChart extends Component {
           default:
           break;
         }
-        // console.log(latestIdleApr.address,timestamp,maxTimestamp,apr);
+        // console.log('Taking missing day',latestIdleApr.address,moment(timestamp*1000).format('DD/MM/YYYY'),moment(maxTimestamp*1000).format('DD/MM/YYYY'),apr);
         if (apr){
           apr.blockTime = timestamp;
           idleData.push(apr);
