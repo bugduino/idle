@@ -6,6 +6,7 @@ import TxProgressBar from '../TxProgressBar/TxProgressBar.js';
 import CryptoInput from '../CryptoInput/CryptoInput.js';
 import ApproveModal from "../utilities/components/ApproveModal";
 import WelcomeModal from "../utilities/components/WelcomeModal";
+import ShareModal from "../utilities/components/ShareModal";
 import axios from 'axios';
 import moment from 'moment';
 import CountUp from 'react-countup';
@@ -384,6 +385,11 @@ class SmartContractControls extends React.Component {
 
       if (this.state.callMintCallback){
         this.props.mintCallback();
+        
+        // Show share modal if it's the first deposit
+        if (this.state.isFirstDeposit){
+          this.toggleShareModal();
+        }
       }
 
       return this.setState({
@@ -818,6 +824,10 @@ class SmartContractControls extends React.Component {
     this.setState(state => ({...state, approveIsOpen: !state.approveIsOpen }));
   }
 
+  toggleShareModal = (e) => {
+    this.setState(state => ({...state, shareModalIsOpen: !state.shareModalIsOpen }));
+  }
+
   toggleWelcomeModal = (e) => {
     this.setState(state => ({...state, welcomeIsOpen: !state.welcomeIsOpen }));
   }
@@ -875,6 +885,9 @@ class SmartContractControls extends React.Component {
     let amountLent = this.BNify(0);
     let transactions = {};
 
+    // Check if this is the first interaction with Idle
+    let depositedTxs = 0;
+
     await this.functionsUtil.asyncForEach(prevTxs,async (tx,index) => {
 
       const isMigrationTx = migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).indexOf(tx.from.toLowerCase()) !== -1 ) && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
@@ -884,6 +897,7 @@ class SmartContractControls extends React.Component {
       // Deposited
       if (isDepositTx){
         amountLent = amountLent.plus(this.BNify(tx.value));
+        depositedTxs++;
 
         this.functionsUtil.customLog('Add deposited value',this.BNify(tx.value).toString(),amountLent.toString());
 
@@ -996,6 +1010,7 @@ class SmartContractControls extends React.Component {
         let txValue;
         switch (tx.method){
           case 'mintIdleToken':
+            depositedTxs++;
             txValue = tx.params ? this.toEth(tx.params[0]).toString() : 0;
             if (!txValue){
               this.functionsUtil.customLog('Skipped tx '+tx.transactionHash+' - value is zero ('+txValue+')');
@@ -1074,11 +1089,14 @@ class SmartContractControls extends React.Component {
       amountLent = this.functionsUtil.BNify(0);
     }
 
+    const isFirstDeposit = depositedTxs === 1;
+
     this.functionsUtil.customLog('getPrevTxs',amountLent,earning);
 
     return this.setState({
       prevTxsError: false,
       prevTxs: transactions,
+      isFirstDeposit,
       amountLent,
       earning
     });
@@ -1177,6 +1195,7 @@ class SmartContractControls extends React.Component {
       welcomeIsOpen: false,
       approveIsOpen: false,
       showFundsInfo:true,
+      isFirstDeposit:false,
       isTokenApproved:false,
       isApprovingToken:false,
       isApprovingDAITest: true,
@@ -1224,7 +1243,8 @@ class SmartContractControls extends React.Component {
       showEmptyWalletOverlay:true,
       prevTxs : null,
       prevTxsError: false,
-      transactions:{}
+      transactions:{},
+      shareModalIsOpen:false
     });
   }
 
@@ -2746,6 +2766,12 @@ class SmartContractControls extends React.Component {
 
             </Box>
         </Form>
+
+        <ShareModal
+          account={this.props.account}
+          isOpen={this.state.shareModalIsOpen}
+          closeModal={this.toggleShareModal}
+          tokenName={this.props.selectedToken} />
 
         <WelcomeModal
           account={this.props.account}

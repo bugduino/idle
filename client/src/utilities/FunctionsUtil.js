@@ -112,6 +112,42 @@ class FunctionsUtil {
     }
     return null;
   }
+  copyToClipboard = (copyText) => {
+    if (typeof copyText.select === 'function'){
+      copyText.select();
+      copyText.setSelectionRange(0, 99999); // Select
+      const res = document.execCommand("copy");
+      copyText.setSelectionRange(0, 0); // Deselect
+      return res;
+    }
+    return false;
+  }
+  loadScript = (url,props,callback) => {
+    const script = document.createElement("script");
+    script.src = url;
+
+    // Append props
+    Object.keys(props).forEach((attr,i) => {
+      script[attr] = props[attr];
+    });
+
+    if (typeof callback === 'function'){
+      if (script.readyState) {  // only required for IE <9
+        script.onreadystatechange = function() {
+          if ( script.readyState === 'loaded' || script.readyState === 'complete' ) {
+            script.onreadystatechange = null;
+            callback();
+          }
+        };
+      } else {  //Others
+        script.onload = callback;
+      }
+    }
+
+    if (!script.id || !document.getElementById(script.id)){
+      document.body.appendChild(script);
+    }
+  }
   getContractBalance = async (contractName,address) => {
     return await this.getProtocolBalance(contractName,address);
   }

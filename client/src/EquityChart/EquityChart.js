@@ -15,7 +15,8 @@ const secondsInYear = 31556952;
 
 class EquityChart extends Component {
   state = {
-    equityMode:'real',
+    mode:'apr', // [equity,apr]
+    equityMode:'best', // [real,best]
     initialBalance:1000,
     graphData: null,
     minValue: null,
@@ -152,9 +153,9 @@ class EquityChart extends Component {
           t:aprInfo.t,
           x:aprInfo.x,
           b:balance,
-          y:(balance-this.state.initialBalance).toFixed(4)
-          // y:balance.toFixed(4)
+          y: this.state.mode === 'equity' ? (balance-this.state.initialBalance).toFixed(4) : aprInfo.y
         });
+
         lastAprInfo = aprInfo;
       });
 
