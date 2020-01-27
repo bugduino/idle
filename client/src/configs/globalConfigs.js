@@ -18,11 +18,11 @@ const globalConfigs = {
     'ZAF':'South Africa',
     'KOR':'South Korea'
   },
-  logs:{
+  logs:{ // Enable logs levels
     messagesEnabled:false,
     errorsEnabled:false
   },
-  connectors:{
+  connectors:{ // Connectors props
     metamask:{
       subcaption:'Browser extension'
     },
@@ -42,7 +42,12 @@ const globalConfigs = {
       subcaption:'Hardware wallet'
     },
   },
-  network:{
+  modals:{ // Enable modals
+    first_deposit_referral:false, // Referral share modal
+    first_deposit_share:true, // First deposit share modal
+    welcome:false // Welcome modal
+  },
+  network:{ // Network configurations
     requiredConfirmations: 1,
     accountBalanceMinimum: 0, // in ETH for gas fees
     requiredNetwork: 42, // { 1: Mainnet, 3: Ropsten, 42: Kovan }
@@ -53,8 +58,8 @@ const globalConfigs = {
         42: 'https://kovan.infura.io/v3/'
       },
       etherscan:{
-        enabled:true, // Enable txs request
-        api:{
+        enabled:true, // False for empty txs list (try new wallet)
+        endpoints:{
           1: 'https://api.etherscan.io/api',
           42: 'https://api-kovan.etherscan.io/api'
         }
@@ -71,7 +76,7 @@ const globalConfigs = {
       }
     }
   },
-  payments: {
+  payments: { // Payment methods & providers
     methods:{
       bank:{
         defaultProvider:null,

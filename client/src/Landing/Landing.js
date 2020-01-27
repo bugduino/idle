@@ -36,13 +36,13 @@ class Landing extends Component {
     var id = window.setTimeout(function() {}, 0);
 
     while (id--) {
-        // console.log('componentWillUnmount - Clear timeoutID',id);
         window.clearTimeout(id); // will do nothing if no timeout with id is present
     }
   }
 
   // Utils
   functionsUtil = null;
+
   loadUtils(){
     if (this.functionsUtil){
       this.functionsUtil.setProps(this.props);
@@ -51,11 +51,35 @@ class Landing extends Component {
     }
   }
 
+  startCarousel = async () => {
+    /*
+    if (!this.props.isMobile){
+      if (this.state.carouselIntervalID){
+        window.clearTimeout(this.state.carouselIntervalID);
+      }
+      const carouselIntervalID = window.setTimeout( async () => setActiveCarousel(this.state.activeCarousel+1) ,6500);
+      this.setState({
+        carouselIntervalID
+      });
+    }
+    */
+    if (this.state.carouselIntervalID){
+      window.clearInterval(this.state.carouselIntervalID);
+    }
+    const carouselIntervalID = window.setInterval(() => { !componentUnmounted && this.setActiveCarousel(this.state.activeCarousel+1) },6500);
+    this.setState({
+      carouselIntervalID
+    });
+  }
+
+  setActiveCarousel = (activeCarousel) => {
+    activeCarousel = activeCarousel<=3 ? activeCarousel : 1;
+    this.setState({activeCarousel});
+  }
+
   async componentDidMount(){
 
     this.loadUtils();
-
-    window.setConfetti = this.setConfetti;
 
     componentUnmounted = false;
     scrollTimeoutID = null;
@@ -73,28 +97,8 @@ class Landing extends Component {
       },150);
     };
 
-    const startCarousel = async () => {
-      if (!this.props.isMobile){
-        if (this.state.carouselIntervalID){
-          window.clearTimeout(this.state.carouselIntervalID);
-        }
-        const carouselIntervalID = window.setTimeout( async () => setActiveCarousel(this.state.activeCarousel+1) ,6500);
-        this.setState({
-          carouselIntervalID
-        });
-      }
-    }
-
-    const setActiveCarousel = (activeCarousel) => {
-      activeCarousel = activeCarousel<=3 ? activeCarousel : 1;
-      this.setState({activeCarousel});
-      startCarousel();
-    }
-
-    this.setState({startCarousel,setActiveCarousel});
-
     if (!this.props.isMobile && !this.state.carouselIntervalID){
-      startCarousel();
+      this.startCarousel();
     }
 
     // Load aprs and allocations
@@ -595,23 +599,23 @@ class Landing extends Component {
               !this.props.isMobile && (
                 <Flex flexDirection={'column'} width={[1,1/2]} justifyContent={'flex-end'} alignItems={'flex-end'}>
                   <Box width={'550px'} position={'relative'} minHeight={'500px'}>
-                    <Flex flexDirection={'column'} textAlign={'center'} alignItems={'center'} justifyContent={'center'} className={[styles.carouselItem,this.state.activeCarousel===1?  styles.pos1 : (this.state.activeCarousel===2 ? styles.pos3 : styles.pos2) ]} boxShadow={ this.state.activeCarousel===1 ? 4 : 1} m={[2,3]} onClick={e => this.state.setActiveCarousel(1)}>
+                    <Flex flexDirection={'column'} textAlign={'center'} alignItems={'center'} justifyContent={'center'} className={[styles.carouselItem,this.state.activeCarousel===1?  styles.pos1 : (this.state.activeCarousel===2 ? styles.pos3 : styles.pos2) ]} boxShadow={ this.state.activeCarousel===1 ? 4 : 1} m={[2,3]} onClick={e => this.setActiveCarousel(1)}>
                       <Image src={'images/smart-contract.png'} pb={2} />
                       <Text fontSize={3} fontWeight={3} color={'dark-gray'}>Non Custodial</Text>
                     </Flex>
-                    <Flex flexDirection={'column'} textAlign={'center'} alignItems={'center'} justifyContent={'center'} className={[styles.carouselItem,this.state.activeCarousel===2 ? styles.pos1 : (this.state.activeCarousel===1 ? styles.pos2 : styles.pos3)]} boxShadow={ this.state.activeCarousel===2 ? 4 : 1} m={[2,3]} onClick={e => this.state.setActiveCarousel(2)}>
+                    <Flex flexDirection={'column'} textAlign={'center'} alignItems={'center'} justifyContent={'center'} className={[styles.carouselItem,this.state.activeCarousel===2 ? styles.pos1 : (this.state.activeCarousel===1 ? styles.pos2 : styles.pos3)]} boxShadow={ this.state.activeCarousel===2 ? 4 : 1} m={[2,3]} onClick={e => this.setActiveCarousel(2)}>
                       <Image src={'images/no-hidden-feeds.png'} pb={2} />
                       <Text fontSize={3} fontWeight={3} color={'dark-gray'}>No Stress</Text>
                     </Flex>
-                    <Flex flexDirection={'column'} textAlign={'center'} alignItems={'center'} justifyContent={'center'} className={[styles.carouselItem,this.state.activeCarousel===3 ? styles.pos1 : (this.state.activeCarousel===2 ? styles.pos2 : styles.pos3)]} boxShadow={ this.state.activeCarousel===3 ? 4 : 1} m={[2,3]} onClick={e => this.state.setActiveCarousel(3)}>
+                    <Flex flexDirection={'column'} textAlign={'center'} alignItems={'center'} justifyContent={'center'} className={[styles.carouselItem,this.state.activeCarousel===3 ? styles.pos1 : (this.state.activeCarousel===2 ? styles.pos2 : styles.pos3)]} boxShadow={ this.state.activeCarousel===3 ? 4 : 1} m={[2,3]} onClick={e => this.setActiveCarousel(3)}>
                       <Image src={'images/decentralized.png'} pb={2} />
                       <Text fontSize={3} fontWeight={3} color={'dark-gray'}>Cost Efficent</Text>
                     </Flex>
                   </Box>
                   <Flex width={1} alignItems={'center'} justifyContent={'center'} position={'relative'} zIndex={'10'}>
-                    <Link className={[styles.carouselNav,this.state.activeCarousel===1 ? styles.selected : '']} onClick={e => this.state.setActiveCarousel(1)}></Link>
-                    <Link className={[styles.carouselNav,this.state.activeCarousel===2 ? styles.selected : '']} onClick={e => this.state.setActiveCarousel(2)}></Link>
-                    <Link className={[styles.carouselNav,this.state.activeCarousel===3 ? styles.selected : '']} onClick={e => this.state.setActiveCarousel(3)}></Link>
+                    <Link className={[styles.carouselNav,this.state.activeCarousel===1 ? styles.selected : '']} onClick={e => this.setActiveCarousel(1)}></Link>
+                    <Link className={[styles.carouselNav,this.state.activeCarousel===2 ? styles.selected : '']} onClick={e => this.setActiveCarousel(2)}></Link>
+                    <Link className={[styles.carouselNav,this.state.activeCarousel===3 ? styles.selected : '']} onClick={e => this.setActiveCarousel(3)}></Link>
                   </Flex>
                 </Flex>
               )

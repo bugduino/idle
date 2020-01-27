@@ -6,6 +6,7 @@ import TxProgressBar from '../TxProgressBar/TxProgressBar.js';
 import CryptoInput from '../CryptoInput/CryptoInput.js';
 import ApproveModal from "../utilities/components/ApproveModal";
 import WelcomeModal from "../utilities/components/WelcomeModal";
+import ReferralShareModal from "../utilities/components/ReferralShareModal";
 import ShareModal from "../utilities/components/ShareModal";
 import axios from 'axios';
 import moment from 'moment';
@@ -197,7 +198,7 @@ class SmartContractControls extends React.Component {
     const addresses = Aprs.addresses.map((addr,i) => { return addr.toString().toLowerCase() });
     const aprs = Aprs.aprs;
 
-    const maxRate = Math.max(...aprs);
+    let maxRate = Math.max(...aprs);
     const currentRate = maxRate;
     const currentProtocol = '';
 
@@ -214,9 +215,11 @@ class SmartContractControls extends React.Component {
       }
     });
 
+    maxRate = aprs ? ((+this.toEth(maxRate)).toFixed(2)) : '0.00';
+
     this.setState({
       aprs,
-      maxRate: aprs ? ((+this.toEth(maxRate)).toFixed(2)) : '0.00',
+      maxRate,
       needsUpdate: false,
       currentProtocol,
       currentRate
@@ -384,11 +387,20 @@ class SmartContractControls extends React.Component {
       this.functionsUtil.customLog('getBalanceOf 3',balance.toString(),tokenToRedeem.toString(),this.state.amountLent,earning,currentApr,earningPerYear);
 
       if (this.state.callMintCallback){
-        this.props.mintCallback();
-        
+
+        // Call mintCallback passed from Landing.js
+        if (typeof this.props.mintCallback === 'function'){
+          this.props.mintCallback();
+        }
+
         // Show share modal if it's the first deposit
         if (this.state.isFirstDeposit){
-          this.toggleShareModal();
+          // Check referral modal enabled
+          if (globalConfigs.modals.first_deposit_referral){
+            this.setActiveModal('referral');
+          } else if (globalConfigs.modals.first_deposit_share){
+            this.setActiveModal('share');
+          }
         }
       }
 
@@ -462,7 +474,7 @@ class SmartContractControls extends React.Component {
     this.setState({
       isApprovingToken: true,
       [`isApproving${name}`]: true, // TODO when set to false?
-      approveIsOpen: false
+      activeModal: 'approve'
     });
   };
 
@@ -536,7 +548,7 @@ class SmartContractControls extends React.Component {
     this.setState({
       isApprovingToken: true,
       [`isApproving${token}`]: true, // TODO when set to false?
-      approveIsOpen: false
+      activeModal: null
     });
   };
 
@@ -606,7 +618,7 @@ class SmartContractControls extends React.Component {
 
     // check if Idle is approved for DAI
     if (this.props.account && !this.state.isTokenApproved) {
-      return this.setState({approveIsOpen: true});
+      return this.setState({activeModal: 'approve'});
     }
 
     if (localStorage){
@@ -649,7 +661,7 @@ class SmartContractControls extends React.Component {
         this.selectTab({ preventDefault:()=>{} },'2');
         
         // Call mint callback after loading funds
-        newState.callMintCallback = typeof this.props.mintCallback === 'function';
+        newState.callMintCallback = true;
       }
       this.setState(newState);
     };
@@ -820,16 +832,16 @@ class SmartContractControls extends React.Component {
     }
   }
 
-  toggleModal = (e) => {
-    this.setState(state => ({...state, approveIsOpen: !state.approveIsOpen }));
+  resetModal = () => {
+    this.setState({
+      activeModal: null
+    });
   }
 
-  toggleShareModal = (e) => {
-    this.setState(state => ({...state, shareModalIsOpen: !state.shareModalIsOpen }));
-  }
-
-  toggleWelcomeModal = (e) => {
-    this.setState(state => ({...state, welcomeIsOpen: !state.welcomeIsOpen }));
+  setActiveModal = (activeModal) => {
+    this.setState({
+      activeModal
+    });
   }
 
   getPrevTxs = async (count) => {
@@ -841,8 +853,8 @@ class SmartContractControls extends React.Component {
     const etherscanInfo = globalConfigs.network.providers.etherscan;
 
     // Check if etherscan is enabled for the required network
-    if (etherscanInfo.enabled && etherscanInfo.api[requiredNetwork]){
-      const etherscanApiUrl = etherscanInfo.api[requiredNetwork];
+    if (etherscanInfo.enabled && etherscanInfo.endpoints[requiredNetwork]){
+      const etherscanApiUrl = etherscanInfo.endpoints[requiredNetwork];
       const txs = await axios.get(`
         ${etherscanApiUrl}?module=account&action=tokentx&address=${this.props.account}&startblock=8119247&endblock=999999999&sort=asc&apikey=${env.REACT_APP_ETHERSCAN_KEY}
       `).catch(err => {
@@ -1192,8 +1204,6 @@ class SmartContractControls extends React.Component {
       partialRedeemEnabled: false,
       disableLendButton: false,
       disableRedeemButton: false,
-      welcomeIsOpen: false,
-      approveIsOpen: false,
       showFundsInfo:true,
       isFirstDeposit:false,
       isTokenApproved:false,
@@ -1239,12 +1249,12 @@ class SmartContractControls extends React.Component {
       callMintCallback: false,
       redeemTx: null,
       approveTx: null,
+      activeModal: 'share',
       fundsError: false,
       showEmptyWalletOverlay:true,
       prevTxs : null,
       prevTxsError: false,
-      transactions:{},
-      shareModalIsOpen:false
+      transactions:{}
     });
   }
 
@@ -1547,7 +1557,7 @@ class SmartContractControls extends React.Component {
 
       // Check if first time entered
       let welcomeIsOpen = false;
-      if (false && localStorage && prevProps.account !== this.props.account){
+      if (globalConfigs.modals.welcome && localStorage && prevProps.account !== this.props.account){
         // Check the last login of the wallet
         const currTime = new Date().getTime();
         const walletAddress = this.props.account.toLowerCase();
@@ -1570,7 +1580,7 @@ class SmartContractControls extends React.Component {
       }
 
       this.setState({
-        welcomeIsOpen,
+        activeModal: welcomeIsOpen ? 'welcome' : this.state.activeModal,
         updateInProgress: false
       });
     }
@@ -2769,22 +2779,33 @@ class SmartContractControls extends React.Component {
 
         <ShareModal
           account={this.props.account}
-          isOpen={this.state.shareModalIsOpen}
-          closeModal={this.toggleShareModal}
+          isOpen={this.state.activeModal === 'share'}
+          closeModal={this.resetModal}
+          title={`Congratulations!`}
+          icon={`images/medal.svg`}
+          confettiEnabled={true}
+          text={`You have successfully made your first deposit!<br />Enjoy <strong>${this.state.maxRate}% APR</strong> on your <strong>${this.props.selectedToken}</strong>!`}
+          tweet={`I'm earning ${this.state.maxRate}% APR on my ${this.props.selectedToken} with @idlefinance! Go to ${globalConfigs.baseURL} and start earning now from your idle tokens!`}
+          tokenName={this.props.selectedToken} />
+
+        <ReferralShareModal
+          account={this.props.account}
+          isOpen={this.state.activeModal === 'referral'}
+          closeModal={this.resetModal}
           tokenName={this.props.selectedToken} />
 
         <WelcomeModal
           account={this.props.account}
-          isOpen={this.state.welcomeIsOpen}
-          closeModal={this.toggleWelcomeModal}
+          isOpen={this.state.activeModal === 'welcome'}
+          closeModal={this.resetModal}
           tokenName={this.props.selectedToken}
           baseTokenName={this.props.selectedToken}
           network={this.props.network.current} />
 
         <ApproveModal
           account={this.props.account}
-          isOpen={this.state.approveIsOpen}
-          closeModal={this.toggleModal}
+          isOpen={this.state.activeModal === 'approve'}
+          closeModal={this.resetModal}
           onClick={e => this.enableERC20(e, this.props.selectedToken)}
           tokenName={this.props.selectedToken}
           baseTokenName={this.props.selectedToken}
