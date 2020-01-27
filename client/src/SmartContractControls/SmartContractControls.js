@@ -1249,7 +1249,7 @@ class SmartContractControls extends React.Component {
       callMintCallback: false,
       redeemTx: null,
       approveTx: null,
-      activeModal: 'share',
+      activeModal: null,
       fundsError: false,
       showEmptyWalletOverlay:true,
       prevTxs : null,
