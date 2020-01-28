@@ -50,7 +50,7 @@ export default {
     black: baseColors.black,
     'near-black': '#111',
     'dark-gray': '#4e4e4e',
-    'mid-gray': '#555',
+    'mid-gray': '#999',
     gray: ' #f7f7f7',
     grey: '#CCC',
     silver: '#999',

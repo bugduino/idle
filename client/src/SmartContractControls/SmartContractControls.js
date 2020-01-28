@@ -170,12 +170,16 @@ class SmartContractControls extends React.Component {
   }
 
   getAllocations = async () => {
-    const allocations = await this.props.getAllocations();
+    const [allocations,navPool] = await this.props.getAllocations();
+    this.functionsUtil.customLog('getAllocations',allocations,navPool);
 
-    this.functionsUtil.customLog('getAllocations',allocations);
+    if (allocations){
+
+    }
 
     this.setState({
-      allocations
+      allocations,
+      navPool // TEMP
     });
   }
 
@@ -244,7 +248,7 @@ class SmartContractControls extends React.Component {
 
     this.setState({
       idleTokenPrice,
-      navPool,
+      // navPool, // TEMP
       tokenPrice,
       needsUpdate: false,
     });
@@ -1800,7 +1804,6 @@ class SmartContractControls extends React.Component {
     const depositedFunds = this.getFormattedBalance(this.state.amountLent,this.props.selectedToken);
     const earningPerc = !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && this.trimEth(this.state.tokenToRedeemParsed)>0 && this.state.amountLent>0 ? this.getFormattedBalance(this.BNify(this.state.tokenToRedeemParsed).div(this.BNify(this.state.amountLent)).minus(1).times(100),'%',4) : '0%';
     const currentApr = !isNaN(this.state.maxRate) ? this.getFormattedBalance(this.state.maxRate,'%',2) : '-';
-    // const balanceOfIdleDAI = this.getFormattedBalance(this.state.tokenBalanceBNify,this.props.tokenConfig.idle.token);
 
     let earningPerDay = this.getFormattedBalance((this.state.earningPerYear/daysInYear),this.props.selectedToken,4);
     const earningPerWeek = this.getFormattedBalance((this.state.earningPerYear/daysInYear*7),this.props.selectedToken,4);
@@ -1809,7 +1812,6 @@ class SmartContractControls extends React.Component {
 
     const currentNavPool = !isNaN(this.trimEth(this.state.navPool)) ? parseFloat(this.trimEth(this.state.navPool,8)) : null;
     let navPoolEarningPerYear = currentNavPool ? parseFloat(this.trimEth(this.BNify(this.state.navPool).times(this.BNify(this.state.maxRate/100)),8)) : null;
-    // const navPoolAtEndOfYear = currentNavPool ? parseFloat(this.trimEth(this.BNify(this.state.navPool).plus(this.BNify(navPoolEarningPerYear)),8)) : null;
     const navPoolEarningPerDay = navPoolEarningPerYear ? (navPoolEarningPerYear/daysInYear) : null;
     const navPoolEarningPerWeek = navPoolEarningPerDay ? (navPoolEarningPerDay*7) : null;
     const navPoolEarningPerMonth = navPoolEarningPerWeek ? (navPoolEarningPerWeek*4.35) : null;
@@ -1834,6 +1836,7 @@ class SmartContractControls extends React.Component {
 
     const counterMaxDigits = 11;
     const counterDecimals = Math.min(Math.max(0,counterMaxDigits-parseInt(currentReedemableFunds).toString().length),Math.max(0,counterMaxDigits-parseInt(currentEarning).toString().length));
+    const rebalanceCounterDecimals = this.state.allocations ? Math.min(...(Object.values(this.state.allocations).map((allocation,i) => { return counterMaxDigits-parseInt(allocation.toString()).toString().length }))) : null;
 
     return (
       <Box textAlign={'center'} alignItems={'center'} width={'100%'}>
@@ -2630,7 +2633,7 @@ class SmartContractControls extends React.Component {
                                     duration={31536000}
                                     delay={0}
                                     separator=""
-                                    decimals={6}
+                                    decimals={rebalanceCounterDecimals}
                                     decimal="."
                                   >
                                     {({ countUpRef, start }) => (
@@ -2665,7 +2668,7 @@ class SmartContractControls extends React.Component {
                                 Daily
                               </Text>
                               <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                {this.getFormattedBalance(navPoolEarningPerDay,this.props.selectedToken,4)}
+                                {this.getFormattedBalance(navPoolEarningPerDay,this.props.selectedToken,3)}
                               </Heading.h3>
                             </Box>
                             <Box width={1/2}>
@@ -2673,7 +2676,7 @@ class SmartContractControls extends React.Component {
                                 Weekly
                               </Text>
                               <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                {this.getFormattedBalance(navPoolEarningPerWeek,this.props.selectedToken,4)}
+                                {this.getFormattedBalance(navPoolEarningPerWeek,this.props.selectedToken,3)}
                               </Heading.h3>
                             </Box>
                           </Flex>
@@ -2683,7 +2686,7 @@ class SmartContractControls extends React.Component {
                                 Monthly
                               </Text>
                               <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                {this.getFormattedBalance(navPoolEarningPerMonth,this.props.selectedToken,4)}
+                                {this.getFormattedBalance(navPoolEarningPerMonth,this.props.selectedToken,3)}
                               </Heading.h3>
                             </Box>
                             <Box width={1/2}>
@@ -2691,7 +2694,7 @@ class SmartContractControls extends React.Component {
                                 Yearly
                               </Text>
                               <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                {this.getFormattedBalance(navPoolEarningPerYear,this.props.selectedToken,4)}
+                                {this.getFormattedBalance(navPoolEarningPerYear,this.props.selectedToken,3)}
                               </Heading.h3>
                             </Box>
                           </Flex>

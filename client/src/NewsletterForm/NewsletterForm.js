@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Flex, Box, Button, Form, Text, Checkbox, Link } from 'rimble-ui';
 import axios from 'axios';
 import styles from './NewsletterForm.module.scss';
+import globalConfigs from '../configs/globalConfigs';
 
 class NewsletterForm extends Component {
   state = {
@@ -28,7 +29,7 @@ class NewsletterForm extends Component {
 
     this.setState({validated:true });
 
-    axios.post(`https://dev.lapisgroup.it/idle/newsletter.php`, {
+    axios.post(globalConfigs.newsletterSubscription.endpoint, {
       'email': this.state.email
     }).then(r => {
       if (r.data.status === 'success'){
