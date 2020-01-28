@@ -1,13 +1,14 @@
 import React from 'react';
-import { TerminalHttpProvider, SourceType } from '@terminal-packages/sdk';
-import WalletConnectQRCodeModal from "@walletconnect/qrcode-modal";
-import ConnectionModalUtil from "./ConnectionModalsUtil";
-import NetworkUtil from "./NetworkUtil";
-import BigNumber from 'bignumber.js';
-import Web3 from "web3";
-import jQuery from 'jquery';
 import globalConfigs from '../configs/globalConfigs';
 import FunctionsUtil from './FunctionsUtil';
+import Web3 from "web3";
+import jQuery from 'jquery';
+import BigNumber from 'bignumber.js';
+import SimpleID from 'simpleid-js-sdk';
+import NetworkUtil from "./NetworkUtil";
+import ConnectionModalUtil from "./ConnectionModalsUtil";
+import WalletConnectQRCodeModal from "@walletconnect/qrcode-modal";
+import { TerminalHttpProvider, SourceType } from '@terminal-packages/sdk';
 
 require('dotenv').config();
 const INFURA_KEY = process.env["REACT_APP_INFURA_KEY"];
@@ -20,9 +21,11 @@ const RimbleTransactionContext = React.createContext({
   accountBalanceLow: {},
   tokenConfig: {},
   web3: {},
+  initWeb3: () => {},
+  simpleID: {},
+  initSimpleID: () => {},
   transactions: {},
   checkPreflight: () => {},
-  initWeb3: () => {},
   initContract: () => {},
   initAccount: () => {},
   getAccountBalance: () => {},
@@ -275,6 +278,29 @@ class RimbleTransaction extends React.Component {
     }
   }
 
+  initSimpleID = () => {
+
+    if (this.state.simpleID){
+      return this.state.simpleID;
+    }
+
+    const simpleIDInfo = globalConfigs.network.providers.simpleID;
+    let simpleID = null;
+
+    if (simpleIDInfo && simpleIDInfo.enabled && simpleIDInfo.supportedNetworks.indexOf(globalConfigs.network.requiredNetwork) !== -1 ){
+      const simpleIDParams = simpleIDInfo.params;
+      simpleIDParams.network = simpleIDInfo.getNetwork(this.state.network.current.id,globalConfigs.network.availableNetworks);
+      // console.log('simpleIDParams',simpleIDParams);
+      simpleID = new SimpleID(simpleIDParams);
+    }
+
+    this.setState({
+      simpleID
+    });
+
+    return simpleID;
+  }
+
   initAccount = async (hideModal = false) => {
     if (!hideModal) {
       this.openConnectionPendingModal();
@@ -286,6 +312,18 @@ class RimbleTransaction extends React.Component {
         const account = wallets[0];
         if (!hideModal) {
           this.closeConnectionPendingModal();
+        }
+
+        const simpleID = this.initSimpleID();
+        if (simpleID && !this.state.simpleIDFired){
+          const walletProvider = localStorage && localStorage.getItem('walletProvider') ? localStorage.getItem('walletProvider') : 'Infura';
+          const userInfo = {
+            // email:'',
+            address:account,
+            provider:walletProvider
+          };
+          // console.log('simpleID passUserInfo',userInfo);
+          simpleID.passUserInfo(userInfo);
         }
 
         // Custom address
@@ -452,23 +490,7 @@ class RimbleTransaction extends React.Component {
         ? this.props.config.requiredNetwork
         : globalConfigs.network.requiredNetwork;
 
-    let networkName = "";
-    switch (networkId) {
-      case 1:
-        networkName = "Main";
-        break;
-      case 3:
-        networkName = "Ropsten";
-        break;
-      case 4:
-        networkName = "Rinkeby";
-        break;
-      case 42:
-        networkName = "Kovan";
-        break;
-      default:
-        networkName = "unknown";
-    }
+    let networkName = globalConfigs.network.availableNetworks[networkId] ? globalConfigs.network.availableNetworks[networkId] : 'unknown';
 
     let requiredNetwork = {
       name: networkName,
@@ -869,9 +891,11 @@ class RimbleTransaction extends React.Component {
     accountBalanceLow: null,
     context:null,
     web3: null,
+    simpleID: null,
     transactions: {},
     checkPreflight: this.checkPreflight,
     initWeb3: this.initWeb3,
+    initSimpleID: this.initSimpleID,
     initContract: this.initContract,
     initAccount: this.initAccount,
     getAccountBalance: this.getAccountBalance,

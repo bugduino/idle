@@ -127,9 +127,11 @@ class FunctionsUtil {
     script.src = url;
 
     // Append props
-    Object.keys(props).forEach((attr,i) => {
-      script[attr] = props[attr];
-    });
+    if (props){
+      Object.keys(props).forEach((attr,i) => {
+        script[attr] = props[attr];
+      });
+    }
 
     if (typeof callback === 'function'){
       if (script.readyState) {  // only required for IE <9

@@ -163,6 +163,8 @@ class App extends Component {
                         needsPreflight,
                         web3,
                         initWeb3,
+                        simpleID,
+                        initSimpleID,
                         account,
                         contracts,
                         getAccountBalance,

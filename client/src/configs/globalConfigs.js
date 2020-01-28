@@ -42,12 +42,21 @@ const globalConfigs = {
       subcaption:'Hardware wallet'
     },
   },
+  newsletterSubscription:{
+    endpoint:'https://dev.lapisgroup.it/idle/newsletter.php'
+  },
   modals:{ // Enable modals
     first_deposit_referral:false, // Referral share modal
     first_deposit_share:true, // First deposit share modal
-    welcome:false // Welcome modal
+    welcome:true // Welcome modal
   },
   network:{ // Network configurations
+    availableNetworks:{
+      1:'Main',
+      3:'Ropsten',
+      4:'Rinkeby',
+      42:'Kovan'
+    },
     requiredConfirmations: 1,
     accountBalanceMinimum: 0, // in ETH for gas fees
     requiredNetwork: 42, // { 1: Mainnet, 3: Ropsten, 42: Kovan }
@@ -72,6 +81,29 @@ const globalConfigs = {
           projectId: 'DYLRXdlpqKVzPmZr',
           source: null,
           web3Version: Web3Versions.one
+        }
+      },
+      simpleID:{
+        enabled:false,
+        supportedNetworks:[1,42],
+        getNetwork:(networkId,availableNetworks) => {
+          let networkName = null;
+          switch (networkId){
+            case 1:
+              networkName = 'mainnet';
+            break;
+            default:
+              networkName = availableNetworks[networkId] ? availableNetworks[networkId].toLowerCase() : 'mainnet';
+            break;
+          }
+          return networkName;
+        },
+        params:{
+          appOrigin: window.location.origin,
+          appName: "Idle",
+          appId: "eb4d1754-a76e-4c58-8422-54b5ca2395e7",
+          useSimpledIdWidget: true,
+          network: 'mainnet'
         }
       }
     }
