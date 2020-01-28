@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Flex, Box, Text, Card, Image, Heading, Link, Pill, Loader, Button } from "rimble-ui";
-import { ResponsiveLine } from '@nivo/line';
+import { Line } from '@nivo/line';
+import { line } from 'd3-shape'
 import axios from 'axios';
 import moment from 'moment';
 import styles from './EquityChart.module.scss';
@@ -15,7 +16,7 @@ const secondsInYear = 31556952;
 
 class EquityChart extends Component {
   state = {
-    mode:'apr', // [equity,apr]
+    mode:'equity', // [equity,apr]
     equityMode:'best', // [real,best]
     initialBalance:1000,
     graphData: null,
@@ -269,7 +270,7 @@ class EquityChart extends Component {
 
   async getAprs() {
     // const graphEndTimestamp = parseInt(moment('05-11-2019','DD-MM-YYYY')._d.getTime()/1000);
-    // const graphStartTimestamp = parseInt(moment('02-09-2019','DD-MM-YYYY')._d.getTime()/1000);
+    // const graphStartTimestamp = parseInt(moment('15-09-2019','DD-MM-YYYY')._d.getTime()/1000);
     const graphStartTimestamp = 1565866741; // First Idle block mined
     const graphEndTimestamp = parseInt(moment()._d.getTime()/1000);
     const graphData = [
@@ -283,6 +284,9 @@ class EquityChart extends Component {
         "color": "hsl(162, 100%, 41%)",
         "aprs": [],
         "data": [],
+        "style" : {
+          strokeWidth: '2px',
+        },
         'endpoint':'https://defiportfolio-backend.herokuapp.com/api/v1/markets/compound_v2/'
       },
       {
@@ -295,6 +299,9 @@ class EquityChart extends Component {
         "color": "hsl(197, 98%, 38%)",
         "aprs": [],
         "data": [],
+        "style" : {
+          strokeWidth: '2px',
+        },
         'endpoint':'https://defiportfolio-backend.herokuapp.com/api/v1/markets/fulcrum/'
       }/*,
       {
@@ -405,210 +412,238 @@ class EquityChart extends Component {
       return false;
     }
 
-    // Get Aprs
-    const idleData = [];
-
-    // Load missing days
-    const firstTxTimestamp = internalTxs[0].timeStamp;
-    // const missingDays = parseInt((firstTxTimestamp-graphStartTimestamp)/60*60*24);
-
-    let timestamp = graphStartTimestamp-60*60*24;
-    for (timestamp;timestamp<firstTxTimestamp;timestamp+=60*60*24){
-      // console.log('Find missing days',moment(timestamp*1000).format('DD/MM/YYYY'));
-      const apr = getHighestAprByTimestamp(timestamp,timestamp+=60*60*24);
-      if (apr){
-        // console.log('Highest Apr',moment(timestamp*1000).format('DD/MM/YYYY'),apr.y);
-        idleData.push(apr);
-        timestamp = apr.t;
+    const idleCharts = [
+      {
+        "id": "Idle v1",
+        'pos_box':2,
+        'pos':3,
+        'chartMode':'real',
+        'icon' : 'idle-mark-old.png',
+        "color": "hsl(227, 100%, 50%)",
+        "aprs": [],
+        "data": [],
+        "style" : {
+          strokeWidth: '2px',
+        },
+      },
+      {
+        "id": "Idle v2",
+        'pos_box':2,
+        'pos':3,
+        'chartMode':'best',
+        'icon' : 'idle-mark.png',
+        "color": "hsl(227, 100%, 50%)",
+        "aprs": [],
+        "data": [],
+        "style" : {
+          strokeDasharray: '3, 3',
+          strokeWidth: '2px',
+        },
       }
-    }
+    ];
 
-    // Group transaction by BlockTime
-    const secondsPerDay = 60*60*24;
-    const rebalancesTxs = [];
-    const idleBlocks = {};
+    idleCharts.forEach((idleChart,chartVersion) => {
 
-    internalTxs.forEach((v,i) => {
-      if (v.to === cDAIAddress || v.to === iDAIAddress){
-        const txTimestamp = parseInt(v.timeStamp)*1000;
-        const m = moment(txTimestamp);
-        const blockDate = m.format('DD/MM/YYYY');
-        const blockTime = getDayTimestamp(txTimestamp);
+      const chartMode = idleChart.chartMode;
 
-        let apr = null;
-        switch (this.state.equityMode){
-          case 'best':
-            apr = getHighestAprByTimestamp(blockTime,parseInt(blockTime)+secondsPerDay);
-          break;
-          case 'real':
-            apr = getClosestProtocolAprByTimestamp(v.to,blockTime,parseInt(blockTime)+secondsPerDay);
-          break;
-          default:
-          break;
-        }
+      // Get Aprs
+      const idleData = [];
 
-        if (!idleBlocks[blockTime] || (apr && idleBlocks[blockTime].to !== v.to && parseFloat(apr.y)>idleBlocks[blockTime].apr)){
-          idleBlocks[blockTime] = {
-            to:v.to,
-            timeStamp:blockTime,
-            date:blockDate,
-            apr:(apr ? parseFloat(apr.y) : null)
-          };
-        }
+      // Load missing days
+      const firstTxTimestamp = internalTxs[0].timeStamp;
+      // const missingDays = parseInt((firstTxTimestamp-graphStartTimestamp)/60*60*24);
 
-        // if (rebalancesTxs.length>0){
-        //   console.log(rebalancesTxs.length,rebalancesTxs[rebalancesTxs.length-1].to,v.to);
-        // }
-
-        if (!rebalancesTxs.length || (rebalancesTxs.length>0 && rebalancesTxs[rebalancesTxs.length-1].to !== v.to)){
-          rebalancesTxs.push(v);
-        }
-      }
-    });
-
-    this.setState({
-      rebalancesTxs
-    });
-
-    const idleBlocksOrdered = {};
-    Object.keys(idleBlocks).sort().forEach(function(key) {
-      idleBlocksOrdered[key] = idleBlocks[key];
-    });
-
-    // Get Aprs based by rebalancing 
-    const blockTimes = Object.keys(idleBlocksOrdered);
-    let nextTimestamp = null;
-
-    blockTimes.forEach((blockTime,i) => {
-    // let blockTime = null;
-    // for (blockTime=blockTimes[0];blockTime<=blockTimes[blockTimes.length];blockTime+=secondsPerDay){
-      if (blockTime<=nextTimestamp){
-        // console.log(moment(blockTime*1000).format('DD/MM/YYYY'),'SKIP TO ',moment(nextTimestamp*1000).format('DD/MM/YYYY'));
-        return;
-      }
-
-      const tx = idleBlocksOrdered[blockTime];
-
-      // Set the max timestamp to look for
-      const nextBlockTime = blockTimes[i+1];
-      const nextTx = nextBlockTime ? idleBlocksOrdered[nextBlockTime] : null;
-      const maxTimestamp = nextTx ? nextTx.timeStamp : null;
-      let apr = null;
-      switch (this.state.equityMode){
-        case 'best':
-          apr = getHighestAprByTimestamp(blockTime,maxTimestamp); // Use this to obtain always the best APR
-        break;
-        case 'real':
-          apr = getClosestProtocolAprByTimestamp(tx.to,blockTime,maxTimestamp); // Use this to obtain the real APR
-        break;
-        default:
-        break;
-      }
-
-      if (apr){
-        nextTimestamp = apr.t;
-        // Set the real rebalance timestamp
-        apr.blockTime = blockTime;
-        idleData.push(apr);
-
-        const prevIdleApr = idleData.length>1 ? idleData[idleData.length-2] : null;
-
-        // const protocolID = this.getProtocolByAddress(graphData,apr.address).id;
-        // console.log(moment(blockTime*1000).format('DD/MM/YYYY'),moment(apr.t*1000).format('DD/MM/YYYY'),protocolID,apr.y,moment(max_apr.t*1000).format('DD/MM/YYYY'),max_apr.y);
-        // console.log(moment(blockTime*1000).format('DD/MM/YYYY'),apr,moment(nextTimestamp*1000).format('DD/MM/YYYY'));
-
-        // Check if skipped some days between last and current apr
-        if (prevIdleApr){
-          const lastTimestamp = prevIdleApr.t;
-          const timestampDiff = apr.t-prevIdleApr.t;
-          const daysBetweenTimestamps = parseInt(timestampDiff/secondsPerDay)-1;
-
-          // console.log('Check skipped days:',moment(apr.t*1000).format('DD/MM/YYYY'),moment(prevIdleApr.t*1000).format('DD/MM/YYYY'),daysBetweenTimestamps);
-
-          if (daysBetweenTimestamps){
-            let timestamp = lastTimestamp+secondsPerDay;
-            for (timestamp;timestamp<blockTime;timestamp+=secondsPerDay){
-              const maxTimestamp = timestamp+secondsPerDay;
-              let apr = null;
-              switch (this.state.equityMode){
-                case 'best':
-                  apr = getHighestAprByTimestamp(timestamp,maxTimestamp); // Use this to obtain always the best APR
-                break;
-                case 'real':
-                  apr = getClosestProtocolAprByTimestamp(prevIdleApr.address,timestamp,maxTimestamp); // Use this to obtain the real APR
-                break;
-                default:
-                break;
-              }
-
-              // console.log('Checking skipped day ',moment(timestamp*1000).format('DD/MM/YYYY'),moment(maxTimestamp*1000).format('DD/MM/YYYY'),apr);
-
-              if (apr){
-                // console.log('Filling skipped day',moment(timestamp*1000).format('DD/MM/YYYY'),' => ',moment(apr.t*1000).format('DD/MM/YYYY'),this.getProtocolByAddress(graphData,prevIdleApr.address).id,apr.y);
-                apr.blockTime = timestamp;
-                idleData.push(apr);
-                timestamp = apr.t;
-              } else {
-                // console.log('Skipped day not found',moment(timestamp*1000).format('DD/MM/YYYY'));
-              }
-            }
-          }
-        }
-
-        idleData.sort(function(a,b){
-          return moment(a.x,'DD/MM/YYYY')._d - moment(b.x,'DD/MM/YYYY')._d;
-        });
-      }
-    });
-
-
-    // Take missing days
-    const latestIdleApr = idleData[idleData.length-1];
-    // Take the last available time
-    // window.graphData = graphData;
-
-    const lastTimestampAvailable = Math.max(...graphData.map((v,i) => { return v.aprs.pop().t; }));
-    // Math.max(parseInt(graphData[0].aprs[graphData[0].aprs.length-1].t),parseInt(graphData[1].aprs[graphData[1].aprs.length-1].t));
-
-    // console.log('Taking missing days:',moment(latestIdleApr.t*1000).format('DD/MM/YYYY'),moment(lastTimestampAvailable*1000).format('DD/MM/YYYY'));
-
-    if (latestIdleApr.t<lastTimestampAvailable){
-      const lastTimestamp = parseInt(latestIdleApr.t);
-      let timestamp = parseInt(lastTimestamp)+secondsPerDay;
-
-      for (timestamp;timestamp<=lastTimestampAvailable;timestamp+=secondsPerDay){
-        const maxTimestamp = timestamp+secondsPerDay;
-        let apr = null;
-        switch (this.state.equityMode){
-          case 'best':
-            apr = getHighestAprByTimestamp(timestamp,maxTimestamp); // Use this to obtain always the best APR
-          break;
-          case 'real':
-            apr = getClosestProtocolAprByTimestamp(latestIdleApr.address,timestamp,maxTimestamp); // Use this to obtain the real APR
-          break;
-          default:
-          break;
-        }
-        // console.log('Taking missing day',latestIdleApr.address,moment(timestamp*1000).format('DD/MM/YYYY'),moment(maxTimestamp*1000).format('DD/MM/YYYY'),apr);
+      let timestamp = graphStartTimestamp-60*60*24;
+      for (timestamp;timestamp<firstTxTimestamp;timestamp+=60*60*24){
+        // console.log('Find missing days',moment(timestamp*1000).format('DD/MM/YYYY'));
+        const apr = getHighestAprByTimestamp(timestamp,timestamp+=60*60*24);
         if (apr){
-          apr.blockTime = timestamp;
+          // console.log('Highest Apr',moment(timestamp*1000).format('DD/MM/YYYY'),apr.y);
           idleData.push(apr);
           timestamp = apr.t;
         }
       }
-    }
 
-    graphData.push(
-      {
-        "id": "Idle",
-        'pos_box':2,
-        'pos':3,
-        'icon' : 'idle-mark-white.png',
-        "color": "hsl(227, 100%, 50%)",
-        "aprs": idleData,
-        "data": []
+      // Group transaction by BlockTime
+      const secondsPerDay = 60*60*24;
+      const rebalancesTxs = [];
+      const idleBlocks = {};
+
+      internalTxs.forEach((v,i) => {
+        if (v.to === cDAIAddress || v.to === iDAIAddress){
+          const txTimestamp = parseInt(v.timeStamp)*1000;
+          const m = moment(txTimestamp);
+          const blockDate = m.format('DD/MM/YYYY');
+          const blockTime = getDayTimestamp(txTimestamp);
+
+          let apr = null;
+          switch (chartMode){
+            case 'best':
+              apr = getHighestAprByTimestamp(blockTime,parseInt(blockTime)+secondsPerDay);
+            break;
+            case 'real':
+              apr = getClosestProtocolAprByTimestamp(v.to,blockTime,parseInt(blockTime)+secondsPerDay);
+            break;
+            default:
+            break;
+          }
+
+          if (!idleBlocks[blockTime] || (apr && idleBlocks[blockTime].to !== v.to && parseFloat(apr.y)>idleBlocks[blockTime].apr)){
+            idleBlocks[blockTime] = {
+              to:v.to,
+              timeStamp:blockTime,
+              date:blockDate,
+              apr:(apr ? parseFloat(apr.y) : null)
+            };
+          }
+
+          // if (rebalancesTxs.length>0){
+          //   console.log(rebalancesTxs.length,rebalancesTxs[rebalancesTxs.length-1].to,v.to);
+          // }
+
+          if (!rebalancesTxs.length || (rebalancesTxs.length>0 && rebalancesTxs[rebalancesTxs.length-1].to !== v.to)){
+            rebalancesTxs.push(v);
+          }
+        }
+      });
+
+      // console.log('rebalancesTxs',rebalancesTxs);
+
+      this.setState({
+        rebalancesTxs
+      });
+
+      const idleBlocksOrdered = {};
+      Object.keys(idleBlocks).sort().forEach(function(key) {
+        idleBlocksOrdered[key] = idleBlocks[key];
+      });
+
+      // Get Aprs based by rebalancing 
+      const blockTimes = Object.keys(idleBlocksOrdered);
+      let nextTimestamp = null;
+
+      blockTimes.forEach((blockTime,i) => {
+      // let blockTime = null;
+      // for (blockTime=blockTimes[0];blockTime<=blockTimes[blockTimes.length];blockTime+=secondsPerDay){
+        if (blockTime<=nextTimestamp){
+          // console.log(moment(blockTime*1000).format('DD/MM/YYYY'),'SKIP TO ',moment(nextTimestamp*1000).format('DD/MM/YYYY'));
+          return;
+        }
+
+        const tx = idleBlocksOrdered[blockTime];
+
+        // Set the max timestamp to look for
+        const nextBlockTime = blockTimes[i+1];
+        const nextTx = nextBlockTime ? idleBlocksOrdered[nextBlockTime] : null;
+        const maxTimestamp = nextTx ? nextTx.timeStamp : null;
+        let apr = null;
+        switch (chartMode){
+          case 'best':
+            apr = getHighestAprByTimestamp(blockTime,maxTimestamp); // Use this to obtain always the best APR
+          break;
+          case 'real':
+            apr = getClosestProtocolAprByTimestamp(tx.to,blockTime,maxTimestamp); // Use this to obtain the real APR
+          break;
+          default:
+          break;
+        }
+
+        if (apr){
+          nextTimestamp = apr.t;
+          // Set the real rebalance timestamp
+          apr.blockTime = blockTime;
+          idleData.push(apr);
+
+          const prevIdleApr = idleData.length>1 ? idleData[idleData.length-2] : null;
+
+          // const protocolID = this.getProtocolByAddress(graphData,apr.address).id;
+          // console.log(moment(blockTime*1000).format('DD/MM/YYYY'),moment(apr.t*1000).format('DD/MM/YYYY'),protocolID,apr.y,moment(max_apr.t*1000).format('DD/MM/YYYY'),max_apr.y);
+          // console.log(moment(blockTime*1000).format('DD/MM/YYYY'),apr,moment(nextTimestamp*1000).format('DD/MM/YYYY'));
+
+          // Check if skipped some days between last and current apr
+          if (prevIdleApr){
+            const lastTimestamp = prevIdleApr.t;
+            const timestampDiff = apr.t-prevIdleApr.t;
+            const daysBetweenTimestamps = parseInt(timestampDiff/secondsPerDay)-1;
+
+            // console.log('Check skipped days:',moment(apr.t*1000).format('DD/MM/YYYY'),moment(prevIdleApr.t*1000).format('DD/MM/YYYY'),daysBetweenTimestamps);
+
+            if (daysBetweenTimestamps){
+              let timestamp = lastTimestamp+secondsPerDay;
+              for (timestamp;timestamp<blockTime;timestamp+=secondsPerDay){
+                const maxTimestamp = timestamp+secondsPerDay;
+                let apr = null;
+                switch (chartMode){
+                  case 'best':
+                    apr = getHighestAprByTimestamp(timestamp,maxTimestamp); // Use this to obtain always the best APR
+                  break;
+                  case 'real':
+                    apr = getClosestProtocolAprByTimestamp(prevIdleApr.address,timestamp,maxTimestamp); // Use this to obtain the real APR
+                  break;
+                  default:
+                  break;
+                }
+
+                // console.log('Checking skipped day ',moment(timestamp*1000).format('DD/MM/YYYY'),moment(maxTimestamp*1000).format('DD/MM/YYYY'),apr);
+
+                if (apr){
+                  // console.log('Filling skipped day',moment(timestamp*1000).format('DD/MM/YYYY'),' => ',moment(apr.t*1000).format('DD/MM/YYYY'),this.getProtocolByAddress(graphData,prevIdleApr.address).id,apr.y);
+                  apr.blockTime = timestamp;
+                  idleData.push(apr);
+                  timestamp = apr.t;
+                } else {
+                  // console.log('Skipped day not found',moment(timestamp*1000).format('DD/MM/YYYY'));
+                }
+              }
+            }
+          }
+
+          idleData.sort(function(a,b){
+            return moment(a.x,'DD/MM/YYYY')._d - moment(b.x,'DD/MM/YYYY')._d;
+          });
+        }
+      });
+
+
+      // Take missing days
+      const latestIdleApr = idleData[idleData.length-1];
+      // Take the last available time
+      // window.graphData = graphData;
+
+      const lastTimestampAvailable = Math.max(...graphData.map((v,i) => { return v.aprs.pop().t; }));
+      // Math.max(parseInt(graphData[0].aprs[graphData[0].aprs.length-1].t),parseInt(graphData[1].aprs[graphData[1].aprs.length-1].t));
+
+      // console.log('Taking missing days:',moment(latestIdleApr.t*1000).format('DD/MM/YYYY'),moment(lastTimestampAvailable*1000).format('DD/MM/YYYY'));
+
+      if (latestIdleApr.t<lastTimestampAvailable){
+        const lastTimestamp = parseInt(latestIdleApr.t);
+        let timestamp = parseInt(lastTimestamp)+secondsPerDay;
+
+        for (timestamp;timestamp<=lastTimestampAvailable;timestamp+=secondsPerDay){
+          const maxTimestamp = timestamp+secondsPerDay;
+          let apr = null;
+          switch (chartMode){
+            case 'best':
+              apr = getHighestAprByTimestamp(timestamp,maxTimestamp); // Use this to obtain always the best APR
+            break;
+            case 'real':
+              apr = getClosestProtocolAprByTimestamp(latestIdleApr.address,timestamp,maxTimestamp); // Use this to obtain the real APR
+            break;
+            default:
+            break;
+          }
+          // console.log('Taking missing day',latestIdleApr.address,moment(timestamp*1000).format('DD/MM/YYYY'),moment(maxTimestamp*1000).format('DD/MM/YYYY'),apr);
+          if (apr){
+            apr.blockTime = timestamp;
+            idleData.push(apr);
+            timestamp = apr.t;
+          }
+        }
       }
-    );
+
+      idleChart.aprs = idleData;
+      graphData.push(idleChart);
+    });
 
     return graphData;
   }
@@ -657,6 +692,25 @@ class EquityChart extends Component {
   }
 
   render() {
+
+    const DashedLine = ({xScale, yScale, series}) => {
+
+        const lineGenerator = line()
+            .x(({ data }) => xScale(data.x))
+            .y(({ data }) => yScale(data.y));
+
+        return series.map(({ id, data, color, style }) => (
+            <path
+                key={`${id}_${color}`}
+                d={lineGenerator(data)}
+                fill="none"
+                stroke={color}
+                style={style}
+            />
+          )
+        )
+    }
+
     const MyResponsiveLine = (data,interestBoxes,txs) => (
       <Flex width={'100%'} flexDirection={'column'}>
         <Heading.h4 fontSize={[2,2]} py={[2,3]} px={[3,0]} textAlign={'center'} fontWeight={2} lineHeight={1.5} color={'dark-gray'}>
@@ -667,96 +721,96 @@ class EquityChart extends Component {
         </Flex>
         {
           !this.props.isMobile && (
-            <>
-              <ResponsiveLine
-                  data={data}
-                  margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
-                  xScale={{
-                    type: 'time',
-                    format: '%d/%m/%Y',
-                    precision: 'day'
-                  }}
-                  curve="catmullRom"
-                  xFormat="time:%d/%m/%Y"
-                  // yScale={{
-                  //   type: 'log',
-                  //   base: 10,
-                  //   max: 'auto',
-                  // }}
-                  yScale={{
-                    type: 'linear',
-                    stacked: false,
-                    // min: this.state.minValue,
-                    // max: this.state.maxValue,
-                  }}
-                  axisLeft={{
-                    legend: this.props.selectedToken+' earned',
-                    legendOffset: -40,
-                    legendPosition: 'middle'
-                  }}
-                  axisBottom={{
-                    format: '%b %d',
-                    // tickValues: 'every 2 days',
-                    // tickValues: 'every 13 days',
-                    // legend: 'TIME',
-                    legendOffset: 36,
-                    legendPosition: 'middle'
+            <Line
+              data={data}
+              width={window.innerWidth*3/4}
+              height={500}
+              margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
+              xScale={{
+                type: 'time',
+                format: '%d/%m/%Y',
+                precision: 'day'
+              }}
+              curve="catmullRom"
+              xFormat="time:%d/%m/%Y"
+              // yScale={{
+              //   type: 'log',
+              //   base: 10,
+              //   max: 'auto',
+              // }}
+              yScale={{
+                type: 'linear',
+                stacked: false,
+                // min: this.state.minValue,
+                // max: this.state.maxValue,
+              }}
+              axisLeft={{
+                legend: this.props.selectedToken+' earned',
+                legendOffset: -40,
+                legendPosition: 'middle'
+              }}
+              axisBottom={{
+                format: '%b %d',
+                // tickValues: 'every 2 days',
+                // tickValues: 'every 13 days',
+                // legend: 'TIME',
+                legendOffset: 36,
+                legendPosition: 'middle'
 
-                  }}
-                  yFormat={value =>
-                    parseFloat(value).toFixed(2)+' '+this.props.selectedToken
-                  }
-                  enableGridX={false}
-                  enableGridY={false}
-                  colors={d => d.color}
-                  pointSize={0}
-                  pointColor={{ from: 'color', modifiers: [] }}
-                  pointBorderWidth={1}
-                  pointLabel="y"
-                  pointLabelYOffset={-12}
-                  enableSlices="x"
-                  useMesh={true}
-                  animate={false}
-                  legends={[
-                      {
-                          anchor: 'bottom-right',
-                          direction: 'column',
-                          justify: false,
-                          translateX: 100,
-                          translateY: 0,
-                          itemsSpacing: 0,
-                          itemDirection: 'left-to-right',
-                          itemWidth: 80,
-                          itemHeight: 20,
-                          itemOpacity: 0.75,
-                          symbolSize: 12,
-                          symbolShape: 'circle',
-                          symbolBorderColor: 'rgba(0, 0, 0, .5)',
-                          effects: [
-                              {
-                                  on: 'hover',
-                                  style: {
-                                      itemBackground: 'rgba(0, 0, 0, .03)',
-                                      itemOpacity: 1
-                                  }
-                              }
-                          ]
-                      }
-                  ]}
-              />
-              {
-                txs && (
-                  <Flex width={'100%'} flexDirection={['column','row']} mt={[2,3]}>
-                    { txs }
-                  </Flex>
-                )
+              }}
+              yFormat={value =>
+                parseFloat(value).toFixed(2)+' '+this.props.selectedToken
               }
-            </>
+              enableGridX={true}
+              enableGridY={false}
+              colors={d => d.color}
+              pointSize={0}
+              pointColor={{ from: 'color', modifiers: [] }}
+              pointBorderWidth={1}
+              pointLabel="y"
+              pointLabelYOffset={-12}
+              enableSlices="x"
+              useMesh={true}
+              animate={false}
+              layers={['grid', 'markers', 'axes', 'areas', 'crosshair', DashedLine, 'points', 'slices', 'mesh', 'legends']}
+              legends={[
+                  {
+                      anchor: 'bottom-right',
+                      direction: 'column',
+                      justify: false,
+                      translateX: 100,
+                      translateY: 0,
+                      itemsSpacing: 0,
+                      itemDirection: 'left-to-right',
+                      itemWidth: 80,
+                      itemHeight: 20,
+                      itemOpacity: 0.75,
+                      symbolSize: 12,
+                      symbolShape: 'circle',
+                      symbolBorderColor: 'rgba(0, 0, 0, .5)',
+                      effects: [
+                          {
+                              on: 'hover',
+                              style: {
+                                  itemBackground: 'rgba(0, 0, 0, .03)',
+                                  itemOpacity: 1
+                              }
+                          }
+                      ]
+                  }
+              ]}
+            />
           )
         }
       </Flex>
     )
-
+    // {
+    //   txs && (
+    //     <Flex width={'100%'} flexDirection={['column','row']} mt={[2,3]}>
+    //       { txs }
+    //     </Flex>
+    //   )
+    // }
     if (this.state.graphError){
       return (
         <Flex
@@ -788,13 +842,44 @@ class EquityChart extends Component {
     } else {
       if (this.state.graphData){
 
-        const graphData = this.state.graphData;
+        const graphData = Object.assign([],this.state.graphData);
+
+        /*
+        // Add rebalances
+        const rebalancesChart = {
+          id: "rebalances",
+          color: "hsl(0, 100%, 50%)",
+          pos_box:0,
+          pos:0,
+          data: [],
+          style : {
+            strokeWidth: '2px',
+          },
+        };
+
+        this.state.rebalancesTxs.forEach((r,i) => {
+          rebalancesChart.data.push({
+            x:moment(r.timeStamp*1000).format('DD/MM/YYYY'),
+            y:this.state.minValue
+          });
+          rebalancesChart.data.push({
+            x:moment(r.timeStamp*1000).format('DD/MM/YYYY'),
+            y:30
+          });
+        });
+
+        graphData.push(rebalancesChart);
+        */
+
         graphData.sort(function(a,b){
           return a.pos_box - b.pos_box;
         });
 
         const interestBoxes = graphData.map(v=>{
-          const isIdle = v.id==='Idle';
+          if (!v.pos){
+            return;
+          }
+          const isIdle = v.id==='Idle v2';
           const interestEarned = parseFloat(v.data[v.data.length-1].y);
           const secondsPassed = parseInt(v.data[v.data.length-1].t)-parseInt(v.data[0].t);
           const interestEarnedPerSecond = interestEarned/secondsPassed;
@@ -809,22 +894,32 @@ class EquityChart extends Component {
           return (
             <Flex key={'graph_'+v.id} width={[1,1/3]} mx={[0,2]} flexDirection={'column'}>
               <Box>
-                <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={ isIdle ? 1 : 1 } className={isIdle ? styles.gradientBg : null}>
+                <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={ isIdle ? '0px 0px 16px 2px rgba(0,54,255,0.3)' : 0 }>
                   <Flex flexDirection={'row'} alignItems={'center'}>
-                    <Flex width={3/12} borderRight={'1px solid #eee'} justifyContent={'center'}>
+                    <Flex width={[1/4,1/3]} justifyContent={'center'}>
                       <Image src={`images/${v.icon}`} height={['1.7em', '2em']} verticalAlign={'middle'} />
                     </Flex>
-                    <Box width={6/12} borderRight={'1px solid #eee'}>
-                      <Text color={isIdle ? 'white' : 'copyColor'} fontSize={[3,'28px']} fontWeight={4} textAlign={'center'}>
-                        {interestEarned.toFixed(2)} <Text.span color={isIdle ? 'white' : 'copyColor'} fontWeight={2} fontSize={['90%','60%']}>{this.props.selectedToken}</Text.span>
+                    <Flex alignItems={'center'} borderLeft={'1px solid #eee'} justifyContent={'center'} flexDirection={'column'} width={[3/4,2/3]}>
+                      <Text.span color={'copyColor'} fontWeight={2} fontSize={'70%'}>AVG APR</Text.span>
+                      <Text lineHeight={1} pl={'10px'} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
+                        {annualReturn}<Text.span color={'copyColor'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
                       </Text>
-                    </Box>
-                    <Flex alignItems={'center'} flexDirection={'column'} width={3/12}>
+                    </Flex>
+                    {
+                      /*
+                      <Box width={6/12} borderRight={'1px solid #eee'}>
+                        <Text color={isIdle ? 'white' : 'copyColor'} fontSize={[3,'28px']} fontWeight={4} textAlign={'center'}>
+                          {interestEarned.toFixed(2)} <Text.span color={isIdle ? 'white' : 'copyColor'} fontWeight={2} fontSize={['90%','60%']}>{this.props.selectedToken}</Text.span>
+                        </Text>
+                      </Box>
+                    <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={3/4}>
                       <Text.span color={isIdle ? 'white' : 'copyColor'} fontWeight={[1,2]} fontSize={['90%','70%']}>AVG APR</Text.span>
                       <Text lineHeight={1} pl={'10px'} color={isIdle ? 'white' : 'copyColor'} fontSize={[2,3]} fontWeight={3} textAlign={'center'}>
                         {annualReturn}<Text.span color={isIdle ? 'white' : 'copyColor'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
                       </Text>
                     </Flex>
+                      */
+                    }
                   </Flex>
                 </Card>
               </Box>
@@ -835,6 +930,7 @@ class EquityChart extends Component {
         graphData.sort(function(a,b){
           return a.pos - b.pos;
         });
+        // debugger;
 
         return MyResponsiveLine(graphData,interestBoxes/*,this.renderTxs(graphData)*/);
       } else {
