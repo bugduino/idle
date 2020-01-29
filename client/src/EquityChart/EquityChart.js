@@ -4,7 +4,7 @@ import { Line } from '@nivo/line';
 import { line } from 'd3-shape'
 import axios from 'axios';
 import moment from 'moment';
-import styles from './EquityChart.module.scss';
+import FunctionsUtil from '../utilities/FunctionsUtil';
 import SmartContractControls_styles from '../SmartContractControls/SmartContractControls.module.scss';
 
 const env = process.env;
@@ -29,9 +29,23 @@ class EquityChart extends Component {
     this.setState(state => ({...state, selectedSection: section}));
   }
 
+  // Utils
+  functionsUtil = null;
+  loadUtils(){
+    if (this.functionsUtil){
+      this.functionsUtil.setProps(this.props);
+    } else {
+      this.functionsUtil = new FunctionsUtil(this.props);
+    }
+  }
+
   async componentDidMount(){
+    this.loadUtils();
     await this.getEquity();
-    // this.getEquity_static();
+  }
+
+  async componentDidUpdate(){
+    this.loadUtils();
   }
 
   async asyncForEach(array, callback){
@@ -467,6 +481,7 @@ class EquityChart extends Component {
       // Group transaction by BlockTime
       const secondsPerDay = 60*60*24;
       const rebalancesTxs = [];
+      let rebalancesGasUsed = this.functionsUtil.BNify(0);
       const idleBlocks = {};
 
       internalTxs.forEach((v,i) => {
@@ -497,20 +512,17 @@ class EquityChart extends Component {
             };
           }
 
-          // if (rebalancesTxs.length>0){
-          //   console.log(rebalancesTxs.length,rebalancesTxs[rebalancesTxs.length-1].to,v.to);
-          // }
-
           if (!rebalancesTxs.length || (rebalancesTxs.length>0 && rebalancesTxs[rebalancesTxs.length-1].to !== v.to)){
             rebalancesTxs.push(v);
+            const txCost = this.functionsUtil.BNify(v.gasPrice).times(this.functionsUtil.BNify(v.gasUsed));
+            rebalancesGasUsed = rebalancesGasUsed.plus(txCost);
           }
         }
       });
 
-      // console.log('rebalancesTxs',rebalancesTxs);
-
       this.setState({
-        rebalancesTxs
+        rebalancesTxs,
+        rebalancesGasUsed
       });
 
       const idleBlocksOrdered = {};
@@ -877,7 +889,7 @@ class EquityChart extends Component {
 
         const interestBoxes = graphData.map(v=>{
           if (!v.pos){
-            return;
+            return false;
           }
           const isIdle = v.id==='Idle v2';
           const interestEarned = parseFloat(v.data[v.data.length-1].y);
