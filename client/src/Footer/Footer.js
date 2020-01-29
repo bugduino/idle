@@ -30,6 +30,7 @@ class Footer extends Component {
                 </RouterLink>
               </Flex>
               <Link pb={[3,2]} href={'https://www.iubenda.com/privacy-policy/61211749'} target={'_blank'} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} color={'blue'} hoverColor={'blue'}>Privacy Policy</Link>
+              <Link pb={[3,2]} href={'https://www.iubenda.com/privacy-policy/61211749/cookie-policy'} target={'_blank'} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} color={'blue'} hoverColor={'blue'}>Cookie Policy</Link>
             </Flex>
           </Flex>
           <Flex width={[1,1/3]} flexDirection={'column'}>

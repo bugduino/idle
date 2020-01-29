@@ -7,18 +7,19 @@ import connectors from './connectors';
 import {
   HashRouter as Router,
   Switch,
-  Route,
+  Route
   // useParams
 } from "react-router-dom";
 
 import theme from "../theme";
 
-import { ThemeProvider, Box } from 'rimble-ui';
+import { ThemeProvider, Box, Text, Link, Image, Flex } from 'rimble-ui';
 import RimbleWeb3 from "../utilities/RimbleWeb3";
 import Header from "../utilities/components/Header";
 import Landing from "../Landing/Landing";
 import ScrollToTop from "../ScrollToTop/ScrollToTop";
 import Tos from "../Tos/Tos";
+import CookieConsent from "react-cookie-consent";
 import PageNotFound from "../PageNotFound/PageNotFound";
 import Web3Debugger from "../Web3Debugger/Web3Debugger";
 import globalConfigs from '../configs/globalConfigs';
@@ -268,6 +269,25 @@ class App extends Component {
                                   tokenConfig={this.state.tokenConfig}
                                   setSelectedToken={ e => { this.setSelectedToken(e) } }
                                   network={network} />
+
+                                  <CookieConsent
+                                    acceptOnScroll={true}
+                                    acceptOnScrollPercentage={5}
+                                    location="bottom"
+                                    buttonText="Accept"
+                                    cookieName="cookieAccepted"
+                                    style={{background: "rgba(255,255,255,0.95)",zIndex:'9999999'}}
+                                    buttonStyle={{display:'none'}}
+                                    expires={365}
+                                  >
+                                    <Flex flexDirection={'row'} alignItems={['flex-start','center']} justifyContent={'flex-start'} maxHeight={['150px','initial']} style={ isMobile ? {overflowY:'scroll'} : null }>
+                                      <Image display={['none','block']} src={'images/cookie.svg'} width={'42px'} height={'42px'} />
+                                      <Text pl={[0,3]} color={'dark-gray'} fontSize={1} textAlign={'justify'}>
+                                        This website or its third-party tools process personal data (e.g. browsing data or IP addresses) and use cookies or other identifiers, which are necessary for its functioning and required to achieve the purposes illustrated in the cookie policy. To learn more, please refer to the <Link href={'https://www.iubenda.com/privacy-policy/61211749/cookie-policy'} target={'_blank'} hoverColor={'blue'}>cookie policy</Link>.
+                                        You accept the use of cookies or other identifiers by closing or dismissing this notice, by scrolling this page, by clicking a link or button or by continuing to browse otherwise.
+                                      </Text>
+                                    </Flex>
+                                  </CookieConsent>
                               </Route>
                               <Route path="/terms-of-service">
                                 <Tos />
