@@ -7,7 +7,7 @@ import {
 } from "rimble-ui";
 import ModalCard from './ModalCard';
 import TwitterShareButton from '../../TwitterShareButton/TwitterShareButton.js';
-import Confetti from 'react-confetti';
+import Confetti from 'react-confetti/dist/react-confetti';
 
 export default function ShareModal(props) {
   const tweet = window.escape(props.tweet);
