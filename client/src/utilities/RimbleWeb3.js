@@ -656,7 +656,7 @@ class RimbleTransaction extends React.Component {
           transaction.recentEvent = "confirmation";
           this.updateTransaction(transaction);
 
-          if (callback && transaction.confirmationCount<2) {
+          if (!globalConfigs.network.isForked && typeof callback === 'function' && transaction.confirmationCount<2) {
             callback(transaction);
             this.functionsUtil.customLog('Confirmed', confirmationNumber, receipt, transaction);
           }
