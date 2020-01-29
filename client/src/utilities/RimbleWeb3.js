@@ -290,11 +290,9 @@ class RimbleTransaction extends React.Component {
     if (simpleIDInfo && simpleIDInfo.enabled && simpleIDInfo.supportedNetworks.indexOf(globalConfigs.network.requiredNetwork) !== -1 ){
       const simpleIDParams = simpleIDInfo.params;
       simpleIDParams.network = simpleIDInfo.getNetwork(this.state.network.current.id,globalConfigs.network.availableNetworks);
-      // console.log('simpleIDParams',simpleIDParams);
+      console.log('simpleIDParams',simpleIDParams);
       simpleID = new SimpleID(simpleIDParams);
     }
-
-    window.simpleID = simpleID;
 
     this.setState({
       simpleID

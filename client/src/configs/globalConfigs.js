@@ -84,7 +84,7 @@ const globalConfigs = {
         }
       },
       simpleID:{
-        enabled:true,
+        enabled:false,
         supportedNetworks:[1,42],
         getNetwork:(networkId,availableNetworks) => {
           let networkName = null;

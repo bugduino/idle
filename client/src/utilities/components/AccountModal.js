@@ -5,7 +5,6 @@ import {
   Modal,
   Box,
   Flex,
-  Button,
   Image,
   EthAddress
 } from "rimble-ui";

@@ -180,7 +180,7 @@ class SmartContractControls extends React.Component {
 
     this.setState({
       allocations,
-      navPool // TEMP
+      // navPool // For demo purpose
     });
   }
 
@@ -249,7 +249,7 @@ class SmartContractControls extends React.Component {
 
     this.setState({
       idleTokenPrice,
-      // navPool, // TEMP
+      navPool, // Remove for demo
       tokenPrice,
       needsUpdate: false,
     });
