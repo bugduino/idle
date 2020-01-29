@@ -16,7 +16,7 @@ const secondsInYear = 31556952;
 
 class EquityChart extends Component {
   state = {
-    mode:'equity', // [equity,apr]
+    mode:'perc', // [equity,apr,perc]
     equityMode:'best', // [real,best]
     initialBalance:1000,
     graphData: null,
@@ -163,13 +163,29 @@ class EquityChart extends Component {
           balance += totalEarned;
         }
 
-        graphData[i].data.push({
+        const graphPoint = {
           a:aprInfo,
           t:aprInfo.t,
           x:aprInfo.x,
           b:balance,
-          y: this.state.mode === 'equity' ? (balance-this.state.initialBalance).toFixed(4) : aprInfo.y
-        });
+          g:(balance-this.state.initialBalance),
+          y: null
+        }
+
+        switch (this.state.mode){
+          case 'perc':
+            graphPoint.y = ((balance/this.state.initialBalance-1)*100).toFixed(2);
+          break;
+          case 'apr':
+            graphPoint.y = aprInfo.y;
+          break;
+          case 'equity':
+          default:
+            graphPoint.y = graphPoint.g.toFixed(4);
+          break;
+        }
+
+        graphData[i].data.push(graphPoint);
 
         lastAprInfo = aprInfo;
       });
@@ -757,7 +773,7 @@ class EquityChart extends Component {
                 // max: this.state.maxValue,
               }}
               axisLeft={{
-                legend: this.props.selectedToken+' earned',
+                legend: ( this.state.mode === 'perc' ? '%' : this.props.selectedToken)+' earned',
                 legendOffset: -40,
                 legendPosition: 'middle'
               }}
@@ -771,7 +787,7 @@ class EquityChart extends Component {
 
               }}
               yFormat={value =>
-                parseFloat(value).toFixed(2)+' '+this.props.selectedToken
+                parseFloat(value).toFixed(2)+' '+( this.state.mode === 'perc' ? '%' : this.props.selectedToken)
               }
               enableGridX={true}
               enableGridY={false}
@@ -892,7 +908,7 @@ class EquityChart extends Component {
             return false;
           }
           const isIdle = v.id==='Idle v2';
-          const interestEarned = parseFloat(v.data[v.data.length-1].y);
+          const interestEarned = parseFloat(v.data[v.data.length-1].g);
           const secondsPassed = parseInt(v.data[v.data.length-1].t)-parseInt(v.data[0].t);
           const interestEarnedPerSecond = interestEarned/secondsPassed;
           const finalBalanceAfterYear = this.state.initialBalance+(interestEarnedPerSecond*secondsInYear);
