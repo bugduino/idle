@@ -20,12 +20,18 @@ class FunctionsUtil {
     return this.BNify(eth).toFixed(6);
   }
   toEth = wei => {
+    if (!this.props.web3){
+      return null;
+    }
     return this.props.web3.utils.fromWei(
       (wei || 0).toString(),
       "ether"
     );
   }
   toWei = eth => {
+    if (!this.props.web3){
+      return null;
+    }
     return this.props.web3.utils.toWei(
       (eth || 0).toString(),
       "ether"
