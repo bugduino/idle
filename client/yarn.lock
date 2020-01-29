@@ -9170,6 +9170,10 @@ loglevel@^1.4.1:
   version "1.6.1"
   resolved "https://registry.yarnpkg.com/loglevel/-/loglevel-1.6.1.tgz#e0fc95133b6ef276cdc8887cdaf24aa6f156f8fa"
 
+loglevel@^1.6.6:
+  version "1.6.6"
+  resolved "https://registry.yarnpkg.com/loglevel/-/loglevel-1.6.6.tgz#0ee6300cc058db6b3551fa1c4bf73b83bb771312"
+
 looper@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/looper/-/looper-2.0.0.tgz#66cd0c774af3d4fedac53794f742db56da8f09ec"
@@ -12682,14 +12686,15 @@ simple-swizzle@^0.2.2:
   dependencies:
     is-arrayish "^0.3.1"
 
-simpleid-js-sdk@^0.1.4-beta:
-  version "0.1.4-beta"
-  resolved "https://registry.yarnpkg.com/simpleid-js-sdk/-/simpleid-js-sdk-0.1.4-beta.tgz#0987694b9d973e8ea35e1fb984467aad53ec5dbd"
+simpleid-js-sdk@^0.1.5-beta:
+  version "0.1.5-beta"
+  resolved "https://registry.yarnpkg.com/simpleid-js-sdk/-/simpleid-js-sdk-0.1.5-beta.tgz#5dd846f0a016e53ee1760baf220d55cc6d50c38e"
   dependencies:
     crypto "^1.0.1"
     crypto-browserify "^3.12.0"
     dotenv "^8.2.0"
     ethers "^4.0.33"
+    loglevel "^1.6.6"
     penpal "^4.1.1"
     pocket-js-core "0.0.6"
     request "^2.88.0"

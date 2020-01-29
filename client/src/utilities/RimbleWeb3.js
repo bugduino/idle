@@ -294,6 +294,8 @@ class RimbleTransaction extends React.Component {
       simpleID = new SimpleID(simpleIDParams);
     }
 
+    window.simpleID = simpleID;
+
     this.setState({
       simpleID
     });
@@ -315,14 +317,14 @@ class RimbleTransaction extends React.Component {
         }
 
         const simpleID = this.initSimpleID();
-        if (simpleID && !this.state.simpleIDFired){
+        if (simpleID){
           const walletProvider = localStorage && localStorage.getItem('walletProvider') ? localStorage.getItem('walletProvider') : 'Infura';
           const userInfo = {
             // email:'',
             address:account,
             provider:walletProvider
           };
-          // console.log('simpleID passUserInfo',userInfo);
+          console.log('simpleID passUserInfo',userInfo);
           simpleID.passUserInfo(userInfo);
         }
 

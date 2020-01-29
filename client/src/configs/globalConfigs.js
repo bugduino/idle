@@ -60,7 +60,7 @@ const globalConfigs = {
     requiredConfirmations: 1,
     accountBalanceMinimum: 0, // in ETH for gas fees
     requiredNetwork: 42, // { 1: Mainnet, 3: Ropsten, 42: Kovan }
-    isForked: true, // If TRUE the tx confirmation callback is fired on the receipt
+    isForked: false, // If TRUE the tx confirmation callback is fired on the receipt
     providers:{
       infura:{
         1: 'https://mainnet.infura.io/v3/',
@@ -84,7 +84,7 @@ const globalConfigs = {
         }
       },
       simpleID:{
-        enabled:false,
+        enabled:true,
         supportedNetworks:[1,42],
         getNetwork:(networkId,availableNetworks) => {
           let networkName = null;
