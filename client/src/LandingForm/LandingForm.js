@@ -27,6 +27,7 @@ class LandingForm extends Component {
             <SmartContractControls
               web3={web3}
               mintCallback={this.props.mintCallback}
+              connecting={this.props.connecting}
               getAllocations={this.props.getAllocations}
               openBuyModal={this.props.openBuyModal}
               selectedToken={this.props.selectedToken}

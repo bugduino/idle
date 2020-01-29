@@ -7,6 +7,7 @@ import styles from './Header.module.scss';
 import BigNumber from 'bignumber.js';
 import TokenSelector from '../../TokenSelector/TokenSelector';
 import ButtonGroup from '../../ButtonGroup/ButtonGroup';
+import ButtonLoader from '../../ButtonLoader/ButtonLoader.js';
 import {
   Link as RouterLink,
 } from "react-router-dom";
@@ -126,6 +127,9 @@ class Header extends React.Component {
   }
 
   render() {
+
+    const buttonSize = this.props.isMobile ? 'small' : 'medium';
+
     return (
       <Box style={{
         'position': 'absolute',
@@ -167,16 +171,16 @@ class Header extends React.Component {
                     toggleModal={e => this.toggleModal('account') }
                   />
                 ) : (
-                  <Button
-                    className={styles.gradientButton}
-                    borderRadius={4}
-                    my={2}
-                    ml={[3, 3]}
-                    onClick={this.props.connectAndValidateAccount}
-                    size={this.props.isMobile ? 'small' : 'medium'}
+                  <ButtonLoader
+                    buttonProps={{className:styles.gradientButton,borderRadius:'2rem',my:8,ml:16,minWidth:['95px','145px'],size:buttonSize}}
+                    handleClick={this.props.connectAndValidateAccount}
+                    buttonText={'CONNECT'}
+                    loaderSrc={'images/lottie/loader.json'}
+                    loaderWidth={'170px'}
+                    loaderHeight={'170px'}
+                    isLoading={this.props.connecting}
                   >
-                    CONNECT
-                  </Button>
+                  </ButtonLoader>
                 )
               }
               {
@@ -209,6 +213,7 @@ class Header extends React.Component {
           idleTokenBalance={this.state.idleTokenBalance}
           isOpen={this.state.isModalOpen==='account'}
           isMobile={this.props.isMobile}
+          setConnector={this.props.setConnector}
           closeModal={e => this.toggleModal('account') }
           network={this.props.network.current} />
       </Box>

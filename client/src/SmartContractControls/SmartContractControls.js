@@ -14,6 +14,7 @@ import CountUp from 'react-countup';
 import jQuery from 'jquery';
 import globalConfigs from '../configs/globalConfigs';
 import FunctionsUtil from '../utilities/FunctionsUtil';
+import ButtonLoader from '../ButtonLoader/ButtonLoader.js';
 
 const env = process.env;
 
@@ -480,9 +481,9 @@ class SmartContractControls extends React.Component {
       [`isApproving${name}`]: true, // TODO when set to false?
       activeModal: 'approve'
     });
-  };
+  }
 
-  checkTransactionMined = (tx) => {
+  checkTransactionAlreadyMined = (tx) => {
     let transaction = this.props.transactions[tx.created];
     return transaction && transaction.status === 'success' && transaction.confirmationCount>1;
   }
@@ -578,7 +579,7 @@ class SmartContractControls extends React.Component {
     const gasLimit = _clientProtocolAmounts.length && _clientProtocolAmounts.indexOf('0') === -1 ? this.functionsUtil.BNify(1500000) : 0;
 
     const callback = (tx) => {
-      const needsUpdate = tx.status === 'success' && !this.checkTransactionMined(tx);
+      const needsUpdate = tx.status === 'success' && !this.checkTransactionAlreadyMined(tx);
       this.setState({
         needsUpdate: needsUpdate,
         rebalanceProcessing: false
@@ -650,8 +651,9 @@ class SmartContractControls extends React.Component {
 
     const callback = (tx) => {
       const txSucceeded = tx.status === 'success';
-      const needsUpdate = txSucceeded && !this.checkTransactionMined(tx);
-      this.functionsUtil.customLog('mintIdleToken_callback needsUpdate:',tx.status,this.checkTransactionMined(tx),needsUpdate);
+      const txMined = this.checkTransactionAlreadyMined(tx);
+      const needsUpdate = txSucceeded && !txMined;
+      this.functionsUtil.customLog('mintIdleToken_callback needsUpdate:',tx,txMined,needsUpdate);
 
       const newState = {
         lendingProcessing: false,
@@ -734,8 +736,8 @@ class SmartContractControls extends React.Component {
     const gasLimit = _clientProtocolAmounts.length && _clientProtocolAmounts.indexOf('0') === -1 ? this.functionsUtil.BNify(1500000) : 0;
 
     const callback = (tx) => {
-      const needsUpdate = tx.status === 'success' && !this.checkTransactionMined(tx);
-      this.functionsUtil.customLog('redeemIdleToken_mined_callback needsUpdate:',tx.status,this.checkTransactionMined(tx),needsUpdate);
+      const needsUpdate = tx.status === 'success' && !this.checkTransactionAlreadyMined(tx);
+      this.functionsUtil.customLog('redeemIdleToken_mined_callback needsUpdate:',tx.status,this.checkTransactionAlreadyMined(tx),needsUpdate);
       this.setState({
         [`isLoading${contractName}`]: false,
         redeemProcessing: false,
@@ -1517,6 +1519,38 @@ class SmartContractControls extends React.Component {
 
     const checkUpdateNeeded = this.props.account && !this.state.updateInProgress && (accountChanged || this.state.needsUpdate || selectedTokenChanged);
 
+    // Show welcome modal
+    if (this.props.account && accountChanged){
+      let welcomeIsOpen = false;
+
+      if (globalConfigs.modals.welcome && localStorage && accountChanged){
+
+        // Check the last login of the wallet
+        const currTime = new Date().getTime();
+        const walletAddress = this.props.account.toLowerCase();
+        let lastLogin = localStorage.getItem('lastLogin');
+
+        if (lastLogin){
+          lastLogin = JSON.parse(lastLogin);
+        }
+
+        if (!lastLogin || !lastLogin[walletAddress]){
+          lastLogin = {};
+          lastLogin[walletAddress] = currTime;
+          welcomeIsOpen = true;
+        } else {
+          const timeFromLastLogin = (currTime-parseInt(lastLogin[walletAddress]))/1000;
+          welcomeIsOpen = timeFromLastLogin>=86400; // 1 day since last login
+        }
+
+        localStorage.setItem('lastLogin',JSON.stringify(lastLogin));
+      }
+
+      this.setState({
+        activeModal: welcomeIsOpen ? 'welcome' : this.state.activeModal
+      });
+    }
+
     // this.functionsUtil.customLog('componentDidUpdate',this.state.componentMounted,this.state.needsUpdate,checkUpdateNeeded);
 
     if (checkUpdateNeeded) {
@@ -1559,32 +1593,7 @@ class SmartContractControls extends React.Component {
         this.rebalanceCheck();
       }
 
-      // Check if first time entered
-      let welcomeIsOpen = false;
-      if (globalConfigs.modals.welcome && localStorage && prevProps.account !== this.props.account){
-        // Check the last login of the wallet
-        const currTime = new Date().getTime();
-        const walletAddress = this.props.account.toLowerCase();
-        let lastLogin = localStorage.getItem('lastLogin');
-
-        if (lastLogin){
-          lastLogin = JSON.parse(lastLogin);
-        }
-
-        if (!lastLogin || !lastLogin[walletAddress]){
-          lastLogin = {};
-          lastLogin[walletAddress] = currTime;
-          welcomeIsOpen = true;
-        } else {
-          const timeFromLastLogin = (currTime-parseInt(lastLogin[walletAddress]))/1000;
-          welcomeIsOpen = timeFromLastLogin>=86400; // 1 day since last login
-        }
-
-        localStorage.setItem('lastLogin',JSON.stringify(lastLogin));
-      }
-
       this.setState({
-        activeModal: welcomeIsOpen ? 'welcome' : this.state.activeModal,
         updateInProgress: false
       });
     }
@@ -2585,21 +2594,17 @@ class SmartContractControls extends React.Component {
                       <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontWeight={2} fontSize={[2,3]} color={'dark-gray'}>
                         Please connect to view your available funds.
                       </Heading.h3>
-                      <Button
-                        className={styles.gradientButton}
-                        onClick={e => this.mint(e, this.props.tokenConfig.idle.token)}
-                        size={this.props.isMobile ? 'medium' : 'medium'}
-                        borderRadius={4}
-                        mainColor={'blue'}
-                        contrastColor={'white'}
-                        fontWeight={3}
-                        fontSize={[2,2]}
-                        mx={'auto'}
-                        px={[4,5]}
-                        mt={[3,4]}
+
+                      <ButtonLoader
+                        buttonProps={{className:styles.gradientButton,fontWeight:600,fontSize:16,mx:'auto',borderRadius:'2rem',mt:[3,4],px:[4,5],minWidth:['95px','145px'],size:['small','medium']}}
+                        handleClick={e => this.mint(e, this.props.tokenConfig.idle.token)}
+                        buttonText={'CONNECT'}
+                        loaderSrc={'images/lottie/loader.json'}
+                        loaderWidth={'170px'}
+                        loaderHeight={'170px'}
+                        isLoading={this.props.connecting}
                       >
-                        CONNECT
-                      </Button>
+                      </ButtonLoader>
                   </Flex>
                 }
               </Box>

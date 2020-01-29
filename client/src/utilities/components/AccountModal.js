@@ -9,6 +9,7 @@ import {
   Image,
   EthAddress
 } from "rimble-ui";
+import ButtonLoader from '../../ButtonLoader/ButtonLoader.js';
 import ModalCard from './ModalCard';
 import { useWeb3Context } from 'web3-react'
 import BigNumber from 'bignumber.js';
@@ -17,6 +18,8 @@ import styles from '../../CryptoInput/CryptoInput.module.scss';
 export default function (props) {
   const context = useWeb3Context();
   const { account, selectedToken, accountBalance, accountBalanceToken, idleTokenBalance, isOpen, closeModal } = props;
+
+  let loggingout = false;
 
   const balances = [
     {
@@ -38,12 +41,17 @@ export default function (props) {
     return BNify(eth).toFixed(6);
   };
   const setConnector = async connectorName => {
+    loggingout = false;
     if (localStorage) {
       localStorage.setItem('walletProvider', '');
       localStorage.setItem('connectorName', connectorName);
     }
+    if (typeof props.setConnector === 'function'){
+      props.setConnector(connectorName);
+    }
     return await context.setConnector(connectorName);
   };
+
   if (account){
 
     const renderBalances = balances.map( (balance,i) => {
@@ -108,14 +116,16 @@ export default function (props) {
 
           <ModalCard.Footer>
             {(context.active || (context.error && context.connectorName)) && (
-              <Button
-                mt={[1, 2]}
-                size={['auto','medium']}
-                px={'80px'}
-                borderRadius={4}
-                onClick={async () => await setConnector('Infura')}>
-                {context.active ? "Log out wallet" : "Reset"}
-              </Button>
+              <ButtonLoader
+                buttonProps={{className:styles.gradientButton,borderRadius:'2rem',mt:[4,8],minWidth:['95px','145px'],size:['auto','medium']}}
+                handleClick={async () => await setConnector('Infura')}
+                buttonText={'Logout wallet'}
+                loaderSrc={'images/lottie/loader.json'}
+                loaderWidth={'170px'}
+                loaderHeight={'170px'}
+                isLoading={loggingout}
+              >
+              </ButtonLoader>
             )}
           </ModalCard.Footer>
         </ModalCard>

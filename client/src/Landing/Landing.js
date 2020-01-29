@@ -9,7 +9,7 @@ import EquityChart from '../EquityChart/EquityChart';
 import Footer from '../Footer/Footer';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import availableTokens from '../configs/availableTokens';
-import Confetti from 'react-confetti';
+// import Confetti from 'react-confetti';
 
 let scrolling = false;
 let scrollTimeoutID;
@@ -27,7 +27,8 @@ class Landing extends Component {
     protocolsAprs:null,
     protocolsAllocations:null,
     totalAllocation:null,
-    runConfetti:false
+    runConfetti:false,
+    randomAllocationEnabled:false
   };
 
   // Clear all the timeouts
@@ -158,7 +159,6 @@ class Landing extends Component {
 
     this.props.tokenConfig.protocols.forEach((protocolInfo,i) => {
       const contractName = protocolInfo.token;
-      const protocolAddr = protocolInfo.address;
 
       const contractLoaded = this.functionsUtil.getContractByName(contractName);
       if (!contractLoaded){
@@ -189,7 +189,9 @@ class Landing extends Component {
         let protocolAllocation = this.functionsUtil.fixTokenDecimals(protocolBalance,tokenDecimals,exchangeRate);
 
         // Raise base protocol allocation from 500k to 10M
-        protocolAllocation = protocolAllocation.plus(this.functionsUtil.BNify(parseInt(Math.random()*10000000+500000)));
+        if (this.state.randomAllocationEnabled){
+          protocolAllocation = protocolAllocation.plus(this.functionsUtil.BNify(parseInt(Math.random()*1000000+100000)));
+        }
 
         totalAllocation = totalAllocation.plus(protocolAllocation);
 
@@ -307,18 +309,22 @@ class Landing extends Component {
           paddingBottom: !network.isCorrectNetwork ? "8em" : "0"
         }}
       >
-        <Confetti
-          style={{ position: 'fixed','zIndex':9999 }}
-          run={this.state.runConfetti}
-          recycle={false}
-          numberOfPieces={500}
-          width={window.innerWidth}
-          height={window.innerHeight}
-          onConfettiComplete={confetti => {
-            this.setConfetti(false);
-            confetti.reset()
-          }}
-        />
+        {
+          /*
+          <Confetti
+            style={{ position: 'fixed','zIndex':9999 }}
+            run={this.state.runConfetti}
+            recycle={false}
+            numberOfPieces={500}
+            width={window.innerWidth}
+            height={window.innerHeight}
+            onConfettiComplete={confetti => {
+              this.setConfetti(false);
+              confetti.reset()
+            }}
+          />
+          */
+        }
         <Box className={[styles.headerContainer]} px={[3,5]} pt={['2.5em', '3em']}>
           <Box position={'relative'} zIndex={10}>
             <Flex flexDirection={'column'} alignItems={'center'} maxWidth={["50em", "70em"]} mx={'auto'} pb={3} textAlign={'center'} pt={['8vh', '8vh']}>
@@ -332,6 +338,7 @@ class Landing extends Component {
             <Flex flexDirection={'column'} alignItems={'center'} maxWidth={["50em", "50em"]} mx={'auto'} textAlign={'center'}>
               <LandingForm
                 // mintCallback={ () => this.setConfetti(true) }
+                connecting={this.props.connecting}
                 getAllocations={this.getAllocations}
                 openBuyModal={this.props.openBuyModal}
                 getAprs={this.getAprs}

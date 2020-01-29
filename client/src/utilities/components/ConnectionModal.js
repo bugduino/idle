@@ -38,15 +38,21 @@ class ConnectionModal extends React.Component {
     });
   }
 
-  componentDidMount = () => {
+  setStoredSection = () => {
+    let currentSection = null;
     if (localStorage){
-      const currentSection = localStorage.getItem('currentSection');
+      currentSection = localStorage.getItem('currentSection');
       if (currentSection){
         this.setState({
           currentSection
         });
       }
     }
+    return currentSection;
+  }
+
+  componentDidMount = () => {
+    this.setStoredSection();
   }
 
   resetModal = e => {
@@ -99,9 +105,11 @@ class ConnectionModal extends React.Component {
   }
 
   closeModal = () => {
-    this.setState({
-      showTxFees: false
-    });
+    // Reset modal
+    this.resetModal();
+    // Set latest stored sections
+    this.setStoredSection();
+    // Close modal
     this.props.closeModal();
   }
 
@@ -111,7 +119,7 @@ class ConnectionModal extends React.Component {
       currentSection
     });
 
-    if (localStorage){
+    if (localStorage && currentSection!=='instructions'){
       localStorage.setItem('currentSection',currentSection);
     }
   }
@@ -205,7 +213,7 @@ class ConnectionModal extends React.Component {
           <ModalCard.Header title={'Select your Wallet'} subtitle={'And get started with Idle.'} icon={'images/idle-mark.png'}></ModalCard.Header>
           <ModalCard.Body>
             <Flex width={1} px={[0,5]} flexDirection={'column'} justifyContent={'center'}>
-              <Web3ConnectionButtons isMobile={this.props.isMobile} closeModal={ this.closeModal } setConnector={ this.props.setConnector } width={1/2} size={ this.props.isMobile ? 'medium' : 'large' } />
+              <Web3ConnectionButtons isMobile={this.props.isMobile} connectionCallback={ this.closeModal } setConnector={ this.props.setConnector } width={1/2} size={ this.props.isMobile ? 'medium' : 'large' } />
             </Flex>
             <Flex pt={3} alignItems={'center'} justifyContent={'center'}>
               <Link textAlign={'center'} hoverColor={'blue'} onClick={ e => this.setCurrentSection(e,'new') }>I don't have a wallet</Link>

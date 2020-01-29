@@ -10,6 +10,7 @@ class ButtonLoader extends Component {
   render() {
     return (
        <Button
+        onClick={this.props.handleClick}
          {...this.props.buttonProps}
        >
         <Flex flexDirection={'column'} alignItems={'center'} justifyContent={'center'}>

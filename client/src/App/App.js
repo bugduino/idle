@@ -36,7 +36,8 @@ class App extends Component {
     selectedTab: '1',
     buyModalOpened: false,
     connectorName:null,
-    walletProvider:null
+    walletProvider:null,
+    connecting:false
   };
 
   async selectTab(e, tabIndex) {
@@ -110,6 +111,7 @@ class App extends Component {
 
   setConnector(connectorName,walletProvider){
     return this.setState({
+      connecting:connectorName !== 'Infura',
       connectorName,
       walletProvider
     });
@@ -194,6 +196,7 @@ class App extends Component {
                             initContract={initContract}
                             contracts={contracts}
                             isMobile={isMobile}
+                            connecting={this.state.connecting}
                             walletProvider={this.state.walletProvider}
                             connectorName={this.state.connectorName}
                             buyModalOpened={this.state.buyModalOpened}
@@ -217,6 +220,7 @@ class App extends Component {
                             tokenConfig={this.state.tokenConfig}
                             selectedToken={this.state.selectedToken}
                             setSelectedToken={ e => { this.setSelectedToken(e) } }
+                            setConnector={this.setConnector.bind(this)}
                             modals={modals}
                             network={network}
                           />
@@ -251,6 +255,7 @@ class App extends Component {
                                   contracts={contracts}
                                   isMobile={isMobile}
                                   account={account}
+                                  connecting={this.state.connecting}
                                   getAccountBalance={getAccountBalance}
                                   accountBalance={accountBalance}
                                   accountBalanceToken={accountBalanceToken}

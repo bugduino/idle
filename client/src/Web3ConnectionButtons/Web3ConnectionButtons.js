@@ -33,13 +33,11 @@ export default function Web3ConnectionButtons(props) {
     if (props.setConnector && typeof props.setConnector === 'function'){
       props.setConnector(connectorName,walletProvider);
     }
-
-    /*
+    
     // Close modal
-    if (typeof props.closeModal === 'function'){
-      props.closeModal();
+    if (typeof props.connectionCallback === 'function'){
+      props.connectionCallback();
     }
-    */
 
     return await context.setConnector(connectorName);
   };
