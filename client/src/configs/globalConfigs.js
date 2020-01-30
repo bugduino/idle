@@ -462,7 +462,7 @@ const globalConfigs = {
             defaultPair:`ETH_${props.selectedToken}`,
             callback:'https://kyberpay-sample.knstats.com/callback',
             paramForwarding:true,
-            network: 'mainnet',
+            network: globalConfigs.network.requiredNetwork === 1 ? 'mainnet' : 'test',
             commissionId:'0x4215606a720477178AdFCd5A59775C63138711e8',
             theme:'theme-ocean'
           };
