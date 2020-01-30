@@ -24,6 +24,7 @@ class EquityChart extends Component {
     maxValue: null,
     rebalanceTxs: null,
     graphError: false,
+    chartWidth: null
   };
   setSection(section) {
     this.setState(state => ({...state, selectedSection: section}));
@@ -39,8 +40,25 @@ class EquityChart extends Component {
     }
   }
 
+  async componentWillMount() {
+    window.addEventListener('resize', this.handleWindowSizeChange);
+  }
+
+  handleWindowSizeChange = () => {
+    const chartContainer = document.getElementById('chart-container');
+    if (chartContainer.offsetWidth !== this.state.chartWidth){
+      const chartWidth = chartContainer.offsetWidth;
+      return this.setState({
+        chartWidth
+      });
+    }
+  };
+
   async componentDidMount(){
     this.loadUtils();
+
+    this.handleWindowSizeChange();
+
     await this.getEquity();
   }
 
@@ -306,8 +324,8 @@ class EquityChart extends Component {
     const graphData = [
       {
         "id": "Compound",
-        'pos_box':1,
-        'pos':1,
+        'pos_box':2,
+        'pos':2,
         'fee':0,
         'address' : cDAIAddress,
         'icon' : 'compound-mark-green.png',
@@ -315,14 +333,15 @@ class EquityChart extends Component {
         "aprs": [],
         "data": [],
         "style" : {
+          strokeDasharray: '3, 3',
           strokeWidth: '2px',
         },
         'endpoint':'https://defiportfolio-backend.herokuapp.com/api/v1/markets/compound_v2/'
       },
       {
         "id": "Fulcrum",
-        'pos_box':3,
-        'pos':2,
+        'pos_box':1,
+        'pos':1,
         'fee':0,
         'address' : iDAIAddress,
         'icon' : 'fulcrum-mark.svg',
@@ -330,6 +349,7 @@ class EquityChart extends Component {
         "aprs": [],
         "data": [],
         "style" : {
+          strokeDasharray: '3, 3',
           strokeWidth: '2px',
         },
         'endpoint':'https://defiportfolio-backend.herokuapp.com/api/v1/markets/fulcrum/'
@@ -445,7 +465,7 @@ class EquityChart extends Component {
     const idleCharts = [
       {
         "id": "Idle v1",
-        'pos_box':2,
+        'pos_box':3,
         'pos':3,
         'chartMode':'real',
         'icon' : 'idle-mark-old.png',
@@ -458,15 +478,14 @@ class EquityChart extends Component {
       },
       {
         "id": "Idle v2",
-        'pos_box':2,
-        'pos':3,
+        'pos_box':4,
+        'pos':4,
         'chartMode':'best',
         'icon' : 'idle-mark.png',
         "color": "hsl(227, 100%, 50%)",
         "aprs": [],
         "data": [],
         "style" : {
-          strokeDasharray: '3, 3',
           strokeWidth: '2px',
         },
       }
@@ -751,7 +770,7 @@ class EquityChart extends Component {
           !this.props.isMobile && (
             <Line
               data={data}
-              width={window.innerWidth*3/4}
+              width={this.state.chartWidth}
               height={500}
               margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
               xScale={{

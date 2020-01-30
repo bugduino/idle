@@ -189,15 +189,30 @@ class Landing extends Component {
         let protocolAllocation = this.functionsUtil.fixTokenDecimals(protocolBalance,tokenDecimals,exchangeRate);
 
         // Raise base protocol allocation from 500k to 10M
-        if (this.state.randomAllocationEnabled){
-          protocolAllocation = protocolAllocation.plus(this.functionsUtil.BNify(parseInt(Math.random()*1000000+100000)));
-        }
+        // if (this.state.randomAllocationEnabled){
+        //   protocolAllocation = protocolAllocation.plus(this.functionsUtil.BNify(parseInt(Math.random()*1000000+100000)));
+        // }
 
         totalAllocation = totalAllocation.plus(protocolAllocation);
 
         this.functionsUtil.customLog('getAllocations', contractName, protocolBalance, tokenDecimals, protocolAllocation.toString());
 
         protocolsAllocations[protocolAddr] = protocolAllocation;
+      });
+    }
+
+    if (this.state.randomAllocationEnabled){
+      let remainingAllocation = parseFloat(totalAllocation.toString());
+      const totProtocols = Object.keys(protocolsAllocations).length;
+      Object.keys(protocolsAllocations).forEach((protocolAddr,i) => {
+        let alloc = parseFloat(protocolsAllocations[protocolAddr].toString());
+        if (i === totProtocols-1){
+          alloc = remainingAllocation;
+        } else {
+          alloc = parseFloat(Math.random()*(remainingAllocation-(remainingAllocation/3))+(remainingAllocation/3));
+          remainingAllocation -= alloc;
+        }
+        protocolsAllocations[protocolAddr] = this.functionsUtil.BNify(alloc);
       });
     }
 
@@ -541,11 +556,11 @@ class Landing extends Component {
 
 
         <Flex position={'relative'} justifyContent={'center'} alignItems={'center'} height={['auto','850px']} pt={0} pb={[4,6]}>
-          <Flex width={1} flexDirection={'column'} maxWidth={['35em','70em']} px={[3,5]}>
+          <Flex id={'chart-container'} width={1} flexDirection={'column'} maxWidth={['35em','70em']}>
             <Heading.h4 color={'dark-gray'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]} textAlign={'center'} alignItems={'center'}>
               Maximize interest return
             </Heading.h4>
-            <Flex height={['auto','500px']}>
+            <Flex width={1} alignItems={'center'} justifyContent={'center'}>
               <EquityChart
                 tokenConfig={availableTokens[1].SAI}
                 selectedToken={'SAI'}
