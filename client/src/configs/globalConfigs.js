@@ -67,7 +67,7 @@ const globalConfigs = {
         42: 'https://kovan.infura.io/v3/'
       },
       etherscan:{
-        enabled:false, // False for empty txs list (try new wallet)
+        enabled:true, // False for empty txs list (try new wallet)
         endpoints:{
           1: 'https://api.etherscan.io/api',
           42: 'https://api-kovan.etherscan.io/api'

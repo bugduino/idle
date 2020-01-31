@@ -47,7 +47,9 @@ export default function (props) {
     }
 
     // Send Google Analytics event
-    window.ga('send', 'event', 'Connect', 'logout');
+    if (window.ga){
+      window.ga('send', 'event', 'Connect', 'logout');
+    }
 
     if (typeof props.setConnector === 'function'){
       props.setConnector(connectorName);

@@ -1669,7 +1669,9 @@ class SmartContractControls extends React.Component {
 
     if (tabIndex === '3') {
       // Send Google Analytics event
-      window.ga('send', 'event', 'UI', 'tabs', 'rebalance');
+      if (window.ga){
+        window.ga('send', 'event', 'UI', 'tabs', 'rebalance');
+      }
 
       await this.rebalanceCheck();
     }

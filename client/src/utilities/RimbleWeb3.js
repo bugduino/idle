@@ -323,7 +323,9 @@ class RimbleTransaction extends React.Component {
         const walletProvider = localStorage && localStorage.getItem('walletProvider') ? localStorage.getItem('walletProvider') : 'Infura';
 
         // Send Google Analytics connection event
-        window.ga('send', 'event', 'Connect', 'connected', walletProvider);
+        if (window.ga){
+          window.ga('send', 'event', 'Connect', 'connected', walletProvider);
+        }
 
         const simpleID = this.initSimpleID();
         if (simpleID){
