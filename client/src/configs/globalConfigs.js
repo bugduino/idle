@@ -384,12 +384,28 @@ const globalConfigs = {
           if (props.selectedMethod && props.selectedMethod){
             switch (props.selectedMethod){
               case 'bank':
-                info.badge = {
-                  text:'SEPA',
-                  color:'#f7cb05 ',
-                  bgColor:'#10288a'
+                if (props.selectedCountry && props.selectedCountry.value){
+                  switch (props.selectedCountry.value.toUpperCase()){
+                    case 'EUR':
+                      info.badge = {
+                        text:'SEPA',
+                        color:'#f7cb05 ',
+                        bgColor:'#10288a'
+                      }
+                      info.subcaption = `~ 1.5% fee ~\nEUR ONLY`;
+                    break;
+                    case 'GBR':
+                      info.badge = {
+                        text:'GBP',
+                      }
+                      info.subcaption = `~ 1.5% fee ~\nGBP ONLY`;
+                    break;
+                    default:
+                      info.badge = null;
+                      info.subcaption = `~ 1.5% fee ~\nEUR/GBP ONLY`;
+                    break;
+                  }
                 }
-                info.subcaption = `~ 1.5% fee ~\nEUR ONLY`;
               break;
               case 'card':
                 info.badge = null;
@@ -408,17 +424,54 @@ const globalConfigs = {
           const params = {
             apiKey,
             currencyCode: buyParams.selectedToken ? buyParams.selectedToken.toLowerCase() : ( props.tokenConfig.moonpay && props.tokenConfig.moonpay.currencyCode ? props.tokenConfig.moonpay.currencyCode : props.selectedToken.toLowerCase()),
-            walletAddress:props.account
+            walletAddress:props.account,
+            baseCurrencyCode:'USD',
+            showWalletAddressForm: true
           };
 
           const methods = {
-            'bank':'sepa_bank_transfer',
+            'bank':{
+              'GBR':'gbp_bank_transfer',
+              'EUR':'sepa_bank_transfer'
+            },
             'card':'credit_debit_card'
           };
 
-          // Set right payment methods
+          const selectedCountry = buyParams.selectedCountry && buyParams.selectedCountry.value ? buyParams.selectedCountry.value.toUpperCase() : null;
+
+          // Set payment method
           if (buyParams.selectedMethod){
-            params.enabledPaymentMethods = methods[buyParams.selectedMethod];
+            switch (buyParams.selectedMethod){
+              case 'bank':
+                params.enabledPaymentMethods = methods[buyParams.selectedMethod]['EUR'];
+                switch (selectedCountry){
+                  case 'GBR':
+                  case 'EUR':
+                    params.enabledPaymentMethods = methods[buyParams.selectedMethod][selectedCountry];
+                  break;
+                  default:
+                    params.enabledPaymentMethods = Object.values(methods[buyParams.selectedMethod]).join(',');
+                  break;
+                }
+              break;
+              case 'card':
+              default:
+                params.enabledPaymentMethods = methods[buyParams.selectedMethod];
+              break;
+            }
+          }
+
+          // Set baseCurrencyCode
+          switch (selectedCountry){
+            case 'GBR':
+              params.baseCurrencyCode = 'GBP';
+            break;
+            case 'EUR':
+              params.baseCurrencyCode = 'EUR';
+            break;
+            default:
+              params.baseCurrencyCode = 'USD';
+            break;
           }
 
           let url = envParams.url;
@@ -515,7 +568,7 @@ const globalConfigs = {
             url:'https://global.transak.com'
           },
           prod:{
-            apiKey:'V3HxJjSTmpjkSDqK',
+            apiKey:'a135bd06-b7f9-4f9e-87f6-c59321f137b2',
             url:'https://global.transak.com'
           }
         },
