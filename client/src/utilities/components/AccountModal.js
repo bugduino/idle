@@ -45,6 +45,10 @@ export default function (props) {
       localStorage.setItem('walletProvider', '');
       localStorage.setItem('connectorName', connectorName);
     }
+
+    // Send Google Analytics event
+    window.ga('send', 'event', 'Connect', 'logout');
+
     if (typeof props.setConnector === 'function'){
       props.setConnector(connectorName);
     }

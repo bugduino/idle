@@ -20,9 +20,14 @@ class TokenSelector extends Component {
     });
   }
 
-
   selectToken(token,tokenInfo){
     if (tokenInfo.enabled){
+
+      // Send Google Analytics event
+      if (window.ga){
+        window.ga('send', 'event', 'UI', 'select_token', token);
+      }
+
       this.toggleOpen();
       this.props.setSelectedToken(token);
       return true;

@@ -110,7 +110,28 @@ class BuyModal extends React.Component {
 
   renderPaymentMethod = async (e,provider,buyParams) => {
 
-    this.closeModal(e);
+    // Send Google Analytics event
+    if (window.ga){
+
+      await (new Promise( async (resolve, reject) => {
+        const eventData = {
+           'eventCategory': 'Buy', //required
+           'eventAction': 'select_provider', //required
+           'eventLabel': provider,
+           'hitCallback': () => {
+              resolve(true);
+            },
+           'hitCallbackFail' : () => {
+              reject();
+           }
+        };
+        window.ga('send', 'event', eventData);
+      }));
+
+      this.closeModal(e);
+    } else {
+      this.closeModal(e);
+    }
 
     const paymentProvider = globalConfigs.payments.providers[provider];
     const initParams = paymentProvider && paymentProvider.getInitParams ? paymentProvider.getInitParams(this.props,globalConfigs,buyParams) : null;
@@ -358,13 +379,15 @@ class BuyModal extends React.Component {
     }
     
     if (!selectedProvider || !globalConfigs.payments.providers[selectedProvider]){
-      this.setState({
+      return this.setState({
         selectedProvider:null
       });
     }
 
+
     const providerInfo = globalConfigs.payments.providers[selectedProvider];
     if (providerInfo){
+
       if (this.state.selectedToken){
         this.renderPaymentMethod(e,selectedProvider,this.state);
         return;
@@ -401,6 +424,12 @@ class BuyModal extends React.Component {
 
     if (Object.keys(globalConfigs.payments.methods).indexOf(selectedMethod) !== -1){
       const availableProviders = this.getAvailablePaymentProviders(selectedMethod,this.state.selectedToken);
+
+      // Send Google Analytics event
+      if (window.ga){
+        window.ga('send', 'event', 'Buy', 'select_method', selectedMethod);
+      }
+
       this.setState({
         availableProviders,
         selectedMethod
@@ -413,6 +442,11 @@ class BuyModal extends React.Component {
       e.preventDefault();
     }
 
+    // Send Google Analytics event
+    if (window.ga){
+      window.ga('send', 'event', 'Buy', 'select_token', selectedToken);
+    }
+
     this.setState({ selectedToken }, async () => {
       if (this.state.selectedProvider){
         return this.renderPaymentMethod(e,this.state.selectedProvider,this.state);
@@ -421,6 +455,12 @@ class BuyModal extends React.Component {
   }
 
   handleCountryChange = selectedCountry => {
+
+    // Send Google Analytics event
+    if (window.ga && selectedCountry){
+      window.ga('send', 'event', 'Buy', 'select_country', selectedCountry.value);
+    }
+
     this.setState({
       selectedCountry
     });

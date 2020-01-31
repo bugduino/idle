@@ -43,6 +43,11 @@ class WelcomeModal extends React.Component {
       window.setTimeout(this.props.closeModal,2500);
     };
 
+    // Send Google Analytics event
+    if (window.ga){
+      window.ga('send', 'event', 'UI', 'send_email', 'WelcomeModal');
+    }
+
     axios.post(globalConfigs.newsletterSubscription.endpoint, {
       'email': this.state.email
     }).then(r => {
@@ -56,6 +61,29 @@ class WelcomeModal extends React.Component {
       sendingForm:true
     })
   };
+
+  closeModal = async () => {
+    if (window.ga){
+      await (new Promise( async (resolve, reject) => {
+        const eventData = {
+           'eventCategory': 'UI', //required
+           'eventAction': 'continue_without_email', //required
+           'eventLabel': 'WelcomeModal',
+           'hitCallback': () => {
+              resolve(true);
+            },
+           'hitCallbackFail' : () => {
+              reject();
+           }
+        };
+        window.ga('send', 'event', eventData);
+      }));
+
+      this.props.closeModal();
+    } else {
+      this.props.closeModal();
+    }
+  }
 
   handleValidation(e) {
     if (e && e.target) {
@@ -155,7 +183,7 @@ class WelcomeModal extends React.Component {
                         isLoading={this.state.sendingForm}
                       >
                       </ButtonLoader>
-                      <Link mt={2} onClick={this.props.closeModal} hoverColor={'blue'}>continue without e-mail</Link>
+                      <Link mt={2} onClick={this.closeModal} hoverColor={'blue'}>continue without e-mail</Link>
                     </Flex>
                   </Flex>
                 </Form>

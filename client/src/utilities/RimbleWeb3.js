@@ -235,6 +235,7 @@ class RimbleTransaction extends React.Component {
       // Infura
       } else if (web3Host) {
         web3 = new Web3(new Web3.providers.HttpProvider(web3Host));
+        this.props.setConnector('Infura',null);
       }
     }
 
@@ -310,13 +311,22 @@ class RimbleTransaction extends React.Component {
       // Request account access if needed
       await this.state.web3.eth.getAccounts().then(wallets => {
         const account = wallets[0];
+
+        if (this.state.account === account){
+          return false;
+        }
+
         if (!hideModal) {
           this.closeConnectionPendingModal();
         }
 
+        const walletProvider = localStorage && localStorage.getItem('walletProvider') ? localStorage.getItem('walletProvider') : 'Infura';
+
+        // Send Google Analytics connection event
+        window.ga('send', 'event', 'Connect', 'connected', walletProvider);
+
         const simpleID = this.initSimpleID();
         if (simpleID){
-          const walletProvider = localStorage && localStorage.getItem('walletProvider') ? localStorage.getItem('walletProvider') : 'Infura';
           const userInfo = {
             // email:'',
             address:account,
@@ -331,6 +341,7 @@ class RimbleTransaction extends React.Component {
 
         // After account is complete, get the balance
         this.getAccountBalance();
+
 
         // TODO subscribe for account changes, no polling
         // set a state flag which indicates if the subscribe handler has been

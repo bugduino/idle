@@ -46,7 +46,7 @@ class EquityChart extends Component {
 
   handleWindowSizeChange = () => {
     const chartContainer = document.getElementById('chart-container');
-    if (chartContainer.offsetWidth !== this.state.chartWidth){
+    if (chartContainer && chartContainer.offsetWidth !== this.state.chartWidth){
       const chartWidth = chartContainer.offsetWidth;
       return this.setState({
         chartWidth

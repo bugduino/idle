@@ -12,6 +12,11 @@ class TwitterShareButton extends Component {
   functionsUtil = null;
 
   share = () => {
+    // Send Google Analytics event
+    if (window.ga){
+      window.ga('send', 'event', 'Share', 'twitter', this.props.parent);
+    }
+
     const w = Math.min(window.innerWidth,600);
     const h = 350;
     const x = (window.innerWidth-w)/2;

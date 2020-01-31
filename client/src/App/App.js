@@ -72,8 +72,6 @@ class App extends Component {
     }
     this.setSelectedToken(selectedToken);
 
-    // console.log('componentWillMount',this.state);
-
     window.addEventListener('resize', this.handleWindowSizeChange);
   }
 
@@ -112,7 +110,7 @@ class App extends Component {
 
   setConnector(connectorName,walletProvider){
     return this.setState({
-      connecting:connectorName !== 'Infura',
+      // connecting:connectorName !== 'Infura',
       connectorName,
       walletProvider
     });
@@ -125,6 +123,7 @@ class App extends Component {
         if (localStorage){
           localStorage.setItem('selectedToken',selectedToken);
         }
+
         return this.setState({
           tokenConfig,
           selectedToken

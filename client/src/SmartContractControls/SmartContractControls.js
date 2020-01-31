@@ -71,12 +71,33 @@ class SmartContractControls extends React.Component {
     }
   }
 
-  getDefaultTokenSwapper = () => {
+  renderDefaultTokenSwapper = (amount) => {
+    const {defaultProvider,defaultProviderName} = this.getDefaultTokenSwapper();
+    if (defaultProvider){
 
-    // Disable token swapper for testnet
-    // if (globalConfigs.network.requiredNetwork !== 1){
-    //   return false;
-    // }
+      const onSuccess = async (tx) => {
+        this.setState({
+          needsUpdate: true
+        });
+      };
+
+      const onClose = async (e) => {
+        return true;
+      }
+
+      const initParams = defaultProvider.getInitParams ? defaultProvider.getInitParams(this.props,globalConfigs,onSuccess,onClose) : null;
+
+      if (window.ga){
+        window.ga('send', 'event', 'UI', 'buy_with_eth', defaultProviderName);
+      }
+
+      return defaultProvider.render ? defaultProvider.render(initParams,amount,this.props) : null;
+    }
+
+    return null;
+  }
+
+  getDefaultTokenSwapper = () => {
 
     const availableProviders = Object.keys(globalConfigs.payments.providers).filter((i) => { const p = globalConfigs.payments.providers[i]; return p.supportedMethods.indexOf('wallet') !== -1 && p.enabled && p.supportedTokens.indexOf(this.props.selectedToken) !== -1 });
 
@@ -87,25 +108,16 @@ class SmartContractControls extends React.Component {
     // Take the default token payment provider for the wallet method
     const defaultProviderName = globalConfigs.payments.methods.wallet.defaultProvider;
     let defaultProvider = null;
+    let providerName = defaultProviderName;
     if (availableProviders.indexOf(defaultProviderName) !== -1){
       defaultProvider = globalConfigs.payments.providers[defaultProviderName];
     // If the default provider is not available pick up the first one available
     } else {
-      defaultProvider = globalConfigs.payments.providers[availableProviders[0]];
+      providerName = availableProviders[0];
+      defaultProvider = globalConfigs.payments.providers[providerName];
     }
 
-    const onSuccess = async (tx) => {
-      this.setState({
-        needsUpdate: true
-      });
-    };
-
-    const onClose = async (e) => {
-      return true;
-    }
-
-    const initParams = defaultProvider.getInitParams ? defaultProvider.getInitParams(this.props,globalConfigs,onSuccess,onClose) : null;
-    return defaultProvider.render ? (amount) => defaultProvider.render(initParams,amount,this.props) : null;
+    return {defaultProvider,defaultProviderName};
   }
 
   // utilities
@@ -536,6 +548,11 @@ class SmartContractControls extends React.Component {
         approveTx:null,
       };
 
+      // Send Google Analytics event
+      if (window.ga){
+        window.ga('send', 'event', 'Approve', this.props.selectedToken, tx.status);
+      }
+
       if (tx.status === 'success'){
         newState.isTokenApproved = true;
       }
@@ -580,6 +597,12 @@ class SmartContractControls extends React.Component {
 
     const callback = (tx) => {
       const needsUpdate = tx.status === 'success' && !this.checkTransactionAlreadyMined(tx);
+
+      // Send Google Analytics event
+      if (window.ga){
+        window.ga('send', 'event', 'Rebalance', this.props.selectedToken, tx.status);
+      }
+
       this.setState({
         needsUpdate: needsUpdate,
         rebalanceProcessing: false
@@ -655,6 +678,11 @@ class SmartContractControls extends React.Component {
       const needsUpdate = txSucceeded && !txMined;
       this.functionsUtil.customLog('mintIdleToken_callback needsUpdate:',tx,txMined,needsUpdate);
 
+      // Send Google Analytics event
+      if (window.ga){
+        window.ga('send', 'event', 'Deposit', this.props.selectedToken, tx.status, parseInt(value.toString().substr(0,18)));
+      }
+
       const newState = {
         lendingProcessing: false,
         [`isLoading${contractName}`]: false,
@@ -665,10 +693,10 @@ class SmartContractControls extends React.Component {
 
       if (txSucceeded){
         this.selectTab({ preventDefault:()=>{} },'2');
-        
         // Call mint callback after loading funds
         newState.callMintCallback = true;
       }
+
       this.setState(newState);
     };
 
@@ -736,8 +764,16 @@ class SmartContractControls extends React.Component {
     const gasLimit = _clientProtocolAmounts.length && _clientProtocolAmounts.indexOf('0') === -1 ? this.functionsUtil.BNify(1500000) : 0;
 
     const callback = (tx) => {
-      const needsUpdate = tx.status === 'success' && !this.checkTransactionAlreadyMined(tx);
+      const txSucceeded = tx.status === 'success';
+      const needsUpdate = txSucceeded && !this.checkTransactionAlreadyMined(tx);
       this.functionsUtil.customLog('redeemIdleToken_mined_callback needsUpdate:',tx.status,this.checkTransactionAlreadyMined(tx),needsUpdate);
+
+      // Send Google Analytics event
+      if (window.ga){
+        const redeemType = this.state.partialRedeemEnabled ? 'partial' : 'total';
+        window.ga('send', 'event', `Redeem_${redeemType}`, this.props.selectedToken, tx.status, parseInt(idleTokenToRedeem.toString().substr(0,18)));
+      }
+
       this.setState({
         [`isLoading${contractName}`]: false,
         redeemProcessing: false,
@@ -1632,6 +1668,9 @@ class SmartContractControls extends React.Component {
     this.props.updateSelectedTab(e,tabIndex);
 
     if (tabIndex === '3') {
+      // Send Google Analytics event
+      window.ga('send', 'event', 'UI', 'tabs', 'rebalance');
+
       await this.rebalanceCheck();
     }
 
@@ -1840,8 +1879,6 @@ class SmartContractControls extends React.Component {
 
     // Check migration enabled and balance
     const migrationEnabled = this.props.account && this.props.tokenConfig.migration && this.props.tokenConfig.migration.enabled && this.state.migrationEnabled;
-
-    const defaultTokenSwapper = this.getDefaultTokenSwapper();
 
     const counterMaxDigits = 11;
     const counterDecimals = Math.min(Math.max(0,counterMaxDigits-parseInt(currentReedemableFunds).toString().length),Math.max(0,counterMaxDigits-parseInt(currentEarning).toString().length));
@@ -2105,7 +2142,7 @@ class SmartContractControls extends React.Component {
 
                 { !this.state.isApprovingToken && !this.state.lendingProcessing &&
                   <CryptoInput
-                    renderTokenSwapper={ defaultTokenSwapper ? defaultTokenSwapper : false }
+                    renderTokenSwapper={ this.renderDefaultTokenSwapper }
                     genericError={this.state.genericError}
                     buyTokenMessage={this.state.buyTokenMessage}
                     disableLendButton={this.state.disableLendButton}

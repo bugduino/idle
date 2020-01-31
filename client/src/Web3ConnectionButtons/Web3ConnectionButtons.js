@@ -1,6 +1,6 @@
 import React from 'react'
 import { useWeb3Context } from 'web3-react'
-import { Button, Box, Text, Flex, Icon, Link } from 'rimble-ui';
+import { Button, Box, Text, Flex, Link } from 'rimble-ui';
 import connectors from '../App/connectors';
 import GeneralUtil from "../utilities/GeneralUtil";
 import ImageButton from '../ImageButton/ImageButton';
@@ -12,9 +12,7 @@ const LOG_ENABLED = false;
 const customLog = (...props) => { if (LOG_ENABLED) console.log(moment().format('HH:mm:ss'),...props); };
 
 export default function Web3ConnectionButtons(props) {
-  const context = useWeb3Context()
-  const size = props.size || 'large';
-  const width = props.width || 1/2;
+  const context = useWeb3Context();
 
   if (!context.active && !context.error) {
     customLog('context loading', context);
@@ -85,26 +83,10 @@ export default function Web3ConnectionButtons(props) {
             <ImageButton key={`wallet_${name}`} isMobile={true} buttonStyle={ props.isMobile ? {justifyContent:'flex-start',flex:'0 100%'} : {justifyContent:'flex-start',flex:'0 48%'} } imageSrc={`images/${name.toLowerCase()}.svg`} imageProps={{width:'auto',height:'42px'}} caption={name} subcaption={ connectorInfo && connectorInfo.subcaption ? connectorInfo.subcaption : `Connect using ${name}` } handleClick={ async () => await setConnector(connectorName,name)} />
           )
         } else {
+          const connectorInfo = globalConfigs.connectors[connectorName.toLowerCase()];
           return (
-            <Button.Outline
-              className={[styles.button]}
-              width={basicConnectorsName.length>1 ? [1,width] : 1}
-              mb={[1, 3]}
-              key={connectorName}
-              disabled={context.connectorName === connectorName}
-              size={size}
-              onClick={async () => await setConnector(connectorName)}>
-              <Flex alignItems={'center'}>
-                <Icon
-                  display={'inline-flex'}
-                  mr={[0,'0.5rem']}
-                  color="primary"
-                  size={32}
-                  name="AccountBalanceWallet" />
-                Generic wallet
-              </Flex>
-            </Button.Outline>
-          )
+            <ImageButton key={`wallet_${connectorName}`} isMobile={true} buttonStyle={ props.isMobile ? {justifyContent:'flex-start',flex:'0 100%'} : {justifyContent:'flex-start',flex:'0 48%'} } imageSrc={`images/new-wallet.png`} imageProps={{width:'auto',height:'42px'}} caption={'Generic Wallet'} subcaption={ connectorInfo && connectorInfo.subcaption ? connectorInfo.subcaption : `Connect using a generic wallet`} handleClick={ async () => await setConnector(connectorName) } />
+          );
         }
       default:
         const connectorInfo = globalConfigs.connectors[connectorName.toLowerCase()];
