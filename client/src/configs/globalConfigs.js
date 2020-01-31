@@ -87,7 +87,7 @@ const globalConfigs = {
         }
       },
       simpleID:{
-        enabled:false,
+        enabled:true,
         supportedNetworks:[1,42],
         getNetwork:(networkId,availableNetworks) => {
           let networkName = null;
@@ -153,10 +153,10 @@ const globalConfigs = {
         caption: 'Buy with',
         captionPos: 'top',
         subcaption: '~ 0.75% fee ~',
-        supportedMethods:['bank','card'],
+        supportedMethods:['card'],
         supportedCountries:['USA','GBR','AUS','BRA','CHN','MEX'],
         supportedTokens:['USDC','DAI','ETH'],
-        remoteResources:{/*'https://verify.testwyre.com/js/widget-loader.js':{}*/},
+        remoteResources:{},
         env:'prod',
         envParams:{
           test:{
@@ -174,7 +174,7 @@ const globalConfigs = {
                 info.subcaption = `~ 0.75% fee ~\nKYC REQUIRED`;
               break;
               case 'card':
-                info.subcaption = `~ 0.75% fee ~\nSSN REQUIRED`;
+                info.subcaption = `~ 3.2% fee ~\n$250.00/day`;
               break;
               default:
               break;
@@ -242,6 +242,7 @@ const globalConfigs = {
                   background:#fff !important;
                 }
                 #wyre-widget-container{
+                  width:100vw;
                   min-height: calc( 100vh - 60px ) !important;
                 }
               }`;
@@ -303,6 +304,11 @@ const globalConfigs = {
         captionPos: 'top',
         subcaption:`~ 2.5% fee ~\nGBP ONLY`,
         supportedMethods:['bank'],
+        badge: {
+          text:'REVOLUT',
+          color:'#fff',
+          bgColor:'#0cade4'
+        },
         supportedCountries:['GBR','EUR'],
         supportedTokens:['ETH','DAI'],
         getInitParams: (props,globalConfigs,buyParams) => {
@@ -378,9 +384,15 @@ const globalConfigs = {
           if (props.selectedMethod && props.selectedMethod){
             switch (props.selectedMethod){
               case 'bank':
-                info.subcaption = `~ 1.5% fee ~\nSEPA ONLY`;
+                info.badge = {
+                  text:'SEPA',
+                  color:'#f7cb05 ',
+                  bgColor:'#10288a'
+                }
+                info.subcaption = `~ 1.5% fee ~\nEUR ONLY`;
               break;
               case 'card':
+                info.badge = null;
                 info.subcaption = `~ 5% fee ~`;
               break;
               default:
@@ -469,6 +481,7 @@ const globalConfigs = {
                   background:#fff !important;
                 }
                 #moonpay-widget-container{
+                  width:100vw;
                   min-height: calc( 100vh - 60px ) !important;
                 }
               }`;
@@ -493,6 +506,9 @@ const globalConfigs = {
         supportedTokens:['DAI','SAI','USDC'],
         remoteResources:{'https://global.transak.com/v1/widget.js':{}},
         env:'prod',
+        badge:{
+          text:'KYC'
+        },
         envParams:{
           test:{
             apiKey:'test',
@@ -593,6 +609,7 @@ const globalConfigs = {
                     background:#fff !important;
                   }
                   #transak-widget-container{
+                    width:100vw;
                     min-height: calc( 100vh - 60px ) !important;
                   }
                 }`;
