@@ -1,4 +1,7 @@
 import { Web3Versions } from '@terminal-packages/sdk';
+import { RampInstantSDK } from '@ramp-network/ramp-instant-sdk';
+import FunctionsUtil from '../utilities/FunctionsUtil';
+
 const globalConfigs = {
   appName: 'Idle',
   baseURL: 'https://beta.idle.finance',
@@ -152,8 +155,8 @@ const globalConfigs = {
         subcaption: '~ 0.75% fee ~',
         supportedMethods:['bank','card'],
         supportedCountries:['USA','GBR','AUS','BRA','CHN','MEX'],
-        supportedTokens:['USDC','DAI','SAI','ETH'],
-        remoteResources:{'https://verify.testwyre.com/js/widget-loader.js':{}},
+        supportedTokens:['USDC','DAI','ETH'],
+        remoteResources:{/*'https://verify.testwyre.com/js/widget-loader.js':{}*/},
         env:'prod',
         envParams:{
           test:{
@@ -180,6 +183,73 @@ const globalConfigs = {
           return info;
         },
         getInitParams: (props,globalConfigs,buyParams) => {
+          const env = globalConfigs.payments.providers.wyre.env;
+          const envParams = globalConfigs.payments.providers.wyre.envParams[env];
+          const referrerAccountId = envParams.accountId;
+          const url = 'https://pay.sendwyre.com/purchase';
+
+          const params = {
+            dest: `ethereum:${props.account}`,
+            destCurrency: buyParams.selectedToken ? buyParams.selectedToken : ( props.tokenConfig.wyre && props.tokenConfig.wyre.destCurrency ? props.tokenConfig.wyre.destCurrency : props.selectedToken ),
+            referrerAccountId,
+            redirectUrl:globalConfigs.baseURL
+            // failureRedirectUrl:globalConfigs.baseURL
+          };
+
+          return `${url}?`+Object.keys(params)
+              .map(k => encodeURIComponent(k) + '=' + encodeURIComponent(params[k]))
+              .join('&');
+        },
+        render: (initParams,amount,props,globalConfigs) => {
+          const wyreWidget = document.getElementById('wyre-widget');
+          if (!wyreWidget){
+            const iframeBox = document.createElement("div");
+            iframeBox.innerHTML = `
+              <div id="wyre-widget" class="wyre-widget" style="position:fixed;display:flex;justify-content:center;align-items:center;top:0;left:0;width:100%;height:100%;z-index:999">
+                <div id="wyre-widget-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1"></div>
+                <a class="wyre-close-button" href="javascript:void(0);" onclick="document.getElementById('wyre-widget').remove();" style="position:absolute;width:30px;height:30px;top:10px;right:10px;font-size:22px;line-height:30px;text-align:center;color:#fff;font-weight:bold;z-index:10;text-decoration:none">✕</a>
+                <div id="wyre-widget-container" style="position:relative;z-index:2;width:400px;height:650px">
+                  <iframe
+                    style="position:relative;z-index:2;"
+                    frameborder="0"
+                    height="100%"
+                    src="${initParams}"
+                    width="100%"
+                  >
+                    <p>Your browser does not support iframes.</p>
+                  </iframe>
+                  <div id="wyre-widget-loading-placeholder" style="position:absolute;background:#fff;width:100%;height:100%;z-index:1;top:0;display:flex;justify-content:center;align-items:center;">
+                    <div style="display:flex;flex-direction:row;align-items:center">
+                      <img src="${globalConfigs.payments.providers.wyre.imageSrc}" style="height:50px;" />
+                      <h3 style="font-weight:600;font-style:italic;color:#000;padding-left:10px">is loading...</h3>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+            document.body.appendChild(iframeBox);
+
+            // Add wyre Widget style (mobile)
+            if (!document.getElementById('wyreWidget_style')){
+              const wyreStyle = document.createElement('style');
+              wyreStyle.id = 'wyreWidget_style';
+              wyreStyle.innerHTML = `
+              @media (max-width: 40em){
+                #wyre-widget {
+                  align-items: flex-start !important;
+                }
+                #wyre-widget-overlay{
+                  background:#fff !important;
+                }
+                #wyre-widget-container{
+                  min-height: calc( 100vh - 60px ) !important;
+                }
+              }`;
+              document.body.appendChild(wyreStyle);
+            }
+          }
+        },
+        getInitParams_old: (props,globalConfigs,buyParams) => {
 
           const generateSecretKey = () => {
             let secretKey = null;
@@ -243,6 +313,39 @@ const globalConfigs = {
 	          userAddress: props.account,
 	          variant: props.isMobile ? 'mobile' : 'desktop',
         	};
+        },
+        render: (initParams,amount,props,globalConfigs) => {
+          new RampInstantSDK(initParams)
+            .on('*', async (event) => {
+              const functionsUtil = new FunctionsUtil(props);
+              let tokenDecimals = null;
+              let tokenAmount = null;
+
+              switch (event.type){
+                case 'PURCHASE_SUCCESSFUL':
+                  // Update balance
+                  props.getAccountBalance();
+
+                  tokenDecimals = await props.getTokenDecimals();
+
+                  tokenAmount = event.payload.purchase.tokenAmount;
+                  tokenAmount = functionsUtil.BNify(tokenAmount.toString()).div(functionsUtil.BNify(Math.pow(10,parseInt(tokenDecimals)).toString())).toString();
+
+                  // Toast message
+                  window.toastProvider.addMessage(`Payment completed`, {
+                    secondaryMessage: `${tokenAmount} ${props.selectedToken} are now in your wallet`,
+                    colorTheme: 'light',
+                    actionHref: "",
+                    actionText: "",
+                    variant: "success",
+                  });
+
+                break;
+                default:
+                break;
+              }
+            })
+            .show();
         }
       },
       moonpay: {
@@ -320,6 +423,58 @@ const globalConfigs = {
           return `${url}?`+Object.keys(params)
               .map(k => encodeURIComponent(k) + '=' + encodeURIComponent(params[k]))
               .join('&');
+        },
+        render: (initParams,amount,props,globalConfigs) => {
+          const moonpayWidget = document.getElementById('moonpay-widget');
+          if (!moonpayWidget){
+            const iframeBox = document.createElement("div");
+            iframeBox.innerHTML = `
+              <div id="moonpay-widget" class="moonpay-widget" style="position:fixed;display:flex;justify-content:center;align-items:center;top:0;left:0;width:100%;height:100%;z-index:999">
+                <div id="moonpay-widget-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1"></div>
+                  <div id="moonpay-widget-container" style="position:relative;z-index:2;width:500px;height:490px">
+                    <iframe
+                      style="position:relative;z-index:2;"
+                      frameborder="0"
+                      height="100%"
+                      src="${initParams}"
+                      width="100%"
+                    >
+                      <p>Your browser does not support iframes.</p>
+                    </iframe>
+                    <div id="moonpay-widget-loading-placeholder" style="position:absolute;background:#fff;width:100%;height:100%;z-index:1;top:0;display:flex;justify-content:center;align-items:center;">
+                      <div style="display:flex;flex-direction:row;align-items:end">
+                        <img src="${globalConfigs.payments.providers.moonpay.imageSrc}" style="height:50px;" />
+                        <h3 style="padding-left:5px;font-weight:600;font-style:italic;">is loading...</h3>
+                      </div>
+                    </div>
+                    <div id="moonpay-widget-footer" style="position:relative;display:flex;justify-content:center;align-items:center;padding:8px 16px;width:100%;background:#fff;top:-20px;z-index:3">
+                      <button style="background:#000;color:#fff;text-align:center;border-radius:5px;width:100%;height:51px;line-height:51px;font-weight:500;border:0;cursor:pointer" onclick="document.getElementById('moonpay-widget').remove();">Close</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+            document.body.appendChild(iframeBox);
+
+            // Add Moonpay Widget style (mobile)
+            if (!document.getElementById('moonpayWidget_style')){
+              const moonpayStyle = document.createElement('style');
+              moonpayStyle.id = 'moonpayWidget_style';
+              moonpayStyle.innerHTML = `
+              @media (max-width: 40em){
+                #moonpay-widget {
+                  align-items: flex-start !important;
+                }
+                #moonpay-widget-overlay{
+                  background:#fff !important;
+                }
+                #moonpay-widget-container{
+                  min-height: calc( 100vh - 60px ) !important;
+                }
+              }`;
+              document.body.appendChild(moonpayStyle);
+            }
+          }
         }
       },
       transak: {
@@ -336,12 +491,15 @@ const globalConfigs = {
         supportedMethods:['bank'],
         supportedCountries:['GBR','IND'],
         supportedTokens:['DAI','SAI','USDC'],
+        remoteResources:{'https://global.transak.com/v1/widget.js':{}},
         env:'prod',
         envParams:{
           test:{
+            apiKey:'test',
             url:'https://global.transak.com'
           },
           prod:{
+            apiKey:'V3HxJjSTmpjkSDqK',
             url:'https://global.transak.com'
           }
         },
@@ -364,16 +522,86 @@ const globalConfigs = {
         getInitParams: (props,globalConfigs,buyParams) => {
           const env = globalConfigs.payments.providers.transak.env;
           const envParams = globalConfigs.payments.providers.transak.envParams[env];
-          const params = {
-            currencyCode: buyParams.selectedToken ? buyParams.selectedToken.toLowerCase() : ( props.tokenConfig.transak && props.tokenConfig.transak.currencyCode ? props.tokenConfig.transak.currencyCode : props.selectedToken.toLowerCase()),
-            walletAddress: props.account,
+
+          let fiatCurrency = null;
+
+          if (buyParams.selectedCountry && buyParams.selectedCountry.value){
+            switch (buyParams.selectedCountry.value.toUpperCase()){
+              case 'IND':
+                fiatCurrency = 'INR';
+              break;
+              case 'GBR':
+              default:
+                fiatCurrency = 'GBP';
+              break;
+            }
+          }
+
+          let cryptoCurrencyCode = buyParams.selectedToken ? buyParams.selectedToken.toLowerCase() : ( props.tokenConfig.transak && props.tokenConfig.transak.currencyCode ? props.tokenConfig.transak.currencyCode : props.selectedToken);
+          cryptoCurrencyCode = cryptoCurrencyCode.toUpperCase();
+
+          const apiKey = envParams.apiKey;
+          const walletAddress = props.account;
+          const partnerCustomerId = props.account;
+          const disableWalletAddressForm = true;
+
+          return {
+            apiKey,
+            cryptoCurrencyCode,
+            walletAddress,
+            fiatCurrency,
+            partnerCustomerId,
+            disableWalletAddressForm,
+            width:'100%',
+            height:'100%'
+            // email,
           };
+        },
+        render: (initParams,amount,props,globalConfigs) => {
+          if (window.transakGlobal){
 
-          let url = envParams.url;
+            const transakWidget = document.getElementById('transak-widget');
+            if (!transakWidget){
+              const iframeBox = document.createElement("div");
+              iframeBox.innerHTML = `
+                <div id="transak-widget" class="transak-widget" style="position:fixed;display:flex;justify-content:center;align-items:center;top:0;left:0;width:100%;height:100%;z-index:999">
+                  <div id="transak-widget-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1"></div>
+                  <a class="transak-close-button" href="javascript:void(0);" onclick="document.getElementById('transak-widget').remove();" style="position:absolute;width:30px;height:30px;top:10px;right:10px;font-size:22px;line-height:30px;text-align:center;color:#fff;font-weight:bold;z-index:10;text-decoration:none">✕</a>
+                  <div class="transak-widget-container" style="position:relative;z-index:2;width:500px;height:550px">
+                    <div id="transak-widget-container" style="position:relative;z-index:2;width:500px;height:550px"></div>
+                    <div id="transak-widget-loading-placeholder" style="position:absolute;background:#fff;width:100%;height:100%;z-index:1;top:0;display:flex;justify-content:center;align-items:center;">
+                      <div style="display:flex;flex-direction:row;align-items:center">
+                        <img src="${globalConfigs.payments.providers.transak.imageSrc}" style="height:50px;" />
+                        <h3 style="font-weight:600;font-style:italic;color:#0040ca">is loading...</h3>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              `;
+              document.body.appendChild(iframeBox);
 
-          return `${url}?`+Object.keys(params)
-              .map(k => encodeURIComponent(k) + '=' + encodeURIComponent(params[k]))
-              .join('&');
+              // Add transak Widget style (mobile)
+              if (!document.getElementById('transakWidget_style')){
+                const transakStyle = document.createElement('style');
+                transakStyle.id = 'transakWidget_style';
+                transakStyle.innerHTML = `
+                @media (max-width: 40em){
+                  #transak-widget {
+                    align-items: flex-start !important;
+                  }
+                  #transak-widget-overlay{
+                    background:#fff !important;
+                  }
+                  #transak-widget-container{
+                    min-height: calc( 100vh - 60px ) !important;
+                  }
+                }`;
+                document.body.appendChild(transakStyle);
+              }
+            }
+
+            window.transakGlobal.render(initParams, 'transak-widget-container');
+          }
         }
       },
       zeroExInstant: {
