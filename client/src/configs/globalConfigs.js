@@ -112,6 +112,7 @@ const globalConfigs = {
     methods:{
       bank:{
         defaultProvider:null,
+        showDefaultOnly:false,
         props:{
           imageSrc:'images/bank.png',
           caption:'Bank Account'
@@ -119,6 +120,7 @@ const globalConfigs = {
       },
       card:{
         defaultProvider:null,
+        showDefaultOnly:false,
         props:{
           imageSrc:'images/debit-card.png',
           caption:'Credit Card'
@@ -126,6 +128,7 @@ const globalConfigs = {
       },
       wallet:{
         defaultProvider:'zeroExInstant',
+        showDefaultOnly:true,
         props:{
           imageSrc:'images/ethereum-wallet.svg',
           caption:'Ethereum Wallet',

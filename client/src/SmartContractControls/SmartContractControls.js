@@ -2202,7 +2202,7 @@ class SmartContractControls extends React.Component {
                 )}
 
                 <Flex mt={3} alignItems={'center'} justifyContent={'center'}>
-                  <Link href={'https://certificate.quantstamp.com/view/idle'} target={'_blank'}>
+                  <Link href={'https://certificate.quantstamp.com/full/idle-finance'} target={'_blank'}>
                     <Image src={`images/quantstamp-badge.svg`} height={'40px'} />
                   </Link>
                 </Flex>

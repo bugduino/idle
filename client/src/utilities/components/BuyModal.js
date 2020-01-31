@@ -359,10 +359,18 @@ class BuyModal extends React.Component {
     return providerInfo;
   }
 
+  getDefaultPaymentProvider = (selectedMethod) => {
+    const paymentMethod = globalConfigs.payments.methods[selectedMethod];
+    if (paymentMethod.defaultProvider){
+      return paymentMethod.defaultProvider;
+    }
+    return null;
+  }
+
   getAvailablePaymentProviders = (selectedMethod,selectedToken) => {
-    selectedToken = selectedToken ? selectedToken : null;
     const availableProviders = [];
-    Object.keys(globalConfigs.payments.providers).forEach((provider,i) => {
+
+    Object.keys(globalConfigs.payments.providers).map((provider,i) => {
       const providerInfo = globalConfigs.payments.providers[provider];
       const providerSupportMethod = providerInfo.supportedMethods.indexOf(selectedMethod) !== -1;
       const providerSupportToken = selectedToken ? providerInfo.supportedTokens.indexOf(selectedToken) !== -1 : (providerInfo.supportedTokens.indexOf(this.props.selectedToken) !== -1 || providerInfo.supportedTokens.indexOf(globalConfigs.baseToken) !== -1);
@@ -370,6 +378,13 @@ class BuyModal extends React.Component {
         availableProviders.push(provider);
       }
     });
+
+    const defaultPaymentProvider = this.getDefaultPaymentProvider(selectedMethod);
+
+    if (defaultPaymentProvider && globalConfigs.payments.methods[selectedMethod].showDefaultOnly && availableProviders.indexOf(defaultPaymentProvider) !== -1){
+      return [defaultPaymentProvider];
+    }
+
     return availableProviders;
   }
 
