@@ -3,10 +3,9 @@ import {
   Flex,
   Button
 } from "rimble-ui";
-import LottieGif from '../LottieGif/LottieGif.js';
+import LoadingSpinner from '../LoadingSpinner/LoadingSpinner.js';
 
 class ButtonLoader extends Component {
-
   render() {
     return (
        <Button
@@ -15,7 +14,7 @@ class ButtonLoader extends Component {
        >
         <Flex flexDirection={'column'} alignItems={'center'} justifyContent={'center'}>
           <Flex width={1} display={ this.props.isLoading ? 'flex' : 'none' }>
-            <LottieGif src={this.props.loaderSrc} width={this.props.loaderWidth} height={this.props.loaderHeight} />
+            <LoadingSpinner />
           </Flex>
           <Flex width={1} display={ this.props.isLoading ? 'none' : 'flex' }>
             {this.props.buttonText}

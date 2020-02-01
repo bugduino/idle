@@ -2638,9 +2638,6 @@ class SmartContractControls extends React.Component {
                         buttonProps={{className:styles.gradientButton,fontWeight:600,fontSize:16,mx:'auto',borderRadius:'2rem',mt:[3,4],px:[4,5],minWidth:['95px','145px'],size:['small','medium']}}
                         handleClick={e => this.mint(e, this.props.tokenConfig.idle.token)}
                         buttonText={'CONNECT'}
-                        loaderSrc={'images/lottie/loader.json'}
-                        loaderWidth={'170px'}
-                        loaderHeight={'170px'}
                         isLoading={this.props.connecting}
                       >
                       </ButtonLoader>

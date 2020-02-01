@@ -125,9 +125,6 @@ export default function (props) {
                 buttonProps={{className:styles.gradientButton,borderRadius:'2rem',mt:[4,8],minWidth:['95px','145px'],size:['auto','medium']}}
                 handleClick={async () => await setConnector('Infura')}
                 buttonText={'Logout wallet'}
-                loaderSrc={'images/lottie/loader.json'}
-                loaderWidth={'170px'}
-                loaderHeight={'170px'}
                 isLoading={loggingout}
               >
               </ButtonLoader>

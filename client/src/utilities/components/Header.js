@@ -156,7 +156,7 @@ class Header extends React.Component {
           <Box width={[1,8/12]} justifyContent="flex-end">
             <Flex alignItems={"center"} justifyContent="flex-end">
               {
-                !this.props.isMobile && 
+                !this.props.isMobile &&
                   <ButtonGroup isMobile={this.props.isMobile} components={this.state.buttonGroup} />
               }
               {
@@ -176,16 +176,13 @@ class Header extends React.Component {
                     buttonProps={{className:styles.gradientButton,borderRadius:'2rem',my:8,ml:16,minWidth:['95px','145px'],size:buttonSize}}
                     handleClick={this.props.connectAndValidateAccount}
                     buttonText={'CONNECT'}
-                    loaderSrc={'images/lottie/loader.json'}
-                    loaderWidth={'170px'}
-                    loaderHeight={'170px'}
                     isLoading={this.props.connecting}
                   >
                   </ButtonLoader>
                 )
               }
               {
-                this.props.isMobile && 
+                this.props.isMobile &&
                   <ButtonGroup isMobile={this.props.isMobile} components={this.state.buttonGroup} />
               }
             </Flex>

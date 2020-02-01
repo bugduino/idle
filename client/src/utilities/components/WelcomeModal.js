@@ -177,9 +177,6 @@ class WelcomeModal extends React.Component {
                       <ButtonLoader
                         buttonProps={{className:header_styles.gradientButton,width:'100%',type:'submit'}}
                         buttonText={'SUBMIT'}
-                        loaderSrc={'images/lottie/loader.json'}
-                        loaderWidth={'170px'}
-                        loaderHeight={'170px'}
                         isLoading={this.state.sendingForm}
                       >
                       </ButtonLoader>
