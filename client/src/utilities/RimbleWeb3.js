@@ -293,7 +293,7 @@ class RimbleTransaction extends React.Component {
     if (simpleIDInfo && simpleIDInfo.enabled && simpleIDInfo.supportedNetworks.indexOf(globalConfigs.network.requiredNetwork) !== -1 ){
       const simpleIDParams = simpleIDInfo.params;
       simpleIDParams.network = simpleIDInfo.getNetwork(this.state.network.current.id,globalConfigs.network.availableNetworks);
-      console.log('simpleIDParams',simpleIDParams);
+      // console.log('simpleIDParams',simpleIDParams);
       simpleID = new SimpleID(simpleIDParams);
     }
 
@@ -332,14 +332,14 @@ class RimbleTransaction extends React.Component {
         const simpleID = this.initSimpleID();
         if (simpleID){
           const userData = simpleID.getUserData();
-          console.log('simpleID userData',userData);
+          // console.log('simpleID userData',userData);
           if (!userData){
             const userInfo = {
               // email:'',
               address:account,
               provider:walletProvider
             };
-            console.log('simpleID passUserInfo',userInfo);
+            // console.log('simpleID passUserInfo',userInfo);
             simpleID.passUserInfo(userInfo);
           }
         }

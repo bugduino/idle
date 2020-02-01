@@ -986,7 +986,9 @@ class EquityChart extends Component {
             justifyContent={'center'}
             alignItems={'center'}
             textAlign={'center'}
-            width={1}>
+            width={1}
+            minHeight={'500px'}
+          >
             <Loader size="40px" /> <Text ml={2}>Loading graph data...</Text>
           </Flex>
         );

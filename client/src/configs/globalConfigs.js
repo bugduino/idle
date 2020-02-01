@@ -51,7 +51,10 @@ const globalConfigs = {
   modals:{ // Enable modals
     first_deposit_referral:false, // Referral share modal
     first_deposit_share:true, // First deposit share modal
-    welcome:true // Welcome modal
+    welcome:{ // Welcome modal
+      enabled:true,
+      frequency:604800 // One week
+    }
   },
   network:{ // Network configurations
     availableNetworks:{
@@ -62,7 +65,7 @@ const globalConfigs = {
     },
     requiredConfirmations: 1,
     accountBalanceMinimum: 0, // in ETH for gas fees
-    requiredNetwork: 42, // { 1: Mainnet, 3: Ropsten, 42: Kovan }
+    requiredNetwork: 1, // { 1: Mainnet, 3: Ropsten, 42: Kovan }
     isForked: false, // If TRUE the tx confirmation callback is fired on the receipt
     providers:{
       infura:{
