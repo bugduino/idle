@@ -35,7 +35,7 @@ class SmartContractControls extends React.Component {
   }
 
   addResources = () => {
-    
+
     if (!document.getElementById('script_0x_overlay_click')){
       const script_0x_overlay_click = document.createElement("script");
       script_0x_overlay_click.id = 'script_0x_overlay_click';
@@ -890,7 +890,7 @@ class SmartContractControls extends React.Component {
     count = count ? count : 0;
 
     let results = [];
-    
+
     const requiredNetwork = globalConfigs.network.requiredNetwork;
     const etherscanInfo = globalConfigs.network.providers.etherscan;
 
@@ -983,7 +983,7 @@ class SmartContractControls extends React.Component {
         const redeemedValue = parseInt(internalTransfer.data,16);
         const tokenDecimals = this.state.tokenDecimals ? this.state.tokenDecimals : await this.functionsUtil.getTokenDecimals();
         const redeemedValueFixed = this.functionsUtil.fixTokenDecimals(redeemedValue,tokenDecimals);
-        
+
         amountLent = amountLent.minus(this.BNify(redeemedValueFixed));
 
         this.functionsUtil.customLog('Add redeemed value',redeemedValueFixed.toString(),amountLent.toString());
@@ -1100,7 +1100,7 @@ class SmartContractControls extends React.Component {
             const redeemedValue = parseInt(internalTransfer.data,16);
             const tokenDecimals = this.state.tokenDecimals ? this.state.tokenDecimals : await this.functionsUtil.getTokenDecimals();
             const redeemedValueFixed = this.functionsUtil.fixTokenDecimals(redeemedValue,tokenDecimals);
-            
+
             amountLent = amountLent.minus(this.BNify(redeemedValueFixed));
 
             this.functionsUtil.customLog('Add redeemed value',redeemedValueFixed.toString(),amountLent.toString());
@@ -1161,12 +1161,12 @@ class SmartContractControls extends React.Component {
     const transactions = this.state.prevTxs || {};
     let update_txs = false;
     let refresh = false;
-    let needsUpdate = false; 
+    let needsUpdate = false;
     const executedTxs = {};
     if (Object.keys(this.props.transactions).length){
       Object.keys(this.props.transactions).forEach(key => {
         let newTx = this.props.transactions[key];
-        // Check if it is a new transaction OR status changed 
+        // Check if it is a new transaction OR status changed
         if ((!prevTxs[key] || prevTxs[key].status !== newTx.status)){
 
           needsUpdate = newTx.status === 'success';
@@ -1527,7 +1527,7 @@ class SmartContractControls extends React.Component {
     }
 
     this.functionsUtil.customLog('oldContractBalanceFormatted',oldContractBalance ? oldContractBalanceFormatted.toString() : null);
-    
+
     // Set migration contract balance
     return this.setState({
       migrationEnabled,
@@ -1681,7 +1681,7 @@ class SmartContractControls extends React.Component {
         window.clearInterval(this.state.earningIntervalId);
       }
     } else {
-      
+
     }
 
   }
@@ -1898,12 +1898,12 @@ class SmartContractControls extends React.Component {
               </Box>
               <Box className={[styles.tab,this.props.selectedTab==='2' ? styles.tabSelected : '']} width={[1/3]} textAlign={'center'} borderLeft={'1px solid #fff'} borderRight={'1px solid #fff'}>
                 <Link display={'block'} pt={[2,3]} pb={2} fontSize={[2,3]} fontWeight={2} onClick={e => this.selectTab(e, '2')}>
-                  Funds
+                  Dashboard
                 </Link>
               </Box>
               <Box className={[styles.tab,this.props.selectedTab==='3' ? styles.tabSelected : '']} width={[1/3]} textAlign={'center'} borderRight={'none'}>
                 <Link display={'block'} pt={[2,3]} pb={2} fontSize={[2,3]} fontWeight={2} onClick={e => this.selectTab(e, '3')}>
-                  Rebalance
+                  Pool
                 </Link>
               </Box>
             </Flex>
@@ -2669,7 +2669,7 @@ class SmartContractControls extends React.Component {
                                 {protocolName}
                               </Text>
                               <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'} style={{whiteSpace:'nowrap'}}>
-                                {protocolAllocation ? 
+                                {protocolAllocation ?
                                   <CountUp
                                     start={protocolAllocation}
                                     end={protocolAllocationEndOfYear}
@@ -2745,7 +2745,7 @@ class SmartContractControls extends React.Component {
                         </Flex>
                       </Flex>
                     </Box>
-                    { !!this.state.calculatingShouldRebalance && 
+                    { !!this.state.calculatingShouldRebalance &&
                       <Box px={[2,0]} textAlign={'text'} py={[3,2]}>
                         <Flex
                           justifyContent={'center'}
@@ -2760,7 +2760,7 @@ class SmartContractControls extends React.Component {
                 }
               </Box>
 
-            { this.props.selectedTab === '3' && !this.state.calculatingShouldRebalance && !!this.state.shouldRebalance && 
+            { this.props.selectedTab === '3' && !this.state.calculatingShouldRebalance && !!this.state.shouldRebalance &&
               <Box px={[2,0]} py={[3,2]}>
                 {this.state.rebalanceProcessing ? (
                     <>
