@@ -1949,7 +1949,7 @@ class SmartContractControls extends React.Component {
 
     const counterMaxDigits = 11;
     const counterDecimals = Math.min(Math.max(0,counterMaxDigits-parseInt(currentReedemableFunds).toString().length),Math.max(0,counterMaxDigits-parseInt(currentEarning).toString().length));
-    const rebalanceCounterDecimals = this.state.allocations ? Math.min(...(Object.values(this.state.allocations).map((allocation,i) => { return counterMaxDigits-parseInt(allocation.toString()).toString().length }))) : null;
+    const rebalanceCounterDecimals = this.state.allocations ? Math.max(0,Math.min(...(Object.values(this.state.allocations).map((allocation,i) => { return counterMaxDigits-parseInt(allocation.toString()).toString().length })))) : null;
 
     return (
       <Box textAlign={'center'} alignItems={'center'} width={'100%'}>
