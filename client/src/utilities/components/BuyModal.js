@@ -454,6 +454,8 @@ class BuyModal extends React.Component {
                           Select your country:
                         </Text>
                         <Select
+                          placeholder={'Select your country'}
+                          noOptionsMessage={ (inputValue) => 'For European countries select Europe' }
                           value={this.state.selectedCountry}
                           onChange={this.handleCountryChange}
                           options={this.getAvailableCountries()}
