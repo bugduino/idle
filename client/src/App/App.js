@@ -3,6 +3,7 @@ import Web3 from "web3"; // uses latest 1.x.x version
 import Web3Provider from 'web3-react';
 import { Web3Consumer } from 'web3-react'
 import connectors from './connectors';
+import jQuery from 'jquery';
 
 import {
   HashRouter as Router,
@@ -47,6 +48,8 @@ class App extends Component {
 
   async componentWillMount() {
 
+    window.jQuery = jQuery;
+
     if (localStorage){
       localStorage.removeItem('context');
     }
@@ -72,11 +75,28 @@ class App extends Component {
     }
     this.setSelectedToken(selectedToken);
 
+    window.closeIframe = (w) => {
+      const iFrames = document.getElementsByTagName('iframe');
+      for (let i=0;i<iFrames.length;i++){
+        const iframe = iFrames[i];
+        if (iframe.contentWindow === w){
+          window.jQuery(iframe).parents('.iframe-container')[0].remove();
+        }
+      }
+    }
+
     window.addEventListener('resize', this.handleWindowSizeChange);
   }
 
   componentWillUnmount() {
     window.removeEventListener('resize', this.handleWindowSizeChange);
+  }
+
+  componentDidMount() {
+    // Close iFrame
+    if (window.self !== window.top && window.top.location.href.indexOf(globalConfigs.baseURL) !== -1 && typeof window.parent.closeIframe === 'function' ){
+      window.parent.closeIframe(window.self);
+    }
   }
 
   handleWindowSizeChange = () => {
@@ -252,6 +272,7 @@ class App extends Component {
                               <Route exact path="/">
                                 <Landing
                                   web3={web3}
+                                  simpleID={simpleID}
                                   contracts={contracts}
                                   isMobile={isMobile}
                                   account={account}

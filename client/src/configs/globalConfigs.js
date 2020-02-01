@@ -4,7 +4,8 @@ import FunctionsUtil from '../utilities/FunctionsUtil';
 
 const globalConfigs = {
   appName: 'Idle',
-  baseURL: 'https://beta.idle.finance',
+  // baseURL: 'https://beta.idle.finance',
+  baseURL: 'http://localhost:3000',
   baseToken: 'ETH',
   countries:{
     'USA':'United States of America',
@@ -208,7 +209,7 @@ const globalConfigs = {
           if (!wyreWidget){
             const iframeBox = document.createElement("div");
             iframeBox.innerHTML = `
-              <div id="wyre-widget" class="wyre-widget" style="position:fixed;display:flex;justify-content:center;align-items:center;top:0;left:0;width:100%;height:100%;z-index:999">
+              <div id="wyre-widget" class="wyre-widget iframe-container" style="position:fixed;display:flex;justify-content:center;align-items:center;top:0;left:0;width:100%;height:100%;z-index:999">
                 <div id="wyre-widget-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1"></div>
                 <a class="wyre-close-button" href="javascript:void(0);" onclick="document.getElementById('wyre-widget').remove();" style="position:absolute;width:30px;height:30px;top:10px;right:10px;font-size:22px;line-height:30px;text-align:center;color:#fff;font-weight:bold;z-index:10;text-decoration:none">✕</a>
                 <div id="wyre-widget-container" style="position:relative;z-index:2;width:400px;height:650px">
@@ -497,7 +498,7 @@ const globalConfigs = {
           if (!moonpayWidget){
             const iframeBox = document.createElement("div");
             iframeBox.innerHTML = `
-              <div id="moonpay-widget" class="moonpay-widget" style="position:fixed;display:flex;justify-content:center;align-items:center;top:0;left:0;width:100%;height:100%;z-index:999">
+              <div id="moonpay-widget" class="moonpay-widget iframe-container" style="position:fixed;display:flex;justify-content:center;align-items:center;top:0;left:0;width:100%;height:100%;z-index:999">
                 <div id="moonpay-widget-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1"></div>
                   <div id="moonpay-widget-container" style="position:relative;z-index:2;width:500px;height:490px">
                     <iframe
@@ -636,7 +637,7 @@ const globalConfigs = {
             if (!transakWidget){
               const iframeBox = document.createElement("div");
               iframeBox.innerHTML = `
-                <div id="transak-widget" class="transak-widget" style="position:fixed;display:flex;justify-content:center;align-items:center;top:0;left:0;width:100%;height:100%;z-index:999">
+                <div id="transak-widget" class="transak-widget iframe-container" style="position:fixed;display:flex;justify-content:center;align-items:center;top:0;left:0;width:100%;height:100%;z-index:999">
                   <div id="transak-widget-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1"></div>
                   <a class="transak-close-button" href="javascript:void(0);" onclick="document.getElementById('transak-widget').remove();" style="position:absolute;width:30px;height:30px;top:10px;right:10px;font-size:22px;line-height:30px;text-align:center;color:#fff;font-weight:bold;z-index:10;text-decoration:none">✕</a>
                   <div class="transak-widget-container" style="position:relative;z-index:2;width:500px;height:550px">

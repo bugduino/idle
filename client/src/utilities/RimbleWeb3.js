@@ -2,7 +2,6 @@ import React from 'react';
 import globalConfigs from '../configs/globalConfigs';
 import FunctionsUtil from './FunctionsUtil';
 import Web3 from "web3";
-import jQuery from 'jquery';
 import BigNumber from 'bignumber.js';
 import SimpleID from 'simpleid-js-sdk';
 import NetworkUtil from "./NetworkUtil";
@@ -96,12 +95,8 @@ class RimbleTransaction extends React.Component {
   }
 
   async componentDidMount() {
-
     this.loadUtils();
-
     this.initSimpleID();
-
-    window.jQuery = jQuery;
   }
 
   componentDidUpdate = (prevProps, prevState) => {
@@ -329,6 +324,7 @@ class RimbleTransaction extends React.Component {
           window.ga('send', 'event', 'Connect', 'connected', walletProvider);
         }
 
+        /*
         const simpleID = this.initSimpleID();
         if (simpleID){
           const userData = simpleID.getUserData();
@@ -343,6 +339,7 @@ class RimbleTransaction extends React.Component {
             simpleID.passUserInfo(userInfo);
           }
         }
+        */
 
         // Custom address
         this.setState({ account });
