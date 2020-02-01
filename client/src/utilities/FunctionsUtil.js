@@ -47,6 +47,26 @@ class FunctionsUtil {
     }
     return contract.contract;
   }
+  simpleIDPassUserInfo = (userInfo) => {
+    if (!userInfo.address && this.props.account){
+      userInfo.address = this.props.account;
+    }
+    if (!userInfo.walletProvider){
+      userInfo.walletProvider = localStorage && localStorage.getItem('walletProvider') ? localStorage.getItem('walletProvider') : 'Infura'
+    }
+    if (typeof userInfo.email !== 'undefined' && !userInfo.email){
+      delete userInfo.email;
+    }
+    if (!userInfo.address){
+      return false;
+    }
+    const simpleID = this.props.simpleID ? this.props.simpleID : this.props.initSimpleID();
+    if (simpleID){
+      console.log('SimpleID passUserInfo',userInfo);
+      return simpleID.passUserInfo(userInfo);
+    }
+    return false;
+  }
   getTokenDecimals = async (contractName) => {
     contractName = contractName ? contractName : this.props.selectedToken;
     return await this.genericContractCall(contractName,'decimals');
@@ -74,6 +94,9 @@ class FunctionsUtil {
     return allowance && this.BNify(allowance).gt(this.BNify(value.toString()));
   }
   getAllowance = async (token,contractAddr,walletAddr) => {
+    if (!token || !contractAddr || !walletAddr){
+      return false;
+    }
     this.customLog('getAllowance',token,contractAddr,walletAddr);
     return await this.genericContractCall(
       token, 'allowance', [walletAddr, contractAddr]

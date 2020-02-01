@@ -1393,8 +1393,7 @@ class SmartContractControls extends React.Component {
     await Promise.all([
       this.getAllocations(),
       this.getAprs(),
-      this.getPriceInToken(),
-      this.checkMigration()
+      this.getPriceInToken()
     ]);
 
     /*
@@ -1627,23 +1626,22 @@ class SmartContractControls extends React.Component {
         // Check the last login of the wallet
         const currTime = new Date().getTime();
         const walletAddress = this.props.account.toLowerCase();
-        let lastLogin = localStorage.getItem('lastLogin');
+        let lastLogin = localStorage.getItem('lastLogin') ? JSON.parse(localStorage.getItem('lastLogin')) : {};
 
-        if (lastLogin){
-          lastLogin = JSON.parse(lastLogin);
-        }
-
-        if (!lastLogin || !lastLogin[walletAddress]){
-          lastLogin = {};
-          lastLogin[walletAddress] = currTime;
+        if (!lastLogin[walletAddress]){
+          lastLogin[walletAddress] = {
+            'signedUp':false,
+            'lastTime':currTime
+          };
           welcomeIsOpen = true;
-        } else {
-          const timeFromLastLogin = (currTime-parseInt(lastLogin[walletAddress]))/1000;
+        } else if (!lastLogin[walletAddress].signedUp) {
+          const lastTime = parseInt(lastLogin[walletAddress].lastTime);
+          const timeFromLastLogin = (currTime-lastTime)/1000;
           welcomeIsOpen = timeFromLastLogin>=globalConfigs.modals.welcome.frequency; // 1 day since last login
         }
 
         if (welcomeIsOpen){
-          lastLogin[walletAddress] = currTime;
+          lastLogin[walletAddress].lastTime = currTime;
           localStorage.setItem('lastLogin',JSON.stringify(lastLogin));
         }
       }
@@ -2904,6 +2902,8 @@ class SmartContractControls extends React.Component {
           tokenName={this.props.selectedToken} />
 
         <WelcomeModal
+          simpleID={this.props.simpleID}
+          initSimpleID={this.props.initSimpleID}
           account={this.props.account}
           isOpen={this.state.activeModal === 'welcome'}
           closeModal={this.resetModal}

@@ -8,14 +8,13 @@ import {
   Flex,
   Link
 } from "rimble-ui";
-import ModalCard from './ModalCard';
-import colors from '../../colors';
-import header_styles from './Header.module.scss';
 import axios from 'axios';
+import colors from '../../colors';
+import ModalCard from './ModalCard';
+import header_styles from './Header.module.scss';
 import ButtonLoader from '../../ButtonLoader/ButtonLoader.js';
 import globalConfigs from '../../configs/globalConfigs';
-
-// export default function WelcomeModal(props) {
+import FunctionsUtil from '../../utilities/FunctionsUtil';
 
 class WelcomeModal extends React.Component {
 
@@ -26,14 +25,25 @@ class WelcomeModal extends React.Component {
     sendingForm:false
   };
 
+  functionsUtil = null;
+
   constructor(props) {
     super(props);
+    this.functionsUtil = new FunctionsUtil(props);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleValidation = this.handleValidation.bind(this);
   }
 
+  componentDidUpdate = async () => {
+    this.functionsUtil.setProps(this.props);
+  }
+
   handleSubmit(e) {
     e.preventDefault();
+
+    if (!this.state.email){
+      return false;
+    }
 
     const callback = () => {
       this.setState({
@@ -42,6 +52,8 @@ class WelcomeModal extends React.Component {
       });
       window.setTimeout(this.props.closeModal,2500);
     };
+
+    this.functionsUtil.simpleIDPassUserInfo({email:this.state.email});
 
     // Send Google Analytics event
     if (window.ga){
@@ -57,17 +69,29 @@ class WelcomeModal extends React.Component {
       callback();
     });
 
+    // Set signedUp in the localStorage
+    if (localStorage){
+      const walletAddress = this.props.account.toLowerCase();
+      let lastLogin = localStorage.getItem('lastLogin') ? JSON.parse(localStorage.getItem('lastLogin')) : null;
+      if (lastLogin && lastLogin[walletAddress] && !lastLogin[walletAddress].signedUp){
+        lastLogin[walletAddress].signedUp = true;
+        localStorage.setItem('lastLogin',JSON.stringify(lastLogin));
+      }
+    }
+
     this.setState({
       sendingForm:true
     })
   };
 
   closeModal = async () => {
+    this.functionsUtil.simpleIDPassUserInfo({email:this.state.email});
+
     if (window.ga){
       await (new Promise( async (resolve, reject) => {
         const eventData = {
-           'eventCategory': 'UI', //required
-           'eventAction': 'continue_without_email', //required
+           'eventCategory': 'UI',
+           'eventAction': 'continue_without_email',
            'eventLabel': 'WelcomeModal',
            'hitCallback': () => {
               resolve(true);

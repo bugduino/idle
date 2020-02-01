@@ -288,7 +288,6 @@ class RimbleTransaction extends React.Component {
     if (simpleIDInfo && simpleIDInfo.enabled && simpleIDInfo.supportedNetworks.indexOf(globalConfigs.network.requiredNetwork) !== -1 ){
       const simpleIDParams = simpleIDInfo.params;
       simpleIDParams.network = simpleIDInfo.getNetwork(this.state.network.current.id,globalConfigs.network.availableNetworks);
-      // console.log('simpleIDParams',simpleIDParams);
       simpleID = new SimpleID(simpleIDParams);
     }
 
@@ -311,6 +310,16 @@ class RimbleTransaction extends React.Component {
 
         if (this.state.account === account){
           return false;
+        } else {
+          /*
+          const simpleID = this.initSimpleID();
+          if (simpleID){
+            const userData = simpleID.getUserData();
+            if (userData && userData.wallet.ethAddr.toLowerCase() !== account.toLowerCase()){
+              simpleID.signOut();
+            }
+          }
+          */
         }
 
         if (!hideModal) {
@@ -323,23 +332,6 @@ class RimbleTransaction extends React.Component {
         if (window.ga){
           window.ga('send', 'event', 'Connect', 'connected', walletProvider);
         }
-
-        /*
-        const simpleID = this.initSimpleID();
-        if (simpleID){
-          const userData = simpleID.getUserData();
-          // console.log('simpleID userData',userData);
-          if (!userData){
-            const userInfo = {
-              // email:'',
-              address:account,
-              provider:walletProvider
-            };
-            // console.log('simpleID passUserInfo',userInfo);
-            simpleID.passUserInfo(userInfo);
-          }
-        }
-        */
 
         // Custom address
         this.setState({ account });

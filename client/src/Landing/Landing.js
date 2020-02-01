@@ -353,6 +353,7 @@ class Landing extends Component {
             <Flex flexDirection={'column'} alignItems={'center'} maxWidth={["50em", "50em"]} mx={'auto'} textAlign={'center'}>
               <LandingForm
                 // mintCallback={ () => this.setConfetti(true) }
+                simpleID={this.props.simpleID}
                 connecting={this.props.connecting}
                 getAllocations={this.getAllocations}
                 openBuyModal={this.props.openBuyModal}

@@ -18,14 +18,18 @@ class LandingForm extends Component {
           initContract,
           initAccount,
           initWeb3,
+          initSimpleID,
           getAccountBalance,
           contractMethodSendWrapper,
           web3,
+          simpleID,
           network
         }) => (
           <Box width={'100%'} mx={"auto"}>
             <SmartContractControls
               web3={web3}
+              simpleID={simpleID}
+              initSimpleID={initSimpleID}
               mintCallback={this.props.mintCallback}
               connecting={this.props.connecting}
               getAllocations={this.props.getAllocations}
