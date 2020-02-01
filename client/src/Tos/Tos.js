@@ -80,6 +80,9 @@ class Tos extends Component {
                     <li>
                       <strong>1.10. “Services”</strong> has the meaning set out in Section 3.1.
                     </li>
+                    <li>
+                      <strong>1.11. “Third-Parties Services”</strong> means other services (such as fiat-to-token gateway, or token-to-token swap) provided by third parties services running on Ethereum Blockchain.
+                    </li>
                   </ul>
                 </Box>
 
@@ -105,8 +108,8 @@ class Tos extends Component {
                     The primary purpose of the Portal and Protocol is to enable users to interact with smart contracts that allocate their digital assets to third-party decentralized web protocols and enable users to receive an optimized allocation of digital assets from these protocols in return (the “Services”).
                   </li>
                   <li>
-                    <strong>3.2. No Fees</strong><br />
-                    Use of the Portal and the Services is provided to you at no charge. 
+                    <strong>3.2. Fees</strong><br />
+                    Use of the Services is provided to you at no charge. Fees are charged on-top of Third-Parties.
                   </li>
                   <li>
                     <strong>3.3. Ethereum Gas Charges</strong><br />
@@ -126,6 +129,7 @@ class Tos extends Component {
                     <ul className={styles.list} style={{listStyle:'lower-alpha'}}>
                       <li>only use the Services and the Portal for lawful purposes and in accordance with these Terms;</li>
                       <li>ensure that, at all times, all information that you provide on the Portal is current, complete and accurate; and maintain the security and confidentiality of your Ethereum Address.</li>
+                      <li>shall be responsible for payment of all applicable taxes, if any, to which the Services might be subject and any and all other taxes which may apply to you.</li>
                     </ul>
                   </li>
                   <li>
@@ -297,7 +301,7 @@ class Tos extends Component {
                     You and Idle agree that any dispute arising out of or related to these Terms or our Services is personal to you and Idle and that any dispute will be resolved solely through individual action, and will not be brought as a class arbitration, class action or any other type of representative proceeding.
                   </Text>
                   <Text py={2}>
-                    Except for small claims disputes in which you or Idle seeks to bring an individual action in small claims court located in the county of your billing address or disputes in which you or Idle seeks injunctive or other equitable relief for the alleged unlawful use of intellectual property, you and Idle waive your rights to a jury trial and to have any dispute arising out of or related to these Terms or our Services resolved in court. Instead, for any dispute or claim that you have against Idle or relating in any way to the Services, you agree to first contact Idle and attempt to resolve the claim informally by sending a written notice of your claim (“Notice”) to Idle by email at info@idle.finance or by certified mail addressed to info@idle.finance. The Notice must (a) include your name, residence address, email address, and telephone number; (b) describe the nature and basis of the claim; (c) set forth the specific relief sought. Our notice to you will be similar in form to that described above. If you and Idle cannot reach an agreement to resolve the claim within thirty (30) days after such Notice is received, then either party may submit the dispute to binding arbitration administered by JAMS or, under the limited circumstances set forth above, in court. All disputes submitted to JAMS will be resolved through confidential, binding arbitration before one arbitrator. Arbitration proceedings will be held in San Francisco, California, in accordance with the JAMS Streamlined Arbitration Rules and Procedures (“JAMS Rules”). The most recent version of the JAMS Rules are available on the JAMS website and are hereby incorporated by reference. You either acknowledge and agree that you have read and understand the JAMS Rules or waive your opportunity to read the JAMS Rules and waive any claim that the JAMS Rules are unfair or should not apply for any reason.
+                    Except for small claims disputes in which you or Idle seeks to bring an individual action in small claims court located in the county of your billing address or disputes in which you or Idle seeks injunctive or other equitable relief for the alleged unlawful use of intellectual property, you and Idle waive your rights to a jury trial and to have any dispute arising out of or related to these Terms or our Services resolved in court. Instead, for any dispute or claim that you have against Idle or relating in any way to the Services, you agree to first contact Idle and attempt to resolve the claim informally by sending a written notice of your claim (“Notice”) to Idle by email at info@idle.finance or by certified mail addressed to info@idle.finance. The Notice must (a) include your name, residence address, email address, and telephone number; (b) describe the nature and basis of the claim; (c) set forth the specific relief sought. Our notice to you will be similar in form to that described above. If you and Idle cannot reach an agreement to resolve the claim within thirty (30) days after such Notice is received, then either party may submit the dispute to binding arbitration administered by JAMS or, under the limited circumstances set forth above, in court. All disputes submitted to JAMS will be resolved through confidential, binding arbitration before one arbitrator. Arbitration proceedings will be held in New York City, New York, in accordance with the JAMS Streamlined Arbitration Rules and Procedures (“JAMS Rules”). The most recent version of the JAMS Rules are available on the JAMS website and are hereby incorporated by reference. You either acknowledge and agree that you have read and understand the JAMS Rules or waive your opportunity to read the JAMS Rules and waive any claim that the JAMS Rules are unfair or should not apply for any reason.
                   </Text>
                   <Text py={2}>
                     You and Idle agree that these Terms affect interstate commerce and that the enforceability of this Section 12 will be substantively and procedurally governed by the Federal Arbitration Act, 9 U.S.C. § 1, et seq. (the “FAA”), to the maximum extent permitted by applicable law. As limited by the FAA, these Terms and the JAMS Rules, the arbitrator will have exclusive authority to make all procedural and substantive decisions regarding any dispute and to grant any remedy that would otherwise be available in court, including the power to determine the question of arbitrability. The arbitrator may conduct only an individual arbitration and may not consolidate more than one individual’s claims, preside over any type of class or representative proceeding or preside over any proceeding involving more than one individual.
@@ -306,7 +310,7 @@ class Tos extends Component {
                     The arbitrator, Idle, and you will maintain the confidentiality of any arbitration proceedings, judgments and awards, including, but not limited to, all information gathered, prepared and presented for purposes of the arbitration or related to the dispute(s) therein. The arbitrator will have the authority to make appropriate rulings to safeguard confidentiality, unless the law provides to the contrary. The duty of confidentiality does not apply to the extent that disclosure is necessary to prepare for or conduct the arbitration hearing on the merits, in connection with a court application for a preliminary remedy or in connection with a judicial challenge to an arbitration award or its enforcement, or to the extent that disclosure is otherwise required by law or judicial decision.
                   </Text>
                   <Text py={2}>
-                    You and Idle agree that for any arbitration you initiate, you will pay the filing fee and Idle will pay the remaining JAMS fees and costs. For any arbitration initiated by Idle, Idle will pay all JAMS fees and costs. You and Idle agree that the state or federal courts of the State of California and the United States sitting in San Francisco, California have exclusive jurisdiction over any appeals and the enforcement of an arbitration award.
+                    You and Idle agree that for any arbitration you initiate, you will pay the filing fee and Idle will pay the remaining JAMS fees and costs. For any arbitration initiated by Idle, Idle will pay all JAMS fees and costs. You and Idle agree that the state or federal courts of the State of New York and the United States sitting in New York City, New York have exclusive jurisdiction over any appeals and the enforcement of an arbitration award.
                   </Text>
                   <Text py={2}>
                     Any claim arising out of or related to these Terms or our Services must be filed within one year after such claim arose; otherwise, the claim is permanently barred, which means that you and Idle will not have the right to assert the claim.
@@ -318,7 +322,7 @@ class Tos extends Component {
                     If any portion of this Section 12 is found to be unenforceable or unlawful for any reason, (a) the unenforceable or unlawful provision shall be severed from these Terms; (b) severance of the unenforceable or unlawful provision shall have no impact whatsoever on the remainder of this Section 12 or the parties’ ability to compel arbitration of any remaining claims on an individual basis pursuant to this Section 12; and (c) to the extent that any claims must therefore proceed on a class, collective, consolidated, or representative basis, such claims must be litigated in a civil court of competent jurisdiction and not in arbitration, and the parties agree that litigation of those claims shall be stayed pending the outcome of any individual claims in arbitration. Further, if any part of this Section 12 is found to prohibit an individual claim seeking public injunctive relief, that provision will have no effect to the extent such relief is allowed to be sought out of arbitration, and the remainder of this Section 12 will be enforceable.
                   </Text>
                 </Box>
-                
+
                 <Box id={'governing-law'} py={[2,3]}>
                   <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[3,4]}>
                     13. GOVERNING LAW
