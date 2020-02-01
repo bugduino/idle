@@ -7,8 +7,8 @@ import {
 
 class Footer extends Component {
   state = {};
-
   render() {
+    const currYear = new Date().getFullYear();
     return (
       <Flex id="footer" flexDirection={'column'} className={styles.footer} backgroundColor={'white'} alignItems={'center'} justifyContent={'flex-start'} pl={0} px={[3,6]}>
         <Flex flexDirection={['column','row']} justifyContent={'flex-start'} alignItems={'flex-start'} width={1} maxWidth={['35em','70em']} height={['auto','100%']}>
@@ -81,7 +81,7 @@ class Footer extends Component {
                 </Link>
               </Flex>
               <Flex width={1} flexDirection={['column','row']} justifyContent={['center','flex-end']} align={['center','flex-end']} py={3}>
-                <Text textAlign={['center','flex-end']} fontSize={[2,1]} py={[2,0]} color={'white'}>&copy; 2019 - Idle Labs Inc.</Text>
+                <Text textAlign={['center','flex-end']} fontSize={[2,1]} py={[2,0]} color={'white'}>&copy; {currYear} - Idle Labs Inc.</Text>
                 <RouterLink to="/terms-of-service" style={{textDecoration:'none'}}>
                   <Text textAlign={['center','flex-end']} pl={2} fontSize={[2,1]} py={[2,0]} color={'#0df'}>Terms of Service</Text>
                 </RouterLink>
