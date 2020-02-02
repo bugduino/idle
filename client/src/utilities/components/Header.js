@@ -33,7 +33,7 @@ class Header extends React.Component {
           color:'white',
           icon:'AddCircleOutline',
           iconpos:'right',
-          onClick: e => { this.props.account ? this.toggleModal('buy') : this.props.connectAndValidateAccount() }
+          onClick: e => { this.props.account ? this.props.openBuyModal(e) : this.props.connectAndValidateAccount() }
         },
         value:'ADD FUNDS'
       },
@@ -56,12 +56,10 @@ class Header extends React.Component {
     let contract = this.props.contracts.find(c => c.name === contractName);
     contract = contract && contract.contract;
     if (!contract) {
-      console.log('Wrong contract name', contractName);
       return;
     }
 
     const value = await contract.methods[methodName](...params).call().catch(error => {
-      console.log(`${contractName} contract method ${methodName} error: `, error);
       this.setState({ error });
     });
     return value;
@@ -111,12 +109,13 @@ class Header extends React.Component {
     if (tokenUpdated){
       this.setCurrentToken();
     }
-
-    if (this.props.buyModalOpened && this.state.isModalOpen !== 'buy'){
+    /*
+    if (this.props.buyModalOpened && this.state.isModalOpen!=='buy'){
       this.setState({
         isModalOpen: 'buy'
       });
     }
+    */
 
     if (this.props.account && (accountUpdated || accountBalanceUpdated)) {
 
@@ -203,7 +202,7 @@ class Header extends React.Component {
           accountBalanceToken={this.props.accountBalanceToken}
           buyToken={this.props.buyToken}
           idleTokenBalance={this.state.idleTokenBalance}
-          isOpen={this.state.isModalOpen==='buy'}
+          isOpen={this.props.buyModalOpened}
           isMobile={this.props.isMobile}
           closeModal={ e => this.closeBuyModal(e) }
           network={this.props.network.current} />

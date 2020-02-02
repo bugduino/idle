@@ -224,6 +224,7 @@ class App extends Component {
                             walletProvider={this.state.walletProvider}
                             connectorName={this.state.connectorName}
                             buyModalOpened={this.state.buyModalOpened}
+                            openBuyModal={this.openBuyModal.bind(this)}
                             buyToken={this.state.buyToken}
                             getAccountBalance={getAccountBalance}
                             getTokenDecimals={getTokenDecimals}

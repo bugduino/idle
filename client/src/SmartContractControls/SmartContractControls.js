@@ -2140,17 +2140,6 @@ class SmartContractControls extends React.Component {
                   <Box pt={['50px','73px']} style={{position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'99'}}>
                     <Box style={{backgroundColor:'rgba(0,0,0,0.83)',position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'0',borderRadius:'15px'}}></Box>
                     <Flex style={{position:'relative',zIndex:'99',height:'100%'}} flexDirection={'column'} alignItems={'center'} justifyContent={'center'}>
-                      {
-                        !this.props.isMobile && (
-                          <Link onClick={e => this.hideEmptyWalletOverlay(e) } style={{position:'absolute',top:'0',right:'0',width:'35px',height:'28px',paddingTop:'7px'}}>
-                            <Icon
-                              name={'Close'}
-                              color={'white'}
-                              size={'28'}
-                            />
-                          </Link>
-                        )
-                      }
                       <Flex flexDirection={'column'} alignItems={'center'} p={[2,4]}>
                         <Flex width={1} justifyContent={'center'} flexDirection={'row'}>
                           <Image src={`images/tokens/${globalConfigs.baseToken}.svg`} height={'38px'} />
