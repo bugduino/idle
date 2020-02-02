@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
 import { Image, Flex, Box, Heading, Link, Text, Card, Icon } from 'rimble-ui'
+import Faq from '../Faq/Faq';
+import Footer from '../Footer/Footer';
 import styles from './Landing.module.scss';
 import LandingForm from '../LandingForm/LandingForm';
-import Faq from '../Faq/Faq';
-import NewsletterForm from '../NewsletterForm/NewsletterForm';
-import EquityChart from '../EquityChart/EquityChart';
-// import DefiScoreTable from '../DefiScoreTable/DefiScoreTable';
-import Footer from '../Footer/Footer';
 import FunctionsUtil from '../utilities/FunctionsUtil';
-import availableTokens from '../configs/availableTokens';
+import NewsletterForm from '../NewsletterForm/NewsletterForm';
+// import DefiScoreTable from '../DefiScoreTable/DefiScoreTable';
+// import EquityChart from '../EquityChart/EquityChart';
+// import availableTokens from '../configs/availableTokens';
 // import Confetti from 'react-confetti';
 
 let scrolling = false;
@@ -68,7 +68,7 @@ class Landing extends Component {
     if (this.state.carouselIntervalID){
       window.clearInterval(this.state.carouselIntervalID);
     }
-    const carouselIntervalID = window.setInterval(() => { !componentUnmounted && this.setActiveCarousel(this.state.activeCarousel+1) },6500);
+    const carouselIntervalID = window.setInterval(() => { !componentUnmounted && this.setActiveCarousel(this.state.activeCarousel+1) },9000);
     this.setState({
       carouselIntervalID
     });
@@ -106,7 +106,6 @@ class Landing extends Component {
     // Load aprs and allocations
     if (!this.state.protocolAllocation && !this.state.updatingAllocations){
       await this.getAprs();
-      // await this.getAllocations();
     }
   }
 
@@ -122,7 +121,6 @@ class Landing extends Component {
 
     if (!this.state.updatingAllocations && (contractChanged || selectedTokenChanged || dataNotLoaded)) {
       await this.getAprs();
-      // await this.getAllocations();
     }
   }
 
@@ -550,7 +548,8 @@ class Landing extends Component {
           </Flex>
         </Box>
 
-
+        {
+        /*
         <Flex position={'relative'} justifyContent={'center'} alignItems={'center'} height={['auto','850px']} pt={0} pb={[4,6]}>
           <Flex id={'chart-container'} width={1} flexDirection={'column'} maxWidth={['35em','70em']}>
             <Heading.h4 color={'dark-gray'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]} textAlign={'center'} alignItems={'center'}>
@@ -567,6 +566,8 @@ class Landing extends Component {
             </Flex>
           </Flex>
         </Flex>
+        */
+        }
 
         <Flex className={styles.gradientBackground} position={'relative'} justifyContent={'center'} alignItems={'center'} height={['auto','600px']} mt={[4,3]} p={[4,6]}>
           <Flex width={1} flexDirection={['column','row']} maxWidth={['35em','70em']}>
