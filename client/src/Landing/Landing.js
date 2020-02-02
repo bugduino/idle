@@ -594,7 +594,7 @@ class Landing extends Component {
                     100% non-custodial, and secured by audit.
                   </Heading.h3>
                   <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5} color={'dark-gray'}>
-                    Idle smart contract passed a security audit control you can read the full report <Link key={1} hoverColor={'blue'} href={'https://certificate.quantstamp.com/full/idle-finance'} target={'_blank'}> here </Link>. We will never be able to touch your money while inside the smart contract. You are always in control of your money.
+                    Idle smart contract passed a security audit control you can read the full report <Link key={1} fontSize={2} hoverColor={'blue'} href={'https://certificate.quantstamp.com/full/idle-finance'} target={'_blank'}>here</Link>. We will never be able to touch your money while inside the smart contract. You are always in control of your money.
                   </Heading.h4>
                 </Box>
                 <Box className={[styles.carouselDesc,this.state.activeCarousel===2 || this.props.isMobile ? styles.selected : '']} py={[3,0]} my={[3,0]}>

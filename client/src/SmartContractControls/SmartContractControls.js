@@ -1955,7 +1955,7 @@ class SmartContractControls extends React.Component {
     // Check migration enabled and balance
     const migrationEnabled = this.props.account && this.props.tokenConfig.migration && this.props.tokenConfig.migration.enabled && this.state.migrationEnabled;
 
-    const counterMaxDigits = 11;
+    const counterMaxDigits = 10;
     const counterDecimals = Math.min(Math.max(0,counterMaxDigits-parseInt(currentReedemableFunds).toString().length),Math.max(0,counterMaxDigits-parseInt(currentEarning).toString().length));
     const rebalanceCounterDecimals = this.state.allocations ? Math.max(0,Math.min(...(Object.values(this.state.allocations).map((allocation,i) => { return counterMaxDigits-parseInt(allocation.toString()).toString().length })))) : null;
 
