@@ -971,33 +971,37 @@ class SmartContractControls extends React.Component {
           return;
         }
 
-        const decodedLogs = this.props.web3.eth.abi.decodeLog([
-          {
-            "internalType": "uint256",
-            "name": "_idleToken",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "_token",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "_price",
-            "type": "uint256"
-          },
-        ],internalTransfers[0].data,internalTransfers[0].topics);
+        try{
+          const decodedLogs = this.props.web3.eth.abi.decodeLog([
+            {
+              "internalType": "uint256",
+              "name": "_idleToken",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "_token",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "_price",
+              "type": "uint256"
+            },
+          ],internalTransfers[0].data,internalTransfers[0].topics);
 
-        const migrationValue = decodedLogs._token;
-        const oldContractTokenDecimals = this.state.oldContractTokenDecimals ? this.state.oldContractTokenDecimals : await this.functionsUtil.getTokenDecimals(this.props.tokenConfig.migration.oldContract.name);
-        const migrationValueFixed = this.functionsUtil.fixTokenDecimals(migrationValue,oldContractTokenDecimals);
+          const migrationValue = decodedLogs._token;
+          const oldContractTokenDecimals = this.state.oldContractTokenDecimals ? this.state.oldContractTokenDecimals : await this.functionsUtil.getTokenDecimals(this.props.tokenConfig.migration.oldContract.name);
+          const migrationValueFixed = this.functionsUtil.fixTokenDecimals(migrationValue,oldContractTokenDecimals);
 
-        amountLent = amountLent.plus(this.BNify(migrationValueFixed));
+          amountLent = amountLent.plus(this.BNify(migrationValueFixed));
 
-        // console.log('Add migrated value',tx.hash,migrationValue,migrationValueFixed.toString(),tokenDecimals,amountLent.toString());
+          // console.log('Add migrated value',tx.hash,migrationValue,migrationValueFixed.toString(),tokenDecimals,amountLent.toString());
 
-        tx.value = migrationValueFixed;
+          tx.value = migrationValueFixed;
+        } catch (error) {
+          return;
+        }
       }
 
       transactions[tx.hash] = tx;
@@ -1354,7 +1358,8 @@ class SmartContractControls extends React.Component {
       prevTxs : null,
       tokenDecimals: null,
       prevTxsError: false,
-      transactions:{}
+      transactions:{},
+      web3:this.props.web3
     });
   }
 
@@ -1379,7 +1384,7 @@ class SmartContractControls extends React.Component {
 
     this.functionsUtil.customLog('Smart contract didMount');
     // do not wait for each one just for the first who will guarantee web3 initialization
-    const web3 = await this.props.initWeb3();
+    const web3 = this.state.web3 ? this.state.web3 : await this.props.initWeb3();
 
     if (!web3) {
       this.functionsUtil.customLog('No Web3 SmartContractControls');
@@ -1409,6 +1414,10 @@ class SmartContractControls extends React.Component {
       updateAfterMount: false,
       needsUpdate: this.props.account && (needsUpdateEnabled || this.state.updateAfterMount)
     };
+
+    if (web3 !== this.state.web3){
+      newState.web3 = web3;
+    }
 
     this.functionsUtil.customLog('componentDidMount',newState);
 
@@ -2040,7 +2049,7 @@ class SmartContractControls extends React.Component {
                               <Box mt={2}>
                                 {
                                   this.state.migrationApproveTx ? (
-                                    <TxProgressBar textColor={'white'} web3={this.props.web3} waitText={'Approving estimated in'} endMessage={'Finalizing approve request...'} hash={this.state.migrationApproveTx.transactionHash} />
+                                    <TxProgressBar textColor={'white'} web3={this.state.web3} waitText={'Approving estimated in'} endMessage={'Finalizing approve request...'} hash={this.state.migrationApproveTx.transactionHash} />
                                   ) : (
                                     <Flex
                                       justifyContent={'center'}
@@ -2055,7 +2064,7 @@ class SmartContractControls extends React.Component {
                               <Box mt={2}>
                                 {
                                   this.state.migrationTx ? (
-                                    <TxProgressBar textColor={'white'} web3={this.props.web3} waitText={'Migration estimated in'} endMessage={'Finalizing migration request...'} hash={this.state.migrationTx.transactionHash} />
+                                    <TxProgressBar textColor={'white'} web3={this.state.web3} waitText={'Migration estimated in'} endMessage={'Finalizing migration request...'} hash={this.state.migrationTx.transactionHash} />
                                   ) : (
                                     <Flex
                                       justifyContent={'center'}
@@ -2234,7 +2243,7 @@ class SmartContractControls extends React.Component {
                   <>
                     {
                       this.state.lendingTx ? (
-                        <TxProgressBar web3={this.props.web3} waitText={'Lending estimated in'} endMessage={'Finalizing lend request...'} hash={this.state.lendingTx.transactionHash} />
+                        <TxProgressBar web3={this.state.web3} waitText={'Lending estimated in'} endMessage={'Finalizing lend request...'} hash={this.state.lendingTx.transactionHash} />
                       ) : (
                         <Flex
                           justifyContent={'center'}
@@ -2251,7 +2260,7 @@ class SmartContractControls extends React.Component {
                   <>
                     {
                       this.state.approveTx ? (
-                        <TxProgressBar web3={this.props.web3} waitText={'Approving estimated in'} endMessage={'Finalizing approve request...'} hash={this.state.approveTx.transactionHash} />
+                        <TxProgressBar web3={this.state.web3} waitText={'Approving estimated in'} endMessage={'Finalizing approve request...'} hash={this.state.approveTx.transactionHash} />
                       ) : (
                         <Flex
                           justifyContent={'center'}
@@ -2442,7 +2451,7 @@ class SmartContractControls extends React.Component {
                                         </Flex>
                                       )
                                    : this.state.redeemTx ? (
-                                    <TxProgressBar web3={this.props.web3} waitText={'Redeeming estimated in'} endMessage={'Finalizing redeem request...'} hash={this.state.redeemTx.transactionHash} />
+                                    <TxProgressBar web3={this.state.web3} waitText={'Redeeming estimated in'} endMessage={'Finalizing redeem request...'} hash={this.state.redeemTx.transactionHash} />
                                   ) : (
                                     <Flex
                                       justifyContent={'center'}

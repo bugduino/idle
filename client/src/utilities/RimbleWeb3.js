@@ -236,6 +236,8 @@ class RimbleTransaction extends React.Component {
       }
     }
 
+    // alert(web3.version);
+
     this.setState({ web3 }, async () => {
 
       // After setting the web3 provider, check network
@@ -598,6 +600,8 @@ class RimbleTransaction extends React.Component {
     
     contract = contract.contract;
 
+    let manualConfirmationTimeoutId = null;
+
     try {
       this.functionsUtil.customLog('contractMethodSendWrapper',contractName,contract._address,account,contractMethod,params,(value ? { from: account, value } : { from: account }));
 
@@ -618,12 +622,95 @@ class RimbleTransaction extends React.Component {
         gas = this.state.web3.utils.toBN(gas.integerValue(BigNumber.ROUND_FLOOR));
       }
 
+      const confirmationCallback = (confirmationNumber, receipt) => {
+
+        if (manualConfirmationTimeoutId){
+          window.clearTimeout(manualConfirmationTimeoutId);
+        }
+
+        // this.functionsUtil.customLog('txOnConfirmation', receipt);
+        // Update confirmation count on each subsequent confirmation that's received
+        transaction.confirmationCount += 1;
+
+        const call_callback = !globalConfigs.network.isForked && typeof callback === 'function' && transaction.confirmationCount===1;
+
+        // if (call_callback){
+        //   alert('confirmationCallback')
+        // }
+
+        // How many confirmations should be received before informing the user
+        const confidenceThreshold = this.props.config.requiredConfirmations || 1;
+
+        if (transaction.confirmationCount === 1) {
+          // Initial confirmation receipt
+          transaction.status = "confirmed";
+        } else if (transaction.confirmationCount < confidenceThreshold) {
+          // Not enough confirmations to match threshold
+        }
+
+        if (transaction.confirmationCount === confidenceThreshold) {
+          // Confirmations match threshold
+          // Check the status from result since we are confident in the result
+          if (receipt.status) {
+            transaction.status = "success";
+          } else if (!receipt.status) {
+            transaction.status = "error";
+          }
+        } else if (transaction.confirmationCount > confidenceThreshold) {
+          // Confidence threshold met
+        }
+
+        // Update transaction with receipt details
+        transaction.recentEvent = "confirmation";
+        this.updateTransaction(transaction);
+
+        if (call_callback) {
+          callback(transaction);
+          this.functionsUtil.customLog('Confirmed', confirmationNumber, receipt, transaction);
+        }
+      };
+
+      const manualConfirmation = (transactionHash,timeout) => {
+        this.state.web3.eth.getTransactionReceipt(transactionHash,(err,txReceipt) => {
+          if (txReceipt && txReceipt.status){
+            confirmationCallback(1,txReceipt);
+          } else {
+            manualConfirmationTimeoutId = window.setTimeout( () => manualConfirmation(transactionHash,timeout) , timeout);
+          }
+        });
+      };
+
+      const receiptCallback = receipt => {
+
+        if (manualConfirmationTimeoutId){
+          window.clearTimeout(manualConfirmationTimeoutId);
+        }
+
+        // Received receipt, met total number of confirmations
+        transaction.recentEvent = "receipt";
+
+        // If the network is forked use the receipt for confirmation
+        if (globalConfigs.network.isForked){
+          transaction.status = "success";
+          callback(transaction);
+        } else {
+          this.updateTransaction(transaction);
+
+          // Transaction mined
+          if (receipt.status){
+            // window.alert(`manualConfirmation - ${receipt.blockNumber} ${receipt.status}`);
+            confirmationCallback(1,receipt);
+          } else {
+            // Manual confirm the transaction if didn't receive the confirmation
+            manualConfirmationTimeoutId = window.setTimeout( () => manualConfirmation(receipt.transactionHash,2000) , 2000);
+          }
+        }
+      };
+
       contract.methods[contractMethod](...params)
         .send(value ? { from: account, value, gas  } : { from: account, gas })
         .on("transactionHash", hash => {
           this.functionsUtil.customLog('txOnTransactionHash', hash);
-          // Submitted to block and received transaction hash
-          // Set properties on the current transaction
           transaction.transactionHash = hash;
           transaction.status = "pending";
           transaction.recentEvent = "transactionHash";
@@ -632,58 +719,18 @@ class RimbleTransaction extends React.Component {
           if (callback_receipt){
             callback_receipt(transaction);
           }
+
+          // Wait for manual confermation
+          manualConfirmationTimeoutId = window.setTimeout( () => manualConfirmation(hash,5000) , 5000);
         })
-        .on("confirmation", (confirmationNumber, receipt) => {
-          // this.functionsUtil.customLog('txOnConfirmation', receipt);
-          // Update confirmation count on each subsequent confirmation that's received
-          transaction.confirmationCount += 1;
-
-          // How many confirmations should be received before informing the user
-          const confidenceThreshold = this.props.config.requiredConfirmations || 1;
-
-          if (transaction.confirmationCount === 1) {
-            // Initial confirmation receipt
-            transaction.status = "confirmed";
-          } else if (transaction.confirmationCount < confidenceThreshold) {
-            // Not enough confirmations to match threshold
-          }
-
-          if (transaction.confirmationCount === confidenceThreshold) {
-            // Confirmations match threshold
-            // Check the status from result since we are confident in the result
-            if (receipt.status) {
-              transaction.status = "success";
-            } else if (!receipt.status) {
-              transaction.status = "error";
-            }
-          } else if (transaction.confirmationCount > confidenceThreshold) {
-            // Confidence threshold met
-          }
-
-          // Update transaction with receipt details
-          transaction.recentEvent = "confirmation";
-          this.updateTransaction(transaction);
-
-          if (!globalConfigs.network.isForked && typeof callback === 'function' && transaction.confirmationCount<2) {
-            callback(transaction);
-            this.functionsUtil.customLog('Confirmed', confirmationNumber, receipt, transaction);
-          }
-        })
-        .on("receipt", receipt => {
-          this.functionsUtil.customLog('txOnReceipt', receipt);
-          // Received receipt, met total number of confirmations
-          transaction.recentEvent = "receipt";
-
-          // If the network is forked use the receipt for confirmation
-          if (globalConfigs.network.isForked){
-            transaction.status = "success";
-            callback(transaction);
-          }
-
-          this.updateTransaction(transaction);
-        })
+        .on("receipt", receiptCallback)
+        .on("confirmation", confirmationCallback)
         .on("error", error => {
           this.functionsUtil.customLog('txOnError',error);
+
+          // const stringifiedError = JSON.stringify(error);
+          // window.alert('Tx txOnError',stringifiedError);
+
           // Errored out
           transaction.status = "error";
           transaction.recentEvent = "error";
@@ -704,7 +751,9 @@ class RimbleTransaction extends React.Component {
           }
         });
     } catch (error) {
-      console.error(error);
+      // const stringifiedError = JSON.stringify(error);
+      // window.alert(`Tx catchError ${stringifiedError}`);
+
       transaction.status = "error";
       this.updateTransaction(transaction);
       // TODO: should this be a custom error? What is the error here?

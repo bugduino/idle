@@ -560,7 +560,7 @@ class Landing extends Component {
             <Heading.h4 color={'dark-gray'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]} textAlign={'center'} alignItems={'center'}>
               Maximize interest return
             </Heading.h4>
-            <Flex width={1} alignItems={'center'} justifyContent={'center'}>
+            <Flex width={1} alignItems={'center'} justifyContent={'center'} px={[3,0]}>
               <EquityChart
                 tokenConfig={availableTokens[1].SAI}
                 selectedToken={'SAI'}
