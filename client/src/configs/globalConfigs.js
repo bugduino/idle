@@ -81,7 +81,7 @@ const globalConfigs = {
         }
       },
       terminal:{
-        enabled:false,
+        enabled:true,
         supportedNetworks:[1,42],
         params:{
           apiKey: 'LonotCXiu7FEVd8Zl2W68A==',
@@ -109,7 +109,7 @@ const globalConfigs = {
           appOrigin: window.location.origin,
           appName: "Idle",
           appId: "eb4d1754-a76e-4c58-8422-54b5ca2395e7",
-          useSimpledIdWidget: true,
+          useSimpledIdWidget: false,
           network: 'mainnet'
         }
       }
@@ -370,7 +370,7 @@ const globalConfigs = {
         captionPos: 'top',
         subcaption: '~ 4.5% fee ~',
         supportedMethods:['card','bank'],
-        supportedCountries:['USA','GBR','EUR','AUS','BRA','CHN','MEX','CAN','HKG','RUS','ZAF','KOR'],
+        supportedCountries:['GBR','EUR','AUS','BRA','CHN','MEX','CAN','HKG','RUS','ZAF','KOR'],
         supportedTokens:['USDC','DAI','ETH'],
         env:'prod',
         envParams:{
