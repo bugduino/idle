@@ -3,6 +3,15 @@ import { Heading, Box, Flex, Form, Button, Image, Link, Text } from 'rimble-ui'
 import styles from './CryptoInput.module.scss';
 
 class CryptoInput extends Component {
+
+  componentDidMount = () => {
+    const input = document.getElementById(`CryptoInput_${this.props.action}`);
+    input.addEventListener("mousewheel",
+      function(event){
+          this.blur()
+      });
+  }
+
   render() {
     const convertedValueDecimals = this.props.isMobile ? 2 : 4;
     const convertedLabel = this.props.convertedLabel ? this.props.convertedLabel : 'idle'+this.props.selectedAsset;
@@ -27,7 +36,7 @@ class CryptoInput extends Component {
               </Flex>
               <Box width={ [8/10,(showConvertedValue ? 11/20 : 17/20)] }>
                 <Form.Input
-                  id={'CryptoInput_'+this.props.action}
+                  id={`CryptoInput_${this.props.action}`}
                   placeholder={this.props.placeholder ? this.props.placeholder : `Enter ${this.props.selectedAsset} Amount`}
                   value={this.props.defaultValue}
                   type="number"
