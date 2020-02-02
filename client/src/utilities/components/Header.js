@@ -201,6 +201,7 @@ class Header extends React.Component {
           selectedToken={this.props.selectedToken}
           accountBalance={this.props.accountBalance}
           accountBalanceToken={this.props.accountBalanceToken}
+          buyToken={this.props.buyToken}
           idleTokenBalance={this.state.idleTokenBalance}
           isOpen={this.state.isModalOpen==='buy'}
           isMobile={this.props.isMobile}

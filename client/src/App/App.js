@@ -36,6 +36,7 @@ class App extends Component {
     route: "default", // or 'onboarding'
     unsubscribeFromHistory:null,
     selectedTab: '1',
+    buyToken: null,
     buyModalOpened: false,
     connectorName:null,
     walletProvider:null,
@@ -117,13 +118,16 @@ class App extends Component {
       e.preventDefault();
     }
     return this.setState({
+      buyToken:null,
       buyModalOpened:false
     });
   }
 
-  openBuyModal(e) {
+  openBuyModal(e,buyToken) {
     e.preventDefault();
+
     return this.setState({
+      buyToken,
       buyModalOpened:true
     });
   }
@@ -220,6 +224,7 @@ class App extends Component {
                             walletProvider={this.state.walletProvider}
                             connectorName={this.state.connectorName}
                             buyModalOpened={this.state.buyModalOpened}
+                            buyToken={this.state.buyToken}
                             getAccountBalance={getAccountBalance}
                             getTokenDecimals={getTokenDecimals}
                             accountBalance={accountBalance}

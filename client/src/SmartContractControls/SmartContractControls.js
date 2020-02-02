@@ -1950,6 +1950,7 @@ class SmartContractControls extends React.Component {
 
     const tokenNotApproved = this.props.account && !this.state.isTokenApproved && !this.state.isApprovingToken && !this.state.updateInProgress;
     const walletIsEmpty = this.props.account && this.state.showEmptyWalletOverlay && !tokenNotApproved && !this.state.isApprovingToken && this.state.tokenBalance !== null && !isNaN(this.state.tokenBalance) && !parseFloat(this.state.tokenBalance);
+    const walletHasNoETH = this.props.account && this.state.showEmptyWalletOverlay && this.props.accountBalance !== null && !isNaN(this.props.accountBalance) && !parseFloat(this.props.accountBalance);
 
     // Check migration enabled and balance
     const migrationEnabled = this.props.account && this.props.tokenConfig.migration && this.props.tokenConfig.migration.enabled && this.state.migrationEnabled;
@@ -2135,6 +2136,44 @@ class SmartContractControls extends React.Component {
                         </Flex>
                       </Flex>
                     </Box>
+                  ) : walletHasNoETH ? (
+                  <Box pt={['50px','73px']} style={{position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'99'}}>
+                    <Box style={{backgroundColor:'rgba(0,0,0,0.83)',position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'0',borderRadius:'15px'}}></Box>
+                    <Flex style={{position:'relative',zIndex:'99',height:'100%'}} flexDirection={'column'} alignItems={'center'} justifyContent={'center'}>
+                      {
+                        !this.props.isMobile && (
+                          <Link onClick={e => this.hideEmptyWalletOverlay(e) } style={{position:'absolute',top:'0',right:'0',width:'35px',height:'28px',paddingTop:'7px'}}>
+                            <Icon
+                              name={'Close'}
+                              color={'white'}
+                              size={'28'}
+                            />
+                          </Link>
+                        )
+                      }
+                      <Flex flexDirection={'column'} alignItems={'center'} p={[2,4]}>
+                        <Flex width={1} justifyContent={'center'} flexDirection={'row'}>
+                          <Image src={`images/tokens/${globalConfigs.baseToken}.svg`} height={'38px'} />
+                          <Icon
+                            name={'KeyboardArrowRight'}
+                            color={'white'}
+                            size={'38'}
+                          />
+                          <Image src={`images/idle-mark.png`} height={'38px'} />
+                        </Flex>
+                        <Heading.h4 my={[3,'15px']} color={'white'} fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
+                          You need {globalConfigs.baseToken} to interact with Idle. Click the button below to buy some.
+                        </Heading.h4>
+                        <Button
+                          onClick={e => { this.props.openBuyModal(e,globalConfigs.baseToken); }}
+                          borderRadius={4}
+                          size={'medium'}
+                        >
+                          BUY {globalConfigs.baseToken}
+                        </Button>
+                      </Flex>
+                    </Flex>
+                  </Box>
                   ) : tokenNotApproved ? (
                   <Box pt={['50px','73px']} style={{position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'99'}}>
                     <Box style={{backgroundColor:'rgba(0,0,0,0.83)',position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'0',borderRadius:'15px'}}></Box>
@@ -2189,17 +2228,13 @@ class SmartContractControls extends React.Component {
                             color={'white'}
                             size={'38'}
                           />
-                          <Icon
-                            name={'AccountBalanceWallet'}
-                            color={'white'}
-                            size={'38'}
-                          />
+                          <Image src={`images/idle-mark.png`} height={'38px'} />
                         </Flex>
                         <Heading.h4 my={[3,'15px']} color={'white'} fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
                           You don't have any {this.props.selectedToken} in your wallet. Click the button below to buy some.
                         </Heading.h4>
                         <Button
-                          onClick={e => { this.props.openBuyModal(e); }}
+                          onClick={e => { this.props.openBuyModal(e,this.props.selectedToken); }}
                           borderRadius={4}
                           size={'medium'}
                         >

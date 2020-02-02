@@ -97,10 +97,19 @@ class BuyModal extends React.Component {
   }
 
   async componentDidMount() {
+
+    this.setState({
+      selectToken:this.props.buyToken
+    });
+
     this.loadRemoteResources();
   }
 
-  async componentDidUpdate() {
+  async componentDidUpdate(prevProps) {
+    if ( prevProps.buyToken !== this.props.buyToken){
+      this.selectToken(null,this.props.buyToken);
+    }
+
     this.loadRemoteResources();
   }
 
