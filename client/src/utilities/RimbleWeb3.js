@@ -99,7 +99,7 @@ class RimbleTransaction extends React.Component {
     this.initSimpleID();
   }
 
-  componentDidUpdate = (prevProps, prevState) => {
+  componentDidUpdate = async (prevProps, prevState) => {
 
     this.loadUtils();
 
@@ -108,6 +108,10 @@ class RimbleTransaction extends React.Component {
       if (!context || (this.props.context.active !== context.active || this.props.context.connectorName !== context.connectorName)){
         localStorage.setItem('context',JSON.stringify({active:this.props.context.active,connectorName:this.props.context.connectorName}));
       }
+    }
+
+    if (prevProps.selectedToken !== this.props.selectedToken){
+      await this.initializeContracts();
     }
   }
 
@@ -276,8 +280,7 @@ class RimbleTransaction extends React.Component {
       }));
       return {name, contract};
     } catch (error) {
-      this.functionsUtil.customLog("Could not create contract.");
-      this.functionsUtil.customLog(error);
+      this.functionsUtil.customLogError("Could not create contract.",name,address,error);
       window.toastProvider.addMessage("Contract creation failed.", {
         variant: "failure",
         colorTheme: 'light'
