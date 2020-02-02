@@ -107,9 +107,6 @@ class BuyModal extends React.Component {
 
   async componentDidUpdate(prevProps) {
     if ( this.props.buyToken && prevProps.buyToken !== this.props.buyToken){
-
-      console.log('componentDidUpdate')
-
       this.selectToken(null,this.props.buyToken);
     }
 
