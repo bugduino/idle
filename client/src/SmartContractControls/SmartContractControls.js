@@ -315,7 +315,11 @@ class SmartContractControls extends React.Component {
   }
 
   reloadFunds = async(e) => {
-    localStorage.removeItem(`transactions_${this.props.selectedToken}`);
+    const storedTxs = localStorage ? JSON.parse(localStorage.getItem('transactions')) : null;
+    if (storedTxs && storedTxs[this.props.account]){
+      delete storedTxs[this.props.account];
+    }
+    localStorage.removeItem('transactions',storedTxs);
     e.preventDefault();
     this.getBalanceOf(this.props.tokenConfig.idle.token);
   }
@@ -364,24 +368,6 @@ class SmartContractControls extends React.Component {
       // this.functionsUtil.customLog('getBalanceOf 2','tokenToRedeem',tokenToRedeem.toString(),'amountLent',this.state.amountLent.toString());
 
       if (this.state.amountLent && this.trimEth(this.state.amountLent.toString())>0 && this.trimEth(tokenToRedeem.toString())>0 && parseFloat(this.trimEth(tokenToRedeem.toString()))<parseFloat(this.trimEth(this.state.amountLent.toString()))){
-        /*
-        this.functionsUtil.customLogError('Balance '+this.trimEth(tokenToRedeem.toString())+' ('+price.toString()+') is less than AmountLent ('+this.trimEth(this.state.amountLent.toString())+').. try again');
-        if (componentUnmounted){
-          return false;
-        }
-
-        this.setState({
-          fundsError:true
-        });
-
-        // Clear local storage
-        localStorage.removeItem(`transactions_${this.props.selectedToken}`);
-        setTimeout(async () => {
-          await this.getPrevTxs();
-          this.getBalanceOf(contractName,count+1);
-        },10000);
-        return false;
-        */
         this.state.amountLent = tokenToRedeem.div(this.state.tokenPrice);
       } else if (this.state.amountLent && this.state.amountLent.lte(0) && tokenToRedeem){
         this.state.amountLent = tokenToRedeem.div(this.state.tokenPrice);
@@ -851,7 +837,7 @@ class SmartContractControls extends React.Component {
     if (etherscanInfo.enabled && etherscanInfo.endpoints[requiredNetwork]){
       const etherscanApiUrl = etherscanInfo.endpoints[requiredNetwork];
       const txs = await axios.get(`
-        ${etherscanApiUrl}?apikey=${etherscanInfo.apiKey}&module=account&action=tokentx&address=${this.props.account}&startblock=8119247&endblock=999999999&sort=asc&apikey=${env.REACT_APP_ETHERSCAN_KEY}
+        ${etherscanApiUrl}?apikey=${env.REACT_APP_ETHERSCAN_KEY}&module=account&action=tokentx&address=${this.props.account}&startblock=8119247&endblock=999999999&sort=asc
       `).catch(err => {
         this.functionsUtil.customLog('Error getting prev txs');
         if (componentUnmounted){
@@ -1007,8 +993,8 @@ class SmartContractControls extends React.Component {
       transactions[tx.hash] = tx;
     });
 
-    const storedTxs = localStorage ? JSON.parse(localStorage.getItem(`transactions_${this.props.selectedToken}`)) : null;
-    const minedTxs = storedTxs ? storedTxs : this.props.transactions;
+    const storedTxs = localStorage ? JSON.parse(localStorage.getItem('transactions')) : null;
+    const minedTxs = storedTxs && storedTxs[this.props.account] && storedTxs[this.props.account][this.props.selectedToken] ? storedTxs[this.props.account][this.props.selectedToken] : this.props.transactions;
 
     // Add missing executed transactions
     if (minedTxs){
@@ -1052,9 +1038,9 @@ class SmartContractControls extends React.Component {
 
             if (realTx.to.toLowerCase() !== this.props.tokenConfig.idle.address.toLowerCase()){
               // Remove wrong contract tx
-              if (storedTxs && storedTxs[txKey]){
-                delete storedTxs[txKey];
-                localStorage.setItem(`transactions_${this.props.selectedToken}`,JSON.stringify(storedTxs));
+              if (storedTxs && storedTxs[this.props.account] && storedTxs[this.props.account][this.props.selectedToken] && storedTxs[this.props.account][this.props.selectedToken][txKey]){
+                delete storedTxs[this.props.account][this.props.selectedToken][txKey];
+                localStorage.setItem('transactions',JSON.stringify(storedTxs));
               }
 
               this.functionsUtil.customLog('Skipped deposit tx '+tx.transactionHash+' - wrong contract');
@@ -1066,6 +1052,7 @@ class SmartContractControls extends React.Component {
               this.functionsUtil.customLog('Skipped deposit tx '+tx.transactionHash+' - value is zero ('+txValue+')');
               return;
             }
+            
             depositedTxs++;
             realTx.status = 'Deposited';
             realTx.value = txValue;
@@ -1082,9 +1069,9 @@ class SmartContractControls extends React.Component {
 
             if (!redeemTxReceipt || redeemTxReceipt.to.toLowerCase() !== this.props.tokenConfig.idle.address.toLowerCase() ){
               // Remove wrong contract tx
-              if (storedTxs && storedTxs[txKey]){
-                delete storedTxs[txKey];
-                localStorage.setItem(`transactions_${this.props.selectedToken}`,JSON.stringify(storedTxs));
+              if (storedTxs && storedTxs[this.props.account] && storedTxs[this.props.account][this.props.selectedToken] && storedTxs[this.props.account][this.props.selectedToken][txKey]){
+                delete storedTxs[this.props.account][this.props.selectedToken][txKey];
+                localStorage.setItem('transactions',JSON.stringify(storedTxs));
               }
               return;
             }
@@ -1125,13 +1112,11 @@ class SmartContractControls extends React.Component {
             const isMigrationRightContract = migrationTxReceipt.logs.filter((tx) => { return tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${contractAddress}`; });
 
             if (!isMigrationRightContract.length){
-
               // Remove wrong contract tx
-              if (storedTxs && storedTxs[txKey]){
-                delete storedTxs[txKey];
-                localStorage.setItem(`transactions_${this.props.selectedToken}`,JSON.stringify(storedTxs));
+              if (storedTxs && storedTxs[this.props.account] && storedTxs[this.props.account][this.props.selectedToken] && storedTxs[this.props.account][this.props.selectedToken][txKey]){
+                delete storedTxs[this.props.account][this.props.selectedToken][txKey];
+                localStorage.setItem('transactions',JSON.stringify(storedTxs));
               }
-
               return;
             }
 
@@ -1720,16 +1705,27 @@ class SmartContractControls extends React.Component {
       // Store transactions into Local Storage
       if (localStorage){
 
-        // Merge together stored and new transactions
-        let storedTxs = localStorage.getItem(`transactions_${this.props.selectedToken}`);
+        // Look for txs object in localStorage
+        let storedTxs = localStorage.getItem('transactions');
         if (storedTxs){
           storedTxs = JSON.parse(storedTxs);
-        } else {
+        } else { // Initialize storedTxs object
           storedTxs = {};
         }
 
-        storedTxs = Object.assign(storedTxs,this.props.transactions);
-        localStorage.setItem(`transactions_${this.props.selectedToken}`,JSON.stringify(storedTxs));
+        // Initialize txs for account
+        if (!storedTxs[this.props.account]){
+          storedTxs[this.props.account] = {};
+        }
+
+        // Initialize txs for selected token
+        if (!storedTxs[this.props.account][this.props.selectedToken]){
+          storedTxs[this.props.account][this.props.selectedToken] = {};
+        }
+
+        // Merge together stored and new transactions
+        storedTxs[this.props.account][this.props.selectedToken] = Object.assign(storedTxs[this.props.account][this.props.selectedToken],this.props.transactions);
+        localStorage.setItem('transactions',JSON.stringify(storedTxs));
       }
 
       this.processTransactionUpdates(prevProps.transactions);
