@@ -851,7 +851,7 @@ class SmartContractControls extends React.Component {
     if (etherscanInfo.enabled && etherscanInfo.endpoints[requiredNetwork]){
       const etherscanApiUrl = etherscanInfo.endpoints[requiredNetwork];
       const txs = await axios.get(`
-        ${etherscanApiUrl}?module=account&action=tokentx&address=${this.props.account}&startblock=8119247&endblock=999999999&sort=asc&apikey=${env.REACT_APP_ETHERSCAN_KEY}
+        ${etherscanApiUrl}?apikey=${etherscanInfo.apiKey}&module=account&action=tokentx&address=${this.props.account}&startblock=8119247&endblock=999999999&sort=asc&apikey=${env.REACT_APP_ETHERSCAN_KEY}
       `).catch(err => {
         this.functionsUtil.customLog('Error getting prev txs');
         if (componentUnmounted){

@@ -75,13 +75,14 @@ const globalConfigs = {
       },
       etherscan:{
         enabled:true, // False for empty txs list (try new wallet)
+        apiKey:'2IJS49Q4RADC8RVEN5SCJHH7S7CQEIZXM7',
         endpoints:{
           1: 'https://api.etherscan.io/api',
           42: 'https://api-kovan.etherscan.io/api'
         }
       },
       terminal:{
-        enabled:true,
+        enabled:false,
         supportedNetworks:[1,42],
         params:{
           apiKey: 'LonotCXiu7FEVd8Zl2W68A==',
