@@ -696,6 +696,8 @@ class RimbleTransaction extends React.Component {
 
       const receiptCallback = receipt => {
 
+        this.functionsUtil.customLog('txOnReceipt', receipt);
+
         if (manualConfirmationTimeoutId){
           window.clearTimeout(manualConfirmationTimeoutId);
         }
@@ -710,13 +712,9 @@ class RimbleTransaction extends React.Component {
         } else {
           this.updateTransaction(transaction);
 
-          // Transaction mined
+          // Transaction mined, wait for manual confirmation
           if (receipt.status){
-            // window.alert(`manualConfirmation - ${receipt.blockNumber} ${receipt.status}`);
-            confirmationCallback(1,receipt);
-          } else {
-            // Manual confirm the transaction if didn't receive the confirmation
-            manualConfirmationTimeoutId = window.setTimeout( () => manualConfirmation(receipt.transactionHash,2000) , 2000);
+            manualConfirmationTimeoutId = window.setTimeout( () => manualConfirmation(receipt.transactionHash,4000), 2000);
           }
         }
       };
@@ -740,11 +738,11 @@ class RimbleTransaction extends React.Component {
             callback_receipt(transaction);
           }
 
-          // Wait for manual confermation
+          // Wait for manual confirmation
           if (manualConfirmationTimeoutId){
             window.clearTimeout(manualConfirmationTimeoutId);
           }
-          manualConfirmationTimeoutId = window.setTimeout( () => manualConfirmation(hash,5000) , 5000);
+          manualConfirmationTimeoutId = window.setTimeout( () => manualConfirmation(hash,60000) , 20000);
         })
         .on("receipt", receiptCallback)
         .on("confirmation", confirmationCallback)

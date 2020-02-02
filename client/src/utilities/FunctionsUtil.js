@@ -137,7 +137,7 @@ class FunctionsUtil {
       this.customLog('getTokenBalance',contractName,tokenBalanceOrig,tokenBalance.toString(),tokenDecimals);
       return tokenBalance;
     } else {
-      this.customLogError('Error on getting balance');
+      this.customLogError('Error on getting balance for ',contractName);
     }
     return null;
   }
