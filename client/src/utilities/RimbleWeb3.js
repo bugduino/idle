@@ -238,8 +238,7 @@ class RimbleTransaction extends React.Component {
 
     // alert(web3.version);
 
-    this.setState({ web3 }, async () => {
-
+    const web3Callback = async () => {
       // After setting the web3 provider, check network
       this.checkNetwork();
       await this.initializeContracts();
@@ -247,7 +246,15 @@ class RimbleTransaction extends React.Component {
       if (context.account) {
         await this.initAccount(context.account);
       }
-    });
+    }
+
+    if (web3 !== this.state.web3){
+      this.setState({ web3 }, web3Callback);
+    } else {
+      if (context.account) {
+        await this.initAccount(context.account);
+      }
+    }
     
     return web3;
   }
@@ -671,8 +678,12 @@ class RimbleTransaction extends React.Component {
       };
 
       const manualConfirmation = (transactionHash,timeout) => {
+        if (!transactionHash){
+          return false;
+        }
         this.state.web3.eth.getTransactionReceipt(transactionHash,(err,txReceipt) => {
           if (txReceipt && txReceipt.status){
+            this.functionsUtil.customLog('Tx manualConfirmation', txReceipt);
             confirmationCallback(1,txReceipt);
           } else {
             manualConfirmationTimeoutId = window.setTimeout( () => manualConfirmation(transactionHash,timeout) , timeout);
@@ -711,6 +722,12 @@ class RimbleTransaction extends React.Component {
         .send(value ? { from: account, value, gas  } : { from: account, gas })
         .on("transactionHash", hash => {
           this.functionsUtil.customLog('txOnTransactionHash', hash);
+
+          if (!hash){
+            this.functionsUtil.customLog('Skip transactionHash due to hash empty', hash);
+            return false;
+          }
+
           transaction.transactionHash = hash;
           transaction.status = "pending";
           transaction.recentEvent = "transactionHash";
@@ -721,16 +738,15 @@ class RimbleTransaction extends React.Component {
           }
 
           // Wait for manual confermation
+          if (manualConfirmationTimeoutId){
+            window.clearTimeout(manualConfirmationTimeoutId);
+          }
           manualConfirmationTimeoutId = window.setTimeout( () => manualConfirmation(hash,5000) , 5000);
         })
         .on("receipt", receiptCallback)
         .on("confirmation", confirmationCallback)
         .on("error", error => {
           this.functionsUtil.customLog('txOnError',error);
-
-          // const stringifiedError = JSON.stringify(error);
-          // window.alert('Tx txOnError',stringifiedError);
-
           // Errored out
           transaction.status = "error";
           transaction.recentEvent = "error";
@@ -751,9 +767,6 @@ class RimbleTransaction extends React.Component {
           }
         });
     } catch (error) {
-      // const stringifiedError = JSON.stringify(error);
-      // window.alert(`Tx catchError ${stringifiedError}`);
-
       transaction.status = "error";
       this.updateTransaction(transaction);
       // TODO: should this be a custom error? What is the error here?
