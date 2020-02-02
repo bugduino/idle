@@ -119,7 +119,7 @@ class Landing extends Component {
     const contract = (this.props.contracts.find(c => c.name === this.props.tokenConfig.idle.token) || {}).contract;
     const contractChanged = contract && prevContract !== contract;
     const dataNotLoaded = contract && (this.state.protocolsAllocations===null || this.state.protocolsAprs===null);
-    
+
     if (!this.state.updatingAllocations && (contractChanged || selectedTokenChanged || dataNotLoaded)) {
       await this.getAprs();
       // await this.getAllocations();
@@ -293,7 +293,7 @@ class Landing extends Component {
         t--;
         return -c/2 * (t*(t-2) - 1) + b;
       };
-          
+
       const animateScroll = () => {
           currentTime += increment;
           var val = Math.easeInOutQuad(currentTime, start, change, duration);
@@ -302,7 +302,7 @@ class Landing extends Component {
             window.setTimeout(animateScroll, increment);
           }
       };
-      
+
       animateScroll();
   }
 
@@ -521,7 +521,7 @@ class Landing extends Component {
 
               <Flex flexDirection={['column','row']} justifyContent={'flex-end'} height={['auto','275px']}>
                 <Flex width={[1,1/2]} justifyContent={'flex-end'}>
-                  
+
                 </Flex>
                 <Flex width={[1,1/2]} justifyContent={['center','flex-start']} alignItems={['center','start']}>
                   <Flex flexDirection={['column','row']} position={'relative'} className={['bulletCard',styles.bulletCard,this.state.activeBullet>=4 ? styles.bulletCardActive :null]} width={[1,5/7]} p={[3,4]}>
@@ -598,7 +598,7 @@ class Landing extends Component {
                     100% non-custodial, and secured by audit.
                   </Heading.h3>
                   <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5} color={'dark-gray'}>
-                    Idle smart contract passed a security audit control. We will never be able to touch your money while inside the smart contract. You are always in control of your money.
+                    Idle smart contract passed a security audit control you can read the full report <Link key={1} hoverColor={'blue'} href={'https://certificate.quantstamp.com/full/idle-finance'} target={'_blank'}> here </Link>. We will never be able to touch your money while inside the smart contract. You are always in control of your money.
                   </Heading.h4>
                 </Box>
                 <Box className={[styles.carouselDesc,this.state.activeCarousel===2 || this.props.isMobile ? styles.selected : '']} py={[3,0]} my={[3,0]}>
@@ -630,7 +630,7 @@ class Landing extends Component {
                   <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5} color={'dark-gray'}>
                     Our "one-for-all" rebalance mechanism allows you to save money in terms of transaction fees, giving you back the best available interest rate on the market.
                   </Heading.h4>
-                </Box> 
+                </Box>
               </Box>
             </Flex>
             {
