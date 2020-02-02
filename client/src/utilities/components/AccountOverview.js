@@ -3,6 +3,7 @@ import { Flex, Icon, Box, Text, QR, Image } from "rimble-ui";
 import ShortHash from "./ShortHash";
 import BigNumber from 'bignumber.js';
 import styles from './AccountOverview.module.scss';
+import globalConfigs from '../../configs/globalConfigs';
 
 class AccountOverview extends React.Component {
   BNify = s => new BigNumber(String(s));
@@ -11,7 +12,7 @@ class AccountOverview extends React.Component {
   };
   getWalletProvider(){
     if (localStorage){
-      return localStorage.getItem('walletProvider');
+      return localStorage.getItem('walletProvider') ? localStorage.getItem('walletProvider') : null;
     }
     return null;
   }
@@ -50,7 +51,7 @@ class AccountOverview extends React.Component {
           </Box>
         }
         {
-          walletProvider && walletProvider!=='Injected' ? (
+          (walletProvider && Object.keys(globalConfigs.connectors).map((c,i) => {return c.toLowerCase()}).indexOf(walletProvider.toLowerCase()) !== -1) ? (
             <Image
               width={'42px'}
               height={'42px'}

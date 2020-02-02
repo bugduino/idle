@@ -24,29 +24,32 @@ class Header extends React.Component {
   }
 
   setCurrentToken = () => {
+
+    const buttonGroup = [
+      {
+        component:Button,
+        props:{
+          mainColor:'transparent',
+          color:'white',
+          icon:'AddCircleOutline',
+          iconpos:'right',
+          onClick: e => { this.props.account ? this.toggleModal('buy') : this.props.connectAndValidateAccount() }
+        },
+        value:'ADD FUNDS'
+      },
+      {
+        component:TokenSelector,
+        props:{
+          setSelectedToken:this.props.setSelectedToken,
+          selectedToken:this.props.selectedToken,
+          availableTokens:this.props.availableTokens
+        }
+      }
+    ];
+
     this.setState({
-      buttonGroup: [
-        {
-          component:Button,
-          props:{
-            mainColor:'transparent',
-            color:'white',
-            icon:'AddCircleOutline',
-            iconpos:'right',
-            onClick: e => { this.props.account ? this.toggleModal('buy') : this.props.connectAndValidateAccount() }
-          },
-          value:'ADD FUNDS'
-        },
-        {
-          component:TokenSelector,
-          props:{
-            setSelectedToken:this.props.setSelectedToken,
-            selectedToken:this.props.selectedToken,
-            availableTokens:this.props.availableTokens
-          }
-        },
-      ]
-    })
+      buttonGroup
+    });
   }
 
   genericContractCall = async (contractName, methodName, params = []) => {

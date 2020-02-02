@@ -237,10 +237,6 @@ class Landing extends Component {
     });
 
     if (!Aprs){
-      setTimeout(() => {
-        this.getAprs();
-      },5000);
-
       this.setState({
         updatingAprs:false
       });
