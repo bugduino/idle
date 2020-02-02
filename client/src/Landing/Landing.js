@@ -412,8 +412,8 @@ class Landing extends Component {
                         )
                       }
                       <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5}>
-                        Connect your wallet and <strong>lend some idle assets to get started</strong>.
-                        Get Idle Tokens back which will track the best rate on the market.
+                        Connect your wallet and and choose the amount that you want to lend.
+                        You will get Idle tokens back which will track the best rate on the market.
                       </Heading.h4>
                     </Box>
                   </Flex>
@@ -445,7 +445,7 @@ class Landing extends Component {
                   <Flex flexDirection={['column','row']} position={'relative'} className={['bulletCard',styles.bulletCard,this.state.activeBullet>=2 ? styles.bulletCardActive :null]} width={[1,5/7]} p={[3,4]}>
                     <Box width={[1,3/4]} pl={[0,2]}>
                       <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
-                        Instantly Earn Interest
+                        Earn Interest Instantly
                       </Heading.h3>
                       {
                         this.props.isMobile && (
@@ -455,7 +455,7 @@ class Landing extends Component {
                         )
                       }
                       <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5}>
-                        Your funds will be automatically allocated into the best <strong>available deal</strong>. You will immediately start earning compounded interest.
+                        Your funds will get automatically allocated into multiple protocols to always give you the best available returns. You will immediately start earning compounded interest.
                       </Heading.h4>
                     </Box>
                     {
@@ -493,7 +493,7 @@ class Landing extends Component {
                     }
                     <Box width={[1,3/4]} pl={[0,2]}>
                       <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
-                        User Based Rebalance
+                        Automated Rebalancing
                       </Heading.h3>
                       {
                         this.props.isMobile && (
@@ -503,8 +503,7 @@ class Landing extends Component {
                         )
                       }
                       <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5}>
-                        Every interaction with Idle <strong>rebalances the entire pool</strong> if needed.
-                        You always have the power to rebalance on behalf of all users. One for all, all for one.
+                        Interest rates are constantly monitored to spot the best allocation. Also, thanks to its user-based architecture, the smart contracts do not rely on any specific pair of human hands.
                       </Heading.h4>
                     </Box>
                   </Flex>
@@ -537,7 +536,7 @@ class Landing extends Component {
                         )
                       }
                       <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5}>
-                        You can <strong>always redeem back your funds and earn interest</strong>, automatically rebalancing the pool if needed. Kudos for you.
+                        Whenever you like, you can withdraw back your funds + earned interest. You can even redeem a fraction of your funds when you reach a desired amount of interest earned.
                       </Heading.h4>
                     </Box>
                     {
