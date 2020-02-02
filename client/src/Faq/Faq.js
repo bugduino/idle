@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Box, Flex, Text, Heading, Link } from 'rimble-ui'
+import { Box, Flex, Text, Heading } from 'rimble-ui'
 // import styles from './Faq.module.scss';
 import Faquestion from '../Faquestion/Faquestion';
 

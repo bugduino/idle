@@ -60,7 +60,7 @@ class App extends Component {
     if (!selectedToken){
       selectedToken = localStorage ? localStorage.getItem('selectedToken') : null;
 
-      // Check if the stored token 
+      // Check if the stored token
       if (selectedToken && availableTokens[selectedToken] && !availableTokens[selectedToken].enabled){
         selectedToken = null;
         localStorage.removeItem('selectedToken');
@@ -273,10 +273,10 @@ class App extends Component {
                                     acceptOnScroll={true}
                                     acceptOnScrollPercentage={5}
                                     location="bottom"
-                                    buttonText="Accept"
+                                    buttonText="Ok"
                                     cookieName="cookieAccepted"
-                                    style={{background: "rgba(255,255,255,0.95)",zIndex:'9999999'}}
-                                    buttonStyle={{display:'none'}}
+                                    style={{background: "rgba(255,255,255,0.95)",zIndex:'9999999', marginBottom: isMobile ? "0px" : "15px"}}
+                                    buttonStyle={{display: isMobile ? "block" : "none", backgroundColor:'#0036ff', color: 'white', marginTop: isMobile ? "0px" : "15px"}}
                                     expires={365}
                                   >
                                     <Flex flexDirection={'row'} alignItems={['flex-start','center']} justifyContent={'flex-start'} maxHeight={['150px','initial']} style={ isMobile ? {overflowY:'scroll'} : null }>
