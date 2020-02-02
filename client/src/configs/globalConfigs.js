@@ -1,6 +1,7 @@
 import { Web3Versions } from '@terminal-packages/sdk';
 import { RampInstantSDK } from '@ramp-network/ramp-instant-sdk';
 import FunctionsUtil from '../utilities/FunctionsUtil';
+const env = process.env;
 
 const globalConfigs = {
   appName: 'Idle',
@@ -75,7 +76,6 @@ const globalConfigs = {
       },
       etherscan:{
         enabled:true, // False for empty txs list (try new wallet)
-        apiKey:'2IJS49Q4RADC8RVEN5SCJHH7S7CQEIZXM7',
         endpoints:{
           1: 'https://api.etherscan.io/api',
           42: 'https://api-kovan.etherscan.io/api'
@@ -85,8 +85,8 @@ const globalConfigs = {
         enabled:false,
         supportedNetworks:[1,42],
         params:{
-          apiKey: 'LonotCXiu7FEVd8Zl2W68A==',
-          projectId: 'DYLRXdlpqKVzPmZr',
+          apiKey: env.REACT_APP_TERMINAL_KEY,
+          projectId: env.REACT_APP_TERMINAL_PROJECT_ID,
           source: null,
           web3Version: Web3Versions.one
         }
@@ -377,11 +377,11 @@ const globalConfigs = {
         envParams:{
           test:{
             url:'https://buy-staging.moonpay.io',
-            apiKey:'pk_test_xZO2dhqZb9gO65wHKCCFmMJ5fbSyHSI'
+            apiKey:env.REACT_APP_MOONPAY_KEY_TEST
           },
           prod:{
             url:'https://buy.moonpay.io',
-            apiKey:'pk_live_iPIpLBe5GGSL73fpAKtGBZTfshXfBwu'
+            apiKey:env.REACT_APP_MOONPAY_KEY_PROD
           }
         },
         getInfo: (props) => {
@@ -569,11 +569,11 @@ const globalConfigs = {
         },
         envParams:{
           test:{
-            apiKey:'test',
+            apiKey:env.REACT_APP_TRANSAK_KEY_TEST,
             url:'https://global.transak.com'
           },
           prod:{
-            apiKey:'a135bd06-b7f9-4f9e-87f6-c59321f137b2',
+            apiKey:env.REACT_APP_TRANSAK_KEY_PROD,
             url:'https://global.transak.com'
           }
         },
