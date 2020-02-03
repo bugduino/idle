@@ -1,7 +1,6 @@
 import styles from './SmartContractControls.module.scss';
 import React from "react";
 import { Form, Flex, Box, Heading, Text, Button, Link, Icon, Pill, Loader, Image, Tooltip } from "rimble-ui";
-import BigNumber from 'bignumber.js';
 import TxProgressBar from '../TxProgressBar/TxProgressBar.js';
 import CryptoInput from '../CryptoInput/CryptoInput.js';
 import ApproveModal from "../utilities/components/ApproveModal";
@@ -123,10 +122,8 @@ class SmartContractControls extends React.Component {
   // utilities
   trimEth = (eth,decimals) => {
     decimals = !isNaN(decimals) ? decimals : 6;
-    return this.BNify(eth).toFixed(decimals);
+    return this.functionsUtil.BNify(eth).toFixed(decimals);
   }
-
-  BNify = s => new BigNumber(String(s))
 
   toEth(wei) {
     return this.props.web3.utils.fromWei(
@@ -227,12 +224,12 @@ class SmartContractControls extends React.Component {
         const protocolApr = aprs[addrIndex];
         this.setState({
           [`${protocolName}Apr`]: protocolApr,
-          [`${protocolName}Rate`]: (+this.toEth(protocolApr)).toFixed(2)
+          [`${protocolName}Rate`]: (+this.functionsUtil.toEth(protocolApr)).toFixed(2)
         });
       }
     });
 
-    maxRate = aprs ? ((+this.toEth(maxRate)).toFixed(2)) : '0.00';
+    maxRate = aprs ? ((+this.functionsUtil.toEth(maxRate)).toFixed(2)) : '0.00';
 
     this.setState({
       aprs,
@@ -256,7 +253,7 @@ class SmartContractControls extends React.Component {
     }
 
     tokenPrice = this.functionsUtil.fixTokenDecimals(tokenPrice,tokenDecimals);
-    const navPool = this.BNify(totalIdleSupply).div(1e18).times(tokenPrice);
+    const navPool = this.functionsUtil.BNify(totalIdleSupply).div(1e18).times(tokenPrice);
     const idleTokenPrice = (totalIdleSupply || totalIdleSupply === 0) && totalIdleSupply.toString() === '0' ? 0 : tokenPrice.toString();
 
     this.setState({
@@ -350,7 +347,7 @@ class SmartContractControls extends React.Component {
 
       // this.functionsUtil.customLog('getBalanceOf 2','tokenToRedeem',tokenToRedeem.toString(),'amountLent',this.state.amountLent.toString());
 
-      if (amountLent && this.trimEth(amountLent.toString())>0 && this.trimEth(tokenToRedeem.toString())>0 && parseFloat(this.trimEth(tokenToRedeem.toString()))<parseFloat(this.trimEth(amountLent.toString()))){
+      if (amountLent && this.functionsUtil.trimEth(amountLent.toString())>0 && this.functionsUtil.trimEth(tokenToRedeem.toString())>0 && parseFloat(this.functionsUtil.trimEth(tokenToRedeem.toString()))<parseFloat(this.functionsUtil.trimEth(amountLent.toString()))){
         this.functionsUtil.customLogError('tokenToRedeem',tokenToRedeem.toString(),' less than amountLent',amountLent.toString());
 
         if (count === 2){
@@ -374,8 +371,8 @@ class SmartContractControls extends React.Component {
         amountLent
       });
 
-      if (this.BNify(tokenToRedeem).gt(this.BNify(amountLent))){
-        earning = tokenToRedeem.minus(this.BNify(amountLent));
+      if (this.functionsUtil.BNify(tokenToRedeem).gt(this.functionsUtil.BNify(amountLent))){
+        earning = tokenToRedeem.minus(this.functionsUtil.BNify(amountLent));
       }
 
       // customLog('earning',earning.toString());
@@ -391,7 +388,7 @@ class SmartContractControls extends React.Component {
         localStorage.removeItem('redirectToFundsAfterLogged');
       }
 
-      const currentApr = this.BNify(this.state.maxRate).div(100);
+      const currentApr = this.functionsUtil.BNify(this.state.maxRate).div(100);
       const earningPerYear = tokenToRedeem.times(currentApr);
       const earningPerDay = earningPerYear.div(this.functionsUtil.BNify(365.242199));
 
@@ -563,7 +560,7 @@ class SmartContractControls extends React.Component {
     if (this.props.account) {
       const value = this.props.web3.utils.toWei('0','ether');
       const allowance = await this.functionsUtil.getAllowance(this.props.selectedToken,this.props.tokenConfig.idle.address,this.props.account);
-      const tokenApproved = this.BNify(allowance).gt(this.BNify(value.toString()));
+      const tokenApproved = this.functionsUtil.BNify(allowance).gt(this.functionsUtil.BNify(value.toString()));
       // customLog('checkTokenApproved',value,allowance.toString(),tokenApproved);
       return this.setState({
         [`${this.props.selectedToken}Allowance`]: allowance,
@@ -675,7 +672,7 @@ class SmartContractControls extends React.Component {
     // Check if amount is more than 0
     if (this.state.partialRedeemEnabled){
       let amount = document.getElementById('CryptoInput_Redeem').value;
-      if (!amount.toString().length || this.BNify(amount).lte(0)) {
+      if (!amount.toString().length || this.functionsUtil.BNify(amount).lte(0)) {
         return this.setState({
           disableRedeemButton:true,
           genericErrorRedeem:`Please insert an amount of ${this.props.selectedToken} to redeem`
@@ -767,10 +764,10 @@ class SmartContractControls extends React.Component {
       let genericErrorRedeem = '';
 
       if (this.props.account) {
-        if (this.BNify(amount).gt(this.BNify(this.state.tokenBalanceBNify))){
+        if (this.functionsUtil.BNify(amount).gt(this.functionsUtil.BNify(this.state.tokenBalanceBNify))){
           disableRedeemButton = true;
           genericErrorRedeem = 'The inserted amount exceeds your redeemable balance';
-        } else if (this.BNify(amount).lte(0)) {
+        } else if (this.functionsUtil.BNify(amount).lte(0)) {
           disableRedeemButton = true;
           genericErrorRedeem = `Please insert an amount of ${this.props.selectedToken} to redeem`;
         }
@@ -795,7 +792,7 @@ class SmartContractControls extends React.Component {
       let buyTokenMessage = null;
 
       if (this.props.account) {
-        if (this.BNify(amount).gt(this.BNify(this.state.tokenBalance))){
+        if (this.functionsUtil.BNify(amount).gt(this.functionsUtil.BNify(this.state.tokenBalance))){
           disableLendButton = true;
           const defaultTokenSwapper = this.getDefaultTokenSwapper();
           if (defaultTokenSwapper){
@@ -803,7 +800,7 @@ class SmartContractControls extends React.Component {
           } else {
             genericError = `The inserted amount exceeds your ${this.props.selectedToken} balance`;
           }
-        } else if (this.BNify(amount).lte(0)) {
+        } else if (this.functionsUtil.BNify(amount).lte(0)) {
           disableLendButton = true;
           genericError = `Please insert an amount of ${this.props.selectedToken} to lend`;
         }
@@ -888,7 +885,7 @@ class SmartContractControls extends React.Component {
 
     // this.functionsUtil.customLog('prevTxs',prevTxs);
 
-    let amountLent = this.BNify(0);
+    let amountLent = this.functionsUtil.BNify(0);
     let transactions = {};
 
     // Check if this is the first interaction with Idle
@@ -902,10 +899,10 @@ class SmartContractControls extends React.Component {
 
       // Deposited
       if (isDepositTx){
-        amountLent = amountLent.plus(this.BNify(tx.value));
+        amountLent = amountLent.plus(this.functionsUtil.BNify(tx.value));
         depositedTxs++;
 
-        // this.functionsUtil.customLog('Add deposited value',this.BNify(tx.value).toString(),amountLent.toString());
+        // console.log('Add deposited value',this.functionsUtil.BNify(tx.value).toString(),amountLent.toString());
 
       // Redeemed
       } else if (isRedeemTx){
@@ -935,9 +932,13 @@ class SmartContractControls extends React.Component {
         const redeemedValue = parseInt(internalTransfer.data,16);
         const redeemedValueFixed = this.functionsUtil.fixTokenDecimals(redeemedValue,tokenDecimals);
 
-        amountLent = amountLent.minus(this.BNify(redeemedValueFixed));
+        amountLent = amountLent.minus(this.functionsUtil.BNify(redeemedValueFixed));
 
-        // this.functionsUtil.customLog('Add redeemed value',redeemedValueFixed.toString(),amountLent.toString());
+        // console.log('Add redeemed value',redeemedValueFixed.toString(),amountLent.toString());
+        
+        if (amountLent.lt(0)){
+          amountLent = this.functionsUtil.BNify(0);
+        }
 
         tx.value = redeemedValueFixed;
 
@@ -986,9 +987,9 @@ class SmartContractControls extends React.Component {
           const oldContractTokenDecimals = this.state.oldContractTokenDecimals ? this.state.oldContractTokenDecimals : await this.functionsUtil.getTokenDecimals(this.props.tokenConfig.migration.oldContract.name);
           const migrationValueFixed = this.functionsUtil.fixTokenDecimals(migrationValue,oldContractTokenDecimals);
 
-          amountLent = amountLent.plus(this.BNify(migrationValueFixed));
+          amountLent = amountLent.plus(this.functionsUtil.BNify(migrationValueFixed));
 
-          // console.log('Add migrated value',tx.hash,migrationValue,migrationValueFixed.toString(),tokenDecimals,amountLent.toString());
+          // console.log('Add migrated value',migrationValueFixed.toString(),amountLent.toString());
 
           tx.value = migrationValueFixed;
         } catch (error) {
@@ -1167,17 +1168,17 @@ class SmartContractControls extends React.Component {
         // this.functionsUtil.customLog('realTx from localStorage:',realTx);
 
         if (tx.method==='mintIdleToken'){
-          amountLent = amountLent.plus(this.BNify(realTx.value));
-          // this.functionsUtil.customLog('Deposited (localStorage) '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
+          amountLent = amountLent.plus(this.functionsUtil.BNify(realTx.value));
+          // console.log('Deposited (localStorage) '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
         } else if (tx.method==='redeemIdleToken'){
-          amountLent = amountLent.minus(this.BNify(realTx.value));
+          amountLent = amountLent.minus(this.functionsUtil.BNify(realTx.value));
           if (amountLent.lt(0)){
-            amountLent = this.BNify(0);
+            amountLent = this.functionsUtil.BNify(0);
           }
-          // this.functionsUtil.customLog('Redeemed (localStorage) '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
+          // console.log('Redeemed (localStorage) '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
         } else if (tx.method==='bridgeIdleV1ToIdleV2'){
-          amountLent = amountLent.plus(this.BNify(realTx.value));
-          // this.functionsUtil.customLog('Migrated (localStorage) '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
+          amountLent = amountLent.plus(this.functionsUtil.BNify(realTx.value));
+          // console.log('Migrated (localStorage) '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
         }
 
         transactions[realTx.hash] = realTx;
@@ -1274,6 +1275,7 @@ class SmartContractControls extends React.Component {
 
   async componentWillMount() {
     this.initState();
+    this.loadUtils();
   }
 
   // Clear all the timeouts
@@ -1367,8 +1369,8 @@ class SmartContractControls extends React.Component {
     componentUnmounted = false;
 
     window.jQuery = jQuery;
-    // window.BNify = this.BNify;
-    // window.toEth = this.toEth.bind(this);
+    // window.BNify = this.functionsUtil.BNify;
+    // window.toEth = this.functionsUtil.toEth.bind(this);
     // customLog('SmartContractControls componentDidMount',jQuery);
 
     this.addResources();
@@ -1926,12 +1928,12 @@ class SmartContractControls extends React.Component {
     decimals = !isNaN(decimals) ? decimals : 6;
     maxLen = !isNaN(maxLen) ? maxLen : 10;
     highlightedDecimals = !isNaN(highlightedDecimals) ? highlightedDecimals : 0;
-    balance = this.BNify(balance).toFixed(decimals);
+    balance = this.functionsUtil.BNify(balance).toFixed(decimals);
 
     const numLen = balance.toString().replace('.','').length;
     if (numLen>maxLen){
       decimals = Math.max(0,decimals-(numLen-maxLen));
-      balance = this.BNify(balance).toFixed(decimals);
+      balance = this.functionsUtil.BNify(balance).toFixed(decimals);
     }
 
     const intPart = Math.floor(balance);
@@ -1942,9 +1944,9 @@ class SmartContractControls extends React.Component {
       const highlightedDec = decPart.substr(0,highlightedDecimals);
       decPart = decPart.substr(highlightedDecimals);
       const highlightedIntPart = (<Text.span fontSize={'100%'} color={'blue'} fontWeight={'inerith'}>{intPart}.{highlightedDec}</Text.span>);
-      return !isNaN(this.trimEth(balance)) ? ( <>{highlightedIntPart}<small style={{fontSize:'70%'}}>{decPart}</small> <Text.span fontSize={[1,2]}>{label}</Text.span></> ) : defaultValue;
+      return !isNaN(this.functionsUtil.trimEth(balance)) ? ( <>{highlightedIntPart}<small style={{fontSize:'70%'}}>{decPart}</small> <Text.span fontSize={[1,2]}>{label}</Text.span></> ) : defaultValue;
     } else {
-      return !isNaN(this.trimEth(balance)) ? ( <>{intPart}<small>.{decPart}</small> <Text.span fontSize={[1,2]}>{label}</Text.span></> ) : defaultValue;
+      return !isNaN(this.functionsUtil.trimEth(balance)) ? ( <>{intPart}<small>.{decPart}</small> <Text.span fontSize={[1,2]}>{label}</Text.span></> ) : defaultValue;
     }
   }
 
@@ -1953,11 +1955,11 @@ class SmartContractControls extends React.Component {
   }
 
   render() {
-    const hasBalance = !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && this.trimEth(this.state.tokenToRedeemParsed) > 0;
+    const hasBalance = !isNaN(this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)) && this.functionsUtil.trimEth(this.state.tokenToRedeemParsed) > 0;
     // const navPool = this.getFormattedBalance(this.state.navPool,this.props.selectedToken);
     const idleTokenPrice = this.getFormattedBalance(this.state.idleTokenPrice,this.props.selectedToken);
     const depositedFunds = this.getFormattedBalance(this.state.amountLent,this.props.selectedToken);
-    const earningPerc = !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && this.trimEth(this.state.tokenToRedeemParsed)>0 && this.state.amountLent>0 ? this.getFormattedBalance(this.BNify(this.state.tokenToRedeemParsed).div(this.BNify(this.state.amountLent)).minus(1).times(100),'%',4) : '0%';
+    const earningPerc = !isNaN(this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)) && this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)>0 && this.state.amountLent>0 ? this.getFormattedBalance(this.functionsUtil.BNify(this.state.tokenToRedeemParsed).div(this.functionsUtil.BNify(this.state.amountLent)).minus(1).times(100),'%',4) : '0%';
     const currentApr = !isNaN(this.state.maxRate) ? this.getFormattedBalance(this.state.maxRate,'%',2) : '-';
 
     let earningPerDay = this.getFormattedBalance((this.state.earningPerYear/daysInYear),this.props.selectedToken,4);
@@ -1965,19 +1967,19 @@ class SmartContractControls extends React.Component {
     const earningPerMonth = this.getFormattedBalance((this.state.earningPerYear/12),this.props.selectedToken,4);
     const earningPerYear = this.getFormattedBalance((this.state.earningPerYear),this.props.selectedToken,4);
 
-    const currentNavPool = !isNaN(this.trimEth(this.state.navPool)) ? parseFloat(this.trimEth(this.state.navPool,8)) : null;
-    let navPoolEarningPerYear = currentNavPool ? parseFloat(this.trimEth(this.BNify(this.state.navPool).times(this.BNify(this.state.maxRate/100)),8)) : null;
+    const currentNavPool = !isNaN(this.functionsUtil.trimEth(this.state.navPool)) ? parseFloat(this.functionsUtil.trimEth(this.state.navPool,8)) : null;
+    let navPoolEarningPerYear = currentNavPool ? parseFloat(this.functionsUtil.trimEth(this.functionsUtil.BNify(this.state.navPool).times(this.functionsUtil.BNify(this.state.maxRate/100)),8)) : null;
     const navPoolEarningPerDay = navPoolEarningPerYear ? (navPoolEarningPerYear/daysInYear) : null;
     const navPoolEarningPerWeek = navPoolEarningPerDay ? (navPoolEarningPerDay*7) : null;
     const navPoolEarningPerMonth = navPoolEarningPerWeek ? (navPoolEarningPerWeek*4.35) : null;
     navPoolEarningPerYear = navPoolEarningPerYear ? navPoolEarningPerYear : null;
 
-    const currentReedemableFunds = !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && !isNaN(this.trimEth(this.state.earningPerYear)) ? parseFloat(this.trimEth(this.state.tokenToRedeemParsed,8)) : 0;
-    const reedemableFundsAtEndOfYear = !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && !isNaN(this.trimEth(this.state.earningPerYear)) ? parseFloat(this.trimEth(this.BNify(this.state.tokenToRedeemParsed).plus(this.BNify(this.state.earningPerYear)),8)) : 0;
-    const currentEarning = !isNaN(this.trimEth(this.state.earning)) ? parseFloat(this.trimEth(this.state.earning,8)) : 0;
-    const earningAtEndOfYear = !isNaN(this.trimEth(this.state.earning)) ? parseFloat(this.trimEth(this.BNify(this.state.earning).plus(this.BNify(this.state.earningPerYear)),8)) : 0;
+    const currentReedemableFunds = !isNaN(this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)) && !isNaN(this.functionsUtil.trimEth(this.state.earningPerYear)) ? parseFloat(this.functionsUtil.trimEth(this.state.tokenToRedeemParsed,8)) : 0;
+    const reedemableFundsAtEndOfYear = !isNaN(this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)) && !isNaN(this.functionsUtil.trimEth(this.state.earningPerYear)) ? parseFloat(this.functionsUtil.trimEth(this.functionsUtil.BNify(this.state.tokenToRedeemParsed).plus(this.functionsUtil.BNify(this.state.earningPerYear)),8)) : 0;
+    const currentEarning = !isNaN(this.functionsUtil.trimEth(this.state.earning)) ? parseFloat(this.functionsUtil.trimEth(this.state.earning,8)) : 0;
+    const earningAtEndOfYear = !isNaN(this.functionsUtil.trimEth(this.state.earning)) ? parseFloat(this.functionsUtil.trimEth(this.functionsUtil.BNify(this.state.earning).plus(this.functionsUtil.BNify(this.state.earningPerYear)),8)) : 0;
 
-    const fundsAreReady = this.state.fundsError || (!this.state.updateInProgress && !isNaN(this.trimEth(this.state.tokenToRedeemParsed)) && !isNaN(this.trimEth(this.state.earning)) && !isNaN(this.trimEth(this.state.amountLent)));
+    const fundsAreReady = this.state.fundsError || (!this.state.updateInProgress && !isNaN(this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)) && !isNaN(this.functionsUtil.trimEth(this.state.earning)) && !isNaN(this.functionsUtil.trimEth(this.state.amountLent)));
 
     // console.log('currentReedemableFunds',currentReedemableFunds,'reedemableFundsAtEndOfYear',reedemableFundsAtEndOfYear,'currentEarning',currentEarning,'earningAtEndOfYear',earningAtEndOfYear);
 
@@ -2304,9 +2306,9 @@ class SmartContractControls extends React.Component {
                     balance={this.state.tokenBalance}
                     tokenDecimals={this.state.tokenDecimals}
                     defaultValue={this.state.lendAmount}
-                    BNify={this.BNify}
+                    BNify={this.functionsUtil.BNify}
                     action={'Lend'}
-                    trimEth={this.trimEth}
+                    trimEth={this.functionsUtil.trimEth}
                     color={'black'}
                     selectedAsset={this.props.selectedToken}
                     useEntireBalance={this.useEntireBalance}
@@ -2508,8 +2510,8 @@ class SmartContractControls extends React.Component {
                                               idleTokenPrice={(1/this.state.idleTokenPrice)}
                                               convertedLabel={this.props.selectedToken}
                                               balanceLabel={this.props.tokenConfig.idle.token}
-                                              BNify={this.BNify}
-                                              trimEth={this.trimEth}
+                                              BNify={this.functionsUtil.BNify}
+                                              trimEth={this.functionsUtil.trimEth}
                                               color={'black'}
                                               balance={this.state.idleTokenBalance}
                                               selectedAsset={this.props.selectedToken}
@@ -2596,7 +2598,7 @@ class SmartContractControls extends React.Component {
                       this.props.selectedTab === '2' && hasBalance && this.state.showFundsInfo && !this.state.prevTxsError &&
                         <>
                           {
-                          !isNaN(this.trimEth(this.state.earningPerYear)) ? (
+                          !isNaN(this.functionsUtil.trimEth(this.state.earningPerYear)) ? (
                           <>
                             <Box my={[3,4]} pb={[3,4]} borderBottom={'1px solid #D6D6D6'}>
                               <Flex flexDirection={'column'} width={[1,'90%']} m={'0 auto'}>
@@ -2807,10 +2809,10 @@ class SmartContractControls extends React.Component {
                             return false;
                           }
                           const protocolName = protocolInfo.name;
-                          const protocolApr = parseFloat(this.toEth(this.state[`${protocolName}Apr`]));
+                          const protocolApr = parseFloat(this.functionsUtil.toEth(this.state[`${protocolName}Apr`]));
                           const protocolAllocation = parseFloat(this.state.allocations[protocolAddr]);
-                          const protocolEarningPerYear = parseFloat(this.BNify(protocolAllocation).times(this.BNify(protocolApr/100)));
-                          const protocolAllocationEndOfYear = parseFloat(this.BNify(protocolAllocation).plus(this.BNify(protocolEarningPerYear)));
+                          const protocolEarningPerYear = parseFloat(this.functionsUtil.BNify(protocolAllocation).times(this.functionsUtil.BNify(protocolApr/100)));
+                          const protocolAllocationEndOfYear = parseFloat(this.functionsUtil.BNify(protocolAllocation).plus(this.functionsUtil.BNify(protocolEarningPerYear)));
                           return (
                             <Box key={`allocation_${protocolName}`} style={{flex:'1 1 0'}}>
                               <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'} style={{textTransform:'capitalize'}}>
