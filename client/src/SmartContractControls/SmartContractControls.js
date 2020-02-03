@@ -495,7 +495,7 @@ class SmartContractControls extends React.Component {
 
       // Send Google Analytics event
       if (window.ga){
-        window.ga('send', 'event', 'Approve', this.props.selectedToken, tx.status);
+        window.ga('send', 'event', 'Approve', token, tx.status);
       }
 
       if (tx.status === 'success'){
@@ -1451,6 +1451,12 @@ class SmartContractControls extends React.Component {
       if (!migrationContractApproved){
 
         const callback = tx => {
+
+          // Send Google Analytics event
+          if (window.ga){
+            window.ga('send', 'event', 'Migrate', 'approve', tx.status);
+          }
+
           const newState = {
             isApprovingMigrationContract: false,
             needsUpdate: true,
@@ -1496,6 +1502,8 @@ class SmartContractControls extends React.Component {
       } else {
         // Call migration contract function to migrate funds
 
+        const toMigrate = this.functionsUtil.BNify(this.state.oldContractBalance).toString();
+
         const callback = tx => {
 
           const newState = {
@@ -1503,6 +1511,11 @@ class SmartContractControls extends React.Component {
             isMigrating: false,
             migrationTx: null
           };
+
+          // Send Google Analytics event
+          if (window.ga){
+            window.ga('send', 'event', 'Migrate', migrationMethod, tx.status);
+          }
 
           if (tx.status === 'success'){
             newState.migrationError = false; // Reset error
@@ -1544,7 +1557,6 @@ class SmartContractControls extends React.Component {
           isMigrating: true
         });
 
-        const toMigrate = this.functionsUtil.BNify(this.state.oldContractBalance).toString();
         // const toMigrate =  this.functionsUtil.normalizeTokenAmount('1',this.state.oldContractTokenDecimals).toString(); // TEST AMOUNT
 
         const migrationParams = [...params];
