@@ -358,6 +358,138 @@ const globalConfigs = {
             .show();
         }
       },
+      transak: {
+        enabled:true,
+        imageSrc: 'images/payments/transak.png',
+        imageProps: {
+          width: ['100%','auto'],
+          height: ['auto','35px'],
+          my: '8px'
+        },
+        caption: 'Buy with',
+        captionPos: 'top',
+        subcaption:`~ 1.5% fee ~\nGBP ONLY`,
+        supportedMethods:['bank'],
+        supportedCountries:['GBR','IND'],
+        supportedTokens:['DAI','SAI','USDC'],
+        remoteResources:{'https://global.transak.com/v1/widget.js':{}},
+        env:'prod',
+        badge:{
+          text:'INSTANT',
+          bgColor:'#0069ee'
+        },
+        envParams:{
+          test:{
+            apiKey:env.REACT_APP_TRANSAK_KEY_TEST,
+            url:'https://global.transak.com'
+          },
+          prod:{
+            apiKey:env.REACT_APP_TRANSAK_KEY_PROD,
+            url:'https://global.transak.com'
+          }
+        },
+        getInfo: (props) => {
+          const info = {};
+          if (props.selectedCountry && props.selectedCountry.value){
+            switch (props.selectedCountry.value.toUpperCase()){
+              case 'GBR':
+                info.subcaption = `~ 1.5% fee ~\nGBP ONLY`;
+              break;
+              case 'IND':
+                info.subcaption = `~ 1.5% fee ~\nINR ONLY`;
+              break;
+              default:
+              break;
+            }
+          }
+          return info;
+        },
+        getInitParams: (props,globalConfigs,buyParams) => {
+          const env = globalConfigs.payments.providers.transak.env;
+          const envParams = globalConfigs.payments.providers.transak.envParams[env];
+
+          let fiatCurrency = null;
+
+          if (buyParams.selectedCountry && buyParams.selectedCountry.value){
+            switch (buyParams.selectedCountry.value.toUpperCase()){
+              case 'IND':
+                fiatCurrency = 'INR';
+              break;
+              case 'GBR':
+              default:
+                fiatCurrency = 'GBP';
+              break;
+            }
+          }
+
+          let cryptoCurrencyCode = buyParams.selectedToken ? buyParams.selectedToken.toLowerCase() : ( props.tokenConfig.transak && props.tokenConfig.transak.currencyCode ? props.tokenConfig.transak.currencyCode : props.selectedToken);
+          cryptoCurrencyCode = cryptoCurrencyCode.toUpperCase();
+
+          const apiKey = envParams.apiKey;
+          const walletAddress = props.account;
+          const partnerCustomerId = props.account;
+          const disableWalletAddressForm = true;
+
+          return {
+            apiKey,
+            cryptoCurrencyCode,
+            walletAddress,
+            fiatCurrency,
+            partnerCustomerId,
+            disableWalletAddressForm,
+            width:'100%',
+            height:'100%'
+            // email,
+          };
+        },
+        render: (initParams,amount,props,globalConfigs) => {
+          if (window.transakGlobal){
+
+            const transakWidget = document.getElementById('transak-widget');
+            if (!transakWidget){
+              const iframeBox = document.createElement("div");
+              iframeBox.innerHTML = `
+                <div id="transak-widget" class="transak-widget iframe-container" style="position:fixed;display:flex;justify-content:center;align-items:center;top:0;left:0;width:100%;height:100%;z-index:999">
+                  <div id="transak-widget-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1" onclick="document.getElementById('transak-widget').remove();"></div>
+                  <a class="transak-close-button" href="javascript:void(0);" onclick="document.getElementById('transak-widget').remove();" style="position:absolute;width:30px;height:30px;top:10px;right:10px;font-size:22px;line-height:30px;text-align:center;color:#fff;font-weight:bold;z-index:10;text-decoration:none">✕</a>
+                  <div class="transak-widget-container" style="position:relative;z-index:2;width:500px;height:550px">
+                    <div id="transak-widget-container" style="position:relative;z-index:2;width:500px;height:550px"></div>
+                    <div id="transak-widget-loading-placeholder" style="position:absolute;background:#fff;width:100%;height:100%;z-index:1;top:0;display:flex;justify-content:center;align-items:center;">
+                      <div style="display:flex;flex-direction:row;align-items:center">
+                        <img src="${globalConfigs.payments.providers.transak.imageSrc}" style="height:50px;" />
+                        <h3 style="font-weight:600;font-style:italic;color:#0040ca">is loading...</h3>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              `;
+              document.body.appendChild(iframeBox);
+
+              // Add transak Widget style (mobile)
+              if (!document.getElementById('transakWidget_style')){
+                const transakStyle = document.createElement('style');
+                transakStyle.id = 'transakWidget_style';
+                transakStyle.innerHTML = `
+                @media (max-width: 40em){
+                  #transak-widget {
+                    align-items: flex-start !important;
+                  }
+                  #transak-widget-overlay{
+                    background:#fff !important;
+                  }
+                  #transak-widget-container{
+                    width:100vw;
+                    min-height: calc( 100vh - 60px ) !important;
+                  }
+                }`;
+                document.body.appendChild(transakStyle);
+              }
+            }
+
+            window.transakGlobal.render(initParams, 'transak-widget-container');
+          }
+        }
+      },
       moonpay: {
         enabled:true,
         imageSrc: 'images/payments/moonpay.svg',
@@ -544,137 +676,6 @@ const globalConfigs = {
               }`;
               document.body.appendChild(moonpayStyle);
             }
-          }
-        }
-      },
-      transak: {
-        enabled:true,
-        imageSrc: 'images/payments/transak.png',
-        imageProps: {
-          width: ['100%','auto'],
-          height: ['auto','35px'],
-          my: '8px'
-        },
-        caption: 'Buy with',
-        captionPos: 'top',
-        subcaption:`~ 2.5% fee ~\nGBP ONLY`,
-        supportedMethods:['bank'],
-        supportedCountries:['GBR','IND'],
-        supportedTokens:['DAI','SAI','USDC'],
-        remoteResources:{'https://global.transak.com/v1/widget.js':{}},
-        env:'prod',
-        badge:{
-          text:'KYC'
-        },
-        envParams:{
-          test:{
-            apiKey:env.REACT_APP_TRANSAK_KEY_TEST,
-            url:'https://global.transak.com'
-          },
-          prod:{
-            apiKey:env.REACT_APP_TRANSAK_KEY_PROD,
-            url:'https://global.transak.com'
-          }
-        },
-        getInfo: (props) => {
-          const info = {};
-          if (props.selectedCountry && props.selectedCountry.value){
-            switch (props.selectedCountry.value.toUpperCase()){
-              case 'GBR':
-                info.subcaption = `~ 2.5% fee ~\nGBP ONLY`;
-              break;
-              case 'IND':
-                info.subcaption = `~ 2.5% fee ~\nINR ONLY`;
-              break;
-              default:
-              break;
-            }
-          }
-          return info;
-        },
-        getInitParams: (props,globalConfigs,buyParams) => {
-          const env = globalConfigs.payments.providers.transak.env;
-          const envParams = globalConfigs.payments.providers.transak.envParams[env];
-
-          let fiatCurrency = null;
-
-          if (buyParams.selectedCountry && buyParams.selectedCountry.value){
-            switch (buyParams.selectedCountry.value.toUpperCase()){
-              case 'IND':
-                fiatCurrency = 'INR';
-              break;
-              case 'GBR':
-              default:
-                fiatCurrency = 'GBP';
-              break;
-            }
-          }
-
-          let cryptoCurrencyCode = buyParams.selectedToken ? buyParams.selectedToken.toLowerCase() : ( props.tokenConfig.transak && props.tokenConfig.transak.currencyCode ? props.tokenConfig.transak.currencyCode : props.selectedToken);
-          cryptoCurrencyCode = cryptoCurrencyCode.toUpperCase();
-
-          const apiKey = envParams.apiKey;
-          const walletAddress = props.account;
-          const partnerCustomerId = props.account;
-          const disableWalletAddressForm = true;
-
-          return {
-            apiKey,
-            cryptoCurrencyCode,
-            walletAddress,
-            fiatCurrency,
-            partnerCustomerId,
-            disableWalletAddressForm,
-            width:'100%',
-            height:'100%'
-            // email,
-          };
-        },
-        render: (initParams,amount,props,globalConfigs) => {
-          if (window.transakGlobal){
-
-            const transakWidget = document.getElementById('transak-widget');
-            if (!transakWidget){
-              const iframeBox = document.createElement("div");
-              iframeBox.innerHTML = `
-                <div id="transak-widget" class="transak-widget iframe-container" style="position:fixed;display:flex;justify-content:center;align-items:center;top:0;left:0;width:100%;height:100%;z-index:999">
-                  <div id="transak-widget-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1"></div>
-                  <a class="transak-close-button" href="javascript:void(0);" onclick="document.getElementById('transak-widget').remove();" style="position:absolute;width:30px;height:30px;top:10px;right:10px;font-size:22px;line-height:30px;text-align:center;color:#fff;font-weight:bold;z-index:10;text-decoration:none">✕</a>
-                  <div class="transak-widget-container" style="position:relative;z-index:2;width:500px;height:550px">
-                    <div id="transak-widget-container" style="position:relative;z-index:2;width:500px;height:550px"></div>
-                    <div id="transak-widget-loading-placeholder" style="position:absolute;background:#fff;width:100%;height:100%;z-index:1;top:0;display:flex;justify-content:center;align-items:center;">
-                      <div style="display:flex;flex-direction:row;align-items:center">
-                        <img src="${globalConfigs.payments.providers.transak.imageSrc}" style="height:50px;" />
-                        <h3 style="font-weight:600;font-style:italic;color:#0040ca">is loading...</h3>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              `;
-              document.body.appendChild(iframeBox);
-
-              // Add transak Widget style (mobile)
-              if (!document.getElementById('transakWidget_style')){
-                const transakStyle = document.createElement('style');
-                transakStyle.id = 'transakWidget_style';
-                transakStyle.innerHTML = `
-                @media (max-width: 40em){
-                  #transak-widget {
-                    align-items: flex-start !important;
-                  }
-                  #transak-widget-overlay{
-                    background:#fff !important;
-                  }
-                  #transak-widget-container{
-                    width:100vw;
-                    min-height: calc( 100vh - 60px ) !important;
-                  }
-                }`;
-                document.body.appendChild(transakStyle);
-              }
-            }
-
-            window.transakGlobal.render(initParams, 'transak-widget-container');
           }
         }
       },
