@@ -1762,13 +1762,12 @@ class SmartContractControls extends React.Component {
 
   async selectTab(e, tabIndex) {
     e.preventDefault();
-    this.props.updateSelectedTab(e,tabIndex);
+
+    const tabChanged = tabIndex !== this.props.selectedTab;
 
     if (tabIndex === '3') {
-      // Send Google Analytics event
-
       // Don't send the event again if already in the tab
-      if (tabIndex !== this.props.selectedTab){
+      if (tabChanged){
         if (window.ga){
           window.ga('send', 'event', 'UI', 'tabs', 'rebalance');
         }
@@ -1783,6 +1782,7 @@ class SmartContractControls extends React.Component {
       }
     }
 
+    this.props.updateSelectedTab(e,tabIndex);
   }
 
   // TODO move in a separate component
