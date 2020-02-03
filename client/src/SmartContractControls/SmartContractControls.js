@@ -75,6 +75,15 @@ class SmartContractControls extends React.Component {
     if (defaultProvider){
 
       const onSuccess = async (tx) => {
+        // Toast message
+        window.toastProvider.addMessage(`Purchase completed`, {
+          secondaryMessage: `Your ${this.props.selectedToken} are now available`,
+          colorTheme: 'light',
+          actionHref: "",
+          actionText: "",
+          variant: "success",
+        });
+
         this.setState({
           needsUpdate: true
         });
@@ -84,7 +93,7 @@ class SmartContractControls extends React.Component {
         return true;
       }
 
-      const initParams = defaultProvider.getInitParams ? defaultProvider.getInitParams(this.props,globalConfigs,onSuccess,onClose) : null;
+      const initParams = defaultProvider.getInitParams ? defaultProvider.getInitParams(this.props,globalConfigs,null,onSuccess,onClose) : null;
 
       if (window.ga){
         window.ga('send', 'event', 'UI', 'buy_with_eth', defaultProviderName);
@@ -117,26 +126,6 @@ class SmartContractControls extends React.Component {
     }
 
     return {defaultProvider,defaultProviderName};
-  }
-
-  // utilities
-  trimEth = (eth,decimals) => {
-    decimals = !isNaN(decimals) ? decimals : 6;
-    return this.functionsUtil.BNify(eth).toFixed(decimals);
-  }
-
-  toEth(wei) {
-    return this.props.web3.utils.fromWei(
-      (wei || 0).toString(),
-      "ether"
-    );
-  }
-
-  toWei(eth) {
-    return this.props.web3.utils.toWei(
-      (eth || 0).toString(),
-      "ether"
-    );
   }
 
   rebalanceCheck = async () => {
@@ -935,7 +924,7 @@ class SmartContractControls extends React.Component {
         amountLent = amountLent.minus(this.functionsUtil.BNify(redeemedValueFixed));
 
         // console.log('Add redeemed value',redeemedValueFixed.toString(),amountLent.toString());
-        
+
         if (amountLent.lt(0)){
           amountLent = this.functionsUtil.BNify(0);
         }
@@ -1777,8 +1766,12 @@ class SmartContractControls extends React.Component {
 
     if (tabIndex === '3') {
       // Send Google Analytics event
-      if (window.ga){
-        window.ga('send', 'event', 'UI', 'tabs', 'rebalance');
+
+      // Don't send the event again if already in the tab
+      if (tabIndex !== this.props.selectedTab){
+        if (window.ga){
+          window.ga('send', 'event', 'UI', 'tabs', 'rebalance');
+        }
       }
 
       await this.rebalanceCheck();

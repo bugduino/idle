@@ -693,7 +693,7 @@ const globalConfigs = {
         supportedMethods:['wallet'],
         supportedTokens:['USDC','DAI'],
         remoteResources:{'https://instant.0x.org/v3/instant.js':{}},
-        getInitParams: (props,globalConfigs,onSuccess,onClose) => {
+        getInitParams: (props,globalConfigs,buyParams,onSuccess,onClose) => {
           const connectorName = window.RimbleWeb3_context ? window.RimbleWeb3_context.connectorName : null;
           return {
             provider: connectorName && connectorName!=='Injected' && window.RimbleWeb3_context.connector[connectorName.toLowerCase()] ? window.RimbleWeb3_context.connector[window.RimbleWeb3_context.connectorName.toLowerCase()].provider : window.ethereum,
@@ -758,7 +758,7 @@ const globalConfigs = {
             }
           }
         },
-        getInitParams: (props,globalConfigs) => {
+        getInitParams: (props,globalConfigs,buyParams) => {
           const params = {
             type:'swap',
             mode:'popup',
@@ -766,7 +766,7 @@ const globalConfigs = {
             lang:'en',
             pinnedTokens:props.selectedToken,
             defaultPair:`ETH_${props.selectedToken}`,
-            callback:'https://kyberpay-sample.knstats.com/callback',
+            callback:globalConfigs.baseURL,
             paramForwarding:true,
             network: globalConfigs.network.requiredNetwork === 1 ? 'mainnet' : 'test',
             commissionId:'0x4215606a720477178AdFCd5A59775C63138711e8',
@@ -802,7 +802,7 @@ const globalConfigs = {
         supportedTokens:['USDC','DAI','SAI'],
         env:'production',
         remoteResources:{'https://cdn.airswap.io/airswap-instant-widget.js':{}},
-        getInitParams: (props,globalConfigs,onComplete,onClose) => {
+        getInitParams: (props,globalConfigs,buyParams,onComplete,onClose) => {
           return {
             env: 'production',
             mode: 'buy',
@@ -836,7 +836,7 @@ const globalConfigs = {
         supportedTokens:['USDC','DAI','SAI'],
         env:'production',
         remoteResources:{'https://widget.totle.com/latest/dist.js':{}},
-        getInitParams: (props,globalConfigs,onComplete,onClose) => {
+        getInitParams: (props,globalConfigs,buyPA,onComplete,onClose) => {
           return {
             sourceAssetAddress: null,
             sourceAmountDecimal: null,

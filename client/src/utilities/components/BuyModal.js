@@ -114,8 +114,26 @@ class BuyModal extends React.Component {
   }
 
   renderPaymentMethod = async (e,provider,buyParams) => {
+
+    const onSuccess = async (tx) => {
+      // Toast message
+      window.toastProvider.addMessage(`Deposit completed`, {
+        secondaryMessage: `Your ${this.props.selectedToken} have been deposited`,
+        colorTheme: 'light',
+        actionHref: "",
+        actionText: "",
+        variant: "success",
+      });
+
+      this.props.getAccountBalance();
+    };
+
+    const onClose = async (e) => {
+      return true;
+    }
+
     const paymentProvider = globalConfigs.payments.providers[provider];
-    const initParams = paymentProvider && paymentProvider.getInitParams ? paymentProvider.getInitParams(this.props,globalConfigs,buyParams) : null;
+    const initParams = paymentProvider && paymentProvider.getInitParams ? paymentProvider.getInitParams(this.props,globalConfigs,buyParams,onSuccess,onClose) : null;
 
     // Render the Payment Provider
     switch (provider){
