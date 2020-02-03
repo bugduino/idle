@@ -538,7 +538,7 @@ class SmartContractControls extends React.Component {
     }
 
     const _clientProtocolAmounts = paramsForRebalance ? paramsForRebalance[1] : [];
-    const gasLimit = _clientProtocolAmounts.length && _clientProtocolAmounts.indexOf('0') === -1 ? this.functionsUtil.BNify(1500000) : 0;
+    const gasLimit = _clientProtocolAmounts.length && _clientProtocolAmounts.indexOf('0') === -1 ? this.functionsUtil.BNify(1500000) : this.functionsUtil.BNify(1000000);
 
     const callback = (tx) => {
       const needsUpdate = tx.status === 'success' && !this.checkTransactionAlreadyMined(tx);
@@ -615,7 +615,7 @@ class SmartContractControls extends React.Component {
     }
 
     const _clientProtocolAmounts = paramsForMint ? paramsForMint[1] : [];
-    const gasLimit = _clientProtocolAmounts.length && _clientProtocolAmounts.indexOf('0') === -1 ? this.functionsUtil.BNify(1500000) : 0;
+    const gasLimit = _clientProtocolAmounts.length && _clientProtocolAmounts.indexOf('0') === -1 ? this.functionsUtil.BNify(1500000) : this.functionsUtil.BNify(1000000);
 
     const callback = (tx) => {
       const txSucceeded = tx.status === 'success';
@@ -706,7 +706,7 @@ class SmartContractControls extends React.Component {
     }
 
     const _clientProtocolAmounts = paramsForRedeem ? paramsForRedeem[1] : [];
-    const gasLimit = _clientProtocolAmounts.length && _clientProtocolAmounts.indexOf('0') === -1 ? this.functionsUtil.BNify(1500000) : 0;
+    const gasLimit = _clientProtocolAmounts.length && _clientProtocolAmounts.indexOf('0') === -1 ? this.functionsUtil.BNify(1500000) : this.functionsUtil.BNify(1000000);
 
     const callback = (tx) => {
       const txSucceeded = tx.status === 'success';
