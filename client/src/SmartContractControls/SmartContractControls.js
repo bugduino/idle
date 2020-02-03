@@ -348,7 +348,7 @@ class SmartContractControls extends React.Component {
 
       let amountLent = this.state.amountLent;
 
-      this.functionsUtil.customLog('getBalanceOf 2','tokenToRedeem',tokenToRedeem.toString(),'amountLent',this.state.amountLent.toString());
+      // this.functionsUtil.customLog('getBalanceOf 2','tokenToRedeem',tokenToRedeem.toString(),'amountLent',this.state.amountLent.toString());
 
       if (amountLent && this.trimEth(amountLent.toString())>0 && this.trimEth(tokenToRedeem.toString())>0 && parseFloat(this.trimEth(tokenToRedeem.toString()))<parseFloat(this.trimEth(amountLent.toString()))){
         this.functionsUtil.customLogError('tokenToRedeem',tokenToRedeem.toString(),' less than amountLent',amountLent.toString());
