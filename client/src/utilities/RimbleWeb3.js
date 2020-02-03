@@ -738,11 +738,13 @@ class RimbleTransaction extends React.Component {
             callback_receipt(transaction);
           }
 
-          // Wait for manual confirmation
-          if (manualConfirmationTimeoutId){
-            window.clearTimeout(manualConfirmationTimeoutId);
+          // Wait for manual confirmation only for mobile
+          if (this.props.isMobile){
+            if (manualConfirmationTimeoutId){
+              window.clearTimeout(manualConfirmationTimeoutId);
+            }
+            manualConfirmationTimeoutId = window.setTimeout( () => manualConfirmation(hash,60000), 20000);
           }
-          manualConfirmationTimeoutId = window.setTimeout( () => manualConfirmation(hash,60000) , 20000);
         })
         .on("receipt", receiptCallback)
         .on("confirmation", confirmationCallback)

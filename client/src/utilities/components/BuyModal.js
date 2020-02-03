@@ -114,6 +114,18 @@ class BuyModal extends React.Component {
   }
 
   renderPaymentMethod = async (e,provider,buyParams) => {
+    const paymentProvider = globalConfigs.payments.providers[provider];
+    const initParams = paymentProvider && paymentProvider.getInitParams ? paymentProvider.getInitParams(this.props,globalConfigs,buyParams) : null;
+
+    // Render the Payment Provider
+    switch (provider){
+      default:
+        if (typeof paymentProvider.render === 'function'){
+          const currentState = Object.assign({},this.state);
+          paymentProvider.render(initParams,null,currentState,globalConfigs);
+        }
+      break;
+    }
 
     // Send Google Analytics event
     if (window.ga){
@@ -136,18 +148,6 @@ class BuyModal extends React.Component {
       this.closeModal(e);
     } else {
       this.closeModal(e);
-    }
-
-    const paymentProvider = globalConfigs.payments.providers[provider];
-    const initParams = paymentProvider && paymentProvider.getInitParams ? paymentProvider.getInitParams(this.props,globalConfigs,buyParams) : null;
-
-    // Render the Payment Provider
-    switch (provider){
-      default:
-        if (typeof paymentProvider.render === 'function'){
-          paymentProvider.render(initParams,null,this.state,globalConfigs);
-        }
-      break;
     }
   }
 

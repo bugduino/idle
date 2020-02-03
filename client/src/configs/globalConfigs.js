@@ -5,7 +5,7 @@ const env = process.env;
 
 const globalConfigs = {
   appName: 'Idle',
-  baseURL: 'https://beta.idle.finance',
+  baseURL: 'https://idle.finance',
   baseToken: 'ETH',
   countries:{
     'USA':'United States of America',
@@ -135,7 +135,7 @@ const globalConfigs = {
       },
       wallet:{
         defaultProvider:'zeroExInstant',
-        showDefaultOnly:true,
+        showDefaultOnly:false,
         props:{
           imageSrc:'images/ethereum-wallet.svg',
           caption:'Ethereum Wallet',
@@ -724,7 +724,7 @@ const globalConfigs = {
         },
         caption: 'Swap with',
         captionPos: 'top',
-        subcaption: '~ 0.075% fee ~',
+        subcaption: '~ 0.25% fee ~',
         supportedMethods:['wallet'],
         supportedTokens:['USDC','DAI','SAI'],
         remoteResources:{
