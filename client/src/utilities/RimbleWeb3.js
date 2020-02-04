@@ -215,7 +215,7 @@ class RimbleTransaction extends React.Component {
     }
 
     const terminalInfo = globalConfigs.network.providers.terminal;
-    
+
     if (terminalInfo && terminalInfo.enabled && terminalInfo.supportedNetworks.indexOf(globalConfigs.network.requiredNetwork) !== -1 ){
       const TerminalHttpProviderParams = terminalInfo.params;
       const terminalSourceType = localStorage && localStorage.getItem('walletProvider') ? localStorage.getItem('walletProvider') : SourceType.Infura;
@@ -226,7 +226,7 @@ class RimbleTransaction extends React.Component {
       } else if (web3Host){
         TerminalHttpProviderParams.host = web3Host;
       }
-          
+
       const terminalHttpProvider = new TerminalHttpProvider(TerminalHttpProviderParams);
       web3 = new Web3(terminalHttpProvider);
     } else {
@@ -259,7 +259,7 @@ class RimbleTransaction extends React.Component {
         await this.initAccount(context.account);
       }
     }
-    
+
     return web3;
   }
 
@@ -359,7 +359,9 @@ class RimbleTransaction extends React.Component {
     } catch (error) {
       // User denied account access...
       this.functionsUtil.customLog("User cancelled connect request. Error:", error);
-
+      if (error && error.message.includes('MULTIPLE_OPEN_CONNECTIONS_DISALLOWED')) {
+        return;
+      }
       // Reject Connect
       this.rejectAccountConnect(error);
     }
@@ -607,7 +609,7 @@ class RimbleTransaction extends React.Component {
     if (!contract) {
       return this.functionsUtil.customLog(`No contract with name ${contractName}`);
     }
-    
+
     contract = contract.contract;
 
     let manualConfirmationTimeoutId = null;
