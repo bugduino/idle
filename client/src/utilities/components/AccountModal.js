@@ -10,11 +10,8 @@ import {
 } from "rimble-ui";
 import ButtonLoader from '../../ButtonLoader/ButtonLoader.js';
 import ModalCard from './ModalCard';
-import BigNumber from 'bignumber.js';
 import styles from '../../CryptoInput/CryptoInput.module.scss';
 import FunctionsUtil from '../../utilities/FunctionsUtil';
-
-// export default function (props) {
 
 class AccountModal extends React.Component {
 
