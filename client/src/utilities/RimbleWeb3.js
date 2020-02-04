@@ -801,7 +801,7 @@ class RimbleTransaction extends React.Component {
           });
 
           if (callback) {
-            callback(transaction);
+            callback(transaction,error);
           }
         });
     } catch (error) {

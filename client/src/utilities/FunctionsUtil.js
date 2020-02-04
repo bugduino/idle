@@ -51,7 +51,16 @@ class FunctionsUtil {
     return globalConfigs;
   }
   sendGoogleAnalyticsEvent = async (eventData) => {
-    if (globalConfigs.analytics.google.events.enabled && window.ga){
+
+    const googleEventsInfo = globalConfigs.analytics.google.events;
+    if (googleEventsInfo.enabled && window.ga){
+
+      // Check if testnet postfix required
+      if (googleEventsInfo.addPostfixForTestnet && globalConfigs.network.requiredNetwork !== 1){
+        const currentNetwork = globalConfigs.network.availableNetworks[globalConfigs.network.requiredNetwork];
+        eventData.eventCategory += `_${currentNetwork}`;
+      }
+
       await (new Promise( async (resolve, reject) => {
         eventData.hitCallback = () => {
           resolve(true);
