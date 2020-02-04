@@ -52,7 +52,8 @@ const globalConfigs = {
   analytics:{
     google:{
       events:{
-        enabled:true
+        enabled:true, // Enable Google Analytics events
+        addPostfixForTestnet:true // Append testnet to eventCategory
       }
     }
   },

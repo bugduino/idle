@@ -471,7 +471,7 @@ class SmartContractControls extends React.Component {
       this.props.tokenConfig.idle.address,
       this.props.web3.utils.toTwosComplement('-1') // max uint solidity
       // this.props.web3.utils.BN(0) // Disapprova
-    ],null,(tx)=>{
+    ],null,(tx,error)=>{
 
       const newState = {
         isTokenApproved: false,
@@ -482,11 +482,24 @@ class SmartContractControls extends React.Component {
       };
 
       // Send Google Analytics event
-      this.functionsUtil.sendGoogleAnalyticsEvent({
+      const eventData = {
         eventCategory: 'Approve',
         eventAction: token,
         eventLabel: tx.status,
-      });
+      };
+
+      if (error){
+        switch (error.code){
+          case 4001:
+            eventData.eventLabel = 'denied';
+          break;
+          default:
+          break;
+        }
+      }
+
+      // Send Google Analytics event
+      this.functionsUtil.sendGoogleAnalyticsEvent(eventData);
 
       if (tx.status === 'success'){
         newState.isTokenApproved = true;
@@ -611,19 +624,31 @@ class SmartContractControls extends React.Component {
     const _clientProtocolAmounts = paramsForMint ? paramsForMint[1] : [];
     const gasLimit = _clientProtocolAmounts.length && _clientProtocolAmounts.indexOf('0') === -1 ? this.functionsUtil.BNify(1500000) : this.functionsUtil.BNify(1000000);
 
-    const callback = (tx) => {
+    const callback = (tx,error) => {
+
       const txSucceeded = tx.status === 'success';
       const txMined = this.checkTransactionAlreadyMined(tx);
       const needsUpdate = txSucceeded && !txMined;
       this.functionsUtil.customLog('mintIdleToken_callback needsUpdate:',tx,txMined,needsUpdate);
 
-      // Send Google Analytics event
-      this.functionsUtil.sendGoogleAnalyticsEvent({
+      const eventData = {
         eventCategory: 'Deposit',
         eventAction: this.props.selectedToken,
         eventLabel: tx.status,
         eventValue: parseInt(lendAmount)
-      });
+      };
+      if (error){
+        switch (error.code){
+          case 4001:
+            eventData.eventLabel = 'denied';
+          break;
+          default:
+          break;
+        }
+      }
+
+      // Send Google Analytics event
+      this.functionsUtil.sendGoogleAnalyticsEvent(eventData);
 
       const newState = {
         lendingProcessing: false,
@@ -714,19 +739,32 @@ class SmartContractControls extends React.Component {
     const _clientProtocolAmounts = paramsForRedeem ? paramsForRedeem[1] : [];
     const gasLimit = _clientProtocolAmounts.length && _clientProtocolAmounts.indexOf('0') === -1 ? this.functionsUtil.BNify(1500000) : this.functionsUtil.BNify(1000000);
 
-    const callback = (tx) => {
+    const callback = (tx,error) => {
       const txSucceeded = tx.status === 'success';
       const needsUpdate = txSucceeded && !this.checkTransactionAlreadyMined(tx);
       this.functionsUtil.customLog('redeemIdleToken_mined_callback needsUpdate:',tx.status,this.checkTransactionAlreadyMined(tx),needsUpdate);
 
       // Send Google Analytics event
       const redeemType = this.state.partialRedeemEnabled ? 'partial' : 'total';
-      this.functionsUtil.sendGoogleAnalyticsEvent({
+      const eventData = {
         eventCategory: `Redeem_${redeemType}`,
         eventAction: this.props.selectedToken,
         eventLabel: tx.status,
         eventValue: parseInt(redeemAmount)
-      });
+      };
+
+      if (error){
+        switch (error.code){
+          case 4001:
+            eventData.eventLabel = 'denied';
+          break;
+          default:
+          break;
+        }
+      }
+
+      // Send Google Analytics event
+      this.functionsUtil.sendGoogleAnalyticsEvent(eventData);
 
       this.setState({
         [`isLoading${contractName}`]: false,
@@ -2167,7 +2205,7 @@ class SmartContractControls extends React.Component {
                             ) : (
                               <>
                                 <Heading.h4 mt={[3,'15px']} color={'white'} fontSize={2} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
-                                  You still have <strong>{ this.state.oldContractBalanceFormatted.toFixed(4) } {this.props.tokenConfig.migration.oldContract.token}</strong> in the old contract.
+                                  You still have <strong>{ this.state.oldContractBalanceFormatted ? this.state.oldContractBalanceFormatted.toFixed(4) : '0' } {this.props.tokenConfig.migration.oldContract.token}</strong> in the old contract.
                                 </Heading.h4>
                                 { !this.state.migrationContractApproved ? (
                                   <>
