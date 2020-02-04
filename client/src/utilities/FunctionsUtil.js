@@ -47,6 +47,23 @@ class FunctionsUtil {
     }
     return contract.contract;
   }
+  getGlobalConfigs = () => {
+    return globalConfigs;
+  }
+  sendGoogleAnalyticsEvent = async (eventData) => {
+    if (globalConfigs.analytics.google.events.enabled && window.ga){
+      await (new Promise( async (resolve, reject) => {
+        eventData.hitCallback = () => {
+          resolve(true);
+        };
+        eventData.hitCallbackFail = () => {
+          reject();
+        };
+        window.ga('send', 'event', eventData);
+      }));
+    }
+    return false;
+  }
   simpleIDPassUserInfo = (userInfo) => {
     if (!userInfo.address && this.props.account){
       userInfo.address = this.props.account;

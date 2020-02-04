@@ -207,6 +207,7 @@ class Header extends React.Component {
           closeModal={ e => this.closeBuyModal(e) }
           network={this.props.network.current} />
         <AccountModal
+          context={this.props.context}
           account={this.props.account}
           selectedToken={this.props.selectedToken}
           accountBalance={this.props.accountBalance}

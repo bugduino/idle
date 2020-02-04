@@ -215,6 +215,7 @@ class App extends Component {
                         return (
                         <Box>
                           <Header
+                            context={context}
                             account={account}
                             initWeb3={initWeb3}
                             initContract={initContract}

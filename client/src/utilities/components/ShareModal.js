@@ -8,26 +8,41 @@ import {
 import ModalCard from './ModalCard';
 import TwitterShareButton from '../../TwitterShareButton/TwitterShareButton.js';
 import Confetti from 'react-confetti/dist/react-confetti';
+import FunctionsUtil from '../../utilities/FunctionsUtil';
 
 class ShareModal extends React.Component {
 
-  closeModal = async (action) => {
-    if (window.ga){
-      await (new Promise( async (resolve, reject) => {
-        const eventData = {
-           'eventCategory': 'Share', //required
-           'eventAction': action, //required
-           'eventLabel': 'ShareModal',
-           'hitCallback': () => {
-              resolve(true);
-            },
-           'hitCallbackFail' : () => {
-              reject();
-           }
-        };
-        window.ga('send', 'event', eventData);
-      }));
+  // Utils
+  functionsUtil = null;
+  loadUtils(){
+    if (this.functionsUtil){
+      this.functionsUtil.setProps(this.props);
+    } else {
+      this.functionsUtil = new FunctionsUtil(this.props);
+    }
+  }
 
+  componentWillMount() {
+    this.loadUtils();
+  }
+
+  componentDidMount() {
+    this.loadUtils();
+  }
+
+  componentDidUpdate() {
+    this.loadUtils();
+  }
+
+  closeModal = async (action) => {
+    const globalConfigs = this.functionsUtil.getGlobalConfigs();
+    // Send Google Analytics event
+    if (globalConfigs.analytics.google.events.enabled){
+      await this.functionsUtil.sendGoogleAnalyticsEvent({
+        eventCategory: 'Share',
+        eventAction: action,
+        eventLabel: 'ShareModal'
+      });
       this.props.closeModal();
     } else {
       this.props.closeModal();

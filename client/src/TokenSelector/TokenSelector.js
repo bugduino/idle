@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { Flex } from 'rimble-ui';
 import styles from './TokenSelector.module.scss';
+import FunctionsUtil from '../utilities/FunctionsUtil';
 import TokenSelectorItem from './TokenSelectorItem.js';
 
 class TokenSelector extends Component {
@@ -20,13 +21,37 @@ class TokenSelector extends Component {
     });
   }
 
+  // Utils
+  functionsUtil = null;
+  loadUtils(){
+    if (this.functionsUtil){
+      this.functionsUtil.setProps(this.props);
+    } else {
+      this.functionsUtil = new FunctionsUtil(this.props);
+    }
+  }
+
+  componentWillMount() {
+    this.loadUtils();
+  }
+
+  componentDidMount() {
+    this.loadUtils();
+  }
+
+  componentDidUpdate() {
+    this.loadUtils();
+  }
+
   selectToken(token,tokenInfo){
     if (tokenInfo.enabled){
-
+      
       // Send Google Analytics event
-      if (window.ga){
-        window.ga('send', 'event', 'UI', 'select_token', token);
-      }
+      this.functionsUtil.sendGoogleAnalyticsEvent({
+        eventCategory: 'UI',
+        eventAction: 'select_token',
+        eventLabel: token
+      });
 
       this.toggleOpen();
       this.props.setSelectedToken(token);

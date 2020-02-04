@@ -56,9 +56,11 @@ class WelcomeModal extends React.Component {
     this.functionsUtil.simpleIDPassUserInfo({email:this.state.email});
 
     // Send Google Analytics event
-    if (window.ga){
-      window.ga('send', 'event', 'UI', 'send_email', 'WelcomeModal');
-    }
+    this.functionsUtil.sendGoogleAnalyticsEvent({
+      eventCategory: 'UI',
+      eventAction: 'send_email',
+      eventLabel: 'WelcomeModal'
+    });
 
     axios.post(globalConfigs.newsletterSubscription.endpoint, {
       'email': this.state.email
@@ -87,22 +89,13 @@ class WelcomeModal extends React.Component {
   closeModal = async () => {
     this.functionsUtil.simpleIDPassUserInfo({email:this.state.email});
 
-    if (window.ga){
-      await (new Promise( async (resolve, reject) => {
-        const eventData = {
-           'eventCategory': 'UI',
-           'eventAction': 'continue_without_email',
-           'eventLabel': 'WelcomeModal',
-           'hitCallback': () => {
-              resolve(true);
-            },
-           'hitCallbackFail' : () => {
-              reject();
-           }
-        };
-        window.ga('send', 'event', eventData);
-      }));
-
+    // Send Google Analytics event
+    if (globalConfigs.analytics.google.events.enabled){
+      await this.functionsUtil.sendGoogleAnalyticsEvent({
+        eventCategory: 'UI',
+        eventAction: 'continue_without_email',
+        eventLabel: 'WelcomeModal'
+      });
       this.props.closeModal();
     } else {
       this.props.closeModal();

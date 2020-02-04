@@ -11,10 +11,11 @@ import {
   Loader
 } from "rimble-ui";
 import styles from './Header.module.scss';
-import ModalCard from './ModalCard';
-import ImageButton from '../../ImageButton/ImageButton';
-import TransactionFeeModal from "./TransactionFeeModal";
-import Web3ConnectionButtons from "../../Web3ConnectionButtons/Web3ConnectionButtons";
+import ModalCard from './ModalCard.js';
+import FunctionsUtil from '../FunctionsUtil.js';
+import ImageButton from '../../ImageButton/ImageButton.js';
+import TransactionFeeModal from "./TransactionFeeModal.js";
+import Web3ConnectionButtons from "../../Web3ConnectionButtons/Web3ConnectionButtons.js";
 
 import {
   Link as RouterLink,
@@ -29,6 +30,16 @@ class ConnectionModal extends React.Component {
     newToEthereumChoice: null,
     showInstructions: false
   };
+
+  // Utils
+  functionsUtil = null;
+  loadUtils(){
+    if (this.functionsUtil){
+      this.functionsUtil.setProps(this.props);
+    } else {
+      this.functionsUtil = new FunctionsUtil(this.props);
+    }
+  }
 
   toggleShowTxFees = e => {
     e.preventDefault();
@@ -52,7 +63,12 @@ class ConnectionModal extends React.Component {
   }
 
   componentDidMount = () => {
+    this.loadUtils();
     this.setStoredSection();
+  }
+
+  componentDidUpdate = () => {
+    this.loadUtils();
   }
 
   resetModal = e => {
@@ -68,9 +84,11 @@ class ConnectionModal extends React.Component {
     let walletProvider = connectorName === 'Injected' ? name : connectorName;
 
     // Send Google Analytics event
-    if (window.ga){
-      window.ga('send', 'event', 'Connect', 'select_wallet', walletProvider);
-    }
+    this.functionsUtil.sendGoogleAnalyticsEvent({
+      eventCategory: 'Connect',
+      eventAction: 'select_wallet',
+      eventLabel: walletProvider
+    });
 
     if (localStorage) {
       localStorage.setItem('walletProvider', walletProvider);
@@ -127,9 +145,11 @@ class ConnectionModal extends React.Component {
 
     if (currentSection!=='instructions'){
       // Send Google Analytics event
-      if (window.ga){
-        window.ga('send', 'event', 'Connect', 'select_mode', currentSection);
-      }
+      this.functionsUtil.sendGoogleAnalyticsEvent({
+        eventCategory: 'Connect',
+        eventAction: 'select_mode',
+        eventLabel: currentSection
+      });
 
       if (localStorage){
         localStorage.setItem('currentSection',currentSection);

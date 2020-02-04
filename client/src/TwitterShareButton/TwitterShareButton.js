@@ -6,16 +6,39 @@ import {
   Text
 } from "rimble-ui";
 import styles from './TwitterShareButton.module.scss';
+import FunctionsUtil from '../utilities/FunctionsUtil';
 
 class TwitterShareButton extends Component {
 
+  // Utils
   functionsUtil = null;
+  loadUtils(){
+    if (this.functionsUtil){
+      this.functionsUtil.setProps(this.props);
+    } else {
+      this.functionsUtil = new FunctionsUtil(this.props);
+    }
+  }
+
+  componentWillMount() {
+    this.loadUtils();
+  }
+
+  componentDidMount() {
+    this.loadUtils();
+  }
+
+  componentDidUpdate() {
+    this.loadUtils();
+  }
 
   share = () => {
     // Send Google Analytics event
-    if (window.ga){
-      window.ga('send', 'event', 'Share', 'twitter', this.props.parent);
-    }
+    this.functionsUtil.sendGoogleAnalyticsEvent({
+      eventCategory: 'Share',
+      eventAction: 'twitter',
+      eventLabel: this.props.parent
+    });
 
     const w = Math.min(window.innerWidth,600);
     const h = 350;

@@ -341,17 +341,50 @@ class RimbleTransaction extends React.Component {
         const walletProvider = localStorage && localStorage.getItem('walletProvider') ? localStorage.getItem('walletProvider') : 'Infura';
 
         // Send Google Analytics connection event
-        if (window.ga){
-          window.ga('send', 'event', 'Connect', 'connected', walletProvider);
-        }
-
-        // Custom address
-        this.setState({ account });
+        this.functionsUtil.sendGoogleAnalyticsEvent({
+          eventCategory: 'Connect',
+          eventAction: 'connected',
+          eventLabel: walletProvider
+        });
 
         // After account is complete, get the balance
         this.getAccountBalance();
 
+        /*
+        if (this.state.web3Subscription){
+          // unsubscribes the subscription
+          this.state.web3Subscription.unsubscribe(function(error, success){
+            if(success){
+              console.log('web3 subscription - Successfully unsubscribed!');
+            } else {
+              console.log('web3 subscription - unsubscribe error',error);
+            }
+          });
+        }
 
+        const web3SocketProvider = new Web3(new Web3.providers.WebsocketProvider(`wss://kovan.infura.io/ws/v3/${INFURA_KEY}`));
+
+        const topics = [null];//'0x00000000000000000000000'+this.props.tokenConfig.idle.address.replace('x','');
+
+        const web3Subscription = web3SocketProvider.eth.subscribe('logs', {
+            address: [this.props.tokenConfig.address],
+            topics
+        }, function(error, result){
+            // console.log('web3 subscription',error,result);
+        })
+        .on("data", function(log){
+            console.log('web3 subscription - data',log);
+        })
+        .on("changed", function(log){
+          console.log('web3 subscription - changed',log);
+        });
+
+        console.log('web3Subscription',web3Subscription);
+
+        this.setState({ web3Subscription, account });
+        */
+
+        this.setState({ account });
         // TODO subscribe for account changes, no polling
         // set a state flag which indicates if the subscribe handler has been
         // called at least once
@@ -964,6 +997,7 @@ class RimbleTransaction extends React.Component {
     accountBalance: null,
     accountBalanceDAI: null,
     accountBalanceLow: null,
+    web3Subscription: null,
     context:null,
     web3: null,
     simpleID: null,

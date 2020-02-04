@@ -95,9 +95,11 @@ class SmartContractControls extends React.Component {
 
       const initParams = defaultProvider.getInitParams ? defaultProvider.getInitParams(this.props,globalConfigs,null,onSuccess,onClose) : null;
 
-      if (window.ga){
-        window.ga('send', 'event', 'UI', 'buy_with_eth', defaultProviderName);
-      }
+      this.functionsUtil.sendGoogleAnalyticsEvent({
+        eventCategory: 'UI',
+        eventAction: 'buy_with_eth',
+        eventLabel: defaultProviderName,
+      });
 
       return defaultProvider.render ? defaultProvider.render(initParams,amount,this.props) : null;
     }
@@ -480,9 +482,11 @@ class SmartContractControls extends React.Component {
       };
 
       // Send Google Analytics event
-      if (window.ga){
-        window.ga('send', 'event', 'Approve', token, tx.status);
-      }
+      this.functionsUtil.sendGoogleAnalyticsEvent({
+        eventCategory: 'Approve',
+        eventAction: token,
+        eventLabel: tx.status,
+      });
 
       if (tx.status === 'success'){
         newState.isTokenApproved = true;
@@ -530,9 +534,11 @@ class SmartContractControls extends React.Component {
       const needsUpdate = tx.status === 'success' && !this.checkTransactionAlreadyMined(tx);
 
       // Send Google Analytics event
-      if (window.ga){
-        window.ga('send', 'event', 'Rebalance', this.props.selectedToken, tx.status);
-      }
+      this.functionsUtil.sendGoogleAnalyticsEvent({
+        eventCategory: 'Rebalance',
+        eventAction: this.props.selectedToken,
+        eventLabel: tx.status,
+      });
 
       this.setState({
         needsUpdate: needsUpdate,
@@ -573,7 +579,9 @@ class SmartContractControls extends React.Component {
       return this.setState({genericError: `Please insert an amount of ${this.props.selectedToken} to lend`});
     }
 
-    const value = this.functionsUtil.normalizeTokenAmount(this.state.lendAmount,this.state.tokenDecimals).toString();
+    const lendAmount = this.state.lendAmount;
+
+    const value = this.functionsUtil.normalizeTokenAmount(lendAmount,this.state.tokenDecimals).toString();
 
     // check if Idle is approved for DAI
     if (this.props.account && !this.state.isTokenApproved) {
@@ -610,9 +618,12 @@ class SmartContractControls extends React.Component {
       this.functionsUtil.customLog('mintIdleToken_callback needsUpdate:',tx,txMined,needsUpdate);
 
       // Send Google Analytics event
-      if (window.ga){
-        window.ga('send', 'event', 'Deposit', this.props.selectedToken, tx.status, parseInt(value.toString().substr(0,18)));
-      }
+      this.functionsUtil.sendGoogleAnalyticsEvent({
+        eventCategory: 'Deposit',
+        eventAction: this.props.selectedToken,
+        eventLabel: tx.status,
+        eventValue: parseInt(lendAmount)
+      });
 
       const newState = {
         lendingProcessing: false,
@@ -623,6 +634,13 @@ class SmartContractControls extends React.Component {
       };
 
       if (txSucceeded){
+        // Reset lending amount
+        this.handleChangeAmount({
+          target:{
+            value: ''
+          }
+        });
+
         this.selectTab({ preventDefault:()=>{} },'2');
         // Call mint callback after loading funds
         newState.callMintCallback = true;
@@ -677,7 +695,9 @@ class SmartContractControls extends React.Component {
       redeemProcessing: true
     }));
 
-    const idleTokenToRedeem = this.functionsUtil.normalizeTokenAmount(this.state.redeemAmount,18).toString();
+    const redeemAmount = this.state.redeemAmount;
+
+    const idleTokenToRedeem = this.functionsUtil.normalizeTokenAmount(redeemAmount,18).toString();
 
     this.functionsUtil.customLog('redeem',idleTokenToRedeem);
 
@@ -700,10 +720,13 @@ class SmartContractControls extends React.Component {
       this.functionsUtil.customLog('redeemIdleToken_mined_callback needsUpdate:',tx.status,this.checkTransactionAlreadyMined(tx),needsUpdate);
 
       // Send Google Analytics event
-      if (window.ga){
-        const redeemType = this.state.partialRedeemEnabled ? 'partial' : 'total';
-        window.ga('send', 'event', `Redeem_${redeemType}`, this.props.selectedToken, tx.status, parseInt(idleTokenToRedeem.toString().substr(0,18)));
-      }
+      const redeemType = this.state.partialRedeemEnabled ? 'partial' : 'total';
+      this.functionsUtil.sendGoogleAnalyticsEvent({
+        eventCategory: `Redeem_${redeemType}`,
+        eventAction: this.props.selectedToken,
+        eventLabel: tx.status,
+        eventValue: parseInt(redeemAmount)
+      });
 
       this.setState({
         [`isLoading${contractName}`]: false,
@@ -711,6 +734,16 @@ class SmartContractControls extends React.Component {
         redeemTx:null,
         needsUpdate
       });
+
+      if (txSucceeded){
+        // Reset lending amount
+        this.handleChangeAmountRedeem({
+          target:{
+            value: ''
+          }
+        });
+      }
+
     };
 
     const callback_receipt = (tx) => {
@@ -1444,9 +1477,11 @@ class SmartContractControls extends React.Component {
         const callback = tx => {
 
           // Send Google Analytics event
-          if (window.ga){
-            window.ga('send', 'event', 'Migrate', 'approve', tx.status);
-          }
+          this.functionsUtil.sendGoogleAnalyticsEvent({
+            eventCategory: 'Migrate',
+            eventAction: 'approve',
+            eventLabel: tx.status
+          });
 
           const newState = {
             isApprovingMigrationContract: false,
@@ -1493,7 +1528,8 @@ class SmartContractControls extends React.Component {
       } else {
         // Call migration contract function to migrate funds
 
-        const toMigrate = this.functionsUtil.BNify(this.state.oldContractBalance).toString();
+        const oldContractBalance = this.state.oldContractBalance;
+        const toMigrate = this.functionsUtil.BNify(oldContractBalance).toString();
 
         const callback = tx => {
 
@@ -1504,9 +1540,12 @@ class SmartContractControls extends React.Component {
           };
 
           // Send Google Analytics event
-          if (window.ga){
-            window.ga('send', 'event', 'Migrate', migrationMethod, tx.status);
-          }
+          this.functionsUtil.sendGoogleAnalyticsEvent({
+            eventCategory: 'Migrate',
+            eventAction: migrationMethod,
+            eventLabel: tx.status,
+            eventValue: parseInt(oldContractBalance)
+          });
 
           if (tx.status === 'success'){
             newState.migrationError = false; // Reset error
@@ -1768,9 +1807,11 @@ class SmartContractControls extends React.Component {
     if (tabIndex === '3') {
       // Don't send the event again if already in the tab
       if (tabChanged){
-        if (window.ga){
-          window.ga('send', 'event', 'UI', 'tabs', 'rebalance');
-        }
+        this.functionsUtil.sendGoogleAnalyticsEvent({
+          eventCategory: 'UI',
+          eventAction: 'tabs',
+          eventLabel: 'rebalance'
+        });
       }
 
       await this.rebalanceCheck();

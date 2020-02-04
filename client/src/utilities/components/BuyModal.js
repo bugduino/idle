@@ -12,6 +12,7 @@ import ModalCard from './ModalCard';
 import ImageButton from '../../ImageButton/ImageButton';
 import styles from './Header.module.scss';
 import globalConfigs from '../../configs/globalConfigs';
+import FunctionsUtil from '../../utilities/FunctionsUtil';
 
 class BuyModal extends React.Component {
 
@@ -96,7 +97,23 @@ class BuyModal extends React.Component {
     });
   }
 
+  // Utils
+  functionsUtil = null;
+  loadUtils(){
+    if (this.functionsUtil){
+      this.functionsUtil.setProps(this.props);
+    } else {
+      this.functionsUtil = new FunctionsUtil(this.props);
+    }
+  }
+
+  componentWillMount() {
+    this.loadUtils();
+  }
+
   async componentDidMount() {
+
+    this.loadUtils();
 
     this.setState({
       selectToken:this.props.buyToken
@@ -106,6 +123,9 @@ class BuyModal extends React.Component {
   }
 
   async componentDidUpdate(prevProps) {
+
+    this.loadUtils();
+
     if ( this.props.buyToken && prevProps.buyToken !== this.props.buyToken){
       this.selectToken(null,this.props.buyToken);
     }
@@ -146,22 +166,12 @@ class BuyModal extends React.Component {
     }
 
     // Send Google Analytics event
-    if (window.ga){
-
-      await (new Promise( async (resolve, reject) => {
-        const eventData = {
-           'eventCategory': 'Buy', //required
-           'eventAction': 'select_provider', //required
-           'eventLabel': provider,
-           'hitCallback': () => {
-              resolve(true);
-            },
-           'hitCallbackFail' : () => {
-              reject();
-           }
-        };
-        window.ga('send', 'event', eventData);
-      }));
+    if (globalConfigs.analytics.google.events.enabled){
+      await this.functionsUtil.sendGoogleAnalyticsEvent({
+        eventCategory: 'Buy',
+        eventAction: 'select_provider',
+        eventLabel: provider
+      });
 
       this.closeModal(e);
     } else {
@@ -306,9 +316,11 @@ class BuyModal extends React.Component {
       const availableProviders = this.getAvailablePaymentProviders(selectedMethod,this.state.selectedToken);
 
       // Send Google Analytics event
-      if (window.ga){
-        window.ga('send', 'event', 'Buy', 'select_method', selectedMethod);
-      }
+      this.functionsUtil.sendGoogleAnalyticsEvent({
+        eventCategory: 'Buy',
+        eventAction: 'select_method',
+        eventLabel: selectedMethod
+      });
 
       this.setState({
         availableProviders,
@@ -323,9 +335,11 @@ class BuyModal extends React.Component {
     }
 
     // Send Google Analytics event
-    if (window.ga){
-      window.ga('send', 'event', 'Buy', 'select_token', selectedToken);
-    }
+    this.functionsUtil.sendGoogleAnalyticsEvent({
+      eventCategory: 'Buy',
+      eventAction: 'select_token',
+      eventLabel: selectedToken
+    });
 
     this.setState({ selectedToken }, async () => {
       if (this.state.selectedProvider){
@@ -337,8 +351,12 @@ class BuyModal extends React.Component {
   handleCountryChange = selectedCountry => {
 
     // Send Google Analytics event
-    if (window.ga && selectedCountry){
-      window.ga('send', 'event', 'Buy', 'select_country', selectedCountry.value);
+    if (globalConfigs.analytics.google.events.enabled && selectedCountry){
+      this.functionsUtil.sendGoogleAnalyticsEvent({
+        eventCategory: 'Buy',
+        eventAction: 'select_country',
+        eventLabel: selectedCountry.value
+      });
     }
 
     this.setState({

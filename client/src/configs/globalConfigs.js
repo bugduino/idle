@@ -49,6 +49,13 @@ const globalConfigs = {
   newsletterSubscription:{
     endpoint:'https://dev.lapisgroup.it/idle/newsletter.php'
   },
+  analytics:{
+    google:{
+      events:{
+        enabled:true
+      }
+    }
+  },
   modals:{ // Enable modals
     first_deposit_referral:false, // Referral share modal
     first_deposit_share:true, // First deposit share modal
