@@ -40,8 +40,24 @@ class App extends Component {
     buyModalOpened: false,
     connectorName:null,
     walletProvider:null,
-    connecting:false
+    connecting:false,
+    toastMessageProps:null
   };
+
+  closeToastMessage = (e) => {
+    if (e){
+      e.preventDefault();
+    }
+    this.setState({
+      toastMessageProps:null
+    });
+  }
+
+  showToastMessage = (props) => {
+    this.setState({
+      toastMessageProps:props
+    });
+  }
 
   async selectTab(e, tabIndex) {
     return this.setState(state => ({...state, selectedTab: tabIndex}));
@@ -98,6 +114,9 @@ class App extends Component {
     if (window.self !== window.top && window.top.location.href.indexOf(globalConfigs.baseURL) !== -1 && typeof window.parent.closeIframe === 'function' ){
       window.parent.closeIframe(window.self);
     }
+
+    window.showToastMessage = this.showToastMessage;
+    window.closeToastMessage = this.closeToastMessage;
   }
 
   handleWindowSizeChange = () => {
@@ -279,21 +298,23 @@ class App extends Component {
                               <Route exact path="/">
                                 <Landing
                                   web3={web3}
+                                  account={account}
+                                  isMobile={isMobile}
                                   simpleID={simpleID}
                                   contracts={contracts}
-                                  isMobile={isMobile}
-                                  account={account}
-                                  connecting={this.state.connecting}
-                                  getAccountBalance={getAccountBalance}
                                   accountBalance={accountBalance}
-                                  accountBalanceToken={accountBalanceToken}
-                                  accountBalanceLow={accountBalanceLow}
-                                  openBuyModal={this.openBuyModal.bind(this)}
-                                  updateSelectedTab={this.selectTab.bind(this)}
+                                  connecting={this.state.connecting}
                                   selectedTab={this.state.selectedTab}
-                                  selectedToken={this.state.selectedToken}
-                                  availableTokens={this.state.availableTokens}
                                   tokenConfig={this.state.tokenConfig}
+                                  accountBalanceLow={accountBalanceLow}
+                                  getAccountBalance={getAccountBalance}
+                                  selectedToken={this.state.selectedToken}
+                                  accountBalanceToken={accountBalanceToken}
+                                  closeToastMessage={this.closeToastMessage}
+                                  openBuyModal={this.openBuyModal.bind(this)}
+                                  availableTokens={this.state.availableTokens}
+                                  updateSelectedTab={this.selectTab.bind(this)}
+                                  toastMessageProps={this.state.toastMessageProps}
                                   setSelectedToken={ e => { this.setSelectedToken(e) } }
                                   network={network} />
 

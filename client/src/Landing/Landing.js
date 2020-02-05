@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
-import { Image, Flex, Box, Heading, Link, Text, Card, Icon } from 'rimble-ui'
+import { Image, Flex, Box, Heading, Link, Text, Card, Icon, ToastMessage } from 'rimble-ui'
 import Faq from '../Faq/Faq';
 import Footer from '../Footer/Footer';
 import styles from './Landing.module.scss';
 import LandingForm from '../LandingForm/LandingForm';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import NewsletterForm from '../NewsletterForm/NewsletterForm';
+import FloatingToastMessage from '../FloatingToastMessage/FloatingToastMessage';
 // import DefiScoreTable from '../DefiScoreTable/DefiScoreTable';
 // import EquityChart from '../EquityChart/EquityChart';
 // import availableTokens from '../configs/availableTokens';
@@ -28,7 +29,7 @@ class Landing extends Component {
     protocolsAllocations:null,
     totalAllocation:null,
     runConfetti:false,
-    randomAllocationEnabled:false
+    randomAllocationEnabled:false,
   };
 
   // Clear all the timeouts
@@ -798,6 +799,11 @@ class Landing extends Component {
         </Flex>
 
         <Footer />
+
+        {
+          this.props.toastMessageProps &&
+            <FloatingToastMessage isMobile={this.props.isMobile} {...this.props.toastMessageProps} handleClose={this.props.closeToastMessage} />
+        }
       </Box>
     );
   }
