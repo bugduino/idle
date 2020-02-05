@@ -53,7 +53,7 @@ class FunctionsUtil {
   sendGoogleAnalyticsEvent = async (eventData) => {
 
     const googleEventsInfo = globalConfigs.analytics.google.events;
-    if (googleEventsInfo.enabled && window.ga){
+    if (googleEventsInfo.enabled && window.ga && ( googleEventsInfo.debugEnabled || window.location.origin.toLowerCase().includes(globalConfigs.baseURL.toLowerCase()))){
 
       // Check if testnet postfix required
       if (googleEventsInfo.addPostfixForTestnet && globalConfigs.network.requiredNetwork !== 1){
