@@ -352,7 +352,7 @@ class RimbleTransaction extends React.Component {
 
         if (this.state.web3SocketProvider){
           // unsubscribes the subscription
-          console.log('Clear all web3SocketProvider subscriptions');
+          this.functionsUtil.customLog('Clear all web3SocketProvider subscriptions');
           this.state.web3SocketProvider.clearSubscriptions();
         }
 

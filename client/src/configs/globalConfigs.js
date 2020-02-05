@@ -53,7 +53,8 @@ const globalConfigs = {
     google:{
       events:{
         enabled:true, // Enable Google Analytics events
-        addPostfixForTestnet:true // Append testnet to eventCategory
+        addPostfixForTestnet:true, // Append testnet to eventCategory
+        debugEnabled: false // Enable sending for test environments
       }
     }
   },
@@ -67,7 +68,7 @@ const globalConfigs = {
   },
   network:{ // Network configurations
     availableNetworks:{
-      1:'Main',
+      1:'Mainnet',
       3:'Ropsten',
       4:'Rinkeby',
       42:'Kovan'
@@ -379,7 +380,7 @@ const globalConfigs = {
         subcaption:`~ 1.5% fee ~\nGBP ONLY`,
         supportedMethods:['bank'],
         supportedCountries:['GBR','IND'],
-        supportedTokens:['DAI','SAI','USDC'],
+        supportedTokens:['ETH','DAI','SAI','USDC'],
         remoteResources:{'https://global.transak.com/v1/widget.js':{}},
         env:'prod',
         badge:{
@@ -704,6 +705,8 @@ const globalConfigs = {
         getInitParams: (props,globalConfigs,buyParams,onSuccess,onClose) => {
           const connectorName = window.RimbleWeb3_context ? window.RimbleWeb3_context.connectorName : null;
           return {
+            networkId: globalConfigs.network.requiredNetwork,
+            chainId: globalConfigs.network.requiredNetwork,
             provider: connectorName && connectorName!=='Injected' && window.RimbleWeb3_context.connector[connectorName.toLowerCase()] ? window.RimbleWeb3_context.connector[window.RimbleWeb3_context.connectorName.toLowerCase()].provider : window.ethereum,
             orderSource: props.tokenConfig.zeroExInstant.orderSource,
             affiliateInfo: props.tokenConfig.zeroExInstant.affiliateInfo,
@@ -736,6 +739,32 @@ const globalConfigs = {
         subcaption: '~ 0.25% fee ~',
         supportedMethods:['wallet'],
         supportedTokens:['USDC','DAI','SAI'],
+        web3Subscription:{ // Data for web3 subscription
+          enabled: true,
+          contractAddress: '0x818e6fecd516ecc3849daf6845e3ec868087b755',
+          decodeLogsData: [
+            {
+              "internalType": "address",
+              "name": "_startAddress",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "_tokenAddress",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "_startAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "_tokenAmount",
+              "type": "uint256"
+            },
+          ],
+        },
         remoteResources:{
           'https://widget.kyber.network/v0.7.4/widget.css':{},
           'https://widget.kyber.network/v0.7.4/widget.js':{
@@ -774,7 +803,7 @@ const globalConfigs = {
             lang:'en',
             pinnedTokens:props.selectedToken,
             defaultPair:`ETH_${props.selectedToken}`,
-            callback:globalConfigs.baseURL,
+            // callback:globalConfigs.baseURL,
             paramForwarding:true,
             network: globalConfigs.network.requiredNetwork === 1 ? 'mainnet' : 'test',
             commissionId:'0x4215606a720477178AdFCd5A59775C63138711e8',
@@ -792,6 +821,32 @@ const globalConfigs = {
           const a = document.getElementById(buttonId);
           if (a){
             a.click();
+
+            // Observe for pending transaction
+            if (window.MutationObserver){
+              setTimeout(() => {
+
+                const observer = new window.MutationObserver(function(mutations) {
+                  mutations.forEach((m,i) => {
+                    if (m.addedNodes.length && m.target.className === 'kyber_widget-broadcast'){
+                      
+                      // Show persistent toast message
+                      window.showToastMessage({
+                        variant:'processing',
+                        message:'Pending deposit',
+                        secondaryMessage:'kyberSwap is processing your request'
+                      });
+
+                      observer.disconnect();
+                    } else if (m.target.id === 'kyber-widget' && m.removedNodes.length && m.removedNodes[0].firstChild.className.includes('kyber_widget-widget-container')) {
+                      observer.disconnect();
+                    }
+                  });
+                });
+                const target = document.querySelector('#kyber-widget');
+                observer.observe(target, { childList: true, subtree: true });
+              },1000);
+            }
           }
         }
       },
@@ -844,7 +899,7 @@ const globalConfigs = {
         supportedTokens:['USDC','DAI','SAI'],
         env:'production',
         remoteResources:{'https://widget.totle.com/latest/dist.js':{}},
-        getInitParams: (props,globalConfigs,buyPA,onComplete,onClose) => {
+        getInitParams: (props,globalConfigs,buyParams,onComplete,onClose) => {
           return {
             sourceAssetAddress: null,
             sourceAmountDecimal: null,
