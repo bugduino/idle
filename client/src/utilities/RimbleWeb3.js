@@ -87,10 +87,12 @@ class RimbleTransaction extends React.Component {
   functionsUtil = null;
 
   loadUtils(){
+    const props = Object.assign({},this.props);
+    props.contracts = this.state.contracts;
     if (this.functionsUtil){
-      this.functionsUtil.setProps(this.props);
+      this.functionsUtil.setProps(props);
     } else {
-      this.functionsUtil = new FunctionsUtil(this.props);
+      this.functionsUtil = new FunctionsUtil(props);
     }
   }
 
@@ -100,8 +102,6 @@ class RimbleTransaction extends React.Component {
   }
 
   componentDidUpdate = async (prevProps, prevState) => {
-
-    this.loadUtils();
 
     if (localStorage){
       const context = JSON.parse(localStorage.getItem('context'));
@@ -113,6 +113,8 @@ class RimbleTransaction extends React.Component {
     if (prevProps.selectedToken !== this.props.selectedToken){
       await this.initializeContracts();
     }
+
+    this.loadUtils();
   }
 
   // Initialize a web3 provider
@@ -347,44 +349,199 @@ class RimbleTransaction extends React.Component {
           eventLabel: walletProvider
         });
 
+
+        if (this.state.web3SocketProvider){
+          // unsubscribes the subscription
+          console.log('Clear all web3SocketProvider subscriptions');
+          this.state.web3SocketProvider.clearSubscriptions();
+        }
+
+        const networkName = globalConfigs.network.availableNetworks[globalConfigs.network.requiredNetwork].toLowerCase();
+        const web3SocketProvider = new Web3(new Web3.providers.WebsocketProvider(`wss://${networkName}.infura.io/ws/v3/${INFURA_KEY}`));
+
+        // Subscribe to logs
+        const addressTopic = '0x00000000000000000000000'+account.toLowerCase().replace('x','');
+
+        // Subscribe for payment methods
+        const paymentProviders = Object.keys(globalConfigs.payments.providers).filter((providerName,i) => { const providerInfo = globalConfigs.payments.providers[providerName]; return providerInfo.enabled && providerInfo.web3Subscription && providerInfo.web3Subscription.enabled  })
+        if (paymentProviders && paymentProviders.length){
+          paymentProviders.forEach((providerName,i) => {
+            const providerInfo = globalConfigs.payments.providers[providerName];
+
+            this.functionsUtil.customLog(`Subscribe to ${providerName} logs`);
+
+            // Subscribe for deposit transactions
+            web3SocketProvider.eth.subscribe('logs', {
+                address: [account,providerInfo.web3Subscription.contractAddress],
+                topics: [null,[addressTopic]]
+            }, function(error, result){
+              
+            })
+            .on("data", async (log) => {
+              this.functionsUtil.customLog(providerName,'logs',log);
+
+              if (log){
+                const txHash = log.transactionHash;
+                const subscribedTransactions = this.state.subscribedTransactions;
+                const walletAddressFound = log.topics.filter((addr,i) => { return addr.toLowerCase().includes(addressTopic); });
+
+                this.functionsUtil.customLog(providerName,txHash,walletAddressFound);
+
+                if (!subscribedTransactions[txHash] && walletAddressFound.length){
+                  const decodedLogs = web3SocketProvider.eth.abi.decodeLog(providerInfo.web3Subscription.decodeLogsData,log.data,log.topics);
+
+                  this.functionsUtil.customLog(providerName,txHash,decodedLogs);
+
+                  if (decodedLogs && decodedLogs._tokenAmount && decodedLogs._tokenAddress && decodedLogs._tokenAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase()){
+
+                    const receiptCallback = async (tx,decodedLogs) => {
+                      const tokenDecimals = await this.getTokenDecimals();
+                      const tokenAmount = this.functionsUtil.BNify(decodedLogs._tokenAmount);
+                      const tokenAmountFixed = this.functionsUtil.fixTokenDecimals(tokenAmount,tokenDecimals);
+                      const tokenAmountFormatted = parseFloat(tokenAmountFixed.toString()).toFixed(2);
+                      const isProviderTx = tx.from.toLowerCase() === account.toLowerCase() && tx.to.toLowerCase() === providerInfo.web3Subscription.contractAddress.toLowerCase();
+
+                      if (isProviderTx){
+
+                        // Mined
+                        if (tx.blockNumber && tx.status){
+                          // Toast message
+                          window.showToastMessage({
+                            variant:'success',
+                            message:'Deposit completed',
+                            secondaryMessage:`${providerName} sent you ${tokenAmountFormatted} ${this.props.selectedToken}`,
+                          });
+
+                          // Update User Balance
+                          this.getAccountBalance(tokenAmount);
+                        } else {
+                          // Toast message
+                          window.showToastMessage({
+                            variant:'processing',
+                            message:'Deposit pending',
+                            secondaryMessage:`${providerName} is sending ${tokenAmountFormatted} ${this.props.selectedToken}`,
+                          });
+                        }
+                      }
+                    }
+
+                    let checkTransactionReceiptTimeoutID = null;
+
+                    const checkTransactionReceipt = (txHash,decodedLogs) => {
+                      if (checkTransactionReceiptTimeoutID){
+                        window.clearTimeout(checkTransactionReceiptTimeoutID);
+                      }
+                      web3SocketProvider.eth.getTransactionReceipt(txHash,(err,txReceipt)=>{
+                        if (!err){
+                          if (txReceipt){
+                            receiptCallback(txReceipt,decodedLogs);
+                          } else{
+                            checkTransactionReceiptTimeoutID = window.setTimeout(() => { checkTransactionReceipt(txHash,decodedLogs) },3000);
+                          }
+                        }
+                      });
+                    }
+
+                    checkTransactionReceipt(txHash,decodedLogs);
+
+                    subscribedTransactions[txHash] = log;
+                    this.setState({subscribedTransactions});
+                  }
+                }
+              }
+            });
+          })
+        }
+
+        // Subscribe for deposit transactions
+        web3SocketProvider.eth.subscribe('logs', {
+            address: [account,this.props.tokenConfig.address],
+            topics: [null,null,[addressTopic]]
+        }, function(error, result){
+
+        })
+        .on("data", async (log) => {
+          if (log){
+            const txHash = log.transactionHash;
+            const subscribedTransactions = this.state.subscribedTransactions;
+            const walletAddressFound = log.topics.filter((addr,i) => { return addr.toLowerCase().includes(addressTopic); });
+
+            if (!subscribedTransactions[txHash] && walletAddressFound.length){
+              const decodedLogs = web3SocketProvider.eth.abi.decodeLog([
+                {
+                  "internalType": "uint256",
+                  "name": "_tokenAmount",
+                  "type": "uint256"
+                },
+              ],log.data,log.topics);
+
+              if (decodedLogs && decodedLogs._tokenAmount){
+
+                const receiptCallback = async (tx,decodedLogs) => {
+                  const tokenDecimals = await this.getTokenDecimals();
+                  const tokenAmount = this.functionsUtil.BNify(decodedLogs._tokenAmount);
+                  const tokenAmountFixed = this.functionsUtil.fixTokenDecimals(tokenAmount,tokenDecimals);
+                  const tokenAmountFormatted = parseFloat(tokenAmountFixed.toString()).toFixed(2);
+                  const isDepositTokenTx = tx.to.toLowerCase() === this.props.tokenConfig.address.toLowerCase();
+
+                  if (isDepositTokenTx){
+
+                    // Mined
+                    if (tx.blockNumber && tx.status){
+                      // Toast message
+                      window.showToastMessage({
+                        message:'Deposit completed',
+                        secondaryMessage: `${tokenAmountFormatted} ${this.props.selectedToken} has been deposited`,
+                        variant: "success",
+                      });
+
+                      // Update User Balance
+                      this.getAccountBalance(tokenAmount);
+                    } else {
+                      // Toast message
+                      window.showToastMessage({
+                        message:'Deposit pending',
+                        secondaryMessage: `${tokenAmountFormatted} ${this.props.selectedToken} are on the way`,
+                        variant: "processing",
+                      });
+                    }
+                  }
+                }
+
+                let checkTransactionReceiptTimeoutID = null;
+
+                const checkTransactionReceipt = (txHash,decodedLogs) => {
+                  if (checkTransactionReceiptTimeoutID){
+                    window.clearTimeout(checkTransactionReceiptTimeoutID);
+                  }
+                  web3SocketProvider.eth.getTransactionReceipt(txHash,(err,txReceipt)=>{
+                    if (!err){
+                      if (txReceipt){
+                        receiptCallback(txReceipt,decodedLogs);
+                      } else{
+                        checkTransactionReceiptTimeoutID = window.setTimeout(() => { checkTransactionReceipt(txHash,decodedLogs) },3000);
+                      }
+                    }
+                  });
+                }
+
+                checkTransactionReceipt(txHash,decodedLogs);
+
+                subscribedTransactions[txHash] = log;
+                this.setState({subscribedTransactions});
+              }
+            }
+          }
+        })
+        .on("changed", log => {
+          
+        });
+
+        this.setState({ web3SocketProvider, account });
+
         // After account is complete, get the balance
         this.getAccountBalance();
 
-        /*
-        if (this.state.web3Subscription){
-          // unsubscribes the subscription
-          this.state.web3Subscription.unsubscribe(function(error, success){
-            if(success){
-              console.log('web3 subscription - Successfully unsubscribed!');
-            } else {
-              console.log('web3 subscription - unsubscribe error',error);
-            }
-          });
-        }
-
-        const web3SocketProvider = new Web3(new Web3.providers.WebsocketProvider(`wss://kovan.infura.io/ws/v3/${INFURA_KEY}`));
-
-        const topics = [null];//'0x00000000000000000000000'+this.props.tokenConfig.idle.address.replace('x','');
-
-        const web3Subscription = web3SocketProvider.eth.subscribe('logs', {
-            address: [this.props.tokenConfig.address],
-            topics
-        }, function(error, result){
-            // console.log('web3 subscription',error,result);
-        })
-        .on("data", function(log){
-            console.log('web3 subscription - data',log);
-        })
-        .on("changed", function(log){
-          console.log('web3 subscription - changed',log);
-        });
-
-        console.log('web3Subscription',web3Subscription);
-
-        this.setState({ web3Subscription, account });
-        */
-
-        this.setState({ account });
         // TODO subscribe for account changes, no polling
         // set a state flag which indicates if the subscribe handler has been
         // called at least once
@@ -408,16 +565,16 @@ class RimbleTransaction extends React.Component {
     this.setState({ modals });
   }
 
-  getAccountBalance = async () => {
-    try {
+  getAccountBalance = async (increaseAmount) => {
 
+    increaseAmount = increaseAmount ? this.functionsUtil.BNify(increaseAmount) : null;
+
+    try {
       const res = await Promise.all([
         this.state.web3.eth.getBalance(this.state.account), // Get ETH balance
         this.getTokenBalance(this.state.account), // Get token balance
         this.getTokenDecimals()
       ]);
-
-      this.functionsUtil.customLog('getAccountBalance',res[0],res[1].toString(),res[2].toString());
 
       let accountBalance = res[0];
       if (accountBalance) {
@@ -428,24 +585,37 @@ class RimbleTransaction extends React.Component {
         accountBalance = this.functionsUtil.BNify(accountBalance).toString();
         this.setState({ accountBalance });
         this.functionsUtil.customLog("account balance: ", accountBalance);
-        this.determineAccountLowBalance();
       }
 
       const tokenDecimals = res[2].toString();
       let accountBalanceToken = res[1];
 
-      // this.functionsUtil.customLog('getAccountBalance',accountBalanceToken,accountBalanceToken.toString(),tokenDecimals,Math.pow(10,parseInt(tokenDecimals)));
+      this.functionsUtil.customLog('accountBalance',res,(accountBalanceToken ? accountBalanceToken.toString() : null),tokenDecimals,increaseAmount);
+
       if (accountBalanceToken) {
-        accountBalanceToken = this.functionsUtil.BNify(accountBalanceToken.toString()).div(this.functionsUtil.BNify(Math.pow(10,parseInt(tokenDecimals)).toString())).toString();
+
+        accountBalanceToken = this.functionsUtil.BNify(accountBalanceToken);
+
+        // Increase balance amount if passed and balance didn't change
+        if (increaseAmount && this.state.accountBalanceToken && this.functionsUtil.normalizeTokenAmount(this.state.accountBalanceToken,tokenDecimals).toString() === accountBalanceToken.toString()){
+          accountBalanceToken = accountBalanceToken.plus(increaseAmount);
+        }
+        
+        accountBalanceToken = this.functionsUtil.fixTokenDecimals(accountBalanceToken,tokenDecimals).toString();
+
+        this.functionsUtil.customLog('increaseAmount',(increaseAmount ? increaseAmount.toString() : '0'),(this.state.accountBalanceToken ? this.state.accountBalanceToken.toString() : '0'),(accountBalanceToken ? accountBalanceToken.toString() : 'ERROR'));
 
         this.setState({
           accountBalanceToken,
           [`accountBalance${this.props.selectedToken}`]:accountBalanceToken
         });
+
         this.functionsUtil.customLog(`account balance ${this.props.selectedToken}: `, accountBalanceToken);
+      } else {
+        this.functionsUtil.customLog('accountBalanceToken is not set:',accountBalanceToken);
       }
     } catch (error) {
-      this.functionsUtil.customLog("Failed to get account balance.", error);
+      this.functionsUtil.customLogError("Failed to get account balance.", error);
     }
   }
 
@@ -500,10 +670,22 @@ class RimbleTransaction extends React.Component {
   }
 
   getTokenDecimals = async () => {
-    const contract = await this.getContractByName(this.props.selectedToken);
-    return await contract.methods.decimals().call().catch(error => {
-      this.functionsUtil.customLog(`Failed to get ${this.props.selectedToken} decimals`, error);
-    });
+    let tokenDecimals = null;
+
+    if (!this.state.tokenDecimals){
+
+      tokenDecimals = await this.functionsUtil.getTokenDecimals(this.props.selectedToken);
+
+      this.setState({
+        tokenDecimals
+      });
+    } else {
+      tokenDecimals = await (new Promise( async (resolve, reject) => {
+        resolve(this.state.tokenDecimals);
+      }));
+    }
+
+    return tokenDecimals;
   }
 
   getTokenBalance = async (account) => {
@@ -1001,6 +1183,8 @@ class RimbleTransaction extends React.Component {
     context:null,
     web3: null,
     simpleID: null,
+    tokenDecimals:null,
+    subscribedTransactions:{},
     transactions: {},
     checkPreflight: this.checkPreflight,
     initWeb3: this.initWeb3,
