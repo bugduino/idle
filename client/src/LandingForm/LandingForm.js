@@ -21,6 +21,7 @@ class LandingForm extends Component {
           initSimpleID,
           accountBalance,
           getAccountBalance,
+          accountBalanceToken,
           contractMethodSendWrapper,
           web3,
           simpleID,
@@ -29,27 +30,27 @@ class LandingForm extends Component {
           <Box width={'100%'} mx={"auto"}>
             <SmartContractControls
               web3={web3}
-              simpleID={simpleID}
-              initSimpleID={initSimpleID}
-              mintCallback={this.props.mintCallback}
-              connecting={this.props.connecting}
-              getAllocations={this.props.getAllocations}
-              openBuyModal={this.props.openBuyModal}
-              selectedToken={this.props.selectedToken}
-              tokenConfig={this.props.tokenConfig}
-              setSelectedToken={this.props.setSelectedToken}
-              accountBalanceToken={this.props.accountBalanceToken}
-              isMobile={this.props.isMobile}
-              updateSelectedTab={this.props.updateSelectedTab}
-              selectedTab={this.props.selectedTab}
               network={network}
-              contracts={contracts}
               account={account}
+              initWeb3={initWeb3}
+              simpleID={simpleID}
+              contracts={contracts}
+              initSimpleID={initSimpleID}
               transactions={transactions}
               initContract={initContract}
-              initWeb3={initWeb3}
+              isMobile={this.props.isMobile}
               accountBalance={accountBalance}
+              connecting={this.props.connecting}
+              tokenConfig={this.props.tokenConfig}
+              selectedTab={this.props.selectedTab}
               getAccountBalance={getAccountBalance}
+              mintCallback={this.props.mintCallback}
+              openBuyModal={this.props.openBuyModal}
+              selectedToken={this.props.selectedToken}
+              getAllocations={this.props.getAllocations}
+              setSelectedToken={this.props.setSelectedToken}
+              updateSelectedTab={this.props.updateSelectedTab}
+              accountBalanceToken={this.props.accountBalanceToken}
               contractMethodSendWrapper={contractMethodSendWrapper}
             />
             <TransactionToastUtil transactions={transactions} />
