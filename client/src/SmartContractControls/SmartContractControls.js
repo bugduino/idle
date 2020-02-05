@@ -171,12 +171,13 @@ class SmartContractControls extends React.Component {
   }
 
   getAllocations = async () => {
+
+    this.setState({
+      allocations:null
+    });
+
     const [allocations,navPool] = await this.props.getAllocations();
     this.functionsUtil.customLog('getAllocations',allocations,navPool);
-
-    if (allocations){
-
-    }
 
     this.setState({
       allocations,
@@ -192,9 +193,6 @@ class SmartContractControls extends React.Component {
     }
 
     if (!Aprs){
-      setTimeout(() => {
-        this.getAprs();
-      },5000);
       return false;
     }
 
@@ -494,6 +492,7 @@ class SmartContractControls extends React.Component {
             eventData.eventLabel = 'denied';
           break;
           default:
+            eventData.eventLabel = `error_${error.code}`;
           break;
         }
       }
@@ -643,6 +642,7 @@ class SmartContractControls extends React.Component {
             eventData.eventLabel = 'denied';
           break;
           default:
+            eventData.eventLabel = `error_${error.code}`;
           break;
         }
       }
@@ -759,6 +759,7 @@ class SmartContractControls extends React.Component {
             eventData.eventLabel = 'denied';
           break;
           default:
+            eventData.eventLabel = `error_${error.code}`;
           break;
         }
       }
@@ -1566,27 +1567,45 @@ class SmartContractControls extends React.Component {
       } else {
         // Call migration contract function to migrate funds
 
+        const oldContractBalanceFormatted = this.state.oldContractBalanceFormatted;
         const oldContractBalance = this.state.oldContractBalance;
         const toMigrate = this.functionsUtil.BNify(oldContractBalance).toString();
 
-        const callback = tx => {
+        const callback = (tx,error) => {
 
           const newState = {
-            migrationError: true, // Throw error by default
+            migrationError: false,
             isMigrating: false,
             migrationTx: null
           };
 
           // Send Google Analytics event
-          this.functionsUtil.sendGoogleAnalyticsEvent({
+          const eventData = {
             eventCategory: 'Migrate',
             eventAction: migrationMethod,
             eventLabel: tx.status,
-            eventValue: parseInt(oldContractBalance)
-          });
+            eventValue: parseInt(oldContractBalanceFormatted)
+          };
+
+          let txDenied = false;
+
+          if (error){
+            switch (error.code){
+              case 4001:
+                txDenied = true;
+                eventData.eventLabel = 'denied';
+              break;
+              default:
+                newState.migrationError = true;
+                eventData.eventLabel = `error_${error.code}`;
+              break;
+            }
+          }
+
+          // Send Google Analytics event
+          this.functionsUtil.sendGoogleAnalyticsEvent(eventData);
 
           if (tx.status === 'success'){
-            newState.migrationError = false; // Reset error
             newState.migrationEnabled = false;
             newState.needsUpdate = true;
 
@@ -1600,8 +1619,8 @@ class SmartContractControls extends React.Component {
             });
 
             this.selectTab({ preventDefault:()=>{} },'2');
-          } else {
-            // Toast message
+          } else if (!txDenied){ // Show migration error toast only for real error
+            newState.migrationError = true;
             window.toastProvider.addMessage(`Migration error`, {
               secondaryMessage: `The migration has failed, try again...`,
               colorTheme: 'light',
@@ -1707,6 +1726,7 @@ class SmartContractControls extends React.Component {
 
     const accountChanged = prevProps.account !== this.props.account;
     const selectedTokenChanged = prevProps.selectedToken !== this.props.selectedToken;
+    const tokenBalanceChanged = this.props.accountBalanceToken !== this.state.tokenBalance;
 
     // Remount the component if token changed
     if (selectedTokenChanged){
@@ -1804,6 +1824,12 @@ class SmartContractControls extends React.Component {
       this.setState({fundsTimeoutID:null});
     }
 
+    if (tokenBalanceChanged){
+      this.setState({
+        tokenBalance: this.props.accountBalanceToken
+      });
+    }
+
     // TO CHECK!!
     if (prevProps.transactions !== this.props.transactions){
 
@@ -1852,7 +1878,10 @@ class SmartContractControls extends React.Component {
         });
       }
 
-      await this.rebalanceCheck();
+      await Promise.all([
+        this.getAllocations(),
+        this.rebalanceCheck()
+      ]);
     }
 
     if (tabIndex !== '2') {
