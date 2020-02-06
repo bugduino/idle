@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Image, Flex, Box, Heading, Link, Text, Card, Icon, ToastMessage } from 'rimble-ui'
+import { Image, Flex, Box, Heading, Link, Text, Card, Icon } from 'rimble-ui'
 import Faq from '../Faq/Faq';
 import Footer from '../Footer/Footer';
 import styles from './Landing.module.scss';

@@ -140,7 +140,6 @@ class SmartContractControls extends React.Component {
     this.setState({
       shouldRebalance,
       calculatingShouldRebalance: false,
-      needsUpdate: false
     });
   }
 
@@ -223,7 +222,6 @@ class SmartContractControls extends React.Component {
     this.setState({
       aprs,
       maxRate,
-      needsUpdate: false,
       currentProtocol,
       currentRate
     });
@@ -249,19 +247,9 @@ class SmartContractControls extends React.Component {
       idleTokenPrice,
       navPool, // Remove for demo
       tokenPrice,
-      needsUpdate: false,
     });
 
     return tokenPrice;
-  }
-
-  getTotalSupply = async (contractName) => {
-    const totalSupply = await this.functionsUtil.genericContractCall(contractName, 'totalSupply');
-    this.setState({
-      [`${contractName}Supply`]: totalSupply,
-      needsUpdate: false
-    });
-    return totalSupply;
   }
 
   getTokenDecimals = async () => {
@@ -439,9 +427,9 @@ class SmartContractControls extends React.Component {
       0 // Disapprova
     ],null,(tx)=>{
       this.setState({
+        needsUpdate:true,
         isApprovingToken: false,
         approveTx:null,
-        [`isApproving${name}`]: false, // TODO when set to false?
       });
     }, (tx) => {
       // this.addTransaction(tx);
@@ -451,9 +439,7 @@ class SmartContractControls extends React.Component {
     });
 
     this.setState({
-      isApprovingToken: true,
-      [`isApproving${name}`]: true, // TODO when set to false?
-      activeModal: 'approve'
+      isApprovingToken: true
     });
   }
 
@@ -462,9 +448,22 @@ class SmartContractControls extends React.Component {
     return transaction && transaction.status === 'success' && transaction.confirmationCount>1;
   }
 
-  enableERC20 = (e, token) => {
-    e.preventDefault();
-    // No need for callback atm
+  enableERC20 = async (e, token) => {
+    if (e){
+      e.preventDefault();
+    }
+
+    // Check if the token is already approved
+    const tokenApproved = await this.checkTokenApproved();
+    if (tokenApproved){
+      return this.setState({
+        isTokenApproved: true,
+        isApprovingToken: false,
+        needsUpdate: true,
+        approveTx:null,
+      });
+    }
+
     this.props.contractMethodSendWrapper(token, 'approve', [
       this.props.tokenConfig.idle.address,
       this.props.web3.utils.toTwosComplement('-1') // max uint solidity
@@ -474,8 +473,7 @@ class SmartContractControls extends React.Component {
       const newState = {
         isTokenApproved: false,
         isApprovingToken: false,
-        [`isApproving${token}`]: false, // TODO when set to false?
-        'needsUpdate': true,
+        needsUpdate: true,
         approveTx:null,
       };
 
@@ -516,7 +514,6 @@ class SmartContractControls extends React.Component {
 
     this.setState({
       isApprovingToken: true,
-      [`isApproving${token}`]: true, // TODO when set to false?
       activeModal: null
     });
   };
@@ -561,19 +558,16 @@ class SmartContractControls extends React.Component {
     const callback_receipt = null;
 
     this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'rebalance', [ _newAmount, _clientProtocolAmounts ], null , callback, callback_receipt, gasLimit);
-  };
+  }
 
   checkTokenApproved = async () => {
     if (this.props.account) {
-      const value = this.props.web3.utils.toWei('0','ether');
-      const allowance = await this.functionsUtil.getAllowance(this.props.selectedToken,this.props.tokenConfig.idle.address,this.props.account);
-      const tokenApproved = this.functionsUtil.BNify(allowance).gt(this.functionsUtil.BNify(value.toString()));
-      // customLog('checkTokenApproved',value,allowance.toString(),tokenApproved);
-      return this.setState({
-        [`${this.props.selectedToken}Allowance`]: allowance,
-        isTokenApproved: tokenApproved,
-        [`is${this.props.selectedToken}Approved`]: tokenApproved
+      const isTokenApproved = await this.functionsUtil.checkTokenApproved(this.props.selectedToken,this.props.tokenConfig.idle.address,this.props.account);
+
+      this.setState({
+        isTokenApproved
       });
+      return isTokenApproved;
     }
     return null;
   }
@@ -1323,13 +1317,15 @@ class SmartContractControls extends React.Component {
         this.setState({
           executedTxs,
           prevTxs: transactions,
-          needsUpdate
         });
       } else if (update_txs){
         this.setState({
           prevTxs: transactions,
-          needsUpdate
         });
+      }
+
+      if (needsUpdate){
+        this.getPrevTxs();
       }
     }
   };
@@ -1453,7 +1449,8 @@ class SmartContractControls extends React.Component {
       this.checkMigration(),
       this.getAllocations(),
       this.getAprs(),
-      this.getPriceInToken()
+      this.getPriceInToken(),
+      this.checkTokenApproved()
     ]);
 
     /*
@@ -1724,6 +1721,7 @@ class SmartContractControls extends React.Component {
     // Update util functions props
     this.loadUtils();
 
+    const transactionsChanged = prevProps.transactions !== this.props.transactions;
     const accountChanged = prevProps.account !== this.props.account;
     const selectedTokenChanged = prevProps.selectedToken !== this.props.selectedToken;
     const tokenBalanceChanged = this.props.accountBalanceToken !== this.state.tokenBalance;
@@ -1792,14 +1790,11 @@ class SmartContractControls extends React.Component {
 
       this.functionsUtil.customLog('Call async functions...');
 
-      await this.checkMigration();
-
       await Promise.all([
-        this.getTokenBalance(),
+        this.checkMigration(),
+        this.checkTokenApproved(),
         this.getAllocations(),
-        this.checkTokenApproved(), // Check if the token is already approved
-        this.getPrevTxs(),
-        this.getTotalSupply(this.props.tokenConfig.idle.token)
+        this.getTokenBalance()
       ]);
 
       this.functionsUtil.customLog('Async functions completed...');
@@ -1811,6 +1806,10 @@ class SmartContractControls extends React.Component {
 
       if (this.props.selectedTab === '3') {
         this.rebalanceCheck();
+      }
+      
+      if (!transactionsChanged){
+        this.getPrevTxs();
       }
 
       this.setState({
@@ -1831,7 +1830,7 @@ class SmartContractControls extends React.Component {
     }
 
     // TO CHECK!!
-    if (prevProps.transactions !== this.props.transactions){
+    if (transactionsChanged){
 
       // Store transactions into Local Storage
       if (localStorage){
