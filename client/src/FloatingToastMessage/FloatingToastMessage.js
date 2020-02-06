@@ -17,6 +17,8 @@ class FloatingToastMessage extends Component {
       case 'failure':
         ToastComponent = ToastMessage.Failure;
       break;
+      default:
+      break;
     }
 
     if (ToastComponent){
