@@ -187,6 +187,8 @@ class SmartContractControls extends React.Component {
   getAprs = async () => {
     const Aprs = await this.functionsUtil.genericIdleCall('getAPRs');
 
+    // console.log(Aprs);
+
     if (componentUnmounted){
       return false;
     }
@@ -194,8 +196,6 @@ class SmartContractControls extends React.Component {
     if (!Aprs){
       return false;
     }
-
-    this.functionsUtil.customLog('getAprs',Aprs);
 
     const addresses = Aprs.addresses.map((addr,i) => { return addr.toString().toLowerCase() });
     const aprs = Aprs.aprs;
@@ -247,6 +247,7 @@ class SmartContractControls extends React.Component {
       idleTokenPrice,
       navPool, // Remove for demo
       tokenPrice,
+      totalIdleSupply
     });
 
     return tokenPrice;
@@ -489,7 +490,7 @@ class SmartContractControls extends React.Component {
       }
 
       // Send Google Analytics event
-      if (error || tx.status !== 'error'){
+      if (error || eventData.status !== 'error'){
         this.functionsUtil.sendGoogleAnalyticsEvent(eventData);
       }
 
@@ -630,8 +631,11 @@ class SmartContractControls extends React.Component {
         eventData.eventLabel = this.functionsUtil.getTransactionError(error);
       }
 
+      console.log(eventData);
+
       // Send Google Analytics event
-      if (error || tx.status !== 'error'){
+      if (error || eventData.status !== 'error'){
+        console.log('sendGoogleAnalyticsEvent',eventData);
         this.functionsUtil.sendGoogleAnalyticsEvent(eventData);
       }
 
@@ -743,7 +747,7 @@ class SmartContractControls extends React.Component {
       }
 
       // Send Google Analytics event
-      if (error || tx.status !== 'error'){
+      if (error || eventData.status !== 'error'){
         this.functionsUtil.sendGoogleAnalyticsEvent(eventData);
       }
 
@@ -1577,7 +1581,7 @@ class SmartContractControls extends React.Component {
           }
 
           // Send Google Analytics event
-          if (error || tx.status !== 'error'){
+          if (error || eventData.status !== 'error'){
             this.functionsUtil.sendGoogleAnalyticsEvent(eventData);
           }
 
@@ -1791,7 +1795,7 @@ class SmartContractControls extends React.Component {
         updateInProgress: false
       });
 
-      if (!transactionsChanged){
+      if (!transactionsChanged || selectedTokenChanged){
         this.getPrevTxs();
       }
     }
