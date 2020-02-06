@@ -1,10 +1,10 @@
-import React, { Component } from 'react';
-import { Flex, Box, Text, Card, Image, Heading, Link, Pill, Loader, Button } from "rimble-ui";
-import { Line } from '@nivo/line';
-import { line } from 'd3-shape'
 import axios from 'axios';
 import moment from 'moment';
+import { line } from 'd3-shape'
+import { Line } from '@nivo/line';
+import React, { Component } from 'react';
 import FunctionsUtil from '../utilities/FunctionsUtil';
+import { Flex, Box, Text, Card, Image, Heading, Link, Pill, Loader, Button } from "rimble-ui";
 import SmartContractControls_styles from '../SmartContractControls/SmartContractControls.module.scss';
 
 const env = process.env;
@@ -14,7 +14,7 @@ const cDAIAddress = '0xf5dce57282a584d2746faf1593d3121fcac444dc';
 const iDAIAddress = '0x14094949152eddbfcd073717200da82fed8dc960';
 const secondsInYear = 31556952;
 
-class EquityChart extends Component {
+class DefiPrimeEquityChart extends Component {
   state = {
     mode:'perc', // [equity,apr,perc]
     equityMode:'best', // [real,best]
@@ -997,4 +997,4 @@ class EquityChart extends Component {
   }
 }
 
-export default EquityChart;
+export default DefiPrimeEquityChart;

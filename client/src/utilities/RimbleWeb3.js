@@ -1,10 +1,11 @@
-import React from 'react';
-import globalConfigs from '../configs/globalConfigs';
-import FunctionsUtil from './FunctionsUtil';
 import Web3 from "web3";
+import React from 'react';
 import BigNumber from 'bignumber.js';
 import SimpleID from 'simpleid-js-sdk';
 import NetworkUtil from "./NetworkUtil";
+import * as Sentry from '@sentry/browser';
+import FunctionsUtil from './FunctionsUtil';
+import globalConfigs from '../configs/globalConfigs';
 import ConnectionModalUtil from "./ConnectionModalsUtil";
 import WalletConnectQRCodeModal from "@walletconnect/qrcode-modal";
 import { TerminalHttpProvider, SourceType } from '@terminal-packages/sdk';
@@ -966,21 +967,28 @@ class RimbleTransaction extends React.Component {
         .on("receipt", receiptCallback)
         .on("confirmation", confirmationCallback)
         .on("error", error => {
-          this.functionsUtil.customLog('txOnError',error);
-          // Errored out
+
+          const isDeniedTx = error.message.includes('User denied transaction signature');
+          
+          // Set error on transaction
           transaction.status = "error";
           transaction.recentEvent = "error";
           this.updateTransaction(transaction);
-          // TODO: should this be a custom error? What is the error here?
-          // TODO: determine how to handle error messages globally
-          window.toastProvider.addMessage("Something went wrong", {
-            secondaryMessage: "Please retry",
-            colorTheme: 'light',
-            actionHref: "",
-            actionText: "",
-            variant: "failure",
-            icon: 'Block'
-          });
+
+          // Show ToastProvider
+          if (!isDeniedTx){
+            window.toastProvider.addMessage("Something went wrong", {
+              secondaryMessage: "Please retry",
+              colorTheme: 'light',
+              actionHref: "",
+              actionText: "",
+              variant: "failure",
+              icon: 'Block'
+            });
+            if (this.functionsUtil.checkUrlOrigin()){
+              Sentry.captureException(error);
+            }
+          }
 
           if (callback) {
             callback(transaction,error);
@@ -999,6 +1007,10 @@ class RimbleTransaction extends React.Component {
         variant: "failure",
         icon: 'Block'
       });
+
+      if ( this.functionsUtil.checkUrlOrigin()){
+        Sentry.captureException(error);
+      }
     }
   }
 

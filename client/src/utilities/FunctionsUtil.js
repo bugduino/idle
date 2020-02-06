@@ -47,8 +47,29 @@ class FunctionsUtil {
     }
     return contract.contract;
   }
+  getTransactionError = error => {
+    let output = 'error';
+    if (parseInt(error.code)){
+      const errorCode = parseInt(error.code);
+      switch (errorCode){
+        case 4001:
+          output = 'denied';
+        break;
+        default:
+          output = `error_${errorCode}`;
+        break;
+      }
+    } else if (error.message){
+      output = error.message.split("\n")[0]; // Take just the first line of the error
+    }
+
+    return output;
+  }
   getGlobalConfigs = () => {
     return globalConfigs;
+  }
+  checkUrlOrigin = () => {
+    return window.location.origin.toLowerCase().includes(globalConfigs.baseURL.toLowerCase());
   }
   sendGoogleAnalyticsEvent = async (eventData) => {
 
@@ -68,6 +89,7 @@ class FunctionsUtil {
         eventData.hitCallbackFail = () => {
           reject();
         };
+
         window.ga('send', 'event', eventData);
       }));
     }

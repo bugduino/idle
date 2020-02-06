@@ -485,18 +485,13 @@ class SmartContractControls extends React.Component {
       };
 
       if (error){
-        switch (error.code){
-          case 4001:
-            eventData.eventLabel = 'denied';
-          break;
-          default:
-            eventData.eventLabel = `error_${error.code}`;
-          break;
-        }
+        eventData.eventLabel = this.functionsUtil.getTransactionError(error);
       }
 
       // Send Google Analytics event
-      this.functionsUtil.sendGoogleAnalyticsEvent(eventData);
+      if (error || tx.status !== 'error'){
+        this.functionsUtil.sendGoogleAnalyticsEvent(eventData);
+      }
 
       if (tx.status === 'success'){
         newState.isTokenApproved = true;
@@ -630,19 +625,15 @@ class SmartContractControls extends React.Component {
         eventLabel: tx.status,
         eventValue: parseInt(lendAmount)
       };
+
       if (error){
-        switch (error.code){
-          case 4001:
-            eventData.eventLabel = 'denied';
-          break;
-          default:
-            eventData.eventLabel = `error_${error.code}`;
-          break;
-        }
+        eventData.eventLabel = this.functionsUtil.getTransactionError(error);
       }
 
       // Send Google Analytics event
-      this.functionsUtil.sendGoogleAnalyticsEvent(eventData);
+      if (error || tx.status !== 'error'){
+        this.functionsUtil.sendGoogleAnalyticsEvent(eventData);
+      }
 
       const newState = {
         lendingProcessing: false,
@@ -748,18 +739,13 @@ class SmartContractControls extends React.Component {
       };
 
       if (error){
-        switch (error.code){
-          case 4001:
-            eventData.eventLabel = 'denied';
-          break;
-          default:
-            eventData.eventLabel = `error_${error.code}`;
-          break;
-        }
+        eventData.eventLabel = this.functionsUtil.getTransactionError(error);
       }
 
       // Send Google Analytics event
-      this.functionsUtil.sendGoogleAnalyticsEvent(eventData);
+      if (error || tx.status !== 'error'){
+        this.functionsUtil.sendGoogleAnalyticsEvent(eventData);
+      }
 
       this.setState({
         [`isLoading${contractName}`]: false,
@@ -1587,20 +1573,13 @@ class SmartContractControls extends React.Component {
           let txDenied = false;
 
           if (error){
-            switch (error.code){
-              case 4001:
-                txDenied = true;
-                eventData.eventLabel = 'denied';
-              break;
-              default:
-                newState.migrationError = true;
-                eventData.eventLabel = `error_${error.code}`;
-              break;
-            }
+            eventData.eventLabel = this.functionsUtil.getTransactionError(error);
           }
 
           // Send Google Analytics event
-          this.functionsUtil.sendGoogleAnalyticsEvent(eventData);
+          if (error || tx.status !== 'error'){
+            this.functionsUtil.sendGoogleAnalyticsEvent(eventData);
+          }
 
           if (tx.status === 'success'){
             newState.migrationEnabled = false;
@@ -1807,14 +1786,14 @@ class SmartContractControls extends React.Component {
       if (this.props.selectedTab === '3') {
         this.rebalanceCheck();
       }
-      
-      if (!transactionsChanged){
-        this.getPrevTxs();
-      }
 
       this.setState({
         updateInProgress: false
       });
+
+      if (!transactionsChanged){
+        this.getPrevTxs();
+      }
     }
 
     if (this.props.selectedTab !== '2' && this.state.fundsTimeoutID){
@@ -2159,7 +2138,7 @@ class SmartContractControls extends React.Component {
                 }
 
                 {
-                  !this.state.componentMounted ? (
+                  !this.state.componentMounted || this.state.updateInProgress ? (
                     <Box pt={['50px','73px']} style={{position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'99'}}>
                       <Box style={{backgroundColor:'rgba(0,0,0,0.83)',position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'0',borderRadius:'15px'}}></Box>
                       <Flex style={{position:'relative',zIndex:'99',height:'100%'}} flexDirection={'column'} alignItems={'center'} justifyContent={'center'}>
@@ -2695,7 +2674,7 @@ class SmartContractControls extends React.Component {
                       )
                     }
                     {
-                      this.props.selectedTab === '2' && hasBalance && this.state.showFundsInfo && !this.state.prevTxsError &&
+                      this.props.selectedTab === '2' && fundsAreReady && hasBalance && this.state.showFundsInfo && !this.state.prevTxsError &&
                         <>
                           {
                           !isNaN(this.functionsUtil.trimEth(this.state.earningPerYear)) ? (

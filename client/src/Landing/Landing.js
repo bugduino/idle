@@ -8,9 +8,8 @@ import FunctionsUtil from '../utilities/FunctionsUtil';
 import NewsletterForm from '../NewsletterForm/NewsletterForm';
 import FloatingToastMessage from '../FloatingToastMessage/FloatingToastMessage';
 // import DefiScoreTable from '../DefiScoreTable/DefiScoreTable';
-// import EquityChart from '../EquityChart/EquityChart';
-// import availableTokens from '../configs/availableTokens';
 // import Confetti from 'react-confetti';
+// import DefiPrimeEquityChart from '../DefiPrimeEquityChart/DefiPrimeEquityChart';
 
 let scrolling = false;
 let scrollTimeoutID;
@@ -550,24 +549,24 @@ class Landing extends Component {
         </Box>
 
         {
-        /*
-        <Flex position={'relative'} justifyContent={'center'} alignItems={'center'} height={['auto','850px']} pt={0} pb={[4,6]}>
-          <Flex id={'chart-container'} width={1} flexDirection={'column'} maxWidth={['35em','70em']}>
-            <Heading.h4 color={'dark-gray'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]} textAlign={'center'} alignItems={'center'}>
-              Maximize interest return
-            </Heading.h4>
-            <Flex width={1} alignItems={'center'} justifyContent={'center'} px={[3,0]}>
-              <EquityChart
-                tokenConfig={availableTokens[1].SAI}
-                selectedToken={'SAI'}
-                isMobile={this.props.isMobile}
-                account={this.props.account}
-                web3={this.props.web3}
-              />
+          /*
+          <Flex position={'relative'} justifyContent={'center'} alignItems={'center'} height={['auto','850px']} pt={0} pb={[4,6]}>
+            <Flex id={'chart-container'} width={1} flexDirection={'column'} maxWidth={['35em','70em']}>
+              <Heading.h4 color={'dark-gray'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]} textAlign={'center'} alignItems={'center'}>
+                Maximize interest return
+              </Heading.h4>
+              <Flex width={1} alignItems={'center'} justifyContent={'center'} px={[3,0]}>
+                <DefiPrimeEquityChart
+                  tokenConfig={this.props.tokenConfig}
+                  selectedToken={'SAI'}
+                  isMobile={this.props.isMobile}
+                  account={this.props.account}
+                  web3={this.props.web3}
+                />
+              </Flex>
             </Flex>
           </Flex>
-        </Flex>
-        */
+          */
         }
 
         <Flex className={styles.gradientBackground} position={'relative'} justifyContent={'center'} alignItems={'center'} height={['auto','600px']} mt={[4,3]} p={[4,6]}>
