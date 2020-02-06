@@ -323,18 +323,9 @@ class RimbleTransaction extends React.Component {
       await this.state.web3.eth.getAccounts().then(wallets => {
         const account = wallets[0];
 
+        // Exit if account is not changed
         if (this.state.account === account){
           return false;
-        } else {
-          /*
-          const simpleID = this.initSimpleID();
-          if (simpleID){
-            const userData = simpleID.getUserData();
-            if (userData && userData.wallet.ethAddr.toLowerCase() !== account.toLowerCase()){
-              simpleID.signOut();
-            }
-          }
-          */
         }
 
         if (!hideModal) {
@@ -343,6 +334,13 @@ class RimbleTransaction extends React.Component {
 
         const walletProvider = localStorage && localStorage.getItem('walletProvider') ? localStorage.getItem('walletProvider') : 'Infura';
 
+        // Send address info to SimpleID
+        const simpleID = this.initSimpleID();
+        this.functionsUtil.simpleIDPassUserInfo({
+          address: account,
+          walletProvider
+        },simpleID);
+
         // Send Google Analytics connection event
         this.functionsUtil.sendGoogleAnalyticsEvent({
           eventCategory: 'Connect',
@@ -350,9 +348,8 @@ class RimbleTransaction extends React.Component {
           eventLabel: walletProvider
         });
 
-
-        if (this.state.web3SocketProvider){
-          // unsubscribes the subscription
+        // Unsubscribes to all subscriptions
+        if (this.state.web3SocketProvider && typeof this.state.web3SocketProvider.clearSubscriptions === 'function'){
           this.functionsUtil.customLog('Clear all web3SocketProvider subscriptions');
           this.state.web3SocketProvider.clearSubscriptions();
         }
@@ -550,11 +547,19 @@ class RimbleTransaction extends React.Component {
     } catch (error) {
       // User denied account access...
       this.functionsUtil.customLog("User cancelled connect request. Error:", error);
+
+      // Catch ledger error
       if (error && error.message.includes('MULTIPLE_OPEN_CONNECTIONS_DISALLOWED')) {
         return;
       }
+
+      // Send Sentry connection error
+      if (this.functionsUtil.checkUrlOrigin()){
+        Sentry.captureException(error);
+      }
+
       // Reject Connect
-      this.rejectAccountConnect(error);
+      // this.rejectAccountConnect(error);
     }
   }
 

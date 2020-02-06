@@ -101,7 +101,7 @@ const globalConfigs = {
       },
       simpleID:{
         enabled:true,
-        supportedNetworks:[1,42],
+        supportedNetworks:[1],
         getNetwork:(networkId,availableNetworks) => {
           let networkName = null;
           switch (networkId){
@@ -118,7 +118,7 @@ const globalConfigs = {
           appOrigin: window.location.origin,
           appName: "Idle",
           appId: "eb4d1754-a76e-4c58-8422-54b5ca2395e7",
-          useSimpledIdWidget: false,
+          renderNotifications: false,
           network: 'mainnet'
         }
       }

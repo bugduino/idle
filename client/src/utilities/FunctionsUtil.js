@@ -95,7 +95,7 @@ class FunctionsUtil {
     }
     return false;
   }
-  simpleIDPassUserInfo = (userInfo) => {
+  simpleIDPassUserInfo = (userInfo,simpleID) => {
     if (!userInfo.address && this.props.account){
       userInfo.address = this.props.account;
     }
@@ -108,9 +108,8 @@ class FunctionsUtil {
     if (!userInfo.address){
       return false;
     }
-    const simpleID = this.props.simpleID ? this.props.simpleID : this.props.initSimpleID();
+    simpleID = simpleID ? simpleID : (this.props.simpleID ? this.props.simpleID : this.props.initSimpleID());
     if (simpleID){
-      console.log('SimpleID passUserInfo',userInfo);
       return simpleID.passUserInfo(userInfo);
     }
     return false;
