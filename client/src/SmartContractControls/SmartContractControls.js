@@ -326,7 +326,7 @@ class SmartContractControls extends React.Component {
       // this.functionsUtil.customLog('getBalanceOf 2','tokenToRedeem',tokenToRedeem.toString(),'amountLent',this.state.amountLent.toString());
 
       if (amountLent && this.functionsUtil.trimEth(amountLent.toString())>0 && this.functionsUtil.trimEth(tokenToRedeem.toString())>0 && parseFloat(this.functionsUtil.trimEth(tokenToRedeem.toString()))<parseFloat(this.functionsUtil.trimEth(amountLent.toString()))){
-        this.functionsUtil.customLogError('tokenToRedeem',tokenToRedeem.toString(),' less than amountLent',amountLent.toString());
+        console.error('tokenToRedeem',tokenToRedeem.toString(),' less than amountLent',amountLent.toString());
 
         if (count === 2){
           amountLent = tokenToRedeem.div(this.state.tokenPrice);
@@ -631,11 +631,8 @@ class SmartContractControls extends React.Component {
         eventData.eventLabel = this.functionsUtil.getTransactionError(error);
       }
 
-      console.log(eventData);
-
       // Send Google Analytics event
       if (error || eventData.status !== 'error'){
-        console.log('sendGoogleAnalyticsEvent',eventData);
         this.functionsUtil.sendGoogleAnalyticsEvent(eventData);
       }
 
@@ -880,25 +877,28 @@ class SmartContractControls extends React.Component {
 
     const requiredNetwork = globalConfigs.network.requiredNetwork;
     const etherscanInfo = globalConfigs.network.providers.etherscan;
+    let lastBlockNumber = this.state.lastBlockNumber;
 
     // Check if etherscan is enabled for the required network
     if (etherscanInfo.enabled && etherscanInfo.endpoints[requiredNetwork]){
       const etherscanApiUrl = etherscanInfo.endpoints[requiredNetwork];
-      const txs = await axios.get(`
-        ${etherscanApiUrl}?apikey=${env.REACT_APP_ETHERSCAN_KEY}&module=account&action=tokentx&address=${this.props.account}&startblock=8119247&endblock=999999999&sort=asc
-      `).catch(err => {
+      const txs = await axios.get(`${etherscanApiUrl}?apikey=${env.REACT_APP_ETHERSCAN_KEY}&module=account&action=tokentx&address=${this.props.account}&startblock=${lastBlockNumber}&endblock=999999999&sort=asc`).catch(err => {
         this.functionsUtil.customLog('Error getting prev txs');
         if (componentUnmounted){
           return false;
         }
         if (!count){
-          setTimeout(()=>{this.getPrevTxs(count+1);},1000);
+          // console.log('Retrieving prevTxs',count);
+          setTimeout(() => {
+            this.getPrevTxs(count+1);
+          },1000);
           return false;
         }
       });
 
-      if (!txs || !txs.data || !txs.data.result) {
+      if (!txs || !txs.data || !txs.data.result){
         return this.setState({
+          prevTxs:{},
           prevTxsError:true,
           amountLent:0,
           earning:0
@@ -914,7 +914,7 @@ class SmartContractControls extends React.Component {
     const migrationContractOldAddrs = this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract && this.props.tokenConfig.migration.migrationContract.oldAddresses ? this.props.tokenConfig.migration.migrationContract.oldAddresses : [];
     const oldContractAddr = this.props.tokenConfig.migration && this.props.tokenConfig.migration.oldContract ? this.props.tokenConfig.migration.oldContract.address.replace('x','').toLowerCase() : null;
 
-    const prevTxs = results.filter(
+    const etherscanTxs = results.filter(
         tx => {
           const internalTxs = results.filter(r => r.hash === tx.hash);
           const isMigrationTx = migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).indexOf(tx.from.toLowerCase()) !== -1 ) && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
@@ -928,125 +928,205 @@ class SmartContractControls extends React.Component {
       return ({...tx, value: this.functionsUtil.fixTokenDecimals(tx.value,tokenDecimals)});
     });
 
-    // this.functionsUtil.customLog('prevTxs',prevTxs);
+    // console.log('etherscanTxs',etherscanTxs);
 
     let amountLent = this.functionsUtil.BNify(0);
-    let transactions = {};
+
+    // Initialize prevTxs
+    let prevTxs = this.state.prevTxs ? Object.assign({},this.state.prevTxs) : {};
 
     // Check if this is the first interaction with Idle
     let depositedTxs = 0;
 
-    await this.functionsUtil.asyncForEach(prevTxs,async (tx,index) => {
 
-      const isMigrationTx = migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).indexOf(tx.from.toLowerCase()) !== -1 ) && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-      const isDepositTx = !isMigrationTx && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-      const isRedeemTx = !isMigrationTx && tx.to.toLowerCase() === this.props.account.toLowerCase();
+    // Take storedTxs from localStorage
+    const storedTxs = localStorage ? JSON.parse(localStorage.getItem('transactions')) : {};
+    
+    // Inizialize storedTxs for pair account-token if empty
+    if (!storedTxs[this.props.account]){
+      storedTxs[this.props.account] = {};
+    } else if (!storedTxs[this.props.account][this.props.selectedToken]){
+      storedTxs[this.props.account][this.props.selectedToken] = {};
+    }
 
-      // Deposited
-      if (isDepositTx){
-        amountLent = amountLent.plus(this.functionsUtil.BNify(tx.value));
-        depositedTxs++;
+    if (etherscanTxs){
 
-        // console.log('Add deposited value',this.functionsUtil.BNify(tx.value).toString(),amountLent.toString());
+      // Merge new txs with previous ones
+      await this.functionsUtil.asyncForEach(etherscanTxs,async (tx,index) => {
+        prevTxs[tx.hash] = tx;
+      });
 
-      // Redeemed
-      } else if (isRedeemTx){
+      // Update last block number
+      lastBlockNumber = etherscanTxs.pop().blockNumber;
 
-        const redeemTxReceipt = await (new Promise( async (resolve, reject) => {
-          this.props.web3.eth.getTransactionReceipt(tx.hash,(err,tx)=>{
-            if (err){
-              reject(err);
+      // Loop through prevTxs to have all the history
+      await this.functionsUtil.asyncForEach(Object.values(prevTxs),async (tx,index) => {
+
+        const txKey = `tx${tx.timeStamp}000`;
+        const storedTx = storedTxs[this.props.account][this.props.selectedToken][txKey] ? storedTxs[this.props.account][this.props.selectedToken][txKey] : tx;
+        const isNewTx = etherscanTxs.indexOf(tx) !== -1; // Just fetched from etherscan
+        const isMigrationTx = migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).indexOf(tx.from.toLowerCase()) !== -1 ) && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
+        const isDepositTx = !isMigrationTx && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
+        const isRedeemTx = !isMigrationTx && tx.to.toLowerCase() === this.props.account.toLowerCase();
+
+        // Deposited
+        if (isDepositTx){
+          amountLent = amountLent.plus(this.functionsUtil.BNify(tx.value));
+          depositedTxs++;
+
+        // Redeemed
+        } else if (isRedeemTx){
+
+          let redeemedValueFixed = storedTx.value;
+
+          // Get real redeemed amount from tx logs
+          if (isNewTx){
+
+            let redeemTxReceipt = storedTx.txReceipt ? storedTx.txReceipt : null;
+
+            if (!redeemTxReceipt){
+              // console.log('getPrevTxs - redeemTx - getTransactionReceipt',tx.hash);
+              redeemTxReceipt = await (new Promise( async (resolve, reject) => {
+                this.props.web3.eth.getTransactionReceipt(tx.hash,(err,tx)=>{
+                  if (err){
+                    reject(err);
+                  }
+                  resolve(tx);
+                });
+              }));
             }
-            resolve(tx);
-          });
-        }));
 
-        if (!redeemTxReceipt){
-          return;
-        }
-
-        const walletAddress = this.props.account.replace('x','').toLowerCase();
-
-        const internalTransfers = redeemTxReceipt.logs.filter((tx) => { return tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${walletAddress}`; });
-
-        if (!internalTransfers.length){
-          return;
-        }
-
-        const internalTransfer = internalTransfers[0];
-        const redeemedValue = parseInt(internalTransfer.data,16);
-        const redeemedValueFixed = this.functionsUtil.fixTokenDecimals(redeemedValue,tokenDecimals);
-
-        amountLent = amountLent.minus(this.functionsUtil.BNify(redeemedValueFixed));
-
-        // console.log('Add redeemed value',redeemedValueFixed.toString(),amountLent.toString());
-
-        if (amountLent.lt(0)){
-          amountLent = this.functionsUtil.BNify(0);
-        }
-
-        tx.value = redeemedValueFixed;
-
-      // Migrated
-      } else if (isMigrationTx){
-
-        const migrationTxReceipt = await (new Promise( async (resolve, reject) => {
-          this.props.web3.eth.getTransactionReceipt(tx.hash,(err,tx)=>{
-            if (err){
-              reject(err);
+            if (!redeemTxReceipt){
+              return;
             }
-            resolve(tx);
-          });
-        }));
 
-        if (!migrationTxReceipt){
-          return;
-        }
+            const walletAddress = this.props.account.replace('x','').toLowerCase();
+            const internalTransfers = redeemTxReceipt.logs.filter((tx) => { return tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${walletAddress}`; });
+            
+            if (!internalTransfers.length){
+              return;
+            }
 
-        const internalTransfers = migrationTxReceipt.logs.filter((tx) => { return tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${oldContractAddr}`; });
+            try{
+              // Decode lons
+              const decodedLogs = this.props.web3.eth.abi.decodeLog([
+                {
+                  "internalType": "uint256",
+                  "name": "_tokenAmount",
+                  "type": "uint256"
+                }
+              ],internalTransfers[0].data,internalTransfers[0].topics);
 
-        if (!internalTransfers.length){
-          return;
-        }
+              if (decodedLogs){
+                const redeemedValue = decodedLogs._tokenAmount;
+                redeemedValueFixed = this.functionsUtil.fixTokenDecimals(redeemedValue,tokenDecimals);
+                storedTx.value = redeemedValueFixed;
+              } else {
+                return;
+              }
+            } catch (err) {
+              return;
+            }
+            
+            // Save txReceipt in localStorage
+            if (!storedTx.txReceipt){
+              storedTx.txReceipt = redeemTxReceipt;
+              storedTxs[this.props.account][this.props.selectedToken][txKey] = storedTx;
+            }
+          }
 
-        try{
-          const decodedLogs = this.props.web3.eth.abi.decodeLog([
-            {
-              "internalType": "uint256",
-              "name": "_idleToken",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "_token",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "_price",
-              "type": "uint256"
-            },
-          ],internalTransfers[0].data,internalTransfers[0].topics);
 
-          const migrationValue = decodedLogs._token;
-          const oldContractTokenDecimals = this.state.oldContractTokenDecimals ? this.state.oldContractTokenDecimals : await this.functionsUtil.getTokenDecimals(this.props.tokenConfig.migration.oldContract.name);
-          const migrationValueFixed = this.functionsUtil.fixTokenDecimals(migrationValue,oldContractTokenDecimals);
+          // Decrese amountLent by redeem amount
+          amountLent = amountLent.minus(this.functionsUtil.BNify(redeemedValueFixed));
+
+          // Reset amountLent if below zero
+          if (amountLent.lt(0)){
+            amountLent = this.functionsUtil.BNify(0);
+          }
+        // Migrated
+        } else if (isMigrationTx){
+
+          let migrationValueFixed = tx.value;
+
+          // Get real migrated amount from tx logs
+          if (isNewTx){
+
+            let migrationTxReceipt = storedTx.txReceipt ? storedTx.txReceipt : null;
+
+            if (!migrationTxReceipt){
+              // console.log('getPrevTxs - migrationTx - getTransactionReceipt',tx.hash);
+              migrationTxReceipt = await (new Promise( async (resolve, reject) => {
+                this.props.web3.eth.getTransactionReceipt(tx.hash,(err,tx)=>{
+                  if (err){
+                    reject(err);
+                  }
+                  resolve(tx);
+                });
+              }));
+            }
+
+            if (!migrationTxReceipt){
+              return;
+            }
+
+            const internalTransfers = migrationTxReceipt.logs.filter((tx) => { return tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${oldContractAddr}`; });
+
+            if (!internalTransfers.length){
+              return;
+            }
+
+            try{
+              const decodedLogs = this.props.web3.eth.abi.decodeLog([
+                /*{
+                  "internalType": "uint256",
+                  "name": "_idleToken",
+                  "type": "uint256"
+                },*/
+                {
+                  "internalType": "uint256",
+                  "name": "_tokenAmount",
+                  "type": "uint256"
+                }/*,
+                {
+                  "internalType": "uint256",
+                  "name": "_price",
+                  "type": "uint256"
+                },*/
+              ],internalTransfers[0].data,internalTransfers[0].topics);
+
+              if (decodedLogs){
+                const migrationValue = decodedLogs._tokenAmount;
+                const oldContractTokenDecimals = this.state.oldContractTokenDecimals ? this.state.oldContractTokenDecimals : await this.functionsUtil.getTokenDecimals(this.props.tokenConfig.migration.oldContract.name);
+                migrationValueFixed = this.functionsUtil.fixTokenDecimals(migrationValue,oldContractTokenDecimals);
+
+                storedTx.value = migrationValueFixed;
+              } else {
+                // console.log('Can\'t decode migration tx logs');
+                return;
+              }
+            } catch (error) {
+              // console.log('Error while decoding migration tx logs',error,internalTransfers);
+              return;
+            }
+
+            // Save txReceipt in localStorage
+            if (!storedTx.txReceipt){
+              storedTx.txReceipt = migrationTxReceipt;
+              storedTxs[this.props.account][this.props.selectedToken][txKey] = storedTx;
+            }
+
+          }
+
 
           amountLent = amountLent.plus(this.functionsUtil.BNify(migrationValueFixed));
-
-          // console.log('Add migrated value',migrationValueFixed.toString(),amountLent.toString());
-
-          tx.value = migrationValueFixed;
-        } catch (error) {
-          return;
         }
-      }
 
-      transactions[tx.hash] = tx;
-    });
+        // Update transaction
+        prevTxs[tx.hash] = tx;
+      });
+    }
 
-    const storedTxs = localStorage ? JSON.parse(localStorage.getItem('transactions')) : null;
-    const minedTxs = storedTxs && storedTxs[this.props.account] && storedTxs[this.props.account][this.props.selectedToken] ? storedTxs[this.props.account][this.props.selectedToken] : this.props.transactions;
+    let minedTxs = storedTxs[this.props.account][this.props.selectedToken];
 
     // Add missing executed transactions
     if (minedTxs){
@@ -1055,23 +1135,28 @@ class SmartContractControls extends React.Component {
 
       await this.asyncForEach(Object.keys(minedTxs),async (txKey,i) => {
         const tx = minedTxs[txKey];
+        const isStoredTx = storedTxs && storedTxs[this.props.account] && storedTxs[this.props.account][this.props.selectedToken] && storedTxs[this.props.account][this.props.selectedToken][txKey];
 
         const allowedMethods = ['mintIdleToken','redeemIdleToken','bridgeIdleV1ToIdleV2']
 
         // Skip invalid txs
-        if (transactions[tx.transactionHash] || tx.status !== 'success' || !tx.transactionHash || allowedMethods.indexOf(tx.method)===-1){
-          // this.functionsUtil.customLog('Skip not allowed transaction',tx.transactionHash);
+        if (prevTxs[tx.transactionHash] || tx.status !== 'success' || !tx.transactionHash || allowedMethods.indexOf(tx.method)===-1){
           return;
         }
 
-        const realTx = await (new Promise( async (resolve, reject) => {
-          this.props.web3.eth.getTransaction(tx.transactionHash,(err,txReceipt)=>{
-            if (err){
-              reject(err);
-            }
-            resolve(txReceipt);
-          });
-        }));
+        let realTx = tx.realTx ? tx.realTx : null;
+
+        if (!realTx){
+          // console.log('getPrevTxs - getTransaction',tx.transactionHash);
+          realTx = await (new Promise( async (resolve, reject) => {
+            this.props.web3.eth.getTransaction(tx.transactionHash,(err,txReceipt)=>{
+              if (err){
+                reject(err);
+              }
+              resolve(txReceipt);
+            });
+          }));
+        }
 
         this.functionsUtil.customLog('realTx (localStorage)',realTx);
 
@@ -1090,9 +1175,8 @@ class SmartContractControls extends React.Component {
 
             if (realTx.to.toLowerCase() !== this.props.tokenConfig.idle.address.toLowerCase()){
               // Remove wrong contract tx
-              if (storedTxs && storedTxs[this.props.account] && storedTxs[this.props.account][this.props.selectedToken] && storedTxs[this.props.account][this.props.selectedToken][txKey]){
+              if (isStoredTx){
                 delete storedTxs[this.props.account][this.props.selectedToken][txKey];
-                localStorage.setItem('transactions',JSON.stringify(storedTxs));
               }
 
               // this.functionsUtil.customLog('Skipped deposit tx '+tx.transactionHash+' - wrong contract');
@@ -1110,51 +1194,86 @@ class SmartContractControls extends React.Component {
             realTx.value = txValue;
           break;
           case 'redeemIdleToken':
-            const redeemTxReceipt = await (new Promise( async (resolve, reject) => {
-              this.props.web3.eth.getTransactionReceipt(tx.transactionHash,(err,tx)=>{
-                if (err){
-                  reject(err);
-                }
-                resolve(tx);
-              });
-            }));
+
+            let redeemTxReceipt = tx.txReceipt ? tx.txReceipt : null;
+
+            if (!redeemTxReceipt){
+              // console.log('getPrevTxs - redeemTx - getTransactionReceipt',tx.hash);
+              redeemTxReceipt = await (new Promise( async (resolve, reject) => {
+                this.props.web3.eth.getTransactionReceipt(tx.transactionHash,(err,tx)=>{
+                  if (err){
+                    reject(err);
+                  }
+                  resolve(tx);
+                });
+              }));
+
+            }
 
             if (!redeemTxReceipt || redeemTxReceipt.to.toLowerCase() !== this.props.tokenConfig.idle.address.toLowerCase() ){
               // Remove wrong contract tx
-              if (storedTxs && storedTxs[this.props.account] && storedTxs[this.props.account][this.props.selectedToken] && storedTxs[this.props.account][this.props.selectedToken][txKey]){
+              if (isStoredTx){
                 delete storedTxs[this.props.account][this.props.selectedToken][txKey];
-                localStorage.setItem('transactions',JSON.stringify(storedTxs));
               }
               return;
             }
 
-            const walletAddress = this.props.account.replace('x','').toLowerCase();
+            // Save txReceipt into the tx
+            if (!tx.txReceipt){
+              tx.txReceipt = redeemTxReceipt;
+              if (isStoredTx){
+                storedTxs[this.props.account][this.props.selectedToken][txKey] = tx;
+              }
+            }
 
+            const walletAddress = this.props.account.replace('x','').toLowerCase();
             const redeemTxInternalTransfers = redeemTxReceipt.logs.filter((tx) => { return tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${walletAddress}`; });
 
             if (!redeemTxInternalTransfers.length){
               return;
             }
 
-            const internalTransfer = redeemTxInternalTransfers[0];
-            const redeemedValue = parseInt(internalTransfer.data,16);
+            try {
+              // Decode lons
+              const decodedLogs = this.props.web3.eth.abi.decodeLog([
+                {
+                  "internalType": "uint256",
+                  "name": "_tokenAmount",
+                  "type": "uint256"
+                }
+              ],redeemTxInternalTransfers[0].data,redeemTxInternalTransfers[0].topics);
 
-            const redeemTokenDecimals = this.state.tokenDecimals ? this.state.tokenDecimals : await this.functionsUtil.getTokenDecimals();
-            const redeemedValueFixed = this.functionsUtil.fixTokenDecimals(redeemedValue,redeemTokenDecimals);
+              if (decodedLogs){
+                const redeemedValue = decodedLogs._tokenAmount;
+                const redeemTokenDecimals = this.state.tokenDecimals ? this.state.tokenDecimals : await this.functionsUtil.getTokenDecimals();
+                const redeemedValueFixed = this.functionsUtil.fixTokenDecimals(redeemedValue,tokenDecimals);
 
-            realTx.status = 'Redeemed';
-            realTx.value = redeemedValueFixed.toString();
+                realTx.status = 'Redeemed';
+                realTx.value = redeemedValueFixed.toString();
+
+              } else {
+                return;
+              }
+            } catch (err) {
+              return;
+            }
+
+            // TODO: save tx to localstorage
           break;
           case 'bridgeIdleV1ToIdleV2':
 
-            const migrationTxReceipt = await (new Promise( async (resolve, reject) => {
-              this.props.web3.eth.getTransactionReceipt(tx.transactionHash,(err,tx)=>{
-                if (err){
-                  reject(err);
-                }
-                resolve(tx);
-              });
-            }));
+            let migrationTxReceipt = tx.txReceipt ? tx.txReceipt : null;
+
+            if (!migrationTxReceipt){
+              migrationTxReceipt = await (new Promise( async (resolve, reject) => {
+                this.props.web3.eth.getTransactionReceipt(tx.transactionHash,(err,tx)=>{
+                  if (err){
+                    reject(err);
+                  }
+                  resolve(tx);
+                });
+              }));
+            }
 
             if (!migrationTxReceipt){
               return;
@@ -1165,11 +1284,18 @@ class SmartContractControls extends React.Component {
 
             if (!isMigrationRightContract.length){
               // Remove wrong contract tx
-              if (storedTxs && storedTxs[this.props.account] && storedTxs[this.props.account][this.props.selectedToken] && storedTxs[this.props.account][this.props.selectedToken][txKey]){
+              if (isStoredTx){
                 delete storedTxs[this.props.account][this.props.selectedToken][txKey];
-                localStorage.setItem('transactions',JSON.stringify(storedTxs));
               }
               return;
+            }
+
+            // Save txReceipt into the tx
+            if (!tx.txReceipt){
+              tx.txReceipt = migrationTxReceipt;
+              if (isStoredTx){
+                storedTxs[this.props.account][this.props.selectedToken][txKey] = tx;
+              }
             }
 
             const migrationTxInternalTransfers = migrationTxReceipt.logs.filter((tx) => { return tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${oldContractAddr}`; });
@@ -1208,7 +1334,6 @@ class SmartContractControls extends React.Component {
         }
 
         realTx.tokenSymbol = this.props.selectedToken;
-        realTx.tx = tx;
 
         // this.functionsUtil.customLog('realTx from localStorage:',realTx);
 
@@ -1226,10 +1351,19 @@ class SmartContractControls extends React.Component {
           // console.log('Migrated (localStorage) '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
         }
 
-        transactions[realTx.hash] = realTx;
+        // Save realTx and update localStorage
+        if (!tx.realTx){
+          tx.realTx = realTx;
+          storedTxs[this.props.account][this.props.selectedToken][txKey] = tx;
+        }
 
-        // this.functionsUtil.customLog('getPrevTxs inserted executed tx',transactions[realTx.hash]);
+        prevTxs[realTx.hash] = realTx;
       });
+  
+      // Update localStorage
+      if (storedTxs && localStorage){
+        localStorage.setItem('transactions',JSON.stringify(storedTxs));
+      }
     }
 
     let earning = this.state.earning;
@@ -1247,7 +1381,8 @@ class SmartContractControls extends React.Component {
 
     return this.setState({
       prevTxsError: false,
-      prevTxs: transactions,
+      prevTxs,
+      lastBlockNumber,
       isFirstDeposit,
       amountLent,
       earning
@@ -1315,6 +1450,7 @@ class SmartContractControls extends React.Component {
       }
 
       if (needsUpdate){
+        // console.log('Txs updated - calling prevTxs');
         this.getPrevTxs();
       }
     }
@@ -1395,10 +1531,10 @@ class SmartContractControls extends React.Component {
       activeModal: null,
       fundsError: false,
       showEmptyWalletOverlay:true,
-      prevTxs : null,
       tokenDecimals: null,
       prevTxsError: false,
-      transactions:{},
+      lastBlockNumber:'8119247', // Idle inception
+      prevTxs: null, // Transactions from Etherscan
       web3:this.props.web3
     });
   }
@@ -1704,6 +1840,7 @@ class SmartContractControls extends React.Component {
     // Update util functions props
     this.loadUtils();
 
+    const getTxsList = this.state.prevTxs === null || !Object.values(this.state.prevTxs).length;
     const transactionsChanged = prevProps.transactions !== this.props.transactions;
     const accountChanged = prevProps.account !== this.props.account;
     const selectedTokenChanged = prevProps.selectedToken !== this.props.selectedToken;
@@ -1777,7 +1914,7 @@ class SmartContractControls extends React.Component {
         this.checkMigration(),
         this.checkTokenApproved(),
         this.getAllocations(),
-        this.getTokenBalance()
+        this.getTokenBalance(),
       ]);
 
       this.functionsUtil.customLog('Async functions completed...');
@@ -1795,7 +1932,9 @@ class SmartContractControls extends React.Component {
         updateInProgress: false
       });
 
-      if (!transactionsChanged || selectedTokenChanged){
+      // Get transactions only if empty
+      if (getTxsList){
+        // console.log('Updating prevTxs',!transactionsChanged,selectedTokenChanged,accountChanged);
         this.getPrevTxs();
       }
     }
@@ -2063,6 +2202,7 @@ class SmartContractControls extends React.Component {
     const earningAtEndOfYear = !isNaN(this.functionsUtil.trimEth(this.state.earning)) ? parseFloat(this.functionsUtil.trimEth(this.functionsUtil.BNify(this.state.earning).plus(this.functionsUtil.BNify(this.state.earningPerYear)),8)) : 0;
 
     const fundsAreReady = this.state.fundsError || (!this.state.updateInProgress && !isNaN(this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)) && !isNaN(this.functionsUtil.trimEth(this.state.earning)) && !isNaN(this.functionsUtil.trimEth(this.state.amountLent)));
+    const transactionsAreReady = this.state.prevTxs !== null;
 
     // console.log('currentReedemableFunds',currentReedemableFunds,'reedemableFundsAtEndOfYear',reedemableFundsAtEndOfYear,'currentEarning',currentEarning,'earningAtEndOfYear',earningAtEndOfYear);
 
@@ -2834,7 +2974,7 @@ class SmartContractControls extends React.Component {
                       this.props.selectedTab === '2' && this.state.showFundsInfo &&
                         <Box my={[3,4]} pb={[3,4]}>
                           {
-                            this.state.prevTxs ? (
+                            transactionsAreReady ? (
                               this.renderPrevTxs()
                             ) : this.state.prevTxsError ? (
                               <Flex
