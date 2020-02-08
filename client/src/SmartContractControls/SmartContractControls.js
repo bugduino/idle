@@ -1381,8 +1381,6 @@ class SmartContractControls extends React.Component {
 
     const isFirstDeposit = depositedTxs === 1;
 
-    console.log('getPrevTxs',amountLent,earning);
-
     return this.setState({
       prevTxsError: false,
       prevTxs,
@@ -1855,7 +1853,7 @@ class SmartContractControls extends React.Component {
     // Remount the component if token changed
     const isCorrectNetwork = !prevProps.network.isCorrectNetwork && this.props.network.isCorrectNetwork;
     const selectedTokenChanged = prevProps.selectedToken !== this.props.selectedToken;
-    
+
     if (selectedTokenChanged || isCorrectNetwork){
       const needsUpdateEnabled = false;
       // Mount the component and initialize the state
