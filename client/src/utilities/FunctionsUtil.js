@@ -1,3 +1,4 @@
+import axios from 'axios';
 import moment from 'moment';
 import BigNumber from 'bignumber.js';
 import globalConfigs from '../configs/globalConfigs';
@@ -47,6 +48,33 @@ class FunctionsUtil {
     }
     return contract.contract;
   }
+  makeCachedRequest = async (endpoint,TTL) => {
+    TTL = TTL ? TTL : 0;
+    const timestamp = parseInt(new Date().getTime()/1000);
+    let cachedRequests = {};
+    // Check if already exists
+    if (localStorage && localStorage.getItem('cachedRequests')){
+      cachedRequests = JSON.parse(localStorage.getItem('cachedRequests'));
+      // Check if it's not expired
+      if (cachedRequests && cachedRequests[endpoint] && cachedRequests[endpoint].timestamp && timestamp-cachedRequests[endpoint].timestamp<TTL){
+        return cachedRequests[endpoint].data;
+      }
+    }
+
+    const data = await axios
+                        .get(endpoint)
+                        .catch(err => {
+                          console.error('Error getting request');
+                        });
+    if (localStorage) {
+      cachedRequests[endpoint] = {
+        data,
+        timestamp
+      };
+      localStorage.setItem('cachedRequests',JSON.stringify(cachedRequests));
+    }
+    return data;
+  }
   getTransactionError = error => {
     let output = 'error';
     if (parseInt(error.code)){
@@ -74,12 +102,20 @@ class FunctionsUtil {
   sendGoogleAnalyticsEvent = async (eventData) => {
 
     const googleEventsInfo = globalConfigs.analytics.google.events;
-    if (googleEventsInfo.enabled && window.ga && ( googleEventsInfo.debugEnabled || window.location.origin.toLowerCase().includes(globalConfigs.baseURL.toLowerCase()))){
+    const debugEnabled = googleEventsInfo.debugEnabled;
+    const originOk = window.location.origin.toLowerCase().includes(globalConfigs.baseURL.toLowerCase());
+    if (googleEventsInfo.enabled && window.ga && ( debugEnabled || originOk)){
 
       // Check if testnet postfix required
-      if (googleEventsInfo.addPostfixForTestnet && globalConfigs.network.requiredNetwork !== 1){
-        const currentNetwork = globalConfigs.network.availableNetworks[globalConfigs.network.requiredNetwork];
-        eventData.eventCategory += `_${currentNetwork}`;
+      if (googleEventsInfo.addPostfixForTestnet){
+        // Postfix network name if not mainnet
+        if (globalConfigs.network.requiredNetwork !== 1){
+          const currentNetwork = globalConfigs.network.availableNetworks[globalConfigs.network.requiredNetwork];
+          eventData.eventCategory += `_${currentNetwork}`;
+        // Postfix test for debug
+        } else if (debugEnabled && !originOk) {
+          eventData.eventCategory += '_test';
+        }
       }
 
       await (new Promise( async (resolve, reject) => {
@@ -239,6 +275,7 @@ class FunctionsUtil {
     });
   }
   genericContractCall = async (contractName, methodName, params = [], callParams = {}) => {
+
     let contract = this.getContractByName(contractName);
 
     if (!contract) {
