@@ -949,15 +949,19 @@ class SmartContractControls extends React.Component {
       storedTxs[this.props.account][this.props.selectedToken] = {};
     }
 
-    if (etherscanTxs){
+    if (etherscanTxs && etherscanTxs.length){
 
       // Merge new txs with previous ones
       await this.functionsUtil.asyncForEach(etherscanTxs,async (tx,index) => {
         prevTxs[tx.hash] = tx;
       });
 
+      const lastTx = etherscanTxs[etherscanTxs.length-1];
+
       // Update last block number
-      lastBlockNumber = etherscanTxs.pop().blockNumber;
+      if (lastTx && lastTx.blockNumber){
+        lastBlockNumber = lastTx.blockNumber;
+      }
 
       // Loop through prevTxs to have all the history
       await this.functionsUtil.asyncForEach(Object.values(prevTxs),async (tx,index) => {
@@ -1246,7 +1250,7 @@ class SmartContractControls extends React.Component {
               if (decodedLogs){
                 const redeemedValue = decodedLogs._tokenAmount;
                 const redeemTokenDecimals = this.state.tokenDecimals ? this.state.tokenDecimals : await this.functionsUtil.getTokenDecimals();
-                const redeemedValueFixed = this.functionsUtil.fixTokenDecimals(redeemedValue,tokenDecimals);
+                const redeemedValueFixed = this.functionsUtil.fixTokenDecimals(redeemedValue,redeemTokenDecimals);
 
                 realTx.status = 'Redeemed';
                 realTx.value = redeemedValueFixed.toString();
@@ -1377,7 +1381,7 @@ class SmartContractControls extends React.Component {
 
     const isFirstDeposit = depositedTxs === 1;
 
-    this.functionsUtil.customLog('getPrevTxs',amountLent,earning);
+    console.log('getPrevTxs',amountLent,earning);
 
     return this.setState({
       prevTxsError: false,
@@ -1568,6 +1572,10 @@ class SmartContractControls extends React.Component {
     }
 
     this.functionsUtil.customLog('Web3 SmartContractControls initialized');
+
+    if (this.props.network && !this.props.network.isCorrectNetwork){
+      return false;
+    }
 
     await this.props.initContract(this.props.tokenConfig.idle.token, this.props.tokenConfig.idle.address, this.props.tokenConfig.idle.abi);
 
@@ -1837,21 +1845,27 @@ class SmartContractControls extends React.Component {
 
   async componentDidUpdate(prevProps, prevState) {
 
+    if (this.props.network && !this.props.network.isCorrectNetwork){
+      return false;
+    }
+
     // Update util functions props
     this.loadUtils();
 
-    const getTxsList = this.state.prevTxs === null || !Object.values(this.state.prevTxs).length;
-    const transactionsChanged = prevProps.transactions !== this.props.transactions;
-    const accountChanged = prevProps.account !== this.props.account;
-    const selectedTokenChanged = prevProps.selectedToken !== this.props.selectedToken;
-    const tokenBalanceChanged = this.props.accountBalanceToken !== this.state.tokenBalance;
-
     // Remount the component if token changed
-    if (selectedTokenChanged){
+    const isCorrectNetwork = !prevProps.network.isCorrectNetwork && this.props.network.isCorrectNetwork;
+    const selectedTokenChanged = prevProps.selectedToken !== this.props.selectedToken;
+    
+    if (selectedTokenChanged || isCorrectNetwork){
       const needsUpdateEnabled = false;
       // Mount the component and initialize the state
       await this.componentDidMount(needsUpdateEnabled);
     }
+
+    const getTxsList = this.state.prevTxs === null || !Object.values(this.state.prevTxs).length;
+    const transactionsChanged = prevProps.transactions !== this.props.transactions;
+    const accountChanged = prevProps.account !== this.props.account;
+    const tokenBalanceChanged = this.props.accountBalanceToken !== this.state.tokenBalance;
 
     // Show welcome modal
     if (this.props.account && accountChanged){
@@ -1999,10 +2013,10 @@ class SmartContractControls extends React.Component {
         });
       }
 
-      await Promise.all([
-        this.getAllocations(),
-        this.rebalanceCheck()
-      ]);
+      // await Promise.all([
+        this.getAllocations();
+        this.rebalanceCheck();
+      // ]);
     }
 
     if (tabIndex !== '2') {

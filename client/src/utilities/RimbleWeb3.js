@@ -247,11 +247,13 @@ class RimbleTransaction extends React.Component {
 
     const web3Callback = async () => {
       // After setting the web3 provider, check network
-      this.checkNetwork();
-      await this.initializeContracts();
+      await this.checkNetwork();
+      if (this.state.network.isCorrectNetwork){
+        await this.initializeContracts();
 
-      if (context.account) {
-        await this.initAccount(context.account);
+        if (context.account) {
+          await this.initAccount(context.account);
+        }
       }
     }
 
@@ -259,7 +261,10 @@ class RimbleTransaction extends React.Component {
       this.setState({ web3 }, web3Callback);
     } else {
       if (context.account) {
-        await this.initAccount(context.account);
+        await this.checkNetwork();
+        if (this.state.network.isCorrectNetwork){
+          await this.initAccount(context.account);
+        }
       }
     }
 
@@ -336,10 +341,12 @@ class RimbleTransaction extends React.Component {
 
         // Send address info to SimpleID
         const simpleID = this.initSimpleID();
-        this.functionsUtil.simpleIDPassUserInfo({
-          address: account,
-          walletProvider
-        },simpleID);
+        if (simpleID){
+          this.functionsUtil.simpleIDPassUserInfo({
+            address: account,
+            walletProvider
+          },simpleID);
+        }
 
         // Send Google Analytics connection event
         this.functionsUtil.sendGoogleAnalyticsEvent({
@@ -545,6 +552,8 @@ class RimbleTransaction extends React.Component {
         // called at least once
       });
     } catch (error) {
+      // console.error(error);
+
       // User denied account access...
       this.functionsUtil.customLog("User cancelled connect request. Error:", error);
 
@@ -596,7 +605,7 @@ class RimbleTransaction extends React.Component {
       const tokenDecimals = res[2].toString();
       let accountBalanceToken = res[1];
 
-      this.functionsUtil.customLog('accountBalance',res,(accountBalanceToken ? accountBalanceToken.toString() : null),tokenDecimals,increaseAmount);
+      // console.log('accountBalance',res,(accountBalanceToken ? accountBalanceToken.toString() : null),tokenDecimals,increaseAmount);
 
       if (accountBalanceToken) {
 
@@ -609,14 +618,14 @@ class RimbleTransaction extends React.Component {
         
         accountBalanceToken = this.functionsUtil.fixTokenDecimals(accountBalanceToken,tokenDecimals).toString();
 
-        this.functionsUtil.customLog('increaseAmount',(increaseAmount ? increaseAmount.toString() : '0'),(this.state.accountBalanceToken ? this.state.accountBalanceToken.toString() : '0'),(accountBalanceToken ? accountBalanceToken.toString() : 'ERROR'));
+        // console.log('increaseAmount',(increaseAmount ? increaseAmount.toString() : '0'),(this.state.accountBalanceToken ? this.state.accountBalanceToken.toString() : '0'),(accountBalanceToken ? accountBalanceToken.toString() : 'ERROR'));
+        // console.log(`account balance ${this.props.selectedToken}: `, accountBalanceToken);
 
         this.setState({
           accountBalanceToken,
           [`accountBalance${this.props.selectedToken}`]:accountBalanceToken
         });
 
-        this.functionsUtil.customLog(`account balance ${this.props.selectedToken}: `, accountBalanceToken);
       } else {
         this.functionsUtil.customLog('accountBalanceToken is not set:',accountBalanceToken);
       }
@@ -776,8 +785,11 @@ class RimbleTransaction extends React.Component {
 
   checkNetwork = async () => {
     this.getRequiredNetwork();
-    await this.getNetworkId();
-    await this.getNetworkName();
+
+    await Promise.all([
+      this.getNetworkId(),
+      this.getNetworkName()
+    ]);
 
     let network = { ...this.state.network };
     network.isCorrectNetwork = this.state.network.current.id === this.state.network.required.id;

@@ -1,13 +1,13 @@
 import React from "react";
-import { Box, Flex, Button, Image } from "rimble-ui";
-import AccountOverview from "./AccountOverview";
-import AccountModal from "./AccountModal";
 import BuyModal from "./BuyModal";
 import styles from './Header.module.scss';
-import BigNumber from 'bignumber.js';
-import TokenSelector from '../../TokenSelector/TokenSelector';
+import AccountModal from "./AccountModal";
+import AccountOverview from "./AccountOverview";
+import { Box, Flex, Button, Image } from "rimble-ui";
+import FunctionsUtil from '../FunctionsUtil';
 import ButtonGroup from '../../ButtonGroup/ButtonGroup';
 import ButtonLoader from '../../ButtonLoader/ButtonLoader.js';
+import TokenSelector from '../../TokenSelector/TokenSelector';
 
 import {
   Link as RouterLink,
@@ -17,6 +17,16 @@ class Header extends React.Component {
   state = {
     idleTokenBalance: null,
     isModalOpen: null,
+  }
+
+  // Utils
+  functionsUtil = null;
+  loadUtils(){
+    if (this.functionsUtil){
+      this.functionsUtil.setProps(this.props);
+    } else {
+      this.functionsUtil = new FunctionsUtil(this.props);
+    }
   }
 
   toggleModal = (modalName) => {
@@ -52,30 +62,6 @@ class Header extends React.Component {
     });
   }
 
-  genericContractCall = async (contractName, methodName, params = []) => {
-    let contract = this.props.contracts.find(c => c.name === contractName);
-    contract = contract && contract.contract;
-    if (!contract) {
-      return;
-    }
-
-    const value = await contract.methods[methodName](...params).call().catch(error => {
-      this.setState({ error });
-    });
-    return value;
-  }
-
-  // Idle
-  genericIdleCall = async (methodName, params = []) => {
-    return await this.genericContractCall(this.props.tokenConfig.idle.token, methodName, params).catch(err => {
-      console.error('Generic Idle call err:', err);
-    });
-  }
-
-  getIdleTokenBalance = async () => {
-    return await this.genericIdleCall('balanceOf', [this.props.account]);
-  }
-
   closeBuyModal = (e) => {
     if (e){
       e.preventDefault();
@@ -85,23 +71,25 @@ class Header extends React.Component {
   }
 
   async componentWillMount() {
+    this.loadUtils();
     this.setCurrentToken();
   }
 
   async componentDidMount() {
+
+    this.loadUtils();
 
     // do not wait for each one just for the first who will guarantee web3 initialization
     const web3 = await this.props.initWeb3();
     if (!web3) {
       return false;
     }
-
-    await this.props.initContract(this.props.tokenConfig.idle.token, this.props.tokenConfig.idle.address, this.props.tokenConfig.idle.abi);
   }
 
-  BNify = s => new BigNumber(String(s));
-
   async componentDidUpdate(prevProps, prevState) {
+
+    this.loadUtils();
+
     const accountUpdated = prevProps.account !== this.props.account;
     const tokenUpdated = prevProps.selectedToken !== this.props.selectedToken;
     const accountBalanceUpdated = prevProps.accountBalanceToken !== this.props.accountBalanceToken;
@@ -109,19 +97,16 @@ class Header extends React.Component {
     if (tokenUpdated){
       this.setCurrentToken();
     }
-    /*
-    if (this.props.buyModalOpened && this.state.isModalOpen!=='buy'){
-      this.setState({
-        isModalOpen: 'buy'
-      });
+
+    if (this.props.network && !this.props.network.isCorrectNetwork){
+      return false;
     }
-    */
 
     if (this.props.account && (accountUpdated || accountBalanceUpdated)) {
 
-      let idleTokenBalance = await this.getIdleTokenBalance();
+      let idleTokenBalance = await this.functionsUtil.getProtocolBalance(this.props.tokenConfig.idle.token,this.props.account);
       if (idleTokenBalance){
-        idleTokenBalance = this.BNify(idleTokenBalance).div(1e18);
+        idleTokenBalance = this.functionsUtil.BNify(idleTokenBalance).div(1e18);
         this.setState({
           idleTokenBalance
         });

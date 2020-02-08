@@ -36,7 +36,7 @@ const Injected = new InjectedConnector({
 });
 
 const Infura = new NetworkOnlyConnector({
-  providerURL: supportedNetworkURLs[defaultNetwork]
+  providerURL: globalConfigs.network.providers.infura[defaultNetwork]+env.REACT_APP_INFURA_KEY
 });
 
 const Trezor = new TrezorConnector({
