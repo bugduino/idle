@@ -323,13 +323,16 @@ class SmartContractControls extends React.Component {
 
       let amountLent = this.state.amountLent;
 
+      // console.log('AmountLent 1',amountLent);
+
       // this.functionsUtil.customLog('getBalanceOf 2','tokenToRedeem',tokenToRedeem.toString(),'amountLent',this.state.amountLent.toString());
 
       if (amountLent && this.functionsUtil.trimEth(amountLent.toString())>0 && this.functionsUtil.trimEth(tokenToRedeem.toString())>0 && parseFloat(this.functionsUtil.trimEth(tokenToRedeem.toString()))<parseFloat(this.functionsUtil.trimEth(amountLent.toString()))){
-        console.error('tokenToRedeem',tokenToRedeem.toString(),' less than amountLent',amountLent.toString());
+        // console.error('tokenToRedeem',tokenToRedeem.toString(),' less than amountLent',amountLent.toString());
 
         if (count === 2){
           amountLent = tokenToRedeem.div(this.state.tokenPrice);
+          // console.log('AmountLent 2',amountLent);
         } else {
           setTimeout( () => {
             this.getBalanceOf(contractName,count+1);
@@ -338,6 +341,7 @@ class SmartContractControls extends React.Component {
         }
       } else if (amountLent && amountLent.lte(0) && tokenToRedeem){
         amountLent = tokenToRedeem.div(this.state.tokenPrice);
+        // console.log('AmountLent 3',amountLent);
       }
 
       // Update state with tokenToRedeem, balance and amountLent
@@ -348,6 +352,8 @@ class SmartContractControls extends React.Component {
         tokenToRedeem,
         amountLent
       });
+
+      // console.log((tokenToRedeem ? tokenToRedeem.toString() : null),(amountLent ? amountLent.toString() : null));
 
       if (this.functionsUtil.BNify(tokenToRedeem).gt(this.functionsUtil.BNify(amountLent))){
         earning = tokenToRedeem.minus(this.functionsUtil.BNify(amountLent));
@@ -945,7 +951,9 @@ class SmartContractControls extends React.Component {
     // Inizialize storedTxs for pair account-token if empty
     if (!storedTxs[this.props.account]){
       storedTxs[this.props.account] = {};
-    } else if (!storedTxs[this.props.account][this.props.selectedToken]){
+    }
+
+    if (!storedTxs[this.props.account][this.props.selectedToken]){
       storedTxs[this.props.account][this.props.selectedToken] = {};
     }
 
@@ -1927,6 +1935,7 @@ class SmartContractControls extends React.Component {
         this.checkTokenApproved(),
         this.getAllocations(),
         this.getTokenBalance(),
+        (getTxsList ? this.getPrevTxs() : null)
       ]);
 
       this.functionsUtil.customLog('Async functions completed...');
@@ -1943,12 +1952,6 @@ class SmartContractControls extends React.Component {
       this.setState({
         updateInProgress: false
       });
-
-      // Get transactions only if empty
-      if (getTxsList){
-        // console.log('Updating prevTxs',!transactionsChanged,selectedTokenChanged,accountChanged);
-        this.getPrevTxs();
-      }
     }
 
     if (this.props.selectedTab !== '2' && this.state.fundsTimeoutID){
