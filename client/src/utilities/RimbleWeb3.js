@@ -985,7 +985,7 @@ class RimbleTransaction extends React.Component {
         .on("confirmation", confirmationCallback)
         .on("error", error => {
 
-          const isDeniedTx = error.message.includes('User denied transaction signature');
+          const isDeniedTx = error && error.message ? error.message.includes('User denied transaction signature') : false;
           
           // Set error on transaction
           transaction.status = "error";
