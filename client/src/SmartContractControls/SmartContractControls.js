@@ -2063,7 +2063,6 @@ class SmartContractControls extends React.Component {
         }
       }
 
-      let tokenSymbol = tx.tokenSymbol;
       const parsedValue = parseFloat(tx.value);
       const value = parsedValue ? (this.props.isMobile ? parsedValue.toFixed(4) : parsedValue.toFixed(decimals)) : '-';
       const momentDate = moment(date);
@@ -2097,7 +2096,6 @@ class SmartContractControls extends React.Component {
           color = 'blue';
           icon = "Sync";
           depositedSinceLastRedeem+=parsedValue;
-          tokenSymbol = this.props.selectedToken;
         break;
         default:
           color = 'grey';
@@ -2118,7 +2116,7 @@ class SmartContractControls extends React.Component {
                 </Pill>
               </Box>
               <Box width={[6/12,3/12]}>
-                <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>{value} {tokenSymbol}</Text>
+                <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>{value} {this.props.selectedToken}</Text>
               </Box>
               <Box width={3/12} display={['none','block']}>
                 <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>
