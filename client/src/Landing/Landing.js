@@ -595,7 +595,7 @@ class Landing extends Component {
                     100% non-custodial, and secured by audit.
                   </Heading.h3>
                   <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5} color={'dark-gray'}>
-                    Idle smart contract passed a security audit control you can read the full report <Link key={1} fontSize={2} hoverColor={'blue'} href={'https://certificate.quantstamp.com/full/idle-finance'} target={'_blank'}>here</Link>. We will never be able to touch your money while inside the smart contract. You are always in control of your money.
+                    Idle smart contract passed a security audit control. You can read the full report <Link key={1} fontSize={2} hoverColor={'blue'} href={'https://certificate.quantstamp.com/full/idle-finance'} target={'_blank'}>here</Link>. We will never be able to touch your money while inside the smart contract. You are always in control of your money.
                   </Heading.h4>
                 </Box>
                 <Box className={[styles.carouselDesc,this.state.activeCarousel===2 || this.props.isMobile ? styles.selected : '']} py={[3,0]} my={[3,0]}>
@@ -610,7 +610,7 @@ class Landing extends Component {
                     Just relax and watch your interest grows up
                   </Heading.h3>
                   <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5} color={'dark-gray'}>
-                    Don't loose your mind following interest rates on different lending protocols, let Idle do the dirty work and save time for yourself.
+                    Don't lose your mind following interest rates on different lending protocols, let Idle do the dirty work and save your time.
                   </Heading.h4>
                 </Box>
                 <Box className={[styles.carouselDesc,this.state.activeCarousel===3 || this.props.isMobile ? styles.selected : '']} py={[3,0]} my={[3,0]}>
@@ -625,7 +625,7 @@ class Landing extends Component {
                     Save money while optimizing your interest rate returns
                   </Heading.h3>
                   <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5} color={'dark-gray'}>
-                    Our "one-for-all" rebalance mechanism allows you to save money in terms of transaction fees, giving you back the best available interest rate on the market.
+                    Our "one-for-all" rebalance mechanism allows you to save money in terms of transaction fees, giving you the best available interest rate in the market.
                   </Heading.h4>
                 </Box>
               </Box>

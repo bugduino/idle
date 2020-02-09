@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Box, Flex, Text, Heading } from 'rimble-ui'
 // import styles from './Faq.module.scss';
 import Faquestion from '../Faquestion/Faquestion';
+import colors from '../colors';
 
 class Faq extends Component {
   state = {
@@ -9,23 +10,22 @@ class Faq extends Component {
     selectedSection: 'general',
     generalQuestions: [
       {
-        q: 'How does Idle works under the hood?',
-        a: `Idle gathers data from different Ethereum lending protocols, calculating the best possibile allocation to have the highest available interest rate. Your funds are put into asset pools (managed by the underlying lending protocols), from there borrowers can use the funds in pools to open up a loan. Those borrowers pay interest into the fund, increasing the size of the fund. When you withdraw your funds, you are entitled to a proportional amount of the interest accrued.`
+        q: 'How does Idle work under the hood?',
+        a: `Idle gathers data from different Ethereum lending protocols, calculating the best possibile allocation to have the highest available interest rate. Your funds are put into asset pools (managed by the underlying lending protocols), from there borrowers can use the funds in pools to take out a loan. Those borrowers pay interest into the fund, increasing the size of the fund. When you withdraw your funds, you are entitled to a proportional amount of the interest accrued.`
       },
       {
         q: 'How long do I have to use Idle to earn interest?',
-        a: `You can use Idle for as short as one block; there are no requirements on how long an asset must be lended. Because interest accrues every block, you’re free to redeem your funds at any time.`
+        a: `You can use Idle for as short as one block; there are no requirements on how long an asset must be loaned. Because interest accrues every block, you’re free to redeem your funds at any time.`
       },
       {
         q: 'Can you walk me through an example?',
-        a: `When entering in Idle the current best APR is automatically shown, if you decide to lend 10 DAI, you should only insert the amount and click on 'Lend'. We will forward your funds to the protocols offering the aggregated best rate, and gives you back tokens representing your position in Idle.`
+        a: `When you use Idle, it automatically shows you the current best APR. If you decide to loan 10 DAI at that APR, simply enter that amount and click on 'Lend'. Idle will forward the funds to the protocol offering the aggregated best rate and give you tokens representing your position.`
       }
     ],
     guidelinesQuestions: [
       {
-        q: 'How do I get the supplied asset back?',
-        a: `You can redeem your assets back using Idle at any time. You just have to connect your wallet and choose to redeem the assets. Idle will send the tokens lended and the interest earned back directly into your wallet.
-          There may be rare cases when your assets are not immediatly available because borrowers borrowed all the capital supplied by lenders. In this case borrowers are incetivized to repay the loan (with an high interest rate) and you are incentivized to keep lending tokens because you will receive an higher APR. You can wait until the liquidity is available or you can redeem the protocol tokens of the underlying lending protocols (eg. cToken, iToken) and redeem your lended assets through their platform.`
+        q: 'How do I get my assets back?',
+        a: `You can back your assets back from Idle at any time by connecting your wallet and choosing "redeem assets". Idle will return the tokens loaned and interest earned directly to your wallet. In rare situations, your assets may not be immediately available because all the capital supplied by lenders has been borrowed. When this happens, borrowers are incentivized to repay the loan because of increasing interest rates. Furthermore, lending additional tokens can be more attractive because you will receive a higher APR for lending additional assets. You can loan more or choose to wait until the liquidity is available. Another option is to redeem the tokens of the underlying lending protocols (e.g. cToken or iToken) to reacquire your assets through their platforms.`
       },
       {
         q: 'How could you provide such APR?',
@@ -45,19 +45,18 @@ class Faq extends Component {
       {
         q: 'Is Idle a non-custodial platform?',
         a: `Yes, only our smart contract can move pooled funds, we cannot directly move funds on your behalf.
-          When you lend assets in Idle, our smart contract forward them to different lending protocols and give you back IdleTokens representing your position in such protocols, all in the same transaction.`
+          When you lend assets in Idle, our smart contract forwards them to different lending protocols and returns Idle tokens representing your position in such protocols, all in the same transaction.`
       },
       {
         q: 'Is Idle safe to use?',
-        a: `Our contract have been audited by Quantstamp, you can read the audit report here https://certificate.quantstamp.com/full/idle-finance.
-          We're operating with different trustfully platforms and their smart contracts (all of them are audited and secured).
-          Our contract code is public and have been extensively tested, but the possibility of a bug always exists.
+        a: `Our contract has been audited by Quantstamp, you can read the audit report <a href='https://certificate.quantstamp.com/full/idle-finance' target="_blank" style="color:${colors.blue}">here</a>.
+          Idle is built upon trustworthy platforms that all employ secured, audited smart contracts.
+          Our contract code is public and has been extensively tested, but the possibility of a bug always exists.
           Use at your own risk.`
       },
       {
-        q: 'How does the decentralized rebalance process work?',
-        a: `For every lend or redeem action, of every user, the smart contract checks if the pool needs to be rebalanced, in that case it liquidates the entire pool position and allocates funds into various protocols in order to have the highest interest rate.
-          If at anytime the rates offered by the protocols are changed and no interactions are made to the contract, then any user can choose to rebalance the pool on their own, rebalancing therefore the position of everyone. To always have the highest interest rate we constantly monitors the lending market at the moment and we trigger the rebalance if needed.`
+        q: 'How does the decentralized rebalancing process work?',
+        a: `After every loan or redemption, the smart contract checks to see if the pool needs to be rebalanced. If rebalancing is required, the entire pool position is liquidated and reallocated into the protocols yielding the highest interest rate. When the interest rates offered by the protocols change but there have not been any loans or redemptions made, then any user can choose to rebalance the pool on their own. This has the effect of rebalancing the entire pool and the position of all Idle customers so that everyone has the highest interest rate. Idle also constantly monitors the lending market to trigger rebalancing id needed.`
       }
     ]
   };

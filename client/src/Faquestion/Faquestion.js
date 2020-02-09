@@ -44,9 +44,7 @@ class Faquestion extends Component {
         </Flex>
         <Flex width={1}>
           {this.props.isOpened &&
-            <Text.p textAlign={'justify'} fontSize={[1,2]}>
-              {this.props.answer}
-            </Text.p>
+            <Text.p textAlign={'justify'} fontSize={[1,2]} dangerouslySetInnerHTML={{ __html: this.props.answer }}></Text.p>
           }
         </Flex>
       </Flex>
