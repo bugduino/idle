@@ -135,7 +135,25 @@ class SmartContractControls extends React.Component {
 
     const _newAmount = 0;
     const _clientProtocolAmounts = [];
-    const shouldRebalance = await this.functionsUtil.genericIdleCall('rebalance',[_newAmount,_clientProtocolAmounts]);
+    let shouldRebalance = await this.functionsUtil.genericIdleCall('rebalance',[_newAmount,_clientProtocolAmounts]);
+
+    if (!shouldRebalance){
+
+      const callParams = { gas: this.props.web3.utils.toBN(5000000) };
+      
+      let [currAllocation,newAllocation] = await Promise.all([
+        this.props.getAllocations(),
+        this.functionsUtil.genericIdleCall('getParamsForRebalance',[_newAmount],callParams)
+      ]);
+
+      const currProtocol = Object.keys(currAllocation[0]).filter((addr,i) => { return parseInt(currAllocation[0][addr].toString()) });
+      newAllocation = newAllocation[0].reduce((obj, key, index) => ({ ...obj, [key.toLowerCase()]: newAllocation[1][index] }), {});
+      const newProtocol = Object.keys(newAllocation).filter((addr,i) => { return parseInt(newAllocation[addr].toString()) });
+
+      if (currProtocol.pop() !== newProtocol.pop()){
+        shouldRebalance = true;
+      }
+    }
 
     this.setState({
       shouldRebalance,
@@ -186,8 +204,6 @@ class SmartContractControls extends React.Component {
 
   getAprs = async () => {
     const Aprs = await this.functionsUtil.genericIdleCall('getAPRs');
-
-    // console.log(Aprs);
 
     if (componentUnmounted){
       return false;
@@ -3091,8 +3107,11 @@ class SmartContractControls extends React.Component {
                   <>
                     <Box borderBottom={'1px solid #D6D6D6'}>
                       <Flex flexDirection={'column'} width={[1,'90%']} m={'0 auto'}>
-                        <Flex flexDirection={['column','row']} width={'100%'}>
-                          <Flex flexDirection={'row'} py={[2,3]} width={[1,'1/2']} m={'0 auto'}>
+                        <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} pt={[2,3]} color={'dark-gray'}>
+                          Estimated pool earnings
+                        </Heading.h3>
+                        <Flex flexDirection={['column','row']} pt={2} pb={[2,3]} width={'100%'}>
+                          <Flex flexDirection={'row'} width={[1,1/2]} m={'0 auto'} alignItems={'center'} justifyContent={'center'}>
                             <Box width={1/2}>
                               <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
                                 Daily
@@ -3110,7 +3129,7 @@ class SmartContractControls extends React.Component {
                               </Heading.h3>
                             </Box>
                           </Flex>
-                          <Flex flexDirection={'row'} py={[2,3]} width={[1,'1/2']} m={'0 auto'}>
+                          <Flex flexDirection={'row'} width={[1,1/2]} m={'0 auto'}>
                             <Box width={1/2}>
                               <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
                                 Monthly
@@ -3197,7 +3216,7 @@ class SmartContractControls extends React.Component {
 
             {
               this.props.selectedTab === '3' && !this.state.calculatingShouldRebalance && !this.state.shouldRebalance &&
-              <Box px={[2,0]} textAlign={'center'} py={[3,2]}>
+              <Box px={[2,0]} textAlign={'center'} pt={[2,0]} pb={[3,2]}>
                 <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} pt={[0,3]} pb={[2,2]} color={'blue'}>
                   The pool is already balanced.
                 </Heading.h3>
