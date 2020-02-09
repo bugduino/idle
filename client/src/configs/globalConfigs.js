@@ -54,7 +54,7 @@ const globalConfigs = {
       events:{
         enabled:true, // Enable Google Analytics events
         addPostfixForTestnet:true, // Append testnet to eventCategory
-        debugEnabled: false // Enable sending for test environments
+        debugEnabled:false // Enable sending for test environments
       }
     }
   },
@@ -64,6 +64,12 @@ const globalConfigs = {
     welcome:{ // Welcome modal
       enabled:true,
       frequency:604800 // One week
+    }
+  },
+  stats:{
+    rates:{
+      endpoint:'https://api.idle.finance/rates/',
+      TTL:3600 // 1 hour
     }
   },
   network:{ // Network configurations
