@@ -139,7 +139,7 @@ class SmartContractControls extends React.Component {
 
     if (!shouldRebalance){
 
-      const callParams = { gas: this.props.web3.utils.toBN(5000000) };
+      const callParams = { gas: this.state.web3.utils.toBN(5000000) };
       
       let [currAllocation,newAllocation] = await Promise.all([
         this.props.getAllocations(),
@@ -483,8 +483,8 @@ class SmartContractControls extends React.Component {
 
     this.props.contractMethodSendWrapper(token, 'approve', [
       this.props.tokenConfig.idle.address,
-      this.props.web3.utils.toTwosComplement('-1') // max uint solidity
-      // this.props.web3.utils.BN(0) // Disapprova
+      this.state.web3.utils.toTwosComplement('-1') // max uint solidity
+      // this.state.web3.utils.BN(0) // Disapprova
     ],null,(tx,error)=>{
 
       const newState = {
@@ -543,7 +543,7 @@ class SmartContractControls extends React.Component {
 
     // Get amounts for best allocations
     if (this.props.account){
-      const callParams = { from: this.props.account, gas: this.props.web3.utils.toBN(5000000) };
+      const callParams = { from: this.props.account, gas: this.state.web3.utils.toBN(5000000) };
       paramsForRebalance = await this.functionsUtil.genericIdleCall('getParamsForRebalance',[_newAmount],callParams);
       this.functionsUtil.customLog('getParamsForRebalance',_newAmount,paramsForRebalance);
     }
@@ -620,7 +620,7 @@ class SmartContractControls extends React.Component {
 
     if (this.props.account){
       // Get amounts for best allocations
-      const callParams = { from: this.props.account, gas: this.props.web3.utils.toBN(5000000) };
+      const callParams = { from: this.props.account, gas: this.state.web3.utils.toBN(5000000) };
       paramsForMint = await this.functionsUtil.genericIdleCall('getParamsForMintIdleToken',[value],callParams);
       this.functionsUtil.customLog('getParamsForMintIdleToken',value,paramsForMint);
     }
@@ -730,7 +730,7 @@ class SmartContractControls extends React.Component {
     let paramsForRedeem = null;
 
     if (this.props.account){
-      const callParams = { from: this.props.account, gas: this.props.web3.utils.toBN(5000000) };
+      const callParams = { from: this.props.account, gas: this.state.web3.utils.toBN(5000000) };
       paramsForRedeem = await this.functionsUtil.genericIdleCall('getParamsForRedeemIdleToken',[idleTokenToRedeem, _skipRebalance],callParams);
       this.functionsUtil.customLog('getParamsForRedeemIdleToken',idleTokenToRedeem,paramsForRedeem);
     }
@@ -1005,7 +1005,7 @@ class SmartContractControls extends React.Component {
             if (!redeemTxReceipt){
               // console.log('getPrevTxs - redeemTx - getTransactionReceipt',tx.hash);
               redeemTxReceipt = await (new Promise( async (resolve, reject) => {
-                this.props.web3.eth.getTransactionReceipt(tx.hash,(err,tx)=>{
+                this.state.web3.eth.getTransactionReceipt(tx.hash,(err,tx)=>{
                   if (err){
                     reject(err);
                   }
@@ -1027,7 +1027,7 @@ class SmartContractControls extends React.Component {
 
             try{
               // Decode lons
-              const decodedLogs = this.props.web3.eth.abi.decodeLog([
+              const decodedLogs = this.state.web3.eth.abi.decodeLog([
                 {
                   "internalType": "uint256",
                   "name": "_tokenAmount",
@@ -1074,7 +1074,7 @@ class SmartContractControls extends React.Component {
             if (!migrationTxReceipt){
               // console.log('getPrevTxs - migrationTx - getTransactionReceipt',tx.hash);
               migrationTxReceipt = await (new Promise( async (resolve, reject) => {
-                this.props.web3.eth.getTransactionReceipt(tx.hash,(err,tx)=>{
+                this.state.web3.eth.getTransactionReceipt(tx.hash,(err,tx)=>{
                   if (err){
                     reject(err);
                   }
@@ -1094,7 +1094,7 @@ class SmartContractControls extends React.Component {
             }
 
             try{
-              const decodedLogs = this.props.web3.eth.abi.decodeLog([
+              const decodedLogs = this.state.web3.eth.abi.decodeLog([
                 /*{
                   "internalType": "uint256",
                   "name": "_idleToken",
@@ -1167,7 +1167,7 @@ class SmartContractControls extends React.Component {
         if (!realTx){
           // console.log('getPrevTxs - getTransaction',tx.transactionHash);
           realTx = await (new Promise( async (resolve, reject) => {
-            this.props.web3.eth.getTransaction(tx.transactionHash,(err,txReceipt)=>{
+            this.state.web3.eth.getTransaction(tx.transactionHash,(err,txReceipt)=>{
               if (err){
                 reject(err);
               }
@@ -1218,7 +1218,7 @@ class SmartContractControls extends React.Component {
             if (!redeemTxReceipt){
               // console.log('getPrevTxs - redeemTx - getTransactionReceipt',tx.hash);
               redeemTxReceipt = await (new Promise( async (resolve, reject) => {
-                this.props.web3.eth.getTransactionReceipt(tx.transactionHash,(err,tx)=>{
+                this.state.web3.eth.getTransactionReceipt(tx.transactionHash,(err,tx)=>{
                   if (err){
                     reject(err);
                   }
@@ -1253,7 +1253,7 @@ class SmartContractControls extends React.Component {
 
             try {
               // Decode lons
-              const decodedLogs = this.props.web3.eth.abi.decodeLog([
+              const decodedLogs = this.state.web3.eth.abi.decodeLog([
                 {
                   "internalType": "uint256",
                   "name": "_tokenAmount",
@@ -1284,7 +1284,7 @@ class SmartContractControls extends React.Component {
 
             if (!migrationTxReceipt){
               migrationTxReceipt = await (new Promise( async (resolve, reject) => {
-                this.props.web3.eth.getTransactionReceipt(tx.transactionHash,(err,tx)=>{
+                this.state.web3.eth.getTransactionReceipt(tx.transactionHash,(err,tx)=>{
                   if (err){
                     reject(err);
                   }
@@ -1322,7 +1322,7 @@ class SmartContractControls extends React.Component {
               return;
             }
 
-            const decodedLogs = this.props.web3.eth.abi.decodeLog([
+            const decodedLogs = this.state.web3.eth.abi.decodeLog([
               {
                 "internalType": "uint256",
                 "name": "_idleToken",
@@ -1786,7 +1786,7 @@ class SmartContractControls extends React.Component {
         const value = this.functionsUtil.normalizeTokenAmount(this.state.oldContractBalanceFormatted,this.state.oldContractTokenDecimals).toString();
         if (this.props.account){
           // Get amounts for best allocations
-          const callParams = { from: this.props.account, gas: this.props.web3.utils.toBN(5000000) };
+          const callParams = { from: this.props.account, gas: this.state.web3.utils.toBN(5000000) };
           const paramsForMint = await this.functionsUtil.genericIdleCall('getParamsForMintIdleToken',[value],callParams);
           if (paramsForMint){
             _clientProtocolAmounts = paramsForMint[1];
