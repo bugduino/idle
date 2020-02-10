@@ -1606,7 +1606,7 @@ class SmartContractControls extends React.Component {
       this.getPriceInToken(),
       this.checkTokenApproved()
     ]);
-    
+
     window.renderWyre = this.renderWyre;
 
     this.props.initContract(this.props.selectedToken, this.props.tokenConfig.address, this.props.tokenConfig.abi);
@@ -1627,11 +1627,13 @@ class SmartContractControls extends React.Component {
   }
 
   async checkMigrationContractApproved() {
-    const migrationContractInfo = this.props.tokenConfig.migration.migrationContract;
-    const migrationContractName = migrationContractInfo.name;
-    const migrationContract = this.functionsUtil.getContractByName(migrationContractName);
-    if (migrationContract){
-      return await this.functionsUtil.checkTokenApproved(this.props.tokenConfig.migration.oldContract.name,migrationContractInfo.address,this.props.account);
+    if (this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract){
+      const migrationContractInfo = this.props.tokenConfig.migration.migrationContract;
+      const migrationContractName = migrationContractInfo.name;
+      const migrationContract = this.functionsUtil.getContractByName(migrationContractName);
+      if (migrationContract){
+        return await this.functionsUtil.checkTokenApproved(this.props.tokenConfig.migration.oldContract.name,migrationContractInfo.address,this.props.account);
+      }
     }
     return false;
   }
