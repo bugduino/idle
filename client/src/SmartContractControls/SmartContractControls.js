@@ -967,11 +967,11 @@ class SmartContractControls extends React.Component {
     const storedTxs = localStorage && JSON.parse(localStorage.getItem('transactions')) ? JSON.parse(localStorage.getItem('transactions')) : {};
     
     // Inizialize storedTxs for pair account-token if empty
-    if (!storedTxs[this.props.account]){
+    if (typeof storedTxs[this.props.account] !== 'object'){
       storedTxs[this.props.account] = {};
     }
 
-    if (!storedTxs[this.props.account][this.props.selectedToken]){
+    if (typeof storedTxs[this.props.account][this.props.selectedToken] !== 'object'){
       storedTxs[this.props.account][this.props.selectedToken] = {};
     }
 
