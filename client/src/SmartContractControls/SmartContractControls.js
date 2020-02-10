@@ -1942,7 +1942,7 @@ class SmartContractControls extends React.Component {
       await this.getBalanceOf(this.props.tokenConfig.idle.token);
 
       // console.log(prevState.tokenToRedeem,this.state.tokenBalance.toString(),this.state.tokenToRedeem.toString(),this.functionsUtil.BNify(this.state.tokenBalance).eq(0));
-      if (prevState.tokenToRedeem === null && this.functionsUtil.BNify(this.state.tokenBalance).eq(0) && this.functionsUtil.BNify(this.state.tokenToRedeem).gt(0)){
+      if (prevState.tokenToRedeem === null && this.props.selectedTab === '1' && this.functionsUtil.BNify(this.state.tokenBalance).eq(0) && this.functionsUtil.BNify(this.state.tokenToRedeem).gt(0)){
         this.selectTab({ preventDefault:()=>{} },'2');
       }
 
