@@ -569,9 +569,10 @@ class RimbleTransaction extends React.Component {
       if (error && error.message.includes('MULTIPLE_OPEN_CONNECTIONS_DISALLOWED')) {
         return;
       }
-
+      
       // Send Sentry connection error
-      if (this.functionsUtil.checkUrlOrigin()){
+      const isError = error instanceof Error;
+      if (this.functionsUtil.checkUrlOrigin() && isError){
         Sentry.captureException(error);
       }
 
@@ -1010,7 +1011,9 @@ class RimbleTransaction extends React.Component {
               variant: "failure",
               icon: 'Block'
             });
-            if (this.functionsUtil.checkUrlOrigin()){
+
+            const isError = error instanceof Error;
+            if (this.functionsUtil.checkUrlOrigin() && isError){
               Sentry.captureException(error);
             }
           }

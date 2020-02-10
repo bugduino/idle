@@ -1,11 +1,11 @@
-import React, { Component } from 'react';
-import { Image, Flex, Box, Heading, Link, Text, Card, Icon } from 'rimble-ui'
 import Faq from '../Faq/Faq';
 import Footer from '../Footer/Footer';
+import React, { Component } from 'react';
 import styles from './Landing.module.scss';
 import LandingForm from '../LandingForm/LandingForm';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import NewsletterForm from '../NewsletterForm/NewsletterForm';
+import { Image, Flex, Box, Heading, Link, Text, Card, Icon } from 'rimble-ui'
 import FloatingToastMessage from '../FloatingToastMessage/FloatingToastMessage';
 // import DefiScoreTable from '../DefiScoreTable/DefiScoreTable';
 // import Confetti from 'react-confetti';
