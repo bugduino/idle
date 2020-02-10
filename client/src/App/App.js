@@ -216,6 +216,7 @@ class App extends Component {
                         accountBalanceLow,
                         initAccount,
                         initContract,
+                        tokenDecimals,
                         rejectAccountConnect,
                         userRejectedConnect,
                         accountValidated,
@@ -231,8 +232,10 @@ class App extends Component {
                         return (
                         <Box>
                           <Switch>
-                            <Route exact path="/stats">
-                              <Stats selectedToken={this.state.selectedToken} tokenConfig={this.state.tokenConfig} />
+                            <Route
+                              path="/stats/:chartMode?/:customToken?"
+                              render={(props) => <Stats {...props} selectedToken={this.state.selectedToken} />}
+                            >
                             </Route>
                             <Route>
                               <Header

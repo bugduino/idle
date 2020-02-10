@@ -228,6 +228,7 @@ const availableTokens = {
   },
   1:{ // Mainnet
     DAI:{
+      decimals:18,
       enabled:true,
       abi:ERC20.abi,
       address:'0x6b175474e89094c44da98b954eedeac495271d0f',
@@ -310,6 +311,7 @@ const availableTokens = {
       ]
     },
     SAI:{
+      decimals:18,
       enabled: true,
       abi:ERC20.abi,
       address:'0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359',
@@ -392,6 +394,7 @@ const availableTokens = {
       ]
     },
     USDC:{
+      decimals:6,
       enabled:true,
       abi:ERC20.abi,
       address:'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',

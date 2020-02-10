@@ -1,4 +1,3 @@
-import { Line } from '@nivo/line';
 import React, { Component } from 'react';
 
 class GenericChart extends Component {
@@ -6,19 +5,11 @@ class GenericChart extends Component {
 
   render() {
 
+    const ChartType = this.props.type;
+
     return (
-      <Line
+      <ChartType
         {...this.props}
-        enableGridX={true}
-        enableGridY={false}
-        colors={d => d.color}
-        pointSize={0}
-        pointColor={{ from: 'color', modifiers: [] }}
-        pointBorderWidth={1}
-        pointLabel="y"
-        pointLabelYOffset={-12}
-        useMesh={true}
-        animate={false}
         legends={[
             {
                 anchor: 'bottom-right',

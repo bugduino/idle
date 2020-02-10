@@ -48,8 +48,7 @@ class FunctionsUtil {
     }
     return contract.contract;
   }
-  makeCachedRequest = async (endpoint,TTL) => {
-    TTL = TTL ? TTL : 0;
+  makeCachedRequest = async (endpoint,TTL=0,return_data=false) => {
     const timestamp = parseInt(new Date().getTime()/1000);
     let cachedRequests = {};
     // Check if already exists
@@ -57,7 +56,7 @@ class FunctionsUtil {
       cachedRequests = JSON.parse(localStorage.getItem('cachedRequests'));
       // Check if it's not expired
       if (cachedRequests && cachedRequests[endpoint] && cachedRequests[endpoint].timestamp && timestamp-cachedRequests[endpoint].timestamp<TTL){
-        return cachedRequests[endpoint].data;
+        return (cachedRequests[endpoint].data && return_data ? cachedRequests[endpoint].data.data : cachedRequests[endpoint].data);
       }
     }
 
@@ -73,7 +72,7 @@ class FunctionsUtil {
       };
       localStorage.setItem('cachedRequests',JSON.stringify(cachedRequests));
     }
-    return data;
+    return (data && return_data ? data.data : data);
   }
   getTransactionError = error => {
     let output = 'error';

@@ -70,6 +70,14 @@ const globalConfigs = {
     rates:{
       endpoint:'https://api.idle.finance/rates/',
       TTL:3600 // 1 hour
+    },
+    protocols:{
+      compound:{
+        color:'hsl(162, 100%, 41%)',
+      },
+      fulcrum:{
+        color:'hsl(197, 98%, 38%)',
+      }
     }
   },
   network:{ // Network configurations
