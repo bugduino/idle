@@ -1,19 +1,19 @@
-import styles from './SmartContractControls.module.scss';
+import axios from 'axios';
 import React from "react";
-import { Form, Flex, Box, Heading, Text, Button, Link, Icon, Pill, Loader, Image, Tooltip } from "rimble-ui";
-import TxProgressBar from '../TxProgressBar/TxProgressBar.js';
+import moment from 'moment';
+import jQuery from 'jquery';
+import CountUp from 'react-countup';
+import globalConfigs from '../configs/globalConfigs';
+import FunctionsUtil from '../utilities/FunctionsUtil';
 import CryptoInput from '../CryptoInput/CryptoInput.js';
+import styles from './SmartContractControls.module.scss';
+import ButtonLoader from '../ButtonLoader/ButtonLoader.js';
+import ShareModal from "../utilities/components/ShareModal";
+import TxProgressBar from '../TxProgressBar/TxProgressBar.js';
 import ApproveModal from "../utilities/components/ApproveModal";
 import WelcomeModal from "../utilities/components/WelcomeModal";
 import ReferralShareModal from "../utilities/components/ReferralShareModal";
-import ShareModal from "../utilities/components/ShareModal";
-import axios from 'axios';
-import moment from 'moment';
-import CountUp from 'react-countup';
-import jQuery from 'jquery';
-import globalConfigs from '../configs/globalConfigs';
-import FunctionsUtil from '../utilities/FunctionsUtil';
-import ButtonLoader from '../ButtonLoader/ButtonLoader.js';
+import { Form, Flex, Box, Heading, Text, Button, Link, Icon, Pill, Loader, Image, Tooltip } from "rimble-ui";
 
 const env = process.env;
 
@@ -928,7 +928,7 @@ class SmartContractControls extends React.Component {
         tx => {
           const internalTxs = results.filter(r => r.hash === tx.hash);
           const isMigrationTx = migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).indexOf(tx.from.toLowerCase()) !== -1 ) && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-          const isRightToken = internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase()).length;
+          const isRightToken = internalTxs.length>1 && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase()).length;
           const isDepositTx = isRightToken && !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
           const isRedeemTx = isRightToken && !isMigrationTx && tx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()).length && tx.to.toLowerCase() === this.props.account.toLowerCase();
 
@@ -1261,7 +1261,7 @@ class SmartContractControls extends React.Component {
 
               if (decodedLogs){
                 const redeemedValue = decodedLogs._tokenAmount;
-                const redeemTokenDecimals = await this.functionsUtil.getTokenDecimals();
+                const redeemTokenDecimals = await this.getTokenDecimals();
                 const redeemedValueFixed = this.functionsUtil.fixTokenDecimals(redeemedValue,redeemTokenDecimals);
 
                 realTx.status = 'Redeemed';
