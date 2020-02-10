@@ -205,6 +205,8 @@ class SmartContractControls extends React.Component {
   getAprs = async () => {
     const Aprs = await this.functionsUtil.genericIdleCall('getAPRs');
 
+    // console.log(Aprs);
+
     if (componentUnmounted){
       return false;
     }
@@ -1541,7 +1543,7 @@ class SmartContractControls extends React.Component {
       tokenToRedeemParsed:null,
       disableRedeemButton:false,
       lastBlockNumber:'8119247', // Idle inception block number
-      partialRedeemEnabled:false,
+      partialRedeemEnabled:true, // Partial redeem enabled by default
       showEmptyWalletOverlay:true,
       oldContractTokenDecimals:null,
       migrationContractApproved:false,
