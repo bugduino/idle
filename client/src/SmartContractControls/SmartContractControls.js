@@ -146,12 +146,14 @@ class SmartContractControls extends React.Component {
         this.functionsUtil.genericIdleCall('getParamsForRebalance',[_newAmount],callParams)
       ]);
 
-      const currProtocol = Object.keys(currAllocation[0]).filter((addr,i) => { return parseInt(currAllocation[0][addr].toString()) });
-      newAllocation = newAllocation[0].reduce((obj, key, index) => ({ ...obj, [key.toLowerCase()]: newAllocation[1][index] }), {});
-      const newProtocol = Object.keys(newAllocation).filter((addr,i) => { return parseInt(newAllocation[addr].toString()) });
+      if (newAllocation && currAllocation){
+        const currProtocol = Object.keys(currAllocation[0]).filter((addr,i) => { return parseInt(currAllocation[0][addr].toString()) });
+        newAllocation = newAllocation[0].reduce((obj, key, index) => ({ ...obj, [key.toLowerCase()]: newAllocation[1][index] }), {});
+        const newProtocol = Object.keys(newAllocation).filter((addr,i) => { return parseInt(newAllocation[addr].toString()) });
 
-      if (currProtocol.pop() !== newProtocol.pop()){
-        shouldRebalance = true;
+        if (currProtocol.pop() !== newProtocol.pop()){
+          shouldRebalance = true;
+        }
       }
     }
 
