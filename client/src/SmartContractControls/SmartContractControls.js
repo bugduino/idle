@@ -351,29 +351,11 @@ class SmartContractControls extends React.Component {
 
       if (amountLent && this.functionsUtil.trimEth(amountLent.toString())>0 && this.functionsUtil.trimEth(tokenToRedeem.toString())>0 && parseFloat(this.functionsUtil.trimEth(tokenToRedeem.toString()))<parseFloat(this.functionsUtil.trimEth(amountLent.toString()))){
         // console.error('tokenToRedeem',tokenToRedeem.toString(),' less than amountLent',amountLent.toString());
-
-        if (count === 2){
-          amountLent = tokenToRedeem.div(this.state.tokenPrice);
-          // console.log('AmountLent 2',amountLent);
-        } else {
-          setTimeout( () => {
-            this.getBalanceOf(contractName,count+1);
-          },2000);
-          return false;
-        }
+        amountLent = tokenToRedeem.div(this.state.tokenPrice);
       } else if (amountLent && amountLent.lte(0) && tokenToRedeem){
         amountLent = tokenToRedeem.div(this.state.tokenPrice);
         // console.log('AmountLent 3',amountLent);
       }
-
-      // Update state with tokenToRedeem, balance and amountLent
-      this.setState({
-        tokenToRedeemParsed: tokenToRedeem ? tokenToRedeem.toString() : null,
-        tokenBalanceBNify:balance,
-        idleTokenBalance:balance ? balance.toString() : null,
-        tokenToRedeem,
-        amountLent
-      });
 
       // console.log((tokenToRedeem ? tokenToRedeem.toString() : null),(amountLent ? amountLent.toString() : null));
 
@@ -383,16 +365,18 @@ class SmartContractControls extends React.Component {
 
       // customLog('earning',earning.toString());
 
-      const redirectToFundsAfterLogged = localStorage ? parseInt(localStorage.getItem('redirectToFundsAfterLogged')) : true;
+      /*
+      const redirectToFundsAfterLogged = localStorage && localStorage.getItem('redirectToFundsAfterLogged') ? parseInt(localStorage.getItem('redirectToFundsAfterLogged')) : true;
 
       // Select seconds Tab
-      if (balance.gt(0) && !this.state.tokenToRedeemParsed && redirectToFundsAfterLogged){
+      if (tokenToRedeem.gt(0) && redirectToFundsAfterLogged){
         this.selectTab({ preventDefault:()=>{} },'2');
       }
 
       if (localStorage){
         localStorage.removeItem('redirectToFundsAfterLogged');
       }
+      */
 
       const currentApr = this.functionsUtil.BNify(this.state.maxRate).div(100);
       const earningPerYear = tokenToRedeem.times(currentApr);
@@ -418,18 +402,18 @@ class SmartContractControls extends React.Component {
         }
       }
 
-      return this.setState({
-        fundsError:false,
-        [`balanceOf${contractName}`]: balance,
-        tokenToRedeemParsed: tokenToRedeem.toString(),
-        tokenBalanceBNify:balance,
-        idleTokenBalance:balance.toString(),
-        callMintCallback:false,
-        currentApr,
-        tokenToRedeem,
+      this.setState({
         earning,
+        balance,
+        amountLent,
+        currentApr,
         earningPerDay,
-        earningPerYear
+        tokenToRedeem,
+        earningPerYear,
+        fundsError:false,
+        callMintCallback:false,
+        idleTokenBalance:balance.toString(),
+        tokenToRedeemParsed: tokenToRedeem.toString(),
       });
     }
 
@@ -823,14 +807,14 @@ class SmartContractControls extends React.Component {
   handleChangeAmountRedeem = (e) => {
     if (this.props.account){
       let amount = e.target.value;
-      // customLog('handleChangeAmountRedeem',amount,this.state.tokenBalanceBNify);
+      // customLog('handleChangeAmountRedeem',amount,this.state.balance);
       this.setState({ redeemAmount: amount });
 
       let disableRedeemButton = false;
       let genericErrorRedeem = '';
 
       if (this.props.account) {
-        if (this.functionsUtil.BNify(amount).gt(this.functionsUtil.BNify(this.state.tokenBalanceBNify))){
+        if (this.functionsUtil.BNify(amount).gt(this.functionsUtil.BNify(this.state.balance))){
           disableRedeemButton = true;
           genericErrorRedeem = 'The inserted amount exceeds your redeemable balance';
         } else if (this.functionsUtil.BNify(amount).lte(0)) {
@@ -1508,6 +1492,7 @@ class SmartContractControls extends React.Component {
       maxRate:'-',
       prevTxs:null, // Transactions from Etherscan
       earning:null,
+      balance:null,
       lendAmount:'',
       redeemTx:null,
       lendingTx:null,
@@ -1530,6 +1515,7 @@ class SmartContractControls extends React.Component {
       earningPerDay:null,
       showFundsInfo:true,
       prevTxsError:false,
+      tokenToRedeem:null,
       fundsTimeoutID:null,
       earningPerYear:null,
       buyTokenMessage:null,
@@ -1538,7 +1524,6 @@ class SmartContractControls extends React.Component {
       migrationError:false,
       idleTokenBalance:null,
       isTokenApproved:false,
-      tokenBalanceBNify:null,
       earningIntervalId:null,
       callMintCallback:false,
       isApprovingToken:false,
@@ -1553,6 +1538,7 @@ class SmartContractControls extends React.Component {
       genericErrorRedeem:null,
       oldContractBalance:null,
       migrationApproveTx:null,
+      tokenToRedeemParsed:null,
       disableRedeemButton:false,
       lastBlockNumber:'8119247', // Idle inception block number
       partialRedeemEnabled:false,
@@ -1874,10 +1860,10 @@ class SmartContractControls extends React.Component {
     const isCorrectNetwork = !prevProps.network.isCorrectNetwork && this.props.network.isCorrectNetwork;
     const selectedTokenChanged = prevProps.selectedToken !== this.props.selectedToken;
 
+    // Mount the component and initialize the state
     if (selectedTokenChanged || isCorrectNetwork){
-      const needsUpdateEnabled = false;
-      // Mount the component and initialize the state
-      await this.componentDidMount(needsUpdateEnabled);
+      this.componentDidMount(true);
+      return false;
     }
 
     const getTxsList = this.state.prevTxs === null || !Object.values(this.state.prevTxs).length;
@@ -1932,12 +1918,12 @@ class SmartContractControls extends React.Component {
 
       // Reset funds and force loader
       this.setState({
-        tokenBalance:null,
-        tokenToRedeemParsed:null,
-        amountLent:null,
         earning:null,
-        updateInProgress: true,
-        needsUpdate: false
+        amountLent:null,
+        tokenBalance:null,
+        needsUpdate:false,
+        updateInProgress:true,
+        tokenToRedeemParsed:null
       });
 
       this.functionsUtil.customLog('Call async functions...');
@@ -1955,7 +1941,10 @@ class SmartContractControls extends React.Component {
       // Keep this call seprated from others cause it needs getPrevTxs results
       await this.getBalanceOf(this.props.tokenConfig.idle.token);
 
-      this.functionsUtil.customLog('getBalanceOf function completed...');
+      // console.log(prevState.tokenToRedeem,this.state.tokenBalance.toString(),this.state.tokenToRedeem.toString(),this.functionsUtil.BNify(this.state.tokenBalance).eq(0));
+      if (prevState.tokenToRedeem === null && this.functionsUtil.BNify(this.state.tokenBalance).eq(0) && this.functionsUtil.BNify(this.state.tokenToRedeem).gt(0)){
+        this.selectTab({ preventDefault:()=>{} },'2');
+      }
 
       if (this.props.selectedTab === '3') {
         this.rebalanceCheck();

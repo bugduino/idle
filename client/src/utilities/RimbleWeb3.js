@@ -549,6 +549,7 @@ class RimbleTransaction extends React.Component {
           
         });
 
+        // Set custom account
         this.setState({ web3SocketProvider, account });
 
         // After account is complete, get the balance
