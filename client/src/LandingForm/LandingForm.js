@@ -12,20 +12,21 @@ class LandingForm extends Component {
     return (
       <RimbleWeb3.Consumer>
         {({
-          contracts,
+          web3,
+          network,
           account,
-          transactions,
-          initContract,
-          initAccount,
           initWeb3,
+          simpleID,
+          contracts,
+          initAccount,
+          initContract,
+          transactions,
           initSimpleID,
           accountBalance,
           getAccountBalance,
           accountBalanceToken,
-          contractMethodSendWrapper,
-          web3,
-          simpleID,
-          network
+          tokenDecimals,
+          contractMethodSendWrapper
         }) => (
           <Box width={'100%'} mx={"auto"}>
             <SmartContractControls
@@ -38,6 +39,7 @@ class LandingForm extends Component {
               initSimpleID={initSimpleID}
               transactions={transactions}
               initContract={initContract}
+              tokenDecimals={tokenDecimals}
               isMobile={this.props.isMobile}
               accountBalance={accountBalance}
               connecting={this.props.connecting}

@@ -248,7 +248,7 @@ class SmartContractControls extends React.Component {
     contractName = contractName ? contractName : this.props.tokenConfig.idle.token;
 
     const totalIdleSupply = await this.functionsUtil.genericContractCall(contractName, 'totalSupply');
-    const tokenDecimals = this.state.tokenDecimals ? this.state.tokenDecimals : await this.functionsUtil.getTokenDecimals();
+    const tokenDecimals = await this.getTokenDecimals();
     let tokenPrice = await this.functionsUtil.genericContractCall(contractName, 'tokenPrice');
 
     if (!tokenPrice || !tokenDecimals){
@@ -270,9 +270,9 @@ class SmartContractControls extends React.Component {
   }
 
   getTokenDecimals = async () => {
-    if (this.state.tokenDecimals){
+    if (this.props.tokenDecimals){
       const tokenDecimals = await (new Promise( async (resolve, reject) => {
-        resolve(this.state.tokenDecimals);
+        resolve(this.props.tokenDecimals);
       }));
 
       return tokenDecimals;
@@ -306,12 +306,18 @@ class SmartContractControls extends React.Component {
   }
 
   reloadFunds = async(e) => {
-    const storedTxs = localStorage ? JSON.parse(localStorage.getItem('transactions')) : null;
-    if (storedTxs && storedTxs[this.props.account]){
-      delete storedTxs[this.props.account];
+    if (e){
+      e.preventDefault();
     }
-    localStorage.removeItem('transactions',storedTxs);
-    e.preventDefault();
+    if (localStorage){
+      const storedTxs = JSON.parse(localStorage.getItem('transactions'));
+      if (storedTxs){
+        if (storedTxs[this.props.account]){
+          delete storedTxs[this.props.account];
+        }
+        localStorage.setItem('transactions',JSON.stringify(storedTxs));
+      }
+    }
     this.getBalanceOf(this.props.tokenConfig.idle.token);
   }
 
@@ -605,7 +611,7 @@ class SmartContractControls extends React.Component {
 
     const lendAmount = this.state.lendAmount;
 
-    const value = this.functionsUtil.normalizeTokenAmount(lendAmount,this.state.tokenDecimals).toString();
+    const value = this.functionsUtil.normalizeTokenAmount(lendAmount,this.props.tokenDecimals).toString();
 
     // check if Idle is approved for DAI
     if (this.props.account && !this.state.isTokenApproved) {
@@ -617,7 +623,6 @@ class SmartContractControls extends React.Component {
     }
 
     this.setState({
-      [`isLoading${contractName}`]: false,
       lendingProcessing: this.props.account,
       lendAmount: '',
       genericError: '',
@@ -660,7 +665,6 @@ class SmartContractControls extends React.Component {
 
       const newState = {
         lendingProcessing: false,
-        [`isLoading${contractName}`]: false,
         lendingTx:null,
         callMintCallback:false,
         needsUpdate
@@ -724,7 +728,6 @@ class SmartContractControls extends React.Component {
       ...state,
       disableRedeemButton:false,
       genericErrorRedeem:'',
-      [`isLoading${contractName}`]: true,
       redeemProcessing: true
     }));
 
@@ -771,7 +774,6 @@ class SmartContractControls extends React.Component {
       }
 
       this.setState({
-        [`isLoading${contractName}`]: false,
         redeemProcessing: false,
         redeemTx:null,
         needsUpdate
@@ -962,7 +964,7 @@ class SmartContractControls extends React.Component {
 
 
     // Take storedTxs from localStorage
-    const storedTxs = localStorage ? JSON.parse(localStorage.getItem('transactions')) : {};
+    const storedTxs = localStorage && JSON.parse(localStorage.getItem('transactions')) ? JSON.parse(localStorage.getItem('transactions')) : {};
     
     // Inizialize storedTxs for pair account-token if empty
     if (!storedTxs[this.props.account]){
@@ -1273,7 +1275,7 @@ class SmartContractControls extends React.Component {
 
               if (decodedLogs){
                 const redeemedValue = decodedLogs._tokenAmount;
-                const redeemTokenDecimals = this.state.tokenDecimals ? this.state.tokenDecimals : await this.functionsUtil.getTokenDecimals();
+                const redeemTokenDecimals = await this.functionsUtil.getTokenDecimals();
                 const redeemedValueFixed = this.functionsUtil.fixTokenDecimals(redeemedValue,redeemTokenDecimals);
 
                 realTx.status = 'Redeemed';
@@ -1501,67 +1503,66 @@ class SmartContractControls extends React.Component {
   async initState(){
     // Init state
     return this.setState({
-      iDAIRate: 0,
-      cDAIRate: 0,
-      cDAIToRedeem: 0,
-      updateAfterMount:false, // Launch componentDidUpdate after mount
-      componentMounted:false, // this trigger the general loading
-      partialRedeemEnabled: false,
-      disableLendButton: false,
-      disableRedeemButton: false,
-      showFundsInfo:true,
-      isFirstDeposit:false,
-      isTokenApproved:false,
-      isApprovingToken:false,
-      isApprovingDAITest: true,
-      redeemProcessing: false,
-      lendingProcessing: false,
-      tokenBalance: this.props.accountBalanceToken,
-      lendAmount: '',
-      redeemAmount: '',
-      isMigrating: false,
-      migrationEnabled: false,
-      migrationError: false,
-      isApprovingMigrationContract: false,
-      oldContractBalance: null,
-      oldContractBalanceFormatted:null,
-      oldContractTokenDecimals:null,
-      migrationContractApproved: false,
-      migrationTx:false,
-      migrationApproveTx: null,
-      updateInProgress: false,
-      needsUpdate: false,
-      genericError: null,
-      genericErrorRedeem: null,
-      buyTokenMessage:null,
-      selectedTab: '1',
-      amountLent: null,
-      IdleDAISupply: null,
-      idleDAICap: 30000,
-      earning: null,
-      earningIntervalId: null,
-      earningPerDay: null,
-      earningPerYear: null,
-      tokenBalanceBNify: null,
-      maxRate: '-',
-      calculatingShouldRebalance: true,
-      fundsTimeoutID: null,
-      idleTokenBalance: null,
-      tokenPrice: null,
+      iDAIRate:0,
+      cDAIRate:0,
+      maxRate:'-',
+      prevTxs:null, // Transactions from Etherscan
+      earning:null,
+      lendAmount:'',
+      redeemTx:null,
+      lendingTx:null,
+      cDAIToRedeem:0,
+      approveTx:null,
+      redeemAmount:'',
+      selectedTab:'1',
+      tokenPrice:null,
+      amountLent:null,
       allocations:null,
       executedTxs:null,
-      lendingTx: null,
-      callMintCallback: false,
-      redeemTx: null,
-      approveTx: null,
-      activeModal: null,
-      fundsError: false,
+      activeModal:null,
+      fundsError:false,
+      idleDAICap:30000,
+      isMigrating:false,
+      migrationTx:false,
+      needsUpdate:false,
+      genericError:null,
+      IdleDAISupply:null,
+      earningPerDay:null,
+      showFundsInfo:true,
+      prevTxsError:false,
+      fundsTimeoutID:null,
+      earningPerYear:null,
+      buyTokenMessage:null,
+      web3:this.props.web3,
+      isFirstDeposit:false,
+      migrationError:false,
+      idleTokenBalance:null,
+      isTokenApproved:false,
+      tokenBalanceBNify:null,
+      earningIntervalId:null,
+      callMintCallback:false,
+      isApprovingToken:false,
+      componentMounted:false, // this trigger the general loading
+      updateAfterMount:false, // Launch componentDidUpdate after mount
+      redeemProcessing:false,
+      migrationEnabled:false,
+      updateInProgress:false,
+      lendingProcessing:false,
+      disableLendButton:false,
+      isApprovingDAITest:true,
+      genericErrorRedeem:null,
+      oldContractBalance:null,
+      migrationApproveTx:null,
+      disableRedeemButton:false,
+      lastBlockNumber:'8119247', // Idle inception block number
+      partialRedeemEnabled:false,
       showEmptyWalletOverlay:true,
-      tokenDecimals: null,
-      prevTxsError: false,
-      lastBlockNumber:'8119247', // Idle inception
-      prevTxs: null, // Transactions from Etherscan
-      web3:this.props.web3
+      oldContractTokenDecimals:null,
+      migrationContractApproved:false,
+      calculatingShouldRebalance:true,
+      oldContractBalanceFormatted:null,
+      isApprovingMigrationContract:false,
+      tokenBalance:this.props.accountBalanceToken
     });
   }
 
@@ -1578,9 +1579,6 @@ class SmartContractControls extends React.Component {
     componentUnmounted = false;
 
     window.jQuery = jQuery;
-    // window.BNify = this.functionsUtil.BNify;
-    // window.toEth = this.functionsUtil.toEth.bind(this);
-    // customLog('SmartContractControls componentDidMount',jQuery);
 
     this.addResources();
 
@@ -1608,11 +1606,7 @@ class SmartContractControls extends React.Component {
       this.getPriceInToken(),
       this.checkTokenApproved()
     ]);
-
-    /*
-    // PUT TEMP FUNCTIONS HERE
-    window.tempFunc = (tx) => {}
-    */
+    
     window.renderWyre = this.renderWyre;
 
     this.props.initContract(this.props.selectedToken, this.props.tokenConfig.address, this.props.tokenConfig.abi);
@@ -1989,12 +1983,7 @@ class SmartContractControls extends React.Component {
       if (localStorage){
 
         // Look for txs object in localStorage
-        let storedTxs = localStorage.getItem('transactions');
-        if (storedTxs){
-          storedTxs = JSON.parse(storedTxs);
-        } else { // Initialize storedTxs object
-          storedTxs = {};
-        }
+        let storedTxs = localStorage && JSON.parse(localStorage.getItem('transactions')) ? JSON.parse(localStorage.getItem('transactions')) : {};
 
         // Initialize txs for account
         if (!storedTxs[this.props.account]){
@@ -2054,7 +2043,7 @@ class SmartContractControls extends React.Component {
     // let totalInterestsAccrued = 0;
     let depositedSinceLastRedeem = 0;
     let totalRedeemed = 0;
-    const decimals = Math.min(this.state.tokenDecimals,8);
+    const decimals = Math.min(this.props.tokenDecimals,8);
 
     const migrationContractAddr = this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract ? this.props.tokenConfig.migration.migrationContract.address : null;
     const migrationContractOldAddrs = this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract && this.props.tokenConfig.migration.migrationContract.oldAddresses ? this.props.tokenConfig.migration.migrationContract.oldAddresses : [];
@@ -2556,7 +2545,7 @@ class SmartContractControls extends React.Component {
                     isMobile={this.props.isMobile}
                     account={this.props.account}
                     balance={this.state.tokenBalance}
-                    tokenDecimals={this.state.tokenDecimals}
+                    tokenDecimals={this.props.tokenDecimals}
                     defaultValue={this.state.lendAmount}
                     BNify={this.functionsUtil.BNify}
                     action={'Lend'}

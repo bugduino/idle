@@ -1,21 +1,18 @@
-import React, { Component } from "react";
-import Web3 from "web3"; // uses latest 1.x.x version
-import Web3Provider from 'web3-react';
-import { Web3Consumer } from 'web3-react'
-import connectors from './connectors';
-import jQuery from 'jquery';
-
+import Web3 from "web3";
 import {
   HashRouter as Router,
   Switch,
   Route
-  // useParams
 } from "react-router-dom";
-
+import jQuery from 'jquery';
 import theme from "../theme";
 import Tos from "../Tos/Tos";
 import Stats from '../Stats/Stats';
+import connectors from './connectors';
+import Web3Provider from 'web3-react';
+import React, { Component } from "react";
 import Landing from "../Landing/Landing";
+import { Web3Consumer } from 'web3-react';
 import CookieConsent from "react-cookie-consent";
 import RimbleWeb3 from "../utilities/RimbleWeb3";
 import Header from "../utilities/components/Header";
