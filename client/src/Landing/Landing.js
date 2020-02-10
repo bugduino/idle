@@ -105,7 +105,10 @@ class Landing extends Component {
 
     // Load aprs and allocations
     if (!this.state.protocolAllocation && !this.state.updatingAllocations){
-      await this.getAprs();
+      Promise.all([
+        this.getAprs(),
+        this.getAllocations()
+      ]);
     }
   }
 
