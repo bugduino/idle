@@ -104,6 +104,13 @@ class RimbleTransaction extends React.Component {
 
   componentDidUpdate = async (prevProps, prevState) => {
 
+    // Reset tokenDecimals if token is changed
+    if (prevProps.selectedToken !== this.props.selectedToken){
+      this.setState({
+        tokenDecimals: null
+      });
+    }
+
     if (localStorage){
       const context = JSON.parse(localStorage.getItem('context'));
       if (!context || (this.props.context.active !== context.active || this.props.context.connectorName !== context.connectorName)){
