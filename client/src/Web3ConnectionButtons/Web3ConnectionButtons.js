@@ -102,11 +102,11 @@ export default function Web3ConnectionButtons(props) {
         {context.error && (
           <Text.p textAlign="center">
             An error occurred, are you using an Ethereum browser such as
-            <Link href="https://metamask.io/" target="_blank">
+            <Link href="https://metamask.io/" target="_blank" rel="nofollow noopener noreferrer">
               &nbsp; Metamask &nbsp;
             </Link>
              or
-            <Link href="https://www.meetdapper.com/" target="_blank">
+            <Link href="https://www.meetdapper.com/" target="_blank" rel="nofollow noopener noreferrer">
               &nbsp; Dapper
             </Link>
             ?

@@ -41,7 +41,7 @@ class NoWalletModal extends React.Component {
 
             <Link
               href="https://chrome.google.com/webstore/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn?hl=en"
-              target="_blank"
+              target="_blank" rel="nofollow noopener noreferrer"
             >
               <Button.Outline size="small">Get MetaMask Extension</Button.Outline>
             </Link>

@@ -23,7 +23,7 @@ class NoWeb3BrowserModal extends React.Component {
             <Link
               href="https://status.im/"
               title="status.im website"
-              target="_blank"
+              target="_blank" rel="nofollow noopener noreferrer"
             >
               Status
             </Link>
@@ -31,7 +31,7 @@ class NoWeb3BrowserModal extends React.Component {
             <Link
               href="https://www.cipherbrowser.com/"
               title="Cipher Wallet"
-              target="_blank"
+              target="_blank" rel="nofollow noopener noreferrer"
             >
               Cipher
             </Link>{" "}
@@ -39,7 +39,7 @@ class NoWeb3BrowserModal extends React.Component {
             <Link
               href="https://wallet.coinbase.com/"
               title="Coinbase Wallet"
-              target="_blank"
+              target="_blank" rel="nofollow noopener noreferrer"
             >
               Coinbase wallet
             </Link>{" "}
@@ -53,7 +53,7 @@ class NoWeb3BrowserModal extends React.Component {
               <Link
                 href="https://brave.com/download/"
                 title="Download Brave browser"
-                target="_blank"
+                target="_blank" rel="nofollow noopener noreferrer"
               >
                 Brave
               </Link>
@@ -61,7 +61,7 @@ class NoWeb3BrowserModal extends React.Component {
               <Link
                 href="https://www.mozilla.org/"
                 title="Download FireFox browser"
-                target="_blank"
+                target="_blank" rel="nofollow noopener noreferrer"
               >
                 FireFox
               </Link>
@@ -69,7 +69,7 @@ class NoWeb3BrowserModal extends React.Component {
               <Link
                 href="https://www.opera.com/download"
                 title="Download Opera Browser"
-                target="_blank"
+                target="_blank" rel="nofollow noopener noreferrer"
               >
                 Opera
               </Link>
@@ -77,7 +77,7 @@ class NoWeb3BrowserModal extends React.Component {
               <Link
                 href="https://www.google.com/chrome/"
                 title="Download Chrome browser"
-                target="_blank"
+                target="_blank" rel="nofollow noopener noreferrer"
               >
                 Chrome
               </Link>{" "}
@@ -90,7 +90,7 @@ class NoWeb3BrowserModal extends React.Component {
               <Link
                 href="https://status.im/"
                 title="status.im website"
-                target="_blank"
+                target="_blank" rel="nofollow noopener noreferrer"
               >
                 Status
               </Link>
@@ -98,7 +98,7 @@ class NoWeb3BrowserModal extends React.Component {
               <Link
                 href="https://www.cipherbrowser.com/"
                 title="Cipher Wallet"
-                target="_blank"
+                target="_blank" rel="nofollow noopener noreferrer"
               >
                 Cipher
               </Link>{" "}
@@ -106,7 +106,7 @@ class NoWeb3BrowserModal extends React.Component {
               <Link
                 href="https://wallet.coinbase.com/"
                 title="Coinbase Wallet"
-                target="_blank"
+                target="_blank" rel="nofollow noopener noreferrer"
               >
                 Coinbase wallet
               </Link>

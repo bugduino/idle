@@ -5,6 +5,8 @@ const GeneralUtil = {
 
     if (typeof window.ethereum !== "undefined") {
       hasMetaMask = typeof window.ethereum.isMetaMask !== "undefined";
+    } else if (typeof window.web3 !== 'undefined') {
+      hasMetaMask = typeof window.web3.currentProvider.isMetaMask !== 'undefined' && window.web3.currentProvider.isMetaMask;
     }
 
     return hasMetaMask;

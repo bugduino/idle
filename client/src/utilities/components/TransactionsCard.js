@@ -120,7 +120,7 @@ class TransactionsCard extends React.Component {
                     {this.props.transactions[keyName].confirmationCount}
                   </td>
                   <td>
-                    <Link href={'https://etherscan.io/tx/'+txHash} target={'_blank'}>
+                    <Link href={'https://etherscan.io/tx/'+txHash} target={'_blank'} rel="nofollow noopener noreferrer">
                       {txHash}
                     </Link>
                   </td>

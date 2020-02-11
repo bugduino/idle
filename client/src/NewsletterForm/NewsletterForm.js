@@ -82,7 +82,7 @@ class NewsletterForm extends Component {
                 </Form.Field>
                 <Flex mb={[3,0]} flexDirection={'row'} alignItems={'center'}>
                   <Checkbox onClick={ e => this.toggleCheckbox(e) } label={'I\'ve read and accepted the'} required />
-                  <Link color={'blue'} hoverColor={'blue'} target={'_blank'} href={"https://www.iubenda.com/privacy-policy/61211749"}>Privacy Policy</Link>
+                  <Link color={'blue'} hoverColor={'blue'} target={'_blank'} rel="nofollow noopener noreferrer" href={"https://www.iubenda.com/privacy-policy/61211749"}>Privacy Policy</Link>
                 </Flex>
                 {this.state.message && this.state.message.length &&
                   <Text.p py={0} mt={[2,3]} mb={3} textAlign={['center','left']} color={this.state.messageColor}>{this.state.message}</Text.p>

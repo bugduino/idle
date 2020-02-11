@@ -711,7 +711,7 @@ class DefiPrimeEquityChart extends Component {
       const value = parseFloat(tx.value) ? (this.props.isMobile ? parseFloat(tx.value).toFixed(4) : parseFloat(tx.value).toFixed(8)) : '-';
       const formattedDate = moment(date).fromNow();
       return (
-        <Link key={'tx_'+i} display={'block'} href={`https://etherscan.io/tx/${tx.hash}`} target={'_blank'}>
+        <Link key={'tx_'+i} display={'block'} href={`https://etherscan.io/tx/${tx.hash}`} target={'_blank'} rel="nofollow noopener noreferrer">
           <Flex alignItems={'center'} flexDirection={['row','row']} width={'100%'} p={[2,3]} borderBottom={'1px solid #D6D6D6'}>
             <Box width={[4/10,3/10]} textAlign={'center'}>
               <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>{formattedDate}</Text>

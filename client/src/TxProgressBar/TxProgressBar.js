@@ -48,7 +48,7 @@ class TxProgressBar extends Component {
     }
   }
 
-  async componentDidMount() {
+  componentDidMount = async () => {
 
     this.loadUtils();
 
@@ -59,7 +59,7 @@ class TxProgressBar extends Component {
     }
   }
 
-  async getTransactionReceipt() {
+  getTransactionReceipt = async () => {
     return new Promise( async (resolve, reject) => {
       this.functionsUtil.customLog('getTransactionReceipt',this.props.hash);
       this.props.web3.eth.getTransactionReceipt(this.props.hash,(err,transactionReceipt) => {
@@ -76,7 +76,7 @@ class TxProgressBar extends Component {
     });
   }
 
-  async getTransaction() {
+  getTransaction = async () => {
     const transaction = await (new Promise( async (resolve, reject) => {
       this.functionsUtil.customLog('getTransaction',this.props.hash);
       this.props.web3.eth.getTransaction(this.props.hash,(err,transaction) => {
@@ -142,7 +142,7 @@ class TxProgressBar extends Component {
     return [expectedWait, prediction['hashpower_accepting'], prediction['tx_atabove'], minedProb];
   }
 
-  async getBlockTime() {
+  getBlockTime = async () => {
     const pt = await axios.get('https://ethgasstation.info/json/ethgasAPI.json');
     if (pt){
       const blockTime = pt.data;
@@ -154,7 +154,7 @@ class TxProgressBar extends Component {
     return null;
   }
 
-  async getPredictionTable() {
+  getPredictionTable = async () => {
     const pt = await axios.get('https://ethgasstation.info/json/predictTable.json');
     if (pt){
       const predictTable = pt.data;
@@ -166,7 +166,7 @@ class TxProgressBar extends Component {
     return null;
   }
 
-  async getTransactionTimestamp(){
+  getTransactionTimestamp = async () => {
     if (!this.state.transaction.blockNumber){
       return null;
     }
@@ -183,7 +183,7 @@ class TxProgressBar extends Component {
     });
   }
 
-  getTxEstimatedTime(gasPrice) {
+  getTxEstimatedTime = (gasPrice) => {
     let prediction = null;
     if (this.state.predictTable){
       this.state.predictTable.forEach((p,i) => {
@@ -194,7 +194,7 @@ class TxProgressBar extends Component {
       });
     }
 
-    if (prediction){
+    if (this.state.blockTime && prediction){
       const pdValues = this._estimateWait(prediction,this.state.transaction.gas);
       const blocksWait = pdValues[0];
       const blockInterval = this.state.blockTime.block_time;
@@ -207,7 +207,7 @@ class TxProgressBar extends Component {
     return null;
   }
 
-  async calculateRemainingTime() {
+  calculateRemainingTime = async () => {
     let remainingTime = 0;
     let estimatedTime = 0;
 
@@ -245,7 +245,7 @@ class TxProgressBar extends Component {
     setTimeout(()=>{this.updateProgressBar()},1000);
   }
 
-  updateProgressBar() {
+  updateProgressBar = () => {
 
     if (this.componentUnmounted){
       return false;
@@ -276,7 +276,7 @@ class TxProgressBar extends Component {
     }
   }
 
-  async getTxInfo() {
+  getTxInfo = async () => {
 
     // Get tx timestamp
     const txProgressBarKey = `txProgressBarData`;
@@ -284,8 +284,7 @@ class TxProgressBar extends Component {
 
     let txProgressBarData = null;
     let txTimestamp = null;
-    let predictTable = null;
-    let blockTime = null;
+    let newState = {};
 
     if (localStorage){
       txProgressBarData = localStorage.getItem(txProgressBarKey);
@@ -296,11 +295,11 @@ class TxProgressBar extends Component {
 
     if (!txProgressBarData || !txProgressBarData[txHash]){
       txTimestamp = new Date().getTime();
-      predictTable = await this.getPredictionTable();
-      // window.alert('Progressbar - getPredictionTable');
 
-      blockTime = await this.getBlockTime();
-      // window.alert('Progressbar - getBlockTime');
+      const [predictTable,blockTime] = await Promise.all([
+        this.getPredictionTable(),
+        this.getBlockTime()
+      ]);
 
       txProgressBarData = {};
       txProgressBarData[txHash] = {
@@ -309,17 +308,22 @@ class TxProgressBar extends Component {
         predictTable
       };
 
+      // Save progress bar status in localStorage
       if (localStorage){
         localStorage.setItem(txProgressBarKey,JSON.stringify(txProgressBarData));
       }
+
+      newState = txProgressBarData[txHash];
+
+      if (!predictTable || !blockTime){
+        newState.error = 'Processing transaction';
+      }
     }
 
-    // window.alert('Progressbar - getTxInfo');
-
-    this.setState(txProgressBarData[txHash]);
+    this.setState(newState);
   }
 
-  async initProgressBar() {
+  initProgressBar = async () => {
 
     if (!this.props.hash){
       return false;
@@ -330,8 +334,6 @@ class TxProgressBar extends Component {
     };
     this.setState(newState);
 
-    // window.alert('Progressbar - Initializing');
-
     try{
       await Promise.all([
         this.getTransaction(),
@@ -339,10 +341,7 @@ class TxProgressBar extends Component {
       ]);
     } catch (err) {
       // const errStringified = JSON.stringify(err);
-      // window.alert(`Progressbar - error in retrieving info: ${errStringified}`);
     }
-
-    // window.alert('Progressbar - Loaded tx and txInfo');
 
     try{
       this.calculateRemainingTime();
@@ -350,7 +349,6 @@ class TxProgressBar extends Component {
       newState.error = 'Processing transaction';
 
       // const errStringified = JSON.stringify(err);
-      // window.alert(`Progressbar - error in calculate remaining time: ${errStringified}`);
     }
 
     this.setState(newState);

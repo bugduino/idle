@@ -38,7 +38,7 @@ class DefiScoreProtocol extends React.Component {
           </Flex>
           <Flex flexDirection={'column'} py={3} justifyContent={'center'} alignItems={'center'}>
             <Heading.h2>{risk.score} / 10</Heading.h2>
-            <Text fontSize={0} color={'darkGray'}>Provided by <Link href={`https://app.defiscore.io/assets/${this.props.token}/${this.props.protocol}`} target={'_blank'} fontSize={0} fontWeight={2} color={'dark-gray'} hoverColor={'blue'}>DeFi Score</Link></Text>
+            <Text fontSize={0} color={'darkGray'}>Provided by <Link href={`https://app.defiscore.io/assets/${this.props.token}/${this.props.protocol}`} target={'_blank'} rel="nofollow noopener noreferrer" fontSize={0} fontWeight={2} color={'dark-gray'} hoverColor={'blue'}>DeFi Score</Link></Text>
           </Flex>
           <Flex>
             <Progress value={score} className={styles.progressBar} theme={customTheme} />
@@ -140,7 +140,7 @@ class DefiScoreProtocol extends React.Component {
             <Text fontWeight={4}>${ parseInt(defiScore.supplyVolume) }</Text>
           </Flex>
           <Flex>
-            <Button as={'a'} width={1} href={`https://app.defiscore.io/assets/${defiScore.token}/${defiScore.protocol}`} target={'_blank'}>View on DeFi Score</Button>
+            <Button as={'a'} width={1} href={`https://app.defiscore.io/assets/${defiScore.token}/${defiScore.protocol}`} target={'_blank'} rel="nofollow noopener noreferrer">View on DeFi Score</Button>
           </Flex>
         </Flex>
       </Card>

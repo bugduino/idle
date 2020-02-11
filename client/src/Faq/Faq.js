@@ -49,7 +49,7 @@ class Faq extends Component {
       },
       {
         q: 'Is Idle safe to use?',
-        a: `Our contract has been audited by Quantstamp, you can read the audit report <a href='https://certificate.quantstamp.com/full/idle-finance' target="_blank" style="color:${colors.blue}">here</a>.
+        a: `Our contract has been audited by Quantstamp, you can read the audit report <a href='https://certificate.quantstamp.com/full/idle-finance' target="_blank" rel="nofollow noopener noreferrer" style="color:${colors.blue}">here</a>.
           Idle is built upon trustworthy platforms that all employ secured, audited smart contracts.
           Our contract code is public and has been extensively tested, but the possibility of a bug always exists.
           Use at your own risk.`
