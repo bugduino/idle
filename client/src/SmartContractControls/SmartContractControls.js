@@ -1577,6 +1577,7 @@ class SmartContractControls extends React.Component {
     await Promise.all([
       this.checkMigration(),
       this.getAllocations(),
+      this.rebalanceCheck(),
       this.getAprs(),
       this.getPriceInToken(),
       this.checkTokenApproved()
@@ -1919,6 +1920,7 @@ class SmartContractControls extends React.Component {
         this.checkMigration(),
         this.checkTokenApproved(),
         this.getAllocations(),
+        this.rebalanceCheck(),
         this.getTokenBalance(),
         (getTxsList ? this.getPrevTxs() : null)
       ]);
@@ -1997,8 +1999,8 @@ class SmartContractControls extends React.Component {
         });
       }
 
-      this.getAllocations();
       this.rebalanceCheck();
+      this.getAllocations();
     }
 
     if (tabIndex !== '2') {
@@ -3168,7 +3170,7 @@ class SmartContractControls extends React.Component {
                           fontSize={[2,2]}
                           mx={'auto'}
                           px={[4,5]}
-                          mt={[2,3]}
+                          mt={2}
                         >
                           REBALANCE NOW
                         </Button>

@@ -22,7 +22,6 @@ class Landing extends Component {
     startCarousel:null,
     setActiveCarousel:null,
     activeBullet:null,
-    updatingAllocations:false,
     testPerformed:false,
     protocolsAprs:null,
     protocolsAllocations:null,
@@ -139,20 +138,11 @@ class Landing extends Component {
 
   getAllocations = async () => {
 
-    if (this.state.updatingAllocations){
-      return false;
-    }
-
     let totalAllocation = this.functionsUtil.BNify(0);
-
-    this.setState({
-      updatingAllocations:true
-    });
 
     const newState = {
       protocolsAllocations:null,
-      totalAllocation:null,
-      updatingAllocations:false
+      totalAllocation:null
     };
 
     const protocolsAllocations = {};
@@ -208,20 +198,9 @@ class Landing extends Component {
   }
 
   getAprs = async () => {
-    if (this.state.updatingAprs){
-      return false;
-    }
-
     const Aprs = await this.functionsUtil.genericIdleCall('getAPRs');
 
-    this.setState({
-      updatingAprs:true
-    });
-
     if (!Aprs){
-      this.setState({
-        updatingAprs:false
-      });
       return false;
     }
 
@@ -246,8 +225,7 @@ class Landing extends Component {
       protocolsAprs,
       maxRate: aprs ? ((+maxRate).toFixed(2)) : '0.00',
       currentProtocol,
-      currentRate: currentRate ? (+this.functionsUtil.toEth(currentRate)).toFixed(2) : null,
-      updatingAprs: false
+      currentRate: currentRate ? (+this.functionsUtil.toEth(currentRate)).toFixed(2) : null
     };
     this.setState(state);
     return state;
