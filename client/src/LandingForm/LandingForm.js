@@ -22,10 +22,11 @@ class LandingForm extends Component {
           initContract,
           transactions,
           initSimpleID,
+          tokenDecimals,
           accountBalance,
           getAccountBalance,
           accountBalanceToken,
-          tokenDecimals,
+          contractsInitialized,
           contractMethodSendWrapper
         }) => (
           <Box width={'100%'} mx={"auto"}>
@@ -50,6 +51,7 @@ class LandingForm extends Component {
               openBuyModal={this.props.openBuyModal}
               selectedToken={this.props.selectedToken}
               getAllocations={this.props.getAllocations}
+              contractsInitialized={contractsInitialized}
               setSelectedToken={this.props.setSelectedToken}
               updateSelectedTab={this.props.updateSelectedTab}
               accountBalanceToken={this.props.accountBalanceToken}

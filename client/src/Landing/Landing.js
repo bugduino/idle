@@ -108,7 +108,6 @@ class Landing extends Component {
 
     this.loadUtils();
 
-    // const selectedTokenChanged = prevProps.selectedToken !== this.props.selectedToken;
     const contractsInitialized = this.props.contractsInitialized && prevProps.contractsInitialized !== this.props.contractsInitialized;
 
     if (contractsInitialized) {
@@ -150,80 +149,58 @@ class Landing extends Component {
       updatingAllocations:true
     });
 
-    let contractsLoaded = true;
-
-    this.props.tokenConfig.protocols.forEach((protocolInfo,i) => {
-      const contractName = protocolInfo.token;
-
-      const contractLoaded = this.functionsUtil.getContractByName(contractName);
-      if (!contractLoaded){
-        // console.log(`getAllocations - contract ${contractName} not loaded`);
-        contractsLoaded = false;
-        this.setState({
-          updatingAllocations:false
-        });
-        return;
-      }
-    });
-
     const newState = {
       protocolsAllocations:null,
+      totalAllocation:null,
       updatingAllocations:false
     };
 
     const protocolsAllocations = {};
 
-    if (contractsLoaded){
+    await this.functionsUtil.asyncForEach(this.props.tokenConfig.protocols,async (protocolInfo,i) => {
+      const contractName = protocolInfo.token;
+      const protocolAddr = protocolInfo.address;
 
-      await this.functionsUtil.asyncForEach(this.props.tokenConfig.protocols,async (protocolInfo,i) => {
-        const contractName = protocolInfo.token;
-        const protocolAddr = protocolInfo.address;
+      let [protocolBalance, tokenDecimals, exchangeRate] = await Promise.all([
+        this.functionsUtil.getProtocolBalance(contractName),
+        this.functionsUtil.getTokenDecimals(contractName),
+        ( protocolInfo.functions.exchangeRate ? this.functionsUtil.genericContractCall(contractName,protocolInfo.functions.exchangeRate.name,protocolInfo.functions.exchangeRate.params) : null )
+      ]);
 
-        let [protocolBalance, tokenDecimals, exchangeRate] = await Promise.all([
-          this.functionsUtil.getProtocolBalance(contractName),
-          this.functionsUtil.getTokenDecimals(contractName),
-          ( protocolInfo.functions.exchangeRate ? this.functionsUtil.genericContractCall(contractName,protocolInfo.functions.exchangeRate.name,protocolInfo.functions.exchangeRate.params) : null )
-        ]);
-
-        if (!protocolBalance){
-          return;
-        }
-
-        if (exchangeRate && protocolInfo.functions.exchangeRate.decimals){
-          exchangeRate = this.functionsUtil.fixTokenDecimals(exchangeRate,protocolInfo.functions.exchangeRate.decimals);
-        }
-
-        let protocolAllocation = this.functionsUtil.fixTokenDecimals(protocolBalance,tokenDecimals,exchangeRate);
-
-        // Raise base protocol allocation from 500k to 10M
-        // if (this.state.randomAllocationEnabled){
-        //   protocolAllocation = protocolAllocation.plus(this.functionsUtil.BNify(parseInt(Math.random()*1000000+100000)));
-        // }
-
-        totalAllocation = totalAllocation.plus(protocolAllocation);
-
-        this.functionsUtil.customLog('getAllocations', contractName, protocolBalance, tokenDecimals, protocolAllocation.toString());
-
-        protocolsAllocations[protocolAddr] = protocolAllocation;
-      });
-      if (this.state.randomAllocationEnabled){
-        let remainingAllocation = parseFloat(totalAllocation.toString());
-        const totProtocols = Object.keys(protocolsAllocations).length;
-        Object.keys(protocolsAllocations).forEach((protocolAddr,i) => {
-          let alloc = parseFloat(protocolsAllocations[protocolAddr].toString());
-          if (i === totProtocols-1){
-            alloc = remainingAllocation;
-          } else {
-            alloc = parseFloat(Math.random()*(remainingAllocation-(remainingAllocation/3))+(remainingAllocation/3));
-            remainingAllocation -= alloc;
-          }
-          protocolsAllocations[protocolAddr] = this.functionsUtil.BNify(alloc);
-        });
+      if (!protocolBalance){
+        return;
       }
 
-      newState.protocolsAllocations = protocolsAllocations;
-      newState.totalAllocation = totalAllocation;
+      if (exchangeRate && protocolInfo.functions.exchangeRate.decimals){
+        exchangeRate = this.functionsUtil.fixTokenDecimals(exchangeRate,protocolInfo.functions.exchangeRate.decimals);
+      }
+
+      const protocolAllocation = this.functionsUtil.fixTokenDecimals(protocolBalance,tokenDecimals,exchangeRate);
+
+      totalAllocation = totalAllocation.plus(protocolAllocation);
+
+      protocolsAllocations[protocolAddr] = protocolAllocation;
+    });
+
+    /*
+    if (this.state.randomAllocationEnabled){
+      let remainingAllocation = parseFloat(totalAllocation.toString());
+      const totProtocols = Object.keys(protocolsAllocations).length;
+      Object.keys(protocolsAllocations).forEach((protocolAddr,i) => {
+        let alloc = parseFloat(protocolsAllocations[protocolAddr].toString());
+        if (i === totProtocols-1){
+          alloc = remainingAllocation;
+        } else {
+          alloc = parseFloat(Math.random()*(remainingAllocation-(remainingAllocation/3))+(remainingAllocation/3));
+          remainingAllocation -= alloc;
+        }
+        protocolsAllocations[protocolAddr] = this.functionsUtil.BNify(alloc);
+      });
     }
+    */
+
+    newState.protocolsAllocations = protocolsAllocations;
+    newState.totalAllocation = totalAllocation;
 
     this.setState(newState);
 
@@ -602,7 +579,7 @@ class Landing extends Component {
                     100% non-custodial, and secured by audit.
                   </Heading.h3>
                   <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5} color={'dark-gray'}>
-                    Idle smart contract passed a security audit control. You can read the full report <Link key={1} fontSize={2} hoverColor={'blue'} href={'https://certificate.quantstamp.com/full/idle-finance'} target={'_blank'}>here</Link>. We will never be able to touch your money while inside the smart contract. You are always in control of your money.
+                    Idle smart contract passed a security audit control. You can read the full report <Link key={1} fontSize={2} hoverColor={'blue'} href={'https://certificate.quantstamp.com/full/idle-finance'} target={'_blank'} rel="nofollow noopener noreferrer">here</Link>. We will never be able to touch your money while inside the smart contract. You are always in control of your money.
                   </Heading.h4>
                 </Box>
                 <Box className={[styles.carouselDesc,this.state.activeCarousel===2 || this.props.isMobile ? styles.selected : '']} py={[3,0]} my={[3,0]}>
