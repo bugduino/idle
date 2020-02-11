@@ -332,7 +332,7 @@ const globalConfigs = {
         subcaption:`~ 2.5% fee ~\nGBP ONLY`,
         supportedMethods:['bank'],
         badge: {
-          text:'REVOLUT',
+          text:'NO ID REQUIRED',
           color:'#fff',
           bgColor:'#0cade4'
         },
@@ -712,7 +712,7 @@ const globalConfigs = {
         },
         caption: 'Buy with',
         captionPos: 'top',
-        subcaption: '~ 0.75% fee ~',
+        subcaption: '~ 0.25% fee ~',
         supportedMethods:['wallet'],
         supportedTokens:['USDC','DAI'],
         remoteResources:{'https://instant.0x.org/v3/instant.js':{}},
