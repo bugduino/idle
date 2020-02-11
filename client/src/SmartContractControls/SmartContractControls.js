@@ -1920,7 +1920,6 @@ class SmartContractControls extends React.Component {
         this.checkMigration(),
         this.checkTokenApproved(),
         this.getAllocations(),
-        this.rebalanceCheck(),
         this.getTokenBalance(),
         (getTxsList ? this.getPrevTxs() : null)
       ]);
@@ -1933,10 +1932,6 @@ class SmartContractControls extends React.Component {
       // console.log(prevState.tokenToRedeem,this.state.tokenBalance.toString(),this.state.tokenToRedeem.toString(),this.functionsUtil.BNify(this.state.tokenBalance).eq(0));
       if (prevState.tokenToRedeem === null && this.props.selectedTab === '1' && this.functionsUtil.BNify(this.state.tokenBalance).eq(0) && this.functionsUtil.BNify(this.state.tokenToRedeem).gt(0)){
         this.selectTab({ preventDefault:()=>{} },'2');
-      }
-
-      if (this.props.selectedTab === '3') {
-        this.rebalanceCheck();
       }
 
       this.setState({
