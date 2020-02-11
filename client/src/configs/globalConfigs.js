@@ -801,6 +801,7 @@ const globalConfigs = {
                 a.id = buttonId;
                 a.href = providerInfo.getInitParams(props,globalConfigs);
                 a.target = '_blank';
+                a.rel = 'nofollow noopener noreferrer';
                 a.className = 'kyber-widget-button theme-ocean theme-supported';
                 a.title = 'Swap with Kyber';
                 a.style = 'display:none;';
