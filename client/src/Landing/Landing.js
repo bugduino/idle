@@ -102,28 +102,18 @@ class Landing extends Component {
     if (!this.props.isMobile && !this.state.carouselIntervalID){
       this.startCarousel();
     }
-
-    // Load aprs and allocations
-    if (!this.state.protocolAllocation && !this.state.updatingAllocations){
-      Promise.all([
-        this.getAprs(),
-        this.getAllocations()
-      ]);
-    }
   }
 
   async componentDidUpdate(prevProps, prevState) {
 
     this.loadUtils();
 
-    const selectedTokenChanged = prevProps.selectedToken !== this.props.selectedToken;
-    const prevContract = (prevProps.contracts.find(c => c.name === this.props.tokenConfig.idle.token) || {}).contract;
-    const contract = (this.props.contracts.find(c => c.name === this.props.tokenConfig.idle.token) || {}).contract;
-    const contractChanged = contract && prevContract !== contract;
-    const dataNotLoaded = contract && (this.state.protocolsAllocations===null || this.state.protocolsAprs===null);
+    // const selectedTokenChanged = prevProps.selectedToken !== this.props.selectedToken;
+    const contractsInitialized = this.props.contractsInitialized && prevProps.contractsInitialized !== this.props.contractsInitialized;
 
-    if (!this.state.updatingAllocations && (contractChanged || selectedTokenChanged || dataNotLoaded)) {
-      await this.getAprs();
+    if (contractsInitialized) {
+      this.getAllocations();
+      this.getAprs();
     }
   }
 
@@ -149,7 +139,11 @@ class Landing extends Component {
   };
 
   getAllocations = async () => {
-    const protocolsAllocations = {};
+
+    if (this.state.updatingAllocations){
+      return false;
+    }
+
     let totalAllocation = this.functionsUtil.BNify(0);
 
     this.setState({
@@ -163,12 +157,24 @@ class Landing extends Component {
 
       const contractLoaded = this.functionsUtil.getContractByName(contractName);
       if (!contractLoaded){
+        // console.log(`getAllocations - contract ${contractName} not loaded`);
         contractsLoaded = false;
+        this.setState({
+          updatingAllocations:false
+        });
         return;
       }
-    })
+    });
+
+    const newState = {
+      protocolsAllocations:null,
+      updatingAllocations:false
+    };
+
+    const protocolsAllocations = {};
 
     if (contractsLoaded){
+
       await this.functionsUtil.asyncForEach(this.props.tokenConfig.protocols,async (protocolInfo,i) => {
         const contractName = protocolInfo.token;
         const protocolAddr = protocolInfo.address;
@@ -200,38 +206,36 @@ class Landing extends Component {
 
         protocolsAllocations[protocolAddr] = protocolAllocation;
       });
+      if (this.state.randomAllocationEnabled){
+        let remainingAllocation = parseFloat(totalAllocation.toString());
+        const totProtocols = Object.keys(protocolsAllocations).length;
+        Object.keys(protocolsAllocations).forEach((protocolAddr,i) => {
+          let alloc = parseFloat(protocolsAllocations[protocolAddr].toString());
+          if (i === totProtocols-1){
+            alloc = remainingAllocation;
+          } else {
+            alloc = parseFloat(Math.random()*(remainingAllocation-(remainingAllocation/3))+(remainingAllocation/3));
+            remainingAllocation -= alloc;
+          }
+          protocolsAllocations[protocolAddr] = this.functionsUtil.BNify(alloc);
+        });
+      }
+
+      newState.protocolsAllocations = protocolsAllocations;
+      newState.totalAllocation = totalAllocation;
     }
 
-    if (this.state.randomAllocationEnabled){
-      let remainingAllocation = parseFloat(totalAllocation.toString());
-      const totProtocols = Object.keys(protocolsAllocations).length;
-      Object.keys(protocolsAllocations).forEach((protocolAddr,i) => {
-        let alloc = parseFloat(protocolsAllocations[protocolAddr].toString());
-        if (i === totProtocols-1){
-          alloc = remainingAllocation;
-        } else {
-          alloc = parseFloat(Math.random()*(remainingAllocation-(remainingAllocation/3))+(remainingAllocation/3));
-          remainingAllocation -= alloc;
-        }
-        protocolsAllocations[protocolAddr] = this.functionsUtil.BNify(alloc);
-      });
-    }
-
-    this.setState({
-      protocolsAllocations,
-      totalAllocation,
-      updatingAllocations: false
-    });
+    this.setState(newState);
 
     return [protocolsAllocations,totalAllocation];
   }
 
   getAprs = async () => {
-    const Aprs = await this.functionsUtil.genericIdleCall('getAPRs');
-
     if (this.state.updatingAprs){
       return false;
     }
+
+    const Aprs = await this.functionsUtil.genericIdleCall('getAPRs');
 
     this.setState({
       updatingAprs:true

@@ -202,9 +202,12 @@ class App extends Component {
                   >
                     <RimbleWeb3.Consumer>
                       {({
-                        needsPreflight,
                         web3,
+                        modals,
+                        network,
                         initWeb3,
+                        transaction,
+                        needsPreflight,
                         simpleID,
                         initSimpleID,
                         account,
@@ -218,6 +221,7 @@ class App extends Component {
                         initContract,
                         tokenDecimals,
                         rejectAccountConnect,
+                        contractsInitialized,
                         userRejectedConnect,
                         accountValidated,
                         accountValidationPending,
@@ -225,9 +229,6 @@ class App extends Component {
                         userRejectedValidation,
                         validateAccount,
                         connectAndValidateAccount,
-                        modals,
-                        network,
-                        transaction
                       }) => {
                         return (
                         <Box>
@@ -247,6 +248,7 @@ class App extends Component {
                                 isMobile={isMobile}
                                 connecting={this.state.connecting}
                                 walletProvider={this.state.walletProvider}
+                                contractsInitialized={contractsInitialized}
                                 connectorName={this.state.connectorName}
                                 buyModalOpened={this.state.buyModalOpened}
                                 openBuyModal={this.openBuyModal.bind(this)}
@@ -316,6 +318,7 @@ class App extends Component {
                                       selectedToken={this.state.selectedToken}
                                       accountBalanceToken={accountBalanceToken}
                                       closeToastMessage={this.closeToastMessage}
+                                      contractsInitialized={contractsInitialized}
                                       openBuyModal={this.openBuyModal.bind(this)}
                                       availableTokens={this.state.availableTokens}
                                       updateSelectedTab={this.selectTab.bind(this)}

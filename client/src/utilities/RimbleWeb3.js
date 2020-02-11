@@ -569,7 +569,7 @@ class RimbleTransaction extends React.Component {
       if (error && error.message.includes('MULTIPLE_OPEN_CONNECTIONS_DISALLOWED')) {
         return;
       }
-      
+
       // Send Sentry connection error
       const isError = error instanceof Error;
       if (this.functionsUtil.checkUrlOrigin() && isError){
@@ -647,41 +647,64 @@ class RimbleTransaction extends React.Component {
 
     const tokenConfig = this.props.tokenConfig;
 
-    // Initialize Token Contract
-    let foundTokenContract = this.state.contracts.find(c => c.name === this.props.selectedToken);
-    if (!foundTokenContract) {
-      this.functionsUtil.customLog('initializeContracts, init contract',this.props.selectedToken, tokenConfig.address);
-      await this.initContract(this.props.selectedToken, tokenConfig.address, tokenConfig.abi);
+    const initTokenContract = async () => {
+      // Initialize Token Contract
+      let foundTokenContract = this.state.contracts.find(c => c.name === this.props.selectedToken);
+      if (!foundTokenContract) {
+        this.functionsUtil.customLog('initializeContracts, init contract',this.props.selectedToken, tokenConfig.address);
+        await this.initContract(this.props.selectedToken, tokenConfig.address, tokenConfig.abi);
+      }
+    };
+
+    const initIdleTokenContract = async () => {
+      // Initialize IdleToken Contract
+      let foundIdleTokenContract = this.state.contracts.find(c => c.name === tokenConfig.idle.token);
+      if (!foundIdleTokenContract) {
+        this.functionsUtil.customLog('initializeContracts, init contract',tokenConfig.idle.token, tokenConfig.idle.address);
+        await this.initContract(tokenConfig.idle.token, tokenConfig.idle.address, tokenConfig.idle.abi);
+      }
     }
 
-    // Initialize IdleToken Contract
-    let foundIdleTokenContract = this.state.contracts.find(c => c.name === tokenConfig.idle.token);
-    if (!foundIdleTokenContract) {
-      this.functionsUtil.customLog('initializeContracts, init contract',tokenConfig.idle.token, tokenConfig.idle.address);
-      await this.initContract(tokenConfig.idle.token, tokenConfig.idle.address, tokenConfig.idle.abi);
+    const initProtocolsContracts = async () => {
+      // Initialize protocols contracts
+      this.props.tokenConfig.protocols.forEach(async (p,i) => {
+        this.functionsUtil.customLog('initializeContracts, init '+p.token+' contract',p);
+        await this.initContract(p.token, p.address, p.abi);
+      });
     }
 
-    // Initialize protocols contracts
-    this.props.tokenConfig.protocols.forEach(async (p,i) => {
-      this.functionsUtil.customLog('initializeContracts, init '+p.name+' contract',p);
-      await this.initContract(p.token, p.address, p.abi);
+    const initMigrationContract = async () => {
+      // Check migration contract
+      if (this.props.tokenConfig.migration){
+
+        if (this.props.tokenConfig.migration.oldContract){
+          const oldContract = this.props.tokenConfig.migration.oldContract;
+          this.functionsUtil.customLog('initializeContracts, init '+oldContract.name+' contract',oldContract);
+          await this.initContract(oldContract.name, oldContract.address, oldContract.abi);
+        }
+
+        if (this.props.tokenConfig.migration.migrationContract){
+          const migrationContract = this.props.tokenConfig.migration.migrationContract;
+          this.functionsUtil.customLog('initializeContracts, init '+migrationContract.name+' contract',migrationContract);
+          await this.initContract(migrationContract.name, migrationContract.address, migrationContract.abi);
+        }
+      }
+    }
+
+    this.setState({
+      contractsInitialized:false
     });
 
-    // Check migration contract
-    if (this.props.tokenConfig.migration){
+    await Promise.all([
+      initTokenContract(),
+      initIdleTokenContract(),
+      initProtocolsContracts(),
+      initMigrationContract()
+    ]);
 
-      if (this.props.tokenConfig.migration.oldContract){
-        const oldContract = this.props.tokenConfig.migration.oldContract;
-        this.functionsUtil.customLog('initializeContracts, init '+oldContract.name+' contract',oldContract);
-        await this.initContract(oldContract.name, oldContract.address, oldContract.abi);
-      }
-
-      if (this.props.tokenConfig.migration.migrationContract){
-        const migrationContract = this.props.tokenConfig.migration.migrationContract;
-        this.functionsUtil.customLog('initializeContracts, init '+migrationContract.name+' contract',migrationContract);
-        await this.initContract(migrationContract.name, migrationContract.address, migrationContract.abi);
-      }
-    }
+    this.setState({
+      contractsInitialized:true
+    });
   }
 
   getContractByName = async (contractName) => {
@@ -1224,6 +1247,7 @@ class RimbleTransaction extends React.Component {
     web3: null,
     simpleID: null,
     tokenDecimals:null,
+    contractsInitialized:false,
     subscribedTransactions:{},
     transactions: {},
     checkPreflight: this.checkPreflight,
