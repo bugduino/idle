@@ -273,8 +273,17 @@ class FunctionsUtil {
       this.customLogError('Generic Idle call err:', err);
     });
   }
-  genericContractCall = async (contractName, methodName, params = [], callParams = {}) => {
+  estimateGas = async (contractName, methodName, params = [], callParams = {}) => {
+    let contract = this.getContractByName(contractName);
 
+    if (!contract) {
+      this.customLogError('Wrong contract name', contractName);
+      return null;
+    }
+
+    return await contract.methods[methodName](...params).estimateGas(callParams);
+  }
+  genericContractCall = async (contractName, methodName, params = [], callParams = {}) => {
     let contract = this.getContractByName(contractName);
 
     if (!contract) {

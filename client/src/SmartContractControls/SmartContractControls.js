@@ -135,11 +135,22 @@ class SmartContractControls extends React.Component {
 
     const _newAmount = 0;
     const _clientProtocolAmounts = [];
-    let shouldRebalance = await this.functionsUtil.genericIdleCall('rebalance',[_newAmount,_clientProtocolAmounts]);
+    let shouldRebalance = null;
+    const callParams = { gas: this.props.web3.utils.toBN(5000000) };
 
+    try{
+      let gas = await this.functionsUtil.estimateGas(this.props.tokenConfig.idle.token,'rebalance',[_newAmount,_clientProtocolAmounts],callParams);
+    } catch (err){
+      shouldRebalance = false;
+
+      return this.setState({
+        shouldRebalance,
+        calculatingShouldRebalance: false,
+      });
+    }
+
+    shouldRebalance = await this.functionsUtil.genericIdleCall('rebalance',[_newAmount,_clientProtocolAmounts]);
     if (!shouldRebalance && this.props.contractsInitialized){
-
-      const callParams = { gas: this.props.web3.utils.toBN(5000000) };
 
       let [currAllocation,newAllocation] = await Promise.all([
         this.props.getAllocations(),
