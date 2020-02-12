@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { Flex } from 'rimble-ui';
+import { Flex, Box, Card, Text } from 'rimble-ui';
 import { Line } from '@nivo/line';
 import React, { Component } from 'react';
 import globalConfigs from '../configs/globalConfigs';
@@ -14,7 +14,7 @@ class Stats extends Component {
     chartData:null,
     chartMode:'ALL',
     tokenConfig:null,
-    selectedToken:null,
+    selectedToken:null
   };
 
   // Utils
@@ -50,6 +50,8 @@ class Stats extends Component {
 
   componentWillMount() {
     this.loadUtils();
+
+    window.moment = moment;
   }
 
   async componentDidMount() {
@@ -70,14 +72,18 @@ class Stats extends Component {
       return false;
     }
 
+    const startTimestamp = parseInt(moment('2020-02-04','YYYY-MM-DD')._d.getTime()/1000);
+
     const apiInfo = globalConfigs.stats.rates;
     const endpoint = `${apiInfo.endpoint}${this.state.tokenConfig.address}`;
     const TTL = apiInfo.TTL ? apiInfo.TTL : 0;
-    const apiResults = await this.functionsUtil.makeCachedRequest(endpoint,TTL,true);
+    let apiResults = await this.functionsUtil.makeCachedRequest(endpoint,TTL,true);
 
     if (!apiResults){
       return false;
     }
+
+    apiResults = apiResults.filter((r,i) => { return r.timestamp > startTimestamp });
 
     const chartData = [];
     let chartProps = {};
@@ -306,6 +312,167 @@ class Stats extends Component {
           margin:{ top: 20, right: 20, bottom: 60, left: 80 }
         };
       break;
+      case 'APR':
+        this.state.tokenConfig.protocols.forEach((p,j) => {
+          chartData.push({
+            id:p.name,
+            color: globalConfigs.stats.protocols[p.name].color,
+            data: apiResults.map((d,i) => {
+              return d.protocolsData.filter((protocolAllocation,x) => {
+                  return protocolAllocation.protocolAddr.toLowerCase() === p.address.toLowerCase()
+              })
+              .map((protocolAllocation,z) => {
+                const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
+                const y = parseFloat(this.functionsUtil.fixTokenDecimals(protocolAllocation.rate,18));
+                return { x, y };
+              })[0]
+            })
+          })
+        });
+
+        // Set chart type
+        chartType = Line;
+
+        chartProps = {
+          xScale:{
+            type: 'time',
+            format: '%Y/%m/%d %H:%M',
+            // precision: 'hour',
+          },
+          xFormat:'time:%b %d %H:%M',
+          yFormat:value => parseFloat(value).toFixed(2)+'%',
+          yScale:{
+            type: 'linear',
+            stacked: false
+          },
+          axisLeft:{
+            format: value => parseFloat(value).toFixed(2)+'%',
+            orient: 'left',
+            tickSize: 5,
+            tickPadding: 5,
+            tickRotation: 0,
+            legend: '',
+            legendOffset: -70,
+            legendPosition: 'middle'
+          },
+          axisBottom:{
+            format: '%b %d %H:%M',
+            orient: 'bottom',
+            legend: '',
+            legendOffset: 36,
+            legendPosition: 'middle'
+          },
+          pointSize:0,
+          useMesh:true,
+          animate:false,
+          pointLabel:"y",
+          curve:'linear',
+          enableArea:true,
+          enableSlices:'x',
+          enableGridX:true,
+          enableGridY:false,
+          pointBorderWidth:1,
+          colors:d => d.color,
+          pointLabelYOffset:-12,
+          pointColor:{ from: 'color', modifiers: []},
+          margin:{ top: 20, right: 20, bottom: 60, left: 80 }
+        };
+      break;
+      case 'PRICE':
+        this.state.tokenConfig.protocols.forEach((p,j) => {
+          let lastRate = 0;
+          const initBalance = 1;
+          chartData.push({
+            id:p.name,
+            color: globalConfigs.stats.protocols[p.name].color,
+            data: apiResults.map((d,i) => {
+              return d.protocolsData.filter((protocolAllocation,x) => {
+                  return protocolAllocation.protocolAddr.toLowerCase() === p.address.toLowerCase()
+              })
+              .map((protocolAllocation,z) => {
+                const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
+                const rate = parseFloat(this.functionsUtil.fixTokenDecimals(protocolAllocation.price,p.functions.exchangeRate.decimals));
+                const diff = lastRate ? rate/lastRate-1 : 0;
+                const y = initBalance+diff;
+
+                if (!lastRate){
+                  lastRate = rate;
+                }
+
+                return { x, y };
+              })[0]
+            })
+          })
+        });
+
+        let lastRate = 0;
+        const initBalance = 1;
+        chartData.push({
+          id:'Idle',
+          color: 'hsl(227, 100%, 50%)',
+          data: apiResults.filter((r,i) => { return r.timestamp > startTimestamp }).map((d,i) => {
+            const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
+            const rate = parseFloat(this.functionsUtil.fixTokenDecimals(d.idlePrice,this.state.tokenConfig.decimals));
+            const diff = lastRate ? rate/lastRate-1 : 0;
+            const y = initBalance+diff;
+
+            if (!lastRate){
+              lastRate = rate;
+            }
+
+            return { x, y };
+          })
+        })
+
+        // Set chart type
+        chartType = Line;
+
+        chartProps = {
+          xScale:{
+            type: 'time',
+            format: '%Y/%m/%d %H:%M',
+            // precision: 'hour',
+          },
+          xFormat:'time:%b %d %H:%M',
+          yFormat:value => parseFloat(value).toFixed(6),
+          yScale:{
+            type: 'linear',
+            stacked: false,
+            min: 1
+          },
+          axisLeft:{
+            format: value => parseFloat(value).toFixed(6),
+            orient: 'left',
+            tickSize: 5,
+            tickPadding: 5,
+            tickRotation: 0,
+            legend: '',
+            legendOffset: -70,
+            legendPosition: 'middle'
+          },
+          axisBottom:{
+            format: '%b %d %H:%M',
+            orient: 'bottom',
+            legend: '',
+            legendOffset: 36,
+            legendPosition: 'middle'
+          },
+          pointSize:0,
+          useMesh:true,
+          animate:false,
+          pointLabel:"y",
+          curve:'linear',
+          enableArea:false,
+          enableSlices:'x',
+          enableGridX:true,
+          enableGridY:false,
+          pointBorderWidth:1,
+          colors:d => d.color,
+          pointLabelYOffset:-12,
+          pointColor:{ from: 'color', modifiers: []},
+          margin:{ top: 20, right: 20, bottom: 60, left: 80 }
+        };
+      break;
       default:
       break;
     }
@@ -320,7 +487,36 @@ class Stats extends Component {
   render() {
     if (this.state.chartType && this.state.chartData){
       return (
-        <Flex p={4}>
+        <Flex flexDirection={'column'} p={4}>
+          <Flex flexDirection={['column','row']} width={1}>
+            <Flex width={[1,1/3]} mx={[0,2]} flexDirection={'column'}>
+              <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'}>
+                <Flex flexDirection={'row'} alignItems={'center'}>
+                  <Flex alignItems={'center'} borderLeft={'1px solid #eee'} justifyContent={'center'} flexDirection={'column'} width={[1,1/4]}>
+                    <Text.span color={'copyColor'} fontWeight={2} fontSize={'70%'}>AVG APR</Text.span>
+                    <Text lineHeight={1} pl={'10px'} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
+                      ---<Text.span color={'copyColor'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
+                    </Text>
+                  </Flex>
+                  {
+                    /*
+                    <Box width={6/12} borderRight={'1px solid #eee'}>
+                      <Text color={isIdle ? 'white' : 'copyColor'} fontSize={[3,'28px']} fontWeight={4} textAlign={'center'}>
+                        {interestEarned.toFixed(2)} <Text.span color={isIdle ? 'white' : 'copyColor'} fontWeight={2} fontSize={['90%','60%']}>{this.props.selectedToken}</Text.span>
+                      </Text>
+                    </Box>
+                  <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={3/4}>
+                    <Text.span color={isIdle ? 'white' : 'copyColor'} fontWeight={[1,2]} fontSize={['90%','70%']}>AVG APR</Text.span>
+                    <Text lineHeight={1} pl={'10px'} color={isIdle ? 'white' : 'copyColor'} fontSize={[2,3]} fontWeight={3} textAlign={'center'}>
+                      {annualReturn}<Text.span color={isIdle ? 'white' : 'copyColor'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
+                    </Text>
+                  </Flex>
+                    */
+                  }
+                </Flex>
+              </Card>
+            </Flex>
+          </Flex>
           <GenericChart
             type={this.state.chartType}
             data={this.state.chartData}
