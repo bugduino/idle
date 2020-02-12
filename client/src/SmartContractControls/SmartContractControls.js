@@ -139,7 +139,7 @@ class SmartContractControls extends React.Component {
     const callParams = { gas: this.props.web3.utils.toBN(5000000) };
 
     try{
-      let gas = await this.functionsUtil.estimateGas(this.props.tokenConfig.idle.token,'rebalance',[_newAmount,_clientProtocolAmounts],callParams);
+      await this.functionsUtil.estimateGas(this.props.tokenConfig.idle.token,'rebalance',[_newAmount,_clientProtocolAmounts],callParams);
     } catch (err){
       shouldRebalance = false;
 
@@ -150,6 +150,7 @@ class SmartContractControls extends React.Component {
     }
 
     shouldRebalance = await this.functionsUtil.genericIdleCall('rebalance',[_newAmount,_clientProtocolAmounts]);
+
     if (!shouldRebalance && this.props.contractsInitialized){
 
       let [currAllocation,newAllocation] = await Promise.all([
@@ -158,12 +159,12 @@ class SmartContractControls extends React.Component {
       ]);
 
       if (newAllocation && currAllocation){
-        const currProtocol = Object.keys(currAllocation[0]).filter((addr,i) => { return parseInt(currAllocation[0][addr].toString()) });
+
+        const currProtocols = Object.keys(currAllocation[0]).filter((addr,i) => { return this.functionsUtil.BNify(currAllocation[0][addr].toString()).gt(0) });
         newAllocation = newAllocation[0].reduce((obj, key, index) => ({ ...obj, [key.toLowerCase()]: newAllocation[1][index] }), {});
-        const newProtocol = Object.keys(newAllocation).filter((addr,i) => { return parseInt(newAllocation[addr].toString()) });
+        const newProtocols = Object.keys(newAllocation).filter((addr,i) => { return this.functionsUtil.BNify(newAllocation[addr].toString()).gt(0) });
 
-
-        if (currProtocol.pop() !== newProtocol.pop()){
+        if (currProtocols.length !== newProtocols.length){
           shouldRebalance = true;
         }
       }
