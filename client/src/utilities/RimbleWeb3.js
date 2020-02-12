@@ -111,6 +111,10 @@ class RimbleTransaction extends React.Component {
       });
     }
 
+    if ( prevProps.customAddress !== this.props.customAddress){
+      this.initWeb3();
+    }
+
     if (localStorage){
       const context = JSON.parse(localStorage.getItem('context'));
       if (!context || (this.props.context.active !== context.active || this.props.context.connectorName !== context.connectorName)){
@@ -328,6 +332,17 @@ class RimbleTransaction extends React.Component {
   initAccount = async (hideModal = false) => {
     if (!hideModal) {
       this.openConnectionPendingModal();
+    }
+
+    if (this.props.customAddress){
+
+      // Set custom account
+      this.setState({ account: this.props.customAddress });
+
+      // After account is complete, get the balance
+      this.getAccountBalance();
+
+      return false;
     }
 
     try {
@@ -1059,7 +1074,8 @@ class RimbleTransaction extends React.Component {
         icon: 'Block'
       });
 
-      if ( this.functionsUtil.checkUrlOrigin()){
+      const isError = error instanceof Error;
+      if ( this.functionsUtil.checkUrlOrigin() && isError){
         Sentry.captureException(error);
       }
     }
