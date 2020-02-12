@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { Flex, Box, Card, Text } from 'rimble-ui';
+import { Flex, Card, Text } from 'rimble-ui';
 import { Line } from '@nivo/line';
 import React, { Component } from 'react';
 import globalConfigs from '../configs/globalConfigs';
@@ -422,7 +422,7 @@ class Stats extends Component {
 
             return { x, y };
           })
-        })
+        });
 
         // Set chart type
         chartType = Line;
@@ -489,30 +489,14 @@ class Stats extends Component {
       return (
         <Flex flexDirection={'column'} p={4}>
           <Flex flexDirection={['column','row']} width={1}>
-            <Flex width={[1,1/3]} mx={[0,2]} flexDirection={'column'}>
+            <Flex width={[1,1/4]} mx={[0,2]} flexDirection={'column'}>
               <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'}>
-                <Flex flexDirection={'row'} alignItems={'center'}>
-                  <Flex alignItems={'center'} borderLeft={'1px solid #eee'} justifyContent={'center'} flexDirection={'column'} width={[1,1/4]}>
-                    <Text.span color={'copyColor'} fontWeight={2} fontSize={'70%'}>AVG APR</Text.span>
-                    <Text lineHeight={1} pl={'10px'} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
-                      ---<Text.span color={'copyColor'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
-                    </Text>
-                  </Flex>
-                  {
-                    /*
-                    <Box width={6/12} borderRight={'1px solid #eee'}>
-                      <Text color={isIdle ? 'white' : 'copyColor'} fontSize={[3,'28px']} fontWeight={4} textAlign={'center'}>
-                        {interestEarned.toFixed(2)} <Text.span color={isIdle ? 'white' : 'copyColor'} fontWeight={2} fontSize={['90%','60%']}>{this.props.selectedToken}</Text.span>
-                      </Text>
-                    </Box>
-                  <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={3/4}>
-                    <Text.span color={isIdle ? 'white' : 'copyColor'} fontWeight={[1,2]} fontSize={['90%','70%']}>AVG APR</Text.span>
-                    <Text lineHeight={1} pl={'10px'} color={isIdle ? 'white' : 'copyColor'} fontSize={[2,3]} fontWeight={3} textAlign={'center'}>
-                      {annualReturn}<Text.span color={isIdle ? 'white' : 'copyColor'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
-                    </Text>
-                  </Flex>
-                    */
-                  }
+                <Flex alignItems={'center'} borderLeft={'1px solid #eee'} justifyContent={'center'} flexDirection={'column'} width={1}>
+                  <Text.span color={'copyColor'} fontWeight={2} fontSize={'70%'}>AVG APR</Text.span>
+                  <Text lineHeight={1} pl={'10px'} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
+                    ---
+                    <Text.span color={'copyColor'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
+                  </Text>
                 </Flex>
               </Card>
             </Flex>
