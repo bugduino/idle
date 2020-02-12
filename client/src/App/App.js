@@ -38,7 +38,8 @@ class App extends Component {
     connectorName:null,
     walletProvider:null,
     connecting:false,
-    toastMessageProps:null
+    toastMessageProps:null,
+    customAddress:null
   };
 
   closeToastMessage = (e) => {
@@ -54,6 +55,19 @@ class App extends Component {
     this.setState({
       toastMessageProps:props
     });
+  }
+
+  setCustomAddress = (customAddress) => {
+    // Reset customAddress if not well formatted
+    if (customAddress && !customAddress.toLowerCase().match(/0x[\w]{40}/)){
+      customAddress = null;
+    }
+
+    if (customAddress !== this.state.customAddress){
+      this.setState({
+        customAddress
+      });
+    }
   }
 
   async selectTab(e, tabIndex) {
@@ -192,13 +206,14 @@ class App extends Component {
               {context => {
                 return (
                   <RimbleWeb3
-                    connectors={connectors}
-                    config={this.config}
                     context={context}
+                    isMobile={isMobile}
+                    config={this.config}
+                    connectors={connectors}
                     tokenConfig={this.state.tokenConfig}
+                    customAddress={this.state.customAddress}
                     selectedToken={this.state.selectedToken}
                     setConnector={this.setConnector.bind(this)}
-                    isMobile={isMobile}
                   >
                     <RimbleWeb3.Consumer>
                       {({
@@ -302,49 +317,56 @@ class App extends Component {
 
                               {this.state.route === "default" ? (
                                 <Switch>
-                                  <Route exact path="/">
-                                    <Landing
-                                      web3={web3}
-                                      account={account}
-                                      isMobile={isMobile}
-                                      simpleID={simpleID}
-                                      contracts={contracts}
-                                      accountBalance={accountBalance}
-                                      connecting={this.state.connecting}
-                                      selectedTab={this.state.selectedTab}
-                                      tokenConfig={this.state.tokenConfig}
-                                      accountBalanceLow={accountBalanceLow}
-                                      getAccountBalance={getAccountBalance}
-                                      selectedToken={this.state.selectedToken}
-                                      accountBalanceToken={accountBalanceToken}
-                                      closeToastMessage={this.closeToastMessage}
-                                      contractsInitialized={contractsInitialized}
-                                      openBuyModal={this.openBuyModal.bind(this)}
-                                      availableTokens={this.state.availableTokens}
-                                      updateSelectedTab={this.selectTab.bind(this)}
-                                      toastMessageProps={this.state.toastMessageProps}
-                                      setSelectedToken={ e => { this.setSelectedToken(e) } }
-                                      network={network} />
+                                  <Route path="/:customAddress?"
+                                    render={ (props) =>
+                                      <>
+                                        <Landing
+                                          {...props}
+                                          web3={web3}
+                                          account={account}
+                                          isMobile={isMobile}
+                                          simpleID={simpleID}
+                                          contracts={contracts}
+                                          accountBalance={accountBalance}
+                                          connecting={this.state.connecting}
+                                          selectedTab={this.state.selectedTab}
+                                          tokenConfig={this.state.tokenConfig}
+                                          accountBalanceLow={accountBalanceLow}
+                                          getAccountBalance={getAccountBalance}
+                                          customAddress={this.state.customAddress}
+                                          setCustomAddress={this.setCustomAddress}
+                                          selectedToken={this.state.selectedToken}
+                                          accountBalanceToken={accountBalanceToken}
+                                          closeToastMessage={this.closeToastMessage}
+                                          contractsInitialized={contractsInitialized}
+                                          openBuyModal={this.openBuyModal.bind(this)}
+                                          availableTokens={this.state.availableTokens}
+                                          updateSelectedTab={this.selectTab.bind(this)}
+                                          toastMessageProps={this.state.toastMessageProps}
+                                          setSelectedToken={ e => { this.setSelectedToken(e) } }
+                                          network={network} />
 
-                                      <CookieConsent
-                                        acceptOnScroll={true}
-                                        acceptOnScrollPercentage={5}
-                                        location="bottom"
-                                        buttonText="Ok"
-                                        cookieName="cookieAccepted"
-                                        style={{background: "rgba(255,255,255,0.95)",zIndex:'9999999', marginBottom: isMobile ? "0px" : "15px"}}
-                                        buttonStyle={{display: isMobile ? "block" : "none", backgroundColor:'#0036ff', color: 'white', marginTop: isMobile ? "0px" : "15px"}}
-                                        expires={365}
-                                      >
-                                        <Flex flexDirection={'row'} alignItems={['flex-start','center']} justifyContent={'flex-start'} maxHeight={['150px','initial']} style={ isMobile ? {overflowY:'scroll'} : null }>
-                                          <Image display={['none','block']} src={'images/cookie.svg'} width={'42px'} height={'42px'} />
-                                          <Text pl={[0,3]} color={'dark-gray'} fontSize={1} textAlign={'justify'}>
-                                            This website or its third-party tools process personal data (e.g. browsing data or IP addresses) and use cookies or other identifiers, which are necessary for its functioning and required to achieve the purposes illustrated in the cookie policy. To learn more, please refer to the <Link href={'https://www.iubenda.com/privacy-policy/61211749/cookie-policy'} target={'_blank'} rel="nofollow noopener noreferrer" hoverColor={'blue'}>cookie policy</Link>.
-                                            You accept the use of cookies or other identifiers by closing or dismissing this notice, by scrolling this page, by clicking a link or button or by continuing to browse otherwise.
-                                          </Text>
-                                        </Flex>
-                                      </CookieConsent>
-                                  </Route>
+                                        <CookieConsent
+                                          acceptOnScroll={true}
+                                          acceptOnScrollPercentage={5}
+                                          location="bottom"
+                                          buttonText="Ok"
+                                          cookieName="cookieAccepted"
+                                          style={{background: "rgba(255,255,255,0.95)",zIndex:'9999999', marginBottom: isMobile ? "0px" : "15px"}}
+                                          buttonStyle={{display: isMobile ? "block" : "none", backgroundColor:'#0036ff', color: 'white', marginTop: isMobile ? "0px" : "15px"}}
+                                          expires={365}
+                                        >
+                                          <Flex flexDirection={'row'} alignItems={['flex-start','center']} justifyContent={'flex-start'} maxHeight={['150px','initial']} style={ isMobile ? {overflowY:'scroll'} : null }>
+                                            <Image display={['none','block']} src={'images/cookie.svg'} width={'42px'} height={'42px'} />
+                                            <Text pl={[0,3]} color={'dark-gray'} fontSize={1} textAlign={'justify'}>
+                                              This website or its third-party tools process personal data (e.g. browsing data or IP addresses) and use cookies or other identifiers, which are necessary for its functioning and required to achieve the purposes illustrated in the cookie policy. To learn more, please refer to the <Link href={'https://www.iubenda.com/privacy-policy/61211749/cookie-policy'} target={'_blank'} rel="nofollow noopener noreferrer" hoverColor={'blue'}>cookie policy</Link>.
+                                              You accept the use of cookies or other identifiers by closing or dismissing this notice, by scrolling this page, by clicking a link or button or by continuing to browse otherwise.
+                                            </Text>
+                                          </Flex>
+                                        </CookieConsent>
+                                      </>
+                                    }
+                                  ></Route>
                                   <Route path="/terms-of-service">
                                     <Tos />
                                   </Route>

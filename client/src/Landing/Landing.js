@@ -81,6 +81,7 @@ class Landing extends Component {
   async componentDidMount(){
 
     this.loadUtils();
+    this.loadCustomAddress();
 
     componentUnmounted = false;
     scrollTimeoutID = null;
@@ -106,12 +107,20 @@ class Landing extends Component {
   async componentDidUpdate(prevProps, prevState) {
 
     this.loadUtils();
+    this.loadCustomAddress();
 
     const contractsInitialized = this.props.contractsInitialized && prevProps.contractsInitialized !== this.props.contractsInitialized;
 
     if (contractsInitialized) {
       this.getAllocations();
       this.getAprs();
+    }
+  }
+
+  loadCustomAddress = () => {
+    const { match: { params } } = this.props;
+    if (this.props.customAddress !== params.customAddress){
+      this.props.setCustomAddress(params.customAddress);
     }
   }
 
@@ -309,19 +318,20 @@ class Landing extends Component {
             <Flex flexDirection={'column'} alignItems={'center'} maxWidth={["50em", "50em"]} mx={'auto'} textAlign={'center'}>
               <LandingForm
                 // mintCallback={ () => this.setConfetti(true) }
+                getAprs={this.getAprs}
+                isMobile={this.props.isMobile}
                 simpleID={this.props.simpleID}
                 connecting={this.props.connecting}
+                selectedTab={this.props.selectedTab}
+                tokenConfig={this.props.tokenConfig}
                 getAllocations={this.getAllocations}
                 openBuyModal={this.props.openBuyModal}
-                getAprs={this.getAprs}
                 selectedToken={this.props.selectedToken}
-                tokenConfig={this.props.tokenConfig}
                 setSelectedToken={this.props.setSelectedToken}
-                accountBalanceToken={this.props.accountBalanceToken}
                 getAccountBalance={this.props.getAccountBalance}
-                isMobile={this.props.isMobile}
                 updateSelectedTab={this.props.updateSelectedTab}
-                selectedTab={this.props.selectedTab} />
+                accountBalanceToken={this.props.accountBalanceToken}
+              />
             </Flex>
             <Flex flexDirection={'column'} py={[3,4]} mb={[3,5]} alignItems={'center'}>
               <Link onClick={(e) => {this.scrollTo(document.getElementById('how-it-works').offsetTop,300)}} textAlign={'center'} color={'dark-gray'} hoverColor={'dark-gray'} fontSize={2} fontWeight={3}>

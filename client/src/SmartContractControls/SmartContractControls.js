@@ -1586,10 +1586,10 @@ class SmartContractControls extends React.Component {
     }
 
     await Promise.all([
+      this.getAprs(),
       this.checkMigration(),
       this.getAllocations(),
       this.rebalanceCheck(),
-      this.getAprs(),
       this.getPriceInToken(),
       this.checkTokenApproved()
     ]);
