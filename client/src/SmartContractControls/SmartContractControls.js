@@ -361,9 +361,9 @@ class SmartContractControls extends React.Component {
 
       if (amountLent && this.functionsUtil.trimEth(amountLent.toString())>0 && this.functionsUtil.trimEth(tokenToRedeem.toString())>0 && parseFloat(this.functionsUtil.trimEth(tokenToRedeem.toString()))<parseFloat(this.functionsUtil.trimEth(amountLent.toString()))){
         // console.error('tokenToRedeem',tokenToRedeem.toString(),' less than amountLent',amountLent.toString());
-        amountLent = tokenToRedeem.div(this.state.tokenPrice);
+        amountLent = tokenToRedeem;
       } else if (amountLent && amountLent.lte(0) && tokenToRedeem){
-        amountLent = tokenToRedeem.div(this.state.tokenPrice);
+        amountLent = tokenToRedeem;
         // console.log('AmountLent 3',amountLent);
       }
 
