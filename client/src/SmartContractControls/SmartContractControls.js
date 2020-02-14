@@ -363,8 +363,8 @@ class SmartContractControls extends React.Component {
         // console.error('tokenToRedeem',tokenToRedeem.toString(),' less than amountLent',amountLent.toString());
         amountLent = tokenToRedeem;
       } else if (amountLent && amountLent.lte(0) && tokenToRedeem){
+        // console.log('AmountLent 3',amountLent.toString(),tokenToRedeem.toString());
         amountLent = tokenToRedeem;
-        // console.log('AmountLent 3',amountLent);
       }
 
       // console.log((tokenToRedeem ? tokenToRedeem.toString() : null),(amountLent ? amountLent.toString() : null));
@@ -1060,7 +1060,7 @@ class SmartContractControls extends React.Component {
             }
           }
 
-          // console.log(`Deposited ${storedTx.idleTokens} (${tx.value}), Balance: ${idleTokenBalance}, AmountLent: ${amountLent}, idleToken price: ${lastIdleTokenPrice}`);
+          // console.log(`Deposited ${storedTx.idleTokens} (${tx.value}), AmountLent: ${amountLent}`);
 
           // Save new storedTx
           storedTxs[this.props.account][this.props.selectedToken][txKey] = storedTx;
@@ -1099,6 +1099,8 @@ class SmartContractControls extends React.Component {
               return;
             }
 
+            const internalTransfer = internalTransfers.pop();
+
             try {
               // Decode lons
               const decodedLogs = this.props.web3.eth.abi.decodeLog([
@@ -1107,7 +1109,7 @@ class SmartContractControls extends React.Component {
                   "name": "_tokenAmount",
                   "type": "uint256"
                 }
-              ],internalTransfers[0].data,internalTransfers[0].topics);
+              ],internalTransfer.data,internalTransfer.topics);
 
               if (decodedLogs){
                 redeemedValue = decodedLogs._tokenAmount;
@@ -1130,7 +1132,7 @@ class SmartContractControls extends React.Component {
           // Decrese amountLent by redeem amount
           amountLent = amountLent.minus(this.functionsUtil.BNify(redeemedValueFixed));
 
-          // console.log(`Redeemed ${tx.value} (${redeemedValueFixed}), Balance: ${idleTokenBalance}, AmountLent: ${amountLent}, idleToken price: ${lastIdleTokenPrice}`);
+          // console.log(`Redeemed ${tx.value} (${redeemedValueFixed}), AmountLent: ${amountLent}`);
           // Reset amountLent if below zero
           if (amountLent.lt(0)){
             amountLent = this.functionsUtil.BNify(0);
@@ -1168,6 +1170,8 @@ class SmartContractControls extends React.Component {
               return;
             }
 
+            const internalTransfer = internalTransfers.pop();
+
             try {
               const decodedLogs = this.props.web3.eth.abi.decodeLog([
                 /*{
@@ -1185,7 +1189,7 @@ class SmartContractControls extends React.Component {
                   "name": "_price",
                   "type": "uint256"
                 },*/
-              ],internalTransfers[0].data,internalTransfers[0].topics);
+              ],internalTransfer.data,internalTransfer.topics);
 
               if (decodedLogs){
                 migrationValue = decodedLogs._tokenAmount;
@@ -1212,7 +1216,7 @@ class SmartContractControls extends React.Component {
 
           amountLent = amountLent.plus(this.functionsUtil.BNify(migrationValueFixed));
 
-          // console.log(`Migrated ${tx.value} (${migrationValueFixed}), Balance: ${idleTokenBalance}, AmountLent: ${amountLent}, idleToken price: ${lastIdleTokenPrice}`);
+          // console.log(`Migrated ${tx.value} (${migrationValueFixed}), AmountLent: ${amountLent}`);
         }
 
         // Update transaction
@@ -1327,6 +1331,8 @@ class SmartContractControls extends React.Component {
               return;
             }
 
+            const redeemInternalTransfer = redeemTxInternalTransfers.pop();
+
             try {
               // Decode lons
               const decodedLogs = this.props.web3.eth.abi.decodeLog([
@@ -1335,7 +1341,7 @@ class SmartContractControls extends React.Component {
                   "name": "_tokenAmount",
                   "type": "uint256"
                 }
-              ],redeemTxInternalTransfers[0].data,redeemTxInternalTransfers[0].topics);
+              ],redeemInternalTransfer.data,redeemInternalTransfer.topics);
 
               if (decodedLogs){
                 const redeemedValue = decodedLogs._tokenAmount;
@@ -1398,6 +1404,8 @@ class SmartContractControls extends React.Component {
               return;
             }
 
+            const migrationInternalTransfer = migrationTxInternalTransfers.pop();
+
             const decodedLogs = this.props.web3.eth.abi.decodeLog([
               {
                 "internalType": "uint256",
@@ -1414,7 +1422,7 @@ class SmartContractControls extends React.Component {
                 "name": "_price",
                 "type": "uint256"
               },
-            ],migrationTxInternalTransfers[0].data,migrationTxInternalTransfers[0].topics);
+            ],migrationInternalTransfer.data,migrationInternalTransfer.topics);
 
             const migrationValue = decodedLogs._token;
             const migrationTokenDecimals = this.state.oldContractTokenDecimals ? this.state.oldContractTokenDecimals : await this.functionsUtil.getTokenDecimals(this.props.tokenConfig.migration.oldContract.name);
@@ -2267,7 +2275,7 @@ class SmartContractControls extends React.Component {
     const hasBalance = !isNaN(this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)) && this.functionsUtil.trimEth(this.state.tokenToRedeemParsed) > 0;
     // const navPool = this.getFormattedBalance(this.state.navPool,this.props.selectedToken);
     const idleTokenPrice = this.getFormattedBalance(this.state.idleTokenPrice,this.props.selectedToken);
-    const depositedFunds = this.getFormattedBalance(this.state.amountLent,this.props.selectedToken);
+    const depositedFunds = this.getFormattedBalance(this.state.amountLent,this.props.selectedToken,6,9);
     const earningPerc = !isNaN(this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)) && this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)>0 && this.state.amountLent>0 ? this.getFormattedBalance(this.functionsUtil.BNify(this.state.tokenToRedeemParsed).div(this.functionsUtil.BNify(this.state.amountLent)).minus(1).times(100),'%',4) : '0%';
     const currentApr = !isNaN(this.state.maxRate) ? this.getFormattedBalance(this.state.maxRate,'%',2) : '-';
 
