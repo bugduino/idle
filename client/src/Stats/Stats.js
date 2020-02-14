@@ -66,6 +66,30 @@ class Stats extends Component {
     }
   }
 
+  getTokenData = async (address) => {
+    const apiInfo = globalConfigs.stats.rates;
+    const endpoint = `${apiInfo.endpoint}${address}`;
+    const TTL = apiInfo.TTL ? apiInfo.TTL : 0;
+    return await this.functionsUtil.makeCachedRequest(endpoint,TTL,true);
+  }
+
+  abbreviateNumber = (value) => {
+    let newValue = value;
+    if (value >= 1000) {
+      const suffixes = ["", "k", "m", "b","t"];
+      const suffixNum = Math.floor( (""+value).length/4 );
+      let shortValue = '';
+      for (let precision = 3; precision >= 1; precision--) {
+        shortValue = parseFloat( (suffixNum !== 0 ? (value / Math.pow(1000,suffixNum) ) : value).toPrecision(precision));
+        const dotLessShortValue = (shortValue + '').replace(/[^a-zA-Z 0-9]+/g,'');
+        if (dotLessShortValue.length <= 3) { break; }
+      }
+      if (shortValue % 1 !== 0)  shortValue = shortValue.toFixed(2);
+      newValue = shortValue+suffixes[suffixNum];
+    }
+    return newValue;
+  }
+
   loadApiData = async () => {
 
     if (!this.state.tokenConfig || !this.state.selectedToken || !this.state.chartMode){
@@ -90,6 +114,73 @@ class Stats extends Component {
     let chartType = Line;
 
     switch (this.state.chartMode){
+      case 'AUM_ALL':
+        await this.functionsUtil.asyncForEach(Object.keys(availableTokens[globalConfigs.network.requiredNetwork]),async (tokenName,i) => {
+          const tokenConfig = availableTokens[globalConfigs.network.requiredNetwork][tokenName];
+          const tokenDataApi = await this.getTokenData(tokenConfig.address);
+          chartData.push({
+            id:tokenName,
+            color: tokenConfig.color,
+            data: tokenDataApi.map((d,i) => {
+              const idleTokens = this.functionsUtil.fixTokenDecimals(d.idleSupply,18);
+              const idlePrice = this.functionsUtil.fixTokenDecimals(d.idlePrice,tokenConfig.decimals);
+              const aum = idleTokens.times(idlePrice);
+              return {
+                x: moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm"),
+                y: parseInt(aum.toString())
+              };
+            })
+          });
+        });
+
+        // Set chart type
+        chartType = Line;
+
+        chartProps = {
+          xScale:{
+            type: 'time',
+            format: '%Y/%m/%d %H:%M',
+            // precision: 'hour',
+          },
+          xFormat:'time:%b %d %H:%M',
+          yFormat:value => (parseInt(value)>=1000 ? parseFloat(value/1000).toFixed(1)+'K' : parseFloat(value) )+' '+this.state.selectedToken,
+          yScale:{
+            type: 'linear',
+            stacked: false
+          },
+          axisLeft:{
+            format: v => this.abbreviateNumber(v),
+            orient: 'left',
+            tickSize: 5,
+            tickPadding: 5,
+            tickRotation: 0,
+            legend: '',
+            legendOffset: -65,
+            legendPosition: 'middle'
+          },
+          axisBottom:{
+            format: '%b %d %H:%M',
+            orient: 'bottom',
+            legend: '',
+            legendOffset: 36,
+            legendPosition: 'middle'
+          },
+          enableArea:false,
+          curve:"linear",
+          enableSlices:'x',
+          enableGridX:true,
+          enableGridY:false,
+          colors:d => d.color,
+          pointSize:0,
+          pointColor:{ from: 'color', modifiers: []},
+          pointBorderWidth:1,
+          pointLabel:"y",
+          pointLabelYOffset:-12,
+          useMesh:true,
+          animate:false,
+          margin:{ top: 20, right: 20, bottom: 60, left: 80 }
+        };
+      break;
       case 'AUM':
         chartData.push({
           id:'AUM',
@@ -108,27 +199,6 @@ class Stats extends Component {
         // Set chart type
         chartType = Line;
 
-        const abbreviateNumber = (value) => {
-          let newValue = value;
-          if (value >= 1000) {
-            const suffixes = ["", "k", "m", "b","t"];
-            const suffixNum = Math.floor( (""+value).length/4 );
-            let shortValue = '';
-            for (let precision = 3; precision >= 1; precision--) {
-              shortValue = parseFloat( (suffixNum !== 0 ? (value / Math.pow(1000,suffixNum) ) : value).toPrecision(precision));
-              const dotLessShortValue = (shortValue + '').replace(/[^a-zA-Z 0-9]+/g,'');
-              if (dotLessShortValue.length <= 3) { break; }
-            }
-            if (shortValue % 1 !== 0)  shortValue = shortValue.toFixed(2);
-            newValue = shortValue+suffixes[suffixNum];
-          }
-          return newValue;
-        }
-
-        const yFormat = (v) => {
-          return abbreviateNumber(v)+' '+this.state.selectedToken
-        }
-
         chartProps = {
           xScale:{
             type: 'time',
@@ -142,7 +212,7 @@ class Stats extends Component {
             stacked: false
           },
           axisLeft:{
-            format: yFormat,
+            format: v => this.abbreviateNumber(v)+' '+this.state.selectedToken,
             orient: 'left',
             tickSize: 5,
             tickPadding: 5,
@@ -159,7 +229,7 @@ class Stats extends Component {
             legendPosition: 'middle'
           },
           enableArea:true,
-          curve:"catmullRom",
+          curve:"linear",
           enableSlices:false,
           enableGridX:true,
           enableGridY:false,

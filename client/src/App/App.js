@@ -250,7 +250,9 @@ class App extends Component {
                           <Switch>
                             <Route
                               path="/stats/:chartMode?/:customToken?"
-                              render={(props) => <Stats {...props} selectedToken={this.state.selectedToken} />}
+                              render={(props) => <Stats {...props}
+                                                    selectedToken={this.state.selectedToken}
+                                                  />}
                             >
                             </Route>
                             <Route>

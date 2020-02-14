@@ -935,12 +935,14 @@ class SmartContractControls extends React.Component {
     const etherscanTxs = results.filter(
         tx => {
           const internalTxs = results.filter(r => r.hash === tx.hash);
+          const isSendTransferTx = internalTxs.length === 1 && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
+          const isReceiveTransferTx = internalTxs.length === 1 && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
           const isMigrationTx = migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).indexOf(tx.from.toLowerCase()) !== -1 ) && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
           const isRightToken = internalTxs.length>1 && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase()).length;
           const isDepositTx = isRightToken && !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
           const isRedeemTx = isRightToken && !isMigrationTx && tx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()).length && tx.to.toLowerCase() === this.props.account.toLowerCase();
 
-          return isMigrationTx || isDepositTx || isRedeemTx;
+          return isSendTransferTx || isReceiveTransferTx || isMigrationTx || isDepositTx || isRedeemTx;
       }
     ).map(tx => {
       return ({...tx, value: this.functionsUtil.fixTokenDecimals(tx.value,tokenDecimals)});
@@ -953,10 +955,6 @@ class SmartContractControls extends React.Component {
     // Initialize prevTxs
     let prevTxs = this.state.prevTxs ? Object.assign({},this.state.prevTxs) : {};
 
-    // Check if this is the first interaction with Idle
-    let depositedTxs = 0;
-
-
     // Take storedTxs from localStorage
     const storedTxs = localStorage && JSON.parse(localStorage.getItem('transactions')) ? JSON.parse(localStorage.getItem('transactions')) : {};
     
@@ -968,6 +966,9 @@ class SmartContractControls extends React.Component {
     if (typeof storedTxs[this.props.account][this.props.selectedToken] !== 'object'){
       storedTxs[this.props.account][this.props.selectedToken] = {};
     }
+
+    // Check if this is the first interaction with Idle
+    let depositedTxs = 0;
 
     if (etherscanTxs && etherscanTxs.length){
 
@@ -990,17 +991,84 @@ class SmartContractControls extends React.Component {
         const storedTx = storedTxs[this.props.account][this.props.selectedToken][txKey] ? storedTxs[this.props.account][this.props.selectedToken][txKey] : tx;
         const isNewTx = etherscanTxs.indexOf(tx) !== -1; // Just fetched from etherscan
         const isMigrationTx = migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).indexOf(tx.from.toLowerCase()) !== -1 ) && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-        const isDepositTx = !isMigrationTx && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-        const isRedeemTx = !isMigrationTx && tx.to.toLowerCase() === this.props.account.toLowerCase();
+        const isSendTransferTx = !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
+        const isReceiveTransferTx = !isMigrationTx && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
+        const isDepositTx = !isMigrationTx && !isSendTransferTx && !isReceiveTransferTx && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
+        const isRedeemTx = !isMigrationTx && !isSendTransferTx && !isReceiveTransferTx && tx.to.toLowerCase() === this.props.account.toLowerCase();
 
         // Deposited
-        if (isDepositTx){
+        if (isSendTransferTx){
+          // amountLent = amountLent.plus(this.functionsUtil.BNify(tx.value));
+          // depositedTxs++;
+          
+          let tokenPrice = await this.functionsUtil.genericContractCall(this.props.tokenConfig.idle.token, 'tokenPrice',[],{}, tx.blockNumber);
+          tokenPrice = this.functionsUtil.fixTokenDecimals(tokenPrice,18);
+
+          const tokensTransfered = tokenPrice.times(this.functionsUtil.BNify(tx.value));
+
+          // Decrese amountLent by the last idleToken price
+          amountLent = amountLent.minus(tokensTransfered);
+
+          if (amountLent.lt(0)){
+            amountLent = this.functionsUtil.BNify(0);
+          }
+
+          // console.log(`Transfer sent of ${tx.value} (${tokensTransfered}) - Balance: ${idleTokenBalance.toString()}, amountLent: ${amountLent}`);
+
+          storedTx.value = tokensTransfered;
+
+        } else if (isReceiveTransferTx){
+          
+          let tokenPrice = await this.functionsUtil.genericContractCall(this.props.tokenConfig.idle.token, 'tokenPrice',[],{}, tx.blockNumber);
+          tokenPrice = this.functionsUtil.fixTokenDecimals(tokenPrice,18);
+
+          const tokensTransfered = tokenPrice.times(this.functionsUtil.BNify(tx.value));
+
+          // Decrese amountLent by the last idleToken price
+          amountLent = amountLent.plus(tokensTransfered);
+
+          // console.log(`Transfer received of ${tx.value} (${tokensTransfered}) - Balance: ${idleTokenBalance.toString()}, amountLent: ${amountLent}`);
+
+          storedTx.value = tokensTransfered;
+
+        } else if (isDepositTx){
           amountLent = amountLent.plus(this.functionsUtil.BNify(tx.value));
+
           depositedTxs++;
+
+          if (!storedTx.idleTokens){
+
+            // Init idleTokens amount
+            storedTx.idleTokens = this.functionsUtil.BNify(tx.value);
+
+            const decodeLogs = [
+              {
+                "internalType": "uint256",
+                "name": "_tokenAmount",
+                "type": "uint256"
+              }
+            ];
+
+            const walletAddress = this.props.account.replace('x','').toLowerCase();
+            const res = await this.functionsUtil.getTxDecodedLogs(tx,walletAddress,decodeLogs,storedTx);
+
+            if (res){
+              const [txReceipt,logs] = res;
+
+              storedTx.idleTokens = this.functionsUtil.fixTokenDecimals(logs._tokenAmount,18);
+              storedTx.txReceipt = txReceipt;
+            }
+          }
+
+          // console.log(`Deposited ${storedTx.idleTokens} (${tx.value}), Balance: ${idleTokenBalance}, AmountLent: ${amountLent}, idleToken price: ${lastIdleTokenPrice}`);
+
+          // Save new storedTx
+          storedTxs[this.props.account][this.props.selectedToken][txKey] = storedTx;
 
         // Redeemed
         } else if (isRedeemTx){
 
+          let redeemedValue = storedTx.value;
           let redeemedValueFixed = storedTx.value;
 
           // Get real redeemed amount from tx logs
@@ -1042,7 +1110,7 @@ class SmartContractControls extends React.Component {
               ],internalTransfers[0].data,internalTransfers[0].topics);
 
               if (decodedLogs){
-                const redeemedValue = decodedLogs._tokenAmount;
+                redeemedValue = decodedLogs._tokenAmount;
                 redeemedValueFixed = this.functionsUtil.fixTokenDecimals(redeemedValue,tokenDecimals);
                 storedTx.value = redeemedValueFixed;
               } else {
@@ -1059,10 +1127,10 @@ class SmartContractControls extends React.Component {
             }
           }
 
-
           // Decrese amountLent by redeem amount
           amountLent = amountLent.minus(this.functionsUtil.BNify(redeemedValueFixed));
 
+          // console.log(`Redeemed ${tx.value} (${redeemedValueFixed}), Balance: ${idleTokenBalance}, AmountLent: ${amountLent}, idleToken price: ${lastIdleTokenPrice}`);
           // Reset amountLent if below zero
           if (amountLent.lt(0)){
             amountLent = this.functionsUtil.BNify(0);
@@ -1070,6 +1138,7 @@ class SmartContractControls extends React.Component {
         // Migrated
         } else if (isMigrationTx){
 
+          let migrationValue = tx.value;
           let migrationValueFixed = tx.value;
 
           // Get real migrated amount from tx logs
@@ -1119,7 +1188,7 @@ class SmartContractControls extends React.Component {
               ],internalTransfers[0].data,internalTransfers[0].topics);
 
               if (decodedLogs){
-                const migrationValue = decodedLogs._tokenAmount;
+                migrationValue = decodedLogs._tokenAmount;
                 const oldContractTokenDecimals = this.state.oldContractTokenDecimals ? this.state.oldContractTokenDecimals : await this.functionsUtil.getTokenDecimals(this.props.tokenConfig.migration.oldContract.name);
                 migrationValueFixed = this.functionsUtil.fixTokenDecimals(migrationValue,oldContractTokenDecimals);
 
@@ -1141,8 +1210,9 @@ class SmartContractControls extends React.Component {
 
           }
 
-
           amountLent = amountLent.plus(this.functionsUtil.BNify(migrationValueFixed));
+
+          // console.log(`Migrated ${tx.value} (${migrationValueFixed}), Balance: ${idleTokenBalance}, AmountLent: ${amountLent}, idleToken price: ${lastIdleTokenPrice}`);
         }
 
         // Update transaction
@@ -2038,8 +2108,10 @@ class SmartContractControls extends React.Component {
       const tx = prevTxs[key];
 
       const isMigrationTx = migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).indexOf(tx.from.toLowerCase()) !== -1 ) && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-      const isDepositTx = !isMigrationTx && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-      const isRedeemTx = !isMigrationTx && tx.to.toLowerCase() === this.props.account.toLowerCase();
+      const isSendTransferTx = !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
+      const isReceiveTransferTx = !isMigrationTx && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
+      const isDepositTx = !isMigrationTx && !isSendTransferTx && !isReceiveTransferTx && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
+      const isRedeemTx = !isMigrationTx && !isSendTransferTx && !isReceiveTransferTx && tx.to.toLowerCase() === this.props.account.toLowerCase();
 
       const date = new Date(tx.timeStamp*1000);
       let status = tx.status ? tx.status : null;
@@ -2050,6 +2122,10 @@ class SmartContractControls extends React.Component {
           status = 'Redeemed';
         } else if (isMigrationTx){
           status = 'Migrated';
+        } else if (isSendTransferTx){
+          status = 'Transfer';
+        } else if (isReceiveTransferTx){
+          status = 'Received';
         }
       }
 
@@ -2081,6 +2157,14 @@ class SmartContractControls extends React.Component {
             depositedSinceLastRedeem = Math.max(0,depositedSinceLastRedeem);
             totalRedeemed = 0;
           }
+        break;
+        case 'Transfer':
+          color = 'green';
+          icon = "Send";
+        break;
+        case 'Received':
+          color = 'blue';
+          icon = "Redo";
         break;
         case 'Migrated':
           color = 'blue';

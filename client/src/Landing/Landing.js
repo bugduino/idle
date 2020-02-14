@@ -379,7 +379,7 @@ class Landing extends Component {
                         )
                       }
                       <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5}>
-                        Connect your wallet and and choose the amount that you want to lend.
+                        Connect your wallet and choose the amount that you want to lend.
                         You will get Idle tokens back which will track the best rate on the market.
                       </Heading.h4>
                     </Box>

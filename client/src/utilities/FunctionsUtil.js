@@ -283,7 +283,42 @@ class FunctionsUtil {
 
     return await contract.methods[methodName](...params).estimateGas(callParams);
   }
-  genericContractCall = async (contractName, methodName, params = [], callParams = {}) => {
+  getTxDecodedLogs = async (tx,logAddr,decodeLogs,storedTx) => {
+
+    let txReceipt = storedTx && storedTx.txReceipt ? storedTx.txReceipt : null;
+
+    if (!txReceipt){
+      // console.log('getPrevTxs - migrationTx - getTransactionReceipt',tx.hash);
+      txReceipt = await (new Promise( async (resolve, reject) => {
+        this.props.web3.eth.getTransactionReceipt(tx.hash,(err,tx)=>{
+          if (err){
+            reject(err);
+          }
+          resolve(tx);
+        });
+      }));
+
+      if (!txReceipt){
+        return;
+      }
+    }
+
+    const internalTransfers = txReceipt.logs.filter((tx) => { return tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${logAddr}`; });
+
+    if (!internalTransfers.length){
+      return null;
+    }
+
+    try {
+      return [
+        txReceipt,
+        this.props.web3.eth.abi.decodeLog(decodeLogs,internalTransfers[0].data,internalTransfers[0].topics)
+      ];
+    } catch (error) {
+      return null;
+    }
+  }
+  genericContractCall = async (contractName, methodName, params = [], callParams = {}, blockNumber = 'latest') => {
     let contract = this.getContractByName(contractName);
 
     if (!contract) {
@@ -291,7 +326,7 @@ class FunctionsUtil {
       return null;
     }
 
-    const value = await contract.methods[methodName](...params).call(callParams).catch(error => {
+    const value = await contract.methods[methodName](...params).call(callParams,blockNumber).catch(error => {
       this.customLogError(`${contractName} contract method ${methodName} error: `, error);
     });
 

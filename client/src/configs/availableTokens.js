@@ -231,6 +231,7 @@ const availableTokens = {
       decimals:18,
       enabled:true,
       abi:ERC20.abi,
+      color:'hsl(40, 95%, 59%)',
       address:'0x6b175474e89094c44da98b954eedeac495271d0f',
       zeroExInstant:{
         orderSource: 'https://api.0x.org/sra/',
@@ -314,6 +315,7 @@ const availableTokens = {
       decimals:18,
       enabled: true,
       abi:ERC20.abi,
+      color:'hsl(36, 92%, 63%)',
       address:'0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359',
       zeroExInstant:{
         orderSource: 'https://api.radarrelay.com/0x/v2/',
@@ -397,6 +399,7 @@ const availableTokens = {
       decimals:6,
       enabled:true,
       abi:ERC20.abi,
+      color:'hsl(211, 67%, 47%)',
       address:'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
       zeroExInstant:{
         orderSource: 'https://api.0x.org/sra/',
