@@ -322,6 +322,8 @@ class RimbleTransaction extends React.Component {
       simpleID = new SimpleID(simpleIDParams);
     }
 
+    window.simpleID = simpleID;
+
     this.setState({
       simpleID
     });
@@ -347,7 +349,7 @@ class RimbleTransaction extends React.Component {
 
     try {
       // Request account access if needed
-      await this.state.web3.eth.getAccounts().then(wallets => {
+      await this.state.web3.eth.getAccounts().then( async (wallets) => {
         const account = wallets[0];
 
         // Exit if account is not changed
@@ -363,11 +365,40 @@ class RimbleTransaction extends React.Component {
 
         // Send address info to SimpleID
         const simpleID = this.initSimpleID();
+
         if (simpleID){
-          this.functionsUtil.simpleIDPassUserInfo({
+          await this.functionsUtil.simpleIDPassUserInfo({
             address: account,
             walletProvider
           },simpleID);
+
+          const notifications = await simpleID.notifications();
+
+          if (notifications && notifications.length && window.$crisp){
+
+            let shownNotifications = [];
+            if (localStorage){
+              shownNotifications = localStorage.getItem('shownNotifications') && JSON.parse(localStorage.getItem('shownNotifications')) ? JSON.parse(localStorage.getItem('shownNotifications')) : [];
+            }
+
+            notifications.forEach((n,i) => {
+
+              const notificationId = n.name;
+
+              // Show notification if not shown already
+              if (shownNotifications.indexOf(notificationId) === -1){
+                window.$crisp.push(["do", "message:show", ["text", this.functionsUtil.normalizeSimpleIDNotification(n.content) ]]);
+
+                // Save notification id
+                shownNotifications.push(notificationId);
+              }
+            });
+
+            // Store shown notification
+            if (localStorage){
+              localStorage.setItem('shownNotifications',JSON.stringify(shownNotifications));
+            }
+          }
         }
 
         // Send Google Analytics connection event
@@ -1262,6 +1293,7 @@ class RimbleTransaction extends React.Component {
     context:null,
     web3: null,
     simpleID: null,
+    CrispClient: null,
     tokenDecimals:null,
     contractsInitialized:false,
     subscribedTransactions:{},

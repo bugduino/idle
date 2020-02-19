@@ -48,6 +48,16 @@ class FunctionsUtil {
     }
     return contract.contract;
   }
+  normalizeSimpleIDNotification = (n) => {
+    return n.replace(/<\/p><p>/g,"\n")
+            .replace(/<p>/g,"")
+            .replace(/<\/p>/g,"");
+  }
+  stripHtml = (html) => {
+     var tmp = document.createElement("DIV");
+     tmp.innerHTML = html;
+     return tmp.textContent || tmp.innerText || "";
+  }
   makeCachedRequest = async (endpoint,TTL=0,return_data=false) => {
     const timestamp = parseInt(new Date().getTime()/1000);
     let cachedRequests = {};

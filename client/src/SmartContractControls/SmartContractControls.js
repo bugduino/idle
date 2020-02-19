@@ -130,6 +130,13 @@ class SmartContractControls extends React.Component {
     return {defaultProvider,defaultProviderName};
   }
 
+  checkContractPaused = async () => {
+    const contractIsPaused = await this.functionsUtil.genericIdleCall('paused');
+    this.setState({
+      contractIsPaused
+    });
+  }
+
   rebalanceCheck = async () => {
     this.setState({calculatingShouldRebalance:true});
 
@@ -1572,7 +1579,7 @@ class SmartContractControls extends React.Component {
     }
   }
 
-  async initState(){
+  initState = async () => {
     // Init state
     return this.setState({
       iDAIRate:0,
@@ -1612,6 +1619,7 @@ class SmartContractControls extends React.Component {
       idleTokenBalance:null,
       isTokenApproved:false,
       earningIntervalId:null,
+      contractIsPaused:false,
       callMintCallback:false,
       isApprovingToken:false,
       componentMounted:false, // this trigger the general loading
@@ -1668,6 +1676,7 @@ class SmartContractControls extends React.Component {
       this.getAprs(),
       this.checkMigration(),
       this.getAllocations(),
+      this.checkContractPaused(),
       this.rebalanceCheck(),
       this.getPriceInToken(),
       this.checkTokenApproved()
@@ -2312,6 +2321,8 @@ class SmartContractControls extends React.Component {
     const counterDecimals = Math.min(Math.max(0,counterMaxDigits-parseInt(currentReedemableFunds).toString().length),Math.max(0,counterMaxDigits-parseInt(currentEarning).toString().length));
     const rebalanceCounterDecimals = this.state.allocations ? Math.max(0,Math.min(...(Object.values(this.state.allocations).map((allocation,i) => { return counterMaxDigits-parseInt(allocation.toString()).toString().length })))) : null;
 
+    const showLendButton = !walletIsEmpty && !migrationEnabled && !tokenNotApproved && (!this.state.contractIsPaused || !this.props.account);
+
     return (
       <Box textAlign={'center'} alignItems={'center'} width={'100%'}>
         <Form minHeight={ migrationEnabled ? ['28em','24em'] : ['auto','17em'] } backgroundColor={'white'} color={'blue'} boxShadow={'0 0 25px 5px rgba(102, 139, 255, 0.7)'} borderRadius={'15px'} style={{position:'relative'}}>
@@ -2377,7 +2388,7 @@ class SmartContractControls extends React.Component {
                 }
 
                 {
-                  !this.state.componentMounted || this.state.updateInProgress ? (
+                  (!this.state.componentMounted || this.state.updateInProgress) ? (
                     <Box pt={['50px','73px']} style={{position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'99'}}>
                       <Box style={{backgroundColor:'rgba(0,0,0,0.83)',position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'0',borderRadius:'15px'}}></Box>
                       <Flex style={{position:'relative',zIndex:'99',height:'100%'}} flexDirection={'column'} alignItems={'center'} justifyContent={'center'}>
@@ -2390,6 +2401,36 @@ class SmartContractControls extends React.Component {
                           <Heading.h4 my={[2,'15px']} color={'white'} fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
                             Loading data, please wait...
                           </Heading.h4>
+                        </Flex>
+                      </Flex>
+                    </Box>
+                  ) : this.state.contractIsPaused && this.props.account ? (
+                    <Box pt={['50px','73px']} style={{position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'99'}}>
+                      <Box style={{backgroundColor:'rgba(0,0,0,0.83)',position:'absolute',top:'0',width:'100%',height:'100%',zIndex:'0',borderRadius:'15px'}}></Box>
+                      <Flex style={{position:'relative',zIndex:'99',height:'100%'}} flexDirection={'column'} alignItems={'center'} justifyContent={'center'}>
+                        <Flex
+                          flexDirection={'column'}
+                          justifyContent={'center'}
+                          alignItems={'center'}
+                          textAlign={'center'}>
+                          <Icon
+                            name={'PauseCircleOutline'}
+                            color={'white'}
+                            size={'62'}
+                          />
+                          <Heading.h4 my={[2,3]} color={'white'} fontSize={[2,3]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
+                            Deposits have been temporarily disabled due to the recent bZx exploits.
+                          </Heading.h4>
+                          <Button
+                            onClick={e => {
+                              e.preventDefault();
+                              window.open('https://twitter.com/bzxHQ');
+                            }}
+                            borderRadius={4}
+                            size={ this.props.isMobile ? 'small' : 'medium' }
+                          >
+                            READ LAST UPDATES
+                          </Button>
                         </Flex>
                       </Flex>
                     </Box>
@@ -2634,7 +2675,7 @@ class SmartContractControls extends React.Component {
                     showTokenApproved={false}
                     isAssetApproved={this.state.isDAIApproved}
                     showApproveModal={this.toggleModal}
-                    showLendButton={!walletIsEmpty && !migrationEnabled && !tokenNotApproved}
+                    showLendButton={showLendButton}
                     handleClick={e => this.mint(e)} />
                 }
 
