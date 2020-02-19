@@ -1,11 +1,13 @@
 import moment from 'moment';
-import { Flex, Card, Text } from 'rimble-ui';
+import colors from '../colors';
 import { Line } from '@nivo/line';
 import React, { Component } from 'react';
+import { Flex, Card, Text } from 'rimble-ui';
 import globalConfigs from '../configs/globalConfigs';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import GenericChart from '../GenericChart/GenericChart';
 import availableTokens from '../configs/availableTokens';
+const env = process.env;
 
 class Stats extends Component {
   state = {
@@ -14,7 +16,8 @@ class Stats extends Component {
     chartData:null,
     chartMode:'ALL',
     tokenConfig:null,
-    selectedToken:null
+    selectedToken:null,
+    startTimestamp:parseInt(moment('2020-02-04','YYYY-MM-DD')._d.getTime()/1000)
   };
 
   // Utils
@@ -70,7 +73,8 @@ class Stats extends Component {
     const apiInfo = globalConfigs.stats.rates;
     const endpoint = `${apiInfo.endpoint}${address}`;
     const TTL = apiInfo.TTL ? apiInfo.TTL : 0;
-    return await this.functionsUtil.makeCachedRequest(endpoint,TTL,true);
+    let output = await this.functionsUtil.makeCachedRequest(endpoint,TTL,true);
+    return output.filter((r,i) => { return r.timestamp > this.state.startTimestamp });
   }
 
   abbreviateNumber = (value) => {
@@ -96,24 +100,142 @@ class Stats extends Component {
       return false;
     }
 
-    const startTimestamp = parseInt(moment('2020-02-04','YYYY-MM-DD')._d.getTime()/1000);
-
-    const apiInfo = globalConfigs.stats.rates;
-    const endpoint = `${apiInfo.endpoint}${this.state.tokenConfig.address}`;
-    const TTL = apiInfo.TTL ? apiInfo.TTL : 0;
-    let apiResults = await this.functionsUtil.makeCachedRequest(endpoint,TTL,true);
-
-    if (!apiResults){
-      return false;
-    }
-
-    apiResults = apiResults.filter((r,i) => { return r.timestamp > startTimestamp });
+    const apiResults = await this.getTokenData(this.state.tokenConfig.address);
 
     const chartData = [];
     let chartProps = {};
     let chartType = Line;
 
     switch (this.state.chartMode){
+      case 'VOL':
+        const etherscanInfo = globalConfigs.network.providers.etherscan;
+        const etherscanApiUrl = etherscanInfo.endpoints[globalConfigs.network.requiredNetwork];
+        const endpoint = `${etherscanApiUrl}?apikey=${env.REACT_APP_ETHERSCAN_KEY}&module=account&action=tokentx&address=${this.state.tokenConfig.idle.address}&startblock=0&endblock=999999999&sort=asc`;
+        const txs = await this.functionsUtil.makeCachedRequest(endpoint,60,true);        
+
+        if (txs && txs.result){
+          const results = txs.result;
+
+          const filteredTxs = results.filter(
+              tx => {
+                const internalTxs = results.filter(r => r.hash === tx.hash);
+                const isRightToken = internalTxs.length>1 && internalTxs.indexOf(tx) === 0;
+                const isDepositTx = isRightToken && tx.to.toLowerCase() === this.state.tokenConfig.idle.address.toLowerCase();
+                const isRedeemTx = isRightToken && tx.from.toLowerCase() === this.state.tokenConfig.idle.address.toLowerCase();
+
+                return isDepositTx || isRedeemTx;
+            }
+          ).map(tx => {
+            return ({...tx, value: this.functionsUtil.fixTokenDecimals(tx.value,this.state.tokenConfig.decimals)});
+          });
+
+          const startTimestamp = parseInt(filteredTxs[0].timeStamp);
+          const endTimestamp = parseInt(filteredTxs[filteredTxs.length-1].timeStamp);
+
+          const deposits = {};
+          const redeems = {};
+
+          for (let timestamp=startTimestamp;timestamp<=endTimestamp;timestamp+=3600){
+            const x = moment(timestamp*1000).format("YYYY/MM/DD HH:00");
+            const y = 0;
+            if (!deposits[x]){
+              deposits[x] = { x, y };
+            }
+            if (!redeems[x]){
+              redeems[x] = { x, y };
+            }
+          }
+
+          filteredTxs
+            .filter((tx) => { return tx.to.toLowerCase() === this.state.tokenConfig.idle.address.toLowerCase(); })
+            .forEach((tx,i) => {
+              // console.log(`Deposit of ${tx.value} ${this.state.selectedToken} - ${tx.hash}`);
+              const x = moment(tx.timeStamp*1000).format("YYYY/MM/DD HH:00");
+              if (!deposits[x]){
+                deposits[x] = {
+                  x,
+                  y:0
+                };
+              }
+
+              deposits[x].y+=parseFloat(tx.value);
+            });
+
+          filteredTxs
+            .filter((tx) => { return tx.from.toLowerCase() === this.state.tokenConfig.idle.address.toLowerCase(); })
+            .forEach((tx,i) => {
+              // console.log(`Redeem of ${tx.value} ${this.state.selectedToken} - ${tx.hash}`);
+              const x = moment(tx.timeStamp*1000).format("YYYY/MM/DD HH:00");
+              if (!redeems[x]){
+                redeems[x] = {
+                  x,
+                  y:0
+                };
+              }
+
+              redeems[x].y+=parseFloat(tx.value);
+            });
+
+          chartData.push({
+            id:'Deposits',
+            color: colors.blue,
+            data: Object.values(deposits)
+          });
+
+          chartData.push({
+            id:'Redeems',
+            color: colors.green,
+            data: Object.values(redeems)
+          });
+
+          // Set chart type
+          chartType = Line;
+
+          chartProps = {
+            xScale:{
+              type: 'time',
+              format: '%Y/%m/%d %H:%M',
+            },
+            xFormat:'time:%b %d %H:%M',
+            yFormat:value => (parseInt(value)>=1000 ? parseFloat(value/1000).toFixed(1)+'K' : parseFloat(value).toFixed(1) )+' '+this.state.selectedToken,
+            yScale:{
+              type: 'linear',
+              stacked: false
+            },
+            axisLeft:{
+              format: v => this.abbreviateNumber(v),
+              orient: 'left',
+              tickSize: 5,
+              tickPadding: 5,
+              tickRotation: 0,
+              legend: '',
+              legendOffset: -65,
+              legendPosition: 'middle'
+            },
+            axisBottom:{
+              format: '%b %d %H:%M',
+              orient: 'bottom',
+              legend: '',
+              legendOffset: 36,
+              legendPosition: 'middle'
+            },
+            enableArea:false,
+            curve:"monotoneX",
+            enableSlices:false,
+            enableGridX:true,
+            enableGridY:false,
+            colors:d => d.color,
+            pointSize:0,
+            pointColor:{ from: 'color', modifiers: []},
+            pointBorderWidth:1,
+            pointLabel:"y",
+            pointLabelYOffset:-12,
+            useMesh:true,
+            animate:false,
+            margin:{ top: 20, right: 20, bottom: 60, left: 80 }
+          };
+        }
+      break;
       case 'AUM_ALL':
         await this.functionsUtil.asyncForEach(Object.keys(availableTokens[globalConfigs.network.requiredNetwork]),async (tokenName,i) => {
           const tokenConfig = availableTokens[globalConfigs.network.requiredNetwork][tokenName];
@@ -480,7 +602,7 @@ class Stats extends Component {
         chartData.push({
           id:'Idle',
           color: 'hsl(227, 100%, 50%)',
-          data: apiResults.filter((r,i) => { return r.timestamp > startTimestamp }).map((d,i) => {
+          data: apiResults.map((d,i) => {
             const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
             const rate = parseFloat(this.functionsUtil.fixTokenDecimals(d.idlePrice,this.state.tokenConfig.decimals));
             const diff = lastRate ? rate/lastRate-1 : 0;
