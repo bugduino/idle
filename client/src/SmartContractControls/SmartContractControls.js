@@ -723,7 +723,7 @@ class SmartContractControls extends React.Component {
       // Send Google Analytics event
       const redeemType = this.state.partialRedeemEnabled ? 'partial' : 'total';
       const eventData = {
-        eventCategory: `Redeem_${redeemType}`,
+        eventCategory: `Redeem_underline`,
         eventAction: this.props.selectedToken,
         eventLabel: tx.status,
         eventValue: parseInt(redeemAmount)

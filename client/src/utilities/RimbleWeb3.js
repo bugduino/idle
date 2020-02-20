@@ -391,8 +391,6 @@ class RimbleTransaction extends React.Component {
 
           const notifications = await simpleID.notifications();
 
-          console.log(account,notifications);
-
           if (notifications && notifications.length && window.$crisp){
 
             let shownNotifications = [];
