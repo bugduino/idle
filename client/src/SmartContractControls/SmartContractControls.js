@@ -207,11 +207,14 @@ class SmartContractControls extends React.Component {
     const res = await this.props.getAllocations();
 
     if (res){
-      const [allocations] = res;
+      const [allocations,totalAllocation,exchangeRates,protocolsBalances] = res;
 
       if (allocations){
         this.setState({
-          allocations
+          allocations,
+          exchangeRates,
+          totalAllocation,
+          protocolsBalances
         });
       }
 
@@ -261,7 +264,6 @@ class SmartContractControls extends React.Component {
   }
 
   getPriceInToken = async (contractName) => {
-
     contractName = contractName ? contractName : this.props.tokenConfig.idle.token;
 
     const totalIdleSupply = await this.functionsUtil.genericContractCall(contractName, 'totalSupply');
@@ -306,15 +308,15 @@ class SmartContractControls extends React.Component {
 
   getTokenBalance = async () => {
     if (this.props.account){
-      let tokenBalance = await this.functionsUtil.genericContractCall(this.props.selectedToken,'balanceOf',[this.props.account]);
+      const tokenBalance = await this.functionsUtil.genericContractCall(this.props.selectedToken,'balanceOf',[this.props.account]);
       if (tokenBalance){
         const tokenDecimals = await this.getTokenDecimals();
-        tokenBalance = this.functionsUtil.fixTokenDecimals(tokenBalance,tokenDecimals);
-        this.functionsUtil.customLog('getTokenBalance',tokenBalance.toString(),tokenDecimals);
+        const tokenBalanceFixed = this.functionsUtil.fixTokenDecimals(tokenBalance,tokenDecimals);
         this.setState({
-          tokenBalance: tokenBalance.toString()
+          tokenBalanceBNify: tokenBalance,
+          tokenBalance: tokenBalanceFixed.toString()
         });
-        return tokenBalance;
+        return tokenBalanceFixed;
       } else {
         this.functionsUtil.customLogError('Error on getting balance');
       }
@@ -338,8 +340,16 @@ class SmartContractControls extends React.Component {
     this.getBalanceOf(this.props.tokenConfig.idle.token);
   }
 
-  getProtocolBalance = async (contractName) => {
-    return await this.functionsUtil.genericContractCall(contractName, 'balanceOf', [this.props.tokenConfig.idle.address]);
+  getUnderlineTokensBalance = async () => {
+    const underlyingTokensAmount = {};
+    await this.functionsUtil.asyncForEach(this.props.tokenConfig.protocols,async (p,i) => {
+      const protocolAddr = p.address;
+      underlyingTokensAmount[protocolAddr] = await this.functionsUtil.getProtocolBalance(p.token,this.props.tokenConfig.idle.address);
+    });
+
+    this.setState({
+      underlyingTokensAmount
+    });
   }
 
   getBalanceOf = async (contractName,count) => {
@@ -721,7 +731,6 @@ class SmartContractControls extends React.Component {
       this.functionsUtil.customLog('redeemInterestBearingTokens_mined_callback needsUpdate:',tx.status,this.checkTransactionAlreadyMined(tx),needsUpdate);
 
       // Send Google Analytics event
-      const redeemType = this.state.partialRedeemEnabled ? 'partial' : 'total';
       const eventData = {
         eventCategory: `Redeem_underline`,
         eventAction: this.props.selectedToken,
@@ -1673,6 +1682,7 @@ class SmartContractControls extends React.Component {
       migrationTx:false,
       needsUpdate:false,
       genericError:null,
+      exchangeRates:null,
       IdleDAISupply:null,
       earningPerDay:null,
       showFundsInfo:true,
@@ -1682,6 +1692,7 @@ class SmartContractControls extends React.Component {
       earningPerYear:null,
       buyTokenMessage:null,
       isFirstDeposit:false,
+      totalAllocation:null,
       migrationError:false,
       idleTokenBalance:null,
       isTokenApproved:false,
@@ -1694,6 +1705,7 @@ class SmartContractControls extends React.Component {
       redeemProcessing:false,
       migrationEnabled:false,
       updateInProgress:false,
+      protocolsBalances:null,
       lendingProcessing:false,
       disableLendButton:false,
       isApprovingDAITest:true,
@@ -1701,6 +1713,7 @@ class SmartContractControls extends React.Component {
       oldContractBalance:null,
       migrationApproveTx:null,
       tokenToRedeemParsed:null,
+      underlyingTokensAmount:{},
       disableRedeemButton:false,
       lastBlockNumber:'8119247', // Idle inception block number
       partialRedeemEnabled:true, // Partial redeem enabled by default
@@ -2799,7 +2812,69 @@ class SmartContractControls extends React.Component {
                             hasBalance ? (
                             <>
                               {
-                                !this.state.fundsError ? (
+                                this.state.fundsError ? (
+                                  <Flex
+                                    alignItems={'center'}
+                                    flexDirection={'column'}
+                                    textAlign={'center'}
+                                    py={[1,3]}
+                                    mb={2}>
+                                      <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontWeight={2} fontSize={[2,3]} color={'dark-gray'}>
+                                        Something went wrong while loading your funds...
+                                      </Heading.h3>
+                                      <Button
+                                        className={[styles.gradientButton,styles.empty]}
+                                        onClick={e => this.reloadFunds(e) }
+                                        size={this.props.isMobile ? 'medium' : 'medium'}
+                                        borderRadius={4}
+                                        contrastColor={'blue'}
+                                        fontWeight={3}
+                                        fontSize={[2,2]}
+                                        mx={'auto'}
+                                        px={[4,5]}
+                                        mt={3}
+                                      >
+                                        RELOAD FUNDS
+                                      </Button>
+                                  </Flex>
+                                ) : this.props.enableUnderlyingWithdraw ? (
+                                  <Box>
+                                    <Flex flexDirection={['column','row']} justifyContent={'center'} alignItems={'center'} pb={[2,3]} width={[1,'70%']} m={'0 auto'}>
+                                      {
+                                        this.state.allocations ?
+                                          Object.keys(this.state.allocations).map((protocolAddr,i)=>{
+                                            const protocolInfo = this.getProtocolInfoByAddress(protocolAddr);
+                                            if (!protocolInfo){
+                                              return false;
+                                            }
+                                            const protocolName = protocolInfo.token;
+                                            const protocolBalance = this.state.protocolsBalances[protocolAddr];
+                                            const idleTokenBalance = this.functionsUtil.BNify(this.functionsUtil.normalizeTokenAmount(this.state.balance,18));
+                                            const tokenBalance = idleTokenBalance.times(protocolBalance).div(this.state.totalIdleSupply);
+                                            const tokenBalanceFixed = parseFloat(this.functionsUtil.fixTokenDecimals(tokenBalance,18)).toFixed(6);
+                                            return (
+                                              <Box key={`allocation_${protocolName}`} style={{flex:'1 1 0'}}>
+                                                <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
+                                                  {protocolName}
+                                                </Text>
+                                                <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'} style={{whiteSpace:'nowrap'}}>
+                                                  {tokenBalanceFixed}
+                                                </Heading.h3>
+                                              </Box>
+                                            )
+                                          })
+                                        : (
+                                          <Flex
+                                            justifyContent={'center'}
+                                            alignItems={'center'}
+                                            textAlign={'center'}>
+                                            <Loader size="40px" /> <Text ml={2}>Loading pool information...</Text>
+                                          </Flex>
+                                        )
+                                      }
+                                    </Flex>
+                                  </Box>
+                                ) : (
                                   <Box>
                                     <Flex flexDirection={['column','row']} py={[2,3]} width={[1,'80%']} m={'0 auto'}>
                                       <Box width={[1,1/2]}>
@@ -2851,31 +2926,6 @@ class SmartContractControls extends React.Component {
                                       </Box>
                                     </Flex>
                                   </Box>
-                                ) : this.state.fundsError && (
-                                  <Flex
-                                    alignItems={'center'}
-                                    flexDirection={'column'}
-                                    textAlign={'center'}
-                                    py={[1,3]}
-                                    mb={2}>
-                                      <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontWeight={2} fontSize={[2,3]} color={'dark-gray'}>
-                                        Something went wrong while loading your funds...
-                                      </Heading.h3>
-                                      <Button
-                                        className={[styles.gradientButton,styles.empty]}
-                                        onClick={e => this.reloadFunds(e) }
-                                        size={this.props.isMobile ? 'medium' : 'medium'}
-                                        borderRadius={4}
-                                        contrastColor={'blue'}
-                                        fontWeight={3}
-                                        fontSize={[2,2]}
-                                        mx={'auto'}
-                                        px={[4,5]}
-                                        mt={3}
-                                      >
-                                        RELOAD FUNDS
-                                      </Button>
-                                  </Flex>
                                 )
                               }
 
@@ -2888,6 +2938,9 @@ class SmartContractControls extends React.Component {
                                         flexDirection={'column'}
                                         alignItems={'center'}
                                         >
+                                          <Heading.h4 color={'red'} fontSize={[2,2]} px={[3,4]} textAlign={'center'} fontWeight={3} lineHeight={1.5}>
+                                            This function allows you to close your Idle position and redeem the underlying tokens according to the current pool allocation.
+                                          </Heading.h4>
                                           <Flex width={1} alignItems={'center'} justifyContent={'center'} mb={0} mx={'auto'}>
                                             <Button
                                               className={[styles.gradientButton]}

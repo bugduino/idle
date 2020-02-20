@@ -148,6 +148,8 @@ class Landing extends Component {
     };
 
     const protocolsAllocations = {};
+    const exchangeRates = {};
+    const protocolsBalances = {};
 
     await this.functionsUtil.asyncForEach(this.props.tokenConfig.protocols,async (protocolInfo,i) => {
       const contractName = protocolInfo.token;
@@ -163,7 +165,9 @@ class Landing extends Component {
         return;
       }
 
+
       if (exchangeRate && protocolInfo.functions.exchangeRate.decimals){
+        exchangeRates[protocolAddr] = exchangeRate;
         exchangeRate = this.functionsUtil.fixTokenDecimals(exchangeRate,protocolInfo.functions.exchangeRate.decimals);
       }
 
@@ -171,6 +175,7 @@ class Landing extends Component {
 
       totalAllocation = totalAllocation.plus(protocolAllocation);
 
+      protocolsBalances[protocolAddr] = protocolBalance;
       protocolsAllocations[protocolAddr] = protocolAllocation;
     });
 
@@ -196,7 +201,7 @@ class Landing extends Component {
 
     this.setState(newState);
 
-    return [protocolsAllocations,totalAllocation];
+    return [protocolsAllocations,totalAllocation,exchangeRates,protocolsBalances];
   }
 
   getAprs = async () => {
