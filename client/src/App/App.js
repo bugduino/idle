@@ -25,21 +25,22 @@ import { ThemeProvider, Box, Text, Link, Image, Flex } from 'rimble-ui';
 
 class App extends Component {
   state = {
-    availableTokens:null,
-    selectedToken: null,
+    buyToken: null,
+    selectedTab: '1',
+    connecting:false,
+    route: "default", // or 'onboarding'
+    connectorName:null,
     tokenConfig: null,
     genericError: null,
-    width: window.innerWidth,
-    route: "default", // or 'onboarding'
-    unsubscribeFromHistory:null,
-    selectedTab: '1',
-    buyToken: null,
-    buyModalOpened: false,
-    connectorName:null,
+    customAddress:null,
     walletProvider:null,
-    connecting:false,
+    selectedToken: null,
+    availableTokens:null,
+    buyModalOpened: false,
     toastMessageProps:null,
-    customAddress:null
+    width: window.innerWidth,
+    unsubscribeFromHistory:null,
+    enableUnderlyingWithdraw:false
   };
 
   closeToastMessage = (e) => {
@@ -57,6 +58,29 @@ class App extends Component {
     });
   }
 
+  processCustomParam = (props,prevProps) => {
+    const params = props ? props.match.params : null;
+    const prevParams = prevProps ? prevProps.match.params : null;
+
+    // Reset params
+    if ( prevParams && params && prevParams.customParam !== params.customParam && (!params || !params.customParam || params.customParam === undefined)){
+      this.setState({
+        customAddress:null,
+        enableUnderlyingWithdraw:false
+      });
+    } else if (params && typeof params.customParam === 'string') {
+      // Check if custom address
+      if (params.customParam.toLowerCase().match(/0x[\w]{40}/) && this.state.customAddress !== params.customParam){
+        this.setCustomAddress(params.customParam);
+      } else if (params && params.customParam === 'withdraw' && !this.state.enableUnderlyingWithdraw){
+        this.setState({
+          customAddress:null,
+          enableUnderlyingWithdraw:true
+        });
+      }
+    }
+  }
+
   setCustomAddress = (customAddress) => {
     // Reset customAddress if not well formatted
     if (customAddress && !customAddress.toLowerCase().match(/0x[\w]{40}/)){
@@ -65,7 +89,8 @@ class App extends Component {
 
     if (customAddress !== this.state.customAddress){
       this.setState({
-        customAddress
+        customAddress,
+        enableUnderlyingWithdraw:false
       });
     }
   }
@@ -214,6 +239,7 @@ class App extends Component {
                     customAddress={this.state.customAddress}
                     selectedToken={this.state.selectedToken}
                     setConnector={this.setConnector.bind(this)}
+                    enableUnderlyingWithdraw={this.state.enableUnderlyingWithdraw}
                   >
                     <RimbleWeb3.Consumer>
                       {({
@@ -319,7 +345,7 @@ class App extends Component {
 
                               {this.state.route === "default" ? (
                                 <Switch>
-                                  <Route path="/:customAddress?"
+                                  <Route path="/:customParam?"
                                     render={ (props) =>
                                       <>
                                         <Landing
@@ -336,7 +362,7 @@ class App extends Component {
                                           accountBalanceLow={accountBalanceLow}
                                           getAccountBalance={getAccountBalance}
                                           customAddress={this.state.customAddress}
-                                          setCustomAddress={this.setCustomAddress}
+                                          processCustomParam={this.processCustomParam}
                                           selectedToken={this.state.selectedToken}
                                           accountBalanceToken={accountBalanceToken}
                                           closeToastMessage={this.closeToastMessage}

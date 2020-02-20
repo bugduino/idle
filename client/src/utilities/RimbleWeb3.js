@@ -35,6 +35,7 @@ const RimbleTransactionContext = React.createContext({
   accountValidationPending: {},
   rejectValidation: () => {},
   validateAccount: () => {},
+  enableUnderlyingWithdraw: false,
   connectAndValidateAccount: () => {},
   network: {
     required: {},
@@ -87,7 +88,7 @@ class RimbleTransaction extends React.Component {
   // Utils
   functionsUtil = null;
 
-  loadUtils(){
+  loadUtils = () => {
     const props = Object.assign({},this.props);
     props.contracts = this.state.contracts;
     if (this.functionsUtil){
@@ -97,7 +98,7 @@ class RimbleTransaction extends React.Component {
     }
   }
 
-  async componentDidMount() {
+  componentDidMount = async () => {
     this.loadUtils();
     this.initSimpleID();
   }
@@ -108,6 +109,13 @@ class RimbleTransaction extends React.Component {
     if (prevProps.selectedToken !== this.props.selectedToken){
       this.setState({
         tokenDecimals: null
+      });
+    }
+
+    // console.log(prevProps.enableUnderlyingWithdraw,this.props.enableUnderlyingWithdraw,this.state.enableUnderlyingWithdraw);
+    if (prevProps.enableUnderlyingWithdraw !== this.props.enableUnderlyingWithdraw){
+      this.setState({
+        enableUnderlyingWithdraw:this.props.enableUnderlyingWithdraw
       });
     }
 
@@ -309,6 +317,15 @@ class RimbleTransaction extends React.Component {
 
   initSimpleID = () => {
 
+    // Clear simpleID localStorage variables
+    if (localStorage){
+      localStorage.removeItem('pinged-simple-id');
+      localStorage.removeItem('active-sid-message');
+      localStorage.removeItem('sid-notifications');
+      localStorage.removeItem('SimpleID-User-Session');
+      localStorage.removeItem('non-sid-user-info');
+    }
+
     if (this.state.simpleID){
       return this.state.simpleID;
     }
@@ -373,6 +390,8 @@ class RimbleTransaction extends React.Component {
           },simpleID);
 
           const notifications = await simpleID.notifications();
+
+          console.log(account,notifications);
 
           if (notifications && notifications.length && window.$crisp){
 
@@ -1312,6 +1331,7 @@ class RimbleTransaction extends React.Component {
     rejectValidation: this.rejectValidation,
     validateAccount: this.validateAccount,
     connectAndValidateAccount: this.connectAndValidateAccount,
+    enableUnderlyingWithdraw:this.props.enableUnderlyingWithdraw,
     network: {
       required: {},
       current: {},

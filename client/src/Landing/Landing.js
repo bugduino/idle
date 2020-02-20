@@ -81,7 +81,7 @@ class Landing extends Component {
   async componentDidMount(){
 
     this.loadUtils();
-    this.loadCustomAddress();
+    this.props.processCustomParam(this.props);
 
     componentUnmounted = false;
     scrollTimeoutID = null;
@@ -107,20 +107,13 @@ class Landing extends Component {
   async componentDidUpdate(prevProps, prevState) {
 
     this.loadUtils();
-    this.loadCustomAddress();
+    this.props.processCustomParam(this.props,prevProps);
 
     const contractsInitialized = this.props.contractsInitialized && prevProps.contractsInitialized !== this.props.contractsInitialized;
 
     if (contractsInitialized) {
       this.getAllocations();
       this.getAprs();
-    }
-  }
-
-  loadCustomAddress = () => {
-    const { match: { params } } = this.props;
-    if (this.props.customAddress !== params.customAddress){
-      this.props.setCustomAddress(params.customAddress);
     }
   }
 

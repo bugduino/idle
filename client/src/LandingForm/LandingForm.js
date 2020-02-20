@@ -27,6 +27,7 @@ class LandingForm extends Component {
           getAccountBalance,
           accountBalanceToken,
           contractsInitialized,
+          enableUnderlyingWithdraw,
           contractMethodSendWrapper
         }) => (
           <Box width={'100%'} mx={"auto"}>
@@ -54,6 +55,7 @@ class LandingForm extends Component {
               contractsInitialized={contractsInitialized}
               setSelectedToken={this.props.setSelectedToken}
               updateSelectedTab={this.props.updateSelectedTab}
+              enableUnderlyingWithdraw={enableUnderlyingWithdraw}
               accountBalanceToken={this.props.accountBalanceToken}
               contractMethodSendWrapper={contractMethodSendWrapper}
             />
