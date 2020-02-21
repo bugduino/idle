@@ -275,8 +275,9 @@ class App extends Component {
                         <Box>
                           <Switch>
                             <Route
-                              path="/stats/:chartMode?/:customToken?"
+                              path="/stats/:customToken?"
                               render={(props) => <Stats {...props}
+                                                    isMobile={isMobile}
                                                     selectedToken={this.state.selectedToken}
                                                   />}
                             >
