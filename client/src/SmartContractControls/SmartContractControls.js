@@ -2848,10 +2848,11 @@ class SmartContractControls extends React.Component {
                                               return false;
                                             }
                                             const protocolName = protocolInfo.token;
-                                            const protocolBalance = this.state.protocolsBalances[protocolAddr];
-                                            const idleTokenBalance = this.functionsUtil.BNify(this.functionsUtil.normalizeTokenAmount(this.state.balance,18));
-                                            const tokenBalance = idleTokenBalance.times(protocolBalance).div(this.state.totalIdleSupply);
-                                            const tokenBalanceFixed = parseFloat(this.functionsUtil.fixTokenDecimals(tokenBalance,18)).toFixed(6);
+                                            const totalSupply = this.functionsUtil.fixTokenDecimals(this.state.totalIdleSupply,18);
+                                            const protocolBalance = this.functionsUtil.fixTokenDecimals(this.state.protocolsBalances[protocolAddr],this.state.tokenDecimals);
+                                            const idleTokenBalance = this.functionsUtil.BNify(this.state.balance);
+                                            const tokenBalance = idleTokenBalance.times(protocolBalance).div(totalSupply);
+                                            const tokenBalanceFixed = parseFloat(tokenBalance).toFixed(6);
                                             return (
                                               <Box key={`allocation_${protocolName}`} style={{flex:'1 1 0'}}>
                                                 <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'}>
