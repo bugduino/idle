@@ -158,8 +158,6 @@ class SmartContractControls extends React.Component {
 
     shouldRebalance = await this.functionsUtil.genericIdleCall('rebalance',[_newAmount,_clientProtocolAmounts]);
 
-    // console.log('shouldRebalance',shouldRebalance);
-
     if (!shouldRebalance && this.props.contractsInitialized){
 
       let [currAllocation,newAllocation] = await Promise.all([
@@ -172,8 +170,10 @@ class SmartContractControls extends React.Component {
         const currProtocols = Object.keys(currAllocation[0]).filter((addr,i) => { return this.functionsUtil.BNify(currAllocation[0][addr].toString()).gt(0) });
         newAllocation = newAllocation[0].reduce((obj, key, index) => ({ ...obj, [key.toLowerCase()]: newAllocation[1][index] }), {});
         const newProtocols = Object.keys(newAllocation).filter((addr,i) => { return this.functionsUtil.BNify(newAllocation[addr].toString()).gt(0) });
+        const diff = newProtocols.filter(x => !currProtocols.includes(x));
 
-        if (currProtocols !== newProtocols){
+        // If newProtocols differs from currProtocols rebalance
+        if (diff && diff.length){
           shouldRebalance = true;
         }
       }
