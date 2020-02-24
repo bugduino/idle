@@ -54,7 +54,7 @@ class Footer extends Component {
               <Link href="https://github.com/bugduino/idle-contracts" target="_blank" rel="nofollow noopener noreferrer">
                 <Image src="images/github-logo.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} className={styles.socialIcon} />
               </Link>
-              <Link href="https://etherscan.io/address/0x10eC0D497824e342bCB0EDcE00959142aAa766dD#code" target="_blank" rel="nofollow noopener noreferrer">
+              <Link href={`https://etherscan.io/address/${this.props.tokenConfig.idle.address}#code`} target="_blank" rel="nofollow noopener noreferrer">
                 <Image src="images/etherscan.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} className={styles.socialIcon} />
               </Link>
             </Flex>

@@ -767,7 +767,7 @@ class Landing extends Component {
           </Flex>
         </Flex>
 
-        <Footer />
+        <Footer tokenConfig={this.props.tokenConfig} />
 
         {
           this.props.toastMessageProps &&
