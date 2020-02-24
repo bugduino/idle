@@ -80,6 +80,13 @@ const globalConfigs = {
       }
     }
   },
+  contract:{
+    methods:{
+      redeem:{
+        skipRebalance:true
+      }
+    }
+  },
   network:{ // Network configurations
     availableNetworks:{
       1:'Mainnet',

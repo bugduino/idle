@@ -815,7 +815,7 @@ class SmartContractControls extends React.Component {
     this.functionsUtil.customLog('redeem',idleTokenToRedeem);
 
     // Get amounts for best allocations
-    const _skipRebalance = false;
+    const _skipRebalance = globalConfigs.contract.methods.redeem.skipRebalance;
     let paramsForRedeem = null;
 
     if (this.props.account){
