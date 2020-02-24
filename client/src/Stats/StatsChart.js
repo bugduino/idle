@@ -197,7 +197,7 @@ class StatsChart extends Component {
             },
             axisBottom:{
               format: '%b %d %H:%M',
-              tickValues: 'every 1 days',
+              tickValues: 'every 3 days',
               orient: 'bottom',
               legend: '',
               legendOffset: 36,
@@ -266,7 +266,7 @@ class StatsChart extends Component {
           },
           axisBottom:{
             format: '%b %d %H:%M',
-            tickValues: 'every 1 days',
+            tickValues: 'every 3 days',
             orient: 'bottom',
             legend: '',
             legendOffset: 36,
@@ -330,7 +330,7 @@ class StatsChart extends Component {
           },
           axisBottom:{
             format: '%b %d %H:%M',
-            tickValues: 'every 1 days',
+            tickValues: 'every 3 days',
             orient: 'bottom',
             legend: '',
             legendOffset: 36,
@@ -397,7 +397,7 @@ class StatsChart extends Component {
           },
           axisBottom:{
             format: '%b %d %H:%M',
-            tickValues: 'every 1 days',
+            tickValues: 'every 3 days',
             orient: 'bottom',
             legend: '',
             legendOffset: 36,
@@ -470,7 +470,7 @@ class StatsChart extends Component {
           },
           axisBottom:{
             format: '%b %d %H:%M',
-            tickValues: 'every 1 days',
+            tickValues: 'every 3 days',
             orient: 'bottom',
             legend: '',
             legendOffset: 36,
@@ -537,7 +537,7 @@ class StatsChart extends Component {
           },
           axisBottom:{
             format: '%b %d %H:%M',
-            tickValues: 'every 1 days',
+            tickValues: 'every 3 days',
             orient: 'bottom',
             legend: '',
             legendOffset: 36,
@@ -612,7 +612,7 @@ class StatsChart extends Component {
           xScale:{
             type: 'time',
             format: '%Y/%m/%d %H:%M',
-            // precision: 'hour',
+            // precision: 'day',
           },
           xFormat:'time:%b %d %H:%M',
           yFormat:value => parseFloat(value).toFixed(6),
@@ -633,7 +633,7 @@ class StatsChart extends Component {
           },
           axisBottom:{
             format: '%b %d %H:%M',
-            tickValues: 'every 1 days',
+            tickValues: 'every 3 days',
             orient: 'bottom',
             legend: '',
             legendOffset: 36,
