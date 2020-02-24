@@ -24,11 +24,15 @@ class Footer extends Component {
             </Heading.h3>
             <Flex width={1} flexDirection={'column'}>
               <Link pb={[3,2]} href={'http://developers.idle.finance'} target={'_blank'} rel="nofollow noopener noreferrer" textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} color={'blue'} hoverColor={'blue'}>Developers</Link>
+              {
+              /*
               <Flex pb={[3,2]} width={1} justifyContent={['center','flex-start']}>
                 <RouterLink to="/stats" style={{textDecoration:'none'}}>
                   <Text href={'#'} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} fontWeight={3} color={'blue'} hoverColor={'blue'}>Stats</Text>
                 </RouterLink>
               </Flex>
+              */
+              }
               <Flex pb={[3,2]} width={1} justifyContent={['center','flex-start']}>
                 <RouterLink to="/terms-of-service" style={{textDecoration:'none'}}>
                   <Text href={'#'} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} fontWeight={3} color={'blue'} hoverColor={'blue'}>Terms of Service</Text>

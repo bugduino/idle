@@ -54,6 +54,7 @@ class Header extends React.Component {
     }
 
     const buttonGroup = [
+      /*
       {
         component:StatsComponent,
         props:{
@@ -66,6 +67,7 @@ class Header extends React.Component {
           marginBottom:'0 !important'
         }
       },
+      */
       {
         component:Button,
         props:{
