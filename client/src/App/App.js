@@ -279,6 +279,8 @@ class App extends Component {
                               render={(props) => <Stats {...props}
                                                     isMobile={isMobile}
                                                     selectedToken={this.state.selectedToken}
+                                                    availableTokens={this.state.availableTokens}
+                                                    setSelectedToken={ e => { this.setSelectedToken(e) } }
                                                   />}
                             >
                             </Route>

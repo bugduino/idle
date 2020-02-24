@@ -1,15 +1,18 @@
 import moment from 'moment';
 import StatsChart from './StatsChart';
 import React, { Component } from 'react';
-import { Flex, Card, Text, Heading } from 'rimble-ui';
 import globalConfigs from '../configs/globalConfigs';
+import { Link as RouterLink } from "react-router-dom";
 import FunctionsUtil from '../utilities/FunctionsUtil';
-import availableTokens from '../configs/availableTokens';
+import ButtonGroup from '../ButtonGroup/ButtonGroup';
+import TokenSelector from '../TokenSelector/TokenSelector';
+import { Box, Flex, Card, Text, Heading, Image } from 'rimble-ui';
 
 class Stats extends Component {
   state = {
     aum:null,
     earning:null,
+    buttonGroup:[],
     tokenConfig:null,
     selectedToken:null,
     startTimestamp:parseInt(moment('2020-02-04','YYYY-MM-DD')._d.getTime()/1000)
@@ -27,17 +30,18 @@ class Stats extends Component {
   }
 
   async loadParams() {
+
     const newState = Object.assign({},this.state);
     const { match: { params } } = this.props;
 
-    const currentNetworkAvailableTokens = Object.keys(availableTokens[globalConfigs.network.requiredNetwork]);
+    const currentNetworkAvailableTokens = Object.keys(this.props.availableTokens);
 
     if (!!params.customToken && currentNetworkAvailableTokens.indexOf(params.customToken.toUpperCase()) !== -1 ){
       newState.selectedToken = params.customToken.toUpperCase();
     } else {
       newState.selectedToken = this.props.selectedToken.toUpperCase();
     }
-    newState.tokenConfig = availableTokens[globalConfigs.network.requiredNetwork][newState.selectedToken];
+    newState.tokenConfig = this.props.availableTokens[newState.selectedToken];
 
     if (newState !== this.state){
       await this.setState(newState);
@@ -50,6 +54,25 @@ class Stats extends Component {
 
   componentWillUnmount(){
     document.getElementById('crisp-custom-style').remove();
+  }
+
+  updateButtonGroup = async () => {
+    const buttonGroup = [
+      {
+        component:TokenSelector,
+        props:{
+          setSelectedToken:this.props.setSelectedToken,
+          selectedToken:this.state.selectedToken,
+          availableTokens:this.props.availableTokens,
+          color:'dark-gray',
+          size:'big'
+        }
+      }
+    ];
+
+    await this.setState({
+      buttonGroup
+    });
   }
 
   async componentDidMount() {
@@ -65,6 +88,7 @@ class Stats extends Component {
 
     this.loadUtils();
     await this.loadParams();
+    await this.updateButtonGroup();
     this.loadApiData();
   }
 
@@ -92,12 +116,13 @@ class Stats extends Component {
     const firstResult = apiResults[0];
     const lastResult = apiResults.pop();
 
+    const days = moment(lastResult.timestamp*1000).diff(moment(firstResult.timestamp*1000),'days');
     const idleTokens = this.functionsUtil.fixTokenDecimals(lastResult.idleSupply,18);
     const firstIdlePrice = this.functionsUtil.fixTokenDecimals(firstResult.idlePrice,this.state.tokenConfig.decimals);
     const lastIdlePrice = this.functionsUtil.fixTokenDecimals(lastResult.idlePrice,this.state.tokenConfig.decimals);
-    const aum = parseInt(idleTokens.times(lastIdlePrice));
-    const apr = lastIdlePrice.div(firstIdlePrice).minus(1).times(100).toFixed(2);
-    const days = moment(lastResult.timestamp*1000).diff(moment(firstResult.timestamp*1000),'days');
+    const aum = this.functionsUtil.formatMoney(parseFloat(idleTokens.times(lastIdlePrice)));
+    const earning = lastIdlePrice.div(firstIdlePrice).minus(1).times(100);
+    const apr = earning.times(365).div(days).toFixed(2);
 
     const compoundInfo = this.state.tokenConfig.protocols.filter((p) => { return p.name === 'compound' })[0];
     const firstCompoundData = firstResult.protocolsData.filter((p) => { return p.protocolAddr.toLowerCase() === compoundInfo.address.toLowerCase() })[0];
@@ -105,7 +130,7 @@ class Stats extends Component {
     const firstCompoundPrice = this.functionsUtil.fixTokenDecimals(firstCompoundData.price,this.state.tokenConfig.decimals);
     const lastCompoundPrice = this.functionsUtil.fixTokenDecimals(lastCompoundData.price,this.state.tokenConfig.decimals);
     const compoundApr = lastCompoundPrice.div(firstCompoundPrice).minus(1).times(100).toFixed(2);
-    const delta = (parseFloat(apr)-parseFloat(compoundApr)).toFixed(2);
+    const delta = (parseFloat(earning)-parseFloat(compoundApr)).toFixed(2);
 
     this.setState({
       aum,
@@ -117,10 +142,28 @@ class Stats extends Component {
 
   render() {
     return (
-      <Flex flexDirection={'column'} p={4}>
-        <Heading.h3 color={'dark-gray'} textAlign={'center'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]} mb={4}>
-          Idle Finance - {this.state.selectedToken} stats
-        </Heading.h3>
+      <Flex flexDirection={'column'} p={[3,4]}>
+        <Flex width={1} flexDirection={'row'} position={['relative','absolute']} zIndex={10} height={['60px','auto']} left={['auto','0']} px={[0,4]}>
+          <Box width={1/2}>
+            <RouterLink to="/">
+              <Image src="images/logo-gradient.svg"
+                height={['35px','48px']}
+                position={'relative'} />
+            </RouterLink>
+          </Box>
+          <Flex width={1/2} justifyContent={'flex-end'}>
+            <ButtonGroup
+              isMobile={this.props.isMobile}
+              components={this.state.buttonGroup}
+              theme={'light'}
+            />
+          </Flex>
+        </Flex>
+        <Flex alignItems={'center'} justifyContent={'center'}>
+          <Heading.h3 color={'dark-gray'} textAlign={'center'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]} mb={[3,4]}>
+            {this.state.selectedToken} stats
+          </Heading.h3>
+        </Flex>
         <Flex flexDirection={['column','row']} width={1}>
           <Flex width={[1,1/4]} flexDirection={'column'}>
             <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'}>
@@ -136,7 +179,7 @@ class Stats extends Component {
           <Flex width={[1,1/4]} flexDirection={'column'} pl={[0,2]}>
             <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'}>
               <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Earnings</Text.span>
+                <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Avg APR</Text.span>
                 <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
                   {this.state.apr}
                   <Text.span color={'copyColor'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
@@ -172,7 +215,7 @@ class Stats extends Component {
           <Flex width={[1,1/4]} flexDirection={'column'} pl={[0,2]}>
             <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'}>
               <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Delta</Text.span>
+                <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Delta on Compound</Text.span>
                 <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
                   {this.state.delta}
                   <Text.span color={'copyColor'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
@@ -188,7 +231,7 @@ class Stats extends Component {
                 <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                   AUM - {this.state.selectedToken}
                 </Text>
-                <StatsChart chartMode={'AUM'} {...this.state} parentId={'chart-AUM'} height={ this.props.isMobile ? 450 : 350 } />
+                <StatsChart chartMode={'AUM'} {...this.state} parentId={'chart-AUM'} height={ 350 } />
               </Flex>
             </Card>
           </Flex>
@@ -198,7 +241,7 @@ class Stats extends Component {
                 <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                   Volume - {this.state.selectedToken}
                 </Text>
-                <StatsChart chartMode={'VOL'} {...this.state} parentId={'chart-VOL'} height={ this.props.isMobile ? 450 : 350 } />
+                <StatsChart chartMode={'VOL'} {...this.state} parentId={'chart-VOL'} height={ 350 } />
               </Flex>
             </Card>
           </Flex>
@@ -208,7 +251,7 @@ class Stats extends Component {
                 <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                   Allocation - {this.state.selectedToken}
                 </Text>
-                <StatsChart chartMode={'ALL'} {...this.state} parentId={'chart-ALL'} height={ this.props.isMobile ? 450 : 350 } />
+                <StatsChart chartMode={'ALL'} {...this.state} parentId={'chart-ALL'} height={ 350 } />
               </Flex>
             </Card>
           </Flex>
@@ -218,7 +261,7 @@ class Stats extends Component {
                 <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                   Allocation Percentage - {this.state.selectedToken}
                 </Text>
-                <StatsChart chartMode={'ALL_PERC'} {...this.state} parentId={'chart-ALL_PERC'} height={ this.props.isMobile ? 450 : 350 } />
+                <StatsChart chartMode={'ALL_PERC'} {...this.state} parentId={'chart-ALL_PERC'} height={ 350 } />
               </Flex>
             </Card>
           </Flex>
@@ -228,7 +271,7 @@ class Stats extends Component {
                 <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                   APRs - {this.state.selectedToken}
                 </Text>
-                <StatsChart chartMode={'APR'} {...this.state} parentId={'chart-APR'} height={ this.props.isMobile ? 450 : 350 } />
+                <StatsChart chartMode={'APR'} {...this.state} parentId={'chart-APR'} height={ 350 } />
               </Flex>
             </Card>
           </Flex>
@@ -238,7 +281,7 @@ class Stats extends Component {
                 <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                   Equity Line - {this.state.selectedToken}
                 </Text>
-                <StatsChart chartMode={'PRICE'} {...this.state} parentId={'chart-PRICE'} height={ this.props.isMobile ? 450 : 350 } />
+                <StatsChart chartMode={'PRICE'} {...this.state} parentId={'chart-PRICE'} height={ 350 } />
               </Flex>
             </Card>
           </Flex>

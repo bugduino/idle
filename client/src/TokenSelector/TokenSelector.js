@@ -68,7 +68,7 @@ class TokenSelector extends Component {
                         const tokenEnabled = tokenInfo.enabled;
                         if (!this.props.isMobile || tokenEnabled){
                           return (
-                            <TokenSelectorItem isMobile={this.props.isMobile} disabled={!tokenEnabled} key={'token_selector_'+token} borderRadius={4} isChild={true} token={token} handleClick={ e => {this.selectToken(token,tokenInfo) }} />
+                            <TokenSelectorItem isMobile={this.props.isMobile} disabled={!tokenEnabled} key={'token_selector_'+token} borderRadius={4} isChild={true} token={token} color={this.props.color} size={this.props.size} handleClick={ e => {this.selectToken(token,tokenInfo) }} />
                           );
                         }
                       }
@@ -89,8 +89,8 @@ class TokenSelector extends Component {
           borderLeft={this.props.borderLeft}
           borderRight={this.props.borderRight}
           >
-            <TokenSelectorItem isMobile={this.props.isMobile} borderRadius={this.props.borderRadius} disabled={false} token={this.props.selectedToken} />
-            <Flex flexDirection={'column'} borderRadius={4} backgroundColor={ this.props.isMobile ? 'transparent' : 'white' } overflow={'hidden'} className={[styles.selectorCurtain,this.state.opened ? styles.opened : null]} position={['static','absolute']} top={'100%'}>
+            <TokenSelectorItem isMobile={this.props.isMobile} borderRadius={this.props.borderRadius} disabled={false} token={this.props.selectedToken} color={this.props.color} size={this.props.size} />
+            <Flex flexDirection={'column'} borderRadius={'1.5rem'} backgroundColor={ this.props.isMobile ? 'transparent' : 'white' } overflow={'hidden'} className={[styles.selectorCurtain,this.state.opened ? styles.opened : null]} position={['static','absolute']} top={'100%'}>
               { tokens }
             </Flex>
         </Flex>

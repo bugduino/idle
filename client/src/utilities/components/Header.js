@@ -11,6 +11,7 @@ import TokenSelector from '../../TokenSelector/TokenSelector';
 
 import {
   Link as RouterLink,
+  useHistory
 } from "react-router-dom";
 
 class Header extends React.Component {
@@ -33,9 +34,38 @@ class Header extends React.Component {
     this.setState(state => ({...state, isModalOpen: (state.isModalOpen===modalName ? null : modalName) }));
   }
 
+  gotoPage = (url) => {
+    let history = useHistory();
+    history.push(url);
+  }
+
   setCurrentToken = () => {
 
+    function StatsComponent(props) {
+      return (
+        <RouterLink to="/stats" style={ props.isMobile ? {textDecoration:'none',width:'100%'} : {textDecoration:'none'}  }>
+          <Button
+            {...props}
+          >
+            STATS
+          </Button>
+        </RouterLink>
+      );
+    }
+
     const buttonGroup = [
+      {
+        component:StatsComponent,
+        props:{
+          mainColor:'transparent',
+          color:'white',
+          icon:'ShowChart',
+          iconpos:'right',
+        },
+        style:{
+          marginBottom:'0 !important'
+        }
+      },
       {
         component:Button,
         props:{

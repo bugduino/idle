@@ -14,10 +14,13 @@
   }
 }
 .selectorCurtain{
+  margin-top: 6px;
   max-height:0 !important;
+  overflow: hidden;
   transition:all 0.2s ease-in-out !important;
   &.opened{
     max-height:100px !important;
+    overflow: visible;
   }
 }
 .comingSoon{

@@ -13,10 +13,16 @@
   .buttonGroup{
     background-color: rgba(0, 54, 255, 1) !important;
     margin-top: 48px !important;
+    &.light{
+      background-color:rgba(255,255,255,1) !important;
+    }
   }
   .buttonGroup .buttonGroupComponent{
     width:100% !important;
     background-color:rgba(255,255,255,0.2) !important;
     margin:15px 0 !important;
+    &.noMarginBottom{
+      margin-bottom: 0 !important;
+    }
   }
 }

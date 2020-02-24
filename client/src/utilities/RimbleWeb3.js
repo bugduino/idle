@@ -308,10 +308,10 @@ class RimbleTransaction extends React.Component {
       return {name, contract};
     } catch (error) {
       this.functionsUtil.customLogError("Could not create contract.",name,address,error);
-      window.toastProvider.addMessage("Contract creation failed.", {
-        variant: "failure",
-        colorTheme: 'light'
-      });
+      // window.toastProvider.addMessage("Contract creation failed.", {
+      //   variant: "failure",
+      //   colorTheme: 'light'
+      // });
     }
   }
 

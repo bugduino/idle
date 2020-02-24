@@ -1,6 +1,7 @@
 import moment from 'moment';
 import colors from '../colors';
 import { Line } from '@nivo/line';
+import { Flex, Loader, Text } from 'rimble-ui';
 import React, { Component } from 'react';
 import globalConfigs from '../configs/globalConfigs';
 import FunctionsUtil from '../utilities/FunctionsUtil';
@@ -203,6 +204,7 @@ class StatsChart extends Component {
               legendOffset: 36,
               legendPosition: 'middle'
             },
+            lineWidth:1,
             enableArea:false,
             curve:"monotoneX",
             enableSlices:'x',
@@ -668,7 +670,17 @@ class StatsChart extends Component {
 
   render() {
     if (!this.state.chartType || !this.state.chartData || !this.state.chartProps){
-      return null;
+      return (
+        <Flex
+          justifyContent={'center'}
+          alignItems={'center'}
+          textAlign={'center'}
+          width={1}
+          minHeight={ this.props.height }
+        >
+          <Loader size="40px" /> <Text ml={2}>Loading graph data...</Text>
+        </Flex>
+      );
     }
 
     return (
