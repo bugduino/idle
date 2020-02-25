@@ -278,6 +278,7 @@ class App extends Component {
                               path="/stats/:customToken?"
                               render={(props) => <Stats {...props}
                                                     isMobile={isMobile}
+                                                    tokenConfig={this.state.tokenConfig}
                                                     selectedToken={this.state.selectedToken}
                                                     availableTokens={this.state.availableTokens}
                                                     setSelectedToken={ e => { this.setSelectedToken(e) } }

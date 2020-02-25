@@ -13,8 +13,8 @@ class Stats extends Component {
     aum:null,
     earning:null,
     buttonGroup:[],
-    tokenConfig:null,
-    selectedToken:null,
+    tokenConfig:this.props.tokenConfig,
+    selectedToken:this.props.selectedToken,
     startTimestamp:parseInt(moment('2020-02-04','YYYY-MM-DD')._d.getTime()/1000)
     // startTimestamp: parseInt(moment().subtract(7,'d')._d.getTime()/1000)
   };
@@ -279,7 +279,7 @@ class Stats extends Component {
             <Card p={[2,3]} pb={0} borderRadius={'10px'}>
               <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
                 <Text color={'copyColor'} fontWeight={2} fontSize={3}>
-                  Equity Line - {this.state.selectedToken}
+                  Performance - {this.state.selectedToken}
                 </Text>
                 <StatsChart chartMode={'PRICE'} {...this.state} parentId={'chart-PRICE'} height={ 350 } />
               </Flex>

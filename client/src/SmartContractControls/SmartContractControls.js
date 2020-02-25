@@ -2983,7 +2983,7 @@ class SmartContractControls extends React.Component {
                                               fontSize={[2,2]}
                                               mx={'auto'}
                                               px={[4,5]}
-                                              mt={3}
+                                              mt={0}
                                             >
                                               REDEEM {this.props.selectedToken}
                                             </Button>
