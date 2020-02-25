@@ -358,7 +358,7 @@ class StatsChart extends Component {
         this.props.tokenConfig.protocols.forEach((p,j) => {
           chartData.push({
             id:p.name,
-            color: globalConfigs.stats.protocols[p.name].color,
+            color: 'hsl('+globalConfigs.stats.protocols[p.name].color.hsl.join(',')+')',
             data: apiResults.map((d,i) => {
               return d.protocolsData.filter((protocolAllocation,x) => {
                   return protocolAllocation.protocolAddr.toLowerCase() === p.address.toLowerCase()
@@ -368,7 +368,7 @@ class StatsChart extends Component {
                 const y = parseInt(this.functionsUtil.fixTokenDecimals(protocolAllocation.allocation,this.props.tokenConfig.decimals));
                 return { x, y };
               })[0]
-            })
+            }).filter((v) => { return v !== undefined; } )
           })
         });
 
@@ -425,7 +425,7 @@ class StatsChart extends Component {
         this.props.tokenConfig.protocols.forEach((p,j) => {
           chartData.push({
             id:p.name,
-            color: globalConfigs.stats.protocols[p.name].color,
+            color: 'hsl('+globalConfigs.stats.protocols[p.name].color.hsl.join(',')+')',
             data: apiResults.map((d,i) => {
               const totalAllocation = d.protocolsData.reduce((accumulator,protocolAllocation) => {
                 const allocation = this.functionsUtil.fixTokenDecimals(protocolAllocation.allocation,this.props.tokenConfig.decimals);
@@ -441,7 +441,7 @@ class StatsChart extends Component {
                 const y = parseFloat(allocation.div(totalAllocation).times(100));
                 return { x, y };
               })[0]
-            })
+            }).filter((v) => { return v !== undefined; } )
           })
         });
 
@@ -498,7 +498,7 @@ class StatsChart extends Component {
         this.props.tokenConfig.protocols.forEach((p,j) => {
           chartData.push({
             id:p.name,
-            color: globalConfigs.stats.protocols[p.name].color,
+            color: 'hsl('+globalConfigs.stats.protocols[p.name].color.hsl.join(',')+')',
             data: apiResults.map((d,i) => {
               return d.protocolsData.filter((protocolAllocation,x) => {
                   return protocolAllocation.protocolAddr.toLowerCase() === p.address.toLowerCase()
@@ -508,7 +508,7 @@ class StatsChart extends Component {
                 const y = parseFloat(this.functionsUtil.fixTokenDecimals(protocolAllocation.rate,18));
                 return { x, y };
               })[0]
-            })
+            }).filter((v) => { return v !== undefined; } )
           })
         });
 
@@ -567,7 +567,7 @@ class StatsChart extends Component {
           const initBalance = 1;
           chartData.push({
             id:p.name,
-            color: globalConfigs.stats.protocols[p.name].color,
+            color: 'hsl('+globalConfigs.stats.protocols[p.name].color.hsl.join(',')+')',
             data: apiResults.map((d,i) => {
               return d.protocolsData.filter((protocolAllocation,x) => {
                   return protocolAllocation.protocolAddr.toLowerCase() === p.address.toLowerCase()
@@ -584,7 +584,7 @@ class StatsChart extends Component {
 
                 return { x, y };
               })[0]
-            })
+            }).filter((v) => { return v !== undefined; } )
           })
         });
 

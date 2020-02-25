@@ -11,6 +11,9 @@ import { Box, Flex, Card, Text, Heading, Image } from 'rimble-ui';
 class Stats extends Component {
   state = {
     aum:null,
+    apr:null,
+    days:'-',
+    delta:null,
     earning:null,
     buttonGroup:[],
     tokenConfig:this.props.tokenConfig,
@@ -235,13 +238,13 @@ class Stats extends Component {
               </Flex>
             </Card>
           </Flex>
-          <Flex id='chart-VOL' width={[1,0.49]} mb={[3,4]}>
+          <Flex id='chart-PRICE' width={[1,0.49]} mb={[3,4]}>
             <Card p={[2,3]} pb={0} borderRadius={'10px'}>
               <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
                 <Text color={'copyColor'} fontWeight={2} fontSize={3}>
-                  Volume - {this.state.selectedToken}
+                  Performance - {this.state.selectedToken}
                 </Text>
-                <StatsChart chartMode={'VOL'} {...this.state} parentId={'chart-VOL'} height={ 350 } />
+                <StatsChart chartMode={'PRICE'} {...this.state} parentId={'chart-PRICE'} height={ 350 } />
               </Flex>
             </Card>
           </Flex>
@@ -275,13 +278,13 @@ class Stats extends Component {
               </Flex>
             </Card>
           </Flex>
-          <Flex id='chart-PRICE' width={[1,0.49]} mb={[3,4]}>
+          <Flex id='chart-VOL' width={[1,0.49]} mb={[3,4]}>
             <Card p={[2,3]} pb={0} borderRadius={'10px'}>
               <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
                 <Text color={'copyColor'} fontWeight={2} fontSize={3}>
-                  Performance - {this.state.selectedToken}
+                  Volume - {this.state.selectedToken}
                 </Text>
-                <StatsChart chartMode={'PRICE'} {...this.state} parentId={'chart-PRICE'} height={ 350 } />
+                <StatsChart chartMode={'VOL'} {...this.state} parentId={'chart-VOL'} height={ 350 } />
               </Flex>
             </Card>
           </Flex>

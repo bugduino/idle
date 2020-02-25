@@ -73,10 +73,22 @@ const globalConfigs = {
     },
     protocols:{
       compound:{
-        color:'hsl(162, 100%, 41%)',
+        color:{
+          rgb:[0, 209, 146],
+          hsl:['162', '100%', '41%']
+        }
       },
       fulcrum:{
-        color:'hsl(197, 98%, 38%)',
+        color:{
+          rgb:[2, 138, 192],
+          hsl:['197', '98%', '38%']
+        }
+      },
+      aave:{
+        color:{
+          rgb:[181, 79, 157],
+          hsl:['314', '41%', '51%']
+        }
       }
     }
   },

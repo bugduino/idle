@@ -84,51 +84,69 @@
 .bulletPoint.bulletRight{
   top: -25px;
   right: -15px;
-  border-left: 15px solid #0036ff;
+  border-left-width: 15px;
+  border-style: solid;
+  border-color:#0036ff;
 }
 .bulletPoint.bulletTop{
   top: -17px;
   right: -23px;
-  border-bottom: 15px solid #0036ff;
+  border-bottom-width: 15px;
+  border-style: solid;
+  border-color:#0036ff;
 }
 .bulletPoint.bulletLeft{
   top: -25px;
   left: -15px;
-  border-right: 15px solid #0036ff;
+  border-right-width: 15px;
+  border-style: solid;
+  border-color:#0036ff;
 }
 .bulletPoint.bulletBottom{
   bottom: -15px;
   right: -23px;
-  border-top: 15px solid #0036ff;
+  border-top-width: 15px;
+  border-style: solid;
+  border-color:#0036ff;
 }
 .bulletPoint.bulletBottomLeft{
   bottom: -15px;
   left: -23px;
-  border-top: 15px solid #0036ff;
+  border-top-width: 15px;
+  border-style: solid;
+  border-color:#0036ff;
 }
 .bulletPoint.bulletBottomBottom{
   bottom:-22px;
   top:initial;
   left: -15px;
-  border-right: 15px solid #0036ff;
+  border-right-width: 15px;
+  border-style: solid;
+  border-color:#0036ff;
 }
 .bulletPoint.bulletBottomBottom.bulletMobile{
   top: -15px;
   right: -19px;
   left: initial;
-  border-bottom: 15px solid #0036ff;
+  border-bottom-width: 15px;
+  border-style: solid;
+  border-color:#0036ff;
   border-right: 0;
 }
 .bulletPoint.bulletLeft.bulletMobile{
   top: -15px;
   left: -20px;
-  border-bottom: 15px solid #0036ff;
+  border-bottom-width: 15px;
+  border-style: solid;
+  border-color:#0036ff;
   border-right: 0;
 }
 .bulletPoint.bulletBottom.bulletMobile{
   bottom: -15px;
   right: -23px;
-  border-top: 15px solid #0036ff;
+  border-top-width: 15px;
+  border-style: solid;
+  border-color:#0036ff;
   border-left: 0;
 }
 /*
