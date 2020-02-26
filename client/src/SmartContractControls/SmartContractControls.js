@@ -166,10 +166,15 @@ class SmartContractControls extends React.Component {
       ]);
 
       if (newAllocation && currAllocation){
+        const currProtocols = Object.keys(currAllocation[0])
+                                .filter((addr,i) => { return this.functionsUtil.BNify(currAllocation[0][addr].toString()).gt(0) })
+                                .map(v => { return v.toLowerCase() });
 
-        const currProtocols = Object.keys(currAllocation[0]).filter((addr,i) => { return this.functionsUtil.BNify(currAllocation[0][addr].toString()).gt(0) });
         newAllocation = newAllocation[0].reduce((obj, key, index) => ({ ...obj, [key.toLowerCase()]: newAllocation[1][index] }), {});
-        const newProtocols = Object.keys(newAllocation).filter((addr,i) => { return this.functionsUtil.BNify(newAllocation[addr].toString()).gt(0) });
+        const newProtocols = Object.keys(newAllocation)
+                              .filter((addr,i) => { return this.functionsUtil.BNify(newAllocation[addr].toString()).gt(0) })
+                              .map(v => { return v.toLowerCase() });
+
         const diff = newProtocols.filter(x => !currProtocols.includes(x));
 
         // If newProtocols differs from currProtocols rebalance
