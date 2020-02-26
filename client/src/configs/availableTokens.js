@@ -1,7 +1,7 @@
 import ERC20 from '../abis/tokens/DAI.js';
 import cDAI from '../abis/compound/cDAI';
 import iDAI from '../abis/fulcrum/iToken.json';
-import aToken from '../abis/aave/AToken.json';
+// import aToken from '../abis/aave/AToken.json';
 import idleDAI from '../contracts/IdleDAI.json';
 import idleToken from '../contracts/IdleToken.json';
 import IdleMcdBridge from '../contracts/IdleMcdBridge.json';
@@ -310,6 +310,7 @@ const availableTokens = {
             }
           },
         },
+        /*
         {
           name:'aave',
           abi:aToken,
@@ -319,6 +320,7 @@ const availableTokens = {
 
           }
         }
+        */
       ]
     },
     SAI:{
@@ -457,6 +459,7 @@ const availableTokens = {
             }
           },
         },
+        /*
         {
           name:'aave',
           abi:aToken,
@@ -466,6 +469,7 @@ const availableTokens = {
             
           }
         }
+        */
       ]
     }
   }

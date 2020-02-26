@@ -1,6 +1,6 @@
 import { Web3Versions } from '@terminal-packages/sdk';
-import { RampInstantSDK } from '@ramp-network/ramp-instant-sdk';
 import FunctionsUtil from '../utilities/FunctionsUtil';
+import { RampInstantSDK } from '@ramp-network/ramp-instant-sdk';
 const env = process.env;
 
 const globalConfigs = {
@@ -71,6 +71,17 @@ const globalConfigs = {
       endpoint:'https://api.idle.finance/rates/',
       TTL:3600 // 1 hour
     },
+    tokens:{
+      DAI:{
+        startTimestamp:'2020-02-11'
+      },
+      USDC:{
+        startTimestamp:'2020-02-04'
+      },
+      SAI:{
+        startTimestamp:'2020-02-04'
+      }
+    },
     protocols:{
       compound:{
         color:{
@@ -88,6 +99,12 @@ const globalConfigs = {
         color:{
           rgb:[181, 79, 157],
           hsl:['314', '41%', '51%']
+        }
+      },
+      idle:{
+        color:{
+          rgb:[0, 55, 255],
+          hsl:['227', '100%', '50%']
         }
       }
     }

@@ -1,12 +1,13 @@
 import moment from 'moment';
 import StatsChart from './StatsChart';
 import React, { Component } from 'react';
+import ButtonGroup from '../ButtonGroup/ButtonGroup';
 import globalConfigs from '../configs/globalConfigs';
 import { Link as RouterLink } from "react-router-dom";
 import FunctionsUtil from '../utilities/FunctionsUtil';
-import ButtonGroup from '../ButtonGroup/ButtonGroup';
 import TokenSelector from '../TokenSelector/TokenSelector';
-import { Box, Flex, Card, Text, Heading, Image } from 'rimble-ui';
+import DateRangeModal from '../utilities/components/DateRangeModal';
+import { Box, Flex, Card, Text, Heading, Image, Button } from 'rimble-ui';
 
 class Stats extends Component {
   state = {
@@ -16,10 +17,11 @@ class Stats extends Component {
     delta:null,
     earning:null,
     buttonGroup:[],
+    startTimestamp:null,
+    startTimestampObj:null,
+    dateRangeModalOpened:false,
     tokenConfig:this.props.tokenConfig,
-    selectedToken:this.props.selectedToken,
-    startTimestamp:parseInt(moment('2020-02-04','YYYY-MM-DD')._d.getTime()/1000)
-    // startTimestamp: parseInt(moment().subtract(7,'d')._d.getTime()/1000)
+    selectedToken:this.props.selectedToken
   };
 
   // Utils
@@ -46,6 +48,9 @@ class Stats extends Component {
     }
     newState.tokenConfig = this.props.availableTokens[newState.selectedToken];
 
+    newState.startTimestampObj = moment(globalConfigs.stats.tokens[newState.selectedToken].startTimestamp,'YYYY-MM-DD');
+    newState.startTimestamp = parseInt(newState.startTimestampObj._d.getTime()/1000);
+
     if (newState !== this.state){
       await this.setState(newState);
     }
@@ -53,14 +58,36 @@ class Stats extends Component {
 
   componentWillMount() {
     this.loadUtils();
+    this.loadParams();
   }
 
   componentWillUnmount(){
     document.getElementById('crisp-custom-style').remove();
   }
 
+  setDateRangeModal = (dateRangeModalOpened) => {
+    if (dateRangeModalOpened !== this.state.dateRangeModalOpened){
+      this.setState({
+        dateRangeModalOpened
+      });
+    }
+  }
+
   updateButtonGroup = async () => {
+
     const buttonGroup = [
+      {
+        component:Button,
+        props:{
+          icon:'Today',
+          iconpos:'right',
+          color:'dark-gray',
+          mainColor:'transparent',
+          contrastColor:'dark-gray',
+          onClick: (e) => this.setDateRangeModal(true)
+        },
+        value:'SELECT DATE'
+      },
       {
         component:TokenSelector,
         props:{
@@ -289,6 +316,10 @@ class Stats extends Component {
             </Card>
           </Flex>
         </Flex>
+
+        <DateRangeModal
+          isOpen={this.props.dateRangeModalOpened}
+          closeModal={this.setDateRangeModal(false)} />
       </Flex>
     );
   }

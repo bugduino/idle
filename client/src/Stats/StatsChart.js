@@ -293,7 +293,7 @@ class StatsChart extends Component {
       case 'AUM':
         chartData.push({
           id:'AUM',
-          color: "hsl(227, 100%, 50%)",
+          color: 'hsl('+globalConfigs.stats.protocols.idle.color.hsl.join(',')+')',
           data: apiResults.map((d,i) => {
             const idleTokens = this.functionsUtil.fixTokenDecimals(d.idleSupply,18);
             const idlePrice = this.functionsUtil.fixTokenDecimals(d.idlePrice,this.props.tokenConfig.decimals);
@@ -364,9 +364,13 @@ class StatsChart extends Component {
                   return protocolAllocation.protocolAddr.toLowerCase() === p.address.toLowerCase()
               })
               .map((protocolAllocation,z) => {
-                const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
-                const y = parseInt(this.functionsUtil.fixTokenDecimals(protocolAllocation.allocation,this.props.tokenConfig.decimals));
-                return { x, y };
+                const protocolPaused = this.functionsUtil.BNify(protocolAllocation.rate).eq(0);
+                if (!protocolPaused){
+                  const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
+                  const y = parseInt(this.functionsUtil.fixTokenDecimals(protocolAllocation.allocation,this.props.tokenConfig.decimals));
+                  return { x, y };
+                }
+                return undefined;
               })[0]
             }).filter((v) => { return v !== undefined; } )
           })
@@ -436,10 +440,14 @@ class StatsChart extends Component {
                   return protocolAllocation.protocolAddr.toLowerCase() === p.address.toLowerCase()
               })
               .map((protocolAllocation,z) => {
-                const allocation = this.functionsUtil.fixTokenDecimals(protocolAllocation.allocation,this.props.tokenConfig.decimals);
-                const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
-                const y = parseFloat(allocation.div(totalAllocation).times(100));
-                return { x, y };
+                const protocolPaused = this.functionsUtil.BNify(protocolAllocation.rate).eq(0);
+                if (!protocolPaused){
+                  const allocation = this.functionsUtil.fixTokenDecimals(protocolAllocation.allocation,this.props.tokenConfig.decimals);
+                  const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
+                  const y = parseFloat(allocation.div(totalAllocation).times(100));
+                  return { x, y };
+                }
+                return undefined;
               })[0]
             }).filter((v) => { return v !== undefined; } )
           })
@@ -504,11 +512,25 @@ class StatsChart extends Component {
                   return protocolAllocation.protocolAddr.toLowerCase() === p.address.toLowerCase()
               })
               .map((protocolAllocation,z) => {
-                const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
-                const y = parseFloat(this.functionsUtil.fixTokenDecimals(protocolAllocation.rate,18));
-                return { x, y };
+                const protocolPaused = this.functionsUtil.BNify(protocolAllocation.rate).eq(0);
+                if (!protocolPaused){
+                  const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
+                  const y = parseFloat(this.functionsUtil.fixTokenDecimals(protocolAllocation.rate,18));
+                  return { x, y };
+                }
+                return undefined;
               })[0]
             }).filter((v) => { return v !== undefined; } )
+          })
+        });
+
+        chartData.push({
+          id:'Idle',
+          color: 'hsl('+globalConfigs.stats.protocols.idle.color.hsl.join(',')+')',
+          data: apiResults.map((d,i) => {
+            const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
+            const y = parseFloat(this.functionsUtil.fixTokenDecimals(d.idleRate,18));
+            return { x, y };
           })
         });
 
@@ -573,16 +595,16 @@ class StatsChart extends Component {
                   return protocolAllocation.protocolAddr.toLowerCase() === p.address.toLowerCase()
               })
               .map((protocolAllocation,z) => {
-                const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
-                const rate = parseFloat(this.functionsUtil.fixTokenDecimals(protocolAllocation.price,p.functions.exchangeRate.decimals));
-                const diff = lastRate ? rate/lastRate-1 : 0;
-                const y = initBalance+diff;
-
-                if (!lastRate){
-                  lastRate = rate;
+                const protocolPaused = this.functionsUtil.BNify(protocolAllocation.rate).eq(0);
+                if (!protocolPaused){
+                  const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
+                  const rate = parseFloat(this.functionsUtil.fixTokenDecimals(protocolAllocation.price,p.functions.exchangeRate.decimals));
+                  const diff = lastRate ? rate/lastRate-1 : 0;
+                  const y = initBalance+diff;
+                  lastRate = lastRate ? lastRate : rate;
+                  return { x, y };
                 }
-
-                return { x, y };
+                return undefined;
               })[0]
             }).filter((v) => { return v !== undefined; } )
           })
@@ -591,8 +613,8 @@ class StatsChart extends Component {
         let lastRate = 0;
         const initBalance = 1;
         chartData.push({
-          id:`Idle`,
-          color: 'hsl(227, 100%, 50%)',
+          id:'Idle',
+          color: 'hsl('+globalConfigs.stats.protocols.idle.color.hsl.join(',')+')',
           data: apiResults.map((d,i) => {
             const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
             const rate = parseFloat(this.functionsUtil.fixTokenDecimals(d.idlePrice,this.props.tokenConfig.decimals));
@@ -624,7 +646,7 @@ class StatsChart extends Component {
             min: 1
           },
           axisLeft:{
-            format: value => parseFloat(value).toFixed(6),
+            format: value => parseFloat(value).toFixed(4),
             orient: 'left',
             tickSize: 5,
             tickPadding: 5,
