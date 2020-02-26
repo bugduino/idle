@@ -84,7 +84,7 @@ class Stats extends Component {
           color:'dark-gray',
           mainColor:'transparent',
           contrastColor:'dark-gray',
-          onClick: (e) => this.setDateRangeModal(true)
+          onClick: (e) => { this.setDateRangeModal(true) }
         },
         value:'SELECT DATE'
       },
@@ -318,8 +318,8 @@ class Stats extends Component {
         </Flex>
 
         <DateRangeModal
-          isOpen={this.props.dateRangeModalOpened}
-          closeModal={this.setDateRangeModal(false)} />
+          isOpen={this.state.dateRangeModalOpened}
+          closeModal={e => this.setDateRangeModal(false)} />
       </Flex>
     );
   }
