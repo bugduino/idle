@@ -7,7 +7,7 @@ import { Link as RouterLink } from "react-router-dom";
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import TokenSelector from '../TokenSelector/TokenSelector';
 import DateRangeModal from '../utilities/components/DateRangeModal';
-import { Box, Flex, Card, Text, Heading, Image, Button } from 'rimble-ui';
+import { Box, Flex, Card, Text, Heading, Image, Button, Link } from 'rimble-ui';
 
 class Stats extends Component {
   state = {
@@ -16,8 +16,10 @@ class Stats extends Component {
     days:'-',
     delta:null,
     earning:null,
+    rebalances:'-',
     buttonGroups:[],
     endTimestamp:null,
+    showAdvanced:false,
     startTimestamp:null,
     endTimestampObj:null,
     startTimestampObj:null,
@@ -52,6 +54,8 @@ class Stats extends Component {
 
     newState.startTimestampObj = moment(globalConfigs.stats.tokens[newState.selectedToken].startTimestamp,'YYYY-MM-DD');
     newState.startTimestamp = parseInt(newState.startTimestampObj._d.getTime()/1000);
+    newState.endTimestampObj = moment();
+    newState.endTimestamp = parseInt(newState.endTimestampObj._d.getTime()/1000);
 
     if (newState !== this.state){
       await this.setState(newState);
@@ -71,16 +75,32 @@ class Stats extends Component {
 
     const minStartTime = moment(globalConfigs.stats.tokens[this.state.selectedToken].startTimestamp);
 
-    const startTimestampObj = moment(ranges.startDate).isSameOrAfter(minStartTime) ? moment(ranges.startDate) : minStartTime;
+    let startTimestampObj = moment(ranges.startDate).isSameOrAfter(minStartTime) ? moment(ranges.startDate) : minStartTime;
+    let endTimestampObj = moment(ranges.endDate);
+
+    if (startTimestampObj.isSame(endTimestampObj)){
+      endTimestampObj.add(1,'day');
+    }
+    
     const startTimestamp = parseInt(startTimestampObj._d.getTime()/1000);
-    const endTimestampObj = moment(ranges.endDate);
     const endTimestamp = parseInt(endTimestampObj._d.getTime()/1000);
 
-    this.setState({
+    const newState = {
       endTimestamp,
       startTimestamp,
       endTimestampObj,
       startTimestampObj
+    };
+
+    this.setState(newState);
+
+    return newState;
+  }
+
+  toggleAdvancedCharts = (e) => {
+    e.preventDefault();
+    this.setState({
+      showAdvanced:!this.state.showAdvanced
     });
   }
 
@@ -176,7 +196,9 @@ class Stats extends Component {
     const firstResult = apiResults[0];
     const lastResult = apiResults.pop();
 
-    const days = moment(lastResult.timestamp*1000).diff(moment(firstResult.timestamp*1000),'days');
+    let days = moment(lastResult.timestamp*1000).diff(moment(firstResult.timestamp*1000),'days');
+    days = Math.max(days,1);
+    
     const idleTokens = this.functionsUtil.fixTokenDecimals(lastResult.idleSupply,18);
     const firstIdlePrice = this.functionsUtil.fixTokenDecimals(firstResult.idlePrice,this.state.tokenConfig.decimals);
     const lastIdlePrice = this.functionsUtil.fixTokenDecimals(lastResult.idlePrice,this.state.tokenConfig.decimals);
@@ -189,14 +211,74 @@ class Stats extends Component {
     const lastCompoundData = lastResult.protocolsData.filter((p) => { return p.protocolAddr.toLowerCase() === compoundInfo.address.toLowerCase() })[0];
     const firstCompoundPrice = this.functionsUtil.fixTokenDecimals(firstCompoundData.price,this.state.tokenConfig.decimals);
     const lastCompoundPrice = this.functionsUtil.fixTokenDecimals(lastCompoundData.price,this.state.tokenConfig.decimals);
-    const compoundApr = lastCompoundPrice.div(firstCompoundPrice).minus(1).times(100).toFixed(2);
-    const delta = (parseFloat(earning)-parseFloat(compoundApr)).toFixed(2);
+    const compoundApr = lastCompoundPrice.div(firstCompoundPrice).minus(1).times(100);
+    const delta = earning.minus(compoundApr).times(365).div(days).toFixed(2);
+
+    // Take rebalances
+    let rebalances = 0;
+    apiResults.forEach((row,index) => {
+      if (index){
+        const prevRow = apiResults[index-1];
+
+        const totalAllocation = row.protocolsData.reduce((accumulator,protocolAllocation) => {
+          const allocation = this.functionsUtil.fixTokenDecimals(protocolAllocation.allocation,this.state.tokenConfig.decimals);
+          return this.functionsUtil.BNify(accumulator).plus(allocation);
+        },0);
+
+        const prevTotalAllocation = prevRow.protocolsData.reduce((accumulator,protocolAllocation) => {
+          const allocation = this.functionsUtil.fixTokenDecimals(protocolAllocation.allocation,this.state.tokenConfig.decimals);
+          return this.functionsUtil.BNify(accumulator).plus(allocation);
+        },0);
+
+        const firstProtocol = row.protocolsData[0];
+        const allocation = this.functionsUtil.fixTokenDecimals(firstProtocol.allocation,this.state.tokenConfig.decimals);
+        const allocationPerc = allocation.div(totalAllocation).toFixed(this.state.tokenConfig.decimals);
+
+        const prevFirstProtocol = prevRow.protocolsData.filter(prevProtocol => { return prevProtocol.protocolAddr === firstProtocol.protocolAddr })[0];
+        const prevAllocation = this.functionsUtil.fixTokenDecimals(prevFirstProtocol.allocation,this.state.tokenConfig.decimals);
+        const prevAllocationPerc = prevAllocation.div(prevTotalAllocation).toFixed(this.state.tokenConfig.decimals);
+
+
+        if (allocationPerc !== prevAllocationPerc){
+          rebalances++;
+        }
+      }
+    });
+
+    /*
+    const contractTxs = await this.functionsUtil.getEtherscanTxs(this.state.tokenConfig.idle.address,60);
+    if (contractTxs){
+      const protocolsAddresses = this.state.tokenConfig.protocols.map(p => { return p.address.toLowerCase() });
+      const rebalancesTxs = {};
+      const processedTxs = {};
+      contractTxs.forEach(tx => {
+        if (!processedTxs[tx.hash] && !rebalancesTxs[tx.hash]){
+          // Filter txs
+          const txs = contractTxs.filter(r => r.hash === tx.hash && protocolsAddresses.includes(r.contractAddress.toLowerCase()));
+          if (txs.length > 1){
+            const firstTx = txs[0];
+            const lastTx = txs[txs.length-1];
+            // First tx contract differs to the last tx one
+            if (firstTx.contractAddress.toLowerCase() !== lastTx.contractAddress.toLowerCase()){
+              rebalancesTxs[firstTx.hash] = txs;
+            }
+          }
+          processedTxs[tx.hash] = 1;
+        }
+      });
+      console.log(contractTxs,rebalancesTxs);
+
+      // Take rebalances count
+      rebalances = Object.keys(rebalancesTxs).length;
+    }
+    */
 
     this.setState({
       aum,
       apr,
       days,
-      delta
+      delta,
+      rebalances
     });
   }
 
@@ -232,10 +314,14 @@ class Stats extends Component {
             }
           </Flex>
         </Flex>
-        <Flex alignItems={'center'} justifyContent={'center'}>
-          <Heading.h3 color={'dark-gray'} textAlign={'center'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]} mb={[3,4]}>
-            {this.state.selectedToken} stats
+        <Flex flexDirection={'column'} alignItems={'center'} justifyContent={'center'} mb={[3,3]}>
+          <Heading.h3 color={'dark-gray'} textAlign={'center'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]} mb={[1,2]}>
+            Idle Stats - {this.state.selectedToken}
           </Heading.h3>
+          <Heading.h5 color={'dark-gray'} textAlign={'center'} fontWeight={3} fontSize={[2,3]} mb={[1,2]}>
+            {this.state.startTimestampObj.format('DD/MM/YYYY')} - {this.state.endTimestampObj.format('DD/MM/YYYY')}
+          </Heading.h5>
+          <Text>(all the statistics shown below are only referred to the selected period of time)</Text>
         </Flex>
         <Flex flexDirection={['column','row']} width={1}>
           <Flex width={[1,1/4]} flexDirection={'column'}>
@@ -273,8 +359,6 @@ class Stats extends Component {
               </Flex>
             </Card>
           </Flex>
-          */
-          }
           <Flex width={[1,1/4]} flexDirection={'column'} pl={[0,2]}>
             <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'}>
               <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
@@ -285,10 +369,22 @@ class Stats extends Component {
               </Flex>
             </Card>
           </Flex>
+          */
+          }
           <Flex width={[1,1/4]} flexDirection={'column'} pl={[0,2]}>
             <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'}>
               <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Delta on Compound</Text.span>
+                <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Rebalances</Text.span>
+                <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
+                  {this.state.rebalances}
+                </Text>
+              </Flex>
+            </Card>
+          </Flex>
+          <Flex width={[1,1/4]} flexDirection={'column'} pl={[0,2]}>
+            <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'}>
+              <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
+                <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>APR delta on Compound</Text.span>
                 <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
                   {this.state.delta}
                   <Text.span color={'copyColor'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
@@ -298,69 +394,90 @@ class Stats extends Component {
           </Flex>
         </Flex>
         <Flex justifyContent={'space-between'} style={{flexWrap:'wrap'}}>
-          <Flex id='chart-AUM' width={[1,0.49]} mb={[3,4]}>
+          <Flex id='chart-AUM' width={[1,0.49]}>
             <Card p={[2,3]} pb={0} borderRadius={'10px'}>
               <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
                 <Text color={'copyColor'} fontWeight={2} fontSize={3}>
-                  AUM - {this.state.selectedToken}
+                  AUM
                 </Text>
                 <StatsChart getTokenData={this.getTokenData} startTimestamp={this.state.startTimestamp} endTimestamp={this.state.endTimestamp} chartMode={'AUM'} {...this.state} parentId={'chart-AUM'} height={ 350 } />
               </Flex>
             </Card>
           </Flex>
-          <Flex id='chart-PRICE' width={[1,0.49]} mb={[3,4]}>
+          <Flex id='chart-PRICE' width={[1,0.49]}>
             <Card p={[2,3]} pb={0} borderRadius={'10px'}>
               <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
                 <Text color={'copyColor'} fontWeight={2} fontSize={3}>
-                  Performance - {this.state.selectedToken}
+                  Performance
                 </Text>
                 <StatsChart getTokenData={this.getTokenData} startTimestamp={this.state.startTimestamp} endTimestamp={this.state.endTimestamp} chartMode={'PRICE'} {...this.state} parentId={'chart-PRICE'} height={ 350 } />
               </Flex>
             </Card>
           </Flex>
-          <Flex id='chart-ALL' width={[1,0.49]} mb={[3,4]}>
-            <Card p={[2,3]} pb={0} borderRadius={'10px'}>
-              <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                <Text color={'copyColor'} fontWeight={2} fontSize={3}>
-                  Allocation - {this.state.selectedToken}
-                </Text>
-                <StatsChart getTokenData={this.getTokenData} startTimestamp={this.state.startTimestamp} endTimestamp={this.state.endTimestamp} chartMode={'ALL'} {...this.state} parentId={'chart-ALL'} height={ 350 } />
-              </Flex>
-            </Card>
-          </Flex>
-          <Flex id='chart-ALL_PERC' width={[1,0.49]} mb={[3,4]}>
-            <Card p={[2,3]} pb={0} borderRadius={'10px'}>
-              <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                <Text color={'copyColor'} fontWeight={2} fontSize={3}>
-                  Allocation Percentage - {this.state.selectedToken}
-                </Text>
-                <StatsChart getTokenData={this.getTokenData} startTimestamp={this.state.startTimestamp} endTimestamp={this.state.endTimestamp} chartMode={'ALL_PERC'} {...this.state} parentId={'chart-ALL_PERC'} height={ 350 } />
-              </Flex>
-            </Card>
-          </Flex>
-          <Flex id='chart-APR' width={[1,0.49]} mb={[3,4]}>
-            <Card p={[2,3]} pb={0} borderRadius={'10px'}>
-              <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                <Text color={'copyColor'} fontWeight={2} fontSize={3}>
-                  APRs - {this.state.selectedToken}
-                </Text>
-                <StatsChart getTokenData={this.getTokenData} startTimestamp={this.state.startTimestamp} endTimestamp={this.state.endTimestamp} chartMode={'APR'} {...this.state} parentId={'chart-APR'} height={ 350 } />
-              </Flex>
-            </Card>
-          </Flex>
-          <Flex id='chart-VOL' width={[1,0.49]} mb={[3,4]}>
-            <Card p={[2,3]} pb={0} borderRadius={'10px'}>
-              <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                <Text color={'copyColor'} fontWeight={2} fontSize={3}>
-                  Volume - {this.state.selectedToken}
-                </Text>
-                <StatsChart getTokenData={this.getTokenData} startTimestamp={this.state.startTimestamp} endTimestamp={this.state.endTimestamp} chartMode={'VOL'} {...this.state} parentId={'chart-VOL'} height={ 350 } />
-              </Flex>
-            </Card>
-          </Flex>
+        </Flex>
+        <Flex flexDirection={'column'} pt={[3,4]} pb={ this.state.showAdvanced ? [3,4] : 0 } alignItems={'center'}>
+          <Link
+            color={'primary'}
+            hoverColor={'primary'}
+            href="#"
+            onClick={e => this.toggleAdvancedCharts(e) }
+            fontSize={[2,3]}
+          >
+            <Flex flexDirection={'column'} pb={0} alignItems={'center'}>
+              { this.state.showAdvanced ? 'hide' : 'show' } advanced charts
+            </Flex>
+          </Link>
         </Flex>
 
+        {
+          this.state.showAdvanced &&
+            <Flex justifyContent={'space-between'} style={{flexWrap:'wrap'}}>
+              <Flex id='chart-ALL' width={[1,0.49]} mb={[3,4]}>
+                <Card p={[2,3]} pb={0} borderRadius={'10px'}>
+                  <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
+                    <Text color={'copyColor'} fontWeight={2} fontSize={3}>
+                      Allocation
+                    </Text>
+                    <StatsChart getTokenData={this.getTokenData} startTimestamp={this.state.startTimestamp} endTimestamp={this.state.endTimestamp} chartMode={'ALL'} {...this.state} parentId={'chart-ALL'} height={ 350 } />
+                  </Flex>
+                </Card>
+              </Flex>
+              <Flex id='chart-ALL_PERC' width={[1,0.49]} mb={[3,4]}>
+                <Card p={[2,3]} pb={0} borderRadius={'10px'}>
+                  <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
+                    <Text color={'copyColor'} fontWeight={2} fontSize={3}>
+                      Allocation Percentage
+                    </Text>
+                    <StatsChart getTokenData={this.getTokenData} startTimestamp={this.state.startTimestamp} endTimestamp={this.state.endTimestamp} chartMode={'ALL_PERC'} {...this.state} parentId={'chart-ALL_PERC'} height={ 350 } />
+                  </Flex>
+                </Card>
+              </Flex>
+              <Flex id='chart-APR' width={[1,0.49]} mb={[3,4]}>
+                <Card p={[2,3]} pb={0} borderRadius={'10px'}>
+                  <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
+                    <Text color={'copyColor'} fontWeight={2} fontSize={3}>
+                      APRs
+                    </Text>
+                    <StatsChart getTokenData={this.getTokenData} startTimestamp={this.state.startTimestamp} endTimestamp={this.state.endTimestamp} chartMode={'APR'} {...this.state} parentId={'chart-APR'} height={ 350 } />
+                  </Flex>
+                </Card>
+              </Flex>
+              <Flex id='chart-VOL' width={[1,0.49]} mb={[3,4]}>
+                <Card p={[2,3]} pb={0} borderRadius={'10px'}>
+                  <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
+                    <Text color={'copyColor'} fontWeight={2} fontSize={3}>
+                      Volume
+                    </Text>
+                    <StatsChart getTokenData={this.getTokenData} startTimestamp={this.state.startTimestamp} endTimestamp={this.state.endTimestamp} chartMode={'VOL'} {...this.state} parentId={'chart-VOL'} height={ 350 } />
+                  </Flex>
+                </Card>
+              </Flex>
+            </Flex>
+        }
+
         <DateRangeModal
+          startDate={this.state.startTimestampObj ? this.state.startTimestampObj._d : null}
+          endDate={this.state.endTimestampObj ? this.state.endTimestampObj._d : null}
           handleSelect={this.setDateRange}
           isOpen={this.state.dateRangeModalOpened}
           closeModal={e => this.setDateRangeModal(false)} />

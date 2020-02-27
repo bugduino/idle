@@ -3,6 +3,8 @@ import moment from 'moment';
 import BigNumber from 'bignumber.js';
 import globalConfigs from '../configs/globalConfigs';
 
+const env = process.env;
+
 class FunctionsUtil {
 
   // Attributes
@@ -191,6 +193,16 @@ class FunctionsUtil {
       balance = balance.times(exchangeRate);
     }
     return balance;
+  }
+  getEtherscanTxs = async (address,TTL) => {
+    const etherscanInfo = globalConfigs.network.providers.etherscan;
+    const etherscanApiUrl = etherscanInfo.endpoints[globalConfigs.network.requiredNetwork];
+    const endpoint = `${etherscanApiUrl}?apikey=${env.REACT_APP_ETHERSCAN_KEY}&module=account&action=tokentx&address=${address}&startblock=0&endblock=999999999&sort=asc`;
+    const txs = await this.makeCachedRequest(endpoint,TTL,true);
+    if (txs && txs.result){
+      return txs.result;
+    }
+    return null;
   }
   checkTokenApproved = async (token,contractAddr,walletAddr) => {
     const value = this.props.web3.utils.toWei('0','ether');

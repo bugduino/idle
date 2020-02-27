@@ -13,8 +13,8 @@ class DateRangeModal extends React.Component {
 
   state = {
     ranges:{
-      startDate: new Date(),
-      endDate: new Date(),
+      startDate: this.props.startDate ? this.props.startDate : new Date(),
+      endDate: this.props.endDate ? this.props.endDate : new Date(),
       key: 'selection',
     }
   }
@@ -26,7 +26,15 @@ class DateRangeModal extends React.Component {
   }
 
   closeModal(){
-    this.props.handleSelect(this.state.ranges);
+    const newState = this.props.handleSelect(this.state.ranges);
+    const ranges = {
+      startDate:newState.startTimestampObj ? newState.startTimestampObj._d : new Date(),
+      endDate:newState.endTimestampObj ? newState.endTimestampObj._d : new Date(),
+      key: 'selection'
+    };
+    this.setState({
+      ranges
+    });
     this.props.closeModal();
   }
 

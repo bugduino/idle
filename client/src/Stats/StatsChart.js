@@ -7,7 +7,6 @@ import globalConfigs from '../configs/globalConfigs';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import GenericChart from '../GenericChart/GenericChart';
 import availableTokens from '../configs/availableTokens';
-const env = process.env;
 
 class StatsChart extends Component {
   state = {
@@ -37,7 +36,7 @@ class StatsChart extends Component {
   handleWindowSizeChange = () => {
     const chartContainer = document.getElementById(this.props.parentId);
     if (chartContainer && chartContainer.offsetWidth !== this.state.chartWidth){
-      const chartWidth = chartContainer.offsetWidth;
+      const chartWidth = parseFloat(chartContainer.offsetWidth)>0 ? chartContainer.offsetWidth : 0;
       return this.setState({
         chartWidth
       });
@@ -89,26 +88,23 @@ class StatsChart extends Component {
 
     switch (this.props.chartMode){
       case 'VOL':
-        const etherscanInfo = globalConfigs.network.providers.etherscan;
-        const etherscanApiUrl = etherscanInfo.endpoints[globalConfigs.network.requiredNetwork];
-        const endpoint = `${etherscanApiUrl}?apikey=${env.REACT_APP_ETHERSCAN_KEY}&module=account&action=tokentx&address=${this.props.tokenConfig.idle.address}&startblock=0&endblock=999999999&sort=asc`;
-        const txs = await this.functionsUtil.makeCachedRequest(endpoint,60,true);        
-
-        if (txs && txs.result){
-          const results = txs.result;
-
+        const results = await this.functionsUtil.getEtherscanTxs(this.props.tokenConfig.idle.address,60);
+        if (results){
           const filteredTxs = results.filter(
               tx => {
                 const internalTxs = results.filter(r => r.hash === tx.hash);
                 const isRightToken = internalTxs.length>1 && internalTxs.indexOf(tx) === 0;
-                const isDepositTx = isRightToken && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
+                const isDepositTx = isRightToken && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase();
                 const isRedeemTx = isRightToken && tx.from.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
+                const isCorrectTimestamp = (!this.props.startTimestamp || tx.timeStamp >= this.props.startTimestamp) && (!this.props.endTimestamp || tx.timeStamp <= this.props.endTimestamp);
 
-                return tx.timeStamp>=this.props.startTimestamp && (isDepositTx || isRedeemTx);
+                return isCorrectTimestamp && (isDepositTx || isRedeemTx);
             }
           ).map(tx => {
             return ({...tx, value: this.functionsUtil.fixTokenDecimals(tx.value,this.props.tokenConfig.decimals)});
           });
+
+          // console.log(results,filteredTxs);
 
           const startTimestamp = parseInt(filteredTxs[0].timeStamp);
           const endTimestamp = parseInt(moment()._d.getTime()/1000); //parseInt(filteredTxs[filteredTxs.length-1].timeStamp);
@@ -127,6 +123,7 @@ class StatsChart extends Component {
             }
           }
 
+          // Filter deposits
           filteredTxs
             .filter((tx) => { return tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase(); })
             .forEach((tx,i) => {
@@ -142,6 +139,7 @@ class StatsChart extends Component {
               deposits[x].y+=parseFloat(tx.value);
             });
 
+          // Filter redeems
           filteredTxs
             .filter((tx) => { return tx.from.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase(); })
             .forEach((tx,i) => {
