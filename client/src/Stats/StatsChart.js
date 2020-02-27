@@ -28,7 +28,8 @@ class StatsChart extends Component {
   }
 
   async componentDidUpdate(prevProps) {
-    if (prevProps.tokenConfig !== this.props.tokenConfig){
+    const dateChanged = prevProps.startTimestamp !== this.props.startTimestamp || prevProps.endTimestamp !== this.props.endTimestamp;
+    if (prevProps.tokenConfig !== this.props.tokenConfig || dateChanged){
       this.componentDidMount();
     }
   }
@@ -53,12 +54,8 @@ class StatsChart extends Component {
     }
   }
 
-  getTokenData = async (address) => {
-    const apiInfo = globalConfigs.stats.rates;
-    const endpoint = `${apiInfo.endpoint}${address}`;
-    const TTL = apiInfo.TTL ? apiInfo.TTL : 0;
-    let output = await this.functionsUtil.makeCachedRequest(endpoint,TTL,true);
-    return output.filter((r,i) => { return r.timestamp >= this.props.startTimestamp });
+  parseAum = value => {
+    return (parseInt(value)>=1000 ? parseFloat(value/1000).toFixed(1)+'K' : parseFloat(value) )+' '+this.props.selectedToken
   }
 
   abbreviateNumber = (value) => {
@@ -84,7 +81,7 @@ class StatsChart extends Component {
       return false;
     }
 
-    const apiResults = await this.getTokenData(this.props.tokenConfig.address);
+    const apiResults = await this.props.getTokenData(this.props.tokenConfig.address);
 
     const chartData = [];
     let chartProps = {};
@@ -197,8 +194,8 @@ class StatsChart extends Component {
               legendPosition: 'middle'
             },
             axisBottom:{
-              format: '%b %d %H:%M',
-              tickValues: 'every 3 days',
+              format: '%b %d',
+              tickValues: 'every 2 days',
               orient: 'bottom',
               legend: '',
               legendOffset: 36,
@@ -225,7 +222,7 @@ class StatsChart extends Component {
       case 'AUM_ALL':
         await this.functionsUtil.asyncForEach(Object.keys(availableTokens[globalConfigs.network.requiredNetwork]),async (tokenName,i) => {
           const tokenConfig = availableTokens[globalConfigs.network.requiredNetwork][tokenName];
-          const tokenDataApi = await this.getTokenData(tokenConfig.address);
+          const tokenDataApi = await this.props.getTokenData(tokenConfig.address);
           chartData.push({
             id:tokenName,
             color: tokenConfig.color,
@@ -267,8 +264,8 @@ class StatsChart extends Component {
             legendPosition: 'middle'
           },
           axisBottom:{
-            format: '%b %d %H:%M',
-            tickValues: 'every 3 days',
+            format: '%b %d',
+            tickValues: 'every 2 days',
             orient: 'bottom',
             legend: '',
             legendOffset: 36,
@@ -305,6 +302,33 @@ class StatsChart extends Component {
           })
         });
 
+        // Add allocation
+        this.props.tokenConfig.protocols.forEach((p,j) => {
+          apiResults.map((d,i) => {
+            return d.protocolsData.filter((protocolAllocation,x) => {
+                return protocolAllocation.protocolAddr.toLowerCase() === p.address.toLowerCase()
+            })
+            .map((protocolAllocation,z) => {
+              const protocolPaused = this.functionsUtil.BNify(protocolAllocation.rate).eq(0);
+              if (!protocolPaused){
+                const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
+                const y = parseInt(this.functionsUtil.fixTokenDecimals(protocolAllocation.allocation,this.props.tokenConfig.decimals));
+                let foundItem = chartData[0].data.filter(item => { return item.x === x });
+                if (foundItem){
+                  foundItem = foundItem[0];
+                  const pos = chartData[0].data.indexOf(foundItem);
+                  if (!foundItem.allocations){
+                    foundItem.allocations = {};
+                  }
+                  foundItem.allocations[p.name] = y;
+                  chartData[0].data[pos] = foundItem;
+                }
+              }
+              return undefined;
+            })[0]
+          }).filter((v) => { return v !== undefined; } )
+        });
+
         // Set chart type
         chartType = Line;
 
@@ -315,7 +339,7 @@ class StatsChart extends Component {
             // precision: 'hour',
           },
           xFormat:'time:%b %d %H:%M',
-          yFormat:value => (parseInt(value)>=1000 ? parseFloat(value/1000).toFixed(1)+'K' : parseFloat(value) )+' '+this.props.selectedToken,
+          yFormat:value => this.parseAum(value),
           yScale:{
             type: 'linear',
             stacked: false
@@ -331,8 +355,8 @@ class StatsChart extends Component {
             legendPosition: 'middle'
           },
           axisBottom:{
-            format: '%b %d %H:%M',
-            tickValues: 'every 3 days',
+            format: '%b %d',
+            tickValues: 'every 2 days',
             orient: 'bottom',
             legend: '',
             legendOffset: 36,
@@ -340,7 +364,7 @@ class StatsChart extends Component {
           },
           enableArea:true,
           curve:"linear",
-          enableSlices:false,
+          enableSlices:'x',
           enableGridX:true,
           enableGridY:false,
           colors:d => d.color,
@@ -351,7 +375,53 @@ class StatsChart extends Component {
           pointLabelYOffset:-12,
           useMesh:true,
           animate:false,
-          margin:{ top: 20, right: 20, bottom: 60, left: 80 }
+          margin:{ top: 20, right: 20, bottom: 60, left: 80 },
+          sliceTooltip:(slideData) => {
+            const { slice } = slideData;
+            const point = slice.points[0];
+            return (
+              <div
+                  key={point.id}
+                  style={{
+                    background: 'white',
+                    color: 'inherit',
+                    fontSize: 'inherit',
+                    borderRadius: '2px',
+                    boxShadow: 'rgba(0, 0, 0, 0.25) 0px 1px 2px',
+                    padding: '5px 9px'
+                  }}
+              >
+                <div>
+                  <table style={{width:'100%',borderCollapse:'collapse'}}>
+                    <tbody>
+                      <tr>
+                        <td style={{padding:'3px 5px'}}>
+                          <span style={{display:'block', width: '12px', height: '12px', background: point.serieColor}}></span>
+                        </td>
+                        <td style={{padding:'3px 5px'}}>{point.serieId}</td>
+                        <td style={{padding:'3px 5px'}}><strong>{point.data.yFormatted}</strong></td>
+                      </tr>
+                      {Object.keys(point.data.allocations).map(protocolName => {
+                          const protocolColor = 'hsl('+globalConfigs.stats.protocols[protocolName].color.hsl.join(',')+')';
+                          const protocolAllocation = this.parseAum(point.data.allocations[protocolName]);
+                          const protocolAllocationPerc = this.functionsUtil.BNify(point.data.allocations[protocolName]).div(this.functionsUtil.BNify(point.data.y)).times(100).toFixed(0)+'%';
+                          return (
+                            <tr key={`${point.id}_${protocolName}`}>
+                              <td style={{padding:'3px 5px'}}>
+                                <span style={{display:'block', width: '12px', height: '12px', background: protocolColor}}></span>
+                              </td>
+                              <td style={{padding:'3px 5px',textTransform:'capitalize'}}>{protocolName}</td>
+                              <td style={{padding:'3px 5px'}}><strong>{protocolAllocation}</strong> ({protocolAllocationPerc})</td>
+                            </tr>
+                          );
+                        })
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )
+          }
         };
       break;
       case 'ALL':
@@ -402,8 +472,8 @@ class StatsChart extends Component {
             legendPosition: 'middle'
           },
           axisBottom:{
-            format: '%b %d %H:%M',
-            tickValues: 'every 3 days',
+            format: '%b %d',
+            tickValues: 'every 2 days',
             orient: 'bottom',
             legend: '',
             legendOffset: 36,
@@ -479,8 +549,8 @@ class StatsChart extends Component {
             legendPosition: 'middle'
           },
           axisBottom:{
-            format: '%b %d %H:%M',
-            tickValues: 'every 3 days',
+            format: '%b %d',
+            tickValues: 'every 2 days',
             orient: 'bottom',
             legend: '',
             legendOffset: 36,
@@ -560,8 +630,8 @@ class StatsChart extends Component {
             legendPosition: 'middle'
           },
           axisBottom:{
-            format: '%b %d %H:%M',
-            tickValues: 'every 3 days',
+            format: '%b %d',
+            tickValues: 'every 2 days',
             orient: 'bottom',
             legend: '',
             legendOffset: 36,
@@ -656,8 +726,8 @@ class StatsChart extends Component {
             legendPosition: 'middle'
           },
           axisBottom:{
-            format: '%b %d %H:%M',
-            tickValues: 'every 3 days',
+            format: '%b %d',
+            tickValues: 'every 2 days',
             orient: 'bottom',
             legend: '',
             legendOffset: 36,

@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  Text,
   Modal,
   Button,
   Flex,
@@ -26,6 +25,11 @@ class DateRangeModal extends React.Component {
     });
   }
 
+  closeModal(){
+    this.props.handleSelect(this.state.ranges);
+    this.props.closeModal();
+  }
+
   render() {
     return (
       <Modal isOpen={this.props.isOpen}>
@@ -45,9 +49,9 @@ class DateRangeModal extends React.Component {
                 my={2}
                 mx={[0, 2]}
                 size={this.props.isMobile ? 'small' : 'medium'}
-                onClick={ e => this.props.closeModal(e) }
+                onClick={ e => this.closeModal(e) }
               >
-              CLOSE
+              APPLY
               </Button>
             </Flex>
           </ModalCard.Footer>

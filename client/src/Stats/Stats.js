@@ -16,8 +16,10 @@ class Stats extends Component {
     days:'-',
     delta:null,
     earning:null,
-    buttonGroup:[],
+    buttonGroups:[],
+    endTimestamp:null,
     startTimestamp:null,
+    endTimestampObj:null,
     startTimestampObj:null,
     dateRangeModalOpened:false,
     tokenConfig:this.props.tokenConfig,
@@ -65,6 +67,23 @@ class Stats extends Component {
     document.getElementById('crisp-custom-style').remove();
   }
 
+  setDateRange = ranges => {
+
+    const minStartTime = moment(globalConfigs.stats.tokens[this.state.selectedToken].startTimestamp);
+
+    const startTimestampObj = moment(ranges.startDate).isSameOrAfter(minStartTime) ? moment(ranges.startDate) : minStartTime;
+    const startTimestamp = parseInt(startTimestampObj._d.getTime()/1000);
+    const endTimestampObj = moment(ranges.endDate);
+    const endTimestamp = parseInt(endTimestampObj._d.getTime()/1000);
+
+    this.setState({
+      endTimestamp,
+      startTimestamp,
+      endTimestampObj,
+      startTimestampObj
+    });
+  }
+
   setDateRangeModal = (dateRangeModalOpened) => {
     if (dateRangeModalOpened !== this.state.dateRangeModalOpened){
       this.setState({
@@ -75,33 +94,37 @@ class Stats extends Component {
 
   updateButtonGroup = async () => {
 
-    const buttonGroup = [
-      {
-        component:Button,
-        props:{
-          icon:'Today',
-          iconpos:'right',
-          color:'dark-gray',
-          mainColor:'transparent',
-          contrastColor:'dark-gray',
-          onClick: (e) => { this.setDateRangeModal(true) }
-        },
-        value:'SELECT DATE'
-      },
-      {
-        component:TokenSelector,
-        props:{
-          setSelectedToken:this.props.setSelectedToken,
-          selectedToken:this.state.selectedToken,
-          availableTokens:this.props.availableTokens,
-          color:'dark-gray',
-          size:'big'
+    const buttonGroups = [
+      [
+        {
+          component:Button,
+          props:{
+            icon:'Today',
+            iconpos:'right',
+            color:'dark-gray',
+            mainColor:'transparent',
+            contrastColor:'dark-gray',
+            onClick: (e) => { this.setDateRangeModal(true) }
+          },
+          value:'SELECT DATE'
         }
-      }
+      ],
+      [
+        {
+          component:TokenSelector,
+          props:{
+            setSelectedToken:this.props.setSelectedToken,
+            selectedToken:this.state.selectedToken,
+            availableTokens:this.props.availableTokens,
+            color:'dark-gray',
+            size:'big'
+          }
+        }
+      ]
     ];
 
     await this.setState({
-      buttonGroup
+      buttonGroups
     });
   }
 
@@ -122,9 +145,14 @@ class Stats extends Component {
     this.loadApiData();
   }
 
-  async componentDidUpdate(prevProps) {
+  async componentDidUpdate(prevProps,prevState) {
     if (prevProps !== this.props){
       await this.componentDidMount();
+    } else {
+      const dateChanged = prevState.startTimestamp !== this.state.startTimestamp || prevState.endTimestamp !== this.state.endTimestamp;
+      if (dateChanged){
+        this.loadApiData();
+      }
     }
   }
 
@@ -133,7 +161,9 @@ class Stats extends Component {
     const endpoint = `${apiInfo.endpoint}${address}`;
     const TTL = apiInfo.TTL ? apiInfo.TTL : 0;
     let output = await this.functionsUtil.makeCachedRequest(endpoint,TTL,true);
-    return output.filter((r,i) => { return r.timestamp >= this.state.startTimestamp });
+    return output.filter((r,i) => {
+      return (!this.state.startTimestamp || r.timestamp >= this.state.startTimestamp) && (!this.state.endTimestamp || r.timestamp <= this.state.endTimestamp);
+    });
   }
 
   loadApiData = async () => {
@@ -181,12 +211,25 @@ class Stats extends Component {
                 position={'relative'} />
             </RouterLink>
           </Box>
-          <Flex width={1/2} justifyContent={'flex-end'}>
-            <ButtonGroup
-              isMobile={this.props.isMobile}
-              components={this.state.buttonGroup}
-              theme={'light'}
-            />
+          <Flex flexDirection={'row'} width={1/2} justifyContent={'flex-end'}>
+            {
+              this.state.buttonGroups && 
+                this.props.isMobile ? (
+                  <ButtonGroup
+                    isMobile={this.props.isMobile}
+                    components={ this.state.buttonGroups.reduce((components,array) => components.concat(array),[]) }
+                    theme={'light'}
+                  />
+                ) :
+                this.state.buttonGroups.map((buttonGroup,i) => (
+                  <ButtonGroup
+                    key={`buttonGroup_${i}`}
+                    isMobile={this.props.isMobile}
+                    components={buttonGroup}
+                    theme={'light'}
+                  />
+                ))
+            }
           </Flex>
         </Flex>
         <Flex alignItems={'center'} justifyContent={'center'}>
@@ -261,7 +304,7 @@ class Stats extends Component {
                 <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                   AUM - {this.state.selectedToken}
                 </Text>
-                <StatsChart chartMode={'AUM'} {...this.state} parentId={'chart-AUM'} height={ 350 } />
+                <StatsChart getTokenData={this.getTokenData} startTimestamp={this.state.startTimestamp} endTimestamp={this.state.endTimestamp} chartMode={'AUM'} {...this.state} parentId={'chart-AUM'} height={ 350 } />
               </Flex>
             </Card>
           </Flex>
@@ -271,7 +314,7 @@ class Stats extends Component {
                 <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                   Performance - {this.state.selectedToken}
                 </Text>
-                <StatsChart chartMode={'PRICE'} {...this.state} parentId={'chart-PRICE'} height={ 350 } />
+                <StatsChart getTokenData={this.getTokenData} startTimestamp={this.state.startTimestamp} endTimestamp={this.state.endTimestamp} chartMode={'PRICE'} {...this.state} parentId={'chart-PRICE'} height={ 350 } />
               </Flex>
             </Card>
           </Flex>
@@ -281,7 +324,7 @@ class Stats extends Component {
                 <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                   Allocation - {this.state.selectedToken}
                 </Text>
-                <StatsChart chartMode={'ALL'} {...this.state} parentId={'chart-ALL'} height={ 350 } />
+                <StatsChart getTokenData={this.getTokenData} startTimestamp={this.state.startTimestamp} endTimestamp={this.state.endTimestamp} chartMode={'ALL'} {...this.state} parentId={'chart-ALL'} height={ 350 } />
               </Flex>
             </Card>
           </Flex>
@@ -291,7 +334,7 @@ class Stats extends Component {
                 <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                   Allocation Percentage - {this.state.selectedToken}
                 </Text>
-                <StatsChart chartMode={'ALL_PERC'} {...this.state} parentId={'chart-ALL_PERC'} height={ 350 } />
+                <StatsChart getTokenData={this.getTokenData} startTimestamp={this.state.startTimestamp} endTimestamp={this.state.endTimestamp} chartMode={'ALL_PERC'} {...this.state} parentId={'chart-ALL_PERC'} height={ 350 } />
               </Flex>
             </Card>
           </Flex>
@@ -301,7 +344,7 @@ class Stats extends Component {
                 <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                   APRs - {this.state.selectedToken}
                 </Text>
-                <StatsChart chartMode={'APR'} {...this.state} parentId={'chart-APR'} height={ 350 } />
+                <StatsChart getTokenData={this.getTokenData} startTimestamp={this.state.startTimestamp} endTimestamp={this.state.endTimestamp} chartMode={'APR'} {...this.state} parentId={'chart-APR'} height={ 350 } />
               </Flex>
             </Card>
           </Flex>
@@ -311,13 +354,14 @@ class Stats extends Component {
                 <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                   Volume - {this.state.selectedToken}
                 </Text>
-                <StatsChart chartMode={'VOL'} {...this.state} parentId={'chart-VOL'} height={ 350 } />
+                <StatsChart getTokenData={this.getTokenData} startTimestamp={this.state.startTimestamp} endTimestamp={this.state.endTimestamp} chartMode={'VOL'} {...this.state} parentId={'chart-VOL'} height={ 350 } />
               </Flex>
             </Card>
           </Flex>
         </Flex>
 
         <DateRangeModal
+          handleSelect={this.setDateRange}
           isOpen={this.state.dateRangeModalOpened}
           closeModal={e => this.setDateRangeModal(false)} />
       </Flex>
