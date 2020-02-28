@@ -16,6 +16,8 @@ class Stats extends Component {
     days:'-',
     delta:null,
     earning:null,
+    minDate:null,
+    maxDate:null,
     rebalances:'-',
     buttonGroups:[],
     endTimestamp:null,
@@ -56,6 +58,8 @@ class Stats extends Component {
     newState.startTimestamp = parseInt(newState.startTimestampObj._d.getTime()/1000);
     newState.endTimestampObj = moment();
     newState.endTimestamp = parseInt(newState.endTimestampObj._d.getTime()/1000);
+    newState.minDate = newState.startTimestampObj._d;
+    newState.maxDate = moment()._d;
 
     if (newState !== this.state){
       await this.setState(newState);
@@ -81,7 +85,7 @@ class Stats extends Component {
     if (startTimestampObj.isSame(endTimestampObj)){
       endTimestampObj.add(1,'day');
     }
-    
+
     const startTimestamp = parseInt(startTimestampObj._d.getTime()/1000);
     const endTimestamp = parseInt(endTimestampObj._d.getTime()/1000);
 
@@ -126,7 +130,7 @@ class Stats extends Component {
             contrastColor:'dark-gray',
             onClick: (e) => { this.setDateRangeModal(true) }
           },
-          value:'SELECT DATE'
+          value:this.state.startTimestampObj.format('DD/MM/YYYY')+' - '+this.state.endTimestampObj.format('DD/MM/YYYY')
         }
       ],
       [
@@ -172,6 +176,7 @@ class Stats extends Component {
       const dateChanged = prevState.startTimestamp !== this.state.startTimestamp || prevState.endTimestamp !== this.state.endTimestamp;
       if (dateChanged){
         this.loadApiData();
+        this.updateButtonGroup()
       }
     }
   }
@@ -198,7 +203,7 @@ class Stats extends Component {
 
     let days = moment(lastResult.timestamp*1000).diff(moment(firstResult.timestamp*1000),'days');
     days = Math.max(days,1);
-    
+
     const idleTokens = this.functionsUtil.fixTokenDecimals(lastResult.idleSupply,18);
     const firstIdlePrice = this.functionsUtil.fixTokenDecimals(firstResult.idlePrice,this.state.tokenConfig.decimals);
     const lastIdlePrice = this.functionsUtil.fixTokenDecimals(lastResult.idlePrice,this.state.tokenConfig.decimals);
@@ -318,13 +323,9 @@ class Stats extends Component {
           <Heading.h3 color={'dark-gray'} textAlign={'center'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]} mb={[1,2]}>
             Idle Stats - {this.state.selectedToken}
           </Heading.h3>
-          <Heading.h5 color={'dark-gray'} textAlign={'center'} fontWeight={3} fontSize={[2,3]} mb={[1,2]}>
-            {this.state.startTimestampObj.format('DD/MM/YYYY')} - {this.state.endTimestampObj.format('DD/MM/YYYY')}
-          </Heading.h5>
-          <Text>(all the statistics shown below are only referred to the selected period of time)</Text>
         </Flex>
-        <Flex flexDirection={['column','row']} width={1}>
-          <Flex width={[1,1/4]} flexDirection={'column'}>
+        <Flex flexDirection={['column','row']} width={1} mb={[2,3]}>
+          <Flex width={[1,1/4]} flexDirection={'column'} pr={[0,2]}>
             <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'}>
               <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
                 <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>AUM</Text.span>
@@ -335,7 +336,7 @@ class Stats extends Component {
               </Flex>
             </Card>
           </Flex>
-          <Flex width={[1,1/4]} flexDirection={'column'} pl={[0,2]}>
+          <Flex width={[1,1/4]} flexDirection={'column'} px={[0,2]}>
             <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'}>
               <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
                 <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Avg APR</Text.span>
@@ -348,7 +349,7 @@ class Stats extends Component {
           </Flex>
           {
           /*
-          <Flex width={[1,1/4]} flexDirection={'column'} pl={[0,2]}>
+          <Flex width={[1,1/4]} flexDirection={'column'} px={[0,2]}>
             <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'}>
               <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
                 <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Current APR</Text.span>
@@ -359,7 +360,7 @@ class Stats extends Component {
               </Flex>
             </Card>
           </Flex>
-          <Flex width={[1,1/4]} flexDirection={'column'} pl={[0,2]}>
+          <Flex width={[1,1/4]} flexDirection={'column'} px={[0,2]}>
             <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'}>
               <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
                 <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Days Live</Text.span>
@@ -371,7 +372,7 @@ class Stats extends Component {
           </Flex>
           */
           }
-          <Flex width={[1,1/4]} flexDirection={'column'} pl={[0,2]}>
+          <Flex width={[1,1/4]} flexDirection={'column'} px={[0,2]}>
             <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'}>
               <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
                 <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Rebalances</Text.span>
@@ -384,7 +385,7 @@ class Stats extends Component {
           <Flex width={[1,1/4]} flexDirection={'column'} pl={[0,2]}>
             <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'}>
               <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>APR delta on Compound</Text.span>
+                <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Overperformance on Compound</Text.span>
                 <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
                   {this.state.delta}
                   <Text.span color={'copyColor'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
@@ -393,7 +394,7 @@ class Stats extends Component {
             </Card>
           </Flex>
         </Flex>
-        <Flex justifyContent={'space-between'} style={{flexWrap:'wrap'}}>
+        <Flex justifyContent={'space-between'} style={{flexWrap:'wrap'}} mb={3}>
           <Flex id='chart-AUM' width={[1,0.49]}>
             <Card p={[2,3]} pb={0} borderRadius={'10px'}>
               <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
@@ -415,24 +416,10 @@ class Stats extends Component {
             </Card>
           </Flex>
         </Flex>
-        <Flex flexDirection={'column'} pt={[3,4]} pb={ this.state.showAdvanced ? [3,4] : 0 } alignItems={'center'}>
-          <Link
-            color={'primary'}
-            hoverColor={'primary'}
-            href="#"
-            onClick={e => this.toggleAdvancedCharts(e) }
-            fontSize={[2,3]}
-          >
-            <Flex flexDirection={'column'} pb={0} alignItems={'center'}>
-              { this.state.showAdvanced ? 'hide' : 'show' } advanced charts
-            </Flex>
-          </Link>
-        </Flex>
-
         {
           this.state.showAdvanced &&
             <Flex justifyContent={'space-between'} style={{flexWrap:'wrap'}}>
-              <Flex id='chart-ALL' width={[1,0.49]} mb={[3,4]}>
+              <Flex id='chart-ALL' width={[1,0.49]} mb={3}>
                 <Card p={[2,3]} pb={0} borderRadius={'10px'}>
                   <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
                     <Text color={'copyColor'} fontWeight={2} fontSize={3}>
@@ -442,7 +429,7 @@ class Stats extends Component {
                   </Flex>
                 </Card>
               </Flex>
-              <Flex id='chart-ALL_PERC' width={[1,0.49]} mb={[3,4]}>
+              <Flex id='chart-ALL_PERC' width={[1,0.49]} mb={3}>
                 <Card p={[2,3]} pb={0} borderRadius={'10px'}>
                   <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
                     <Text color={'copyColor'} fontWeight={2} fontSize={3}>
@@ -452,7 +439,7 @@ class Stats extends Component {
                   </Flex>
                 </Card>
               </Flex>
-              <Flex id='chart-APR' width={[1,0.49]} mb={[3,4]}>
+              <Flex id='chart-APR' width={[1,0.49]} mb={3}>
                 <Card p={[2,3]} pb={0} borderRadius={'10px'}>
                   <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
                     <Text color={'copyColor'} fontWeight={2} fontSize={3}>
@@ -462,7 +449,7 @@ class Stats extends Component {
                   </Flex>
                 </Card>
               </Flex>
-              <Flex id='chart-VOL' width={[1,0.49]} mb={[3,4]}>
+              <Flex id='chart-VOL' width={[1,0.49]} mb={3}>
                 <Card p={[2,3]} pb={0} borderRadius={'10px'}>
                   <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
                     <Text color={'copyColor'} fontWeight={2} fontSize={3}>
@@ -475,7 +462,27 @@ class Stats extends Component {
             </Flex>
         }
 
+        <Flex flexDirection={'column'} mt={2} alignItems={'center'}>
+          <Link
+            href="#"
+            fontSize={2}
+            display={'flex'}
+            color={'dark-gray'}
+            hoverColor={'primary'}
+            style={{width:'100%'}}
+            onClick={e => this.toggleAdvancedCharts(e) }
+          >
+            <Card width={1} p={[2,3]} pb={0} borderRadius={'10px'}>
+              <Flex justifyContent={'center'}>
+                { this.state.showAdvanced ? 'hide' : 'show' } more stats
+              </Flex>
+            </Card>
+          </Link>
+        </Flex>
+
         <DateRangeModal
+          minDate={this.state.minDate}
+          maxDate={this.state.maxDate}
           startDate={this.state.startTimestampObj ? this.state.startTimestampObj._d : null}
           endDate={this.state.endTimestampObj ? this.state.endTimestampObj._d : null}
           handleSelect={this.setDateRange}

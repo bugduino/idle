@@ -15,7 +15,7 @@ class DateRangeModal extends React.Component {
     ranges:{
       startDate: this.props.startDate ? this.props.startDate : new Date(),
       endDate: this.props.endDate ? this.props.endDate : new Date(),
-      key: 'selection',
+      key: 'selection'
     }
   }
 
@@ -23,6 +23,18 @@ class DateRangeModal extends React.Component {
     this.setState({
       ranges:ranges.selection
     });
+  }
+
+  componentDidUpdate = (prevProps) => {
+    if (prevProps.minDate !== this.props.minDate || prevProps.maxDate !== this.props.maxDate){
+      this.setState({
+        ranges:{
+          startDate: this.props.minDate ? this.props.minDate : new Date(),
+          endDate: this.props.maxDate ? this.props.maxDate : new Date(),
+          key: 'selection'
+        }
+      });
+    }
   }
 
   closeModal(){
@@ -47,6 +59,8 @@ class DateRangeModal extends React.Component {
           <ModalCard.Body>
             <DateRange
               ranges={[this.state.ranges]}
+              minDate={this.props.minDate}
+              maxDate={this.props.maxDate}
               onChange={this.handleSelect.bind(this)}
             />
           </ModalCard.Body>

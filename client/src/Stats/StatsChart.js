@@ -1,8 +1,9 @@
 import moment from 'moment';
 import colors from '../colors';
+import { Bar } from '@nivo/bar';
 import { Line } from '@nivo/line';
-import { Flex, Loader, Text } from 'rimble-ui';
 import React, { Component } from 'react';
+import { Flex, Loader, Text } from 'rimble-ui';
 import globalConfigs from '../configs/globalConfigs';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import GenericChart from '../GenericChart/GenericChart';
@@ -82,9 +83,11 @@ class StatsChart extends Component {
 
     const apiResults = await this.props.getTokenData(this.props.tokenConfig.address);
 
-    const chartData = [];
+    let chartData = [];
     let chartProps = {};
     let chartType = Line;
+    let keys = {};
+    let tempData = {};
 
     switch (this.props.chartMode){
       case 'VOL':
@@ -423,6 +426,94 @@ class StatsChart extends Component {
         };
       break;
       case 'ALL':
+        keys = {};
+        tempData = {};
+
+        apiResults.forEach((d,i) => {
+          const date = moment(d.timestamp*1000).format("YYYY/MM/DD")
+          let row = {
+            date:moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm")
+          };
+          if (tempData[date]){
+            row = tempData[date];
+          }
+
+          d.protocolsData.forEach((protocolData) => {
+            const protocolPaused = this.functionsUtil.BNify(protocolData.rate).eq(0);
+            const protocolName = this.props.tokenConfig.protocols.filter((p) => { return p.address.toLowerCase() === protocolData.protocolAddr.toLowerCase() })[0].name;
+            if (!protocolPaused){
+              const allocation = parseInt(this.functionsUtil.fixTokenDecimals(protocolData.allocation,this.props.tokenConfig.decimals));
+              keys[protocolName] = 1;
+              row[protocolName] = allocation;
+              row[`${protocolName}Color`] = 'hsl('+globalConfigs.stats.protocols[protocolName].color.hsl.join(',')+')';
+            } else if (typeof row[protocolName] !== undefined) {
+              row[protocolName] = 0;
+            } 
+          });
+          
+          tempData[date] = row;
+        });
+
+        chartData = Object.values(tempData);
+
+        // Set chart type
+        chartType = Bar;
+
+        let axisBottomIndex = 0;
+
+        chartProps = {
+          padding: 0.2,
+          animate: false,
+          indexBy: 'date',
+          data: chartData,
+          enableLabel: false,
+          labelSkipWidth: 16,
+          labelSkipHeight: 16,
+          keys: Object.keys(keys),
+          labelTextColor: 'inherit:darker(1.4)',
+          margin: { top: 60, right: 80, bottom: 60, left: 80 },
+          colors: ({ id, data }) => data[`${id}Color`],
+          axisLeft:{
+            format: v => this.abbreviateNumber(v),
+            orient: 'left',
+            tickSize: 5,
+            tickPadding: 5,
+            tickRotation: 0,
+            legend: '',
+            legendOffset: -65,
+            legendPosition: 'middle'
+          },
+          axisBottom:{
+            legend: '',
+            format: (value) => {
+              if (axisBottomIndex++ % 2 === 0){
+                return moment(value,'YYYY/MM/DD HH:mm').format('MMM DD')
+              }
+            },
+            orient: 'bottom',
+            legendOffset: 36,
+            legendPosition: 'middle',
+            tickValues: 'every 2 days'
+          },
+          tooltip:({ id, value, color }) => {
+            const allocation = this.functionsUtil.formatMoney(value,0);
+            return (
+              <table style={{width:'100%',borderCollapse:'collapse'}}>
+                <tbody>
+                  <tr>
+                    <td style={{padding:'3px 5px'}}>
+                      <span style={{display:'block', width: '12px', height: '12px', background: color}}></span>
+                    </td>
+                    <td style={{padding:'3px 5px',textTransform:'capitalize'}}>{id}</td>
+                    <td style={{padding:'3px 5px'}}><strong>{allocation} {this.props.selectedToken}</strong></td>
+                  </tr>
+                </tbody>
+              </table>
+            )
+          }
+        }
+      break;
+      case 'ALL_LINE':
         this.props.tokenConfig.protocols.forEach((p,j) => {
           chartData.push({
             id:p.name,
@@ -494,6 +585,90 @@ class StatsChart extends Component {
         };
       break;
       case 'ALL_PERC':
+        keys = {};
+        tempData = {};
+
+        apiResults.forEach((d,i) => {
+          const date = moment(d.timestamp*1000).format("YYYY/MM/DD")
+          let row = {
+            date:moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm")
+          };
+          if (tempData[date]){
+            row = tempData[date];
+          }
+
+          const totalAllocation = d.protocolsData.reduce((accumulator,protocolAllocation) => {
+            const allocation = this.functionsUtil.fixTokenDecimals(protocolAllocation.allocation,this.props.tokenConfig.decimals);
+            return this.functionsUtil.BNify(accumulator).plus(allocation);
+          },0);
+
+          d.protocolsData.forEach((protocolData) => {
+            const protocolPaused = this.functionsUtil.BNify(protocolData.rate).eq(0);
+            const protocolName = this.props.tokenConfig.protocols.filter((p) => { return p.address.toLowerCase() === protocolData.protocolAddr.toLowerCase() })[0].name;
+            if (!protocolPaused){
+              const allocation = this.functionsUtil.fixTokenDecimals(protocolData.allocation,this.props.tokenConfig.decimals);
+              const allocationPerc = parseFloat(allocation.div(totalAllocation).times(100));
+              keys[protocolName] = 1;
+              row[protocolName] = allocationPerc;
+              row[`${protocolName}Color`] = 'hsl('+globalConfigs.stats.protocols[protocolName].color.hsl.join(',')+')';
+            } else if (typeof row[protocolName] !== undefined) {
+              row[protocolName] = 0;
+            } 
+          });
+          
+          tempData[date] = row;
+        });
+
+        chartData = Object.values(tempData);
+
+        // Set chart type
+        chartType = Bar;
+
+        axisBottomIndex = 0;
+
+        chartProps = {
+          padding: 0.2,
+          animate: false,
+          indexBy: 'date',
+          data: chartData,
+          enableLabel: false,
+          labelSkipWidth: 16,
+          labelSkipHeight: 16,
+          keys: Object.keys(keys),
+          labelTextColor: 'inherit:darker(1.4)',
+          margin: { top: 60, right: 80, bottom: 60, left: 80 },
+          colors: ({ id, data }) => data[`${id}Color`],
+          axisBottom:{
+            legend: '',
+            format: (value) => {
+              if (axisBottomIndex++ % 2 === 0){
+                return moment(value,'YYYY/MM/DD HH:mm').format('MMM DD')
+              }
+            },
+            orient: 'bottom',
+            legendOffset: 36,
+            legendPosition: 'middle',
+            tickValues: 'every 2 days'
+          },
+          tooltip:({ id, value, color }) => {
+            const allocation = this.functionsUtil.formatMoney(value,0);
+            return (
+              <table style={{width:'100%',borderCollapse:'collapse'}}>
+                <tbody>
+                  <tr>
+                    <td style={{padding:'3px 5px'}}>
+                      <span style={{display:'block', width: '12px', height: '12px', background: color}}></span>
+                    </td>
+                    <td style={{padding:'3px 5px',textTransform:'capitalize'}}>{id}</td>
+                    <td style={{padding:'3px 5px'}}><strong>{allocation}%</strong></td>
+                  </tr>
+                </tbody>
+              </table>
+            )
+          }
+        }
+      break;
+      case 'ALL_PERC_LINE':
         this.props.tokenConfig.protocols.forEach((p,j) => {
           chartData.push({
             id:p.name,
@@ -618,7 +793,7 @@ class StatsChart extends Component {
             stacked: false
           },
           axisLeft:{
-            format: value => parseFloat(value).toFixed(2)+'%',
+            format: value => parseInt(value),
             orient: 'left',
             tickSize: 5,
             tickPadding: 5,
@@ -653,8 +828,9 @@ class StatsChart extends Component {
       break;
       case 'PRICE':
         this.props.tokenConfig.protocols.forEach((p,j) => {
-          let lastRate = 0;
-          const initBalance = 1;
+          // let lastRate = 0;
+          // const initBalance = 1;
+          let firstRate = null;
           chartData.push({
             id:p.name,
             color: 'hsl('+globalConfigs.stats.protocols[p.name].color.hsl.join(',')+')',
@@ -666,10 +842,19 @@ class StatsChart extends Component {
                 const protocolPaused = this.functionsUtil.BNify(protocolAllocation.rate).eq(0);
                 if (!protocolPaused){
                   const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
-                  const rate = parseFloat(this.functionsUtil.fixTokenDecimals(protocolAllocation.price,p.functions.exchangeRate.decimals));
-                  const diff = lastRate ? rate/lastRate-1 : 0;
-                  const y = initBalance+diff;
-                  lastRate = lastRate ? lastRate : rate;
+                  // const rate = parseFloat(this.functionsUtil.fixTokenDecimals(protocolAllocation.price,p.functions.exchangeRate.decimals));
+                  // const diff = lastRate ? rate/lastRate-1 : 0;
+                  // const y = initBalance+diff;
+                  // lastRate = lastRate ? lastRate : rate;
+
+                  const rate = this.functionsUtil.fixTokenDecimals(protocolAllocation.price,p.functions.exchangeRate.decimals);
+                  let y = 0;
+
+                  if (!firstRate){
+                    firstRate = rate;
+                  } else {
+                    y = parseFloat(rate.div(firstRate).minus(1).times(100));
+                  }
                   return { x, y };
                 }
                 return undefined;
@@ -678,24 +863,35 @@ class StatsChart extends Component {
           })
         });
 
-        let lastRate = 0;
-        const initBalance = 1;
+        // let lastRate = 0;
+        // const initBalance = 1;
+        let firstRate = null;
         chartData.push({
           id:'Idle',
           color: 'hsl('+globalConfigs.stats.protocols.idle.color.hsl.join(',')+')',
           data: apiResults.map((d,i) => {
             const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
-            const rate = parseFloat(this.functionsUtil.fixTokenDecimals(d.idlePrice,this.props.tokenConfig.decimals));
-            const diff = lastRate ? rate/lastRate-1 : 0;
-            const y = initBalance+diff;
+            // const rate = parseFloat(this.functionsUtil.fixTokenDecimals(d.idlePrice,this.props.tokenConfig.decimals));
+            // const diff = lastRate ? rate/lastRate-1 : 0;
+            // const y = initBalance+diff;
+            // if (!lastRate){
+            //   lastRate = rate;
+            // }
+            const rate = this.functionsUtil.fixTokenDecimals(d.idlePrice,this.props.tokenConfig.decimals);
+            let y = 0;
 
-            if (!lastRate){
-              lastRate = rate;
+            if (!firstRate){
+              firstRate = rate;
+            } else {
+              y = parseFloat(rate.div(firstRate).minus(1).times(100));
             }
+
 
             return { x, y };
           })
         });
+
+        // debugger;
 
         // Set chart type
         chartType = Line;
@@ -707,14 +903,14 @@ class StatsChart extends Component {
             // precision: 'day',
           },
           xFormat:'time:%b %d %H:%M',
-          yFormat:value => parseFloat(value).toFixed(6),
+          yFormat:value => parseFloat(value).toFixed(2)+'%',
           yScale:{
             type: 'linear',
             stacked: false,
-            min: 1
+            // min: 1
           },
           axisLeft:{
-            format: value => parseFloat(value).toFixed(4),
+            format: value => parseFloat(value).toFixed(2),
             orient: 'left',
             tickSize: 5,
             tickPadding: 5,
@@ -773,13 +969,13 @@ class StatsChart extends Component {
       );
     }
 
-    return (
+    return(
       <GenericChart
+        {...this.state.chartProps}
+        height={this.props.height}
         type={this.state.chartType}
         data={this.state.chartData}
-        {...this.state.chartProps}
         width={this.state.chartWidth}
-        height={this.props.height}
       />
     );
   }
