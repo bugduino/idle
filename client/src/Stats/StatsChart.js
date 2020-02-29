@@ -107,6 +107,146 @@ class StatsChart extends Component {
             return ({...tx, value: this.functionsUtil.fixTokenDecimals(tx.value,this.props.tokenConfig.decimals)});
           });
 
+          const startTimestamp = parseInt(filteredTxs[0].timeStamp);
+          const endTimestamp = parseInt(moment()._d.getTime()/1000); //parseInt(filteredTxs[filteredTxs.length-1].timeStamp);
+
+          let divergingData = {};
+
+          for (let timestamp=startTimestamp;timestamp<=endTimestamp;timestamp+=86400){
+            const date = moment(timestamp*1000).format("YYYY/MM/DD");
+            if (!divergingData[date]){
+              divergingData[date] = {
+                date,
+                deposits: 0,
+                redeems: 0
+              };
+            }
+          }
+
+          const protocolsAddresses = this.props.tokenConfig.protocols.map(p => { return p.address.toLowerCase() });
+
+          // Filter deposits
+          filteredTxs
+            .filter((tx) => { return tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase(); })
+            .forEach((tx,i) => {
+              const date = moment(tx.timeStamp*1000).format("YYYY/MM/DD");
+              divergingData[date].deposits+=parseFloat(tx.value);
+            });
+
+          // Filter redeems
+          filteredTxs
+            .filter((tx) => { return tx.from.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase(); })
+            .forEach((tx,i) => {
+              let isRebalanceTx = false;
+              const txs = results.filter(r => r.hash === tx.hash && protocolsAddresses.includes(tx.contractAddress.toLowerCase()));
+              if (txs.length > 1){
+                const firstTx = txs[0];
+                const lastTx = txs[txs.length-1];
+                isRebalanceTx = firstTx.contractAddress.toLowerCase() !== lastTx.contractAddress.toLowerCase();
+              }
+
+              if (!isRebalanceTx){
+                const date = moment(tx.timeStamp*1000).format("YYYY/MM/DD");
+                divergingData[date].redeems-=parseFloat(tx.value);
+              }
+            });
+
+          chartData = Object.values(divergingData);
+
+          chartType = Bar;
+
+          chartProps = {
+            indexBy: 'date',
+            enableLabel: false,
+            enableGridX: true,
+            enableGridY: false,
+            // label: d => Math.abs(d.value),
+            labelTextColor: 'inherit:darker(1.2)',
+            axisTop: {
+              tickSize: 0,
+              tickPadding: 12,
+            },
+            axisBottom:{
+              legend: '',
+              format: (value) => {
+                if (axisBottomIndex++ % 2 === 0){
+                  return moment(value,'YYYY/MM/DD HH:mm').format('MMM DD')
+                }
+              },
+              orient: 'bottom',
+              legendOffset: 36,
+              legendPosition: 'middle',
+              tickValues: 'every 2 days'
+            },
+            axisLeft: null,
+            // axisRight: {
+            //     format: v => `${Math.abs(v)}%`,
+            // },
+            markers: [
+              {
+                axis: 'y',
+                value: 0,
+                lineStyle: { strokeOpacity: 0 },
+                textStyle: { fill: colors.blue },
+                legend: 'deposits',
+                legendPosition: 'top-left',
+                legendOrientation: 'vertical',
+                // legendOffsetY: 120,
+              },
+              {
+                axis: 'y',
+                value: 0,
+                lineStyle: { stroke: colors.red, strokeWidth: 1 },
+                textStyle: { fill: colors.green },
+                legend: 'redeems',
+                legendPosition: 'bottom-left',
+                legendOrientation: 'vertical',
+                // legendOffsetY: 120,
+              },
+            ],
+            keys:['deposits','redeems'],
+            padding:0.4,
+            colors:[colors.blue, colors.green],
+            tooltip:({ id, value, color }) => {
+              value = this.functionsUtil.formatMoney(value,0);
+              return (
+                <table style={{width:'100%',borderCollapse:'collapse'}}>
+                  <tbody>
+                    <tr>
+                      <td style={{padding:'3px 5px'}}>
+                        <span style={{display:'block', width: '12px', height: '12px', background: color}}></span>
+                      </td>
+                      <td style={{padding:'3px 5px',textTransform:'capitalize'}}>{id}</td>
+                      <td style={{padding:'3px 5px'}}><strong>{value} {this.props.selectedToken}</strong></td>
+                    </tr>
+                  </tbody>
+                </table>
+              );
+            }
+            // labelFormat:v => `${v}%`
+          };
+
+          // debugger;
+        }
+      break;
+      /*
+      case 'VOL_LINE':
+        const results = await this.functionsUtil.getEtherscanTxs(this.props.tokenConfig.idle.address,60);
+        if (results){
+          const filteredTxs = results.filter(
+              tx => {
+                const internalTxs = results.filter(r => r.hash === tx.hash);
+                const isRightToken = internalTxs.length>1 && internalTxs.indexOf(tx) === 0;
+                const isDepositTx = isRightToken && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase();
+                const isRedeemTx = isRightToken && tx.from.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
+                const isCorrectTimestamp = (!this.props.startTimestamp || tx.timeStamp >= this.props.startTimestamp) && (!this.props.endTimestamp || tx.timeStamp <= this.props.endTimestamp);
+
+                return isCorrectTimestamp && (isDepositTx || isRedeemTx);
+            }
+          ).map(tx => {
+            return ({...tx, value: this.functionsUtil.fixTokenDecimals(tx.value,this.props.tokenConfig.decimals)});
+          });
+
           // console.log(results,filteredTxs);
 
           const startTimestamp = parseInt(filteredTxs[0].timeStamp);
@@ -220,6 +360,7 @@ class StatsChart extends Component {
           };
         }
       break;
+      */
       case 'AUM_ALL':
         await this.functionsUtil.asyncForEach(Object.keys(availableTokens[globalConfigs.network.requiredNetwork]),async (tokenName,i) => {
           const tokenConfig = availableTokens[globalConfigs.network.requiredNetwork][tokenName];
@@ -340,7 +481,7 @@ class StatsChart extends Component {
             // precision: 'hour',
           },
           xFormat:'time:%b %d %H:%M',
-          yFormat:value => this.parseAum(value),
+          yFormat:value => this.functionsUtil.formatMoney(value,0),
           yScale:{
             type: 'linear',
             stacked: false
@@ -404,7 +545,7 @@ class StatsChart extends Component {
                       </tr>
                       {Object.keys(point.data.allocations).map(protocolName => {
                           const protocolColor = 'hsl('+globalConfigs.stats.protocols[protocolName].color.hsl.join(',')+')';
-                          const protocolAllocation = this.parseAum(point.data.allocations[protocolName]);
+                          const protocolAllocation = this.functionsUtil.formatMoney(point.data.allocations[protocolName],0);
                           const protocolAllocationPerc = this.functionsUtil.BNify(point.data.allocations[protocolName]).div(this.functionsUtil.BNify(point.data.y)).times(100).toFixed(0)+'%';
                           return (
                             <tr key={`${point.id}_${protocolName}`}>
@@ -465,7 +606,6 @@ class StatsChart extends Component {
           padding: 0.2,
           animate: false,
           indexBy: 'date',
-          data: chartData,
           enableLabel: false,
           labelSkipWidth: 16,
           labelSkipHeight: 16,
