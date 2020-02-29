@@ -124,6 +124,8 @@ class StatsChart extends Component {
           }
 
           const protocolsAddresses = this.props.tokenConfig.protocols.map(p => { return p.address.toLowerCase() });
+          let maxValue = 0;
+          let minValue = 0;
 
           // Filter deposits
           filteredTxs
@@ -131,6 +133,7 @@ class StatsChart extends Component {
             .forEach((tx,i) => {
               const date = moment(tx.timeStamp*1000).format("YYYY/MM/DD");
               divergingData[date].deposits+=parseFloat(tx.value);
+              maxValue = Math.max(maxValue,parseFloat(tx.value));
             });
 
           // Filter redeems
@@ -148,24 +151,35 @@ class StatsChart extends Component {
               if (!isRebalanceTx){
                 const date = moment(tx.timeStamp*1000).format("YYYY/MM/DD");
                 divergingData[date].redeems-=parseFloat(tx.value);
+
+                minValue = Math.min(minValue,-1*parseFloat(tx.value));
               }
             });
+
+          maxValue+=maxValue*0.2;
+          minValue-=minValue*0.2;
 
           chartData = Object.values(divergingData);
 
           chartType = Bar;
+
+          axisBottomIndex = 0;
 
           chartProps = {
             indexBy: 'date',
             enableLabel: false,
             enableGridX: true,
             enableGridY: false,
-            // label: d => Math.abs(d.value),
-            labelTextColor: 'inherit:darker(1.2)',
-            axisTop: {
-              tickSize: 0,
-              tickPadding: 12,
+            // minValue,
+            // maxValue,
+            label: d => {
+              return Math.abs(d.value);
             },
+            labelTextColor: 'inherit:darker(1.2)',
+            // axisTop: {
+            //   tickSize: 0,
+            //   tickPadding: 12,
+            // },
             axisBottom:{
               legend: '',
               format: (value) => {
@@ -179,9 +193,9 @@ class StatsChart extends Component {
               tickValues: 'every 2 days'
             },
             axisLeft: null,
-            // axisRight: {
-            //     format: v => `${Math.abs(v)}%`,
-            // },
+            axisRight: {
+              format: v => this.abbreviateNumber(Math.abs(v))
+            },
             markers: [
               {
                 axis: 'y',
@@ -192,6 +206,7 @@ class StatsChart extends Component {
                 legendPosition: 'top-left',
                 legendOrientation: 'vertical',
                 // legendOffsetY: 120,
+                legendOffsetX: -10
               },
               {
                 axis: 'y',
@@ -202,11 +217,16 @@ class StatsChart extends Component {
                 legendPosition: 'bottom-left',
                 legendOrientation: 'vertical',
                 // legendOffsetY: 120,
+                legendOffsetX: -10
               },
             ],
             keys:['deposits','redeems'],
             padding:0.4,
             colors:[colors.blue, colors.green],
+            margin: { top: 60, right: 60, bottom: 60, left: 60 },
+            labelTextColor: 'inherit:darker(1.4)',
+            labelSkipWidth: 16,
+            labelSkipHeight: 16,
             tooltip:({ id, value, color }) => {
               value = this.functionsUtil.formatMoney(value,0);
               return (
@@ -611,7 +631,7 @@ class StatsChart extends Component {
           labelSkipHeight: 16,
           keys: Object.keys(keys),
           labelTextColor: 'inherit:darker(1.4)',
-          margin: { top: 60, right: 80, bottom: 60, left: 80 },
+          margin: { top: 60, right: 60, bottom: 60, left: 60 },
           colors: ({ id, data }) => data[`${id}Color`],
           axisLeft:{
             format: v => this.abbreviateNumber(v),
@@ -776,7 +796,7 @@ class StatsChart extends Component {
           labelSkipHeight: 16,
           keys: Object.keys(keys),
           labelTextColor: 'inherit:darker(1.4)',
-          margin: { top: 60, right: 80, bottom: 60, left: 80 },
+          margin: { top: 60, right: 60, bottom: 60, left: 60 },
           colors: ({ id, data }) => data[`${id}Color`],
           axisBottom:{
             legend: '',
