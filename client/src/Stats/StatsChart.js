@@ -88,6 +88,7 @@ class StatsChart extends Component {
     let chartType = Line;
     let keys = {};
     let tempData = {};
+    let axisBottomIndex = 0;
 
     switch (this.props.chartMode){
       case 'VOL':
@@ -175,11 +176,6 @@ class StatsChart extends Component {
             label: d => {
               return Math.abs(d.value);
             },
-            labelTextColor: 'inherit:darker(1.2)',
-            // axisTop: {
-            //   tickSize: 0,
-            //   tickPadding: 12,
-            // },
             axisBottom:{
               legend: '',
               format: (value) => {
@@ -620,7 +616,7 @@ class StatsChart extends Component {
         // Set chart type
         chartType = Bar;
 
-        let axisBottomIndex = 0;
+        axisBottomIndex = 0;
 
         chartProps = {
           padding: 0.2,

@@ -82,7 +82,11 @@ class FunctionsUtil {
         data,
         timestamp
       };
-      localStorage.setItem('cachedRequests',JSON.stringify(cachedRequests));
+      try{
+        localStorage.setItem('cachedRequests',JSON.stringify(cachedRequests));
+      } catch (e) {
+        
+      }
     }
     return (data && return_data ? data.data : data);
   }
