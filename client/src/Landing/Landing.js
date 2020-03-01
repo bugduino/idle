@@ -281,6 +281,7 @@ class Landing extends Component {
     const maxOpacity = 0.6;
     const minOpacity = 0.1;
     const idleOpacity = maxOpacity;
+    const protocolLen = this.props.tokenConfig.protocols.length;
 
     return (
       <Box
@@ -665,7 +666,7 @@ class Landing extends Component {
                     const protocolColor = globalConfigs.stats.protocols[protocolName].color.rgb.join(',');
                     const boxShadow = `0px 0px 16px 2px rgba(${protocolColor},${protocolOpacity})`;
 
-                    switch (this.props.tokenConfig.protocols.length){
+                    switch (protocolLen){
                       case 2:
                         output = (
                           <Flex key={`allocation_${protocolName}`} width={[1/2,1]} flexDirection={['column','row']} mr={ !i ? [1,0] : null} mt={ i ? [0,4] : null} ml={ i ? [1,0] : null}>
@@ -783,12 +784,12 @@ class Landing extends Component {
               <Flex width={[1,1/2]} flexDirection={['column','row']}>
                 <Flex zIndex={'-1'} width={[1,2/5]} flexDirection={['column','row']} position={'relative'} height={['50px','100%']}>
                   <Box className={styles.rebalanceCircle} position={'absolute'} zIndex={'2'} width={['50px','72px']} height={['50px','72px']} backgroundColor={'white'} borderRadius={'50%'} boxShadow={2} left={['50%','-44px']} top={['0','49%']} mt={['-41px','-14px']} ml={['-25px',0]}></Box>
-                  <Box position={'absolute'} zIndex={'1'} width={['20%','100%']} height={['100px','auto']} top={[0,'52%']} left={['50%',0]} ml={['-5px',0]} borderLeft={[`10px solid rgba(0,54,255,${idleOpacity})`,'0']} borderTop={[0,`15px solid rgba(0,54,255,${idleOpacity})`]}></Box>
-                  <Box position={'absolute'} display={['none','block']} className={styles.bulletPoint} borderLeft={'15px solid #0036ff'} top={'50%'} right={'-15px'}></Box>
+                  <Box position={'absolute'} zIndex={'1'} width={['20%','100%']} height={['100px','auto']} top={[0, protocolLen === 3 ? '52%' : '54%' ]} left={['50%',0]} ml={['-5px',0]} borderLeft={[`10px solid rgba(0,54,255,${idleOpacity})`,'0']} borderTop={[0,`15px solid rgba(0,54,255,${idleOpacity})`]}></Box>
+                  <Box position={'absolute'} display={['none','block']} className={styles.bulletPoint} borderLeft={'15px solid #0036ff'} top={ protocolLen === 3 ? '50%' : '51%' } right={'-15px'}></Box>
                 </Flex>
                 <Flex width={[1,3/5]} flexDirection={'column'} position={'relative'}>
                   <Flex width={1} flexDirection={'column'} height={'100%'} justifyContent={'center'}>
-                    <Flex justifyContent={'center'} alignItems={'center'} mt={[0,'5%']}>
+                    <Flex justifyContent={'center'} alignItems={'center'} mt={0}>
                       <Image src={`images/tokens/${this.props.tokenConfig.idle.token}.png`} height={['1.3em', '2em']} mr={[1,2]} verticalAlign={'middle'} />
                       <Text.span fontSize={[4,5]} textAlign={'center'} fontWeight={3} color={'dark-gray'}>
                         {this.props.tokenConfig.idle.token}
@@ -801,9 +802,6 @@ class Landing extends Component {
                         </Text>
                       </Card>
                     </Box>
-                    <Heading.h3 style={{width:'100%'}} color={'dark-gray'} textAlign={'center'} fontWeight={2} lineHeight={'initial'} fontSize={[2,2]} pt={2}>
-                      The <strong>best available interest rate</strong>,<br />on auto-pilot.
-                    </Heading.h3>
                   </Flex>
                 </Flex>
               </Flex>
