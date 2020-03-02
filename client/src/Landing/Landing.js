@@ -6,6 +6,7 @@ import globalConfigs from '../configs/globalConfigs';
 import LandingForm from '../LandingForm/LandingForm';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import NewsletterForm from '../NewsletterForm/NewsletterForm';
+import AllocationChart from '../AllocationChart/AllocationChart';
 import { Image, Flex, Box, Heading, Link, Text, Card, Icon } from 'rimble-ui'
 import FloatingToastMessage from '../FloatingToastMessage/FloatingToastMessage';
 // import DefiScoreTable from '../DefiScoreTable/DefiScoreTable';
@@ -631,122 +632,55 @@ class Landing extends Component {
         </Flex>
 
         <Flex className={styles.gradientBackground} flexDirection={'column'} position={'relative'} justifyContent={'center'} alignItems={'center'} p={[3,6]} pb={[4,6]}>
-          <Flex position={'relative'} zIndex={'10'} flexDirection={'column'} justifyContent={'flex-start'} alignItems={'flex-start'} width={1} maxWidth={['35em','70em']}>
-            <Flex width={1} flexDirection={['column','row']} alignItems={'center'}>
-              {
-                !this.props.isMobile && (
-                <Box width={1/2}>
-                    <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[4,4]}>
-                      Underlying protocol allocation
-                    </Heading.h3>
-                </Box>
-                )
-              }
-              <Flex width={[1,1/2]} flexDirection={'column'}>
-                <Heading.h3 color={'dark-gray'} textAlign={'center'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]}>
-                  Get the best APR, always.
-                </Heading.h3>
+          {
+            this.props.isMobile ? (
+              <Flex position={'relative'} zIndex={'10'} flexDirection={'column'} justifyContent={'center'} alignItems={'center'} width={1} maxWidth={['35em','70em']}>
+                <Flex width={1} flexDirection={'column'} alignItems={'center'} justifyContent={'center'}>
+                  <Heading.h3 color={'dark-gray'} textAlign={'center'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]}>
+                    Underlying protocol allocation
+                  </Heading.h3>
+                  <AllocationChart width={ Math.min(this.props.innerWidth*0.85,500) } height={Math.min(this.props.innerWidth*0.85,500)} tokenConfig={this.props.tokenConfig} protocolsAllocations={this.state.protocolsAllocations} totalAllocation={this.state.totalAllocation} />
+                </Flex>
               </Flex>
-            </Flex>
-            <Flex flexDirection={['column','row']} width={[1,7/8]} mt={4}>
-              <Flex width={[1,1/2]} flexDirection={['row','column']}>
+            ) : (
+              <Flex position={'relative'} zIndex={'10'} flexDirection={'column'} justifyContent={'flex-start'} alignItems={'flex-start'} width={1} maxWidth={['35em','70em']}>
+                <Flex width={1} flexDirection={['column','row']} alignItems={'center'}>
+                  {
+                    !this.props.isMobile && (
+                    <Box width={1/2}>
+                      <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[4,4]}>
+                        Underlying protocol allocation
+                      </Heading.h3>
+                    </Box>
+                    )
+                  }
+                  <Flex width={[1,1/2]} flexDirection={'column'}>
+                    <Heading.h3 color={'dark-gray'} textAlign={'center'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]}>
+                      Get the best APR, always.
+                    </Heading.h3>
+                  </Flex>
+                </Flex>
+                <Flex flexDirection={['column','row']} width={[1,7/8]} mt={4}>
+                  <Flex width={[1,1/2]} flexDirection={['row','column']}>
+                    {
+                      this.props.tokenConfig.protocols.map((protocolInfo,i)=>{
+                        const protocolAddr = protocolInfo.address;
+                        const protocolName = protocolInfo.name;
+                        const protocolToken = protocolInfo.token;
+                        const protocolLoaded = this.state.totalAllocation && this.state.protocolsAllocations && this.state.protocolsAllocations[protocolAddr];
+                        const protocolAllocation = protocolLoaded ? parseFloat(this.state.protocolsAllocations[protocolAddr].toString()) : null;
+                        const protocolAllocationPerc = protocolAllocation !== null ? parseFloat(protocolAllocation)/parseFloat(this.state.totalAllocation.toString()) : null;
+                        const protocolOpacity = protocolAllocationPerc>maxOpacity ? maxOpacity : (protocolAllocationPerc<minOpacity) ? minOpacity : protocolAllocationPerc.toFixed(2);
+                        const protocolAllocationPercParsed = protocolAllocationPerc === null ? '-' : (protocolAllocationPerc*100).toFixed(2);
 
-                {
-                  this.props.tokenConfig.protocols.map((protocolInfo,i)=>{
-                    const protocolAddr = protocolInfo.address;
-                    const protocolName = protocolInfo.name;
-                    const protocolToken = protocolInfo.token;
-                    const protocolLoaded = this.state.totalAllocation && this.state.protocolsAllocations && this.state.protocolsAllocations[protocolAddr];
-                    const protocolAllocation = protocolLoaded ? parseFloat(this.state.protocolsAllocations[protocolAddr].toString()) : null;
-                    const protocolAllocationPerc = protocolAllocation !== null ? parseFloat(protocolAllocation)/parseFloat(this.state.totalAllocation.toString()) : null;
-                    const protocolOpacity = protocolAllocationPerc>maxOpacity ? maxOpacity : (protocolAllocationPerc<minOpacity) ? minOpacity : protocolAllocationPerc.toFixed(2);
-                    const protocolAllocationPercParsed = protocolAllocationPerc === null ? '-' : (protocolAllocationPerc*100).toFixed(2);
+                        let output = null;
+                        const protocolColor = globalConfigs.stats.protocols[protocolName].color.rgb.join(',');
+                        const boxShadow = `0px 0px 16px 2px rgba(${protocolColor},${protocolOpacity})`;
 
-                    let output = null;
-                    const protocolColor = globalConfigs.stats.protocols[protocolName].color.rgb.join(',');
-                    const boxShadow = `0px 0px 16px 2px rgba(${protocolColor},${protocolOpacity})`;
-
-                    switch (protocolLen){
-                      case 2:
-                        output = (
-                          <Flex key={`allocation_${protocolName}`} width={[1/2,1]} flexDirection={['column','row']} mr={ !i ? [1,0] : null} mt={ i ? [0,4] : null} ml={ i ? [1,0] : null}>
-                            <Flex width={[1,1/2]} flexDirection={'column'}>
-                              <Flex flexDirection={'row'} justifyContent={'center'} alignItems={'center'}>
-                                <Image src={`images/tokens/${protocolToken}.svg`} height={['1.3em', '2em']} mr={[1,2]} my={[2,0]} verticalAlign={['middle','bottom']} />
-                                <Text.span fontSize={[2,3]} textAlign={['center','left']} fontWeight={3} color={'dark-gray'}>
-                                  {protocolToken}
-                                </Text.span>
-                              </Flex>
-                              <Box>
-                                <Card my={[2,2]} p={3} borderRadius={'10px'} boxShadow={protocolAllocationPerc>0 ? boxShadow : 1}>
-                                  <Text fontSize={[4,5]} fontWeight={4} textAlign={'center'}>{(protocolAllocationPerc*100).toFixed(2)}<Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span></Text>
-                                </Card>
-                              </Box>
-                            </Flex>
-
-                            {
-                              !i ? (
-                                <Box width={1/2} zIndex={'-1'} position={'relative'} height={'80px'} borderRadius={['0 0 0 30px','0 50px 0 0']} borderBottom={[`10px solid rgba(${protocolColor},${protocolOpacity})`,0]} borderLeft={[`10px solid rgba(${protocolColor},${protocolOpacity})`,0]}  borderTop={[0,`15px solid rgba(${protocolColor},${protocolOpacity})`]} borderRight={[0,`15px solid rgba(${protocolColor},${protocolOpacity})`]} top={['-10px','75px']} left={['48%',0]}>
-                                  <Box position={'absolute'} display={'block'} borderColor={`rgb(${protocolColor}) !important`} className={[styles.bulletPoint,styles.bulletLeft,this.props.isMobile ? styles.bulletMobile : '']}></Box>
-                                </Box>
-                              ) : (
-                                <Box width={1/2} zIndex={'-1'} position={'relative'} height={['80px','72px']} borderRadius={['0 0 30px 0','0 0 50px 0']} borderBottom={[`10px solid rgba(${protocolColor},${protocolOpacity})`,`15px solid rgba(${protocolColor},${protocolOpacity})`]} borderRight={[`10px solid rgba(${protocolColor},${protocolOpacity})`,`15px solid rgba(${protocolColor},${protocolOpacity})`]} top={['-10px','18px']} left={['0%',0]}>
-                                  <Box position={'absolute'} display={'block'} borderColor={`rgb(${protocolColor}) !important`} className={[styles.bulletPoint,styles.bulletBottomBottom,this.props.isMobile ? styles.bulletMobile : '']}></Box>
-                                </Box>
-                              )
-                            }
-                          </Flex>
-                        );
-                      break;
-                      case 3:
-                        switch (i){
-                          case 0:
-                            output = (
-                              <Flex key={`allocation_${protocolName}`} width={[1/2,1]} flexDirection={['column','row']} mr={[1,0]} position={'relative'}>
-                                <Flex width={[1,1/2]} flexDirection={'column'}>
-                                  <Flex flexDirection={'row'} justifyContent={'center'} alignItems={'center'}>
-                                    <Image src={`images/tokens/${protocolToken}.svg`} height={['1.3em', '2em']} mr={[1,2]} my={[2,0]} verticalAlign={['middle','bottom']} />
-                                    <Text.span fontSize={[2,3]} textAlign={['center','left']} fontWeight={3} color={'dark-gray'}>
-                                      {protocolToken}
-                                    </Text.span>
-                                  </Flex>
-                                  <Box>
-                                    <Card my={[2,2]} p={3} borderRadius={'10px'} boxShadow={protocolAllocationPerc>0 ? boxShadow : 1}>
-                                      <Text fontSize={[4,5]} fontWeight={4} textAlign={'center'}>{protocolAllocationPercParsed}<Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span></Text>
-                                    </Card>
-                                  </Box>
-                                </Flex>
-                                <Box width={1/2} zIndex={'-1'} position={['relative','absolute']} height={['80px','150px']} borderRadius={['0 0 0 30px','0 50px 0 0']} borderBottom={[`10px solid rgba(${protocolColor},${protocolOpacity})`,0]} borderLeft={[`10px solid rgba(${protocolColor},${protocolOpacity})`,0]}  borderTop={[0,`15px solid rgba(${protocolColor},${protocolOpacity})`]} borderRight={[0,`15px solid rgba(${protocolColor},${protocolOpacity})`]} top={['-10px','75px']} left={['48%','50%']}>
-                                  <Box position={'absolute'} display={'block'} borderColor={`rgb(${protocolColor}) !important`} className={[styles.bulletPoint,styles.bulletLeft,this.props.isMobile ? styles.bulletMobile : '']}></Box>
-                                </Box>
-                              </Flex>
-                            );
-                          break;
-                          case 1:
-                            output = (
-                              <Flex key={`allocation_${protocolName}`} width={[1/2,1]} flexDirection={['column','row']} mt={[0,4]} ml={[1,0]}>
-                                <Flex width={[1,1/2]} flexDirection={'column'}>
-                                  <Flex flexDirection={'row'} justifyContent={'center'} alignItems={'center'}>
-                                    <Image src={`images/tokens/${protocolToken}.svg`} height={['1.3em', '2em']} mr={[1,2]} my={[2,0]} verticalAlign={['middle','bottom']} />
-                                    <Text.span fontSize={[2,3]} textAlign={['center','left']} fontWeight={3} color={'dark-gray'}>
-                                      {protocolToken}
-                                    </Text.span>
-                                  </Flex>
-                                  <Box>
-                                    <Card my={[2,2]} p={3} borderRadius={'10px'} boxShadow={protocolAllocationPerc>0 ? boxShadow : 1}>
-                                      <Text fontSize={[4,5]} fontWeight={4} textAlign={'center'}>{protocolAllocationPercParsed}<Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span></Text>
-                                    </Card>
-                                  </Box>
-                                </Flex>
-                                <Box width={1/2} zIndex={'-1'} position={'relative'} height={['80px','72px']} borderRadius={0} borderBottom={[`10px solid rgba(${protocolColor},${protocolOpacity})`,`15px solid rgba(${protocolColor},${protocolOpacity})`]} top={['-10px','18px']} left={['0%',0]}>
-                                  <Box position={'absolute'} display={'block'} borderColor={`rgb(${protocolColor}) !important`} className={[styles.bulletPoint,styles.bulletBottomBottom,this.props.isMobile ? styles.bulletMobile : '']}></Box>
-                                </Box>
-                              </Flex>
-                            );
-                          break;
+                        switch (protocolLen){
                           case 2:
                             output = (
-                              <Flex key={`allocation_${protocolName}`} width={[1/2,1]} flexDirection={['column','row']} mt={[0,4]} ml={[1,0]} position={'relative'}>
+                              <Flex key={`allocation_${protocolName}`} width={[1/2,1]} flexDirection={['column','row']} mr={ !i ? [1,0] : null} mt={ i ? [0,4] : null} ml={ i ? [1,0] : null}>
                                 <Flex width={[1,1/2]} flexDirection={'column'}>
                                   <Flex flexDirection={'row'} justifyContent={'center'} alignItems={'center'}>
                                     <Image src={`images/tokens/${protocolToken}.svg`} height={['1.3em', '2em']} mr={[1,2]} my={[2,0]} verticalAlign={['middle','bottom']} />
@@ -756,57 +690,136 @@ class Landing extends Component {
                                   </Flex>
                                   <Box>
                                     <Card my={[2,2]} p={3} borderRadius={'10px'} boxShadow={protocolAllocationPerc>0 ? boxShadow : 1}>
-                                      <Text fontSize={[4,5]} fontWeight={4} textAlign={'center'}>{protocolAllocationPercParsed}<Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span></Text>
+                                      <Text fontSize={[4,5]} fontWeight={4} textAlign={'center'}>{(protocolAllocationPerc*100).toFixed(2)}<Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span></Text>
                                     </Card>
                                   </Box>
                                 </Flex>
-                                <Box width={1/2} zIndex={'-1'} position={['relative','absolute']} height={['80px','150px']} borderRadius={['0 0 30px 0','0 0 50px 0']} borderBottom={[`10px solid rgba(${protocolColor},${protocolOpacity})`,`15px solid rgba(${protocolColor},${protocolOpacity})`]} borderRight={[`10px solid rgba(${protocolColor},${protocolOpacity})`,`15px solid rgba(${protocolColor},${protocolOpacity})`]} top={['-10px','-60px']} left={['0%','50%']}>
-                                  <Box position={'absolute'} display={'block'} borderColor={`rgb(${protocolColor}) !important`} className={[styles.bulletPoint,styles.bulletBottomBottom,this.props.isMobile ? styles.bulletMobile : '']}></Box>
-                                </Box>
+
+                                {
+                                  !i ? (
+                                    <Box width={1/2} zIndex={'-1'} position={'relative'} height={'80px'} borderRadius={['0 0 0 30px','0 50px 0 0']} borderBottom={[`10px solid rgba(${protocolColor},${protocolOpacity})`,0]} borderLeft={[`10px solid rgba(${protocolColor},${protocolOpacity})`,0]}  borderTop={[0,`15px solid rgba(${protocolColor},${protocolOpacity})`]} borderRight={[0,`15px solid rgba(${protocolColor},${protocolOpacity})`]} top={['-10px','75px']} left={['48%',0]}>
+                                      <Box position={'absolute'} display={'block'} borderColor={`rgb(${protocolColor}) !important`} className={[styles.bulletPoint,styles.bulletLeft,this.props.isMobile ? styles.bulletMobile : '']}></Box>
+                                    </Box>
+                                  ) : (
+                                    <Box width={1/2} zIndex={'-1'} position={'relative'} height={['80px','72px']} borderRadius={['0 0 30px 0','0 0 50px 0']} borderBottom={[`10px solid rgba(${protocolColor},${protocolOpacity})`,`15px solid rgba(${protocolColor},${protocolOpacity})`]} borderRight={[`10px solid rgba(${protocolColor},${protocolOpacity})`,`15px solid rgba(${protocolColor},${protocolOpacity})`]} top={['-10px','18px']} left={['0%',0]}>
+                                      <Box position={'absolute'} display={'block'} borderColor={`rgb(${protocolColor}) !important`} className={[styles.bulletPoint,styles.bulletBottomBottom,this.props.isMobile ? styles.bulletMobile : '']}></Box>
+                                    </Box>
+                                  )
+                                }
                               </Flex>
                             );
+                          break;
+                          case 3:
+                            switch (i){
+                              case 0:
+                                output = (
+                                  <Flex key={`allocation_${protocolName}`} width={[1/2,1]} flexDirection={['column','row']} mr={[1,0]} position={'relative'}>
+                                    <Flex width={[1,1/2]} flexDirection={'column'}>
+                                      <Flex flexDirection={'row'} justifyContent={'center'} alignItems={'center'}>
+                                        <Image src={`images/tokens/${protocolToken}.svg`} height={['1.3em', '2em']} mr={[1,2]} my={[2,0]} verticalAlign={['middle','bottom']} />
+                                        <Text.span fontSize={[2,3]} textAlign={['center','left']} fontWeight={3} color={'dark-gray'}>
+                                          {protocolToken}
+                                        </Text.span>
+                                      </Flex>
+                                      <Box>
+                                        <Card my={[2,2]} p={3} borderRadius={'10px'} boxShadow={protocolAllocationPerc>0 ? boxShadow : 1}>
+                                          <Text fontSize={[4,5]} fontWeight={4} textAlign={'center'}>{protocolAllocationPercParsed}<Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span></Text>
+                                        </Card>
+                                      </Box>
+                                    </Flex>
+                                    <Box width={1/2} zIndex={'-1'} position={['relative','absolute']} height={['80px','150px']} borderRadius={['0 0 0 30px','0 50px 0 0']} borderBottom={[`10px solid rgba(${protocolColor},${protocolOpacity})`,0]} borderLeft={[`10px solid rgba(${protocolColor},${protocolOpacity})`,0]}  borderTop={[0,`15px solid rgba(${protocolColor},${protocolOpacity})`]} borderRight={[0,`15px solid rgba(${protocolColor},${protocolOpacity})`]} top={['-10px','75px']} left={['48%','50%']}>
+                                      <Box position={'absolute'} display={'block'} borderColor={`rgb(${protocolColor}) !important`} className={[styles.bulletPoint,styles.bulletLeft,this.props.isMobile ? styles.bulletMobile : '']}></Box>
+                                    </Box>
+                                  </Flex>
+                                );
+                              break;
+                              case 1:
+                                output = (
+                                  <Flex key={`allocation_${protocolName}`} width={[1/2,1]} flexDirection={['column','row']} mt={[0,4]} ml={[1,0]}>
+                                    <Flex width={[1,1/2]} flexDirection={'column'}>
+                                      <Flex flexDirection={'row'} justifyContent={'center'} alignItems={'center'}>
+                                        <Image src={`images/tokens/${protocolToken}.svg`} height={['1.3em', '2em']} mr={[1,2]} my={[2,0]} verticalAlign={['middle','bottom']} />
+                                        <Text.span fontSize={[2,3]} textAlign={['center','left']} fontWeight={3} color={'dark-gray'}>
+                                          {protocolToken}
+                                        </Text.span>
+                                      </Flex>
+                                      <Box>
+                                        <Card my={[2,2]} p={3} borderRadius={'10px'} boxShadow={protocolAllocationPerc>0 ? boxShadow : 1}>
+                                          <Text fontSize={[4,5]} fontWeight={4} textAlign={'center'}>{protocolAllocationPercParsed}<Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span></Text>
+                                        </Card>
+                                      </Box>
+                                    </Flex>
+                                    <Box width={1/2} zIndex={'-1'} position={'relative'} height={['80px','72px']} borderRadius={0} borderBottom={[`10px solid rgba(${protocolColor},${protocolOpacity})`,`15px solid rgba(${protocolColor},${protocolOpacity})`]} top={['-10px','18px']} left={['0%',0]}>
+                                      <Box position={'absolute'} display={'block'} borderColor={`rgb(${protocolColor}) !important`} className={[styles.bulletPoint,styles.bulletBottomBottom,this.props.isMobile ? styles.bulletMobile : '']}></Box>
+                                    </Box>
+                                  </Flex>
+                                );
+                              break;
+                              case 2:
+                                output = (
+                                  <Flex key={`allocation_${protocolName}`} width={[1/2,1]} flexDirection={['column','row']} mt={[0,4]} ml={[1,0]} position={'relative'}>
+                                    <Flex width={[1,1/2]} flexDirection={'column'}>
+                                      <Flex flexDirection={'row'} justifyContent={'center'} alignItems={'center'}>
+                                        <Image src={`images/tokens/${protocolToken}.svg`} height={['1.3em', '2em']} mr={[1,2]} my={[2,0]} verticalAlign={['middle','bottom']} />
+                                        <Text.span fontSize={[2,3]} textAlign={['center','left']} fontWeight={3} color={'dark-gray'}>
+                                          {protocolToken}
+                                        </Text.span>
+                                      </Flex>
+                                      <Box>
+                                        <Card my={[2,2]} p={3} borderRadius={'10px'} boxShadow={protocolAllocationPerc>0 ? boxShadow : 1}>
+                                          <Text fontSize={[4,5]} fontWeight={4} textAlign={'center'}>{protocolAllocationPercParsed}<Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span></Text>
+                                        </Card>
+                                      </Box>
+                                    </Flex>
+                                    <Box width={1/2} zIndex={'-1'} position={['relative','absolute']} height={['80px','150px']} borderRadius={['0 0 30px 0','0 0 50px 0']} borderBottom={[`10px solid rgba(${protocolColor},${protocolOpacity})`,`15px solid rgba(${protocolColor},${protocolOpacity})`]} borderRight={[`10px solid rgba(${protocolColor},${protocolOpacity})`,`15px solid rgba(${protocolColor},${protocolOpacity})`]} top={['-10px','-60px']} left={['0%','50%']}>
+                                      <Box position={'absolute'} display={'block'} borderColor={`rgb(${protocolColor}) !important`} className={[styles.bulletPoint,styles.bulletBottomBottom,this.props.isMobile ? styles.bulletMobile : '']}></Box>
+                                    </Box>
+                                  </Flex>
+                                );
+                              break;
+                              default:
+                                output = null;
+                              break;
+                            }
                           break;
                           default:
                             output = null;
                           break;
                         }
-                      break;
-                      default:
-                        output = null;
-                      break;
+
+                        return output;
+                      })
                     }
+                  </Flex>
 
-                    return output;
-                  })
-                }
-              </Flex>
-
-              <Flex width={[1,1/2]} flexDirection={['column','row']}>
-                <Flex zIndex={'-1'} width={[1,2/5]} flexDirection={['column','row']} position={'relative'} height={['50px','100%']}>
-                  <Box className={styles.rebalanceCircle} position={'absolute'} zIndex={'2'} width={['50px','72px']} height={['50px','72px']} backgroundColor={'white'} borderRadius={'50%'} boxShadow={2} left={['50%','-44px']} top={['0','49%']} mt={['-41px','-14px']} ml={['-25px',0]}></Box>
-                  <Box position={'absolute'} zIndex={'1'} width={['20%','100%']} height={['100px','auto']} top={[0, protocolLen === 3 ? '52%' : '54%' ]} left={['50%',0]} ml={['-5px',0]} borderLeft={[`10px solid rgba(0,54,255,${idleOpacity})`,'0']} borderTop={[0,`15px solid rgba(0,54,255,${idleOpacity})`]}></Box>
-                  <Box position={'absolute'} display={['none','block']} className={styles.bulletPoint} borderLeft={'15px solid #0036ff'} top={ protocolLen === 3 ? '50%' : '51%' } right={'-15px'}></Box>
-                </Flex>
-                <Flex width={[1,3/5]} flexDirection={'column'} position={'relative'}>
-                  <Flex width={1} flexDirection={'column'} height={'100%'} justifyContent={'center'}>
-                    <Flex justifyContent={'center'} alignItems={'center'} mt={0}>
-                      <Image src={`images/tokens/${this.props.tokenConfig.idle.token}.png`} height={['1.3em', '2em']} mr={[1,2]} verticalAlign={'middle'} />
-                      <Text.span fontSize={[4,5]} textAlign={'center'} fontWeight={3} color={'dark-gray'}>
-                        {this.props.tokenConfig.idle.token}
-                      </Text.span>
+                  <Flex width={[1,1/2]} flexDirection={['column','row']}>
+                    <Flex zIndex={'-1'} width={[1,2/5]} flexDirection={['column','row']} position={'relative'} height={['50px','100%']}>
+                      <Box className={styles.rebalanceCircle} position={'absolute'} zIndex={'2'} width={['50px','72px']} height={['50px','72px']} backgroundColor={'white'} borderRadius={'50%'} boxShadow={2} left={['50%','-44px']} top={['0','49%']} mt={['-41px','-14px']} ml={['-25px',0]}></Box>
+                      <Box position={'absolute'} zIndex={'1'} width={['20%','100%']} height={['100px','auto']} top={[0, protocolLen === 3 ? '52%' : '54%' ]} left={['50%',0]} ml={['-5px',0]} borderLeft={[`10px solid rgba(0,54,255,${idleOpacity})`,'0']} borderTop={[0,`15px solid rgba(0,54,255,${idleOpacity})`]}></Box>
+                      <Box position={'absolute'} display={['none','block']} className={styles.bulletPoint} borderLeft={'15px solid #0036ff'} top={ protocolLen === 3 ? '50%' : '51%' } right={'-15px'}></Box>
                     </Flex>
-                    <Box>
-                      <Card my={[2,2]} p={4} borderRadius={'10px'} boxShadow={this.state.currentRate ? `0px 0px 16px 2px rgba(0,54,255,${maxOpacity})` : 0}>
-                        <Text fontSize={[5,7]} fontWeight={4} textAlign={'center'}>
-                          {this.state.currentRate ? this.state.currentRate : '-' }<Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
-                        </Text>
-                      </Card>
-                    </Box>
+                    <Flex width={[1,3/5]} flexDirection={'column'} position={'relative'}>
+                      <Flex width={1} flexDirection={'column'} height={'100%'} justifyContent={'center'}>
+                        <Flex justifyContent={'center'} alignItems={'center'} mt={0}>
+                          <Image src={`images/tokens/${this.props.tokenConfig.idle.token}.png`} height={['1.3em', '2em']} mr={[1,2]} verticalAlign={'middle'} />
+                          <Text.span fontSize={[4,5]} textAlign={'center'} fontWeight={3} color={'dark-gray'}>
+                            {this.props.tokenConfig.idle.token}
+                          </Text.span>
+                        </Flex>
+                        <Box>
+                          <Card my={[2,2]} p={4} borderRadius={'10px'} boxShadow={this.state.currentRate ? `0px 0px 16px 2px rgba(0,54,255,${maxOpacity})` : 0}>
+                            <Text fontSize={[5,7]} fontWeight={4} textAlign={'center'}>
+                              {this.state.currentRate ? this.state.currentRate : '-' }<Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
+                            </Text>
+                          </Card>
+                        </Box>
+                      </Flex>
+                    </Flex>
                   </Flex>
                 </Flex>
               </Flex>
-            </Flex>
-          </Flex>
+            )
+          }
         </Flex>
 
         {

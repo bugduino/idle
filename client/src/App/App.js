@@ -361,6 +361,7 @@ class App extends Component {
                                           isMobile={isMobile}
                                           simpleID={simpleID}
                                           contracts={contracts}
+                                          innerWidth={this.state.width}
                                           accountBalance={accountBalance}
                                           connecting={this.state.connecting}
                                           selectedTab={this.state.selectedTab}
