@@ -20,6 +20,7 @@ class Stats extends Component {
     maxDate:null,
     rebalances:'-',
     buttonGroups:[],
+    minStartTime:null,
     endTimestamp:null,
     showAdvanced:false,
     startTimestamp:null,
@@ -41,7 +42,6 @@ class Stats extends Component {
   }
 
   async loadParams() {
-
     const newState = Object.assign({},this.state);
     const { match: { params } } = this.props;
 
@@ -52,12 +52,14 @@ class Stats extends Component {
     } else {
       newState.selectedToken = this.props.selectedToken.toUpperCase();
     }
-    newState.tokenConfig = this.props.availableTokens[newState.selectedToken];
 
-    newState.startTimestampObj = moment(globalConfigs.stats.tokens[newState.selectedToken].startTimestamp,'YYYY-MM-DD');
+    newState.tokenConfig = this.props.availableTokens[newState.selectedToken];
+    newState.minStartTime = moment(globalConfigs.stats.tokens[this.state.selectedToken].startTimestamp,'YYYY-MM-DD');
+    newState.startTimestampObj = newState.minStartTime;
     newState.startTimestamp = parseInt(newState.startTimestampObj._d.getTime()/1000);
     newState.endTimestampObj = moment();
     newState.endTimestamp = parseInt(newState.endTimestampObj._d.getTime()/1000);
+
     newState.minDate = newState.startTimestampObj._d;
     newState.maxDate = moment()._d;
 
@@ -72,7 +74,9 @@ class Stats extends Component {
   }
 
   componentWillUnmount(){
-    document.getElementById('crisp-custom-style').remove();
+    if (document.getElementById('crisp-custom-style')){
+      document.getElementById('crisp-custom-style').remove();
+    }
   }
 
   setDateRange = ranges => {
@@ -86,10 +90,13 @@ class Stats extends Component {
       endTimestampObj.add(1,'day');
     }
 
+    endTimestampObj = moment(endTimestampObj.format('YYYY-MM-DD 23:59'),'YYYY-MM-DD HH:mm');
+
     const startTimestamp = parseInt(startTimestampObj._d.getTime()/1000);
     const endTimestamp = parseInt(endTimestampObj._d.getTime()/1000);
 
     const newState = {
+      minStartTime,
       endTimestamp,
       startTimestamp,
       endTimestampObj,
@@ -154,6 +161,11 @@ class Stats extends Component {
 
   async componentDidMount() {
 
+    if (!this.props.web3){
+      this.props.initWeb3();
+      return false;
+    }
+
     const style = document.createElement('style');
     style.id = 'crisp-custom-style';
     style.type = 'text/css';
@@ -181,11 +193,14 @@ class Stats extends Component {
     }
   }
 
-  getTokenData = async (address) => {
+  getTokenData = async (address,filter=true) => {
     const apiInfo = globalConfigs.stats.rates;
     const endpoint = `${apiInfo.endpoint}${address}`;
     const TTL = apiInfo.TTL ? apiInfo.TTL : 0;
     let output = await this.functionsUtil.makeCachedRequest(endpoint,TTL,true);
+    if (!filter){
+      return output;
+    }
     return output.filter((r,i) => {
       return (!this.state.startTimestamp || r.timestamp >= this.state.startTimestamp) && (!this.state.endTimestamp || r.timestamp <= this.state.endTimestamp);
     });
@@ -394,24 +409,24 @@ class Stats extends Component {
             </Card>
           </Flex>
         </Flex>
-        <Flex justifyContent={'space-between'} style={{flexWrap:'wrap'}} mb={3}>
-          <Flex id='chart-AUM' width={[1,0.49]}>
+        <Flex justifyContent={'space-between'} style={{flexWrap:'wrap'}}>
+          <Flex id='chart-AUM' width={[1,0.49]} mb={3}>
             <Card p={[2,3]} pb={0} borderRadius={'10px'}>
               <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
                 <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                   AUM
                 </Text>
-                <StatsChart getTokenData={this.getTokenData} startTimestamp={this.state.startTimestamp} endTimestamp={this.state.endTimestamp} chartMode={'AUM'} {...this.state} parentId={'chart-AUM'} height={ 350 } />
+                <StatsChart isMobile={this.props.isMobile} web3={this.props.web3} getTokenData={this.getTokenData} chartMode={'AUM'} {...this.state} parentId={'chart-AUM'} height={ 350 } />
               </Flex>
             </Card>
           </Flex>
-          <Flex id='chart-PRICE' width={[1,0.49]}>
+          <Flex id='chart-PRICE' width={[1,0.49]} mb={3}>
             <Card p={[2,3]} pb={0} borderRadius={'10px'}>
               <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
                 <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                   Performance
                 </Text>
-                <StatsChart getTokenData={this.getTokenData} startTimestamp={this.state.startTimestamp} endTimestamp={this.state.endTimestamp} chartMode={'PRICE'} {...this.state} parentId={'chart-PRICE'} height={ 350 } />
+                <StatsChart isMobile={this.props.isMobile} web3={this.props.web3} getTokenData={this.getTokenData} chartMode={'PRICE'} {...this.state} parentId={'chart-PRICE'} height={ 350 } />
               </Flex>
             </Card>
           </Flex>
@@ -425,7 +440,7 @@ class Stats extends Component {
                     <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                       Allocation
                     </Text>
-                    <StatsChart getTokenData={this.getTokenData} startTimestamp={this.state.startTimestamp} endTimestamp={this.state.endTimestamp} chartMode={'ALL'} {...this.state} parentId={'chart-ALL'} height={ 350 } />
+                    <StatsChart isMobile={this.props.isMobile} web3={this.props.web3} getTokenData={this.getTokenData} chartMode={'ALL'} {...this.state} parentId={'chart-ALL'} height={ 350 } />
                   </Flex>
                 </Card>
               </Flex>
@@ -435,7 +450,7 @@ class Stats extends Component {
                     <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                       Allocation Percentage
                     </Text>
-                    <StatsChart getTokenData={this.getTokenData} startTimestamp={this.state.startTimestamp} endTimestamp={this.state.endTimestamp} chartMode={'ALL_PERC'} {...this.state} parentId={'chart-ALL_PERC'} height={ 350 } />
+                    <StatsChart isMobile={this.props.isMobile} web3={this.props.web3} getTokenData={this.getTokenData} chartMode={'ALL_PERC'} {...this.state} parentId={'chart-ALL_PERC'} height={ 350 } />
                   </Flex>
                 </Card>
               </Flex>
@@ -445,7 +460,7 @@ class Stats extends Component {
                     <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                       APRs
                     </Text>
-                    <StatsChart getTokenData={this.getTokenData} startTimestamp={this.state.startTimestamp} endTimestamp={this.state.endTimestamp} chartMode={'APR'} {...this.state} parentId={'chart-APR'} height={ 350 } />
+                    <StatsChart isMobile={this.props.isMobile} web3={this.props.web3} getTokenData={this.getTokenData} chartMode={'APR'} {...this.state} parentId={'chart-APR'} height={ 350 } />
                   </Flex>
                 </Card>
               </Flex>
@@ -455,7 +470,7 @@ class Stats extends Component {
                     <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                       Volume
                     </Text>
-                    <StatsChart getTokenData={this.getTokenData} startTimestamp={this.state.startTimestamp} endTimestamp={this.state.endTimestamp} chartMode={'VOL'} {...this.state} parentId={'chart-VOL'} height={ 350 } />
+                    <StatsChart isMobile={this.props.isMobile} web3={this.props.web3} getTokenData={this.getTokenData} chartMode={'VOL'} {...this.state} parentId={'chart-VOL'} height={ 350 } />
                   </Flex>
                 </Card>
               </Flex>
@@ -472,7 +487,7 @@ class Stats extends Component {
             style={{width:'100%'}}
             onClick={e => this.toggleAdvancedCharts(e) }
           >
-            <Card width={1} p={[2,3]} pb={0} borderRadius={'10px'}>
+            <Card width={1} p={3} borderRadius={'10px'}>
               <Flex justifyContent={'center'}>
                 { this.state.showAdvanced ? 'hide' : 'show' } more stats
               </Flex>

@@ -277,6 +277,8 @@ class App extends Component {
                             <Route
                               path="/stats/:customToken?"
                               render={(props) => <Stats {...props}
+                                                    web3={web3}
+                                                    initWeb3={initWeb3}
                                                     isMobile={isMobile}
                                                     tokenConfig={this.state.tokenConfig}
                                                     selectedToken={this.state.selectedToken}

@@ -14,7 +14,9 @@ class StatsChart extends Component {
     chartProps:{},
     chartType:null,
     chartData:null,
-    chartWidth:null
+    chartWidth:null,
+    apiResults:null,
+    apiResults_unfiltered:null,
   };
 
   async componentWillMount() {
@@ -28,8 +30,9 @@ class StatsChart extends Component {
   }
 
   async componentDidUpdate(prevProps) {
+    const tokenChanged = prevProps.tokenConfig !== this.props.tokenConfig;
     const dateChanged = prevProps.startTimestamp !== this.props.startTimestamp || prevProps.endTimestamp !== this.props.endTimestamp;
-    if (prevProps.tokenConfig !== this.props.tokenConfig || dateChanged){
+    if (tokenChanged || dateChanged){
       this.componentDidMount();
     }
   }
@@ -81,6 +84,7 @@ class StatsChart extends Component {
       return false;
     }
 
+    const apiResults_unfiltered = await this.props.getTokenData(this.props.tokenConfig.address,false);
     const apiResults = await this.props.getTokenData(this.props.tokenConfig.address);
 
     let chartData = [];
@@ -92,291 +96,140 @@ class StatsChart extends Component {
 
     switch (this.props.chartMode){
       case 'VOL':
-        const results = await this.functionsUtil.getEtherscanTxs(this.props.tokenConfig.idle.address,60);
-        if (results){
-          const filteredTxs = results.filter(
-              tx => {
-                const internalTxs = results.filter(r => r.hash === tx.hash);
-                const isRightToken = internalTxs.length>1 && internalTxs.indexOf(tx) === 0;
-                const isDepositTx = isRightToken && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase();
-                const isRedeemTx = isRightToken && tx.from.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-                const isCorrectTimestamp = (!this.props.startTimestamp || tx.timeStamp >= this.props.startTimestamp) && (!this.props.endTimestamp || tx.timeStamp <= this.props.endTimestamp);
+        let divergingData = {};
 
-                return isCorrectTimestamp && (isDepositTx || isRedeemTx);
-            }
-          ).map(tx => {
-            return ({...tx, value: this.functionsUtil.fixTokenDecimals(tx.value,this.props.tokenConfig.decimals)});
-          });
+        const startTimestamp = parseInt(apiResults_unfiltered[0].timestamp);
+        const endTimestamp = parseInt(moment()._d.getTime()/1000);
 
-          const startTimestamp = parseInt(filteredTxs[0].timeStamp);
-          const endTimestamp = parseInt(moment()._d.getTime()/1000); //parseInt(filteredTxs[filteredTxs.length-1].timeStamp);
+        for (let timestamp=startTimestamp;timestamp<=endTimestamp;timestamp+=86400){
+          const date = moment(timestamp*1000).format("YYYY/MM/DD");
+          if (!divergingData[date]){
+            divergingData[date] = {
+              date,
+              timestamp,
+              deposits: 0,
+              redeems: 0
+            };
+          }
+        }
 
-          let divergingData = {};
+        let lastRow = null;
+        apiResults_unfiltered.forEach(row => {
+          const date = moment(row.timestamp*1000).format("YYYY/MM/DD");
+          const idleTokens = this.functionsUtil.fixTokenDecimals(row.idleSupply,18);
 
-          for (let timestamp=startTimestamp;timestamp<=endTimestamp;timestamp+=86400){
-            const date = moment(timestamp*1000).format("YYYY/MM/DD");
-            if (!divergingData[date]){
-              divergingData[date] = {
-                date,
-                deposits: 0,
-                redeems: 0
-              };
-            }
+          if (!divergingData[date]){
+            divergingData[date] = {
+              date,
+              timestamp:row.timestamp,
+              deposits: 0,
+              redeems: 0
+            };
           }
 
-          const protocolsAddresses = this.props.tokenConfig.protocols.map(p => { return p.address.toLowerCase() });
-          let maxValue = 0;
-          let minValue = 0;
-
-          // Filter deposits
-          filteredTxs
-            .filter((tx) => { return tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase(); })
-            .forEach((tx,i) => {
-              const date = moment(tx.timeStamp*1000).format("YYYY/MM/DD");
-              divergingData[date].deposits+=parseFloat(tx.value);
-              maxValue = Math.max(maxValue,parseFloat(tx.value));
-            });
-
-          // Filter redeems
-          filteredTxs
-            .filter((tx) => { return tx.from.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase(); })
-            .forEach((tx,i) => {
-              let isRebalanceTx = false;
-              const txs = results.filter(r => r.hash === tx.hash && protocolsAddresses.includes(tx.contractAddress.toLowerCase()));
-              if (txs.length > 1){
-                const firstTx = txs[0];
-                const lastTx = txs[txs.length-1];
-                isRebalanceTx = firstTx.contractAddress.toLowerCase() !== lastTx.contractAddress.toLowerCase();
+          if (lastRow){
+            const idleTokensPrev = this.functionsUtil.fixTokenDecimals(lastRow.idleSupply,18);
+            const idleTokensDiff = !idleTokens.eq(idleTokensPrev);
+            if (idleTokensDiff){
+              const diff = idleTokens.minus(idleTokensPrev);
+              // Deposits
+              if (diff.gte(0)){
+                divergingData[date].deposits+=parseFloat(diff);
+              } else {
+                divergingData[date].redeems+=parseFloat(diff);
               }
-
-              if (!isRebalanceTx){
-                const date = moment(tx.timeStamp*1000).format("YYYY/MM/DD");
-                divergingData[date].redeems-=parseFloat(tx.value);
-
-                minValue = Math.min(minValue,-1*parseFloat(tx.value));
-              }
-            });
-
-          maxValue+=maxValue*0.2;
-          minValue-=minValue*0.2;
-
-          chartData = Object.values(divergingData);
-
-          chartType = Bar;
-
-          axisBottomIndex = 0;
-
-          chartProps = {
-            indexBy: 'date',
-            enableLabel: false,
-            enableGridX: true,
-            enableGridY: false,
-            // minValue,
-            // maxValue,
-            label: d => {
-              return Math.abs(d.value);
-            },
-            axisBottom:{
-              legend: '',
-              format: (value) => {
-                if (axisBottomIndex++ % 2 === 0){
-                  return moment(value,'YYYY/MM/DD HH:mm').format('MMM DD')
-                }
-              },
-              orient: 'bottom',
-              legendOffset: 36,
-              legendPosition: 'middle',
-              tickValues: 'every 2 days'
-            },
-            axisLeft: null,
-            axisRight: {
-              format: v => this.abbreviateNumber(Math.abs(v))
-            },
-            markers: [
-              {
-                axis: 'y',
-                value: 0,
-                lineStyle: { strokeOpacity: 0 },
-                textStyle: { fill: colors.blue },
-                legend: 'deposits',
-                legendPosition: 'top-left',
-                legendOrientation: 'vertical',
-                // legendOffsetY: 120,
-                legendOffsetX: -10
-              },
-              {
-                axis: 'y',
-                value: 0,
-                lineStyle: { stroke: colors.red, strokeWidth: 1 },
-                textStyle: { fill: colors.green },
-                legend: 'redeems',
-                legendPosition: 'bottom-left',
-                legendOrientation: 'vertical',
-                // legendOffsetY: 120,
-                legendOffsetX: -10
-              },
-            ],
-            keys:['deposits','redeems'],
-            padding:0.4,
-            colors:[colors.blue, colors.green],
-            margin: { top: 60, right: 60, bottom: 60, left: 60 },
-            labelTextColor: 'inherit:darker(1.4)',
-            labelSkipWidth: 16,
-            labelSkipHeight: 16,
-            tooltip:({ id, value, color }) => {
-              value = this.functionsUtil.formatMoney(value,0);
-              return (
-                <table style={{width:'100%',borderCollapse:'collapse'}}>
-                  <tbody>
-                    <tr>
-                      <td style={{padding:'3px 5px'}}>
-                        <span style={{display:'block', width: '12px', height: '12px', background: color}}></span>
-                      </td>
-                      <td style={{padding:'3px 5px',textTransform:'capitalize'}}>{id}</td>
-                      <td style={{padding:'3px 5px'}}><strong>{value} {this.props.selectedToken}</strong></td>
-                    </tr>
-                  </tbody>
-                </table>
-              );
             }
-            // labelFormat:v => `${v}%`
-          };
-
-          // debugger;
-        }
-      break;
-      /*
-      case 'VOL_LINE':
-        const results = await this.functionsUtil.getEtherscanTxs(this.props.tokenConfig.idle.address,60);
-        if (results){
-          const filteredTxs = results.filter(
-              tx => {
-                const internalTxs = results.filter(r => r.hash === tx.hash);
-                const isRightToken = internalTxs.length>1 && internalTxs.indexOf(tx) === 0;
-                const isDepositTx = isRightToken && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase();
-                const isRedeemTx = isRightToken && tx.from.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-                const isCorrectTimestamp = (!this.props.startTimestamp || tx.timeStamp >= this.props.startTimestamp) && (!this.props.endTimestamp || tx.timeStamp <= this.props.endTimestamp);
-
-                return isCorrectTimestamp && (isDepositTx || isRedeemTx);
-            }
-          ).map(tx => {
-            return ({...tx, value: this.functionsUtil.fixTokenDecimals(tx.value,this.props.tokenConfig.decimals)});
-          });
-
-          // console.log(results,filteredTxs);
-
-          const startTimestamp = parseInt(filteredTxs[0].timeStamp);
-          const endTimestamp = parseInt(moment()._d.getTime()/1000); //parseInt(filteredTxs[filteredTxs.length-1].timeStamp);
-
-          const deposits = {};
-          const redeems = {};
-
-          for (let timestamp=startTimestamp;timestamp<=endTimestamp;timestamp+=3600){
-            const x = moment(timestamp*1000).format("YYYY/MM/DD HH:00");
-            const y = 0;
-            if (!deposits[x]){
-              deposits[x] = { x, y };
-            }
-            if (!redeems[x]){
-              redeems[x] = { x, y };
-            }
+          } else {
+            divergingData[date].deposits+=parseFloat(idleTokens);
           }
 
-          // Filter deposits
-          filteredTxs
-            .filter((tx) => { return tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase(); })
-            .forEach((tx,i) => {
-              // console.log(`Deposit of ${tx.value} ${this.props.selectedToken} - ${tx.hash}`);
-              const x = moment(tx.timeStamp*1000).format("YYYY/MM/DD HH:00");
-              if (!deposits[x]){
-                deposits[x] = {
-                  x,
-                  y:0
-                };
+          lastRow = row;
+        });
+
+        chartData = Object.values(divergingData).filter(v => {
+          return (!this.props.startTimestamp || v.timestamp>=this.props.startTimestamp) && (!this.props.endTimestamp || v.timestamp<=this.props.endTimestamp);
+        });
+
+        chartType = Bar;
+
+        axisBottomIndex = 0;
+
+        chartProps = {
+          indexBy: 'date',
+          enableLabel: false,
+          enableGridX: true,
+          enableGridY: false,
+          // minValue,
+          // maxValue,
+          label: d => {
+            return Math.abs(d.value);
+          },
+          axisBottom:{
+            legend: '',
+            format: (value) => {
+              if (axisBottomIndex++ % ( this.props.isMobile ? 3 : 2 ) === 0){
+                return moment(value,'YYYY/MM/DD HH:mm').format('MMM DD')
               }
-
-              deposits[x].y+=parseFloat(tx.value);
-            });
-
-          // Filter redeems
-          filteredTxs
-            .filter((tx) => { return tx.from.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase(); })
-            .forEach((tx,i) => {
-              // console.log(`Redeem of ${tx.value} ${this.props.selectedToken} - ${tx.hash}`);
-              const x = moment(tx.timeStamp*1000).format("YYYY/MM/DD HH:00");
-              if (!redeems[x]){
-                redeems[x] = {
-                  x,
-                  y:0
-                };
-              }
-
-              redeems[x].y+=parseFloat(tx.value);
-            });
-
-          chartData.push({
-            id:'Deposits',
-            color: colors.blue,
-            data: Object.values(deposits)
-          });
-
-          chartData.push({
-            id:'Redeems',
-            color: colors.green,
-            data: Object.values(redeems)
-          });
-
-          // Set chart type
-          chartType = Line;
-
-          chartProps = {
-            xScale:{
-              type: 'time',
-              format: '%Y/%m/%d %H:%M',
             },
-            xFormat:'time:%b %d %H:%M',
-            yFormat:value => (parseInt(value)>=1000 ? parseFloat(value/1000).toFixed(1)+'K' : parseFloat(value).toFixed(1) )+' '+this.props.selectedToken,
-            yScale:{
-              type: 'linear',
-              stacked: false
+            orient: 'bottom',
+            legendOffset: 36,
+            legendPosition: 'middle',
+            tickValues: 'every 2 days'
+          },
+          axisLeft: null,
+          axisRight: {
+            format: v => this.abbreviateNumber(Math.abs(v))
+          },
+          markers: [
+            {
+              axis: 'y',
+              value: 0,
+              lineStyle: { strokeOpacity: 0 },
+              textStyle: { fill: colors.blue },
+              legend: 'deposits',
+              legendPosition: 'top-left',
+              legendOrientation: 'vertical',
+              // legendOffsetY: 120,
+              legendOffsetX: -10
             },
-            axisLeft:{
-              format: v => this.abbreviateNumber(v),
-              orient: 'left',
-              tickSize: 5,
-              tickPadding: 5,
-              tickRotation: 0,
-              legend: '',
-              legendOffset: -65,
-              legendPosition: 'middle'
+            {
+              axis: 'y',
+              value: 0,
+              lineStyle: { stroke: colors.red, strokeWidth: 1 },
+              textStyle: { fill: colors.green },
+              legend: 'redeems',
+              legendPosition: 'bottom-left',
+              legendOrientation: 'vertical',
+              // legendOffsetY: 120,
+              legendOffsetX: -10
             },
-            axisBottom:{
-              format: '%b %d',
-              tickValues: 'every 2 days',
-              orient: 'bottom',
-              legend: '',
-              legendOffset: 36,
-              legendPosition: 'middle'
-            },
-            lineWidth:1,
-            enableArea:false,
-            curve:"monotoneX",
-            enableSlices:'x',
-            enableGridX:true,
-            enableGridY:false,
-            colors:d => d.color,
-            pointSize:0,
-            pointColor:{ from: 'color', modifiers: []},
-            pointBorderWidth:1,
-            pointLabel:"y",
-            pointLabelYOffset:-12,
-            useMesh:true,
-            animate:false,
-            margin:{ top: 20, right: 20, bottom: 60, left: 80 }
-          };
-        }
+          ],
+          keys:['deposits','redeems'],
+          padding:0.4,
+          colors:[colors.blue, colors.green],
+          margin: this.props.isMobile ? { top: 20, right: 20, bottom: 40, left: 50 } : { top: 20, right: 60, bottom: 40, left: 60 },
+          labelTextColor: 'inherit:darker(1.4)',
+          labelSkipWidth: 16,
+          labelSkipHeight: 16,
+          tooltip:({ id, value, color }) => {
+            value = this.functionsUtil.formatMoney(value,0);
+            return (
+              <table style={{width:'100%',borderCollapse:'collapse'}}>
+                <tbody>
+                  <tr>
+                    <td style={{padding:'3px 5px'}}>
+                      <span style={{display:'block', width: '12px', height: '12px', background: color}}></span>
+                    </td>
+                    <td style={{padding:'3px 5px',textTransform:'capitalize'}}>{id}</td>
+                    <td style={{padding:'3px 5px'}}><strong>{value} {this.props.selectedToken}</strong></td>
+                  </tr>
+                </tbody>
+              </table>
+            );
+          }
+          // labelFormat:v => `${v}%`
+        };
       break;
-      */
       case 'AUM_ALL':
         await this.functionsUtil.asyncForEach(Object.keys(availableTokens[globalConfigs.network.requiredNetwork]),async (tokenName,i) => {
           const tokenConfig = availableTokens[globalConfigs.network.requiredNetwork][tokenName];
@@ -423,7 +276,7 @@ class StatsChart extends Component {
           },
           axisBottom:{
             format: '%b %d',
-            tickValues: 'every 2 days',
+            tickValues: this.props.isMobile ? 'every 4 days' : 'every 2 days',
             orient: 'bottom',
             legend: '',
             legendOffset: 36,
@@ -442,7 +295,7 @@ class StatsChart extends Component {
           pointLabelYOffset:-12,
           useMesh:true,
           animate:false,
-          margin:{ top: 20, right: 20, bottom: 60, left: 80 }
+          margin: this.props.isMobile ? { top: 20, right: 20, bottom: 40, left: 50 } : { top: 20, right: 60, bottom: 40, left: 60 },
         };
       break;
       case 'AUM':
@@ -514,7 +367,7 @@ class StatsChart extends Component {
           },
           axisBottom:{
             format: '%b %d',
-            tickValues: 'every 2 days',
+            tickValues: this.props.isMobile ? 'every 4 days' : 'every 2 days',
             orient: 'bottom',
             legend: '',
             legendOffset: 36,
@@ -533,7 +386,7 @@ class StatsChart extends Component {
           pointLabelYOffset:-12,
           useMesh:true,
           animate:false,
-          margin:{ top: 20, right: 20, bottom: 60, left: 80 },
+          margin: this.props.isMobile ? { top: 20, right: 20, bottom: 40, left: 50 } : { top: 20, right: 40, bottom: 40, left: 60 },
           sliceTooltip:(slideData) => {
             const { slice } = slideData;
             const point = slice.points[0];
@@ -627,7 +480,7 @@ class StatsChart extends Component {
           labelSkipHeight: 16,
           keys: Object.keys(keys),
           labelTextColor: 'inherit:darker(1.4)',
-          margin: { top: 60, right: 60, bottom: 60, left: 60 },
+          margin: this.props.isMobile ? { top: 20, right: 20, bottom: 40, left: 50 } : { top: 20, right: 40, bottom: 40, left: 60 },
           colors: ({ id, data }) => data[`${id}Color`],
           axisLeft:{
             format: v => this.abbreviateNumber(v),
@@ -642,7 +495,7 @@ class StatsChart extends Component {
           axisBottom:{
             legend: '',
             format: (value) => {
-              if (axisBottomIndex++ % 2 === 0){
+              if (axisBottomIndex++ % ( this.props.isMobile ? 3 : 2 ) === 0){
                 return moment(value,'YYYY/MM/DD HH:mm').format('MMM DD')
               }
             },
@@ -668,77 +521,6 @@ class StatsChart extends Component {
             )
           }
         }
-      break;
-      case 'ALL_LINE':
-        this.props.tokenConfig.protocols.forEach((p,j) => {
-          chartData.push({
-            id:p.name,
-            color: 'hsl('+globalConfigs.stats.protocols[p.name].color.hsl.join(',')+')',
-            data: apiResults.map((d,i) => {
-              return d.protocolsData.filter((protocolAllocation,x) => {
-                  return protocolAllocation.protocolAddr.toLowerCase() === p.address.toLowerCase()
-              })
-              .map((protocolAllocation,z) => {
-                const protocolPaused = this.functionsUtil.BNify(protocolAllocation.rate).eq(0);
-                if (!protocolPaused){
-                  const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
-                  const y = parseInt(this.functionsUtil.fixTokenDecimals(protocolAllocation.allocation,this.props.tokenConfig.decimals));
-                  return { x, y };
-                }
-                return undefined;
-              })[0]
-            }).filter((v) => { return v !== undefined; } )
-          })
-        });
-
-        // Set chart type
-        chartType = Line;
-
-        chartProps = {
-          xScale:{
-            type: 'time',
-            format: '%Y/%m/%d %H:%M',
-            // precision: 'hour',
-          },
-          xFormat:'time:%b %d %H:%M',
-          yFormat:value => (parseInt(value)>=1000 ? parseFloat(value/1000).toFixed(1)+'K' : parseFloat(value) )+' '+this.props.selectedToken,
-          yScale:{
-            type: 'linear',
-            stacked: false
-          },
-          axisLeft:{
-            format: v => this.abbreviateNumber(v),
-            orient: 'left',
-            tickSize: 5,
-            tickPadding: 5,
-            tickRotation: 0,
-            legend: '',
-            legendOffset: -70,
-            legendPosition: 'middle'
-          },
-          axisBottom:{
-            format: '%b %d',
-            tickValues: 'every 2 days',
-            orient: 'bottom',
-            legend: '',
-            legendOffset: 36,
-            legendPosition: 'middle'
-          },
-          pointSize:0,
-          useMesh:true,
-          animate:false,
-          pointLabel:"y",
-          curve:'linear',
-          enableArea:true,
-          enableSlices:'x',
-          enableGridX:true,
-          enableGridY:false,
-          pointBorderWidth:1,
-          colors:d => d.color,
-          pointLabelYOffset:-12,
-          pointColor:{ from: 'color', modifiers: []},
-          margin:{ top: 20, right: 20, bottom: 60, left: 80 }
-        };
       break;
       case 'ALL_PERC':
         keys = {};
@@ -792,12 +574,15 @@ class StatsChart extends Component {
           labelSkipHeight: 16,
           keys: Object.keys(keys),
           labelTextColor: 'inherit:darker(1.4)',
-          margin: { top: 60, right: 60, bottom: 60, left: 60 },
+          margin: this.props.isMobile ? { top: 20, right: 20, bottom: 40, left: 50 } : { top: 20, right: 40, bottom: 40, left: 60 },
           colors: ({ id, data }) => data[`${id}Color`],
+          axisLeft:{
+            format: v => parseInt(v)+'%'
+          },
           axisBottom:{
             legend: '',
             format: (value) => {
-              if (axisBottomIndex++ % 2 === 0){
+              if (axisBottomIndex++ % ( this.props.isMobile ? 3 : 2 ) === 0){
                 return moment(value,'YYYY/MM/DD HH:mm').format('MMM DD')
               }
             },
@@ -823,83 +608,6 @@ class StatsChart extends Component {
             )
           }
         }
-      break;
-      case 'ALL_PERC_LINE':
-        this.props.tokenConfig.protocols.forEach((p,j) => {
-          chartData.push({
-            id:p.name,
-            color: 'hsl('+globalConfigs.stats.protocols[p.name].color.hsl.join(',')+')',
-            data: apiResults.map((d,i) => {
-              const totalAllocation = d.protocolsData.reduce((accumulator,protocolAllocation) => {
-                const allocation = this.functionsUtil.fixTokenDecimals(protocolAllocation.allocation,this.props.tokenConfig.decimals);
-                return this.functionsUtil.BNify(accumulator).plus(allocation);
-              },0);
-
-              return d.protocolsData.filter((protocolAllocation,x) => {
-                  return protocolAllocation.protocolAddr.toLowerCase() === p.address.toLowerCase()
-              })
-              .map((protocolAllocation,z) => {
-                const protocolPaused = this.functionsUtil.BNify(protocolAllocation.rate).eq(0);
-                if (!protocolPaused){
-                  const allocation = this.functionsUtil.fixTokenDecimals(protocolAllocation.allocation,this.props.tokenConfig.decimals);
-                  const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
-                  const y = parseFloat(allocation.div(totalAllocation).times(100));
-                  return { x, y };
-                }
-                return undefined;
-              })[0]
-            }).filter((v) => { return v !== undefined; } )
-          })
-        });
-
-        // Set chart type
-        chartType = Line;
-
-        chartProps = {
-          xScale:{
-            type: 'time',
-            format: '%Y/%m/%d %H:%M',
-            // precision: 'hour',
-          },
-          xFormat:'time:%b %d %H:%M',
-          yFormat: value => value.toFixed(2)+'%',
-          yScale:{
-            type: 'linear',
-            stacked: false
-          },
-          axisLeft:{
-            format: value => parseInt(value)+'%',
-            orient: 'left',
-            tickSize: 5,
-            tickPadding: 5,
-            tickRotation: 0,
-            legend: '',
-            legendOffset: -70,
-            legendPosition: 'middle'
-          },
-          axisBottom:{
-            format: '%b %d',
-            tickValues: 'every 2 days',
-            orient: 'bottom',
-            legend: '',
-            legendOffset: 36,
-            legendPosition: 'middle'
-          },
-          enableArea:true,
-          curve:"linear",
-          enableSlices:'x',
-          enableGridX:true,
-          enableGridY:false,
-          colors:d => d.color,
-          pointSize:0,
-          pointColor:{ from: 'color', modifiers: []},
-          pointBorderWidth:1,
-          pointLabel:"y",
-          pointLabelYOffset:-12,
-          useMesh:true,
-          animate:false,
-          margin:{ top: 20, right: 20, bottom: 60, left: 80 }
-        };
       break;
       case 'APR':
         this.props.tokenConfig.protocols.forEach((p,j) => {
@@ -949,7 +657,7 @@ class StatsChart extends Component {
             stacked: false
           },
           axisLeft:{
-            format: value => parseInt(value),
+            format: value => parseInt(value)+'%',
             orient: 'left',
             tickSize: 5,
             tickPadding: 5,
@@ -960,7 +668,7 @@ class StatsChart extends Component {
           },
           axisBottom:{
             format: '%b %d',
-            tickValues: 'every 2 days',
+            tickValues: this.props.isMobile ? 'every 4 days' : 'every 2 days',
             orient: 'bottom',
             legend: '',
             legendOffset: 36,
@@ -979,7 +687,7 @@ class StatsChart extends Component {
           colors:d => d.color,
           pointLabelYOffset:-12,
           pointColor:{ from: 'color', modifiers: []},
-          margin:{ top: 20, right: 20, bottom: 60, left: 80 }
+          margin: this.props.isMobile ? { top: 20, right: 20, bottom: 40, left: 50 } : { top: 20, right: 40, bottom: 40, left: 60 },
         };
       break;
       case 'PRICE':
@@ -998,10 +706,6 @@ class StatsChart extends Component {
                 const protocolPaused = this.functionsUtil.BNify(protocolAllocation.rate).eq(0);
                 if (!protocolPaused){
                   const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
-                  // const rate = parseFloat(this.functionsUtil.fixTokenDecimals(protocolAllocation.price,p.functions.exchangeRate.decimals));
-                  // const diff = lastRate ? rate/lastRate-1 : 0;
-                  // const y = initBalance+diff;
-                  // lastRate = lastRate ? lastRate : rate;
 
                   const rate = this.functionsUtil.fixTokenDecimals(protocolAllocation.price,p.functions.exchangeRate.decimals);
                   let y = 0;
@@ -1027,12 +731,7 @@ class StatsChart extends Component {
           color: 'hsl('+globalConfigs.stats.protocols.idle.color.hsl.join(',')+')',
           data: apiResults.map((d,i) => {
             const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
-            // const rate = parseFloat(this.functionsUtil.fixTokenDecimals(d.idlePrice,this.props.tokenConfig.decimals));
-            // const diff = lastRate ? rate/lastRate-1 : 0;
-            // const y = initBalance+diff;
-            // if (!lastRate){
-            //   lastRate = rate;
-            // }
+
             const rate = this.functionsUtil.fixTokenDecimals(d.idlePrice,this.props.tokenConfig.decimals);
             let y = 0;
 
@@ -1066,7 +765,7 @@ class StatsChart extends Component {
             // min: 1
           },
           axisLeft:{
-            format: value => parseFloat(value).toFixed(2),
+            format: value => parseFloat(value).toFixed(2)+'%',
             orient: 'left',
             tickSize: 5,
             tickPadding: 5,
@@ -1077,7 +776,7 @@ class StatsChart extends Component {
           },
           axisBottom:{
             format: '%b %d',
-            tickValues: 'every 2 days',
+            tickValues: this.props.isMobile ? 'every 4 days' : 'every 2 days',
             orient: 'bottom',
             legend: '',
             legendOffset: 36,
@@ -1096,7 +795,7 @@ class StatsChart extends Component {
           colors:d => d.color,
           pointLabelYOffset:-12,
           pointColor:{ from: 'color', modifiers: []},
-          margin:{ top: 20, right: 20, bottom: 60, left: 80 }
+          margin: this.props.isMobile ? { top: 20, right: 20, bottom: 40, left: 50 } : { top: 20, right: 40, bottom: 40, left: 60 },
         };
       break;
       default:
