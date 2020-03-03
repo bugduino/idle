@@ -2370,7 +2370,7 @@ class SmartContractControls extends React.Component {
   render() {
     const hasBalance = !isNaN(this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)) && this.functionsUtil.trimEth(this.state.tokenToRedeemParsed) > 0;
     // const navPool = this.getFormattedBalance(this.state.navPool,this.props.selectedToken);
-    const idleTokenPrice = this.getFormattedBalance(this.state.idleTokenPrice,this.props.selectedToken);
+
     const depositedFunds = this.getFormattedBalance(this.state.amountLent,this.props.selectedToken,6,9);
     const earningPerc = !isNaN(this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)) && this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)>0 && this.state.amountLent>0 ? this.getFormattedBalance(this.functionsUtil.BNify(this.state.tokenToRedeemParsed).div(this.functionsUtil.BNify(this.state.amountLent)).minus(1).times(100),'%',4) : '0%';
     const currentApr = !isNaN(this.state.maxRate) ? this.getFormattedBalance(this.state.maxRate,'%',2) : '-';
@@ -2391,6 +2391,9 @@ class SmartContractControls extends React.Component {
     const reedemableFundsAtEndOfYear = !isNaN(this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)) && !isNaN(this.functionsUtil.trimEth(this.state.earningPerYear)) ? parseFloat(this.functionsUtil.trimEth(this.functionsUtil.BNify(this.state.tokenToRedeemParsed).plus(this.functionsUtil.BNify(this.state.earningPerYear)),8)) : 0;
     const currentEarning = !isNaN(this.functionsUtil.trimEth(this.state.earning)) ? parseFloat(this.functionsUtil.trimEth(this.state.earning,8)) : 0;
     const earningAtEndOfYear = !isNaN(this.functionsUtil.trimEth(this.state.earning)) ? parseFloat(this.functionsUtil.trimEth(this.functionsUtil.BNify(this.state.earning).plus(this.functionsUtil.BNify(this.state.earningPerYear)),8)) : 0;
+
+    const idleTokenPrice = parseFloat(this.state.idleTokenPrice);
+    const idleTokenPriceEndOfYear = idleTokenPrice && !isNaN(this.state.maxRate) ? parseFloat(this.functionsUtil.BNify(idleTokenPrice).plus(this.functionsUtil.BNify(idleTokenPrice).times(this.functionsUtil.BNify(this.state.maxRate)))) : idleTokenPrice;
 
     const fundsAreReady = this.state.fundsError || (!this.state.updateInProgress && !isNaN(this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)) && !isNaN(this.functionsUtil.trimEth(this.state.earning)) && !isNaN(this.functionsUtil.trimEth(this.state.amountLent)));
     const transactionsAreReady = this.state.prevTxs !== null;
@@ -3192,7 +3195,24 @@ class SmartContractControls extends React.Component {
                                         </Tooltip>
                                       </Flex>
                                       <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                        { idleTokenPrice }
+                                        {
+                                          idleTokenPrice ? (
+                                            <CountUp
+                                              start={idleTokenPrice}
+                                              end={idleTokenPriceEndOfYear}
+                                              useEasing={false}
+                                              duration={31536000}
+                                              delay={0}
+                                              separator=""
+                                              decimals={ 6 }
+                                              decimal="."
+                                            >
+                                              {({ countUpRef, start }) => (
+                                                <><span ref={countUpRef} /> <span style={{fontSize:'16px',fontWeight:'400',lineHeight:'1.5',color:'#3F3D4B'}}>{this.props.selectedToken}</span></>
+                                              )}
+                                            </CountUp>
+                                          ) : '-'
+                                        }
                                       </Heading.h3>
                                     </Box>
                                   </Flex>
