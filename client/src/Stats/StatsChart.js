@@ -444,6 +444,7 @@ class StatsChart extends Component {
           let row = {
             date:moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm")
           };
+
           if (tempData[date]){
             row = tempData[date];
           }
@@ -453,14 +454,16 @@ class StatsChart extends Component {
             const protocolName = this.props.tokenConfig.protocols.filter((p) => { return p.address.toLowerCase() === protocolData.protocolAddr.toLowerCase() })[0].name;
             if (!protocolPaused){
               const allocation = parseInt(this.functionsUtil.fixTokenDecimals(protocolData.allocation,this.props.tokenConfig.decimals));
-              keys[protocolName] = 1;
-              row[protocolName] = allocation;
-              row[`${protocolName}Color`] = 'hsl('+globalConfigs.stats.protocols[protocolName].color.hsl.join(',')+')';
+              if (!tempData[date] || !tempData[date][protocolName] || tempData[date][protocolName]<allocation){
+                keys[protocolName] = 1;
+                row[protocolName] = allocation;
+                row[`${protocolName}Color`] = 'hsl('+globalConfigs.stats.protocols[protocolName].color.hsl.join(',')+')';
+              }
             } else if (typeof row[protocolName] !== undefined) {
               row[protocolName] = 0;
             } 
           });
-          
+            
           tempData[date] = row;
         });
 
