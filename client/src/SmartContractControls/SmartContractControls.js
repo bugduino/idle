@@ -1759,9 +1759,10 @@ class SmartContractControls extends React.Component {
     }
 
     await Promise.all([
-      this.getAprs(),
+      this.getAprs().then(() => {
+        this.getAllocations()
+      }),
       this.checkMigration(),
-      this.getAllocations(),
       this.checkContractPaused(),
       this.rebalanceCheck(),
       this.getPriceInToken(),
@@ -2104,7 +2105,9 @@ class SmartContractControls extends React.Component {
       await Promise.all([
         this.checkMigration(),
         this.checkTokenApproved(),
-        this.getAllocations(),
+        this.getAprs().then(() => {
+          this.getAllocations()
+        }),
         this.getTokenBalance(),
         (getTxsList ? this.getPrevTxs() : null)
       ]);
@@ -2180,7 +2183,9 @@ class SmartContractControls extends React.Component {
       }
 
       this.rebalanceCheck();
-      this.getAllocations();
+      this.getAprs().then(() => {
+        this.getAllocations()
+      });
     }
 
     if (tabIndex !== '2') {
@@ -3340,10 +3345,10 @@ class SmartContractControls extends React.Component {
                           }
                           const protocolName = protocolInfo.name;
                           const protocolEnabled = protocolInfo.enabled;
-                          const protocolApr = this.state.protocolsAprs[protocolAddr];
+                          const protocolApr = this.state.protocolsAprs ? this.state.protocolsAprs[protocolAddr] : null;
                           const protocolAllocation = parseFloat(this.state.protocolsAllocations[protocolAddr]);
-                          const protocolEarningPerYear = parseFloat(this.functionsUtil.BNify(protocolAllocation).times(this.functionsUtil.BNify(protocolApr.div(100))));
-                          const protocolAllocationEndOfYear = parseFloat(this.functionsUtil.BNify(protocolAllocation).plus(this.functionsUtil.BNify(protocolEarningPerYear)));
+                          const protocolEarningPerYear = protocolApr !== null ? parseFloat(this.functionsUtil.BNify(protocolAllocation).times(this.functionsUtil.BNify(protocolApr.div(100)))) : 0;
+                          const protocolAllocationEndOfYear = protocolEarningPerYear ? parseFloat(this.functionsUtil.BNify(protocolAllocation).plus(this.functionsUtil.BNify(protocolEarningPerYear))) : 0;
                           return (
                             <Box key={`allocation_${protocolName}`} width={[1,1/Object.keys(this.state.protocolsAllocations).length]}>
                               <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'} style={{textTransform:'capitalize'}}>
