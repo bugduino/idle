@@ -470,9 +470,9 @@ const availableTokens = {
             }
           },
         },
-        /*
         {
           name:'aave',
+          enabled:true,
           abi:aToken,
           address:'0x9bA00D6856a4eDF4665BcA2C2309936572473B7E',
           token:'aUSDC',
@@ -480,7 +480,6 @@ const availableTokens = {
             
           }
         }
-        */
       ]
     }
   }
