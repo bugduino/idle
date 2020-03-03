@@ -313,47 +313,6 @@ const globalConfigs = {
             }
           }
         },
-        getInitParams_old: (props,globalConfigs,buyParams) => {
-
-          const generateSecretKey = () => {
-            let secretKey = null;
-            if (localStorage) {
-              if (!(secretKey = localStorage.getItem('wyreSecretKey'))){
-                secretKey = 'xxxxxxxx-xxxx-yxxx-yxxx-xxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                  // eslint-disable-next-line
-                  var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-                  return v.toString(16);
-                });
-                localStorage.setItem('wyreSecretKey',secretKey);
-              }
-            }
-            return secretKey;
-          }
-
-          const methods = {
-            'bank':'onramp',
-            'card':'debitcard'
-          };
-
-          const secretKey = generateSecretKey();
-          const env = globalConfigs.payments.providers.wyre.env;
-          const envParams = globalConfigs.payments.providers.wyre.envParams[env];
-          const accountId = envParams.accountId;
-
-          return {
-            accountId,
-            auth: {
-              type: 'secretKey',
-              secretKey
-            },
-            env,
-            operation: {
-              type: methods[buyParams.selectedMethod],
-              dest: `ethereum:${props.account}`,
-              destCurrency: buyParams.selectedToken ? buyParams.selectedToken : ( props.tokenConfig.wyre && props.tokenConfig.wyre.destCurrency ? props.tokenConfig.wyre.destCurrency : props.selectedToken ),
-            }
-          };
-        }
       },
       ramp: {
         enabled:true,
