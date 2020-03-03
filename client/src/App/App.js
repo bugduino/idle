@@ -108,7 +108,14 @@ class App extends Component {
     }
 
     const requiredNetwork = globalConfigs.network.requiredNetwork;
-    const availableTokensNetwork = availableTokens[requiredNetwork];
+    const availableTokensNetwork = {};
+
+    Object.keys(availableTokens[requiredNetwork]).forEach((token) => {
+      const tokenInfo = availableTokens[requiredNetwork][token];
+      if (tokenInfo.enabled){
+        availableTokensNetwork[token] = tokenInfo;
+      }
+    });
 
     await this.setState({ availableTokens: availableTokensNetwork });
 

@@ -7,7 +7,6 @@ import { Flex, Loader, Text } from 'rimble-ui';
 import globalConfigs from '../configs/globalConfigs';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import GenericChart from '../GenericChart/GenericChart';
-import availableTokens from '../configs/availableTokens';
 
 class StatsChart extends Component {
   state = {
@@ -230,6 +229,7 @@ class StatsChart extends Component {
           // labelFormat:v => `${v}%`
         };
       break;
+      /*
       case 'AUM_ALL':
         await this.functionsUtil.asyncForEach(Object.keys(availableTokens[globalConfigs.network.requiredNetwork]),async (tokenName,i) => {
           const tokenConfig = availableTokens[globalConfigs.network.requiredNetwork][tokenName];
@@ -298,6 +298,7 @@ class StatsChart extends Component {
           margin: this.props.isMobile ? { top: 20, right: 20, bottom: 40, left: 50 } : { top: 20, right: 60, bottom: 40, left: 60 },
         };
       break;
+      */
       case 'AUM':
         chartData.push({
           id:'AUM',
@@ -440,9 +441,10 @@ class StatsChart extends Component {
         tempData = {};
 
         apiResults.forEach((d,i) => {
-          const date = moment(d.timestamp*1000).format("YYYY/MM/DD")
+          const date = moment(d.timestamp*1000).format("YYYY/MM/DD");
+
           let row = {
-            date:moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm")
+            date
           };
 
           if (tempData[date]){
@@ -454,16 +456,16 @@ class StatsChart extends Component {
             const protocolName = this.props.tokenConfig.protocols.filter((p) => { return p.address.toLowerCase() === protocolData.protocolAddr.toLowerCase() })[0].name;
             if (!protocolPaused){
               const allocation = parseInt(this.functionsUtil.fixTokenDecimals(protocolData.allocation,this.props.tokenConfig.decimals));
-              if (!tempData[date] || !tempData[date][protocolName] || tempData[date][protocolName]<allocation){
+              if (!row[protocolName] || row[protocolName]<allocation || !allocation){
                 keys[protocolName] = 1;
                 row[protocolName] = allocation;
                 row[`${protocolName}Color`] = 'hsl('+globalConfigs.stats.protocols[protocolName].color.hsl.join(',')+')';
               }
-            } else if (typeof row[protocolName] !== undefined) {
+            } else {
               row[protocolName] = 0;
-            } 
+            }
           });
-            
+
           tempData[date] = row;
         });
 

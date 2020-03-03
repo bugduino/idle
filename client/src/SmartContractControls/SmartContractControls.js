@@ -373,17 +373,17 @@ class SmartContractControls extends React.Component {
       // this.functionsUtil.customLog('getBalanceOf 2','tokenToRedeem',tokenToRedeem.toString(),'amountLent',this.state.amountLent.toString());
 
       if (amountLent && this.functionsUtil.trimEth(amountLent.toString())>0 && this.functionsUtil.trimEth(tokenToRedeem.toString())>0 && parseFloat(this.functionsUtil.trimEth(tokenToRedeem.toString()))<parseFloat(this.functionsUtil.trimEth(amountLent.toString()))){
-        console.error('tokenToRedeem',tokenToRedeem.toString(),' less than amountLent',amountLent.toString());
+        // console.error('tokenToRedeem',tokenToRedeem.toString(),' less than amountLent',amountLent.toString());
         amountLent = tokenToRedeem;
       } else if (amountLent && amountLent.lte(0) && tokenToRedeem){
-        console.log('AmountLent 3',amountLent.toString(),tokenToRedeem.toString());
+        // console.log('AmountLent 3',amountLent.toString(),tokenToRedeem.toString());
         amountLent = tokenToRedeem;
       }
 
       // console.log((tokenToRedeem ? tokenToRedeem.toString() : null),(amountLent ? amountLent.toString() : null));
 
       if (this.functionsUtil.BNify(tokenToRedeem).gt(this.functionsUtil.BNify(amountLent))){
-        console.log('AmountLent 4',amountLent.toString(),tokenToRedeem.toString());
+        // console.log('AmountLent 4',amountLent.toString(),tokenToRedeem.toString());
         earning = tokenToRedeem.minus(this.functionsUtil.BNify(amountLent));
       }
 
