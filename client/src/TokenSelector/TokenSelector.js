@@ -66,7 +66,7 @@ class TokenSelector extends Component {
                       if (token !== this.props.selectedToken){
                         const tokenInfo = this.props.availableTokens[token];
                         const tokenEnabled = tokenInfo.enabled;
-                        if (!this.props.isMobile && tokenEnabled){
+                        if (!this.props.isMobile || tokenEnabled){
                           return (
                             <TokenSelectorItem isMobile={this.props.isMobile} disabled={!tokenEnabled} key={'token_selector_'+token} borderRadius={4} isChild={true} token={token} color={this.props.color} size={this.props.size} handleClick={ e => {this.selectToken(token,tokenInfo) }} />
                           );
