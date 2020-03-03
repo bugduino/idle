@@ -667,14 +667,16 @@ class Landing extends Component {
                         const protocolAddr = protocolInfo.address;
                         const protocolName = protocolInfo.name;
                         const protocolToken = protocolInfo.token;
+                        const protocolEnabled = protocolInfo.enabled;
+
                         const protocolLoaded = this.state.totalAllocation && this.state.protocolsAllocations && this.state.protocolsAllocations[protocolAddr];
                         const protocolAllocation = protocolLoaded ? parseFloat(this.state.protocolsAllocations[protocolAddr].toString()) : null;
                         const protocolAllocationPerc = protocolAllocation !== null ? parseFloat(protocolAllocation)/parseFloat(this.state.totalAllocation.toString()) : null;
-                        const protocolOpacity = protocolAllocationPerc>maxOpacity ? maxOpacity : (protocolAllocationPerc<minOpacity) ? minOpacity : protocolAllocationPerc.toFixed(2);
-                        const protocolAllocationPercParsed = protocolAllocationPerc === null ? '-' : (protocolAllocationPerc*100).toFixed(2);
+                        const protocolOpacity = !protocolEnabled ? '0.3' : (protocolAllocationPerc>maxOpacity ? maxOpacity : (protocolAllocationPerc<minOpacity) ? minOpacity : protocolAllocationPerc.toFixed(2));
+                        const protocolAllocationPercParsed = !protocolEnabled ? 'paused' : (protocolAllocationPerc === null ? '-' : (protocolAllocationPerc*100).toFixed(2));
 
                         let output = null;
-                        const protocolColor = globalConfigs.stats.protocols[protocolName].color.rgb.join(',');
+                        const protocolColor = protocolEnabled ? globalConfigs.stats.protocols[protocolName].color.rgb.join(',') : '200,200,200';
                         const boxShadow = `0px 0px 16px 2px rgba(${protocolColor},${protocolOpacity})`;
 
                         switch (protocolLen){
@@ -723,7 +725,7 @@ class Landing extends Component {
                                       </Flex>
                                       <Box>
                                         <Card my={[2,2]} p={3} borderRadius={'10px'} boxShadow={protocolAllocationPerc>0 ? boxShadow : 1}>
-                                          <Text fontSize={[4,5]} fontWeight={4} textAlign={'center'}>{protocolAllocationPercParsed}<Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span></Text>
+                                          <Text color={protocolEnabled ? 'copyColor' : 'darkGray' } fontSize={[4,5]} fontWeight={4} textAlign={'center'}>{protocolAllocationPercParsed}{ protocolEnabled ? <Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span> : null }</Text>
                                         </Card>
                                       </Box>
                                     </Flex>
@@ -745,7 +747,7 @@ class Landing extends Component {
                                       </Flex>
                                       <Box>
                                         <Card my={[2,2]} p={3} borderRadius={'10px'} boxShadow={protocolAllocationPerc>0 ? boxShadow : 1}>
-                                          <Text fontSize={[4,5]} fontWeight={4} textAlign={'center'}>{protocolAllocationPercParsed}<Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span></Text>
+                                          <Text color={protocolEnabled ? 'copyColor' : 'darkGray' } fontSize={[4,5]} fontWeight={4} textAlign={'center'}>{protocolAllocationPercParsed}{ protocolEnabled ? <Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span> : null }</Text>
                                         </Card>
                                       </Box>
                                     </Flex>
@@ -767,7 +769,7 @@ class Landing extends Component {
                                       </Flex>
                                       <Box>
                                         <Card my={[2,2]} p={3} borderRadius={'10px'} boxShadow={protocolAllocationPerc>0 ? boxShadow : 1}>
-                                          <Text fontSize={[4,5]} fontWeight={4} textAlign={'center'}>{protocolAllocationPercParsed}<Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span></Text>
+                                          <Text color={protocolEnabled ? 'copyColor' : 'darkGray' } fontSize={[4,5]} fontWeight={4} textAlign={'center'}>{protocolAllocationPercParsed}{ protocolEnabled ? <Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span> : null }</Text>
                                         </Card>
                                       </Box>
                                     </Flex>

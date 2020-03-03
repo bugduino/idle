@@ -3319,6 +3319,7 @@ class SmartContractControls extends React.Component {
                             return false;
                           }
                           const protocolName = protocolInfo.name;
+                          const protocolEnabled = protocolInfo.enabled;
                           const protocolApr = parseFloat(this.functionsUtil.toEth(this.state[`${protocolName}Apr`]));
                           const protocolAllocation = parseFloat(this.state.allocations[protocolAddr]);
                           const protocolEarningPerYear = parseFloat(this.functionsUtil.BNify(protocolAllocation).times(this.functionsUtil.BNify(protocolApr/100)));
@@ -3328,25 +3329,33 @@ class SmartContractControls extends React.Component {
                               <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'} style={{textTransform:'capitalize'}}>
                                 {protocolName}
                               </Text>
-                              <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'} style={{whiteSpace:'nowrap'}}>
-                                {protocolAllocation ?
-                                  <CountUp
-                                    start={protocolAllocation}
-                                    end={protocolAllocationEndOfYear}
-                                    useEasing={false}
-                                    duration={31536000}
-                                    delay={0}
-                                    separator=""
-                                    decimals={rebalanceCounterDecimals}
-                                    decimal="."
-                                  >
-                                    {({ countUpRef, start }) => (
-                                      <><span ref={countUpRef} /> <span style={{fontSize:'16px',fontWeight:'400',lineHeight:'1.5',color:'#3F3D4B'}}>{this.props.selectedToken}</span></>
-                                    )}
-                                  </CountUp>
-                                  : parseInt(0).toFixed(6)
-                                }
-                              </Heading.h3>
+                              {
+                                protocolEnabled ? (
+                                  <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'} style={{whiteSpace:'nowrap'}}>
+                                    {protocolAllocation ?
+                                      <CountUp
+                                        start={protocolAllocation}
+                                        end={protocolAllocationEndOfYear}
+                                        useEasing={false}
+                                        duration={31536000}
+                                        delay={0}
+                                        separator=""
+                                        decimals={rebalanceCounterDecimals}
+                                        decimal="."
+                                      >
+                                        {({ countUpRef, start }) => (
+                                          <><span ref={countUpRef} /> <span style={{fontSize:'16px',fontWeight:'400',lineHeight:'1.5',color:'#3F3D4B'}}>{this.props.selectedToken}</span></>
+                                        )}
+                                      </CountUp>
+                                      : parseInt(0).toFixed(6)
+                                    }
+                                  </Heading.h3>
+                                ) : (
+                                  <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'darkGray'} textAlign={'center'} style={{whiteSpace:'nowrap'}}>
+                                    paused
+                                  </Heading.h3>
+                                )
+                              }
                             </Box>
                           )
                         })
