@@ -41,6 +41,7 @@ class LandingForm extends Component {
               initSimpleID={initSimpleID}
               transactions={transactions}
               initContract={initContract}
+              getAprs={this.props.getAprs}
               tokenDecimals={tokenDecimals}
               isMobile={this.props.isMobile}
               accountBalance={accountBalance}

@@ -69,10 +69,10 @@ const availableTokens = {
           abi:cDAI.abi,
           address:'0x63c344bf8651222346dd870be254d4347c9359f7',
           token:'cSAI',
+          decimals:28,
           functions:{
             exchangeRate:{
               name:'exchangeRateStored',
-              decimals:28,
               params:[]
             }
           },
@@ -83,10 +83,10 @@ const availableTokens = {
           abi:iDAI,
           address:'0xA1e58F3B1927743393b25f261471E1f2D3D9f0F6',
           token:'iSAI',
+          decimals:18,
           functions:{
             exchangeRate:{
               name:'tokenPrice',
-              decimals:18,
               params:[]
             }
           },
@@ -154,10 +154,10 @@ const availableTokens = {
           abi:cDAI.abi,
           address:'0xe7bc397dbd069fc7d0109c0636d06888bb50668c',
           token:'cDAI',
+          decimals:28,
           functions:{
             exchangeRate:{
               name:'exchangeRateStored',
-              decimals:28,
               params:[]
             }
           },
@@ -168,10 +168,10 @@ const availableTokens = {
           abi:iDAI,
           address:'0x6c1e2b0f67e00c06c8e2be7dc681ab785163ff4d',
           token:'iDAI',
+          decimals:18,
           functions:{
             exchangeRate:{
               name:'tokenPrice',
-              decimals:18,
               params:[]
             }
           },
@@ -208,10 +208,10 @@ const availableTokens = {
           abi:cDAI.abi,
           address:'0x63c344bf8651222346dd870be254d4347c9359f7',
           token:'cUSDC',
+          decimals:28,
           functions:{
             exchangeRate:{
               name:'exchangeRateStored',
-              decimals:28,
               params:[]
             }
           },
@@ -222,10 +222,10 @@ const availableTokens = {
           abi:iDAI,
           address:'0xA1e58F3B1927743393b25f261471E1f2D3D9f0F6',
           token:'iUSDC',
+          decimals:18,
           functions:{
             exchangeRate:{
               name:'tokenPrice',
-              decimals:18,
               params:[]
             }
           },
@@ -296,10 +296,10 @@ const availableTokens = {
           abi:cDAI.abi,
           address:'0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643',
           token:'cDAI',
+          decimals:28,
           functions:{
             exchangeRate:{
               name:'exchangeRateStored',
-              decimals:28,
               params:[]
             }
           },
@@ -310,10 +310,10 @@ const availableTokens = {
           abi:iDAI,
           address:'0x493c57c4763932315a328269e1adad09653b9081',
           token:'iDAI',
+          decimals:18,
           functions:{
             exchangeRate:{
               name:'tokenPrice',
-              decimals:18,
               params:[]
             }
           },
@@ -324,6 +324,7 @@ const availableTokens = {
           abi:aToken,
           address:'0xfC1E690f61EFd961294b3e1Ce3313fBD8aa4f85d',
           token:'aDAI',
+          decimals:18,
           functions:{
 
           }
@@ -392,10 +393,10 @@ const availableTokens = {
           abi:cDAI.abi,
           address:'0xf5dce57282a584d2746faf1593d3121fcac444dc',
           token:'cSAI',
+          decimals:28,
           functions:{
             exchangeRate:{
               name:'exchangeRateStored',
-              decimals:28,
               params:[]
             }
           },
@@ -406,10 +407,10 @@ const availableTokens = {
           abi:iDAI,
           address:'0x14094949152eddbfcd073717200da82fed8dc960',
           token:'iSAI',
+          decimals:18,
           functions:{
             exchangeRate:{
               name:'tokenPrice',
-              decimals:18,
               params:[]
             }
           },
@@ -448,10 +449,10 @@ const availableTokens = {
           abi:cDAI.abi,
           address:'0x39aa39c021dfbae8fac545936693ac917d5e7563',
           token:'cUSDC',
+          decimals:16,
           functions:{
             exchangeRate:{
               name:'exchangeRateStored',
-              decimals:16,
               params:[]
             }
           },
@@ -462,10 +463,10 @@ const availableTokens = {
           abi:iDAI,
           address:'0xf013406a0b1d544238083df0b93ad0d2cbe0f65f',
           token:'iUSDC',
+          decimals:18,
           functions:{
             exchangeRate:{
               name:'tokenPrice',
-              decimals:18,
               params:[]
             }
           },
@@ -476,6 +477,7 @@ const availableTokens = {
           abi:aToken,
           address:'0x9bA00D6856a4eDF4665BcA2C2309936572473B7E',
           token:'aUSDC',
+          decimals:18,
           functions:{
             
           }

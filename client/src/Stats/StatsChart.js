@@ -592,7 +592,7 @@ class StatsChart extends Component {
             tickValues: 'every 2 days'
           },
           tooltip:({ id, value, color }) => {
-            const allocation = this.functionsUtil.formatMoney(value,0);
+            const allocation = parseInt(value)===100 ? this.functionsUtil.formatMoney(value,0) : this.functionsUtil.formatMoney(value,2);
             return (
               <table style={{width:'100%',borderCollapse:'collapse'}}>
                 <tbody>
@@ -611,10 +611,13 @@ class StatsChart extends Component {
       break;
       case 'APR':
         this.props.tokenConfig.protocols.forEach((p,j) => {
+          if (chartData.filter(d => { return d.name === p.name; }).length){
+            return;
+          }
           chartData.push({
             id:p.name,
-            color: 'hsl('+globalConfigs.stats.protocols[p.name].color.hsl.join(',')+')',
-            data: apiResults.map((d,i) => {
+            color:'hsl('+globalConfigs.stats.protocols[p.name].color.hsl.join(',')+')',
+            data:apiResults.map((d,i) => {
               return d.protocolsData.filter((protocolAllocation,x) => {
                   return protocolAllocation.protocolAddr.toLowerCase() === p.address.toLowerCase()
               })
@@ -707,7 +710,7 @@ class StatsChart extends Component {
                 if (!protocolPaused){
                   const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
 
-                  const rate = this.functionsUtil.fixTokenDecimals(protocolAllocation.price,p.functions.exchangeRate.decimals);
+                  const rate = this.functionsUtil.fixTokenDecimals(protocolAllocation.price,p.decimals);
                   let y = 0;
 
                   if (!firstRate){

@@ -180,8 +180,20 @@ class FunctionsUtil {
     contractName = contractName ? contractName : this.props.selectedToken;
     return await this.genericContractCall(contractName,'decimals');
   }
+  getAvgApr = (aprs,allocations,totalAllocation) => {
+    let avgApr = 0;
+    if (aprs && allocations && totalAllocation){
+      avgApr = Object.keys(allocations).reduce((aprWeighted,protocolAddr) => {
+        const allocation = this.BNify(allocations[protocolAddr]);
+        const apr = this.BNify(aprs[protocolAddr]);
+        return this.BNify(aprWeighted).plus(allocation.times(apr));
+      },0);
+      avgApr = avgApr.div(totalAllocation);
+    }
+    return avgApr;
+  }
   getProtocolInfoByAddress = (addr) => {
-    return this.props.tokenConfig.protocols.find(c => c.address === addr);
+    return this.props.tokenConfig.protocols.find(c => c.address.toLowerCase() === addr.toLowerCase());
   }
   normalizeTokenAmount = (tokenBalance,tokenDecimals) => {
     let amount = this.BNify(tokenBalance).times(this.BNify(Math.pow(10,parseInt(tokenDecimals)).toString()));

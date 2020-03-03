@@ -19,16 +19,17 @@ let componentUnmounted;
 
 class Landing extends Component {
   state = {
+    avgApr:null,
     activeCarousel:1,
-    carouselIntervalID:null,
-    startCarousel:null,
-    setActiveCarousel:null,
-    activeBullet:null,
-    testPerformed:false,
-    protocolsAprs:null,
-    protocolsAllocations:null,
-    totalAllocation:null,
     runConfetti:false,
+    activeBullet:null,
+    protocolsAprs:null,
+    startCarousel:null,
+    testPerformed:false,
+    totalAllocation:null,
+    setActiveCarousel:null,
+    carouselIntervalID:null,
+    protocolsAllocations:null,
     randomAllocationEnabled:false,
   };
 
@@ -114,8 +115,10 @@ class Landing extends Component {
     const contractsInitialized = this.props.contractsInitialized && prevProps.contractsInitialized !== this.props.contractsInitialized;
 
     if (contractsInitialized) {
-      this.getAllocations();
-      this.getAprs();
+      await Promise.all([
+        this.getAprs(),
+        this.getAllocations()
+      ]);
     }
   }
 
@@ -145,8 +148,9 @@ class Landing extends Component {
     let totalAllocation = this.functionsUtil.BNify(0);
 
     const newState = {
+      avgApr: null,
+      totalAllocation:null,
       protocolsAllocations:null,
-      totalAllocation:null
     };
 
     const protocolsAllocations = {};
@@ -155,7 +159,7 @@ class Landing extends Component {
 
     await this.functionsUtil.asyncForEach(this.props.tokenConfig.protocols,async (protocolInfo,i) => {
       const contractName = protocolInfo.token;
-      const protocolAddr = protocolInfo.address;
+      const protocolAddr = protocolInfo.address.toLowerCase();
 
       let [protocolBalance, tokenDecimals, exchangeRate] = await Promise.all([
         this.functionsUtil.getProtocolBalance(contractName),
@@ -168,9 +172,9 @@ class Landing extends Component {
       }
 
 
-      if (exchangeRate && protocolInfo.functions.exchangeRate.decimals){
+      if (exchangeRate && protocolInfo.decimals){
         exchangeRates[protocolAddr] = exchangeRate;
-        exchangeRate = this.functionsUtil.fixTokenDecimals(exchangeRate,protocolInfo.functions.exchangeRate.decimals);
+        exchangeRate = this.functionsUtil.fixTokenDecimals(exchangeRate,protocolInfo.decimals);
       }
 
       const protocolAllocation = this.functionsUtil.fixTokenDecimals(protocolBalance,tokenDecimals,exchangeRate);
@@ -181,7 +185,6 @@ class Landing extends Component {
       protocolsAllocations[protocolAddr] = protocolAllocation;
     });
 
-    /*
     if (this.state.randomAllocationEnabled){
       let remainingAllocation = parseFloat(totalAllocation.toString());
       const totProtocols = Object.keys(protocolsAllocations).length;
@@ -196,14 +199,17 @@ class Landing extends Component {
         protocolsAllocations[protocolAddr] = this.functionsUtil.BNify(alloc);
       });
     }
-    */
 
     newState.protocolsAllocations = protocolsAllocations;
     newState.totalAllocation = totalAllocation;
 
+    if (this.state.protocolsAprs){
+      newState.avgApr = this.functionsUtil.getAvgApr(this.state.protocolsAprs,protocolsAllocations,totalAllocation);
+    }
+
     this.setState(newState);
 
-    return [protocolsAllocations,totalAllocation,exchangeRates,protocolsBalances];
+    return newState;
   }
 
   getAprs = async () => {
@@ -215,9 +221,6 @@ class Landing extends Component {
 
     const addresses = Aprs.addresses.map((addr,i) => { return addr.toString().toLowerCase() });
     const aprs = Aprs.aprs;
-    const currentProtocol = '';
-    const maxRate = Math.max(...aprs);
-    const currentRate = maxRate;
     const protocolsAprs = {};
 
     this.props.tokenConfig.protocols.forEach((info,i) => {
@@ -226,18 +229,21 @@ class Landing extends Component {
       const addrIndex = addresses.indexOf(protocolAddr);
       if ( addrIndex !== -1 ) {
         const protocolApr = aprs[addrIndex];
-        protocolsAprs[protocolAddr] = (+this.functionsUtil.toEth(protocolApr)).toFixed(2);
+        protocolsAprs[protocolAddr] = this.functionsUtil.BNify(+this.functionsUtil.toEth(protocolApr));
       }
     });
 
-    const state = {
-      protocolsAprs,
-      maxRate: aprs ? ((+maxRate).toFixed(2)) : '0.00',
-      currentProtocol,
-      currentRate: currentRate ? (+this.functionsUtil.toEth(currentRate)).toFixed(2) : null
+    const newState = {
+      avgApr: null,
+      protocolsAprs
     };
-    this.setState(state);
-    return state;
+
+    if (this.state.protocolsAllocations && this.state.totalAllocation){
+      newState.avgApr = this.functionsUtil.getAvgApr(protocolsAprs,this.state.protocolsAllocations,this.state.totalAllocation);
+    }
+
+    this.setState(newState);
+    return newState;
   };
 
   startLending = async e => {
@@ -280,9 +286,10 @@ class Landing extends Component {
   render() {
     const { network } = this.props;
     const maxOpacity = 0.6;
-    const minOpacity = 0.1;
+    const minOpacity = 0.2;
     const idleOpacity = maxOpacity;
     const protocolLen = this.props.tokenConfig.protocols.length;
+    const avgApr = this.state.avgApr ? parseFloat(this.state.avgApr).toFixed(2) : null;
 
     return (
       <Box
@@ -664,7 +671,7 @@ class Landing extends Component {
                   <Flex width={[1,1/2]} flexDirection={['row','column']}>
                     {
                       this.props.tokenConfig.protocols.map((protocolInfo,i)=>{
-                        const protocolAddr = protocolInfo.address;
+                        const protocolAddr = protocolInfo.address.toLowerCase();
                         const protocolName = protocolInfo.name;
                         const protocolToken = protocolInfo.token;
                         const protocolEnabled = protocolInfo.enabled;
@@ -672,7 +679,7 @@ class Landing extends Component {
                         const protocolLoaded = this.state.totalAllocation && this.state.protocolsAllocations && this.state.protocolsAllocations[protocolAddr];
                         const protocolAllocation = protocolLoaded ? parseFloat(this.state.protocolsAllocations[protocolAddr].toString()) : null;
                         const protocolAllocationPerc = protocolAllocation !== null ? parseFloat(protocolAllocation)/parseFloat(this.state.totalAllocation.toString()) : null;
-                        const protocolOpacity = !protocolEnabled ? '0.3' : (protocolAllocationPerc>maxOpacity ? maxOpacity : (protocolAllocationPerc<minOpacity) ? minOpacity : protocolAllocationPerc.toFixed(2));
+                        const protocolOpacity = !protocolEnabled ? 0.3 : (protocolAllocationPerc ? maxOpacity : minOpacity);
                         const protocolAllocationPercParsed = !protocolEnabled ? 'paused' : (protocolAllocationPerc === null ? '-' : (protocolAllocationPerc*100).toFixed(2));
 
                         let output = null;
@@ -809,9 +816,9 @@ class Landing extends Component {
                           </Text.span>
                         </Flex>
                         <Box>
-                          <Card my={[2,2]} p={4} borderRadius={'10px'} boxShadow={this.state.currentRate ? `0px 0px 16px 2px rgba(0,54,255,${maxOpacity})` : 0}>
+                          <Card my={[2,2]} p={4} borderRadius={'10px'} boxShadow={avgApr ? `0px 0px 16px 2px rgba(0,54,255,${maxOpacity})` : 0}>
                             <Text fontSize={[5,7]} fontWeight={4} textAlign={'center'}>
-                              {this.state.currentRate ? this.state.currentRate : '-' }<Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
+                              {avgApr ? avgApr : '-' }<Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
                             </Text>
                           </Card>
                         </Box>

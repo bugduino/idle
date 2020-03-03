@@ -166,13 +166,13 @@ class SmartContractControls extends React.Component {
       ]);
 
       if (newAllocation && currAllocation){
-        const currProtocols = Object.keys(currAllocation[0])
-                                .filter((addr,i) => { return this.functionsUtil.BNify(currAllocation[0][addr].toString()).gt(0) })
+        const currProtocols = Object.keys(currAllocation.protocolsAllocations)
+                                .filter((protocolAddr,i) => { return this.functionsUtil.BNify(currAllocation.protocolsAllocations[protocolAddr.toLowerCase()].toString()).gt(0) })
                                 .map(v => { return v.toLowerCase() });
 
         newAllocation = newAllocation[0].reduce((obj, key, index) => ({ ...obj, [key.toLowerCase()]: newAllocation[1][index] }), {});
         const newProtocols = Object.keys(newAllocation)
-                              .filter((addr,i) => { return this.functionsUtil.BNify(newAllocation[addr].toString()).gt(0) })
+                              .filter((protocolAddr,i) => { return this.functionsUtil.BNify(newAllocation[protocolAddr].toString()).gt(0) })
                               .map(v => { return v.toLowerCase() });
 
         const diff = newProtocols.filter(x => !currProtocols.includes(x));
@@ -207,67 +207,56 @@ class SmartContractControls extends React.Component {
   }
 
   getProtocolInfoByAddress = (addr) => {
-    return this.props.tokenConfig.protocols.find(c => c.address === addr);
+    return this.props.tokenConfig.protocols.find(c => c.address.toLowerCase() === addr.toLowerCase());
   }
 
   getAllocations = async () => {
     const res = await this.props.getAllocations();
 
     if (res){
-      const [allocations,totalAllocation,exchangeRates,protocolsBalances] = res;
+      const {
+        avgApr,
+        exchangeRates,
+        totalAllocation,
+        protocolsBalances,
+        protocolsAllocations
+      } = res;
 
-      if (allocations){
+      if (protocolsAllocations){
         this.setState({
-          allocations,
+          avgApr,
           exchangeRates,
           totalAllocation,
-          protocolsBalances
+          protocolsBalances,
+          protocolsAllocations
         });
       }
 
-      return allocations;
+      return protocolsAllocations;
     }
+
+    return null;
   }
 
   getAprs = async () => {
-    const Aprs = await this.functionsUtil.genericIdleCall('getAPRs');
+    const res = await this.props.getAprs();
+    if (res){
+      const {
+        protocolsAprs,
+        avgApr
+      } = res;
 
-    if (componentUnmounted){
-      return false;
-    }
-
-    if (!Aprs){
-      return false;
-    }
-
-    const addresses = Aprs.addresses.map((addr,i) => { return addr.toString().toLowerCase() });
-    const aprs = Aprs.aprs;
-
-    let maxRate = Math.max(...aprs);
-    const currentRate = maxRate;
-    const currentProtocol = '';
-
-    this.props.tokenConfig.protocols.forEach((info,i) => {
-      const protocolName = info.name;
-      const protocolAddr = info.address.toString().toLowerCase();
-      const addrIndex = addresses.indexOf(protocolAddr);
-      if ( addrIndex !== -1 ) {
-        const protocolApr = aprs[addrIndex];
+      if (protocolsAprs){
         this.setState({
-          [`${protocolName}Apr`]: protocolApr,
-          [`${protocolName}Rate`]: (+this.functionsUtil.toEth(protocolApr)).toFixed(2)
+          avgApr,
+          protocolsAprs
         });
       }
-    });
 
-    maxRate = aprs ? ((+this.functionsUtil.toEth(maxRate)).toFixed(2)) : '0.00';
+      return protocolsAprs;
+    }
 
-    this.setState({
-      aprs,
-      maxRate,
-      currentProtocol,
-      currentRate
-    });
+    return null;
   }
 
   getPriceInToken = async (contractName) => {
@@ -384,16 +373,17 @@ class SmartContractControls extends React.Component {
       // this.functionsUtil.customLog('getBalanceOf 2','tokenToRedeem',tokenToRedeem.toString(),'amountLent',this.state.amountLent.toString());
 
       if (amountLent && this.functionsUtil.trimEth(amountLent.toString())>0 && this.functionsUtil.trimEth(tokenToRedeem.toString())>0 && parseFloat(this.functionsUtil.trimEth(tokenToRedeem.toString()))<parseFloat(this.functionsUtil.trimEth(amountLent.toString()))){
-        // console.error('tokenToRedeem',tokenToRedeem.toString(),' less than amountLent',amountLent.toString());
+        console.error('tokenToRedeem',tokenToRedeem.toString(),' less than amountLent',amountLent.toString());
         amountLent = tokenToRedeem;
       } else if (amountLent && amountLent.lte(0) && tokenToRedeem){
-        // console.log('AmountLent 3',amountLent.toString(),tokenToRedeem.toString());
+        console.log('AmountLent 3',amountLent.toString(),tokenToRedeem.toString());
         amountLent = tokenToRedeem;
       }
 
       // console.log((tokenToRedeem ? tokenToRedeem.toString() : null),(amountLent ? amountLent.toString() : null));
 
       if (this.functionsUtil.BNify(tokenToRedeem).gt(this.functionsUtil.BNify(amountLent))){
+        console.log('AmountLent 4',amountLent.toString(),tokenToRedeem.toString());
         earning = tokenToRedeem.minus(this.functionsUtil.BNify(amountLent));
       }
 
@@ -412,7 +402,7 @@ class SmartContractControls extends React.Component {
       }
       */
 
-      const currentApr = this.functionsUtil.BNify(this.state.maxRate).div(100);
+      const currentApr = this.functionsUtil.BNify(this.state.avgApr).div(100);
       const earningPerYear = tokenToRedeem.times(currentApr);
       const earningPerDay = earningPerYear.div(this.functionsUtil.BNify(365.242199));
 
@@ -1667,7 +1657,7 @@ class SmartContractControls extends React.Component {
     return this.setState({
       iDAIRate:0,
       cDAIRate:0,
-      maxRate:'-',
+      avgApr:null,
       prevTxs:null, // Transactions from Etherscan
       earning:null,
       balance:null,
@@ -2368,12 +2358,13 @@ class SmartContractControls extends React.Component {
   }
 
   render() {
+    const avgApr = this.state.avgApr ? parseFloat(this.state.avgApr).toFixed(2) : null;
     const hasBalance = !isNaN(this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)) && this.functionsUtil.trimEth(this.state.tokenToRedeemParsed) > 0;
     // const navPool = this.getFormattedBalance(this.state.navPool,this.props.selectedToken);
 
     const depositedFunds = this.getFormattedBalance(this.state.amountLent,this.props.selectedToken,6,9);
     const earningPerc = !isNaN(this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)) && this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)>0 && this.state.amountLent>0 ? this.getFormattedBalance(this.functionsUtil.BNify(this.state.tokenToRedeemParsed).div(this.functionsUtil.BNify(this.state.amountLent)).minus(1).times(100),'%',4) : '0%';
-    const currentApr = !isNaN(this.state.maxRate) ? this.getFormattedBalance(this.state.maxRate,'%',2) : '-';
+    const currentApr = !isNaN(avgApr) ? this.getFormattedBalance(avgApr,'%',2) : '-';
 
     let earningPerDay = this.getFormattedBalance((this.state.earningPerYear/daysInYear),this.props.selectedToken,4);
     const earningPerWeek = this.getFormattedBalance((this.state.earningPerYear/daysInYear*7),this.props.selectedToken,4);
@@ -2381,7 +2372,7 @@ class SmartContractControls extends React.Component {
     const earningPerYear = this.getFormattedBalance((this.state.earningPerYear),this.props.selectedToken,4);
 
     const currentNavPool = !isNaN(this.functionsUtil.trimEth(this.state.navPool)) ? parseFloat(this.functionsUtil.trimEth(this.state.navPool,8)) : null;
-    let navPoolEarningPerYear = currentNavPool ? parseFloat(this.functionsUtil.trimEth(this.functionsUtil.BNify(this.state.navPool).times(this.functionsUtil.BNify(this.state.maxRate/100)),8)) : null;
+    let navPoolEarningPerYear = currentNavPool && this.state.avgApr !== null ? parseFloat(this.functionsUtil.trimEth(this.functionsUtil.BNify(this.state.navPool).times(this.functionsUtil.BNify(this.state.avgApr.div(100))),8)) : null;
     const navPoolEarningPerDay = navPoolEarningPerYear ? (navPoolEarningPerYear/daysInYear) : null;
     const navPoolEarningPerWeek = navPoolEarningPerDay ? (navPoolEarningPerDay*7) : null;
     const navPoolEarningPerMonth = navPoolEarningPerWeek ? (navPoolEarningPerWeek*4.35) : null;
@@ -2393,7 +2384,7 @@ class SmartContractControls extends React.Component {
     const earningAtEndOfYear = !isNaN(this.functionsUtil.trimEth(this.state.earning)) ? parseFloat(this.functionsUtil.trimEth(this.functionsUtil.BNify(this.state.earning).plus(this.functionsUtil.BNify(this.state.earningPerYear)),8)) : 0;
 
     const idleTokenPrice = parseFloat(this.state.idleTokenPrice);
-    const idleTokenPriceEndOfYear = idleTokenPrice && !isNaN(this.state.maxRate) ? parseFloat(this.functionsUtil.BNify(idleTokenPrice).plus(this.functionsUtil.BNify(idleTokenPrice).times(this.functionsUtil.BNify(this.state.maxRate)))) : idleTokenPrice;
+    const idleTokenPriceEndOfYear = idleTokenPrice && avgApr !== null ? parseFloat(this.functionsUtil.BNify(idleTokenPrice).plus(this.functionsUtil.BNify(idleTokenPrice).times(this.functionsUtil.BNify(this.state.avgApr.div(100))))) : idleTokenPrice;
 
     const fundsAreReady = this.state.fundsError || (!this.state.updateInProgress && !isNaN(this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)) && !isNaN(this.functionsUtil.trimEth(this.state.earning)) && !isNaN(this.functionsUtil.trimEth(this.state.amountLent)));
     const transactionsAreReady = this.state.prevTxs !== null;
@@ -2409,7 +2400,7 @@ class SmartContractControls extends React.Component {
 
     const counterMaxDigits = 11;
     const counterDecimals = Math.min(Math.max(0,counterMaxDigits-parseInt(currentReedemableFunds).toString().length),Math.max(0,counterMaxDigits-parseInt(currentEarning).toString().length));
-    const rebalanceCounterDecimals = this.state.allocations ? Math.max(0,Math.min(...(Object.values(this.state.allocations).map((allocation,i) => { return counterMaxDigits-parseInt(allocation.toString()).toString().length })))) : null;
+    const rebalanceCounterDecimals = this.state.protocolsAllocations ? Math.max(0,Math.min(...(Object.values(this.state.protocolsAllocations).map((allocation,i) => { return counterMaxDigits-parseInt(allocation.toString()).toString().length })))) : null;
 
     const showLendButton = !walletIsEmpty && !migrationEnabled && !tokenNotApproved && (!this.state.contractIsPaused || !this.props.account);
 
@@ -2741,7 +2732,7 @@ class SmartContractControls extends React.Component {
                 }
 
                 <Heading.h3 pb={[2, 0]} mb={[2,3]} fontFamily={'sansSerif'} fontSize={[2, 3]} fontWeight={2} color={'dark-gray'} textAlign={'center'}>
-                  Earn <Text.span fontWeight={'bold'} fontSize={[3,4]}>{this.state.maxRate}% APR</Text.span> on your <Text.span fontWeight={'bold'} fontSize={[3,4]}>{this.props.selectedToken}</Text.span>
+                  Earn <Text.span fontWeight={'bold'} fontSize={[3,4]}>{avgApr}% APR</Text.span> on your <Text.span fontWeight={'bold'} fontSize={[3,4]}>{this.props.selectedToken}</Text.span>
                 </Heading.h3>
 
                 { !this.state.isApprovingToken && !this.state.lendingProcessing &&
@@ -2851,9 +2842,9 @@ class SmartContractControls extends React.Component {
                                   <Box>
                                     <Flex flexDirection={['column','row']} justifyContent={'center'} alignItems={'center'} pb={[2,3]} width={[1,'70%']} m={'0 auto'}>
                                       {
-                                        this.state.allocations ?
-                                          Object.keys(this.state.allocations).map((protocolAddr,i)=>{
-                                            const protocolInfo = this.getProtocolInfoByAddress(protocolAddr);
+                                        this.state.protocolsAllocations ?
+                                          Object.keys(this.state.protocolsAllocations).map((protocolAddr,i)=>{
+                                            const protocolInfo = this.functionsUtil.getProtocolInfoByAddress(protocolAddr);
                                             if (!protocolInfo){
                                               return false;
                                             }
@@ -3332,20 +3323,20 @@ class SmartContractControls extends React.Component {
                 <Box width={'100%'} borderBottom={'1px solid #D6D6D6'}>
                   <Flex flexDirection={['column','row']} justifyContent={'center'} alignItems={'center'} pb={[2,3]} width={[1,'80%']} m={'0 auto'}>
                     {
-                      this.state.allocations ?
-                        Object.keys(this.state.allocations).map((protocolAddr,i)=>{
-                          const protocolInfo = this.getProtocolInfoByAddress(protocolAddr);
+                      this.state.protocolsAllocations ?
+                        Object.keys(this.state.protocolsAllocations).map((protocolAddr,i)=>{
+                          const protocolInfo = this.functionsUtil.getProtocolInfoByAddress(protocolAddr);
                           if (!protocolInfo){
                             return false;
                           }
                           const protocolName = protocolInfo.name;
                           const protocolEnabled = protocolInfo.enabled;
-                          const protocolApr = parseFloat(this.functionsUtil.toEth(this.state[`${protocolName}Apr`]));
-                          const protocolAllocation = parseFloat(this.state.allocations[protocolAddr]);
-                          const protocolEarningPerYear = parseFloat(this.functionsUtil.BNify(protocolAllocation).times(this.functionsUtil.BNify(protocolApr/100)));
+                          const protocolApr = this.state.protocolsAprs[protocolAddr];
+                          const protocolAllocation = parseFloat(this.state.protocolsAllocations[protocolAddr]);
+                          const protocolEarningPerYear = parseFloat(this.functionsUtil.BNify(protocolAllocation).times(this.functionsUtil.BNify(protocolApr.div(100))));
                           const protocolAllocationEndOfYear = parseFloat(this.functionsUtil.BNify(protocolAllocation).plus(this.functionsUtil.BNify(protocolEarningPerYear)));
                           return (
-                            <Box key={`allocation_${protocolName}`} width={[1,1/Object.keys(this.state.allocations).length]}>
+                            <Box key={`allocation_${protocolName}`} width={[1,1/Object.keys(this.state.protocolsAllocations).length]}>
                               <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'} style={{textTransform:'capitalize'}}>
                                 {protocolName}
                               </Text>
@@ -3523,8 +3514,8 @@ class SmartContractControls extends React.Component {
           title={`Congratulations!`}
           icon={`images/medal.svg`}
           confettiEnabled={true}
-          text={`You have successfully made your first deposit!<br />Enjoy <strong>${this.state.maxRate}% APR</strong> on your <strong>${this.props.selectedToken}</strong>!`}
-          tweet={`I'm earning ${this.state.maxRate}% APR on my ${this.props.selectedToken} with @idlefinance! Go to ${globalConfigs.baseURL} and start earning now from your idle tokens!`}
+          text={`You have successfully made your first deposit!<br />Enjoy <strong>${avgApr}% APR</strong> on your <strong>${this.props.selectedToken}</strong>!`}
+          tweet={`I'm earning ${avgApr}% APR on my ${this.props.selectedToken} with @idlefinance! Go to ${globalConfigs.baseURL} and start earning now from your idle tokens!`}
           tokenName={this.props.selectedToken} />
 
         <ReferralShareModal
