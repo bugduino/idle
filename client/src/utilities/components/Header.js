@@ -40,7 +40,7 @@ class Header extends React.Component {
   }
 
   setCurrentToken = () => {
-    
+    /*
     function StatsComponent(props) {
       return (
         <RouterLink to="/stats" style={ props.isMobile ? {textDecoration:'none',width:'100%'} : {textDecoration:'none'}  }>
@@ -52,8 +52,10 @@ class Header extends React.Component {
         </RouterLink>
       );
     }
+    */
 
     const buttonGroup = [
+      /*
       {
         component:StatsComponent,
         props:{
@@ -66,6 +68,7 @@ class Header extends React.Component {
           marginBottom:'0 !important'
         }
       },
+      */
       {
         component:Button,
         props:{
