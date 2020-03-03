@@ -66,10 +66,8 @@ class AccountModal extends React.Component {
   }
 
   setConnector = async connectorName => {
-    if (localStorage) {
-      localStorage.setItem('walletProvider', '');
-      localStorage.setItem('connectorName', connectorName);
-    }
+    this.functionsUtil.setLocalStorage('walletProvider', '');
+    this.functionsUtil.setLocalStorage('connectorName', connectorName);
 
     // Send Google Analytics event
     this.functionsUtil.sendGoogleAnalyticsEvent({

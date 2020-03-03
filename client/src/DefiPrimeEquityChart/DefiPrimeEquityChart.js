@@ -289,7 +289,7 @@ class DefiPrimeEquityChart extends Component {
         data,
         timestamp
       };
-      localStorage.setItem('cachedRequests',JSON.stringify(cachedRequests));
+      this.functionsUtil.setLocalStorage('cachedRequests',JSON.stringify(cachedRequests));
     }
     return data;
   }

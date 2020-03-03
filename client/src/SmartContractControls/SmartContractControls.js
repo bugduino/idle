@@ -341,7 +341,7 @@ class SmartContractControls extends React.Component {
         if (storedTxs[this.props.account]){
           delete storedTxs[this.props.account];
         }
-        localStorage.setItem('transactions',JSON.stringify(storedTxs));
+        this.functionsUtil.setLocalStorage('transactions',JSON.stringify(storedTxs));
       }
     }
     this.getBalanceOf(this.props.tokenConfig.idle.token);
@@ -637,7 +637,7 @@ class SmartContractControls extends React.Component {
     }
 
     if (localStorage){
-      localStorage.setItem('redirectToFundsAfterLogged',0);
+      this.functionsUtil.setLocalStorage('redirectToFundsAfterLogged',0);
     }
 
     this.setState({
@@ -1554,7 +1554,7 @@ class SmartContractControls extends React.Component {
   
       // Update localStorage
       if (storedTxs && localStorage){
-        localStorage.setItem('transactions',JSON.stringify(storedTxs));
+        this.functionsUtil.setLocalStorage('transactions',JSON.stringify(storedTxs));
       }
     }
 
@@ -2070,7 +2070,7 @@ class SmartContractControls extends React.Component {
 
         if (welcomeIsOpen){
           lastLogin[walletAddress].lastTime = currTime;
-          localStorage.setItem('lastLogin',JSON.stringify(lastLogin));
+          this.functionsUtil.setLocalStorage('lastLogin',JSON.stringify(lastLogin));
         }
       }
 
@@ -2158,7 +2158,7 @@ class SmartContractControls extends React.Component {
 
         // Merge together stored and new transactions
         storedTxs[this.props.account][this.props.selectedToken] = Object.assign(storedTxs[this.props.account][this.props.selectedToken],this.props.transactions);
-        localStorage.setItem('transactions',JSON.stringify(storedTxs));
+        this.functionsUtil.setLocalStorage('transactions',JSON.stringify(storedTxs));
       }
 
       this.processTransactionUpdates(prevProps.transactions);

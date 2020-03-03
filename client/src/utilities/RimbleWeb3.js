@@ -126,7 +126,7 @@ class RimbleTransaction extends React.Component {
     if (localStorage){
       const context = JSON.parse(localStorage.getItem('context'));
       if (!context || (this.props.context.active !== context.active || this.props.context.connectorName !== context.connectorName)){
-        localStorage.setItem('context',JSON.stringify({active:this.props.context.active,connectorName:this.props.context.connectorName}));
+        this.functionsUtil.setLocalStorage('context',JSON.stringify({active:this.props.context.active,connectorName:this.props.context.connectorName}));
       }
     }
 
@@ -179,7 +179,7 @@ class RimbleTransaction extends React.Component {
           if (localStorage){
             localStorage.removeItem('walletProvider');
             localStorage.removeItem('connectorName');
-            localStorage.setItem('context',JSON.stringify({active:context.active,connectorName:context.connectorName}));
+            this.functionsUtil.setLocalStorage('context',JSON.stringify({active:context.active,connectorName:context.connectorName}));
           }
           await context.unsetConnector();
           await context.setFirstValidConnector(['Infura']);
@@ -413,7 +413,7 @@ class RimbleTransaction extends React.Component {
 
             // Store shown notification
             if (localStorage){
-              localStorage.setItem('shownNotifications',JSON.stringify(shownNotifications));
+              this.functionsUtil.setLocalStorage('shownNotifications',JSON.stringify(shownNotifications));
             }
           }
         }

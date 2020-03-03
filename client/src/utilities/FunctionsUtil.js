@@ -82,11 +82,7 @@ class FunctionsUtil {
         data,
         timestamp
       };
-      try{
-        localStorage.setItem('cachedRequests',JSON.stringify(cachedRequests));
-      } catch (e) {
-        
-      }
+      this.setLocalStorage('cachedRequests',JSON.stringify(cachedRequests));
     }
     return (data && return_data ? data.data : data);
   }
@@ -197,6 +193,15 @@ class FunctionsUtil {
       balance = balance.times(exchangeRate);
     }
     return balance;
+  }
+  setLocalStorage = (key,value) => {
+    if (window.localStorage){
+      try {
+        window.localStorage.setItem(key,value);
+      } catch (error) {
+        window.localStorage.removeItem(key);
+      }
+    }
   }
   getEtherscanTxs = async (address,TTL) => {
     const etherscanInfo = globalConfigs.network.providers.etherscan;

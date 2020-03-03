@@ -309,9 +309,7 @@ class TxProgressBar extends Component {
       };
 
       // Save progress bar status in localStorage
-      if (localStorage){
-        localStorage.setItem(txProgressBarKey,JSON.stringify(txProgressBarData));
-      }
+      this.functionsUtil.setLocalStorage(txProgressBarKey,JSON.stringify(txProgressBarData));
 
       newState = txProgressBarData[txHash];
 

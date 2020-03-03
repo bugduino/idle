@@ -90,10 +90,8 @@ class ConnectionModal extends React.Component {
       eventLabel: walletProvider
     });
 
-    if (localStorage) {
-      localStorage.setItem('walletProvider', walletProvider);
-      localStorage.setItem('connectorName', connectorName);
-    }
+    this.functionsUtil.setLocalStorage('walletProvider', walletProvider);
+    this.functionsUtil.setLocalStorage('connectorName', connectorName);
 
     if (this.props.setConnector && typeof this.props.setConnector === 'function'){
       this.props.setConnector(connectorName,walletProvider);
@@ -151,9 +149,7 @@ class ConnectionModal extends React.Component {
         eventLabel: currentSection
       });
 
-      if (localStorage){
-        localStorage.setItem('currentSection',currentSection);
-      }
+      this.functionsUtil.setLocalStorage('currentSection',currentSection);
     }
   }
 

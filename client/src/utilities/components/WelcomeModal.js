@@ -77,7 +77,7 @@ class WelcomeModal extends React.Component {
       let lastLogin = localStorage.getItem('lastLogin') ? JSON.parse(localStorage.getItem('lastLogin')) : null;
       if (lastLogin && lastLogin[walletAddress] && !lastLogin[walletAddress].signedUp){
         lastLogin[walletAddress].signedUp = true;
-        localStorage.setItem('lastLogin',JSON.stringify(lastLogin));
+        this.functionsUtil.setLocalStorage('lastLogin',JSON.stringify(lastLogin));
       }
     }
 
