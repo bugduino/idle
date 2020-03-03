@@ -3345,7 +3345,7 @@ class SmartContractControls extends React.Component {
                           const protocolEarningPerYear = parseFloat(this.functionsUtil.BNify(protocolAllocation).times(this.functionsUtil.BNify(protocolApr/100)));
                           const protocolAllocationEndOfYear = parseFloat(this.functionsUtil.BNify(protocolAllocation).plus(this.functionsUtil.BNify(protocolEarningPerYear)));
                           return (
-                            <Box key={`allocation_${protocolName}`} style={{flex:'1 1 0'}}>
+                            <Box key={`allocation_${protocolName}`} width={[1,1/Object.keys(this.state.allocations).length]}>
                               <Text fontFamily={'sansSerif'} fontSize={[1, 2]} fontWeight={2} color={'blue'} textAlign={'center'} style={{textTransform:'capitalize'}}>
                                 {protocolName}
                               </Text>
