@@ -138,11 +138,19 @@ class SmartContractControls extends React.Component {
   }
 
   rebalanceCheck = async () => {
+
+    if (!globalConfigs.contract.methods.rebalance.enabled){
+      return this.setState({
+        shouldRebalance:false,
+        calculatingShouldRebalance: false
+      });
+    }
+
     this.setState({calculatingShouldRebalance:true});
 
+    let shouldRebalance = false;
     const _newAmount = 0;
     const _clientProtocolAmounts = [];
-    let shouldRebalance = null;
     const callParams = { gas: this.props.web3.utils.toBN(5000000) };
 
     try{
@@ -166,6 +174,7 @@ class SmartContractControls extends React.Component {
       ]);
 
       if (newAllocation && currAllocation){
+
         const currProtocols = Object.keys(currAllocation.protocolsAllocations)
                                 .filter((protocolAddr,i) => { return this.functionsUtil.BNify(currAllocation.protocolsAllocations[protocolAddr.toLowerCase()].toString()).gt(0) })
                                 .map(v => { return v.toLowerCase() });

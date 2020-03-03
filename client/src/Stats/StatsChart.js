@@ -391,48 +391,50 @@ class StatsChart extends Component {
           sliceTooltip:(slideData) => {
             const { slice } = slideData;
             const point = slice.points[0];
-            return (
-              <div
-                  key={point.id}
-                  style={{
-                    background: 'white',
-                    color: 'inherit',
-                    fontSize: 'inherit',
-                    borderRadius: '2px',
-                    boxShadow: 'rgba(0, 0, 0, 0.25) 0px 1px 2px',
-                    padding: '5px 9px'
-                  }}
-              >
-                <div>
-                  <table style={{width:'100%',borderCollapse:'collapse'}}>
-                    <tbody>
-                      <tr>
-                        <td style={{padding:'3px 5px'}}>
-                          <span style={{display:'block', width: '12px', height: '12px', background: point.serieColor}}></span>
-                        </td>
-                        <td style={{padding:'3px 5px'}}>{point.serieId}</td>
-                        <td style={{padding:'3px 5px'}}><strong>{point.data.yFormatted}</strong></td>
-                      </tr>
-                      {Object.keys(point.data.allocations).map(protocolName => {
-                          const protocolColor = 'hsl('+globalConfigs.stats.protocols[protocolName].color.hsl.join(',')+')';
-                          const protocolAllocation = this.functionsUtil.formatMoney(point.data.allocations[protocolName],0);
-                          const protocolAllocationPerc = this.functionsUtil.BNify(point.data.allocations[protocolName]).div(this.functionsUtil.BNify(point.data.y)).times(100).toFixed(0)+'%';
-                          return (
-                            <tr key={`${point.id}_${protocolName}`}>
-                              <td style={{padding:'3px 5px'}}>
-                                <span style={{display:'block', width: '12px', height: '12px', background: protocolColor}}></span>
-                              </td>
-                              <td style={{padding:'3px 5px',textTransform:'capitalize'}}>{protocolName}</td>
-                              <td style={{padding:'3px 5px'}}><strong>{protocolAllocation}</strong> ({protocolAllocationPerc})</td>
-                            </tr>
-                          );
-                        })
-                      }
-                    </tbody>
-                  </table>
+            if (typeof point === 'object' && typeof point.data === 'object' && point.data.yFormatted){
+              return (
+                <div
+                    key={point.id}
+                    style={{
+                      background: 'white',
+                      color: 'inherit',
+                      fontSize: 'inherit',
+                      borderRadius: '2px',
+                      boxShadow: 'rgba(0, 0, 0, 0.25) 0px 1px 2px',
+                      padding: '5px 9px'
+                    }}
+                >
+                  <div>
+                    <table style={{width:'100%',borderCollapse:'collapse'}}>
+                      <tbody>
+                        <tr>
+                          <td style={{padding:'3px 5px'}}>
+                            <span style={{display:'block', width: '12px', height: '12px', background: point.serieColor}}></span>
+                          </td>
+                          <td style={{padding:'3px 5px'}}>{point.serieId}</td>
+                          <td style={{padding:'3px 5px'}}><strong>{point.data.yFormatted}</strong></td>
+                        </tr>
+                        {Object.keys(point.data.allocations).map(protocolName => {
+                            const protocolColor = 'hsl('+globalConfigs.stats.protocols[protocolName].color.hsl.join(',')+')';
+                            const protocolAllocation = this.functionsUtil.formatMoney(point.data.allocations[protocolName],0);
+                            const protocolAllocationPerc = this.functionsUtil.BNify(point.data.allocations[protocolName]).div(this.functionsUtil.BNify(point.data.y)).times(100).toFixed(0)+'%';
+                            return (
+                              <tr key={`${point.id}_${protocolName}`}>
+                                <td style={{padding:'3px 5px'}}>
+                                  <span style={{display:'block', width: '12px', height: '12px', background: protocolColor}}></span>
+                                </td>
+                                <td style={{padding:'3px 5px',textTransform:'capitalize'}}>{protocolName}</td>
+                                <td style={{padding:'3px 5px'}}><strong>{protocolAllocation}</strong> ({protocolAllocationPerc})</td>
+                              </tr>
+                            );
+                          })
+                        }
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </div>
-            )
+              );
+            }
           }
         };
       break;

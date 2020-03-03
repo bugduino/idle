@@ -113,6 +113,9 @@ const globalConfigs = {
     methods:{
       redeem:{
         skipRebalance:true
+      },
+      rebalance:{
+        enabled:false
       }
     }
   },
