@@ -1,5 +1,6 @@
 .footer{
-  background:url(/images/bg-footer.jpg) no-repeat;
+  background-image:url(/images/bg-footer.jpg)!important;
+  background-repeat: no-repeat;
   background-position: center bottom;
   background-size:100% auto;
   height:70vh;
