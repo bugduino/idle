@@ -36,7 +36,7 @@ class AllocationChart extends Component {
 
     const chartData = this.props.tokenConfig.protocols.map((protocolInfo,i)=>{
       const protocolName = protocolInfo.name;
-      const protocolAddr = protocolInfo.address;
+      const protocolAddr = protocolInfo.address.toLowerCase();
       const protocolLoaded = this.props.totalAllocation && this.props.protocolsAllocations && this.props.protocolsAllocations[protocolAddr];
       const protocolAllocation = protocolLoaded ? parseFloat(this.props.protocolsAllocations[protocolAddr].toString()) : null;
       const protocolAllocationPerc = protocolAllocation !== null ? parseFloat(protocolAllocation)/parseFloat(this.props.totalAllocation.toString()) : null;
