@@ -333,7 +333,7 @@ const availableTokens = {
     },
     SAI:{
       decimals:18,
-      enabled: true,
+      enabled: false,
       abi:ERC20.abi,
       color:'hsl(36, 92%, 63%)',
       address:'0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359',

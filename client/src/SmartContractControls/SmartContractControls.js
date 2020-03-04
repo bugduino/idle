@@ -1589,12 +1589,12 @@ class SmartContractControls extends React.Component {
     const isFirstDeposit = depositedTxs === 1;
 
     return this.setState({
-      prevTxsError: false,
+      earning,
       prevTxs,
-      lastBlockNumber,
-      isFirstDeposit,
       amountLent,
-      earning
+      isFirstDeposit,
+      lastBlockNumber,
+      prevTxsError: false,
     });
   };
 
@@ -2111,15 +2111,19 @@ class SmartContractControls extends React.Component {
         });
       }
 
-      // Reset funds and force loader
-      this.setState({
-        earning:null,
-        amountLent:null,
-        tokenBalance:null,
+      const newState = {
         needsUpdate:false,
         updateInProgress:true,
-        tokenToRedeemParsed:null
-      });
+      };
+
+      if (accountChanged || selectedTokenChanged){
+        newState.earning=null;
+        newState.amountLent=null;
+        newState.tokenBalance=null;
+        newState.tokenToRedeemParsed=null;
+      }
+      // Reset funds and force loader
+      this.setState(newState);
 
       this.functionsUtil.customLog('Call async functions...');
 
@@ -2425,7 +2429,9 @@ class SmartContractControls extends React.Component {
     const fundsAreReady = this.state.fundsError || (!this.state.updateInProgress && !isNaN(this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)) && !isNaN(this.functionsUtil.trimEth(this.state.earning)) && !isNaN(this.functionsUtil.trimEth(this.state.amountLent)));
     const transactionsAreReady = this.state.prevTxs !== null;
 
-    // console.log('currentReedemableFunds',currentReedemableFunds,'reedemableFundsAtEndOfYear',reedemableFundsAtEndOfYear,'currentEarning',currentEarning,'earningAtEndOfYear',earningAtEndOfYear);
+    // if (transactionsAreReady && !fundsAreReady){
+    //   console.log(this.state.fundsError,this.state.updateInProgress,this.functionsUtil.trimEth(this.state.tokenToRedeemParsed),this.functionsUtil.trimEth(this.state.earning),this.functionsUtil.trimEth(this.state.amountLent));
+    // }
 
     const tokenNotApproved = this.props.account && !this.state.isTokenApproved && !this.state.isApprovingToken && !this.state.updateInProgress;
     const walletIsEmpty = this.props.account && this.state.showEmptyWalletOverlay && !tokenNotApproved && !this.state.isApprovingToken && this.state.tokenBalance !== null && !isNaN(this.state.tokenBalance) && !parseFloat(this.state.tokenBalance);
