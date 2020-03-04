@@ -151,11 +151,13 @@ class Landing extends Component {
       avgApr: null,
       totalAllocation:null,
       protocolsAllocations:null,
+      protocolsAllocationsPerc:null
     };
 
-    const protocolsAllocations = {};
     const exchangeRates = {};
     const protocolsBalances = {};
+    const protocolsAllocations = {};
+    const protocolsAllocationsPerc = {};
 
     await this.functionsUtil.asyncForEach(this.props.tokenConfig.protocols,async (protocolInfo,i) => {
       const contractName = protocolInfo.token;
@@ -200,8 +202,15 @@ class Landing extends Component {
       });
     }
 
-    newState.protocolsAllocations = protocolsAllocations;
+    Object.keys(protocolsAllocations).forEach((protocolAddr,i) => {
+      const protocolAllocation = protocolsAllocations[protocolAddr];
+      const protocolAllocationPerc = protocolAllocation.div(totalAllocation);
+      protocolsAllocationsPerc[protocolAddr] = protocolAllocationPerc;
+    });
+
     newState.totalAllocation = totalAllocation;
+    newState.protocolsAllocations = protocolsAllocations;
+    newState.protocolsAllocationsPerc = protocolsAllocationsPerc;
 
     if (this.state.protocolsAprs){
       newState.avgApr = this.functionsUtil.getAvgApr(this.state.protocolsAprs,protocolsAllocations,totalAllocation);
@@ -699,7 +708,7 @@ class Landing extends Component {
                                   </Flex>
                                   <Box>
                                     <Card my={[2,2]} p={3} borderRadius={'10px'} boxShadow={protocolAllocationPerc>0 ? boxShadow : 1}>
-                                      <Text fontSize={[4,5]} fontWeight={4} textAlign={'center'}>{(protocolAllocationPerc*100).toFixed(2)}<Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span></Text>
+                                      <Text color={protocolEnabled ? 'copyColor' : 'darkGray' } fontSize={[4,5]} fontWeight={4} textAlign={'center'}>{protocolAllocationPercParsed}{ protocolEnabled ? <Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span> : null }</Text>
                                     </Card>
                                   </Box>
                                 </Flex>
