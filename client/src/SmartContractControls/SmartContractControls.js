@@ -3363,7 +3363,7 @@ class SmartContractControls extends React.Component {
 
               <Box display={ this.props.selectedTab === '3' ? 'block' : 'none' }>
                 <Box width={'100%'} borderBottom={'1px solid #D6D6D6'}>
-                  <Flex flexDirection={['column','row']} justifyContent={'center'} alignItems={'center'} pb={[2,3]} width={[1,'80%']} m={'0 auto'}>
+                  <Flex flexDirection={['column','row']} justifyContent={'center'} alignItems={['center','flex-start']} pb={[2,3]} width={[1,'80%']} m={'0 auto'}>
                     {
                       this.state.protocolsAllocations ?
                         Object.keys(this.state.protocolsAllocations).map((protocolAddr,i)=>{
@@ -3385,25 +3385,31 @@ class SmartContractControls extends React.Component {
                               </Text>
                               {
                                 protocolEnabled ? (
-                                  <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'} style={{whiteSpace:'nowrap'}}>
-                                    {protocolAllocation ?
-                                      <CountUp
-                                        start={protocolAllocation}
-                                        end={protocolAllocationEndOfYear}
-                                        useEasing={false}
-                                        duration={31536000}
-                                        delay={0}
-                                        separator=""
-                                        decimals={rebalanceCounterDecimals}
-                                        decimal="."
-                                      >
-                                        {({ countUpRef, start }) => (
-                                          <><span ref={countUpRef} /> <span style={{fontSize:'16px',fontWeight:'400',lineHeight:'1.5',color:'#3F3D4B'}}>{this.props.selectedToken}</span></>
-                                        )}
-                                      </CountUp>
-                                      : parseInt(0).toFixed(6)
+                                  <Flex flexDirection={'column'}>
+                                    <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'} style={{whiteSpace:'nowrap'}}>
+                                      {protocolAllocation ?
+                                        <CountUp
+                                          start={protocolAllocation}
+                                          end={protocolAllocationEndOfYear}
+                                          useEasing={false}
+                                          duration={31536000}
+                                          delay={0}
+                                          separator=""
+                                          decimals={rebalanceCounterDecimals}
+                                          decimal="."
+                                        >
+                                          {({ countUpRef, start }) => (
+                                            <><span ref={countUpRef} /> <span style={{fontSize:'16px',fontWeight:'400',lineHeight:'1.5',color:'#3F3D4B'}}>{this.props.selectedToken}</span></>
+                                          )}
+                                        </CountUp>
+                                        : parseInt(0).toFixed(6)
+                                      }
+                                    </Heading.h3>
+                                    {
+                                      !this.props.isMobile &&
+                                        <Text color={'#777'} fontSize={2} fontWeight={2} textAlign={'center'}>{protocolApr ? protocolApr.toFixed(2) : '-'}<Text.span color={'#777'} fontWeight={2} fontSize={'80%'}>% APR</Text.span></Text>
                                     }
-                                  </Heading.h3>
+                                  </Flex>
                                 ) : (
                                   <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'darkGray'} textAlign={'center'} style={{whiteSpace:'nowrap'}}>
                                     paused
