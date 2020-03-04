@@ -148,54 +148,72 @@ class SmartContractControls extends React.Component {
 
     this.setState({calculatingShouldRebalance:true});
 
-    let shouldRebalance = false;
-    const _newAmount = 0;
-    const _clientProtocolAmounts = [];
-    const callParams = { gas: this.props.web3.utils.toBN(5000000) };
+    const rebalancer = await this.functionsUtil.genericIdleCall('rebalancer');
+    const idleRebalancerInstance = await this.functionsUtil.createContract('idleRebalancerInstance',rebalancer,globalConfigs.contract.methods.rebalance.abi);
 
-    try{
-      await this.functionsUtil.estimateGas(this.props.tokenConfig.idle.token,'rebalance',[_newAmount,_clientProtocolAmounts],callParams);
-    } catch (err){
-      shouldRebalance = false;
-
+    if (!idleRebalancerInstance || !idleRebalancerInstance.contract){
       return this.setState({
-        shouldRebalance,
-        calculatingShouldRebalance: false,
+        shouldRebalance:false,
+        calculatingShouldRebalance: false
       });
     }
 
-    shouldRebalance = await this.functionsUtil.genericIdleCall('rebalance',[_newAmount,_clientProtocolAmounts]);
+    // Take next protocols allocations
+    const allocationsPromises = [];
+    const availableTokensPromises = [];
 
-    if (!shouldRebalance && this.props.contractsInitialized){
+    for (let protocolIndex=0;protocolIndex<this.props.tokenConfig.protocols.length;protocolIndex++){
+      const allocationPromise = new Promise( async (resolve, reject) => {
+        const allocation = await idleRebalancerInstance.contract.methods['lastAmounts'](protocolIndex).call().catch(error => {
+          reject(error);
+        });
+        resolve({
+          allocation,
+          protocolIndex
+        });
+      });
+      allocationsPromises.push(allocationPromise);
 
-      let [currAllocation,newAllocation] = await Promise.all([
-        this.props.getAllocations(),
-        this.functionsUtil.genericIdleCall('getParamsForRebalance',[_newAmount],callParams)
-      ]);
-
-      if (newAllocation && currAllocation){
-
-        const currProtocols = Object.keys(currAllocation.protocolsAllocations)
-                                .filter((protocolAddr,i) => { return this.functionsUtil.BNify(currAllocation.protocolsAllocations[protocolAddr.toLowerCase()].toString()).gt(0) })
-                                .map(v => { return v.toLowerCase() });
-
-        newAllocation = newAllocation[0].reduce((obj, key, index) => ({ ...obj, [key.toLowerCase()]: newAllocation[1][index] }), {});
-        const newProtocols = Object.keys(newAllocation)
-                              .filter((protocolAddr,i) => { return this.functionsUtil.BNify(newAllocation[protocolAddr].toString()).gt(0) })
-                              .map(v => { return v.toLowerCase() });
-
-        const diff = newProtocols.filter(x => !currProtocols.includes(x));
-
-        // If newProtocols differs from currProtocols rebalance
-        if (diff && diff.length){
-          shouldRebalance = true;
+      const availableTokenPromise = new Promise( async (resolve, reject) => {
+        try{
+          const protocolAddr = await this.functionsUtil.genericIdleCall('allAvailableTokens',[protocolIndex]);
+          resolve({
+            protocolAddr,
+            protocolIndex
+          });
+        } catch (err) {
+          reject(err);
         }
-      }
+      });
+      availableTokensPromises.push(availableTokenPromise);
     }
 
-    this.setState({
+    const nextAllocations = await Promise.all(allocationsPromises);
+    const allAvailableTokens = await Promise.all(availableTokensPromises);
+
+    // Merge nextAllocations and allAvailableTokens
+    const newProtocolsAllocations = allAvailableTokens.reduce((accumulator,availableTokenInfo) => {
+      const nextAllocation = nextAllocations.find(v => { return v.protocolIndex === availableTokenInfo.protocolIndex; });
+      if (nextAllocation){
+        accumulator[availableTokenInfo.protocolAddr.toLowerCase()] = parseInt(nextAllocation.allocation);
+      }
+      return accumulator;
+    },{});
+
+    // Check if newAllocations differs from currentAllocations
+    let shouldRebalance = false;
+    Object.keys(this.state.protocolsAllocationsPerc).forEach((protocolAddr) => {
+      const protocolAllocation = this.state.protocolsAllocationsPerc[protocolAddr];
+      const protocolAllocationParsed = parseInt(protocolAllocation.times(10000).toFixed(0));
+      const newProtocolAllocation = newProtocolsAllocations[protocolAddr.toLowerCase()] ? newProtocolsAllocations[protocolAddr.toLowerCase()] : 0;
+      if (protocolAllocationParsed !== newProtocolAllocation){
+        shouldRebalance = true;
+      }
+    });
+
+    return this.setState({
       shouldRebalance,
-      calculatingShouldRebalance: false,
+      calculatingShouldRebalance: false
     });
   }
 
@@ -228,7 +246,8 @@ class SmartContractControls extends React.Component {
         exchangeRates,
         totalAllocation,
         protocolsBalances,
-        protocolsAllocations
+        protocolsAllocations,
+        protocolsAllocationsPerc
       } = res;
 
       if (protocolsAllocations){
@@ -237,7 +256,8 @@ class SmartContractControls extends React.Component {
           exchangeRates,
           totalAllocation,
           protocolsBalances,
-          protocolsAllocations
+          protocolsAllocations,
+          protocolsAllocationsPerc
         });
       }
 
@@ -1760,11 +1780,12 @@ class SmartContractControls extends React.Component {
 
     await Promise.all([
       this.getAprs().then(() => {
-        this.getAllocations()
+        this.getAllocations().then( () => {
+          this.rebalanceCheck()
+        })
       }),
       this.checkMigration(),
       this.checkContractPaused(),
-      this.rebalanceCheck(),
       this.getPriceInToken(),
       this.checkTokenApproved()
     ]);
@@ -2182,9 +2203,10 @@ class SmartContractControls extends React.Component {
         });
       }
 
-      this.rebalanceCheck();
-      this.getAprs().then(() => {
-        this.getAllocations()
+      this.getAprs().then( () => {
+        this.getAllocations().then( () => {
+          this.rebalanceCheck();
+        })
       });
     }
 

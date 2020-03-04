@@ -142,6 +142,15 @@ class FunctionsUtil {
     }
     return false;
   }
+  createContract = async (name, address, abi) => {
+    try {
+      const contract = new this.props.web3.eth.Contract(abi, address);
+      return {name, contract};
+    } catch (error) {
+      this.customLogError("Could not create contract.",name,address,error);
+    }
+    return null;
+  }
   simpleIDPassUserInfo = (userInfo,simpleID) => {
     if (!userInfo.address && this.props.account){
       userInfo.address = this.props.account;
