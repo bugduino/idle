@@ -252,11 +252,11 @@ class Stats extends Component {
 
         const firstProtocol = row.protocolsData[0];
         const allocation = this.functionsUtil.fixTokenDecimals(firstProtocol.allocation,this.state.tokenConfig.decimals);
-        const allocationPerc = allocation.div(totalAllocation).toFixed(this.state.tokenConfig.decimals);
+        const allocationPerc = parseInt(allocation.div(totalAllocation).times(10000).toFixed(0));
 
-        const prevFirstProtocol = prevRow.protocolsData.filter(prevProtocol => { return prevProtocol.protocolAddr === firstProtocol.protocolAddr })[0];
+        const prevFirstProtocol = prevRow.protocolsData.find(prevProtocol => { return prevProtocol.protocolAddr === firstProtocol.protocolAddr });
         const prevAllocation = this.functionsUtil.fixTokenDecimals(prevFirstProtocol.allocation,this.state.tokenConfig.decimals);
-        const prevAllocationPerc = prevAllocation.div(prevTotalAllocation).toFixed(this.state.tokenConfig.decimals);
+        const prevAllocationPerc = parseInt(prevAllocation.div(prevTotalAllocation).times(10000).toFixed(0));
 
 
         if (allocationPerc !== prevAllocationPerc){
@@ -264,34 +264,6 @@ class Stats extends Component {
         }
       }
     });
-
-    /*
-    const contractTxs = await this.functionsUtil.getEtherscanTxs(this.state.tokenConfig.idle.address,60);
-    if (contractTxs){
-      const protocolsAddresses = this.state.tokenConfig.protocols.map(p => { return p.address.toLowerCase() });
-      const rebalancesTxs = {};
-      const processedTxs = {};
-      contractTxs.forEach(tx => {
-        if (!processedTxs[tx.hash] && !rebalancesTxs[tx.hash]){
-          // Filter txs
-          const txs = contractTxs.filter(r => r.hash === tx.hash && protocolsAddresses.includes(r.contractAddress.toLowerCase()));
-          if (txs.length > 1){
-            const firstTx = txs[0];
-            const lastTx = txs[txs.length-1];
-            // First tx contract differs to the last tx one
-            if (firstTx.contractAddress.toLowerCase() !== lastTx.contractAddress.toLowerCase()){
-              rebalancesTxs[firstTx.hash] = txs;
-            }
-          }
-          processedTxs[tx.hash] = 1;
-        }
-      });
-      console.log(contractTxs,rebalancesTxs);
-
-      // Take rebalances count
-      rebalances = Object.keys(rebalancesTxs).length;
-    }
-    */
 
     this.setState({
       aum,
