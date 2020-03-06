@@ -477,7 +477,7 @@ const availableTokens = {
           abi:aToken,
           address:'0x9bA00D6856a4eDF4665BcA2C2309936572473B7E',
           token:'aUSDC',
-          decimals:18,
+          decimals:6,
           functions:{
             
           }
