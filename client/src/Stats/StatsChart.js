@@ -163,6 +163,11 @@ class StatsChart extends Component {
           return (!this.props.startTimestamp || v.timestamp>=this.props.startTimestamp) && (!this.props.endTimestamp || v.timestamp<=this.props.endTimestamp);
         });
 
+        let maxRange = 0;
+        chartData.forEach(v => {
+          maxRange = Math.max(maxRange,Math.abs(v.deposits),Math.abs(v.redeems));
+        })
+
         chartType = Bar;
 
         axisBottomIndex = 0;
@@ -172,8 +177,8 @@ class StatsChart extends Component {
           enableLabel: false,
           enableGridX: true,
           enableGridY: false,
-          // minValue,
-          // maxValue,
+          minValue:-maxRange,
+          maxValue:maxRange,
           label: d => {
             return Math.abs(d.value);
           },
@@ -720,7 +725,35 @@ class StatsChart extends Component {
       break;
       case 'PRICE':
 
-        const aave_data = {};
+        let firstTokenPrice = null;
+        let firstIdleBlock = null;
+
+        const idleChartData = apiResults.map((d,i) => {
+          const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
+
+          const tokenPrice = this.functionsUtil.fixTokenDecimals(d.idlePrice,this.props.tokenConfig.decimals);
+          let y = 0;
+
+          if (!firstTokenPrice){
+            firstTokenPrice = tokenPrice;
+          } else {
+            y = parseFloat(tokenPrice.div(firstTokenPrice).minus(1).times(100));
+          }
+
+          if (firstIdleBlock === null){
+            firstIdleBlock = parseInt(d.blocknumber);
+          }
+
+          return { x, y, blocknumber: d.blocknumber };
+        });
+
+        chartData.push({
+          id:'Idle',
+          color: 'hsl('+globalConfigs.stats.protocols.idle.color.hsl.join(',')+')',
+          data: idleChartData
+        });
+
+        // const aave_data = {};
 
         await this.functionsUtil.asyncForEach(this.props.tokenConfig.protocols,async (p) => {
 
@@ -730,11 +763,11 @@ class StatsChart extends Component {
             data: []
           };
 
+          firstTokenPrice = null;
           let lastRowData = null;
           let lastTokenPrice = null;
-          let firstTokenPrice = null;
-          let protocolHasData = false;
           let baseProfit = 0;
+          let firstProtocolBlock = null;
 
           await this.functionsUtil.asyncForEach(apiResults,async (d) => {
 
@@ -746,18 +779,31 @@ class StatsChart extends Component {
               const protocolPaused = this.functionsUtil.BNify(protocolData.rate).eq(0);
               if (!protocolPaused){
 
+                // Start new protocols from Idle performances
+                if (firstProtocolBlock === null){
+                  firstProtocolBlock = parseInt(d.blocknumber);
+                  if (firstProtocolBlock>firstIdleBlock){
+                    const idlePerformance = idleChartData.find(d1 => {
+                      return d1.blocknumber>=firstProtocolBlock;
+                    });
+                    if (idlePerformance){
+                      baseProfit = idlePerformance.y;
+                    }
+                  }
+                }
+
                 let rowData = {};
                 let tokenExchangeRate = protocolData.price;
                 let tokenPriceFixed = this.functionsUtil.fixTokenDecimals(tokenExchangeRate,p.decimals);
                 const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
 
                 // Take data from
-                if (tokenPriceFixed.eq(1) && globalConfigs.stats.protocols[p.name].data && globalConfigs.stats.protocols[p.name].data[d.blocknumber]){
-                  tokenExchangeRate = this.functionsUtil.BNify(globalConfigs.stats.protocols[p.name].data[d.blocknumber]);
+                if (globalConfigs.stats.protocols[p.name] && globalConfigs.stats.protocols[p.name].data && globalConfigs.stats.protocols[p.name].data[p.address.toLowerCase()] && globalConfigs.stats.protocols[p.name].data[p.address.toLowerCase()][d.blocknumber]){
+                  tokenExchangeRate = this.functionsUtil.BNify(globalConfigs.stats.protocols[p.name].data[p.address.toLowerCase()][d.blocknumber]);
                   tokenPriceFixed = this.functionsUtil.fixTokenDecimals(tokenExchangeRate,p.decimals);
-                  protocolHasData = true;
                 }/* else if (p.name === 'aave'){
-                  let aaveTokenBalance = await this.functionsUtil.genericContractCall(p.token,'balanceOf',['0xc025c03e10f656d3ee76685d53d236824d8ef3da'],{},d.blocknumber);
+                  // Token holders (aDAI = 0xc025c03e10f656d3ee76685d53d236824d8ef3da , aUSDC = 0xd2c734fbd8f5d1c809185e014016dd4097e94711)
+                  let aaveTokenBalance = await this.functionsUtil.genericContractCall(p.token,'balanceOf',['0xd2c734fbd8f5d1c809185e014016dd4097e94711'],{},d.blocknumber);
                   if (aaveTokenBalance){
                     if (!Object.values(aave_data).length){
                       tokenExchangeRate = this.functionsUtil.normalizeTokenAmount(1,p.decimals);
@@ -768,9 +814,10 @@ class StatsChart extends Component {
                       aave_data[d.blocknumber] = tokenExchangeRate.toString();
                     }
                   }
-                }*/
+                }
+                */
 
-                let y = 0;
+                let y = baseProfit;
 
                 if (!firstTokenPrice){
                   firstTokenPrice = tokenPriceFixed;
@@ -781,7 +828,7 @@ class StatsChart extends Component {
                     y = lastRowData.y+lastYDiff;
                     baseProfit = y;
                   } else {
-                    y = parseFloat(tokenPriceFixed.div(firstTokenPrice).minus(1).times(100))+baseProfit;
+                    y += parseFloat(tokenPriceFixed.div(firstTokenPrice).minus(1).times(100));
                   }
                 }
 
@@ -792,7 +839,6 @@ class StatsChart extends Component {
 
                 lastTokenPrice = tokenPriceFixed;
                 lastRowData = rowData;
-
                 chartRow.data.push(rowData);
               }
             }
@@ -801,33 +847,10 @@ class StatsChart extends Component {
           chartData.push(chartRow);
         });
 
-        if (Object.values(aave_data).length){
-          aave_data[Object.keys(aave_data)[0]] = 1;
-          console.log(JSON.stringify(aave_data));
-        }
-
-        // let lastRate = 0;
-        // const initBalance = 1;
-        let firstTokenPrice = null;
-        chartData.push({
-          id:'Idle',
-          color: 'hsl('+globalConfigs.stats.protocols.idle.color.hsl.join(',')+')',
-          data: apiResults.map((d,i) => {
-            const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
-
-            const tokenPrice = this.functionsUtil.fixTokenDecimals(d.idlePrice,this.props.tokenConfig.decimals);
-            let y = 0;
-
-            if (!firstTokenPrice){
-              firstTokenPrice = tokenPrice;
-            } else {
-              y = parseFloat(tokenPrice.div(firstTokenPrice).minus(1).times(100));
-            }
-
-
-            return { x, y };
-          })
-        });
+        // if (Object.values(aave_data).length){
+        //   aave_data[Object.keys(aave_data)[0]] = 1;
+        //   console.log(JSON.stringify(aave_data));
+        // }
 
         // Set chart type
         chartType = Line;
