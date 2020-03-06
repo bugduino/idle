@@ -2366,33 +2366,6 @@ class SmartContractControls extends React.Component {
     );
   }
 
-  getFormattedBalance(balance,label,decimals,maxLen,highlightedDecimals){
-    const defaultValue = '-';
-    decimals = !isNaN(decimals) ? decimals : 6;
-    maxLen = !isNaN(maxLen) ? maxLen : 10;
-    highlightedDecimals = !isNaN(highlightedDecimals) ? highlightedDecimals : 0;
-    balance = this.functionsUtil.BNify(balance).toFixed(decimals);
-
-    const numLen = balance.toString().replace('.','').length;
-    if (numLen>maxLen){
-      decimals = Math.max(0,decimals-(numLen-maxLen));
-      balance = this.functionsUtil.BNify(balance).toFixed(decimals);
-    }
-
-    const intPart = Math.floor(balance);
-    let decPart = (balance%1).toString().substr(2,decimals);
-    decPart = (decPart+("0".repeat(decimals))).substr(0,decimals);
-
-    if (highlightedDecimals){
-      const highlightedDec = decPart.substr(0,highlightedDecimals);
-      decPart = decPart.substr(highlightedDecimals);
-      const highlightedIntPart = (<Text.span fontSize={'100%'} color={'blue'} fontWeight={'inerith'}>{intPart}.{highlightedDec}</Text.span>);
-      return !isNaN(this.functionsUtil.trimEth(balance)) ? ( <>{highlightedIntPart}<small style={{fontSize:'70%'}}>{decPart}</small> <Text.span fontSize={[1,2]}>{label}</Text.span></> ) : defaultValue;
-    } else {
-      return !isNaN(this.functionsUtil.trimEth(balance)) ? ( <>{intPart}<small>.{decPart}</small> <Text.span fontSize={[1,2]}>{label}</Text.span></> ) : defaultValue;
-    }
-  }
-
   formatCountUp = (n) => {
     return n.toFixed(6);
   }
@@ -2400,16 +2373,16 @@ class SmartContractControls extends React.Component {
   render() {
     const avgApr = this.state.avgApr ? parseFloat(this.state.avgApr).toFixed(2) : null;
     const hasBalance = !isNaN(this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)) && this.functionsUtil.trimEth(this.state.tokenToRedeemParsed) > 0;
-    // const navPool = this.getFormattedBalance(this.state.navPool,this.props.selectedToken);
+    // const navPool = this.functionsUtil.getFormattedBalance(this.state.navPool,this.props.selectedToken);
 
-    const depositedFunds = this.getFormattedBalance(this.state.amountLent,this.props.selectedToken,6,9);
-    const earningPerc = !isNaN(this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)) && this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)>0 && this.state.amountLent>0 ? this.getFormattedBalance(this.functionsUtil.BNify(this.state.tokenToRedeemParsed).div(this.functionsUtil.BNify(this.state.amountLent)).minus(1).times(100),'%',4) : '0%';
-    const currentApr = !isNaN(avgApr) ? this.getFormattedBalance(avgApr,'%',2) : '-';
+    const depositedFunds = this.functionsUtil.getFormattedBalance(this.state.amountLent,this.props.selectedToken,6,9);
+    const earningPerc = !isNaN(this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)) && this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)>0 && this.state.amountLent>0 ? this.functionsUtil.getFormattedBalance(this.functionsUtil.BNify(this.state.tokenToRedeemParsed).div(this.functionsUtil.BNify(this.state.amountLent)).minus(1).times(100),'%',4) : '0%';
+    const currentApr = avgApr !== null ? this.functionsUtil.getFormattedBalance(avgApr,'%',2) : '-';
 
-    let earningPerDay = this.getFormattedBalance((this.state.earningPerYear/daysInYear),this.props.selectedToken,4);
-    const earningPerWeek = this.getFormattedBalance((this.state.earningPerYear/daysInYear*7),this.props.selectedToken,4);
-    const earningPerMonth = this.getFormattedBalance((this.state.earningPerYear/12),this.props.selectedToken,4);
-    const earningPerYear = this.getFormattedBalance((this.state.earningPerYear),this.props.selectedToken,4);
+    let earningPerDay = this.functionsUtil.getFormattedBalance((this.state.earningPerYear/daysInYear),this.props.selectedToken,4);
+    const earningPerWeek = this.functionsUtil.getFormattedBalance((this.state.earningPerYear/daysInYear*7),this.props.selectedToken,4);
+    const earningPerMonth = this.functionsUtil.getFormattedBalance((this.state.earningPerYear/12),this.props.selectedToken,4);
+    const earningPerYear = this.functionsUtil.getFormattedBalance((this.state.earningPerYear),this.props.selectedToken,4);
 
     const currentNavPool = !isNaN(this.functionsUtil.trimEth(this.state.navPool)) ? parseFloat(this.functionsUtil.trimEth(this.state.navPool,8)) : null;
     let navPoolEarningPerYear = currentNavPool && this.state.avgApr !== null ? parseFloat(this.functionsUtil.trimEth(this.functionsUtil.BNify(this.state.navPool).times(this.functionsUtil.BNify(this.state.avgApr.div(100))),8)) : null;
@@ -2774,7 +2747,7 @@ class SmartContractControls extends React.Component {
                 }
 
                 <Heading.h3 pb={[2, 0]} mb={[2,3]} fontFamily={'sansSerif'} fontSize={[2, 3]} fontWeight={2} color={'dark-gray'} textAlign={'center'}>
-                  Earn <Text.span fontWeight={'bold'} fontSize={[3,4]}>{avgApr}% APR</Text.span> on your <Text.span fontWeight={'bold'} fontSize={[3,4]}>{this.props.selectedToken}</Text.span>
+                  Earn <Text.span fontWeight={'bold'} fontSize={[3,4]}>{avgApr}<Text.span fontSize={'80%'}>%</Text.span> APR</Text.span> on your <Text.span fontWeight={'bold'} fontSize={[3,4]}>{this.props.selectedToken}</Text.span>
                 </Heading.h3>
 
                 { !this.state.isApprovingToken && !this.state.lendingProcessing &&
@@ -3209,7 +3182,7 @@ class SmartContractControls extends React.Component {
                                         </Tooltip>
                                       </Flex>
                                       <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                        { currentApr }
+                                        {currentApr}
                                       </Heading.h3>
                                     </Box>
                                     <Box width={1/2}>
@@ -3444,7 +3417,7 @@ class SmartContractControls extends React.Component {
                                 Daily
                               </Text>
                               <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                {this.getFormattedBalance(navPoolEarningPerDay,this.props.selectedToken,3)}
+                                {this.functionsUtil.getFormattedBalance(navPoolEarningPerDay,this.props.selectedToken,3)}
                               </Heading.h3>
                             </Box>
                             <Box width={1/2}>
@@ -3452,7 +3425,7 @@ class SmartContractControls extends React.Component {
                                 Weekly
                               </Text>
                               <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                {this.getFormattedBalance(navPoolEarningPerWeek,this.props.selectedToken,3)}
+                                {this.functionsUtil.getFormattedBalance(navPoolEarningPerWeek,this.props.selectedToken,3)}
                               </Heading.h3>
                             </Box>
                           </Flex>
@@ -3462,7 +3435,7 @@ class SmartContractControls extends React.Component {
                                 Monthly
                               </Text>
                               <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                {this.getFormattedBalance(navPoolEarningPerMonth,this.props.selectedToken,3)}
+                                {this.functionsUtil.getFormattedBalance(navPoolEarningPerMonth,this.props.selectedToken,3)}
                               </Heading.h3>
                             </Box>
                             <Box width={1/2}>
@@ -3470,7 +3443,7 @@ class SmartContractControls extends React.Component {
                                 Yearly
                               </Text>
                               <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                {this.getFormattedBalance(navPoolEarningPerYear,this.props.selectedToken,3)}
+                                {this.functionsUtil.getFormattedBalance(navPoolEarningPerYear,this.props.selectedToken,3)}
                               </Heading.h3>
                             </Box>
                           </Flex>
@@ -3563,8 +3536,8 @@ class SmartContractControls extends React.Component {
           title={`Congratulations!`}
           icon={`images/medal.svg`}
           confettiEnabled={true}
-          text={`You have successfully made your first deposit!<br />Enjoy <strong>${avgApr}% APR</strong> on your <strong>${this.props.selectedToken}</strong>!`}
-          tweet={`I'm earning ${avgApr}% APR on my ${this.props.selectedToken} with @idlefinance! Go to ${globalConfigs.baseURL} and start earning now from your idle tokens!`}
+          text={`You have successfully made your first deposit!<br />Enjoy <strong>${currentApr} APR</strong> on your <strong>${this.props.selectedToken}</strong>!`}
+          tweet={`I'm earning ${currentApr} APR on my ${this.props.selectedToken} with @idlefinance! Go to ${globalConfigs.baseURL} and start earning now from your idle tokens!`}
           tokenName={this.props.selectedToken} />
 
         <ReferralShareModal

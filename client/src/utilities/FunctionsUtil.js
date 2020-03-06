@@ -1,5 +1,7 @@
+import React from "react";
 import axios from 'axios';
 import moment from 'moment';
+import { Text } from "rimble-ui";
 import BigNumber from 'bignumber.js';
 import globalConfigs from '../configs/globalConfigs';
 
@@ -402,6 +404,32 @@ class FunctionsUtil {
   asyncForEach = async (array, callback) => {
     for (let index = 0; index < array.length; index++) {
       await callback(array[index], index, array);
+    }
+  }
+  getFormattedBalance(balance,label,decimals,maxLen,highlightedDecimals){
+    const defaultValue = '-';
+    decimals = !isNaN(decimals) ? decimals : 6;
+    maxLen = !isNaN(maxLen) ? maxLen : 10;
+    highlightedDecimals = !isNaN(highlightedDecimals) ? highlightedDecimals : 0;
+    balance = parseFloat(this.BNify(balance)).toFixed(decimals);
+
+    const numLen = balance.toString().replace('.','').length;
+    if (numLen>maxLen){
+      decimals = Math.max(0,decimals-(numLen-maxLen));
+      balance = parseFloat(this.BNify(balance)).toFixed(decimals);
+    }
+
+    const intPart = Math.floor(balance);
+    let decPart = (balance%1).toPrecision(decimals).substr(2,decimals);;
+    decPart = (decPart+("0".repeat(decimals))).substr(0,decimals);
+
+    if (highlightedDecimals){
+      const highlightedDec = decPart.substr(0,highlightedDecimals);
+      decPart = decPart.substr(highlightedDecimals);
+      const highlightedIntPart = (<Text.span fontSize={'100%'} color={'blue'} fontWeight={'inerith'}>{intPart}.{highlightedDec}</Text.span>);
+      return !isNaN(this.trimEth(balance)) ? ( <>{highlightedIntPart}<small style={{fontSize:'70%'}}>{decPart}</small> <Text.span fontSize={[1,2]}>{label}</Text.span></> ) : defaultValue;
+    } else {
+      return !isNaN(this.trimEth(balance)) ? ( <>{intPart}<small>.{decPart}</small>{ label !== '%' ? ' ' : null }{ label ? <Text.span fontSize={[1,2]}>{label}</Text.span> : null }</> ) : defaultValue;
     }
   }
 };
