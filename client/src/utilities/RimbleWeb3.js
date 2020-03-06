@@ -624,7 +624,7 @@ class RimbleTransaction extends React.Component {
       this.functionsUtil.customLog("User cancelled connect request. Error:", error);
 
       // Catch ledger error
-      if (error && error.message.includes('MULTIPLE_OPEN_CONNECTIONS_DISALLOWED')) {
+      if (error && error.message && error.message.includes('MULTIPLE_OPEN_CONNECTIONS_DISALLOWED')) {
         return;
       }
 
