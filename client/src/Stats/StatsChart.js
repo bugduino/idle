@@ -747,12 +747,6 @@ class StatsChart extends Component {
           return { x, y, blocknumber: d.blocknumber };
         });
 
-        chartData.push({
-          id:'Idle',
-          color: 'hsl('+globalConfigs.stats.protocols.idle.color.hsl.join(',')+')',
-          data: idleChartData
-        });
-
         // const aave_data = {};
 
         await this.functionsUtil.asyncForEach(this.props.tokenConfig.protocols,async (p) => {
@@ -851,6 +845,12 @@ class StatsChart extends Component {
         //   aave_data[Object.keys(aave_data)[0]] = 1;
         //   console.log(JSON.stringify(aave_data));
         // }
+
+        chartData.push({
+          id:'Idle',
+          color: 'hsl('+globalConfigs.stats.protocols.idle.color.hsl.join(',')+')',
+          data: idleChartData
+        });
 
         // Set chart type
         chartType = Line;
