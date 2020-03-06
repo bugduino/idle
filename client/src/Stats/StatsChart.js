@@ -22,16 +22,30 @@ class StatsChart extends Component {
     window.addEventListener('resize', this.handleWindowSizeChange);
   }
 
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.handleWindowSizeChange);
+  }
+
   async componentDidMount() {
+    if (!this.props.contractsInitialized){
+      return false;
+    }
+    this.setState({
+      chartData:null,
+      chartType:null,
+      chartProps:null,
+    });
     this.loadUtils();
     this.handleWindowSizeChange();
     this.loadApiData();
   }
 
   async componentDidUpdate(prevProps) {
+    const contractsInitialized = prevProps.contractsInitialized !== this.props.contractsInitialized;
     const tokenChanged = prevProps.tokenConfig !== this.props.tokenConfig;
     const dateChanged = prevProps.startTimestamp !== this.props.startTimestamp || prevProps.endTimestamp !== this.props.endTimestamp;
-    if (tokenChanged || dateChanged){
+    const showAdvancedChanged = prevProps.showAdvanced !== this.props.showAdvanced;
+    if (tokenChanged || dateChanged || contractsInitialized || showAdvancedChanged){
       this.componentDidMount();
     }
   }
@@ -705,62 +719,115 @@ class StatsChart extends Component {
         };
       break;
       case 'PRICE':
-        this.props.tokenConfig.protocols.forEach((p,j) => {
-          // let lastRate = 0;
-          // const initBalance = 1;
-          let firstRate = null;
-          chartData.push({
+
+        const aave_data = {};
+
+        await this.functionsUtil.asyncForEach(this.props.tokenConfig.protocols,async (p) => {
+
+          const chartRow = {
             id:p.name,
             color: 'hsl('+globalConfigs.stats.protocols[p.name].color.hsl.join(',')+')',
-            data: apiResults.map((d,i) => {
-              return d.protocolsData.filter((protocolAllocation,x) => {
-                  return protocolAllocation.protocolAddr.toLowerCase() === p.address.toLowerCase()
-              })
-              .map((protocolAllocation,z) => {
-                const protocolPaused = this.functionsUtil.BNify(protocolAllocation.rate).eq(0);
-                if (!protocolPaused){
-                  const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
+            data: []
+          };
 
-                  const rate = this.functionsUtil.fixTokenDecimals(protocolAllocation.price,p.decimals);
-                  let y = 0;
+          let lastRowData = null;
+          let lastTokenPrice = null;
+          let firstTokenPrice = null;
+          let protocolHasData = false;
+          let baseProfit = 0;
 
-                  if (!firstRate){
-                    firstRate = rate;
-                  } else {
-                    y = parseFloat(rate.div(firstRate).minus(1).times(100));
+          await this.functionsUtil.asyncForEach(apiResults,async (d) => {
+
+            const protocolData = d.protocolsData.find((pData,x) => {
+              return pData.protocolAddr.toLowerCase() === p.address.toLowerCase()
+            });
+
+            if (protocolData){
+              const protocolPaused = this.functionsUtil.BNify(protocolData.rate).eq(0);
+              if (!protocolPaused){
+
+                let rowData = {};
+                let tokenExchangeRate = protocolData.price;
+                let tokenPriceFixed = this.functionsUtil.fixTokenDecimals(tokenExchangeRate,p.decimals);
+                const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
+
+                // Take data from
+                if (tokenPriceFixed.eq(1) && globalConfigs.stats.protocols[p.name].data && globalConfigs.stats.protocols[p.name].data[d.blocknumber]){
+                  tokenExchangeRate = this.functionsUtil.BNify(globalConfigs.stats.protocols[p.name].data[d.blocknumber]);
+                  tokenPriceFixed = this.functionsUtil.fixTokenDecimals(tokenExchangeRate,p.decimals);
+                  protocolHasData = true;
+                }/* else if (p.name === 'aave'){
+                  let aaveTokenBalance = await this.functionsUtil.genericContractCall(p.token,'balanceOf',['0xc025c03e10f656d3ee76685d53d236824d8ef3da'],{},d.blocknumber);
+                  if (aaveTokenBalance){
+                    if (!Object.values(aave_data).length){
+                      tokenExchangeRate = this.functionsUtil.normalizeTokenAmount(1,p.decimals);
+                      aave_data[d.blocknumber] = aaveTokenBalance.toString();
+                    } else {
+                      const firstBalance = Object.values(aave_data)[0];
+                      tokenExchangeRate = this.functionsUtil.normalizeTokenAmount(this.functionsUtil.BNify(aaveTokenBalance).div(this.functionsUtil.BNify(firstBalance)).toFixed(p.decimals),p.decimals);
+                      aave_data[d.blocknumber] = tokenExchangeRate.toString();
+                    }
                   }
-                  return { x, y };
+                }*/
+
+                let y = 0;
+
+                if (!firstTokenPrice){
+                  firstTokenPrice = tokenPriceFixed;
+                } else {
+                  if (tokenPriceFixed.lt(lastTokenPrice)){
+                    firstTokenPrice = tokenPriceFixed;
+                    const lastYDiff = chartRow.data[chartRow.data.length-1].y-chartRow.data[chartRow.data.length-2].y;
+                    y = lastRowData.y+lastYDiff;
+                    baseProfit = y;
+                  } else {
+                    y = parseFloat(tokenPriceFixed.div(firstTokenPrice).minus(1).times(100))+baseProfit;
+                  }
                 }
-                return undefined;
-              })[0]
-            }).filter((v) => { return v !== undefined; } )
-          })
+
+                rowData = {
+                  x,
+                  y
+                };
+
+                lastTokenPrice = tokenPriceFixed;
+                lastRowData = rowData;
+
+                chartRow.data.push(rowData);
+              }
+            }
+          });
+
+          chartData.push(chartRow);
         });
+
+        if (Object.values(aave_data).length){
+          aave_data[Object.keys(aave_data)[0]] = 1;
+          console.log(JSON.stringify(aave_data));
+        }
 
         // let lastRate = 0;
         // const initBalance = 1;
-        let firstRate = null;
+        let firstTokenPrice = null;
         chartData.push({
           id:'Idle',
           color: 'hsl('+globalConfigs.stats.protocols.idle.color.hsl.join(',')+')',
           data: apiResults.map((d,i) => {
             const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
 
-            const rate = this.functionsUtil.fixTokenDecimals(d.idlePrice,this.props.tokenConfig.decimals);
+            const tokenPrice = this.functionsUtil.fixTokenDecimals(d.idlePrice,this.props.tokenConfig.decimals);
             let y = 0;
 
-            if (!firstRate){
-              firstRate = rate;
+            if (!firstTokenPrice){
+              firstTokenPrice = tokenPrice;
             } else {
-              y = parseFloat(rate.div(firstRate).minus(1).times(100));
+              y = parseFloat(tokenPrice.div(firstTokenPrice).minus(1).times(100));
             }
 
 
             return { x, y };
           })
         });
-
-        // debugger;
 
         // Set chart type
         chartType = Line;
@@ -772,7 +839,7 @@ class StatsChart extends Component {
             // precision: 'day',
           },
           xFormat:'time:%b %d %H:%M',
-          yFormat:value => parseFloat(value).toFixed(2)+'%',
+          yFormat:value => parseFloat(value).toFixed(3)+'%',
           yScale:{
             type: 'linear',
             stacked: false,
@@ -790,7 +857,7 @@ class StatsChart extends Component {
           },
           axisBottom:{
             format: '%b %d',
-            tickValues: this.props.isMobile ? 'every 4 days' : 'every 2 days',
+            tickValues: this.props.isMobile ? 'every 4 days' : (this.props.showAdvanced ? 'every 2 days' : 'every day'),
             orient: 'bottom',
             legend: '',
             legendOffset: 36,
@@ -824,7 +891,7 @@ class StatsChart extends Component {
   }
 
   render() {
-    if (!this.state.chartType || !this.state.chartData || !this.state.chartProps){
+    if (!this.state.chartType || !this.state.chartData || !this.state.chartProps || !this.props.contractsInitialized){
       return (
         <Flex
           justifyContent={'center'}

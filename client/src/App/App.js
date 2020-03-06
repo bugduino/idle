@@ -287,8 +287,10 @@ class App extends Component {
                                                     web3={web3}
                                                     initWeb3={initWeb3}
                                                     isMobile={isMobile}
+                                                    contracts={contracts}
                                                     tokenConfig={this.state.tokenConfig}
                                                     selectedToken={this.state.selectedToken}
+                                                    contractsInitialized={contractsInitialized}
                                                     availableTokens={this.state.availableTokens}
                                                     setSelectedToken={ e => { this.setSelectedToken(e) } }
                                                   />}
@@ -296,42 +298,42 @@ class App extends Component {
                             </Route>
                             <Route>
                               <Header
+                                modals={modals}
+                                network={network}
                                 context={context}
                                 account={account}
                                 initWeb3={initWeb3}
-                                initContract={initContract}
-                                contracts={contracts}
                                 isMobile={isMobile}
-                                connecting={this.state.connecting}
-                                walletProvider={this.state.walletProvider}
-                                contractsInitialized={contractsInitialized}
-                                connectorName={this.state.connectorName}
-                                buyModalOpened={this.state.buyModalOpened}
-                                openBuyModal={this.openBuyModal.bind(this)}
-                                buyToken={this.state.buyToken}
-                                getAccountBalance={getAccountBalance}
-                                getTokenDecimals={getTokenDecimals}
-                                accountBalance={accountBalance}
-                                accountBalanceToken={accountBalanceToken}
-                                accountBalanceLow={accountBalanceLow}
+                                contracts={contracts}
                                 initAccount={initAccount}
-                                rejectAccountConnect={rejectAccountConnect}
-                                userRejectedConnect={userRejectedConnect}
-                                accountValidated={accountValidated}
-                                accountValidationPending={accountValidationPending}
-                                rejectValidation={rejectValidation}
-                                userRejectedValidation={userRejectedValidation}
+                                initContract={initContract}
+                                buyToken={this.state.buyToken}
+                                accountBalance={accountBalance}
                                 validateAccount={validateAccount}
-                                connectAndValidateAccount={connectAndValidateAccount}
-                                closeBuyModal={this.closeBuyModal.bind(this)}
-                                handleMenuClick={this.selectTab.bind(this)}
-                                availableTokens={this.state.availableTokens}
+                                connecting={this.state.connecting}
+                                accountValidated={accountValidated}
+                                getTokenDecimals={getTokenDecimals}
+                                rejectValidation={rejectValidation}
                                 tokenConfig={this.state.tokenConfig}
+                                getAccountBalance={getAccountBalance}
+                                accountBalanceLow={accountBalanceLow}
                                 selectedToken={this.state.selectedToken}
-                                setSelectedToken={ e => { this.setSelectedToken(e) } }
+                                connectorName={this.state.connectorName}
+                                userRejectedConnect={userRejectedConnect}
+                                accountBalanceToken={accountBalanceToken}
+                                walletProvider={this.state.walletProvider}
+                                buyModalOpened={this.state.buyModalOpened}
+                                contractsInitialized={contractsInitialized}
+                                openBuyModal={this.openBuyModal.bind(this)}
+                                rejectAccountConnect={rejectAccountConnect}
+                                handleMenuClick={this.selectTab.bind(this)}
                                 setConnector={this.setConnector.bind(this)}
-                                modals={modals}
-                                network={network}
+                                availableTokens={this.state.availableTokens}
+                                closeBuyModal={this.closeBuyModal.bind(this)}
+                                userRejectedValidation={userRejectedValidation}
+                                accountValidationPending={accountValidationPending}
+                                connectAndValidateAccount={connectAndValidateAccount}
+                                setSelectedToken={ e => { this.setSelectedToken(e) } }
                               />
 
                               {this.state.route === "onboarding" ? (

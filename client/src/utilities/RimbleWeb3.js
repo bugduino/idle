@@ -292,7 +292,6 @@ class RimbleTransaction extends React.Component {
 
   initContract = async (name, address, abi) => {
     this.functionsUtil.customLog(`Init contract: ${name}`);
-
     return await this.createContract(name, address, abi);
   }
 
@@ -308,10 +307,6 @@ class RimbleTransaction extends React.Component {
       return {name, contract};
     } catch (error) {
       this.functionsUtil.customLogError("Could not create contract.",name,address,error);
-      // window.toastProvider.addMessage("Contract creation failed.", {
-      //   variant: "failure",
-      //   colorTheme: 'light'
-      // });
     }
   }
 
@@ -754,10 +749,6 @@ class RimbleTransaction extends React.Component {
       }
     }
 
-    this.setState({
-      contractsInitialized:false
-    });
-
     await Promise.all([
       initTokenContract(),
       initIdleTokenContract(),
@@ -765,7 +756,7 @@ class RimbleTransaction extends React.Component {
       initMigrationContract()
     ]);
 
-    this.setState({
+    return this.setState({
       contractsInitialized:true
     });
   }

@@ -57,7 +57,7 @@ class Stats extends Component {
     newState.minStartTime = moment(globalConfigs.stats.tokens[this.state.selectedToken].startTimestamp,'YYYY-MM-DD');
     newState.startTimestampObj = newState.minStartTime;
     newState.startTimestamp = parseInt(newState.startTimestampObj._d.getTime()/1000);
-    newState.endTimestampObj = moment();
+    newState.endTimestampObj = moment(moment().format('YYYY-MM-DD 23:59'),'YYYY-MM-DD HH:mm');
     newState.endTimestamp = parseInt(newState.endTimestampObj._d.getTime()/1000);
 
     newState.minDate = newState.startTimestampObj._d;
@@ -258,7 +258,6 @@ class Stats extends Component {
         const prevAllocation = this.functionsUtil.fixTokenDecimals(prevFirstProtocol.allocation,this.state.tokenConfig.decimals);
         const prevAllocationPerc = parseInt(prevAllocation.div(prevTotalAllocation).times(10000).toFixed(0));
 
-
         if (allocationPerc !== prevAllocationPerc){
           rebalances++;
         }
@@ -382,26 +381,29 @@ class Stats extends Component {
           </Flex>
         </Flex>
         <Flex justifyContent={'space-between'} style={{flexWrap:'wrap'}}>
-          <Flex id='chart-AUM' width={[1,0.49]} mb={3}>
+          <Flex id='chart-PRICE' width={[1,this.state.showAdvanced ? 0.49 : 1]} mb={3}>
             <Card p={[2,3]} pb={0} borderRadius={'10px'}>
               <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
                 <Text color={'copyColor'} fontWeight={2} fontSize={3}>
-                  AUM
+                  Historical Performance
                 </Text>
-                <StatsChart isMobile={this.props.isMobile} web3={this.props.web3} getTokenData={this.getTokenData} chartMode={'AUM'} {...this.state} parentId={'chart-AUM'} height={ 350 } />
+                <StatsChart contracts={this.props.contracts} contractsInitialized={this.props.contractsInitialized} isMobile={this.props.isMobile} web3={this.props.web3} getTokenData={this.getTokenData} chartMode={'PRICE'} {...this.state} parentId={'chart-PRICE'} height={ 350 } />
               </Flex>
             </Card>
           </Flex>
-          <Flex id='chart-PRICE' width={[1,0.49]} mb={3}>
-            <Card p={[2,3]} pb={0} borderRadius={'10px'}>
-              <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                <Text color={'copyColor'} fontWeight={2} fontSize={3}>
-                  Performance
-                </Text>
-                <StatsChart isMobile={this.props.isMobile} web3={this.props.web3} getTokenData={this.getTokenData} chartMode={'PRICE'} {...this.state} parentId={'chart-PRICE'} height={ 350 } />
+          {
+            this.state.showAdvanced &&
+              <Flex id='chart-AUM' width={[1,0.49]} mb={3}>
+                <Card p={[2,3]} pb={0} borderRadius={'10px'}>
+                  <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
+                    <Text color={'copyColor'} fontWeight={2} fontSize={3}>
+                      AUM
+                    </Text>
+                    <StatsChart contracts={this.props.contracts} contractsInitialized={this.props.contractsInitialized} isMobile={this.props.isMobile} web3={this.props.web3} getTokenData={this.getTokenData} chartMode={'AUM'} {...this.state} parentId={'chart-AUM'} height={ 350 } />
+                  </Flex>
+                </Card>
               </Flex>
-            </Card>
-          </Flex>
+          }
         </Flex>
         {
           this.state.showAdvanced &&
@@ -412,7 +414,7 @@ class Stats extends Component {
                     <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                       Allocation
                     </Text>
-                    <StatsChart isMobile={this.props.isMobile} web3={this.props.web3} getTokenData={this.getTokenData} chartMode={'ALL'} {...this.state} parentId={'chart-ALL'} height={ 350 } />
+                    <StatsChart contracts={this.props.contracts} contractsInitialized={this.props.contractsInitialized} isMobile={this.props.isMobile} web3={this.props.web3} getTokenData={this.getTokenData} chartMode={'ALL'} {...this.state} parentId={'chart-ALL'} height={ 350 } />
                   </Flex>
                 </Card>
               </Flex>
@@ -422,7 +424,7 @@ class Stats extends Component {
                     <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                       Allocation Percentage
                     </Text>
-                    <StatsChart isMobile={this.props.isMobile} web3={this.props.web3} getTokenData={this.getTokenData} chartMode={'ALL_PERC'} {...this.state} parentId={'chart-ALL_PERC'} height={ 350 } />
+                    <StatsChart contracts={this.props.contracts} contractsInitialized={this.props.contractsInitialized} isMobile={this.props.isMobile} web3={this.props.web3} getTokenData={this.getTokenData} chartMode={'ALL_PERC'} {...this.state} parentId={'chart-ALL_PERC'} height={ 350 } />
                   </Flex>
                 </Card>
               </Flex>
@@ -432,7 +434,7 @@ class Stats extends Component {
                     <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                       APRs
                     </Text>
-                    <StatsChart isMobile={this.props.isMobile} web3={this.props.web3} getTokenData={this.getTokenData} chartMode={'APR'} {...this.state} parentId={'chart-APR'} height={ 350 } />
+                    <StatsChart contracts={this.props.contracts} contractsInitialized={this.props.contractsInitialized} isMobile={this.props.isMobile} web3={this.props.web3} getTokenData={this.getTokenData} chartMode={'APR'} {...this.state} parentId={'chart-APR'} height={ 350 } />
                   </Flex>
                 </Card>
               </Flex>
@@ -442,7 +444,7 @@ class Stats extends Component {
                     <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                       Volume
                     </Text>
-                    <StatsChart isMobile={this.props.isMobile} web3={this.props.web3} getTokenData={this.getTokenData} chartMode={'VOL'} {...this.state} parentId={'chart-VOL'} height={ 350 } />
+                    <StatsChart contracts={this.props.contracts} contractsInitialized={this.props.contractsInitialized} isMobile={this.props.isMobile} web3={this.props.web3} getTokenData={this.getTokenData} chartMode={'VOL'} {...this.state} parentId={'chart-VOL'} height={ 350 } />
                   </Flex>
                 </Card>
               </Flex>
