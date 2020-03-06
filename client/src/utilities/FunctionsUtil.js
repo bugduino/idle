@@ -192,16 +192,18 @@ class FunctionsUtil {
     return await this.genericContractCall(contractName,'decimals');
   }
   getAvgApr = (aprs,allocations,totalAllocation) => {
-    let avgApr = 0;
     if (aprs && allocations && totalAllocation){
-      avgApr = Object.keys(allocations).reduce((aprWeighted,protocolAddr) => {
+      let avgApr = Object.keys(allocations).reduce((aprWeighted,protocolAddr) => {
         const allocation = this.BNify(allocations[protocolAddr]);
         const apr = this.BNify(aprs[protocolAddr]);
         return this.BNify(aprWeighted).plus(allocation.times(apr));
       },0);
-      avgApr = avgApr.div(totalAllocation);
+
+      if (avgApr){
+        return this.BNify(avgApr).div(totalAllocation);
+      }
     }
-    return avgApr;
+    return null;
   }
   getProtocolInfoByAddress = (addr) => {
     return this.props.tokenConfig.protocols.find(c => c.address.toLowerCase() === addr.toLowerCase());
