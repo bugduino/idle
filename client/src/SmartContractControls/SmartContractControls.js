@@ -149,6 +149,14 @@ class SmartContractControls extends React.Component {
     this.setState({calculatingShouldRebalance:true});
 
     const rebalancer = await this.functionsUtil.genericIdleCall('rebalancer');
+
+    if (!rebalancer){
+      return this.setState({
+        shouldRebalance:false,
+        calculatingShouldRebalance: false
+      });
+    }
+
     const idleRebalancerInstance = await this.functionsUtil.createContract('idleRebalancerInstance',rebalancer,globalConfigs.contract.methods.rebalance.abi);
 
     if (!idleRebalancerInstance || !idleRebalancerInstance.contract){
@@ -202,14 +210,17 @@ class SmartContractControls extends React.Component {
 
     // Check if newAllocations differs from currentAllocations
     let shouldRebalance = false;
-    Object.keys(this.state.protocolsAllocationsPerc).forEach((protocolAddr) => {
-      const protocolAllocation = this.state.protocolsAllocationsPerc[protocolAddr];
-      const protocolAllocationParsed = parseInt(protocolAllocation.times(10000).toFixed(0));
-      const newProtocolAllocation = newProtocolsAllocations[protocolAddr.toLowerCase()] ? newProtocolsAllocations[protocolAddr.toLowerCase()] : 0;
-      if (protocolAllocationParsed !== newProtocolAllocation){
-        shouldRebalance = true;
-      }
-    });
+
+    if (typeof this.state.protocolsAllocationsPerc === 'object'){
+      Object.keys(this.state.protocolsAllocationsPerc).forEach((protocolAddr) => {
+        const protocolAllocation = this.state.protocolsAllocationsPerc[protocolAddr];
+        const protocolAllocationParsed = parseInt(protocolAllocation.times(10000).toFixed(0));
+        const newProtocolAllocation = newProtocolsAllocations[protocolAddr.toLowerCase()] ? newProtocolsAllocations[protocolAddr.toLowerCase()] : 0;
+        if (protocolAllocationParsed !== newProtocolAllocation){
+          shouldRebalance = true;
+        }
+      });
+    }
 
     return this.setState({
       shouldRebalance,
