@@ -367,9 +367,10 @@ class FunctionsUtil {
         });
       }));
 
-      if (!txReceipt){
-        return;
-      }
+    }
+
+    if (!txReceipt){
+      return null;
     }
 
     const internalTransfers = txReceipt.logs.filter((tx) => { return tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${logAddr}`; });
