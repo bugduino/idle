@@ -312,15 +312,6 @@ class RimbleTransaction extends React.Component {
 
   initSimpleID = () => {
 
-    // Clear simpleID localStorage variables
-    if (localStorage){
-      localStorage.removeItem('pinged-simple-id');
-      localStorage.removeItem('active-sid-message');
-      localStorage.removeItem('sid-notifications');
-      localStorage.removeItem('SimpleID-User-Session');
-      localStorage.removeItem('non-sid-user-info');
-    }
-
     if (this.state.simpleID){
       return this.state.simpleID;
     }
