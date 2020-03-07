@@ -880,7 +880,7 @@ class StatsChart extends Component {
           },
           axisBottom:{
             format: '%b %d',
-            tickValues: this.props.isMobile ? 'every 4 days' : (this.props.showAdvanced ? 'every 2 days' : 'every day'),
+            tickValues: this.props.isMobile ? 'every 4 days' : 'every 2 days',
             orient: 'bottom',
             legend: '',
             legendOffset: 36,
@@ -899,7 +899,7 @@ class StatsChart extends Component {
           colors:d => d.color,
           pointLabelYOffset:-12,
           pointColor:{ from: 'color', modifiers: []},
-          margin: this.props.isMobile ? { top: 20, right: 20, bottom: 40, left: 50 } : { top: 20, right: 40, bottom: 40, left: 60 },
+          margin: this.props.isMobile ? { top: 20, right: 20, bottom: 40, left: 50 } : { top: 20, right: 40, bottom: 40, left: 80 },
         };
       break;
       default:

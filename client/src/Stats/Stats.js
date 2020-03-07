@@ -1,6 +1,7 @@
 import moment from 'moment';
 import StatsChart from './StatsChart';
 import React, { Component } from 'react';
+import Toggler from '../Toggler/Toggler';
 import ButtonGroup from '../ButtonGroup/ButtonGroup';
 import globalConfigs from '../configs/globalConfigs';
 import { Link as RouterLink } from "react-router-dom";
@@ -124,8 +125,18 @@ class Stats extends Component {
   }
 
   updateButtonGroup = async () => {
-
     const buttonGroups = [
+      [
+        {
+          component:Toggler,
+          props:{
+            checked:this.state.showAdvanced,
+            handleClick:this.toggleAdvancedCharts,
+            label:'Mode: Basic',
+            labelChecked:'Mode: Advanced'
+          },
+        }
+      ],
       [
         {
           component:Button,
@@ -188,7 +199,9 @@ class Stats extends Component {
       const dateChanged = prevState.startTimestamp !== this.state.startTimestamp || prevState.endTimestamp !== this.state.endTimestamp;
       if (dateChanged){
         this.loadApiData();
-        this.updateButtonGroup()
+      }
+      if (prevState.showAdvanced !== this.state.showAdvanced){
+        this.updateButtonGroup();
       }
     }
   }
@@ -275,16 +288,19 @@ class Stats extends Component {
 
   render() {
     return (
-      <Flex flexDirection={'column'} p={[3,4]}>
-        <Flex width={1} flexDirection={'row'} position={['relative','absolute']} zIndex={10} height={['60px','auto']} left={['auto','0']} px={[0,4]}>
-          <Box width={1/2}>
+      <Flex flexDirection={'column'} px={[3,5]} py={[3,4]}>
+        <Flex width={1} flexDirection={'row'} left={['auto','0']}>
+          <Flex alignItems={'center'} width={[2/3,1/2]}>
             <RouterLink to="/">
               <Image src="images/logo-gradient.svg"
                 height={['35px','48px']}
                 position={'relative'} />
             </RouterLink>
-          </Box>
-          <Flex flexDirection={'row'} width={1/2} justifyContent={'flex-end'}>
+            <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={3} lineHeight={'initial'} fontSize={[4,5]} ml={[1,2]}>
+              <Text.span fontSize={'80%'}>|</Text.span> Stats
+            </Heading.h3>
+          </Flex>
+          <Flex flexDirection={'row'} width={[1/3,1/2]} justifyContent={'flex-end'} alignItems={'center'}>
             {
               this.state.buttonGroups && 
                 this.props.isMobile ? (
@@ -305,25 +321,23 @@ class Stats extends Component {
             }
           </Flex>
         </Flex>
-        <Flex flexDirection={'column'} alignItems={'center'} justifyContent={'center'} mb={[3,3]}>
-          <Heading.h3 color={'dark-gray'} textAlign={'center'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]} mb={[1,2]}>
-            Idle Stats - {this.state.selectedToken}
-          </Heading.h3>
-        </Flex>
-        <Flex flexDirection={['column','row']} width={1} mb={[2,3]}>
-          <Flex width={[1,1/4]} flexDirection={'column'} pr={[0,2]}>
-            <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'}>
-              <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>AUM</Text.span>
-                <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
-                  {this.state.aum}
-                  <Text.span color={'copyColor'} fontWeight={3} fontSize={['90%','70%']} pl={2}>{this.state.selectedToken}</Text.span>
-                </Text>
+        <Flex flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'} width={1} mb={[2,3]}>
+          {
+            this.state.showAdvanced &&
+              <Flex width={[1,1/4]} flexDirection={'column'} pr={[0,2]}>
+                <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
+                  <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
+                    <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Asset Under Management</Text.span>
+                    <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
+                      {this.state.aum}
+                      <Text.span color={'copyColor'} fontWeight={3} fontSize={['90%','70%']} pl={2}>{this.state.selectedToken}</Text.span>
+                    </Text>
+                  </Flex>
+                </Card>
               </Flex>
-            </Card>
-          </Flex>
+          }
           <Flex width={[1,1/4]} flexDirection={'column'} px={[0,2]}>
-            <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'}>
+            <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
               <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
                 <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Avg APR</Text.span>
                 <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
@@ -333,10 +347,34 @@ class Stats extends Component {
               </Flex>
             </Card>
           </Flex>
+          <Flex width={[1,1/4]} flexDirection={'column'} px={[0,2]}>
+            <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
+              <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
+                <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Overperformance on Compound</Text.span>
+                <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
+                  {this.state.delta}
+                  <Text.span color={'copyColor'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
+                </Text>
+              </Flex>
+            </Card>
+          </Flex>
+          {
+            this.state.showAdvanced &&
+              <Flex width={[1,1/4]} flexDirection={'column'} pl={[0,2]}>
+                <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
+                  <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
+                    <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Rebalances</Text.span>
+                    <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
+                      {this.state.rebalances}
+                    </Text>
+                  </Flex>
+                </Card>
+              </Flex>
+          }
           {
           /*
           <Flex width={[1,1/4]} flexDirection={'column'} px={[0,2]}>
-            <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'}>
+            <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
               <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
                 <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Current APR</Text.span>
                 <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
@@ -347,7 +385,7 @@ class Stats extends Component {
             </Card>
           </Flex>
           <Flex width={[1,1/4]} flexDirection={'column'} px={[0,2]}>
-            <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'}>
+            <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
               <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
                 <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Days Live</Text.span>
                 <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
@@ -358,31 +396,10 @@ class Stats extends Component {
           </Flex>
           */
           }
-          <Flex width={[1,1/4]} flexDirection={'column'} px={[0,2]}>
-            <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'}>
-              <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Rebalances</Text.span>
-                <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
-                  {this.state.rebalances}
-                </Text>
-              </Flex>
-            </Card>
-          </Flex>
-          <Flex width={[1,1/4]} flexDirection={'column'} pl={[0,2]}>
-            <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'}>
-              <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Overperformance on Compound</Text.span>
-                <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
-                  {this.state.delta}
-                  <Text.span color={'copyColor'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
-                </Text>
-              </Flex>
-            </Card>
-          </Flex>
         </Flex>
         <Flex justifyContent={'space-between'} style={{flexWrap:'wrap'}}>
-          <Flex id='chart-PRICE' width={[1,this.state.showAdvanced ? 0.49 : 1]} mb={3}>
-            <Card p={[2,3]} pb={0} borderRadius={'10px'}>
+          <Flex id='chart-PRICE' width={[1,0.49]} mb={3}>
+            <Card p={[2,3]} boxShadow={0} pb={0} borderRadius={'10px'}>
               <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
                 <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                   Historical Performance
@@ -391,25 +408,22 @@ class Stats extends Component {
               </Flex>
             </Card>
           </Flex>
-          {
-            this.state.showAdvanced &&
-              <Flex id='chart-AUM' width={[1,0.49]} mb={3}>
-                <Card p={[2,3]} pb={0} borderRadius={'10px'}>
-                  <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                    <Text color={'copyColor'} fontWeight={2} fontSize={3}>
-                      AUM
-                    </Text>
-                    <StatsChart contracts={this.props.contracts} contractsInitialized={this.props.contractsInitialized} isMobile={this.props.isMobile} web3={this.props.web3} getTokenData={this.getTokenData} chartMode={'AUM'} {...this.state} parentId={'chart-AUM'} height={ 350 } />
-                  </Flex>
-                </Card>
+          <Flex id='chart-AUM' width={[1,0.49]} mb={3}>
+            <Card p={[2,3]} boxShadow={0} pb={0} borderRadius={'10px'}>
+              <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
+                <Text color={'copyColor'} fontWeight={2} fontSize={3}>
+                  Asset Under Management
+                </Text>
+                <StatsChart contracts={this.props.contracts} contractsInitialized={this.props.contractsInitialized} isMobile={this.props.isMobile} web3={this.props.web3} getTokenData={this.getTokenData} chartMode={'AUM'} {...this.state} parentId={'chart-AUM'} height={ 350 } />
               </Flex>
-          }
+            </Card>
+          </Flex>
         </Flex>
         {
           this.state.showAdvanced &&
             <Flex justifyContent={'space-between'} style={{flexWrap:'wrap'}}>
               <Flex id='chart-ALL' width={[1,0.49]} mb={3}>
-                <Card p={[2,3]} pb={0} borderRadius={'10px'}>
+                <Card p={[2,3]} boxShadow={0} pb={0} borderRadius={'10px'}>
                   <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
                     <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                       Allocation
@@ -419,7 +433,7 @@ class Stats extends Component {
                 </Card>
               </Flex>
               <Flex id='chart-ALL_PERC' width={[1,0.49]} mb={3}>
-                <Card p={[2,3]} pb={0} borderRadius={'10px'}>
+                <Card p={[2,3]} boxShadow={0} pb={0} borderRadius={'10px'}>
                   <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
                     <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                       Allocation Percentage
@@ -429,7 +443,7 @@ class Stats extends Component {
                 </Card>
               </Flex>
               <Flex id='chart-APR' width={[1,0.49]} mb={3}>
-                <Card p={[2,3]} pb={0} borderRadius={'10px'}>
+                <Card p={[2,3]} boxShadow={0} pb={0} borderRadius={'10px'}>
                   <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
                     <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                       APRs
@@ -439,7 +453,7 @@ class Stats extends Component {
                 </Card>
               </Flex>
               <Flex id='chart-VOL' width={[1,0.49]} mb={3}>
-                <Card p={[2,3]} pb={0} borderRadius={'10px'}>
+                <Card p={[2,3]} boxShadow={0} pb={0} borderRadius={'10px'}>
                   <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
                     <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                       Volume
@@ -450,24 +464,25 @@ class Stats extends Component {
               </Flex>
             </Flex>
         }
-
-        <Flex flexDirection={'column'} mt={2} alignItems={'center'}>
-          <Link
-            href="#"
-            fontSize={2}
-            display={'flex'}
-            color={'dark-gray'}
-            hoverColor={'primary'}
-            style={{width:'100%'}}
-            onClick={e => this.toggleAdvancedCharts(e) }
-          >
-            <Card width={1} p={3} borderRadius={'10px'}>
-              <Flex justifyContent={'center'}>
+        {
+          /*
+          <Flex flexDirection={'column'} mt={2} alignItems={'center'}>
+            <Link
+              href="#"
+              fontSize={2}
+              display={'flex'}
+              color={'dark-gray'}
+              hoverColor={'primary'}
+              style={{width:'100%'}}
+              onClick={e => this.toggleAdvancedCharts(e) }
+            >
+              <Flex width={1} justifyContent={'center'}>
                 { this.state.showAdvanced ? 'hide' : 'show' } more stats
               </Flex>
-            </Card>
-          </Link>
-        </Flex>
+            </Link>
+          </Flex>
+          */
+        }
 
         <DateRangeModal
           minDate={this.state.minDate}
