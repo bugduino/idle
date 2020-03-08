@@ -26,11 +26,11 @@ class DateRangeModal extends React.Component {
   }
 
   componentDidUpdate = (prevProps) => {
-    if (prevProps.minDate !== this.props.minDate || prevProps.maxDate !== this.props.maxDate){
+    if (prevProps.startDate !== this.props.startDate || prevProps.endDate !== this.props.endDate){
       this.setState({
         ranges:{
-          startDate: this.props.minDate ? this.props.minDate : new Date(),
-          endDate: this.props.maxDate ? this.props.maxDate : new Date(),
+          startDate: this.props.startDate ? this.props.startDate : new Date(),
+          endDate: this.props.endDate ? this.props.endDate : new Date(),
           key: 'selection'
         }
       });

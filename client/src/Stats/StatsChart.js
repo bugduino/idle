@@ -880,7 +880,7 @@ class StatsChart extends Component {
           },
           axisBottom:{
             format: '%b %d',
-            tickValues: this.props.isMobile ? 'every 4 days' : 'every 2 days',
+            tickValues: this.props.isMobile ? 'every 4 days' : ( this.props.showAdvanced ? 'every 2 days' : 'every day'),
             orient: 'bottom',
             legend: '',
             legendOffset: 36,

@@ -56,12 +56,12 @@ class Stats extends Component {
 
     newState.tokenConfig = this.props.availableTokens[newState.selectedToken];
     newState.minStartTime = moment(globalConfigs.stats.tokens[this.state.selectedToken].startTimestamp,'YYYY-MM-DD');
-    newState.startTimestampObj = newState.minStartTime;
-    newState.startTimestamp = parseInt(newState.startTimestampObj._d.getTime()/1000);
     newState.endTimestampObj = moment(moment().format('YYYY-MM-DD 23:59'),'YYYY-MM-DD HH:mm');
     newState.endTimestamp = parseInt(newState.endTimestampObj._d.getTime()/1000);
+    newState.startTimestampObj = newState.endTimestampObj.clone().subtract(1,'week');
+    newState.startTimestamp = parseInt(newState.startTimestampObj._d.getTime()/1000);
 
-    newState.minDate = newState.startTimestampObj._d;
+    newState.minDate = newState.minStartTime._d;
     newState.maxDate = moment()._d;
 
     if (newState !== this.state){
@@ -199,8 +199,8 @@ class Stats extends Component {
       const dateChanged = prevState.startTimestamp !== this.state.startTimestamp || prevState.endTimestamp !== this.state.endTimestamp;
       if (dateChanged){
         this.loadApiData();
-      }
-      if (prevState.showAdvanced !== this.state.showAdvanced){
+        this.updateButtonGroup();
+      } else if (prevState.showAdvanced !== this.state.showAdvanced){
         this.updateButtonGroup();
       }
     }
@@ -289,7 +289,7 @@ class Stats extends Component {
   render() {
     return (
       <Flex flexDirection={'column'} px={[3,5]} py={[3,4]}>
-        <Flex width={1} flexDirection={'row'} left={['auto','0']}>
+        <Flex width={1} flexDirection={'row'} left={['auto','0']} mb={[0,3]}>
           <Flex alignItems={'center'} width={[2/3,1/2]}>
             <RouterLink to="/">
               <Image src="images/logo-gradient.svg"
@@ -336,7 +336,7 @@ class Stats extends Component {
                 </Card>
               </Flex>
           }
-          <Flex width={[1,1/4]} flexDirection={'column'} px={[0,2]}>
+          <Flex width={[1,this.state.showAdvanced ? 1/4 : 0.4]} flexDirection={'column'} pl={[0, this.state.showAdvanced ? 2 : 0]} pr={[0,2]}>
             <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
               <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
                 <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Avg APR</Text.span>
@@ -347,7 +347,7 @@ class Stats extends Component {
               </Flex>
             </Card>
           </Flex>
-          <Flex width={[1,1/4]} flexDirection={'column'} px={[0,2]}>
+          <Flex width={[1,this.state.showAdvanced ? 1/4 : 0.4]} flexDirection={'column'} pl={[0,2]} pr={[0,this.state.showAdvanced ? 2 : 0]}>
             <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
               <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
                 <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Overperformance on Compound</Text.span>
@@ -397,8 +397,8 @@ class Stats extends Component {
           */
           }
         </Flex>
-        <Flex justifyContent={'space-between'} style={{flexWrap:'wrap'}}>
-          <Flex id='chart-PRICE' width={[1,0.49]} mb={3}>
+        <Flex justifyContent={this.state.showAdvanced ? 'space-between' : 'center'} style={{flexWrap:'wrap'}}>
+          <Flex id='chart-PRICE' width={[1,this.state.showAdvanced ? 0.49 : 0.8]} mb={3}>
             <Card p={[2,3]} boxShadow={0} pb={0} borderRadius={'10px'}>
               <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
                 <Text color={'copyColor'} fontWeight={2} fontSize={3}>
@@ -408,16 +408,19 @@ class Stats extends Component {
               </Flex>
             </Card>
           </Flex>
-          <Flex id='chart-AUM' width={[1,0.49]} mb={3}>
-            <Card p={[2,3]} boxShadow={0} pb={0} borderRadius={'10px'}>
-              <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                <Text color={'copyColor'} fontWeight={2} fontSize={3}>
-                  Asset Under Management
-                </Text>
-                <StatsChart contracts={this.props.contracts} contractsInitialized={this.props.contractsInitialized} isMobile={this.props.isMobile} web3={this.props.web3} getTokenData={this.getTokenData} chartMode={'AUM'} {...this.state} parentId={'chart-AUM'} height={ 350 } />
-              </Flex>
-            </Card>
-          </Flex>
+          {
+            this.state.showAdvanced &&
+            <Flex id='chart-AUM' width={[1,0.49]} mb={3}>
+              <Card p={[2,3]} boxShadow={0} pb={0} borderRadius={'10px'}>
+                <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
+                  <Text color={'copyColor'} fontWeight={2} fontSize={3}>
+                    Asset Under Management
+                  </Text>
+                  <StatsChart contracts={this.props.contracts} contractsInitialized={this.props.contractsInitialized} isMobile={this.props.isMobile} web3={this.props.web3} getTokenData={this.getTokenData} chartMode={'AUM'} {...this.state} parentId={'chart-AUM'} height={ 350 } />
+                </Flex>
+              </Card>
+            </Flex>
+          }
         </Flex>
         {
           this.state.showAdvanced &&
