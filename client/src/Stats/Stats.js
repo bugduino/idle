@@ -8,7 +8,7 @@ import { Link as RouterLink } from "react-router-dom";
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import TokenSelector from '../TokenSelector/TokenSelector';
 import DateRangeModal from '../utilities/components/DateRangeModal';
-import { Box, Flex, Card, Text, Heading, Image, Button, Link } from 'rimble-ui';
+import { Flex, Card, Text, Heading, Image, Button } from 'rimble-ui';
 
 class Stats extends Component {
   state = {
@@ -58,7 +58,7 @@ class Stats extends Component {
     newState.minStartTime = moment(globalConfigs.stats.tokens[this.state.selectedToken].startTimestamp,'YYYY-MM-DD');
     newState.endTimestampObj = moment(moment().format('YYYY-MM-DD 23:59'),'YYYY-MM-DD HH:mm');
     newState.endTimestamp = parseInt(newState.endTimestampObj._d.getTime()/1000);
-    newState.startTimestampObj = newState.endTimestampObj.clone().subtract(1,'week');
+    newState.startTimestampObj = newState.endTimestampObj.clone().subtract(2,'week');
     newState.startTimestamp = parseInt(newState.startTimestampObj._d.getTime()/1000);
 
     newState.minDate = newState.minStartTime._d;
