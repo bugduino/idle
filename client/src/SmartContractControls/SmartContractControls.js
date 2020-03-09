@@ -199,6 +199,13 @@ class SmartContractControls extends React.Component {
     const nextAllocations = await Promise.all(allocationsPromises);
     const allAvailableTokens = await Promise.all(availableTokensPromises);
 
+    if (!allAvailableTokens || !nextAllocations){
+      return this.setState({
+        shouldRebalance:false,
+        calculatingShouldRebalance: false
+      });
+    }
+
     // Merge nextAllocations and allAvailableTokens
     const newProtocolsAllocations = allAvailableTokens.reduce((accumulator,availableTokenInfo) => {
       const nextAllocation = nextAllocations.find(v => { return v.protocolIndex === availableTokenInfo.protocolIndex; });
