@@ -289,7 +289,7 @@ class Stats extends Component {
   render() {
     return (
       <Flex flexDirection={'column'} px={[3,5]} py={[3,4]}>
-        <Flex width={1} flexDirection={'row'} left={['auto','0']} mb={[0,3]}>
+        <Flex position={['absolute','relative']} left={0} px={[3,0]} zIndex={10} width={1} flexDirection={'row'} left={['auto','0']} mb={[0,3]}>
           <Flex alignItems={'center'} width={[2/3,1/2]}>
             <RouterLink to="/">
               <Image src="images/logo-gradient.svg"
@@ -321,7 +321,7 @@ class Stats extends Component {
             }
           </Flex>
         </Flex>
-        <Flex flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'} width={1} mb={[2,3]}>
+        <Flex flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'} width={1} mt={[5,0]} mb={[2,3]}>
           {
             this.state.showAdvanced &&
               <Flex width={[1,1/4]} flexDirection={'column'} pr={[0,2]}>
