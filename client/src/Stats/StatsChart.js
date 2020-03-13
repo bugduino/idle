@@ -472,20 +472,14 @@ class StatsChart extends Component {
             date
           };
 
-          if (tempData[date]){
-            row = tempData[date];
-          }
-
           d.protocolsData.forEach((protocolData) => {
             const protocolPaused = this.functionsUtil.BNify(protocolData.rate).eq(0);
             const protocolName = this.props.tokenConfig.protocols.filter((p) => { return p.address.toLowerCase() === protocolData.protocolAddr.toLowerCase() })[0].name;
             if (!protocolPaused){
               const allocation = parseInt(this.functionsUtil.fixTokenDecimals(protocolData.allocation,this.props.tokenConfig.decimals));
-              if (!row[protocolName] || row[protocolName]<allocation || !allocation){
-                keys[protocolName] = 1;
-                row[protocolName] = allocation;
-                row[`${protocolName}Color`] = 'hsl('+globalConfigs.stats.protocols[protocolName].color.hsl.join(',')+')';
-              }
+              keys[protocolName] = 1;
+              row[protocolName] = allocation;
+              row[`${protocolName}Color`] = 'hsl('+globalConfigs.stats.protocols[protocolName].color.hsl.join(',')+')';
             } else {
               row[protocolName] = 0;
             }

@@ -229,7 +229,9 @@ class Stats extends Component {
     const firstResult = apiResults[0];
     const lastResult = apiResults.pop();
 
-    let days = moment(lastResult.timestamp*1000).diff(moment(firstResult.timestamp*1000),'days');
+    window.moment = moment;
+
+    let days = (lastResult.timestamp-firstResult.timestamp)/86400;
     days = Math.max(days,1);
 
     const idleTokens = this.functionsUtil.fixTokenDecimals(lastResult.idleSupply,18);
