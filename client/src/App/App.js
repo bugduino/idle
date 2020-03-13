@@ -204,7 +204,12 @@ class App extends Component {
 
   setConnector(connectorName,walletProvider){
 
-    if ( (connectorName !== 'Injected' && !Object.keys(globalConfigs.connectors).includes(connectorName.toLowerCase())) || (walletProvider && !Object.keys(globalConfigs.connectors).includes(walletProvider.toLowerCase()))) {
+    let connectorInfo = globalConfigs.connectors[connectorName.toLowerCase()];
+    if (!connectorInfo && walletProvider){
+      connectorInfo = globalConfigs.connectors[walletProvider.toLowerCase()];
+    }
+
+    if ( (connectorInfo && !connectorInfo.enabled) || (connectorName !== 'Injected' && !Object.keys(globalConfigs.connectors).includes(connectorName.toLowerCase())) || (walletProvider && !Object.keys(globalConfigs.connectors).includes(walletProvider.toLowerCase()))) {
       connectorName = 'Infura';
       walletProvider = 'Infura';
     } else if ( connectorName === 'Injected' ){
@@ -224,6 +229,8 @@ class App extends Component {
         break;
       }
     }
+
+    console.log(connectorInfo);
 
     if (localStorage){
       localStorage.setItem('connectorName', connectorName);

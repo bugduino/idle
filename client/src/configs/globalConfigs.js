@@ -29,28 +29,36 @@ const globalConfigs = {
   },
   connectors:{ // Connectors props
     metamask:{
+      enabled:true,
       subcaption:'Browser extension'
     },
     dapper:{
+      enabled:true,
       subcaption:'Browser extension',
       icon:'dapper.png'
     },
     walletconnect:{
+      enabled:true,
       subcaption:'Connect with Walletconnect'
     },
     fortmatic:{
+      enabled:true,
       subcaption:'Login with phone-number'
     },
     portis:{
+      enabled:true,
       subcaption:'Login with e-mail'
     },
     trezor:{
+      enabled:true,
       subcaption:'Hardware wallet'
     },
     ledger:{
+      enabled:true,
       subcaption:'Hardware wallet'
     },
     authereum:{
+      enabled:true,
       subcaption:'Cross-device wallet'
     }
   },
