@@ -216,6 +216,7 @@ class App extends Component {
       const hasMetamask = GeneralUtil.hasMetaMask();
       const hasDapper = GeneralUtil.hasDapper()
 
+      // Check if injected connector is valid
       switch (walletProvider){
         case 'Metamask':
           if (!hasMetamask && hasDapper){
@@ -229,8 +230,6 @@ class App extends Component {
         break;
       }
     }
-
-    console.log(connectorInfo);
 
     if (localStorage){
       localStorage.setItem('connectorName', connectorName);
