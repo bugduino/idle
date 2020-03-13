@@ -228,6 +228,8 @@ class App extends Component {
             walletProvider = 'Metamask';
           }
         break;
+        default:
+        break;
       }
     }
 

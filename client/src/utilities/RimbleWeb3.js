@@ -165,12 +165,8 @@ class RimbleTransaction extends React.Component {
     if (!window.RimbleWeb3_context || context.connectorName !== window.RimbleWeb3_context.connectorName){
       window.RimbleWeb3_context = context;
     }
-
-    // Check localstorage
-    // const connectorName = localStorage ? localStorage.getItem('connectorName') : null;
-    // const walletProvider = localStorage ? localStorage.getItem('walletProvider') : null;
+    
     const connectorName = this.props.connectorName;
-    const walletProvider = this.props.walletProvider;
     const last_context = localStorage ? JSON.parse(localStorage.getItem('context')) : null;
 
     this.functionsUtil.customLog('initWeb3 context',connectorName,setConnectorName);
