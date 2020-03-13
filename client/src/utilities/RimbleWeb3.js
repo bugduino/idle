@@ -101,9 +101,19 @@ class RimbleTransaction extends React.Component {
   componentDidMount = async () => {
     this.loadUtils();
     this.initSimpleID();
+
+    // console.log('RimbleWeb3 componentDidMount');
+    this.initWeb3();
+
+    window.initWeb3 = this.initWeb3;
   }
 
   componentDidUpdate = async (prevProps, prevState) => {
+
+    if (prevProps.connectorName !== this.props.connectorName && this.props.connectorName){
+      // console.log('RimbleWeb3 componentDidUpdate',prevProps.connectorName,this.props.connectorName);
+      this.initWeb3();
+    }
 
     // Reset tokenDecimals if token is changed
     if (prevProps.selectedToken !== this.props.selectedToken){
@@ -157,19 +167,23 @@ class RimbleTransaction extends React.Component {
     }
 
     // Check localstorage
-    const connectorName = localStorage ? localStorage.getItem('connectorName') : null;
-    const walletProvider = localStorage ? localStorage.getItem('walletProvider') : null;
+    // const connectorName = localStorage ? localStorage.getItem('connectorName') : null;
+    // const walletProvider = localStorage ? localStorage.getItem('walletProvider') : null;
+    const connectorName = this.props.connectorName;
+    const walletProvider = this.props.walletProvider;
     const last_context = localStorage ? JSON.parse(localStorage.getItem('context')) : null;
 
     this.functionsUtil.customLog('initWeb3 context',connectorName,setConnectorName);
 
-    if (!context.active) {
+    // console.log(context.active,connectorName,setConnectorName);
+
+    if (!context.active || (connectorName !== 'Infura' && connectorName !== setConnectorName)) {
       // Select preferred web3 provider
       if (connectorName && connectorName !== 'Infura' && connectorName !== setConnectorName){
-        this.functionsUtil.customLog('initWeb3 set connector',connectorName);
+        // console.log('initWeb3 set connector',connectorName);
         setConnectorName = connectorName;
-        this.props.setConnector(connectorName,walletProvider);
-        await context.setFirstValidConnector([connectorName, 'Infura']);
+        await context.setConnector(connectorName);
+        // await context.setFirstValidConnector([connectorName, 'Infura']);
         return web3;
       } else if (setConnectorName){
         // Catch WalletConnect unexpected disconnect and fallback to Infura
@@ -181,6 +195,7 @@ class RimbleTransaction extends React.Component {
             localStorage.removeItem('connectorName');
             this.functionsUtil.setLocalStorage('context',JSON.stringify({active:context.active,connectorName:context.connectorName}));
           }
+          setConnectorName = null;
           await context.unsetConnector();
           await context.setFirstValidConnector(['Infura']);
         }
@@ -200,11 +215,8 @@ class RimbleTransaction extends React.Component {
           context.connector.walletConnector.uri,
           async () => {
             document.getElementById('walletconnect-wrapper').remove();
-            if (localStorage){
-              localStorage.removeItem('connectorName');
-              localStorage.removeItem('walletProvider');
-            }
-            await context.unsetConnector();
+            this.setConnector('Infura','Infura');
+            setConnectorName = null;
           }
         );
       } else {
@@ -213,7 +225,8 @@ class RimbleTransaction extends React.Component {
         } catch {}
       }
     // Reset web3 if Infura
-    } else if (context.active && context.connectorName === "Infura"){
+    } else if (context.active && (connectorName === 'Infura' || context.connectorName === "Infura")){
+      setConnectorName = null;
       web3 = null;
     }
 
@@ -231,7 +244,6 @@ class RimbleTransaction extends React.Component {
         this.functionsUtil.customLog("Non-Ethereum browser detected. Using Infura fallback.");
         web3Host = globalConfigs.network.providers.infura[globalConfigs.network.requiredNetwork]+INFURA_KEY;
       }
-
     } else {
       web3Provider = web3.currentProvider;
     }
@@ -254,6 +266,7 @@ class RimbleTransaction extends React.Component {
     } else {
       // Injected web3 provider
       if (web3Provider){
+        // console.log(web3Provider);
         web3 = new Web3(web3Provider);
       // Infura
       } else if (web3Host) {
@@ -261,6 +274,8 @@ class RimbleTransaction extends React.Component {
         this.props.setConnector('Infura',null);
       }
     }
+
+    // console.log('web3Provider',web3Provider,web3);
 
     // alert(web3.version);
 
@@ -334,10 +349,7 @@ class RimbleTransaction extends React.Component {
     return simpleID;
   }
 
-  initAccount = async (hideModal = false) => {
-    if (!hideModal) {
-      this.openConnectionPendingModal();
-    }
+  initAccount = async (account = false) => {
 
     if (this.props.customAddress){
 
@@ -351,17 +363,20 @@ class RimbleTransaction extends React.Component {
     }
 
     try {
+
+      if (!account){
+        const wallets = await this.state.web3.eth.getAccounts();
+        if (wallets && wallets.length){
+          account = wallets[0];
+        }
+      }
+
       // Request account access if needed
-      await this.state.web3.eth.getAccounts().then( async (wallets) => {
-        const account = wallets[0];
+      if (account){
 
         // Exit if account is not changed
         if (this.state.account === account){
           return false;
-        }
-
-        if (!hideModal) {
-          this.closeConnectionPendingModal();
         }
 
         const walletProvider = localStorage && localStorage.getItem('walletProvider') ? localStorage.getItem('walletProvider') : 'Infura';
@@ -607,8 +622,9 @@ class RimbleTransaction extends React.Component {
         // TODO subscribe for account changes, no polling
         // set a state flag which indicates if the subscribe handler has been
         // called at least once
-      });
+      }
     } catch (error) {
+
       // console.error(error);
 
       // User denied account access...
@@ -643,6 +659,7 @@ class RimbleTransaction extends React.Component {
     increaseAmount = increaseAmount ? this.functionsUtil.BNify(increaseAmount) : null;
 
     try {
+
       const res = await Promise.all([
         this.state.web3.eth.getBalance(this.state.account), // Get ETH balance
         this.getTokenBalance(this.state.account), // Get token balance

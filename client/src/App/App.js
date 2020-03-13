@@ -15,6 +15,7 @@ import Landing from "../Landing/Landing";
 import { Web3Consumer } from 'web3-react';
 import CookieConsent from "react-cookie-consent";
 import RimbleWeb3 from "../utilities/RimbleWeb3";
+import GeneralUtil from "../utilities/GeneralUtil";
 import Header from "../utilities/components/Header";
 import globalConfigs from '../configs/globalConfigs';
 import ScrollToTop from "../ScrollToTop/ScrollToTop";
@@ -160,6 +161,13 @@ class App extends Component {
 
     window.showToastMessage = this.showToastMessage;
     window.closeToastMessage = this.closeToastMessage;
+
+    if (localStorage){
+      const connectorName = localStorage.getItem('connectorName') ? localStorage.getItem('connectorName') : 'Infura';
+      const walletProvider = localStorage.getItem('walletProvider') ? localStorage.getItem('walletProvider') : 'Infura';
+
+      this.setConnector(connectorName,walletProvider);
+    }
   }
 
   handleWindowSizeChange = () => {
@@ -195,8 +203,33 @@ class App extends Component {
   }
 
   setConnector(connectorName,walletProvider){
+
+    if ( (connectorName !== 'Injected' && !Object.keys(globalConfigs.connectors).includes(connectorName.toLowerCase())) || (walletProvider && !Object.keys(globalConfigs.connectors).includes(walletProvider.toLowerCase()))) {
+      connectorName = 'Infura';
+      walletProvider = 'Infura';
+    } else if ( connectorName === 'Injected' ){
+      const hasMetamask = GeneralUtil.hasMetaMask();
+      const hasDapper = GeneralUtil.hasDapper()
+
+      switch (walletProvider){
+        case 'Metamask':
+          if (!hasMetamask && hasDapper){
+            walletProvider = 'Dapper';
+          }
+        break;
+        case 'Dapper':
+          if (!hasDapper && hasMetamask){
+            walletProvider = 'Metamask';
+          }
+        break;
+      }
+    }
+
+    if (localStorage){
+      localStorage.setItem('connectorName', connectorName);
+      localStorage.setItem('walletProvider', walletProvider);
+    }
     return this.setState({
-      // connecting:connectorName !== 'Infura',
       connectorName,
       walletProvider
     });
@@ -245,6 +278,8 @@ class App extends Component {
                     tokenConfig={this.state.tokenConfig}
                     customAddress={this.state.customAddress}
                     selectedToken={this.state.selectedToken}
+                    connectorName={this.state.connectorName}
+                    walletProvider={this.state.walletProvider}
                     setConnector={this.setConnector.bind(this)}
                     enableUnderlyingWithdraw={this.state.enableUnderlyingWithdraw}
                   >

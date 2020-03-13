@@ -39,22 +39,22 @@ class Header extends React.Component {
     history.push(url);
   }
 
-  setCurrentToken = () => {
-    function StatsComponent(props) {
-      return (
-        <RouterLink to="/stats" style={ props.isMobile ? {textDecoration:'none',width:'100%'} : {textDecoration:'none'}  }>
-          <Button
-            {...props}
-          >
-            STATS
-          </Button>
-        </RouterLink>
-      );
-    }
+  StatsComponent = (props) => {
+    return (
+      <RouterLink to="/stats" style={ props.isMobile ? {textDecoration:'none',width:'100%'} : {textDecoration:'none'}  }>
+        <Button
+          {...props}
+        >
+          STATS
+        </Button>
+      </RouterLink>
+    );
+  }
 
+  loadButtonGroup = () => {
     const buttonGroup = [
       {
-        component:StatsComponent,
+        component:this.StatsComponent,
         props:{
           mainColor:'transparent',
           color:'white',
@@ -90,6 +90,10 @@ class Header extends React.Component {
       buttonGroup
     });
   }
+ 
+  setCurrentToken = () => {
+    this.loadButtonGroup();
+  }
 
   closeBuyModal = (e) => {
     if (e){
@@ -107,12 +111,6 @@ class Header extends React.Component {
   async componentDidMount() {
 
     this.loadUtils();
-
-    // do not wait for each one just for the first who will guarantee web3 initialization
-    const web3 = await this.props.initWeb3();
-    if (!web3) {
-      return false;
-    }
   }
 
   async componentDidUpdate(prevProps, prevState) {
@@ -123,7 +121,7 @@ class Header extends React.Component {
     const tokenUpdated = prevProps.selectedToken !== this.props.selectedToken;
     const accountBalanceUpdated = prevProps.accountBalanceToken !== this.props.accountBalanceToken;
 
-    if (tokenUpdated){
+    if (tokenUpdated || accountUpdated){
       this.setCurrentToken();
     }
 

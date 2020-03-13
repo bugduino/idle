@@ -20,6 +20,9 @@ class AccountOverview extends React.Component {
     const roundedBalance = this.trimEth(this.props.accountBalance, 4);
     const roundedTokenBalance = this.trimEth(this.props.accountBalanceToken, 2);
     const walletProvider = this.getWalletProvider();
+
+    const connectorInfo = globalConfigs.connectors[walletProvider.toLowerCase()];
+    const walletIcon = connectorInfo && connectorInfo.icon ? connectorInfo.icon : `${walletProvider.toLowerCase()}.svg`;
     return (
       <Flex alignItems={"flex-start"} style={{cursor: 'pointer'}} mx={3} my={2} onClick={this.props.toggleModal}>
         {!this.props.isMobile &&
@@ -51,13 +54,13 @@ class AccountOverview extends React.Component {
           </Box>
         }
         {
-          (walletProvider && Object.keys(globalConfigs.connectors).map((c,i) => {return c.toLowerCase()}).indexOf(walletProvider.toLowerCase()) !== -1) ? (
+          connectorInfo ? (
             <Image
               width={'42px'}
               height={'42px'}
               display={'inline-flex'}
               mr={[0,'0.5rem']}
-              src={`images/${walletProvider.toLowerCase()}.svg`}
+              src={`images/${walletIcon}`}
               alt={walletProvider.toLowerCase()}
               className={styles.walletProvider}
             />

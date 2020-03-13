@@ -1,12 +1,12 @@
 import React from 'react'
-import { useWeb3Context } from 'web3-react'
-import { Button, Box, Text, Flex, Link } from 'rimble-ui';
+import moment from 'moment';
 import connectors from '../App/connectors';
+import { useWeb3Context } from 'web3-react';
 import GeneralUtil from "../utilities/GeneralUtil";
 import ImageButton from '../ImageButton/ImageButton';
-import styles from './Web3ConnectionButtons.module.scss';
-import moment from 'moment';
 import globalConfigs from '../configs/globalConfigs';
+import styles from './Web3ConnectionButtons.module.scss';
+import { Button, Box, Text, Flex, Link } from 'rimble-ui';
 
 const LOG_ENABLED = false;
 const customLog = (...props) => { if (LOG_ENABLED) console.log(moment().format('HH:mm:ss'),...props); };
@@ -37,18 +37,19 @@ export default function Web3ConnectionButtons(props) {
       props.connectionCallback();
     }
 
-    return await context.setConnector(connectorName);
+    return connectorName;
+    // return await context.setConnector(connectorName);
   };
   const unsetConnector = async () => {
-    if (localStorage) {
-      localStorage.removeItem('connectorName');
-      localStorage.removeItem('walletProvider');
+    if (props.setConnector && typeof props.setConnector === 'function'){
+      props.setConnector('Infura','Infura');
     }
-    return await context.unsetConnector();
   };
   
   const isMetamask = GeneralUtil.hasMetaMask();
   const isOpera = GeneralUtil.isOpera();
+  const isDapper = GeneralUtil.hasDapper();
+  
   const allowedConnectors = props.allowedConnectors;
   const registerPage = props.registerPage;
 
@@ -62,6 +63,7 @@ export default function Web3ConnectionButtons(props) {
     }
   }
 
+
   let basicConnectorsName = Object.keys(connectors).filter(c => c !== 'Infura');
 
   if (allowedConnectors) {
@@ -72,15 +74,18 @@ export default function Web3ConnectionButtons(props) {
 
     switch (connectorName) {
       case 'Injected':
-        if (isMetamask || isOpera) {
+        if (isMetamask || isOpera || isDapper) {
           let name = 'Metamask';
           if (isOpera) {
             name = 'Opera';
+          } else if (isDapper){
+            name = 'Dapper';
           }
 
           const connectorInfo = globalConfigs.connectors[name.toLowerCase()];
+          const walletIcon = connectorInfo.icon ? connectorInfo.icon : `${name.toLowerCase()}.svg`;
           return (
-            <ImageButton key={`wallet_${name}`} isMobile={true} buttonStyle={ props.isMobile ? {justifyContent:'flex-start',flex:'0 100%'} : {justifyContent:'flex-start',flex:'0 48%'} } imageSrc={`images/${name.toLowerCase()}.svg`} imageProps={{width:'auto',height:'42px'}} caption={name} subcaption={ connectorInfo && connectorInfo.subcaption ? connectorInfo.subcaption : `Connect using ${name}` } handleClick={ async () => await setConnector(connectorName,name)} />
+            <ImageButton key={`wallet_${name}`} isMobile={true} buttonStyle={ props.isMobile ? {justifyContent:'flex-start',flex:'0 100%'} : {justifyContent:'flex-start',flex:'0 48%'} } imageSrc={`images/${walletIcon}`} imageProps={{width:'auto',height:'42px'}} caption={name} subcaption={ connectorInfo && connectorInfo.subcaption ? connectorInfo.subcaption : `Connect using ${name}` } handleClick={ async () => await setConnector(connectorName,name)} />
           )
         } else {
           const connectorInfo = globalConfigs.connectors[connectorName.toLowerCase()];

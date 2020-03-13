@@ -29,6 +29,7 @@ class AccountModal extends React.Component {
       {
         'icon':'images/tokens/'+this.props.selectedToken+'.svg',
         'amount':this.props.accountBalanceToken
+
       },
       {
         'icon':`images/tokens/idle${this.props.selectedToken}.png`,
@@ -65,24 +66,26 @@ class AccountModal extends React.Component {
     }
   }
 
-  setConnector = async connectorName => {
-    this.functionsUtil.setLocalStorage('walletProvider', '');
-    this.functionsUtil.setLocalStorage('connectorName', connectorName);
-
+  setConnector = async (connectorName) => {
     // Send Google Analytics event
     this.functionsUtil.sendGoogleAnalyticsEvent({
       eventCategory: 'Connect',
       eventAction: 'logout'
     });
 
-    this.setState({
-      logout:true
-    });
-
     if (typeof this.props.setConnector === 'function'){
       this.props.setConnector(connectorName);
     }
+
     return await this.props.context.setConnector(connectorName);
+  }
+
+  async logout(){
+    this.setState({
+      logout:true
+    });
+    await this.setConnector('Infura');
+    // this.props.closeModal();
   }
 
   render(){
@@ -151,7 +154,7 @@ class AccountModal extends React.Component {
               {(this.props.context.active || (this.props.context.error && this.props.context.connectorName)) && (
                 <ButtonLoader
                   buttonProps={{className:styles.gradientButton,borderRadius:'2rem',mt:[4,8],minWidth:['95px','145px'],size:['auto','medium']}}
-                  handleClick={async () => await this.setConnector('Infura')}
+                  handleClick={ async () => { await this.logout() } }
                   buttonText={'Logout wallet'}
                   isLoading={this.state.logout}
                 >

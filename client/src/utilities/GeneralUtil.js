@@ -11,6 +11,15 @@ const GeneralUtil = {
 
     return hasMetaMask;
   },
+  hasDapper: () => {
+    let hasDapper = typeof window.DapperEthereum !== 'undefined';
+
+    if (typeof window.ethereum !== "undefined") {
+      hasDapper = typeof window.ethereum.isDapper !== "undefined" && window.ethereum.isDapper;
+    }
+
+    return hasDapper;
+  },
   isOpera: () => {
     return /Opera|OPR\//.test(navigator.userAgent);
   },

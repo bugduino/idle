@@ -90,9 +90,6 @@ class ConnectionModal extends React.Component {
       eventLabel: walletProvider
     });
 
-    this.functionsUtil.setLocalStorage('walletProvider', walletProvider);
-    this.functionsUtil.setLocalStorage('connectorName', connectorName);
-
     if (this.props.setConnector && typeof this.props.setConnector === 'function'){
       this.props.setConnector(connectorName,walletProvider);
     }
@@ -104,7 +101,9 @@ class ConnectionModal extends React.Component {
 
     this.closeCountdown();
 
-    return await window.RimbleWeb3_context.setConnector(connectorName);
+    return connectorName;
+
+    // return await window.RimbleWeb3_context.setConnector(connectorName);
   }
 
   closeCountdown = () => {

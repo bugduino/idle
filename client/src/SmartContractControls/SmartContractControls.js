@@ -199,7 +199,7 @@ class SmartContractControls extends React.Component {
     const nextAllocations = await Promise.all(allocationsPromises);
     const allAvailableTokens = await Promise.all(availableTokensPromises);
 
-    if (!allAvailableTokens || !nextAllocations){
+    if ((!allAvailableTokens || !allAvailableTokens.length) || (!nextAllocations || !nextAllocations.length)){
       return this.setState({
         shouldRebalance:false,
         calculatingShouldRebalance: false
@@ -2389,7 +2389,7 @@ class SmartContractControls extends React.Component {
   }
 
   render() {
-    const avgApr = this.state.avgApr ? parseFloat(this.state.avgApr).toFixed(2) : null;
+    const avgApr = !isNaN(parseFloat(this.state.avgApr)) ? parseFloat(this.state.avgApr).toFixed(2) : null;
     const hasBalance = !isNaN(this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)) && this.functionsUtil.trimEth(this.state.tokenToRedeemParsed) > 0;
     // const navPool = this.functionsUtil.getFormattedBalance(this.state.navPool,this.props.selectedToken);
 

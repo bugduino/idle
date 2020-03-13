@@ -1,9 +1,11 @@
-import { Connectors } from "web3-react";
-import TrezorApi from "trezor-connect";
-import WalletConnectApi from "@walletconnect/web3-subprovider";
-import FortmaticApi from "fortmatic";
+import AuthereumApi from 'authereum';
 import PortisApi from "@portis/web3";
+import FortmaticApi from "fortmatic";
+import TrezorApi from "trezor-connect";
+import { Connectors } from "web3-react";
 import globalConfigs from '../configs/globalConfigs';
+import WalletConnectApi from "@walletconnect/web3-subprovider";
+import AuthereumConnector from './connectors/AuthereumConnector';
 
 const {
   InjectedConnector,
@@ -71,6 +73,11 @@ const Portis = new PortisConnector({
   network: portisNetwork
 });
 
+const Authereum = new AuthereumConnector({
+  api: AuthereumApi,
+  network: globalConfigs.network.availableNetworks[defaultNetwork].toLowerCase()
+});
+
 export default {
   Injected,
   Infura,
@@ -78,5 +85,6 @@ export default {
   Fortmatic,
   Portis,
   Trezor,
-  Ledger
+  Ledger,
+  Authereum
 };

@@ -31,6 +31,10 @@ const globalConfigs = {
     metamask:{
       subcaption:'Browser extension'
     },
+    dapper:{
+      subcaption:'Browser extension',
+      icon:'dapper.png'
+    },
     walletconnect:{
       subcaption:'Connect with Walletconnect'
     },
@@ -46,6 +50,9 @@ const globalConfigs = {
     ledger:{
       subcaption:'Hardware wallet'
     },
+    authereum:{
+      subcaption:'Cross-device wallet'
+    }
   },
   newsletterSubscription:{
     endpoint:'https://dev.lapisgroup.it/idle/newsletter.php'
