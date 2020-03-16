@@ -211,6 +211,9 @@ class Stats extends Component {
     const endpoint = `${apiInfo.endpoint}${address}`;
     const TTL = apiInfo.TTL ? apiInfo.TTL : 0;
     let output = await this.functionsUtil.makeCachedRequest(endpoint,TTL,true);
+    if (!output){
+      return [];
+    }
     if (!filter){
       return output;
     }
