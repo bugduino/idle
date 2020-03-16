@@ -3367,7 +3367,7 @@ class SmartContractControls extends React.Component {
                           const protocolColor = 'rgb('+globalConfigs.stats.protocols[protocolName].color.rgb.join(',')+')';
                           const protocolApr = this.state.protocolsAprs ? this.state.protocolsAprs[protocolAddr] : null;
                           const protocolAllocation = parseFloat(this.state.protocolsAllocations[protocolAddr]);
-                          const protocolEarningPerYear = protocolApr !== null ? parseFloat(this.functionsUtil.BNify(protocolAllocation).times(this.functionsUtil.BNify(protocolApr.div(100)))) : 0;
+                          const protocolEarningPerYear = protocolApr && protocolApr !== null ? parseFloat(this.functionsUtil.BNify(protocolAllocation).times(this.functionsUtil.BNify(protocolApr).div(100))) : 0;
                           const protocolAllocationEndOfYear = protocolEarningPerYear ? parseFloat(this.functionsUtil.BNify(protocolAllocation).plus(this.functionsUtil.BNify(protocolEarningPerYear))) : 0;
                           return (
                             <Box key={`allocation_${protocolName}`} width={[1,1/Object.keys(this.state.protocolsAllocations).length]}>
