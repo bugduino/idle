@@ -1119,8 +1119,10 @@ class RimbleTransaction extends React.Component {
         icon: 'Block'
       });
 
+      const isDeniedTx = error && error.message ? error.message.includes('User denied transaction signature') : false;
+
       const isError = error instanceof Error;
-      if ( this.functionsUtil.checkUrlOrigin() && isError){
+      if ( this.functionsUtil.checkUrlOrigin() && isError && !isDeniedTx){
         Sentry.captureException(error);
       }
     }
