@@ -165,7 +165,7 @@ class RimbleTransaction extends React.Component {
     if (!window.RimbleWeb3_context || context.connectorName !== window.RimbleWeb3_context.connectorName){
       window.RimbleWeb3_context = context;
     }
-    
+
     const connectorName = this.props.connectorName;
     const last_context = localStorage ? JSON.parse(localStorage.getItem('context')) : null;
 
@@ -211,7 +211,9 @@ class RimbleTransaction extends React.Component {
           context.connector.walletConnector.uri,
           async () => {
             document.getElementById('walletconnect-wrapper').remove();
-            this.setConnector('Infura','Infura');
+            await context.unsetConnector();
+            this.props.setConnector('Infura',null);
+            // await context.setFirstValidConnector(['Infura']);
             setConnectorName = null;
           }
         );
