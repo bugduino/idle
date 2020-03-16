@@ -208,9 +208,11 @@ class SmartContractControls extends React.Component {
 
     // Merge nextAllocations and allAvailableTokens
     const newProtocolsAllocations = allAvailableTokens.reduce((accumulator,availableTokenInfo) => {
-      const nextAllocation = nextAllocations.find(v => { return v.protocolIndex === availableTokenInfo.protocolIndex; });
-      if (nextAllocation){
-        accumulator[availableTokenInfo.protocolAddr.toLowerCase()] = parseInt(nextAllocation.allocation);
+      if (availableTokenInfo.protocolAddr){
+        const nextAllocation = nextAllocations.find(v => { return v.protocolIndex === availableTokenInfo.protocolIndex; });
+        if (nextAllocation){
+          accumulator[availableTokenInfo.protocolAddr.toLowerCase()] = parseInt(nextAllocation.allocation);
+        }
       }
       return accumulator;
     },{});
