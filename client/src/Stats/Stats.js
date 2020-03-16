@@ -241,13 +241,19 @@ class Stats extends Component {
     const earning = lastIdlePrice.div(firstIdlePrice).minus(1).times(100);
     const apr = earning.times(365).div(days).toFixed(2);
 
+    // console.log(firstResult.timestamp,lastResult.timestamp,firstResult.idlePrice,lastResult.idlePrice,days,earning.toString());
+
     const compoundInfo = this.state.tokenConfig.protocols.filter((p) => { return p.name === 'compound' })[0];
     const firstCompoundData = firstResult.protocolsData.filter((p) => { return p.protocolAddr.toLowerCase() === compoundInfo.address.toLowerCase() })[0];
     const lastCompoundData = lastResult.protocolsData.filter((p) => { return p.protocolAddr.toLowerCase() === compoundInfo.address.toLowerCase() })[0];
-    const firstCompoundPrice = this.functionsUtil.fixTokenDecimals(firstCompoundData.price,this.state.tokenConfig.decimals);
-    const lastCompoundPrice = this.functionsUtil.fixTokenDecimals(lastCompoundData.price,this.state.tokenConfig.decimals);
-    const compoundApr = lastCompoundPrice.div(firstCompoundPrice).minus(1).times(100);
-    const delta = earning.minus(compoundApr).times(365).div(days).toFixed(2);
+
+    let delta = null;
+    if (firstCompoundData && lastCompoundData){
+      const firstCompoundPrice = this.functionsUtil.fixTokenDecimals(firstCompoundData.price,this.state.tokenConfig.decimals);
+      const lastCompoundPrice = this.functionsUtil.fixTokenDecimals(lastCompoundData.price,this.state.tokenConfig.decimals);
+      const compoundApr = lastCompoundPrice.div(firstCompoundPrice).minus(1).times(100);
+      delta = earning.minus(compoundApr).times(365).div(days).toFixed(2);
+    }
 
     // Take rebalances
     let rebalances = 0;
