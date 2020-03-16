@@ -130,9 +130,11 @@ class Landing extends Component {
 
       for (let i=0;i<bulletCards.length;i++){
         const bulletCard = bulletCards[i];
-        const offsetY = bulletCard.offsetTop ? bulletCard.offsetTop : bulletCard.offsetParent.offsetTop;
-        if (window.scrollY >= offsetY-200){
-          activeBullet = i+2;
+        if (bulletCard && bulletCard.offsetParent){
+          const offsetY = bulletCard.offsetTop ? bulletCard.offsetTop : bulletCard.offsetParent.offsetTop;
+          if (window.scrollY >= offsetY-200){
+            activeBullet = i+2;
+          }
         }
       }
       scrolling = false;
