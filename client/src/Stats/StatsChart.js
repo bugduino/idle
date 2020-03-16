@@ -727,18 +727,23 @@ class StatsChart extends Component {
 
           const tokenPrice = this.functionsUtil.fixTokenDecimals(d.idlePrice,this.props.tokenConfig.decimals);
           let y = 0;
+          let apy = 0;
 
           if (!firstTokenPrice){
             firstTokenPrice = tokenPrice;
           } else {
             y = parseFloat(tokenPrice.div(firstTokenPrice).minus(1).times(100));
+
+            const days = (d.timestamp-apiResults[0].timestamp)/86400;
+            const earning = tokenPrice.div(firstTokenPrice).minus(1).times(100);
+            apy = earning.times(365).div(days).toFixed(2);
           }
 
           if (firstIdleBlock === null){
             firstIdleBlock = parseInt(d.blocknumber);
           }
 
-          return { x, y, blocknumber: d.blocknumber };
+          return { x, y, apy, blocknumber: d.blocknumber };
         });
 
         // const aave_data = {};
@@ -752,6 +757,7 @@ class StatsChart extends Component {
           };
 
           firstTokenPrice = null;
+          let firstProtocolData = null;
           let lastRowData = null;
           let lastTokenPrice = null;
           let baseProfit = 0;
@@ -764,6 +770,11 @@ class StatsChart extends Component {
             });
 
             if (protocolData){
+
+              if (!firstProtocolData){
+                firstProtocolData = protocolData;
+              }
+
               const protocolPaused = this.functionsUtil.BNify(protocolData.rate).eq(0);
               if (!protocolPaused){
 
@@ -806,6 +817,7 @@ class StatsChart extends Component {
                 */
 
                 let y = baseProfit;
+                let apy = 0;
 
                 if (!firstTokenPrice){
                   firstTokenPrice = tokenPriceFixed;
@@ -818,11 +830,17 @@ class StatsChart extends Component {
                   } else {
                     y += parseFloat(tokenPriceFixed.div(firstTokenPrice).minus(1).times(100));
                   }
+
+                  const days = (d.timestamp-apiResults[0].timestamp)/86400;
+                  const earning = tokenPriceFixed.div(firstTokenPrice).minus(1).times(100);
+                  apy = earning.times(365).div(days).toFixed(2);
                 }
+
 
                 rowData = {
                   x,
-                  y
+                  y,
+                  apy
                 };
 
                 lastTokenPrice = tokenPriceFixed;
@@ -894,6 +912,46 @@ class StatsChart extends Component {
           pointLabelYOffset:-12,
           pointColor:{ from: 'color', modifiers: []},
           margin: this.props.isMobile ? { top: 20, right: 20, bottom: 40, left: 50 } : { top: 20, right: 40, bottom: 40, left: 80 },
+          sliceTooltip:(slideData) => {
+            const { slice } = slideData;
+            return (
+              <div
+                  key={`slice_${slice.id}`}
+                  style={{
+                    background: 'white',
+                    color: 'inherit',
+                    fontSize: 'inherit',
+                    borderRadius: '2px',
+                    boxShadow: 'rgba(0, 0, 0, 0.25) 0px 1px 2px',
+                    padding: '5px 9px'
+                  }}
+              >
+                <div>
+                  <table style={{width:'100%',borderCollapse:'collapse'}}>
+                    <tbody>
+                      {
+                        typeof slice.points === 'object' && slice.points.length &&
+                          slice.points.map(point => {
+                            const protocolName = point.serieId;
+                            const protocolEarning = point.data.yFormatted;
+                            const protocolApy = point.data.apy;
+                            return (
+                              <tr key={`${point.id}_${protocolName}`}>
+                                <td style={{padding:'3px 5px'}}>
+                                  <span style={{display:'block', width: '12px', height: '12px', background: point.color}}></span>
+                                </td>
+                                <td style={{padding:'3px 5px',textTransform:'capitalize'}}>{protocolName}</td>
+                                <td style={{padding:'3px 5px'}}><strong>{protocolEarning}</strong> ({protocolApy}<small>% APY</small>)</td>
+                              </tr>
+                            );
+                          })
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            );
+          }
         };
       break;
       default:

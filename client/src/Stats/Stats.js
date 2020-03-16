@@ -96,6 +96,8 @@ class Stats extends Component {
     const startTimestamp = parseInt(startTimestampObj._d.getTime()/1000);
     const endTimestamp = parseInt(endTimestampObj._d.getTime()/1000);
 
+    // console.log(startTimestampObj.format('YYYY-MM-DD HH:mm'),endTimestampObj.format('YYYY-MM-DD HH:mm'));
+
     const newState = {
       minStartTime,
       endTimestamp,
@@ -350,7 +352,7 @@ class Stats extends Component {
           <Flex width={[1,this.state.showAdvanced ? 1/4 : 0.4]} flexDirection={'column'} pl={[0, this.state.showAdvanced ? 2 : 0]} pr={[0,2]}>
             <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
               <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Avg APR</Text.span>
+                <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Avg APY</Text.span>
                 <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
                   {this.state.apr}
                   <Text.span color={'copyColor'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
