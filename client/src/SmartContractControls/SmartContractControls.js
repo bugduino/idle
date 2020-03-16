@@ -1453,6 +1453,10 @@ class SmartContractControls extends React.Component {
               }
             }
 
+            if (!redeemTxReceipt.logs){
+              return;
+            }
+
             const walletAddress = this.props.account.replace('x','').toLowerCase();
             const redeemTxInternalTransfers = redeemTxReceipt.logs.filter((tx) => { return tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${walletAddress}`; });
 
