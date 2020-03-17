@@ -108,7 +108,7 @@ class RimbleTransaction extends React.Component {
     // console.log('RimbleWeb3 componentDidMount');
     this.initWeb3();
 
-    window.initWeb3 = this.initWeb3;
+    // window.initWeb3 = this.initWeb3;
   }
 
   componentDidUpdate = async (prevProps, prevState) => {
@@ -287,8 +287,7 @@ class RimbleTransaction extends React.Component {
       }
     }
 
-    window.web3Provider = web3Provider;
-
+    // window.web3Injected = web3;
     // console.log('web3Provider',web3Provider,web3);
 
     // alert(web3.version);
