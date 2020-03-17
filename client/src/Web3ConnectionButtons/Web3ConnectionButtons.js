@@ -85,8 +85,8 @@ export default function Web3ConnectionButtons(props) {
           }
 
           const connectorInfo = globalConfigs.connectors[name.toLowerCase()];
-          const walletIcon = connectorInfo.icon ? connectorInfo.icon : `${name.toLowerCase()}.svg`;
-          if (connectorInfo.enabled){
+          if (connectorInfo && connectorInfo.enabled){
+            const walletIcon = connectorInfo.icon ? connectorInfo.icon : `${name.toLowerCase()}.svg`;
             return (
               <ImageButton key={`wallet_${name}`} isMobile={true} buttonStyle={ props.isMobile ? {justifyContent:'flex-start',flex:'0 100%'} : {justifyContent:'flex-start',flex:'0 48%'} } imageSrc={`images/${walletIcon}`} imageProps={{width:'auto',height:'42px'}} caption={name} subcaption={ connectorInfo && connectorInfo.subcaption ? connectorInfo.subcaption : `Connect using ${name}` } handleClick={ async () => await setConnector(connectorName,name)} />
             )
@@ -100,7 +100,7 @@ export default function Web3ConnectionButtons(props) {
         }
       default:
         const connectorInfo = globalConfigs.connectors[connectorName.toLowerCase()];
-        if (connectorInfo.enabled){
+        if (connectorInfo && connectorInfo.enabled){
           return (
             <ImageButton key={`wallet_${connectorName}`} isMobile={true} buttonStyle={ props.isMobile ? {justifyContent:'flex-start',flex:'0 100%'} : {justifyContent:'flex-start',flex:'0 48%'} } imageSrc={`images/${connectorName.toLowerCase()}.svg`} imageProps={{width:'auto',height:'42px'}} caption={connectorName} subcaption={ connectorInfo && connectorInfo.subcaption ? connectorInfo.subcaption : `Connect using ${connectorName}`} handleClick={ async () => await setConnector(connectorName) } />
           );

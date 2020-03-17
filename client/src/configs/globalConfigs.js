@@ -32,6 +32,10 @@ const globalConfigs = {
       enabled:true,
       subcaption:'Browser extension'
     },
+    opera:{
+      enabled:true,
+      subcaption:'Opera injected wallet'
+    },
     dapper:{
       enabled:true,
       subcaption:'Browser extension',
