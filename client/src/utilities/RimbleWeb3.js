@@ -54,7 +54,8 @@ const RimbleTransactionContext = React.createContext({
       userRejectedValidation: {},
       wrongNetworkModalIsOpen: {},
       transactionConnectionModalIsOpen: {},
-      lowFundsModalIsOpen: {}
+      lowFundsModalIsOpen: {},
+      connectionError: {}
     },
     methods: {
       openNoWeb3BrowserModal: () => {},
@@ -65,6 +66,8 @@ const RimbleTransactionContext = React.createContext({
       openUserRejectedConnectionModal: () => {},
       closeUserRejectedValidationModal: () => {},
       openUserRejectedValidationModal: () => {},
+      closeConnectionErrorModal: () => {},
+      openConnectionErrorModal: () => {},
       closeWrongNetworkModal: () => {},
       openWrongNetworkModal: () => {},
       closeLowFundsModal: () => {},
@@ -113,6 +116,19 @@ class RimbleTransaction extends React.Component {
     if (prevProps.connectorName !== this.props.connectorName && this.props.connectorName){
       // console.log('RimbleWeb3 componentDidUpdate',prevProps.connectorName,this.props.connectorName);
       this.initWeb3();
+    }
+
+    // Context change
+    if (prevProps.context !== this.props.context){
+      // console.log('Context changed',this.props.context,this.props.context.error,prevProps.connectorName,this.props.connectorName);
+      if (this.props.context.error instanceof Error && this.props.context.error.message.length){
+        this.state.modals.methods.openConnectionErrorModal(null,this.props.context.error.message);
+      // WalletConnect double trigger initWeb3
+      } else if (this.props.context.active && this.props.context.connectorName==='WalletConnect' && this.props.connectorName==='WalletConnect') {
+        this.initWeb3();
+      }/* else if (!this.props.context.active && this.props.connectorName==='Injected') {
+        this.initWeb3();
+      }*/
     }
 
     // Reset tokenDecimals if token is changed
@@ -171,7 +187,7 @@ class RimbleTransaction extends React.Component {
 
     this.functionsUtil.customLog('initWeb3 context',connectorName,setConnectorName);
 
-    // console.log(context.active,connectorName,setConnectorName);
+    // console.log(context.active,context.connectorName,connectorName,setConnectorName);
 
     if (!context.active || (connectorName !== 'Infura' && connectorName !== setConnectorName)) {
       // Select preferred web3 provider
@@ -192,8 +208,7 @@ class RimbleTransaction extends React.Component {
             this.functionsUtil.setLocalStorage('context',JSON.stringify({active:context.active,connectorName:context.connectorName}));
           }
           setConnectorName = null;
-          await context.unsetConnector();
-          await context.setFirstValidConnector(['Infura']);
+          await context.setConnector('Infura');
         }
 
         this.functionsUtil.customLog('initWeb3 skip due to setConnectorName ('+setConnectorName+') already set');
@@ -209,13 +224,12 @@ class RimbleTransaction extends React.Component {
 
         WalletConnectQRCodeModal.open(
           context.connector.walletConnector.uri,
-          async () => {
-            document.getElementById('walletconnect-wrapper').remove();
-            await context.unsetConnector();
-            this.props.setConnector('Infura',null);
-            // await context.setFirstValidConnector(['Infura']);
-            setConnectorName = null;
-          }
+          await (async () => {
+                  document.getElementById('walletconnect-wrapper').remove();
+                  this.props.setConnector('Infura',null);
+                  await context.setConnector('Infura');
+                  setConnectorName = null;
+                })
         );
       } else {
         try {
@@ -272,6 +286,8 @@ class RimbleTransaction extends React.Component {
         this.props.setConnector('Infura',null);
       }
     }
+
+    window.web3Provider = web3Provider;
 
     // console.log('web3Provider',web3Provider,web3);
 
@@ -1199,6 +1215,26 @@ class RimbleTransaction extends React.Component {
     this.setState({ modals });
   }
 
+  closeConnectionErrorModal = e => {
+    if (typeof e !== "undefined") {
+      e.preventDefault();
+    }
+
+    let modals = { ...this.state.modals };
+    modals.data.connectionError = false;
+    this.setState({ modals });
+  }
+
+  openConnectionErrorModal = (e,error) => {
+    if (typeof e !== "undefined" && e) {
+      e.preventDefault();
+    }
+
+    let modals = { ...this.state.modals };
+    modals.data.connectionError = error;
+    this.setState({ modals });
+  }
+
   closeUserRejectedConnectionModal = e => {
     if (typeof e !== "undefined") {
       e.preventDefault();
@@ -1346,7 +1382,8 @@ class RimbleTransaction extends React.Component {
         userRejectedValidation: null,
         wrongNetworkModalIsOpen: null,
         transactionConnectionModalIsOpen: null,
-        lowFundsModalIsOpen: null
+        lowFundsModalIsOpen: null,
+        connectionError: null
       },
       methods: {
         openNoWeb3BrowserModal: this.openNoWeb3BrowserModal,
@@ -1364,7 +1401,9 @@ class RimbleTransaction extends React.Component {
         closeWrongNetworkModal: this.closeWrongNetworkModal,
         openWrongNetworkModal: this.openWrongNetworkModal,
         closeLowFundsModal: this.closeLowFundsModal,
-        openLowFundsModal: this.openLowFundsModal
+        openLowFundsModal: this.openLowFundsModal,
+        closeConnectionErrorModal: this.closeConnectionErrorModal,
+        openConnectionErrorModal: this.openConnectionErrorModal
       }
     },
     transaction: {

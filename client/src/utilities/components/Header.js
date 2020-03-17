@@ -2,10 +2,11 @@ import React from "react";
 import BuyModal from "./BuyModal";
 import styles from './Header.module.scss';
 import AccountModal from "./AccountModal";
+import FunctionsUtil from '../FunctionsUtil';
 import AccountOverview from "./AccountOverview";
 import { Box, Flex, Button, Image } from "rimble-ui";
-import FunctionsUtil from '../FunctionsUtil';
 import ButtonGroup from '../../ButtonGroup/ButtonGroup';
+import ConnectionErrorModal from './ConnectionErrorModal';
 import ButtonLoader from '../../ButtonLoader/ButtonLoader.js';
 import TokenSelector from '../../TokenSelector/TokenSelector';
 
@@ -125,6 +126,16 @@ class Header extends React.Component {
       this.setCurrentToken();
     }
 
+    if (typeof this.props.modals.data.connectionError === 'string' && this.props.modals.data.connectionError.length>0){
+      if (this.state.isModalOpen !== 'error'){
+        this.setState({
+          isModalOpen:'error'
+        });
+      }
+    } else if (this.state.isModalOpen === 'error'){
+      this.toggleModal('error');
+    }
+
     if (this.props.network && !this.props.network.isCorrectNetwork){
       return false;
     }
@@ -202,6 +213,13 @@ class Header extends React.Component {
             </Flex>
           </Box>
         </Flex>
+        <ConnectionErrorModal
+          modals={this.props.modals}
+          context={this.props.context}
+          setConnector={this.props.setConnector}
+          isOpen={this.state.isModalOpen==='error'}
+        >
+        </ConnectionErrorModal>
         <BuyModal
           account={this.props.account}
           tokenConfig={this.props.tokenConfig}

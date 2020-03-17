@@ -319,7 +319,7 @@ class App extends Component {
                         rejectValidation,
                         userRejectedValidation,
                         validateAccount,
-                        connectAndValidateAccount,
+                        connectAndValidateAccount
                       }) => {
                         return (
                         <Box>

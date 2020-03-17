@@ -75,8 +75,10 @@ export default function Web3ConnectionButtons(props) {
     switch (connectorName) {
       case 'Injected':
         if (isMetamask || isOpera || isDapper) {
-          let name = 'Metamask';
-          if (isOpera) {
+          let name = null;
+          if (isMetamask) {
+            name = 'Metamask';
+          } else if (isOpera) {
             name = 'Opera';
           } else if (isDapper){
             name = 'Dapper';
