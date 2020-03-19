@@ -13,9 +13,7 @@ class StatsChart extends Component {
     chartProps:{},
     chartType:null,
     chartData:null,
-    chartWidth:null,
-    apiResults:null,
-    apiResults_unfiltered:null,
+    chartWidth:null
   };
 
   async componentWillMount() {
@@ -27,9 +25,6 @@ class StatsChart extends Component {
   }
 
   async componentDidMount() {
-    if (!this.props.contractsInitialized){
-      return false;
-    }
     this.setState({
       chartData:null,
       chartType:null,
@@ -41,11 +36,9 @@ class StatsChart extends Component {
   }
 
   async componentDidUpdate(prevProps) {
-    const contractsInitialized = prevProps.contractsInitialized !== this.props.contractsInitialized;
-    const tokenChanged = prevProps.tokenConfig !== this.props.tokenConfig;
-    const dateChanged = prevProps.startTimestamp !== this.props.startTimestamp || prevProps.endTimestamp !== this.props.endTimestamp;
     const showAdvancedChanged = prevProps.showAdvanced !== this.props.showAdvanced;
-    if (tokenChanged || dateChanged || contractsInitialized || showAdvancedChanged){
+    const apiResultsChanged = prevProps.apiResults !== this.props.apiResults;
+    if (apiResultsChanged || showAdvancedChanged){
       this.componentDidMount();
     }
   }
@@ -93,12 +86,12 @@ class StatsChart extends Component {
 
   loadApiData = async () => {
 
-    if (!this.props.tokenConfig || !this.props.selectedToken || !this.props.chartMode){
+    if (!this.props.tokenConfig || !this.props.selectedToken || !this.props.chartMode || !this.props.apiResults){
       return false;
     }
 
-    const apiResults_unfiltered = await this.props.getTokenData(this.props.tokenConfig.address,false);
-    const apiResults = await this.props.getTokenData(this.props.tokenConfig.address);
+    const apiResults_unfiltered = this.props.apiResults_unfiltered;
+    const apiResults = this.props.apiResults;
 
     let chartData = [];
     let chartProps = {};
@@ -966,7 +959,7 @@ class StatsChart extends Component {
   }
 
   render() {
-    if (!this.state.chartType || !this.state.chartData || !this.state.chartProps || !this.props.contractsInitialized){
+    if (!this.state.chartType || !this.state.chartData || !this.state.chartProps || !this.props.apiResults){
       return (
         <Flex
           justifyContent={'center'}

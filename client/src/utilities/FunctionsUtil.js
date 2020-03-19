@@ -62,15 +62,17 @@ class FunctionsUtil {
      tmp.innerHTML = html;
      return tmp.textContent || tmp.innerText || "";
   }
-  makeCachedRequest = async (endpoint,TTL=0,return_data=false) => {
+  makeCachedRequest = async (endpoint,TTL=0,return_data=false,alias=false) => {
+
+    const key = alias ? alias : endpoint;
     const timestamp = parseInt(new Date().getTime()/1000);
     let cachedRequests = {};
     // Check if already exists
     if (localStorage && localStorage.getItem('cachedRequests')){
       cachedRequests = JSON.parse(localStorage.getItem('cachedRequests'));
       // Check if it's not expired
-      if (cachedRequests && cachedRequests[endpoint] && cachedRequests[endpoint].timestamp && timestamp-cachedRequests[endpoint].timestamp<TTL){
-        return (cachedRequests[endpoint].data && return_data ? cachedRequests[endpoint].data.data : cachedRequests[endpoint].data);
+      if (cachedRequests && cachedRequests[key] && cachedRequests[key].timestamp && timestamp-cachedRequests[key].timestamp<TTL){
+        return (cachedRequests[key].data && return_data ? cachedRequests[key].data.data : cachedRequests[key].data);
       }
     }
 
@@ -80,7 +82,7 @@ class FunctionsUtil {
                           console.error('Error getting request');
                         });
     if (localStorage) {
-      cachedRequests[endpoint] = {
+      cachedRequests[key] = {
         data,
         timestamp
       };

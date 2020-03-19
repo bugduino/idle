@@ -21,12 +21,14 @@ class Stats extends Component {
     maxDate:null,
     rebalances:'-',
     buttonGroups:[],
+    apiResults:null,
     minStartTime:null,
     endTimestamp:null,
     showAdvanced:false,
     startTimestamp:null,
     endTimestampObj:null,
     startTimestampObj:null,
+    apiResults_unfiltered:null,
     dateRangeModalOpened:false,
     tokenConfig:this.props.tokenConfig,
     selectedToken:this.props.selectedToken
@@ -95,8 +97,6 @@ class Stats extends Component {
 
     const startTimestamp = parseInt(startTimestampObj._d.getTime()/1000);
     const endTimestamp = parseInt(endTimestampObj._d.getTime()/1000);
-
-    // console.log(startTimestampObj.format('YYYY-MM-DD HH:mm'),endTimestampObj.format('YYYY-MM-DD HH:mm'));
 
     const newState = {
       minStartTime,
@@ -195,13 +195,16 @@ class Stats extends Component {
   }
 
   async componentDidUpdate(prevProps,prevState) {
-    if (prevProps !== this.props){
+    const contractsInitialized = prevProps.contractsInitialized !== this.props.contractsInitialized;
+    const tokenChanged = prevProps.tokenConfig !== this.props.tokenConfig;
+    const dateChanged = prevState.startTimestamp !== this.state.startTimestamp || prevState.endTimestamp !== this.state.endTimestamp;
+
+    if (contractsInitialized || tokenChanged){
       await this.componentDidMount();
     } else {
-      const dateChanged = prevState.startTimestamp !== this.state.startTimestamp || prevState.endTimestamp !== this.state.endTimestamp;
       if (dateChanged){
-        this.loadApiData();
         this.updateButtonGroup();
+        this.loadApiData();
       } else if (prevState.showAdvanced !== this.state.showAdvanced){
         this.updateButtonGroup();
       }
@@ -210,7 +213,18 @@ class Stats extends Component {
 
   getTokenData = async (address,filter=true) => {
     const apiInfo = globalConfigs.stats.rates;
-    const endpoint = `${apiInfo.endpoint}${address}`;
+    let endpoint = `${apiInfo.endpoint}${address}`;
+    if (this.state.startTimestamp || this.state.endTimestamp){
+      const params = [];
+      if (this.state.startTimestamp && parseInt(this.state.startTimestamp)){
+        const start = this.state.startTimestamp-(60*60*24*2); // Minus 1 day for Volume graph
+        params.push(`start=${start}`);
+      }
+      if (this.state.endTimestamp && parseInt(this.state.endTimestamp)){
+        params.push(`end=${this.state.endTimestamp}`);
+      }
+      endpoint += '?'+params.join('&');
+    }
     const TTL = apiInfo.TTL ? apiInfo.TTL : 0;
     let output = await this.functionsUtil.makeCachedRequest(endpoint,TTL,true);
     if (!output){
@@ -219,13 +233,18 @@ class Stats extends Component {
     if (!filter){
       return output;
     }
-    return output.filter((r,i) => {
+    return this.filterTokenData(output);
+  }
+
+  filterTokenData = (apiResults) => {
+    return apiResults.filter((r,i) => {
       return (!this.state.startTimestamp || r.timestamp >= this.state.startTimestamp) && (!this.state.endTimestamp || r.timestamp <= this.state.endTimestamp);
     });
   }
 
   loadApiData = async () => {
-    const apiResults = await this.getTokenData(this.state.tokenConfig.address);
+    const apiResults_unfiltered = await this.getTokenData(this.state.tokenConfig.address,false);
+    const apiResults = this.filterTokenData(apiResults_unfiltered);
 
     if (!apiResults){
       return false;
@@ -246,7 +265,7 @@ class Stats extends Component {
     const earning = lastIdlePrice.div(firstIdlePrice).minus(1).times(100);
     const apr = earning.times(365).div(days).toFixed(2);
 
-    // console.log(firstResult.timestamp,lastResult.timestamp,firstResult.idlePrice,lastResult.idlePrice,days,earning.toString());
+    // console.log(moment(firstResult.timestamp*1000).format('YYYY-MM-DD HH:mm'),moment(lastResult.timestamp*1000).format('YYYY-MM-DD HH:mm'));
 
     const compoundInfo = this.state.tokenConfig.protocols.filter((p) => { return p.name === 'compound' })[0];
     const firstCompoundData = firstResult.protocolsData.filter((p) => { return p.protocolAddr.toLowerCase() === compoundInfo.address.toLowerCase() })[0];
@@ -295,7 +314,9 @@ class Stats extends Component {
       apr,
       days,
       delta,
-      rebalances
+      apiResults,
+      rebalances,
+      apiResults_unfiltered
     });
   }
 
@@ -417,7 +438,7 @@ class Stats extends Component {
                 <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                   Historical Performance
                 </Text>
-                <StatsChart contracts={this.props.contracts} contractsInitialized={this.props.contractsInitialized} isMobile={this.props.isMobile} web3={this.props.web3} getTokenData={this.getTokenData} chartMode={'PRICE'} {...this.state} parentId={'chart-PRICE'} height={ 350 } />
+                <StatsChart contracts={this.props.contracts} apiResults_unfiltered={this.state.apiResults_unfiltered} apiResults={this.state.apiResults} isMobile={this.props.isMobile} chartMode={'PRICE'} {...this.state} parentId={'chart-PRICE'} height={ 350 } />
               </Flex>
             </Card>
           </Flex>
@@ -429,7 +450,7 @@ class Stats extends Component {
                   <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                     Asset Under Management
                   </Text>
-                  <StatsChart contracts={this.props.contracts} contractsInitialized={this.props.contractsInitialized} isMobile={this.props.isMobile} web3={this.props.web3} getTokenData={this.getTokenData} chartMode={'AUM'} {...this.state} parentId={'chart-AUM'} height={ 350 } />
+                  <StatsChart contracts={this.props.contracts} apiResults_unfiltered={this.state.apiResults_unfiltered} apiResults={this.state.apiResults} isMobile={this.props.isMobile} chartMode={'AUM'} {...this.state} parentId={'chart-AUM'} height={ 350 } />
                 </Flex>
               </Card>
             </Flex>
@@ -444,7 +465,7 @@ class Stats extends Component {
                     <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                       Allocation
                     </Text>
-                    <StatsChart contracts={this.props.contracts} contractsInitialized={this.props.contractsInitialized} isMobile={this.props.isMobile} web3={this.props.web3} getTokenData={this.getTokenData} chartMode={'ALL'} {...this.state} parentId={'chart-ALL'} height={ 350 } />
+                    <StatsChart contracts={this.props.contracts} apiResults_unfiltered={this.state.apiResults_unfiltered} apiResults={this.state.apiResults} isMobile={this.props.isMobile} chartMode={'ALL'} {...this.state} parentId={'chart-ALL'} height={ 350 } />
                   </Flex>
                 </Card>
               </Flex>
@@ -454,7 +475,7 @@ class Stats extends Component {
                     <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                       Allocation Percentage
                     </Text>
-                    <StatsChart contracts={this.props.contracts} contractsInitialized={this.props.contractsInitialized} isMobile={this.props.isMobile} web3={this.props.web3} getTokenData={this.getTokenData} chartMode={'ALL_PERC'} {...this.state} parentId={'chart-ALL_PERC'} height={ 350 } />
+                    <StatsChart contracts={this.props.contracts} apiResults_unfiltered={this.state.apiResults_unfiltered} apiResults={this.state.apiResults} isMobile={this.props.isMobile} chartMode={'ALL_PERC'} {...this.state} parentId={'chart-ALL_PERC'} height={ 350 } />
                   </Flex>
                 </Card>
               </Flex>
@@ -464,7 +485,7 @@ class Stats extends Component {
                     <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                       APRs
                     </Text>
-                    <StatsChart contracts={this.props.contracts} contractsInitialized={this.props.contractsInitialized} isMobile={this.props.isMobile} web3={this.props.web3} getTokenData={this.getTokenData} chartMode={'APR'} {...this.state} parentId={'chart-APR'} height={ 350 } />
+                    <StatsChart contracts={this.props.contracts} apiResults_unfiltered={this.state.apiResults_unfiltered} apiResults={this.state.apiResults} isMobile={this.props.isMobile} chartMode={'APR'} {...this.state} parentId={'chart-APR'} height={ 350 } />
                   </Flex>
                 </Card>
               </Flex>
@@ -474,7 +495,7 @@ class Stats extends Component {
                     <Text color={'copyColor'} fontWeight={2} fontSize={3}>
                       Volume
                     </Text>
-                    <StatsChart contracts={this.props.contracts} contractsInitialized={this.props.contractsInitialized} isMobile={this.props.isMobile} web3={this.props.web3} getTokenData={this.getTokenData} chartMode={'VOL'} {...this.state} parentId={'chart-VOL'} height={ 350 } />
+                    <StatsChart contracts={this.props.contracts} apiResults_unfiltered={this.state.apiResults_unfiltered} apiResults={this.state.apiResults} isMobile={this.props.isMobile} chartMode={'VOL'} {...this.state} parentId={'chart-VOL'} height={ 350 } />
                   </Flex>
                 </Card>
               </Flex>
