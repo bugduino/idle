@@ -13,6 +13,7 @@ import Web3Provider from 'web3-react';
 import React, { Component } from "react";
 import Landing from "../Landing/Landing";
 import { Web3Consumer } from 'web3-react';
+import Dashboard from '../Dashboard/Dashboard';
 import CookieConsent from "react-cookie-consent";
 import RimbleWeb3 from "../utilities/RimbleWeb3";
 import GeneralUtil from "../utilities/GeneralUtil";
@@ -344,6 +345,17 @@ class App extends Component {
                                                     contractsInitialized={contractsInitialized}
                                                     availableTokens={this.state.availableTokens}
                                                     setSelectedToken={ e => { this.setSelectedToken(e) } }
+                                                  />}
+                            >
+                            </Route>
+                            <Route
+                              path="/dashboard/:strategy?/:asset?"
+                              render={(props) => <Dashboard {...props}
+                                                    web3={web3}
+                                                    initWeb3={initWeb3}
+                                                    isMobile={isMobile}
+                                                    contracts={contracts}
+                                                    contractsInitialized={contractsInitialized}
                                                   />}
                             >
                             </Route>

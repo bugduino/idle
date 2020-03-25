@@ -1,9 +1,14 @@
+import {
+  Link as RouterLink,
+  useHistory
+} from "react-router-dom";
 import Faq from '../Faq/Faq';
 import Footer from '../Footer/Footer';
 import React, { Component } from 'react';
 import styles from './Landing.module.scss';
 import globalConfigs from '../configs/globalConfigs';
-import LandingForm from '../LandingForm/LandingForm';
+// import LandingForm from '../LandingForm/LandingForm';
+import ImageButton from '../ImageButton/ImageButton';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import NewsletterForm from '../NewsletterForm/NewsletterForm';
 import AllocationChart from '../AllocationChart/AllocationChart';
@@ -334,24 +339,35 @@ class Landing extends Component {
                 Maximize your lending returns by investing in a single token
               </Heading.h2>
             </Flex>
-            <Flex flexDirection={'column'} alignItems={'center'} maxWidth={["50em", "50em"]} mx={'auto'} textAlign={'center'}>
-              <LandingForm
-                // mintCallback={ () => this.setConfetti(true) }
-                getAprs={this.getAprs}
-                isMobile={this.props.isMobile}
-                simpleID={this.props.simpleID}
-                connecting={this.props.connecting}
-                selectedTab={this.props.selectedTab}
-                tokenConfig={this.props.tokenConfig}
-                getAllocations={this.getAllocations}
-                openBuyModal={this.props.openBuyModal}
-                selectedToken={this.props.selectedToken}
-                setSelectedToken={this.props.setSelectedToken}
-                getAccountBalance={this.props.getAccountBalance}
-                updateSelectedTab={this.props.updateSelectedTab}
-                accountBalanceToken={this.props.accountBalanceToken}
-              />
+            <Flex flexDirection={'row'} justifyContent={'center'} maxWidth={["50em", "50em"]} mx={'auto'} textAlign={'center'}>
+              <RouterLink to="/dashboard/risk" style={ this.props.isMobile ? {textDecoration:'none',width:'100%'} : {textDecoration:'none'}  }>
+                <ImageButton isMobile={this.props.isMobile} imageSrc={`images/strategies/risk.svg`} imageProps={ this.props.isMobile ? {height:'42px'} : {p:[2,3],height:'80px'}} caption={'Best Risk'} />
+              </RouterLink>
+              <RouterLink to="/dashboard/best" style={ this.props.isMobile ? {textDecoration:'none',width:'100%'} : {textDecoration:'none'}  }>
+                <ImageButton isMobile={this.props.isMobile} imageSrc={`images/strategies/best.svg`} imageProps={ this.props.isMobile ? {height:'42px'} : {p:[2,3],height:'80px'}} caption={'Best Yield'} />
+              </RouterLink>
             </Flex>
+            {
+              /*
+              <Flex flexDirection={'column'} alignItems={'center'} maxWidth={["50em", "50em"]} mx={'auto'} textAlign={'center'}>
+                <LandingForm
+                  getAprs={this.getAprs}
+                  isMobile={this.props.isMobile}
+                  simpleID={this.props.simpleID}
+                  connecting={this.props.connecting}
+                  selectedTab={this.props.selectedTab}
+                  tokenConfig={this.props.tokenConfig}
+                  getAllocations={this.getAllocations}
+                  openBuyModal={this.props.openBuyModal}
+                  selectedToken={this.props.selectedToken}
+                  setSelectedToken={this.props.setSelectedToken}
+                  getAccountBalance={this.props.getAccountBalance}
+                  updateSelectedTab={this.props.updateSelectedTab}
+                  accountBalanceToken={this.props.accountBalanceToken}
+                />
+              </Flex>
+              */
+            }
             <Flex flexDirection={'column'} py={[3,4]} mb={[3,5]} alignItems={'center'}>
               <Link onClick={(e) => {this.scrollTo(document.getElementById('how-it-works').offsetTop,300)}} textAlign={'center'} color={'dark-gray'} hoverColor={'dark-gray'} fontSize={2} fontWeight={3}>
                 <Flex flexDirection={'column'} py={[2,1]} alignItems={'center'}>
