@@ -245,7 +245,7 @@ const globalConfigs = {
         captionPos: 'top',
         subcaption: '~ 0.75% fee ~',
         supportedMethods:['card'],
-        supportedCountries:['USA','GBR','AUS','BRA','CHN','MEX'],
+        supportedCountries:['USA','GBR','AUS','BRA','CHN','MEX','EUR'],
         supportedTokens:['USDC','DAI','ETH'],
         remoteResources:{},
         env:'prod',
