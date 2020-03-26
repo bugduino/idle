@@ -1,7 +1,3 @@
-import {
-  Link as RouterLink,
-  useHistory
-} from "react-router-dom";
 import Faq from '../Faq/Faq';
 import Footer from '../Footer/Footer';
 import React, { Component } from 'react';
@@ -299,6 +295,19 @@ class Landing extends Component {
     })
   }
 
+  connectAndGoToRoute = (route) => {
+
+    const goToLocation = () => {
+      window.location = "/#"+route;
+    }
+
+    if (this.props.account){
+      goToLocation();
+    } else {
+      this.props.connectAndValidateAccount(goToLocation);
+    }
+  }
+
   render() {
     const { network } = this.props;
     const maxOpacity = 0.6;
@@ -340,12 +349,8 @@ class Landing extends Component {
               </Heading.h2>
             </Flex>
             <Flex flexDirection={'row'} justifyContent={'center'} maxWidth={["50em", "50em"]} mx={'auto'} textAlign={'center'}>
-              <RouterLink to="/dashboard/risk" style={ this.props.isMobile ? {textDecoration:'none',width:'100%'} : {textDecoration:'none'}  }>
-                <ImageButton isMobile={this.props.isMobile} imageSrc={`images/strategies/risk.svg`} imageProps={ this.props.isMobile ? {height:'42px'} : {p:[2,3],height:'80px'}} caption={'Best Risk'} />
-              </RouterLink>
-              <RouterLink to="/dashboard/best" style={ this.props.isMobile ? {textDecoration:'none',width:'100%'} : {textDecoration:'none'}  }>
-                <ImageButton isMobile={this.props.isMobile} imageSrc={`images/strategies/best.svg`} imageProps={ this.props.isMobile ? {height:'42px'} : {p:[2,3],height:'80px'}} caption={'Best Yield'} />
-              </RouterLink>
+              <ImageButton handleClick={ e => this.connectAndGoToRoute('/dashboard/risk') } isMobile={this.props.isMobile} imageSrc={`images/strategies/risk.svg`} imageProps={ this.props.isMobile ? {height:'42px'} : {p:[2,3],height:'80px'}} caption={'Risk-Adjusted'} />
+              <ImageButton handleClick={ e => this.connectAndGoToRoute('/dashboard/best') } isMobile={this.props.isMobile} imageSrc={`images/strategies/best.svg`} imageProps={ this.props.isMobile ? {height:'42px'} : {p:[2,3],height:'80px'}} caption={'Best Yield'} />
             </Flex>
             {
               /*

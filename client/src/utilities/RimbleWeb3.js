@@ -296,23 +296,27 @@ class RimbleTransaction extends React.Component {
       // After setting the web3 provider, check network
       await this.checkNetwork();
       if (this.state.network.isCorrectNetwork){
-        await this.initializeContracts();
+
+        if (!this.state.contractsInitialized){
+          await this.initializeContracts();
+        }
 
         if (context.account) {
           await this.initAccount(context.account);
+        }
+        
+        if (typeof this.props.callbackAfterLogin === 'function'){
+          this.props.callbackAfterLogin();
+          this.props.setCallbackAfterLogin(null);
         }
       }
     }
 
     if (web3 !== this.state.web3){
       this.setState({ web3 }, web3Callback);
-    } else {
-      if (context.account) {
-        await this.checkNetwork();
-        if (this.state.network.isCorrectNetwork){
-          await this.initAccount(context.account);
-        }
-      }
+    } else if (context.account){
+      console.log(context.account);
+      web3Callback();
     }
 
     return web3;
@@ -833,9 +837,10 @@ class RimbleTransaction extends React.Component {
     });
   }
 
-  connectAndValidateAccount = async () => {
+  connectAndValidateAccount = async (callbackAfterLogin) => {
     // Check for account
     if (!this.state.account) {
+      this.props.setCallbackAfterLogin(callbackAfterLogin);
       // Show modal to connect account
       this.openConnectionModal();
     }
@@ -1335,74 +1340,74 @@ class RimbleTransaction extends React.Component {
   }
 
   state = {
-    contracts: [],
-    account: null,
-    accountBalance: null,
-    accountBalanceDAI: null,
-    accountBalanceLow: null,
-    web3Subscription: null,
-    context:null,
     web3: null,
+    context:null,
+    account: null,
+    contracts: [],
     simpleID: null,
+    transactions: {},
     CrispClient: null,
     tokenDecimals:null,
-    contractsInitialized:false,
-    subscribedTransactions:{},
-    transactions: {},
-    checkPreflight: this.checkPreflight,
+    accountBalance: null,
+    web3Subscription: null,
+    accountValidated: null,
+    accountBalanceDAI: null,
     initWeb3: this.initWeb3,
+    accountBalanceLow: null,
+    subscribedTransactions:{},
+    contractsInitialized:false,
+    initAccount: this.initAccount,
+    accountValidationPending: null,
     initSimpleID: this.initSimpleID,
     initContract: this.initContract,
-    initAccount: this.initAccount,
-    getAccountBalance: this.getAccountBalance,
-    getTokenDecimals: this.getTokenDecimals,
-    contractMethodSendWrapper: this.contractMethodSendWrapper,
-    rejectAccountConnect: this.rejectAccountConnect,
-    accountValidated: null,
-    accountValidationPending: null,
-    rejectValidation: this.rejectValidation,
+    checkPreflight: this.checkPreflight,
     validateAccount: this.validateAccount,
+    rejectValidation: this.rejectValidation,
+    getTokenDecimals: this.getTokenDecimals,
+    getAccountBalance: this.getAccountBalance,
+    rejectAccountConnect: this.rejectAccountConnect,
+    contractMethodSendWrapper: this.contractMethodSendWrapper,
     connectAndValidateAccount: this.connectAndValidateAccount,
-    enableUnderlyingWithdraw:this.props.enableUnderlyingWithdraw,
+    enableUnderlyingWithdraw: this.props.enableUnderlyingWithdraw,
     network: {
-      required: {},
       current: {},
+      required: {},
       isCorrectNetwork: null,
       checkNetwork: this.checkNetwork
     },
     modals: {
       data: {
-        noWeb3BrowserModalIsOpen: this.noWeb3BrowserModalIsOpen,
-        noWalletModalIsOpen: this.noWalletModalIsOpen,
-        connectionModalIsOpen: null,
-        accountConnectionPending: null,
+        connectionError: null,
+        lowFundsModalIsOpen: null,
         userRejectedConnect: null,
-        accountValidationPending: null,
+        connectionModalIsOpen: null,
         userRejectedValidation: null,
         wrongNetworkModalIsOpen: null,
+        accountConnectionPending: null,
+        accountValidationPending: null,
         transactionConnectionModalIsOpen: null,
-        lowFundsModalIsOpen: null,
-        connectionError: null
+        noWalletModalIsOpen: this.noWalletModalIsOpen,
+        noWeb3BrowserModalIsOpen: this.noWeb3BrowserModalIsOpen,
       },
       methods: {
-        openNoWeb3BrowserModal: this.openNoWeb3BrowserModal,
-        closeNoWeb3BrowserModal: this.closeNoWeb3BrowserModal,
+        openLowFundsModal: this.openLowFundsModal,
         openNoWalletModal: this.openNoWalletModal,
         closeNoWalletModal: this.closeNoWalletModal,
-        closeConnectionModal: this.closeConnectionModal,
+        closeLowFundsModal: this.closeLowFundsModal,
         openConnectionModal: this.openConnectionModal,
-        closeConnectionPendingModal: this.closeConnectionPendingModal,
+        closeConnectionModal: this.closeConnectionModal,
+        openWrongNetworkModal: this.openWrongNetworkModal,
+        closeWrongNetworkModal: this.closeWrongNetworkModal,
+        openNoWeb3BrowserModal: this.openNoWeb3BrowserModal,
+        closeNoWeb3BrowserModal: this.closeNoWeb3BrowserModal,
+        openConnectionErrorModal: this.openConnectionErrorModal,
+        closeConnectionErrorModal: this.closeConnectionErrorModal,
         openConnectionPendingModal: this.openConnectionPendingModal,
-        closeUserRejectedConnectionModal: this.closeUserRejectedConnectionModal,
+        closeConnectionPendingModal: this.closeConnectionPendingModal,
+        openUserRejectedValidationModal: this.openUserRejectedValidationModal,
         openUserRejectedConnectionModal: this.openUserRejectedConnectionModal,
         closeUserRejectedValidationModal: this.closeUserRejectedValidationModal,
-        openUserRejectedValidationModal: this.openUserRejectedValidationModal,
-        closeWrongNetworkModal: this.closeWrongNetworkModal,
-        openWrongNetworkModal: this.openWrongNetworkModal,
-        closeLowFundsModal: this.closeLowFundsModal,
-        openLowFundsModal: this.openLowFundsModal,
-        closeConnectionErrorModal: this.closeConnectionErrorModal,
-        openConnectionErrorModal: this.openConnectionErrorModal
+        closeUserRejectedConnectionModal: this.closeUserRejectedConnectionModal,
       }
     },
     transaction: {
@@ -1419,18 +1424,21 @@ class RimbleTransaction extends React.Component {
       <div>
         <RimbleTransactionContext.Provider value={this.state} {...this.props} />
         <ConnectionModalUtil
-          setConnector={this.props.setConnector}
+          modals={this.state.modals}
+          network={this.state.network}
+          account={this.state.account}
           isMobile={this.props.isMobile}
           initAccount={this.state.initAccount}
-          account={this.state.account}
+          setConnector={this.props.setConnector}
           validateAccount={this.state.validateAccount}
+          accountValidated={this.state.accountValidated}
           accountConnectionPending={this.state.accountConnectionPending}
           accountValidationPending={this.state.accountValidationPending}
-          accountValidated={this.state.accountValidated}
-          network={this.state.network}
-          modals={this.state.modals}
         />
-        <NetworkUtil network={this.state.network} web3={this.state.web3} />
+        <NetworkUtil
+          web3={this.state.web3}
+          network={this.state.network}
+        />
       </div>
     );
   }

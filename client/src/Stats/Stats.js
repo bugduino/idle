@@ -324,7 +324,7 @@ class Stats extends Component {
 
   render() {
     return (
-      <Flex flexDirection={'column'} px={[3,5]} py={[3,4]}>
+      <Flex width={'100%'} flexDirection={'column'} px={[3,5]} py={[3,4]}>
         <Flex position={['absolute','relative']} left={0} px={[3,0]} zIndex={10} width={1} flexDirection={'row'} mb={[0,3]}>
           <Flex alignItems={'center'} width={[2/3,1/2]}>
             <RouterLink to="/">

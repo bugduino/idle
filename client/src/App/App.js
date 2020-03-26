@@ -40,6 +40,7 @@ class App extends Component {
     availableTokens:null,
     buyModalOpened: false,
     toastMessageProps:null,
+    callbackAfterLogin:null,
     width: window.innerWidth,
     unsubscribeFromHistory:null,
     enableUnderlyingWithdraw:false
@@ -81,6 +82,12 @@ class App extends Component {
         });
       }
     }
+  }
+
+  setCallbackAfterLogin = (callbackAfterLogin) => {
+    this.setState({
+      callbackAfterLogin
+    });
   }
 
   setCustomAddress = (customAddress) => {
@@ -298,6 +305,8 @@ class App extends Component {
                     connectorName={this.state.connectorName}
                     walletProvider={this.state.walletProvider}
                     setConnector={this.setConnector.bind(this)}
+                    callbackAfterLogin={this.state.callbackAfterLogin}
+                    setCallbackAfterLogin={this.setCallbackAfterLogin.bind(this)}
                     enableUnderlyingWithdraw={this.state.enableUnderlyingWithdraw}
                   >
                     <RimbleWeb3.Consumer>
@@ -350,13 +359,21 @@ class App extends Component {
                             </Route>
                             <Route
                               path="/dashboard/:strategy?/:asset?"
-                              render={(props) => <Dashboard {...props}
+                              render={(props) => <Dashboard
+                                                    {...props}
                                                     web3={web3}
+                                                    account={account}
                                                     initWeb3={initWeb3}
                                                     isMobile={isMobile}
                                                     contracts={contracts}
+                                                    tokenConfig={this.state.tokenConfig}
+                                                    selectedToken={this.state.selectedToken}
                                                     contractsInitialized={contractsInitialized}
-                                                  />}
+                                                    availableTokens={this.state.availableTokens}
+                                                    connectAndValidateAccount={connectAndValidateAccount}
+                                                    setSelectedToken={ e => { this.setSelectedToken(e) } }
+                                                />
+                                              }
                             >
                             </Route>
                             <Route>
@@ -441,15 +458,16 @@ class App extends Component {
                                           accountBalanceLow={accountBalanceLow}
                                           getAccountBalance={getAccountBalance}
                                           customAddress={this.state.customAddress}
-                                          processCustomParam={this.processCustomParam}
                                           selectedToken={this.state.selectedToken}
                                           accountBalanceToken={accountBalanceToken}
                                           closeToastMessage={this.closeToastMessage}
                                           contractsInitialized={contractsInitialized}
                                           openBuyModal={this.openBuyModal.bind(this)}
+                                          processCustomParam={this.processCustomParam}
                                           availableTokens={this.state.availableTokens}
                                           updateSelectedTab={this.selectTab.bind(this)}
                                           toastMessageProps={this.state.toastMessageProps}
+                                          connectAndValidateAccount={connectAndValidateAccount}
                                           setSelectedToken={ e => { this.setSelectedToken(e) } }
                                           network={network} />
 

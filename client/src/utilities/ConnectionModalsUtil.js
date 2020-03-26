@@ -33,15 +33,12 @@ class ConnectionModalUtil extends React.Component {
         />
 
         <ConnectionModal
-          setConnector={ this.props.setConnector }
           isMobile={this.props.isMobile}
-          closeModal={this.props.modals.methods.closeConnectionModal}
-          validateAccount={this.props.validateAccount}
-          isOpen={
-            this.props.modals.data.connectionModalIsOpen &&
-            !this.props.accountValidated
-          }
+          setConnector={this.props.setConnector}
           currentNetwork={this.props.network.current}
+          validateAccount={this.props.validateAccount}
+          closeModal={this.props.modals.methods.closeConnectionModal}
+          isOpen={ this.props.modals.data.connectionModalIsOpen && !this.props.accountValidated }
         />
 
         <ConnectionPendingModal
