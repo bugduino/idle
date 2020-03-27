@@ -2829,9 +2829,9 @@ atob@^2.1.1:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/atob/-/atob-2.1.2.tgz#6d9517eb9e030d2436666651e86bd9f6f13533c9"
 
-authereum@^0.0.4-beta.118:
-  version "0.0.4-beta.118"
-  resolved "https://registry.yarnpkg.com/authereum/-/authereum-0.0.4-beta.118.tgz#51510c41236856db5874c6fde39370f7f6f4a1e6"
+authereum@^0.0.4-beta.128:
+  version "0.0.4-beta.129"
+  resolved "https://registry.yarnpkg.com/authereum/-/authereum-0.0.4-beta.129.tgz#ce0f5984a2174c18b3b5fa63a701cef6d4501df3"
   dependencies:
     async "^3.1.0"
     ethereum-private-key-to-address "0.0.3"
@@ -2841,9 +2841,10 @@ authereum@^0.0.4-beta.118:
     moment "^2.24.0"
     penpal "^4.1.1"
     pify "^4.0.1"
+    querystring "^0.2.0"
     rollup-plugin-commonjs "^10.1.0"
     store "^2.0.12"
-    to-hex "0.0.9"
+    to-hex "0.0.11"
     uuidv4 "^6.0.6"
     web3-provider-engine "^15.0.4"
     web3-utils "^1.2.1"
@@ -11814,7 +11815,7 @@ querystring-es3@^0.2.0:
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/querystring-es3/-/querystring-es3-0.2.1.tgz#9ec61f79049875707d69414596fd907a4d711e73"
 
-querystring@0.2.0:
+querystring@0.2.0, querystring@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/querystring/-/querystring-0.2.0.tgz#b209849203bb25df820da756e747005878521620"
 
@@ -13983,9 +13984,9 @@ to-fast-properties@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/to-fast-properties/-/to-fast-properties-2.0.0.tgz#dc5e698cbd079265bc73e0377681a4e4e83f616e"
 
-to-hex@0.0.9:
-  version "0.0.9"
-  resolved "https://registry.yarnpkg.com/to-hex/-/to-hex-0.0.9.tgz#310ac7e35068f77b6d4c6bb09e0a3fd024a50c26"
+to-hex@0.0.11:
+  version "0.0.11"
+  resolved "https://registry.yarnpkg.com/to-hex/-/to-hex-0.0.11.tgz#22355e09e5b56f5ae2b32502c493320f021171ac"
   dependencies:
     normalize-hex "0.0.2"
 
