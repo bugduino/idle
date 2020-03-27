@@ -3560,8 +3560,8 @@ class SmartContractControls extends React.Component {
           title={`Congratulations!`}
           icon={`images/medal.svg`}
           confettiEnabled={true}
-          text={`You have successfully made your first deposit!<br />Enjoy <strong>${currentApr} APR</strong> on your <strong>${this.props.selectedToken}</strong>!`}
-          tweet={`I'm earning ${currentApr} APR on my ${this.props.selectedToken} with @idlefinance! Go to ${globalConfigs.baseURL} and start earning now from your idle tokens!`}
+          text={`You have successfully made your first deposit!<br />Enjoy <strong>${avgApr}% APR</strong> on your <strong>${this.props.selectedToken}</strong>!`}
+          tweet={`I'm earning ${avgApr}% APR on my ${this.props.selectedToken} with @idlefinance! Go to ${globalConfigs.baseURL} and start earning now from your idle tokens!`}
           tokenName={this.props.selectedToken} />
 
         <ReferralShareModal
