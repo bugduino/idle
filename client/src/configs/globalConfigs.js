@@ -53,6 +53,15 @@ const globalConfigs = {
       enabled:true,
       subcaption:'Login with e-mail'
     },
+    authereum:{
+      enabled:true,
+      subcaption:'Cross-device wallet'
+    },
+    torus:{
+      enabled:true,
+      icon:'torus.png',
+      subcaption:'One-Click login for Web 3.0'
+    },
     trezor:{
       enabled:true,
       subcaption:'Hardware wallet'
@@ -60,10 +69,6 @@ const globalConfigs = {
     ledger:{
       enabled:true,
       subcaption:'Hardware wallet'
-    },
-    authereum:{
-      enabled:true,
-      subcaption:'Cross-device wallet'
     }
   },
   newsletterSubscription:{

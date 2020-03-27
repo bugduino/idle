@@ -3,7 +3,9 @@ import PortisApi from "@portis/web3";
 import FortmaticApi from "fortmatic";
 import TrezorApi from "trezor-connect";
 import { Connectors } from "web3-react";
+import TorusApi from '@toruslabs/torus-embed';
 import globalConfigs from '../configs/globalConfigs';
+import TorusConnector from './connectors/TorusConnector';
 import WalletConnectApi from "@walletconnect/web3-subprovider";
 import AuthereumConnector from './connectors/AuthereumConnector';
 
@@ -78,13 +80,28 @@ const Authereum = new AuthereumConnector({
   network: globalConfigs.network.availableNetworks[defaultNetwork].toLowerCase()
 });
 
+const Torus = new TorusConnector({
+  api: TorusApi,
+  initParams:{
+    buildEnv: "production", // default: production
+    enableLogging: true, // default: false
+    network: {
+      host: globalConfigs.network.availableNetworks[defaultNetwork].toLowerCase(), // default: mainnet
+      chainId: defaultNetwork, // default: 1
+      networkName: globalConfigs.network.availableNetworks[defaultNetwork].toLowerCase() // default: Main Ethereum Network
+    },
+    showTorusButton: false // default: true
+  }
+});
+
 export default {
   Injected,
   Infura,
   WalletConnect,
   Fortmatic,
   Portis,
+  Authereum,
+  Torus,
   Trezor,
   Ledger,
-  Authereum
 };
