@@ -406,7 +406,7 @@ class SmartContractControls extends React.Component {
       this.getTokenBalance()
     ]);
 
-    const price = await this.getPriceInToken(contractName);
+    const price = this.state.tokenPrice ? this.state.tokenPrice : await this.getPriceInToken(contractName);
     const balance = await this.functionsUtil.getTokenBalance(contractName,this.props.account);
 
     this.functionsUtil.customLog('getBalanceOf 1',contractName,'price',price.toString(),'balance',(balance ? balance.toString() : balance));
@@ -414,10 +414,8 @@ class SmartContractControls extends React.Component {
     if (balance) {
       const tokenToRedeem = balance.times(price);
       let earning = 0;
-
+      let earningPerc = 0;
       let amountLent = this.state.amountLent;
-
-      // console.log('AmountLent 1',amountLent);
 
       // this.functionsUtil.customLog('getBalanceOf 2','tokenToRedeem',tokenToRedeem.toString(),'amountLent',this.state.amountLent.toString());
 
@@ -430,32 +428,16 @@ class SmartContractControls extends React.Component {
       }
 
       // console.log((tokenToRedeem ? tokenToRedeem.toString() : null),(amountLent ? amountLent.toString() : null));
-
       if (this.functionsUtil.BNify(tokenToRedeem).gt(this.functionsUtil.BNify(amountLent))){
-        // console.log('AmountLent 4',amountLent.toString(),tokenToRedeem.toString());
         earning = tokenToRedeem.minus(this.functionsUtil.BNify(amountLent));
+        earningPerc = tokenToRedeem.div(this.functionsUtil.BNify(amountLent)).minus(1).times(100);
       }
-
-      // customLog('earning',earning.toString());
-
-      /*
-      const redirectToFundsAfterLogged = localStorage && localStorage.getItem('redirectToFundsAfterLogged') ? parseInt(localStorage.getItem('redirectToFundsAfterLogged')) : true;
-
-      // Select seconds Tab
-      if (tokenToRedeem.gt(0) && redirectToFundsAfterLogged){
-        this.selectTab({ preventDefault:()=>{} },'2');
-      }
-
-      if (localStorage){
-        localStorage.removeItem('redirectToFundsAfterLogged');
-      }
-      */
 
       const currentApr = this.functionsUtil.BNify(this.state.avgApr).div(100);
       const earningPerYear = tokenToRedeem.times(currentApr);
       const earningPerDay = earningPerYear.div(this.functionsUtil.BNify(365.242199));
 
-      this.functionsUtil.customLog('getBalanceOf 3',balance.toString(),tokenToRedeem.toString(),amountLent,earning,currentApr,earningPerYear);
+      // this.functionsUtil.customLog('getBalanceOf 3',balance.toString(),tokenToRedeem.toString(),amountLent,earning,currentApr,earningPerYear);
 
       if (this.state.callMintCallback){
 
@@ -476,10 +458,11 @@ class SmartContractControls extends React.Component {
       }
 
       this.setState({
-        earning,
         balance,
+        earning,
         amountLent,
         currentApr,
+        earningPerc,
         earningPerDay,
         tokenToRedeem,
         earningPerYear,
@@ -487,6 +470,18 @@ class SmartContractControls extends React.Component {
         callMintCallback:false,
         idleTokenBalance:balance.toString(),
         tokenToRedeemParsed: tokenToRedeem.toString(),
+      });
+    } else {
+      this.setState({
+        balance:0,
+        earning:0,
+        amountLent:0,
+        earningPerc:0,
+        earningPerDay:0,
+        tokenToRedeem:0,
+        earningPerYear:0,
+        fundsError:false,
+        callMintCallback:false,
       });
     }
 
@@ -1061,7 +1056,8 @@ class SmartContractControls extends React.Component {
     const migrationContractOldAddrs = this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract && this.props.tokenConfig.migration.migrationContract.oldAddresses ? this.props.tokenConfig.migration.migrationContract.oldAddresses : [];
     const oldContractAddr = this.props.tokenConfig.migration && this.props.tokenConfig.migration.oldContract ? this.props.tokenConfig.migration.oldContract.address.replace('x','').toLowerCase() : null;
 
-    const etherscanTxs = results.filter(
+    let etherscanTxs = {};
+    results.filter(
         tx => {
           const internalTxs = results.filter(r => r.hash === tx.hash);
           const isSendTransferTx = internalTxs.length === 1 && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
@@ -1073,9 +1069,15 @@ class SmartContractControls extends React.Component {
 
           return isSendTransferTx || isReceiveTransferTx || isMigrationTx || isDepositTx || isRedeemTx;
       }
-    ).map(tx => {
-      return ({...tx, value: this.functionsUtil.fixTokenDecimals(tx.value,tokenDecimals)});
+    ).forEach(tx => {
+      if (etherscanTxs[tx.hash]){
+        etherscanTxs[tx.hash].value = etherscanTxs[tx.hash].value.plus(this.functionsUtil.fixTokenDecimals(tx.value,tokenDecimals));
+      } else {
+        etherscanTxs[tx.hash] = ({...tx, value: this.functionsUtil.fixTokenDecimals(tx.value,tokenDecimals)});
+      }
     });
+
+    etherscanTxs = Object.values(etherscanTxs);
 
     // console.log('etherscanTxs',etherscanTxs);
 
@@ -1098,6 +1100,7 @@ class SmartContractControls extends React.Component {
 
     // Check if this is the first interaction with Idle
     let depositedTxs = 0;
+    let avgBuyPrice = this.functionsUtil.BNify(0);
 
     if (etherscanTxs && etherscanTxs.length){
 
@@ -1118,49 +1121,50 @@ class SmartContractControls extends React.Component {
 
         const txKey = `tx${tx.timeStamp}000`;
         const storedTx = storedTxs[this.props.account][this.props.selectedToken][txKey] ? storedTxs[this.props.account][this.props.selectedToken][txKey] : tx;
-        const isNewTx = etherscanTxs.indexOf(tx) !== -1; // Just fetched from etherscan
+        // const isNewTx = etherscanTxs.indexOf(tx) !== -1; // Just fetched from etherscan
         const isMigrationTx = migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).indexOf(tx.from.toLowerCase()) !== -1 ) && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
         const isSendTransferTx = !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
         const isReceiveTransferTx = !isMigrationTx && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
         const isDepositTx = !isMigrationTx && !isSendTransferTx && !isReceiveTransferTx && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
         const isRedeemTx = !isMigrationTx && !isSendTransferTx && !isReceiveTransferTx && tx.to.toLowerCase() === this.props.account.toLowerCase();
 
+        let tokenPrice = await this.functionsUtil.genericContractCall(this.props.tokenConfig.idle.token, 'tokenPrice',[],{}, tx.blockNumber);
+        tokenPrice = this.functionsUtil.fixTokenDecimals(tokenPrice,this.props.tokenConfig.decimals);
+        let tokensTransfered = tokenPrice.times(this.functionsUtil.BNify(tx.value));
+
         // Deposited
         if (isSendTransferTx){
           // amountLent = amountLent.plus(this.functionsUtil.BNify(tx.value));
           // depositedTxs++;
-          
-          let tokenPrice = await this.functionsUtil.genericContractCall(this.props.tokenConfig.idle.token, 'tokenPrice',[],{}, tx.blockNumber);
-          tokenPrice = this.functionsUtil.fixTokenDecimals(tokenPrice,18);
-
-          const tokensTransfered = tokenPrice.times(this.functionsUtil.BNify(tx.value));
 
           // Decrese amountLent by the last idleToken price
           amountLent = amountLent.minus(tokensTransfered);
 
-          if (amountLent.lt(0)){
+          if (amountLent.lte(0)){
             amountLent = this.functionsUtil.BNify(0);
+            avgBuyPrice = this.functionsUtil.BNify(0);
+            // console.log(`Sent ${tokensTransfered} @${tokenPrice}, avgBuyPrice: ${avgBuyPrice}`);
           }
 
-          // console.log(`Transfer sent of ${tx.value} (${tokensTransfered}) - Balance: ${idleTokenBalance.toString()}, amountLent: ${amountLent}`);
+          // console.log(`Transfer sent of ${tx.value} (${tokensTransfered}) - amountLent: ${amountLent}`);
 
           storedTx.value = tokensTransfered;
 
         } else if (isReceiveTransferTx){
-          
-          let tokenPrice = await this.functionsUtil.genericContractCall(this.props.tokenConfig.idle.token, 'tokenPrice',[],{}, tx.blockNumber);
-          tokenPrice = this.functionsUtil.fixTokenDecimals(tokenPrice,18);
-
-          const tokensTransfered = tokenPrice.times(this.functionsUtil.BNify(tx.value));
 
           // Decrese amountLent by the last idleToken price
           amountLent = amountLent.plus(tokensTransfered);
 
-          // console.log(`Transfer received of ${tx.value} (${tokensTransfered}) - Balance: ${idleTokenBalance.toString()}, amountLent: ${amountLent}`);
+          // Calculate avgBuyPrice for current earnings
+          avgBuyPrice = avgBuyPrice.plus(tokensTransfered);
+
+          // console.log(`Received ${tokensTransfered} @${tokenPrice}, avgBuyPrice: ${avgBuyPrice}`);
+          // console.log(`Transfer received of ${tx.value} (${tokensTransfered}) - amountLent: ${amountLent}`);
 
           storedTx.value = tokensTransfered;
 
         } else if (isDepositTx){
+
           amountLent = amountLent.plus(this.functionsUtil.BNify(tx.value));
 
           depositedTxs++;
@@ -1189,7 +1193,11 @@ class SmartContractControls extends React.Component {
             }
           }
 
-          // console.log(`Deposited ${storedTx.idleTokens} (${tx.value}), AmountLent: ${amountLent}`);
+          // Calculate avgBuyPrice for current earnings
+          avgBuyPrice = avgBuyPrice.plus(tokensTransfered);
+
+          // console.log(`Deposited ${tx.value} @${tokenPrice}, AmountLent: ${amountLent}, avgBuyPrice: ${avgBuyPrice}`);
+          // console.log(`Deposited ${tx.value} (${storedTx.idleTokens}), AmountLent: ${amountLent}`);
 
           // Save new storedTx
           storedTxs[this.props.account][this.props.selectedToken][txKey] = storedTx;
@@ -1197,155 +1205,43 @@ class SmartContractControls extends React.Component {
         // Redeemed
         } else if (isRedeemTx){
 
-          let redeemedValue = storedTx.value;
-          let redeemedValueFixed = storedTx.value;
-
-          // Get real redeemed amount from tx logs
-          if (isNewTx){
-
-            let redeemTxReceipt = storedTx.txReceipt ? storedTx.txReceipt : null;
-
-            if (!redeemTxReceipt){
-              // console.log('getPrevTxs - redeemTx - getTransactionReceipt',tx.hash);
-              redeemTxReceipt = await (new Promise( async (resolve, reject) => {
-                this.props.web3.eth.getTransactionReceipt(tx.hash,(err,tx)=>{
-                  if (err){
-                    reject(err);
-                  }
-                  resolve(tx);
-                });
-              }));
-            }
-
-            if (!redeemTxReceipt){
-              return;
-            }
-
-            const walletAddress = this.props.account.replace('x','').toLowerCase();
-            const internalTransfers = redeemTxReceipt.logs.filter((tx) => { return tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${walletAddress}`; });
-            
-            if (!internalTransfers.length){
-              return;
-            }
-
-            const internalTransfer = internalTransfers.pop();
-
-            try {
-              // Decode lons
-              const decodedLogs = this.props.web3.eth.abi.decodeLog([
-                {
-                  "internalType": "uint256",
-                  "name": "_tokenAmount",
-                  "type": "uint256"
-                }
-              ],internalTransfer.data,internalTransfer.topics);
-
-              if (decodedLogs){
-                redeemedValue = decodedLogs._tokenAmount;
-                redeemedValueFixed = this.functionsUtil.fixTokenDecimals(redeemedValue,tokenDecimals);
-                storedTx.value = redeemedValueFixed;
-              } else {
-                return;
-              }
-            } catch (err) {
-              return;
-            }
-            
-            // Save txReceipt in localStorage
-            if (!storedTx.txReceipt){
-              storedTx.txReceipt = redeemTxReceipt;
-              storedTxs[this.props.account][this.props.selectedToken][txKey] = storedTx;
-            }
-          }
+          const redeemedValueFixed = this.functionsUtil.BNify(storedTx.value);
 
           // Decrese amountLent by redeem amount
-          amountLent = amountLent.minus(this.functionsUtil.BNify(redeemedValueFixed));
+          amountLent = amountLent.minus(redeemedValueFixed);
+          avgBuyPrice = avgBuyPrice.minus(tokensTransfered);
 
-          // console.log(`Redeemed ${tx.value} (${redeemedValueFixed}), AmountLent: ${amountLent}`);
           // Reset amountLent if below zero
           if (amountLent.lt(0)){
             amountLent = this.functionsUtil.BNify(0);
+
+            // Reset Avg Buy Price
+            avgBuyPrice = this.functionsUtil.BNify(0);
           }
+
+          // console.log(`Redeemed ${redeemedValueFixed} @${tokenPrice}, AmountLent: ${amountLent}, avgBuyPrice: ${avgBuyPrice}`);
+          // console.log(`Redeemed ${tx.value} (${redeemedValueFixed}), AmountLent: ${amountLent}`);
         // Migrated
         } else if (isMigrationTx){
 
-          let migrationValue = tx.value;
-          let migrationValueFixed = tx.value;
+          let migrationValueFixed = this.functionsUtil.BNify(storedTx.value);
+          if (!storedTx.tokenPrice){
+            storedTx.tokenPrice = tokenPrice;
+            migrationValueFixed = migrationValueFixed.times(tokenPrice);
 
-          // Get real migrated amount from tx logs
-          if (isNewTx){
-
-            let migrationTxReceipt = storedTx.txReceipt ? storedTx.txReceipt : null;
-
-            if (!migrationTxReceipt){
-              // console.log('getPrevTxs - migrationTx - getTransactionReceipt',tx.hash);
-              migrationTxReceipt = await (new Promise( async (resolve, reject) => {
-                this.props.web3.eth.getTransactionReceipt(tx.hash,(err,tx)=>{
-                  if (err){
-                    reject(err);
-                  }
-                  resolve(tx);
-                });
-              }));
-            }
-
-            if (!migrationTxReceipt){
-              return;
-            }
-
-            const internalTransfers = migrationTxReceipt.logs.filter((tx) => { return tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${oldContractAddr}`; });
-
-            if (!internalTransfers.length){
-              return;
-            }
-
-            const internalTransfer = internalTransfers.pop();
-
-            try {
-              const decodedLogs = this.props.web3.eth.abi.decodeLog([
-                /*{
-                  "internalType": "uint256",
-                  "name": "_idleToken",
-                  "type": "uint256"
-                },*/
-                {
-                  "internalType": "uint256",
-                  "name": "_tokenAmount",
-                  "type": "uint256"
-                }/*,
-                {
-                  "internalType": "uint256",
-                  "name": "_price",
-                  "type": "uint256"
-                },*/
-              ],internalTransfer.data,internalTransfer.topics);
-
-              if (decodedLogs){
-                migrationValue = decodedLogs._tokenAmount;
-                const oldContractTokenDecimals = this.state.oldContractTokenDecimals ? this.state.oldContractTokenDecimals : await this.functionsUtil.getTokenDecimals(this.props.tokenConfig.migration.oldContract.name);
-                migrationValueFixed = this.functionsUtil.fixTokenDecimals(migrationValue,oldContractTokenDecimals);
-
-                storedTx.value = migrationValueFixed;
-              } else {
-                // console.log('Can\'t decode migration tx logs');
-                return;
-              }
-            } catch (error) {
-              // console.log('Error while decoding migration tx logs',error,internalTransfers);
-              return;
-            }
-
-            // Save txReceipt in localStorage
-            if (!storedTx.txReceipt){
-              storedTx.txReceipt = migrationTxReceipt;
-              storedTxs[this.props.account][this.props.selectedToken][txKey] = storedTx;
-            }
-
+            // Save Tx
+            storedTxs[this.props.account][this.props.selectedToken][txKey] = storedTx;
           }
 
-          amountLent = amountLent.plus(this.functionsUtil.BNify(migrationValueFixed));
+          tx.value = migrationValueFixed;
 
-          // console.log(`Migrated ${tx.value} (${migrationValueFixed}), AmountLent: ${amountLent}`);
+          amountLent = amountLent.plus(migrationValueFixed);
+
+          // Calculate avgBuyPrice for current earnings
+          tokensTransfered = tokenPrice.times(migrationValueFixed);
+          avgBuyPrice = avgBuyPrice.plus(tokensTransfered);
+
+          // console.log(`Migrated ${migrationValueFixed} @${tokenPrice}, AmountLent: ${amountLent}, avgBuyPrice: ${avgBuyPrice}`);
         }
 
         // Update transaction
@@ -1363,6 +1259,9 @@ class SmartContractControls extends React.Component {
       await this.functionsUtil.asyncForEach(Object.keys(minedTxs),async (txKey,i) => {
         const tx = minedTxs[txKey];
         const isStoredTx = storedTxs && storedTxs[this.props.account] && storedTxs[this.props.account][this.props.selectedToken] && storedTxs[this.props.account][this.props.selectedToken][txKey];
+
+        let tokenPrice = await this.functionsUtil.genericContractCall(this.props.tokenConfig.idle.token, 'tokenPrice',[],{}, tx.blockNumber);
+        tokenPrice = this.functionsUtil.fixTokenDecimals(tokenPrice,18);
 
         const allowedMethods = ['mintIdleToken','redeemIdleToken','bridgeIdleV1ToIdleV2']
 
@@ -1421,74 +1320,13 @@ class SmartContractControls extends React.Component {
             realTx.value = txValue;
           break;
           case 'redeemIdleToken':
-
-            let redeemTxReceipt = tx.txReceipt ? tx.txReceipt : null;
-
-            if (!redeemTxReceipt){
-              // console.log('getPrevTxs - redeemTx - getTransactionReceipt',tx.hash);
-              redeemTxReceipt = await (new Promise( async (resolve, reject) => {
-                this.props.web3.eth.getTransactionReceipt(tx.transactionHash,(err,tx)=>{
-                  if (err){
-                    reject(err);
-                  }
-                  resolve(tx);
-                });
-              }));
-
-            }
-
-            if (!redeemTxReceipt || redeemTxReceipt.to.toLowerCase() !== this.props.tokenConfig.idle.address.toLowerCase() ){
-              // Remove wrong contract tx
-              if (isStoredTx){
-                delete storedTxs[this.props.account][this.props.selectedToken][txKey];
-              }
-              return;
-            }
-
-            // Save txReceipt into the tx
-            if (!tx.txReceipt){
-              tx.txReceipt = redeemTxReceipt;
-              if (isStoredTx){
-                storedTxs[this.props.account][this.props.selectedToken][txKey] = tx;
-              }
-            }
-
-            if (!redeemTxReceipt.logs){
-              return;
-            }
-
-            const walletAddress = this.props.account.replace('x','').toLowerCase();
-            const redeemTxInternalTransfers = redeemTxReceipt.logs.filter((tx) => { return tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${walletAddress}`; });
-
-            if (!redeemTxInternalTransfers.length){
-              return;
-            }
-
-            const redeemInternalTransfer = redeemTxInternalTransfers.pop();
-
-            try {
-              // Decode lons
-              const decodedLogs = this.props.web3.eth.abi.decodeLog([
-                {
-                  "internalType": "uint256",
-                  "name": "_tokenAmount",
-                  "type": "uint256"
-                }
-              ],redeemInternalTransfer.data,redeemInternalTransfer.topics);
-
-              if (decodedLogs){
-                const redeemedValue = decodedLogs._tokenAmount;
-                const redeemTokenDecimals = await this.getTokenDecimals();
-                const redeemedValueFixed = this.functionsUtil.fixTokenDecimals(redeemedValue,redeemTokenDecimals);
-
-                realTx.status = 'Redeemed';
-                realTx.value = redeemedValueFixed.toString();
-
-              } else {
-                return;
-              }
-            } catch (err) {
-              return;
+            if (!realTx.tokenPrice){
+              const redeemedValue = this.functionsUtil.BNify(tx.value).times(tokenPrice);
+              const redeemTokenDecimals = await this.getTokenDecimals();
+              const redeemedValueFixed = this.functionsUtil.fixTokenDecimals(redeemedValue,redeemTokenDecimals);
+              realTx.tokenPrice = tokenPrice;
+              realTx.status = 'Redeemed';
+              realTx.value = redeemedValueFixed.toString();
             }
 
             // TODO: save tx to localstorage
@@ -1571,18 +1409,27 @@ class SmartContractControls extends React.Component {
         realTx.tokenSymbol = this.props.selectedToken;
 
         // this.functionsUtil.customLog('realTx from localStorage:',realTx);
+        const tokensTransfered = tokenPrice.times(this.functionsUtil.BNify(realTx.value));
 
         if (tx.method==='mintIdleToken'){
           amountLent = amountLent.plus(this.functionsUtil.BNify(realTx.value));
+          avgBuyPrice = avgBuyPrice.plus(tokensTransfered);
           // console.log('Deposited (localStorage) '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
+          // console.log(`Deposited (localStorage) ${realTx.value} @${tokenPrice}, AmountLent: ${amountLent}, avgBuyPrice: ${avgBuyPrice}`);
         } else if (tx.method==='redeemIdleToken'){
           amountLent = amountLent.minus(this.functionsUtil.BNify(realTx.value));
+          avgBuyPrice = avgBuyPrice.minus(tokenPrice.times(this.functionsUtil.BNify(realTx.value)));
+
           if (amountLent.lt(0)){
             amountLent = this.functionsUtil.BNify(0);
+            avgBuyPrice = this.functionsUtil.BNify(0);
           }
           // console.log('Redeemed (localStorage) '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
+          // console.log(`Redeemed (localStorage) ${realTx.value} @${tokenPrice}, AmountLent: ${amountLent}, avgBuyPrice: ${avgBuyPrice}`);
         } else if (tx.method==='bridgeIdleV1ToIdleV2'){
           amountLent = amountLent.plus(this.functionsUtil.BNify(realTx.value));
+          avgBuyPrice = avgBuyPrice.plus(tokensTransfered);
+          // console.log(`Migrated (localStorage) ${realTx.value} @${tokenPrice}, AmountLent: ${amountLent}, avgBuyPrice: ${avgBuyPrice}`);
           // console.log('Migrated (localStorage) '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
         }
 
@@ -1601,21 +1448,29 @@ class SmartContractControls extends React.Component {
       }
     }
 
-    let earning = this.state.earning;
-    if (this.state.tokenToRedeem){
-      earning = this.state.tokenToRedeem.minus(amountLent);
+    // let earning = 0;
+    // let earningPerc = 0;
+
+    if (amountLent.lte(0)){
+      amountLent = this.functionsUtil.BNify(0);
+      avgBuyPrice = this.functionsUtil.BNify(0);
+    } else {
+      avgBuyPrice = avgBuyPrice.div(amountLent);
+      // earningPerc = this.state.tokenPrice.div(avgBuyPrice).minus(1);
+      // earning = amountLent.times(earningPerc);
+      // earningPerc = earningPerc.times(100);
     }
 
-    if (amountLent.lt(0)){
-      amountLent = this.functionsUtil.BNify(0);
-    }
+    // console.log(`avgBuyPrice: ${avgBuyPrice}, earning: ${earning}, earningPerc: ${earningPerc}`);
 
     const isFirstDeposit = depositedTxs === 1;
 
     return this.setState({
-      earning,
+      // earning,
       prevTxs,
       amountLent,
+      // earningPerc,
+      avgBuyPrice,
       isFirstDeposit,
       lastBlockNumber,
       prevTxsError: false,
@@ -1723,7 +1578,9 @@ class SmartContractControls extends React.Component {
       selectedTab:'1',
       tokenPrice:null,
       amountLent:null,
+      avgBuyPrice:null,
       allocations:null,
+      earningPerc:null,
       executedTxs:null,
       activeModal:null,
       fundsError:false,
@@ -2073,9 +1930,10 @@ class SmartContractControls extends React.Component {
     const contractsInitialized = this.props.contractsInitialized && prevProps.contractsInitialized !== this.props.contractsInitialized;
     const isCorrectNetwork = !prevProps.network.isCorrectNetwork && this.props.network.isCorrectNetwork;
     const selectedTokenChanged = prevProps.selectedToken !== this.props.selectedToken;
+    const accountChanged = prevProps.account !== this.props.account;
 
     // Mount the component and initialize the state
-    if (contractsInitialized || selectedTokenChanged || isCorrectNetwork){
+    if (contractsInitialized || selectedTokenChanged || isCorrectNetwork || accountChanged){
       this.componentDidMount(true);
       return false;
     }
@@ -2087,7 +1945,6 @@ class SmartContractControls extends React.Component {
 
     const getTxsList = this.state.prevTxs === null || !Object.values(this.state.prevTxs).length;
     const transactionsChanged = prevProps.transactions !== this.props.transactions;
-    const accountChanged = prevProps.account !== this.props.account;
     const tokenBalanceChanged = this.props.accountBalanceToken !== this.state.tokenBalance;
 
     // Show welcome modal
@@ -2150,6 +2007,9 @@ class SmartContractControls extends React.Component {
       this.setState(newState);
 
       this.functionsUtil.customLog('Call async functions...');
+
+      // Get TokenPrice
+      await this.getPriceInToken();
 
       await Promise.all([
         this.checkMigration(),
@@ -2288,6 +2148,11 @@ class SmartContractControls extends React.Component {
       }
 
       const parsedValue = parseFloat(tx.value);
+
+      if (!parsedValue){
+        return false;
+      }
+
       const value = parsedValue ? (this.props.isMobile ? parsedValue.toFixed(4) : parsedValue.toFixed(decimals)) : '-';
       const momentDate = moment(date);
       const formattedDate = momentDate.fromNow();
@@ -2396,11 +2261,11 @@ class SmartContractControls extends React.Component {
 
   render() {
     const avgApr = !isNaN(parseFloat(this.state.avgApr)) ? parseFloat(this.state.avgApr).toFixed(2) : null;
-    const hasBalance = !isNaN(this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)) && this.functionsUtil.trimEth(this.state.tokenToRedeemParsed) > 0;
+    const hasBalance = !isNaN(parseFloat(this.state.tokenToRedeemParsed)) && parseFloat(this.state.tokenToRedeemParsed) > 0;
     // const navPool = this.functionsUtil.getFormattedBalance(this.state.navPool,this.props.selectedToken);
 
     const depositedFunds = this.functionsUtil.getFormattedBalance(this.state.amountLent,this.props.selectedToken,6,9);
-    const earningPerc = !isNaN(this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)) && this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)>0 && this.state.amountLent>0 ? this.functionsUtil.getFormattedBalance(this.functionsUtil.BNify(this.state.tokenToRedeemParsed).div(this.functionsUtil.BNify(this.state.amountLent)).minus(1).times(100),'%',4) : '0%';
+    const earningPerc = !isNaN(this.state.earningPerc) ? this.functionsUtil.getFormattedBalance(this.state.earningPerc,'%',4) : this.functionsUtil.getFormattedBalance(0,'%',0);
     const currentApr = avgApr !== null ? this.functionsUtil.getFormattedBalance(avgApr,'%',2) : '-';
 
     let earningPerDay = this.functionsUtil.getFormattedBalance((this.state.earningPerYear/daysInYear),this.props.selectedToken,4);
@@ -2409,25 +2274,25 @@ class SmartContractControls extends React.Component {
     const earningPerYear = this.functionsUtil.getFormattedBalance((this.state.earningPerYear),this.props.selectedToken,4);
 
     const currentNavPool = !isNaN(this.functionsUtil.trimEth(this.state.navPool)) ? parseFloat(this.functionsUtil.trimEth(this.state.navPool,8)) : null;
-    let navPoolEarningPerYear = currentNavPool && this.state.avgApr !== null ? parseFloat(this.functionsUtil.trimEth(this.functionsUtil.BNify(this.state.navPool).times(this.functionsUtil.BNify(this.state.avgApr.div(100))),8)) : null;
+    let navPoolEarningPerYear = currentNavPool && this.state.avgApr !== null ? parseFloat(this.functionsUtil.BNify(this.state.navPool).times(this.functionsUtil.BNify(this.state.avgApr.div(100)))) : null;
     const navPoolEarningPerDay = navPoolEarningPerYear ? (navPoolEarningPerYear/daysInYear) : null;
     const navPoolEarningPerWeek = navPoolEarningPerDay ? (navPoolEarningPerDay*7) : null;
     const navPoolEarningPerMonth = navPoolEarningPerWeek ? (navPoolEarningPerWeek*4.35) : null;
     navPoolEarningPerYear = navPoolEarningPerYear ? navPoolEarningPerYear : null;
 
-    const currentReedemableFunds = !isNaN(this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)) && !isNaN(this.functionsUtil.trimEth(this.state.earningPerYear)) ? parseFloat(this.functionsUtil.trimEth(this.state.tokenToRedeemParsed,8)) : 0;
-    const reedemableFundsAtEndOfYear = !isNaN(this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)) && !isNaN(this.functionsUtil.trimEth(this.state.earningPerYear)) ? parseFloat(this.functionsUtil.trimEth(this.functionsUtil.BNify(this.state.tokenToRedeemParsed).plus(this.functionsUtil.BNify(this.state.earningPerYear)),8)) : 0;
-    const currentEarning = !isNaN(this.functionsUtil.trimEth(this.state.earning)) ? parseFloat(this.functionsUtil.trimEth(this.state.earning,8)) : 0;
-    const earningAtEndOfYear = !isNaN(this.functionsUtil.trimEth(this.state.earning)) ? parseFloat(this.functionsUtil.trimEth(this.functionsUtil.BNify(this.state.earning).plus(this.functionsUtil.BNify(this.state.earningPerYear)),8)) : 0;
+    const currentReedemableFunds = !isNaN(parseFloat(this.state.tokenToRedeemParsed)) && !isNaN(this.functionsUtil.trimEth(this.state.earningPerYear)) ? parseFloat(parseFloat(this.state.tokenToRedeemParsed)) : 0;
+    const reedemableFundsAtEndOfYear = !isNaN(parseFloat(this.state.tokenToRedeemParsed)) && !isNaN(this.functionsUtil.trimEth(this.state.earningPerYear)) ? parseFloat(this.functionsUtil.BNify(this.state.tokenToRedeemParsed).plus(this.functionsUtil.BNify(this.state.earningPerYear))) : 0;
+    const currentEarning = !isNaN(this.state.earning) ? parseFloat(this.state.earning) : 0;
+    const earningAtEndOfYear = !isNaN(this.functionsUtil.trimEth(this.state.earning)) ? parseFloat(this.functionsUtil.BNify(this.state.earning).plus(this.functionsUtil.BNify(this.state.earningPerYear))) : 0;
 
     const idleTokenPrice = parseFloat(this.state.idleTokenPrice);
     const idleTokenPriceEndOfYear = idleTokenPrice && avgApr !== null ? parseFloat(this.functionsUtil.BNify(idleTokenPrice).plus(this.functionsUtil.BNify(idleTokenPrice).times(this.functionsUtil.BNify(this.state.avgApr.div(100))))) : idleTokenPrice;
 
-    const fundsAreReady = this.state.fundsError || (!this.state.updateInProgress && !isNaN(this.functionsUtil.trimEth(this.state.tokenToRedeemParsed)) && !isNaN(this.functionsUtil.trimEth(this.state.earning)) && !isNaN(this.functionsUtil.trimEth(this.state.amountLent)));
+    const fundsAreReady = this.state.fundsError || (!this.state.updateInProgress && !isNaN(parseFloat(this.state.tokenToRedeemParsed)) && !isNaN(this.functionsUtil.trimEth(this.state.earning)) && !isNaN(this.functionsUtil.trimEth(this.state.amountLent)));
     const transactionsAreReady = this.state.prevTxs !== null;
 
     // if (transactionsAreReady && !fundsAreReady){
-    //   console.log(this.state.fundsError,this.state.updateInProgress,this.functionsUtil.trimEth(this.state.tokenToRedeemParsed),this.functionsUtil.trimEth(this.state.earning),this.functionsUtil.trimEth(this.state.amountLent));
+    //   console.log(this.state.fundsError,this.state.updateInProgress,parseFloat(this.state.tokenToRedeemParsed),this.functionsUtil.trimEth(this.state.earning),this.functionsUtil.trimEth(this.state.amountLent));
     // }
 
     const tokenNotApproved = this.props.account && !this.state.isTokenApproved && !this.state.isApprovingToken && !this.state.updateInProgress;
