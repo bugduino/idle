@@ -351,17 +351,36 @@ class SmartContractControls extends React.Component {
     return tokenDecimals;
   }
 
+  getIdleTokenBalance = async () => {
+    if (this.props.account){
+      const idleTokenBalance = await this.functionsUtil.getTokenBalance(this.props.tokenConfig.idle.token,this.props.account);
+      if (idleTokenBalance){
+        const newState = {
+          idleTokenBalance: idleTokenBalance.toString()
+        };
+
+        // Set amountLent=0 if no idleToken balance
+        if (idleTokenBalance.lte(0)){
+          newState.amountLent = 0;
+        }
+        this.setState(newState);
+        return idleTokenBalance;
+      } else {
+        this.functionsUtil.customLogError('Error on getting idleToken balance');
+      }
+    }
+    return null;
+  }
+
   getTokenBalance = async () => {
     if (this.props.account){
-      const tokenBalance = await this.functionsUtil.genericContractCall(this.props.selectedToken,'balanceOf',[this.props.account]);
+      const tokenBalance = await this.functionsUtil.getTokenBalance(this.props.selectedToken,this.props.account);
       if (tokenBalance){
-        const tokenDecimals = await this.getTokenDecimals();
-        const tokenBalanceFixed = this.functionsUtil.fixTokenDecimals(tokenBalance,tokenDecimals);
-        this.setState({
-          tokenBalanceBNify: tokenBalance,
-          tokenBalance: tokenBalanceFixed.toString()
-        });
-        return tokenBalanceFixed;
+        const newState = {
+          tokenBalance: tokenBalance.toString()
+        };
+        this.setState(newState);
+        return tokenBalance;
       } else {
         this.functionsUtil.customLogError('Error on getting balance');
       }
@@ -407,7 +426,7 @@ class SmartContractControls extends React.Component {
     ]);
 
     const price = this.state.tokenPrice ? this.state.tokenPrice : await this.getPriceInToken(contractName);
-    const balance = await this.functionsUtil.getTokenBalance(contractName,this.props.account);
+    const balance = this.state.idleTokenBalance ? this.functionsUtil.BNify(this.state.idleTokenBalance) : await this.functionsUtil.getTokenBalance(contractName,this.props.account);
 
     this.functionsUtil.customLog('getBalanceOf 1',contractName,'price',price.toString(),'balance',(balance ? balance.toString() : balance));
 
@@ -1015,35 +1034,45 @@ class SmartContractControls extends React.Component {
   getPrevTxs = async (count) => {
     count = count ? count : 0;
 
-    let results = [];
-
     const requiredNetwork = globalConfigs.network.requiredNetwork;
     const etherscanInfo = globalConfigs.network.providers.etherscan;
     let lastBlockNumber = this.state.lastBlockNumber;
 
+    let results = [];
+    let etherscanEndpoint = null;
+    let cachedTxs = null;
+
     // Check if etherscan is enabled for the required network
     if (etherscanInfo.enabled && etherscanInfo.endpoints[requiredNetwork]){
       const etherscanApiUrl = etherscanInfo.endpoints[requiredNetwork];
-      const txs = await axios.get(`${etherscanApiUrl}?apikey=${env.REACT_APP_ETHERSCAN_KEY}&module=account&action=tokentx&address=${this.props.account}&startblock=${lastBlockNumber}&endblock=999999999&sort=asc`).catch(err => {
-        this.functionsUtil.customLog('Error getting prev txs');
-        if (componentUnmounted){
-          return false;
-        }
-        if (!count){
-          // console.log('Retrieving prevTxs',count);
-          setTimeout(() => {
-            this.getPrevTxs(count+1);
-          },1000);
-          return false;
-        }
-      });
+      etherscanEndpoint = `${etherscanApiUrl}?apikey=${env.REACT_APP_ETHERSCAN_KEY}&token=${this.props.selectedToken}&module=account&action=tokentx&address=${this.props.account}&startblock=${lastBlockNumber}&endblock=999999999&sort=asc`;
+
+      cachedTxs = this.functionsUtil.getCachedRequest(etherscanEndpoint);
+      let txs = cachedTxs;
+
+      if (!txs){
+        // Make request
+        txs = await axios.get(etherscanEndpoint).catch(err => {
+          this.functionsUtil.customLog('Error getting prev txs');
+          if (componentUnmounted){
+            return false;
+          }
+          if (!count){
+            // console.log('Retrieving prevTxs',count);
+            setTimeout(() => {
+              this.getPrevTxs(count+1);
+            },1000);
+            return false;
+          }
+        });
+      }
 
       if (!txs || !txs.data || !txs.data.result){
         return this.setState({
+          earning:0,
           prevTxs:{},
-          prevTxsError:true,
           amountLent:0,
-          earning:0
+          prevTxsError:true,
         });
       }
 
@@ -1056,30 +1085,44 @@ class SmartContractControls extends React.Component {
     const migrationContractOldAddrs = this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract && this.props.tokenConfig.migration.migrationContract.oldAddresses ? this.props.tokenConfig.migration.migrationContract.oldAddresses : [];
     const oldContractAddr = this.props.tokenConfig.migration && this.props.tokenConfig.migration.oldContract ? this.props.tokenConfig.migration.oldContract.address.replace('x','').toLowerCase() : null;
 
-    let etherscanTxs = {};
-    results.filter(
-        tx => {
-          const internalTxs = results.filter(r => r.hash === tx.hash);
-          const isSendTransferTx = internalTxs.length === 1 && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-          const isReceiveTransferTx = internalTxs.length === 1 && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-          const isMigrationTx = migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).indexOf(tx.from.toLowerCase()) !== -1 ) && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-          const isRightToken = internalTxs.length>1 && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase()).length;
-          const isDepositTx = isRightToken && !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-          const isRedeemTx = isRightToken && !isMigrationTx && tx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()).length && tx.to.toLowerCase() === this.props.account.toLowerCase();
+    let etherscanTxs = null;
 
-          return isSendTransferTx || isReceiveTransferTx || isMigrationTx || isDepositTx || isRedeemTx;
+    if (cachedTxs){
+      etherscanTxs = cachedTxs.data.result;
+    } else {
+      etherscanTxs = {};
+      results.filter(
+          tx => {
+            const internalTxs = results.filter(r => r.hash === tx.hash);
+            const isSendTransferTx = internalTxs.length === 1 && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
+            const isReceiveTransferTx = internalTxs.length === 1 && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
+            const isMigrationTx = migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).indexOf(tx.from.toLowerCase()) !== -1 ) && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
+            const isRightToken = internalTxs.length>1 && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase()).length;
+            const isDepositTx = isRightToken && !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
+            const isRedeemTx = isRightToken && !isMigrationTx && tx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()).length && tx.to.toLowerCase() === this.props.account.toLowerCase();
+
+            return isSendTransferTx || isReceiveTransferTx || isMigrationTx || isDepositTx || isRedeemTx;
+        }
+      ).forEach(tx => {
+        if (etherscanTxs[tx.hash]){
+          etherscanTxs[tx.hash].value = etherscanTxs[tx.hash].value.plus(this.functionsUtil.fixTokenDecimals(tx.value,tokenDecimals));
+        } else {
+          etherscanTxs[tx.hash] = ({...tx, value: this.functionsUtil.fixTokenDecimals(tx.value,tokenDecimals)});
+        }
+      });
+      etherscanTxs = Object.values(etherscanTxs);
+
+      // Store filtered txs
+      if (etherscanEndpoint){
+        const cachedRequestData = {
+          data:{
+            result:etherscanTxs
+          }
+        };
+        this.functionsUtil.saveCachedRequest(etherscanEndpoint,false,cachedRequestData);
       }
-    ).forEach(tx => {
-      if (etherscanTxs[tx.hash]){
-        etherscanTxs[tx.hash].value = etherscanTxs[tx.hash].value.plus(this.functionsUtil.fixTokenDecimals(tx.value,tokenDecimals));
-      } else {
-        etherscanTxs[tx.hash] = ({...tx, value: this.functionsUtil.fixTokenDecimals(tx.value,tokenDecimals)});
-      }
-    });
+    }
 
-    etherscanTxs = Object.values(etherscanTxs);
-
-    // console.log('etherscanTxs',etherscanTxs);
 
     let amountLent = this.functionsUtil.BNify(0);
 
@@ -2018,6 +2061,7 @@ class SmartContractControls extends React.Component {
           this.getAllocations()
         }),
         this.getTokenBalance(),
+        this.getIdleTokenBalance(),
         (getTxsList ? this.getPrevTxs() : null)
       ]);
 

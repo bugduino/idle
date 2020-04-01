@@ -62,6 +62,37 @@ class FunctionsUtil {
      tmp.innerHTML = html;
      return tmp.textContent || tmp.innerText || "";
   }
+  saveCachedRequest = (endpoint,alias=false,data) => {
+    const key = alias ? alias : endpoint;
+    let cachedRequests = {};
+    // Check if already exists
+    if (localStorage && localStorage.getItem('cachedRequests')){
+      cachedRequests = JSON.parse(localStorage.getItem('cachedRequests'));
+    }
+
+    if (localStorage) {
+      const timestamp = parseInt(new Date().getTime()/1000);
+      cachedRequests[key] = {
+        data,
+        timestamp
+      };
+      return this.setLocalStorage('cachedRequests',JSON.stringify(cachedRequests));
+    }
+    return false;
+  }
+  getCachedRequest = (endpoint,alias=false) => {
+    const key = alias ? alias : endpoint;
+    let cachedRequests = {};
+    // Check if already exists
+    if (localStorage && localStorage.getItem('cachedRequests')){
+      cachedRequests = JSON.parse(localStorage.getItem('cachedRequests'));
+      // Check if it's not expired
+      if (cachedRequests && cachedRequests[key]){
+        return cachedRequests[key].data;
+      }
+    }
+    return null;
+  }
   makeCachedRequest = async (endpoint,TTL=0,return_data=false,alias=false) => {
 
     const key = alias ? alias : endpoint;
@@ -225,10 +256,12 @@ class FunctionsUtil {
     if (window.localStorage){
       try {
         window.localStorage.setItem(key,value);
+        return true;
       } catch (error) {
         window.localStorage.removeItem(key);
       }
     }
+    return false;
   }
   getEtherscanTxs = async (address,TTL) => {
     const etherscanInfo = globalConfigs.network.providers.etherscan;
