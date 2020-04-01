@@ -106,6 +106,13 @@ class Landing extends Component {
     if (!this.props.isMobile && !this.state.carouselIntervalID){
       this.startCarousel();
     }
+
+    if (this.props.contractsInitialized){
+      await Promise.all([
+        this.getAprs(),
+        this.getAllocations()
+      ]);
+    }
   }
 
   async componentDidUpdate(prevProps, prevState) {
