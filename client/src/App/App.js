@@ -106,6 +106,14 @@ class App extends Component {
 
     if (localStorage){
       localStorage.removeItem('context');
+
+      const version = localStorage.getItem('version');
+      if (version !== globalConfigs.version){
+        localStorage.removeItem('transactions');
+        localStorage.removeItem('cachedRequests');
+        localStorage.setItem('version',globalConfigs.version);
+      }
+
     }
 
     const requiredNetwork = globalConfigs.network.requiredNetwork;
