@@ -1045,6 +1045,8 @@ class SmartContractControls extends React.Component {
     // Check if etherscan is enabled for the required network
     if (etherscanInfo.enabled && etherscanInfo.endpoints[requiredNetwork]){
       const etherscanApiUrl = etherscanInfo.endpoints[requiredNetwork];
+
+      // Add token variable to endpoint for separate cached requests between tokens
       etherscanEndpoint = `${etherscanApiUrl}?apikey=${env.REACT_APP_ETHERSCAN_KEY}&token=${this.props.selectedToken}&module=account&action=tokentx&address=${this.props.account}&startblock=${lastBlockNumber}&endblock=999999999&sort=asc`;
 
       cachedTxs = this.functionsUtil.getCachedRequest(etherscanEndpoint);
