@@ -35,6 +35,8 @@ const RimbleTransactionContext = React.createContext({
   accountValidationPending: {},
   rejectValidation: () => {},
   validateAccount: () => {},
+  accountInizialized: false,
+  contractsInitialized: false,
   enableUnderlyingWithdraw: false,
   connectAndValidateAccount: () => {},
   network: {
@@ -303,6 +305,11 @@ class RimbleTransaction extends React.Component {
 
         if (context.account) {
           await this.initAccount(context.account);
+        } else {
+          this.setState({
+            account: null,
+            accountInizialized: true
+          });
         }
         
         if (typeof this.props.callbackAfterLogin === 'function'){
@@ -371,7 +378,10 @@ class RimbleTransaction extends React.Component {
     if (this.props.customAddress){
 
       // Set custom account
-      this.setState({ account: this.props.customAddress });
+      this.setState({
+        accountInizialized: true,
+        account: this.props.customAddress
+      });
 
       // After account is complete, get the balance
       this.getAccountBalance();
@@ -388,13 +398,15 @@ class RimbleTransaction extends React.Component {
         }
       }
 
+      if (!account || this.state.account === account){
+        this.setState({
+          accountInizialized: true
+        });
+        return false;
+      }
+
       // Request account access if needed
       if (account){
-
-        // Exit if account is not changed
-        if (this.state.account === account){
-          return false;
-        }
 
         const walletProvider = localStorage && localStorage.getItem('walletProvider') ? localStorage.getItem('walletProvider') : 'Infura';
 
@@ -631,7 +643,11 @@ class RimbleTransaction extends React.Component {
         });
 
         // Set custom account
-        this.setState({ web3SocketProvider, account });
+        this.setState({
+          account,
+          web3SocketProvider,
+          accountInizialized: true
+        });
 
         // After account is complete, get the balance
         this.getAccountBalance();
@@ -641,6 +657,10 @@ class RimbleTransaction extends React.Component {
         // called at least once
       }
     } catch (error) {
+
+      this.setState({
+        accountInizialized: true
+      });
 
       // console.error(error);
 
@@ -1354,6 +1374,7 @@ class RimbleTransaction extends React.Component {
     accountBalanceDAI: null,
     initWeb3: this.initWeb3,
     accountBalanceLow: null,
+    accountInizialized:false,
     subscribedTransactions:{},
     contractsInitialized:false,
     initAccount: this.initAccount,

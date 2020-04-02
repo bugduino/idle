@@ -314,29 +314,30 @@ class App extends Component {
                         web3,
                         modals,
                         network,
-                        initWeb3,
-                        transaction,
-                        needsPreflight,
-                        simpleID,
-                        initSimpleID,
                         account,
+                        initWeb3,
+                        simpleID,
                         contracts,
-                        getAccountBalance,
-                        getTokenDecimals,
-                        accountBalance,
-                        accountBalanceToken,
-                        accountBalanceLow,
+                        transaction,
                         initAccount,
                         initContract,
+                        initSimpleID,
                         tokenDecimals,
+                        accountBalance,
+                        needsPreflight,
+                        validateAccount,
+                        rejectValidation,
+                        accountValidated,
+                        getTokenDecimals,
+                        getAccountBalance,
+                        accountBalanceLow,
+                        accountInizialized,
+                        accountBalanceToken,
+                        userRejectedConnect,
                         rejectAccountConnect,
                         contractsInitialized,
-                        userRejectedConnect,
-                        accountValidated,
-                        accountValidationPending,
-                        rejectValidation,
                         userRejectedValidation,
-                        validateAccount,
+                        accountValidationPending,
                         connectAndValidateAccount
                       }) => {
                         return (
@@ -367,6 +368,7 @@ class App extends Component {
                                                     isMobile={isMobile}
                                                     contracts={contracts}
                                                     tokenConfig={this.state.tokenConfig}
+                                                    accountInizialized={accountInizialized}
                                                     selectedToken={this.state.selectedToken}
                                                     contractsInitialized={contractsInitialized}
                                                     availableTokens={this.state.availableTokens}
