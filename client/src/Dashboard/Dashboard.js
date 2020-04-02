@@ -4,11 +4,11 @@ import DashboardMenu from './DashboardMenu';
 // import globalConfigs from '../configs/globalConfigs';
 import { Link as RouterLink } from "react-router-dom";
 import FunctionsUtil from '../utilities/FunctionsUtil';
-import { Flex, Card, Image } from 'rimble-ui';
+import { Flex, Card, Image, Loader, Text } from 'rimble-ui';
 
 // Import page components
 import Stats from '../Stats/Stats';
-// import RiskAdjustedStrategy from {};
+import RiskAdjustedStrategy from '../RiskAdjustedStrategy/RiskAdjustedStrategy';
 // import BestYieldStrategy from {};
 
 class Dashboard extends Component {
@@ -16,6 +16,7 @@ class Dashboard extends Component {
     menu:[],
     currentRoute:null,
     pageComponent:null,
+    selectedToken:null,
     baseRoute:'/dashboard',
   };
 
@@ -45,7 +46,7 @@ class Dashboard extends Component {
         bgColor:'#2196F3',
         color:'#fff',
         selected:false,
-        component:null,
+        component:RiskAdjustedStrategy,
         submenu:[
           {
             icon:null,
@@ -108,15 +109,23 @@ class Dashboard extends Component {
   async loadParams() {
     const { match: { params } } = this.props;
     let currentRoute = this.state.baseRoute;
+
+    let selectedToken = null;
+
     if (params.strategy){
       currentRoute += '/'+params.strategy;
       if (params.asset){
-        currentRoute += '/'+params.asset;
+        // Check if the asset is valid
+        if (Object.keys(this.props.availableTokens).includes(params.asset.toUpperCase())){
+          selectedToken = params.asset.toUpperCase();
+          currentRoute += '/'+selectedToken;
+        }
       }
     }
 
     const menu = this.state.menu;
     let pageComponent = null;
+
     menu.forEach(m => {
       m.selected = false;
       if (currentRoute.toLowerCase() === m.route.toLowerCase()){
@@ -129,6 +138,12 @@ class Dashboard extends Component {
           if (submRoute.toLowerCase() === currentRoute.toLowerCase()){
             m.selected = true;
             subm.selected = true;
+            // Set component, if null use parent
+            if (subm.component){
+              pageComponent = subm.component;
+            } else {
+              pageComponent = m.component;
+            }
           }
         })
       }
@@ -138,15 +153,13 @@ class Dashboard extends Component {
       menu,
       params,
       currentRoute,
+      selectedToken,
       pageComponent
     });
   }
 
   async componentWillMount() {
-    if (!this.props.account){
-      window.location = '/';
-      return;
-    }
+    this.checkAccountConnected();
 
     this.loadUtils();
     await this.loadMenu();
@@ -155,10 +168,7 @@ class Dashboard extends Component {
 
   async componentDidMount() {
 
-    if (!this.props.account){
-      window.location = '/';
-      return;
-    }
+    this.checkAccountConnected();
 
     if (!this.props.web3){
       this.props.initWeb3();
@@ -170,7 +180,17 @@ class Dashboard extends Component {
     this.loadParams();
   }
 
+  checkAccountConnected(){
+    if (this.props.accountInizialized && !this.props.account){
+      window.location = '/';
+      return false;
+    }
+    return true;
+  }
+
   async componentDidUpdate(prevProps,prevState) {
+    this.checkAccountConnected();
+
     const prevParams = prevProps.match.params;
     const params = this.props.match.params;
     if (JSON.stringify(prevParams) !== JSON.stringify(params)){
@@ -179,9 +199,10 @@ class Dashboard extends Component {
   }
 
   render() {
-    if (!this.props.account){
+    if (this.props.accountInizialized && !this.props.account){
       return null;
     }
+
     const PageComponent = this.state.pageComponent ? this.state.pageComponent : null;
     return (
       <Flex flexDirection={'row'} width={'100%'} height={'100vh'} position={'fixed'}>
@@ -201,21 +222,31 @@ class Dashboard extends Component {
         </Flex>
         <Flex width={5/6} style={{overflow:'scroll'}}>
           {
-            PageComponent &&
-              <PageComponent
-                match={{
-                  params:{}
-                }}
-                web3={this.props.web3}
-                initWeb3={this.props.initWeb3}
-                isMobile={this.props.isMobile}
-                contracts={this.props.contracts}
-                tokenConfig={this.props.tokenConfig}
-                selectedToken={this.props.selectedToken}
-                availableTokens={this.props.availableTokens}
-                setSelectedToken={this.props.setSelectedToken}
-                contractsInitialized={this.props.contractsInitialized}
-                />
+            !this.props.accountInizialized ? (
+              <Flex
+                justifyContent={'center'}
+                alignItems={'center'}
+                textAlign={'center'}
+                width={1}
+                minHeight={'100vh'}
+              >
+                <Loader size="40px" /> <Text ml={2}>Loading account...</Text>
+              </Flex>
+            ) : PageComponent &&
+                  <PageComponent
+                    match={{
+                      params:{}
+                    }}
+                    web3={this.props.web3}
+                    account={this.props.account}
+                    initWeb3={this.props.initWeb3}
+                    isMobile={this.props.isMobile}
+                    contracts={this.props.contracts}
+                    tokenConfig={this.props.tokenConfig}
+                    selectedToken={this.state.selectedToken}
+                    availableTokens={this.props.availableTokens}
+                    contractsInitialized={this.props.contractsInitialized}
+                    />
           }
         </Flex>
       </Flex>

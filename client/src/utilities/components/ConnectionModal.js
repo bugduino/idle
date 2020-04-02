@@ -1,24 +1,24 @@
 import React from "react";
 import {
-  Heading,
-  Text,
-  Icon,
-  Modal,
-  Flex,
   Box,
+  Text,
   Link,
+  Icon,
+  Flex,
+  Modal,
+  Loader,
   Button,
-  Loader
+  Heading
 } from "rimble-ui";
-import styles from './Header.module.scss';
 import ModalCard from './ModalCard.js';
+import styles from './Header.module.scss';
 import FunctionsUtil from '../FunctionsUtil.js';
 import ImageButton from '../../ImageButton/ImageButton.js';
 import TransactionFeeModal from "./TransactionFeeModal.js";
 import Web3ConnectionButtons from "../../Web3ConnectionButtons/Web3ConnectionButtons.js";
 
 import {
-  Link as RouterLink,
+  Link as RouterLink
 } from "react-router-dom";
 
 class ConnectionModal extends React.Component {

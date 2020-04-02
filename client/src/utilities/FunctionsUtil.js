@@ -57,6 +57,9 @@ class FunctionsUtil {
             .replace(/<p>/g,"")
             .replace(/<\/p>/g,"");
   }
+  strToMoment = date => {
+    return moment(date);
+  }
   stripHtml = (html) => {
      var tmp = document.createElement("DIV");
      tmp.innerHTML = html;
@@ -123,7 +126,7 @@ class FunctionsUtil {
     }
     return null;
   }
-  makeRequest = async (endpoint,error_callback=false) => {
+  makeRequest = async(endpoint,error_callback=false) => {
     const data = await axios
                   .get(endpoint)
                   .catch(err => {
