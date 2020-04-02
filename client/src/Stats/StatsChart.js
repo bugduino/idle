@@ -178,14 +178,14 @@ class StatsChart extends Component {
           axisBottom:{
             legend: '',
             format: (value) => {
-              if (axisBottomIndex++ % ( this.props.isMobile ? 3 : 2 ) === 0){
+              if (axisBottomIndex++ % 3 === 0){
                 return moment(value,'YYYY/MM/DD HH:mm').format('MMM DD')
               }
             },
             orient: 'bottom',
             legendOffset: 36,
             legendPosition: 'middle',
-            tickValues: 'every 2 days'
+            tickValues: 'every 3 days'
           },
           axisLeft: null,
           axisRight: {
@@ -288,7 +288,7 @@ class StatsChart extends Component {
           },
           axisBottom:{
             format: '%b %d',
-            tickValues: this.props.isMobile ? 'every 4 days' : 'every 2 days',
+            tickValues: this.props.isMobile ? 'every 4 days' : 'every 3 days',
             orient: 'bottom',
             legend: '',
             legendOffset: 36,
@@ -380,7 +380,7 @@ class StatsChart extends Component {
           },
           axisBottom:{
             format: '%b %d',
-            tickValues: this.props.isMobile ? 'every 4 days' : 'every 2 days',
+            tickValues: this.props.isMobile ? 'every 4 days' : 'every 3 days',
             orient: 'bottom',
             legend: '',
             legendOffset: 36,
@@ -512,14 +512,14 @@ class StatsChart extends Component {
           axisBottom:{
             legend: '',
             format: (value) => {
-              if (axisBottomIndex++ % ( this.props.isMobile ? 3 : 2 ) === 0){
+              if (axisBottomIndex++ % 3 === 0){
                 return moment(value,'YYYY/MM/DD HH:mm').format('MMM DD')
               }
             },
             orient: 'bottom',
             legendOffset: 36,
             legendPosition: 'middle',
-            tickValues: 'every 2 days'
+            tickValues: 'every 3 days'
           },
           tooltip:({ id, value, color }) => {
             const allocation = this.functionsUtil.formatMoney(value,0);
@@ -599,14 +599,14 @@ class StatsChart extends Component {
           axisBottom:{
             legend: '',
             format: (value) => {
-              if (axisBottomIndex++ % ( this.props.isMobile ? 3 : 2 ) === 0){
+              if (axisBottomIndex++ % 3 === 0){
                 return moment(value,'YYYY/MM/DD HH:mm').format('MMM DD')
               }
             },
             orient: 'bottom',
             legendOffset: 36,
             legendPosition: 'middle',
-            tickValues: 'every 2 days'
+            tickValues: 'every 3 days'
           },
           tooltip:({ id, value, color }) => {
             const allocation = parseInt(value)===100 ? this.functionsUtil.formatMoney(value,0) : this.functionsUtil.formatMoney(value,2);
@@ -688,7 +688,7 @@ class StatsChart extends Component {
           },
           axisBottom:{
             format: '%b %d',
-            tickValues: this.props.isMobile ? 'every 4 days' : 'every 2 days',
+            tickValues: this.props.isMobile ? 'every 4 days' : 'every 3 days',
             orient: 'bottom',
             legend: '',
             legendOffset: 36,
@@ -885,7 +885,7 @@ class StatsChart extends Component {
           },
           axisBottom:{
             format: '%b %d',
-            tickValues: this.props.isMobile ? 'every 4 days' : ( this.props.showAdvanced ? 'every 2 days' : 'every day'),
+            tickValues: this.props.isMobile ? 'every 4 days' : ( this.props.showAdvanced ? 'every 3 days' : 'every 2 days'),
             orient: 'bottom',
             legend: '',
             legendOffset: 36,

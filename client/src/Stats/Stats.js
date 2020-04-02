@@ -60,7 +60,9 @@ class Stats extends Component {
     newState.minStartTime = moment(globalConfigs.stats.tokens[this.state.selectedToken].startTimestamp,'YYYY-MM-DD');
     newState.endTimestampObj = moment(moment().format('YYYY-MM-DD 23:59'),'YYYY-MM-DD HH:mm');
     newState.endTimestamp = parseInt(newState.endTimestampObj._d.getTime()/1000);
-    newState.startTimestampObj = newState.endTimestampObj.clone().subtract(2,'week');
+
+    // Set start date
+    newState.startTimestampObj = newState.endTimestampObj.clone().subtract(1,'month');
     newState.startTimestamp = parseInt(newState.startTimestampObj._d.getTime()/1000);
 
     newState.minDate = newState.minStartTime._d;
