@@ -62,6 +62,36 @@ class FunctionsUtil {
      tmp.innerHTML = html;
      return tmp.textContent || tmp.innerText || "";
   }
+  filterEtherscanTxs = (results) => {
+    if (!results || !results.length){
+      return [];
+    }
+
+    const tokenDecimals = this.props.tokenConfig.decimals;
+    const migrationContractAddr = this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract ? this.props.tokenConfig.migration.migrationContract.address : null;
+    const migrationContractOldAddrs = this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract && this.props.tokenConfig.migration.migrationContract.oldAddresses ? this.props.tokenConfig.migration.migrationContract.oldAddresses : [];
+    const etherscanTxs = {};
+    results.filter(
+      tx => {
+        const internalTxs = results.filter(r => r.hash === tx.hash);
+        const isSendTransferTx = internalTxs.length === 1 && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
+        const isReceiveTransferTx = internalTxs.length === 1 && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
+        const isMigrationTx = migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).indexOf(tx.from.toLowerCase()) !== -1 ) && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
+        const isRightToken = internalTxs.length>1 && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase()).length;
+        const isDepositTx = isRightToken && !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
+        const isRedeemTx = isRightToken && !isMigrationTx && tx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()).length && tx.to.toLowerCase() === this.props.account.toLowerCase();
+        return isSendTransferTx || isReceiveTransferTx || isMigrationTx || isDepositTx || isRedeemTx;
+      }
+    ).forEach(tx => {
+      if (etherscanTxs[tx.hash]){
+        etherscanTxs[tx.hash].value = etherscanTxs[tx.hash].value.plus(this.fixTokenDecimals(tx.value,tokenDecimals));
+      } else {
+        etherscanTxs[tx.hash] = ({...tx, value: this.fixTokenDecimals(tx.value,tokenDecimals)});
+      }
+    });
+
+    return Object.values(etherscanTxs);
+  }
   saveCachedRequest = (endpoint,alias=false,data) => {
     const key = alias ? alias : endpoint;
     let cachedRequests = {};
@@ -93,8 +123,17 @@ class FunctionsUtil {
     }
     return null;
   }
+  makeRequest = async (endpoint,error_callback=false) => {
+    const data = await axios
+                  .get(endpoint)
+                  .catch(err => {
+                    if (typeof error_callback === 'function'){
+                      error_callback(err);
+                    }
+                  });
+    return data;
+  }
   makeCachedRequest = async (endpoint,TTL=0,return_data=false,alias=false) => {
-
     const key = alias ? alias : endpoint;
     const timestamp = parseInt(new Date().getTime()/1000);
     let cachedRequests = {};
@@ -394,7 +433,6 @@ class FunctionsUtil {
     let txReceipt = storedTx && storedTx.txReceipt ? storedTx.txReceipt : null;
 
     if (!txReceipt){
-      // console.log('getPrevTxs - migrationTx - getTransactionReceipt',tx.hash);
       txReceipt = await (new Promise( async (resolve, reject) => {
         this.props.web3.eth.getTransactionReceipt(tx.hash,(err,tx)=>{
           if (err){

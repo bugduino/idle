@@ -33,6 +33,313 @@ class SmartContractControls extends React.Component {
     }
   }
 
+  async componentWillMount() {
+    this.initState();
+    this.loadUtils();
+  }
+
+  // Clear all the timeouts
+  async componentWillUnmount(){
+    componentUnmounted = true;
+
+    let id = window.setTimeout(function() {}, 0);
+
+    while (id--) {
+        window.clearTimeout(id); // will do nothing if no timeout with id is present
+    }
+  }
+
+  initState = async () => {
+    // Init state
+    return this.setState({
+      iDAIRate:0,
+      cDAIRate:0,
+      avgApr:null,
+      prevTxs:null, // Transactions from Etherscan
+      earning:null,
+      balance:null,
+      lendAmount:'',
+      redeemTx:null,
+      lendingTx:null,
+      cDAIToRedeem:0,
+      approveTx:null,
+      redeemAmount:'',
+      selectedTab:'1',
+      tokenPrice:null,
+      amountLent:null,
+      avgBuyPrice:null,
+      allocations:null,
+      earningPerc:null,
+      executedTxs:null,
+      activeModal:null,
+      fundsError:false,
+      idleDAICap:30000,
+      isMigrating:false,
+      migrationTx:false,
+      needsUpdate:false,
+      genericError:null,
+      exchangeRates:null,
+      IdleDAISupply:null,
+      earningPerDay:null,
+      showFundsInfo:true,
+      prevTxsError:false,
+      tokenToRedeem:null,
+      fundsTimeoutID:null,
+      earningPerYear:null,
+      buyTokenMessage:null,
+      isFirstDeposit:false,
+      lastBlockNumber:null, // Last tx block number
+      totalAllocation:null,
+      migrationError:false,
+      idleTokenBalance:null,
+      isTokenApproved:false,
+      earningIntervalId:null,
+      contractIsPaused:false,
+      callMintCallback:false,
+      isApprovingToken:false,
+      componentMounted:false, // this trigger the general loading
+      updateAfterMount:false, // Launch componentDidUpdate after mount
+      redeemProcessing:false,
+      migrationEnabled:false,
+      updateInProgress:false,
+      protocolsBalances:null,
+      lendingProcessing:false,
+      disableLendButton:false,
+      isApprovingDAITest:true,
+      genericErrorRedeem:null,
+      oldContractBalance:null,
+      migrationApproveTx:null,
+      tokenToRedeemParsed:null,
+      firstBlockNumber:8119247,
+      underlyingTokensAmount:{},
+      disableRedeemButton:false,
+      partialRedeemEnabled:true, // Partial redeem enabled by default
+      showEmptyWalletOverlay:true,
+      oldContractTokenDecimals:null,
+      migrationContractApproved:false,
+      calculatingShouldRebalance:true,
+      oldContractBalanceFormatted:null,
+      isApprovingMigrationContract:false,
+      tokenBalance:this.props.accountBalanceToken
+    });
+  }
+
+  async componentDidMount(needsUpdateEnabled) {
+
+    if (needsUpdateEnabled === undefined){
+      needsUpdateEnabled = true;
+    }
+
+    this.loadUtils();
+
+    await this.initState();
+
+    componentUnmounted = false;
+
+    window.jQuery = jQuery;
+
+    // TO REMOVE
+    window.getPrevTxs = this.getPrevTxs;
+    window.setLastBlockNumber = (lastBlockNumber) => {
+      this.setState({
+        lastBlockNumber
+      });
+    }
+
+    this.addResources();
+
+    if (!this.props.web3 || !this.props.contractsInitialized){
+      this.functionsUtil.customLog('Web3 or Contracts not initialized');
+      return false;
+    }
+
+    if (this.props.network && !this.props.network.isCorrectNetwork){
+      return false;
+    }
+
+    await Promise.all([
+      this.getAprs().then(() => {
+        this.getAllocations().then( () => {
+          this.rebalanceCheck()
+        })
+      }),
+      this.checkMigration(),
+      this.checkContractPaused(),
+      this.getPriceInToken(),
+      this.checkTokenApproved()
+    ]);
+
+    const newState = {
+      componentMounted: true,
+      updateAfterMount: false,
+      needsUpdate: this.props.account && (needsUpdateEnabled || this.state.updateAfterMount)
+    };
+
+    this.functionsUtil.customLog('componentDidMount',newState);
+
+    this.setState(newState);
+  }
+
+  async componentDidUpdate(prevProps, prevState) {
+
+    if (this.props.network && !this.props.network.isCorrectNetwork){
+      return false;
+    }
+
+    // Update util functions props
+    this.loadUtils();
+
+    // Remount the component if token changed
+    const contractsInitialized = this.props.contractsInitialized && prevProps.contractsInitialized !== this.props.contractsInitialized;
+    const isCorrectNetwork = !prevProps.network.isCorrectNetwork && this.props.network.isCorrectNetwork;
+    const selectedTokenChanged = prevProps.selectedToken !== this.props.selectedToken;
+    const accountChanged = prevProps.account !== this.props.account;
+
+    // Mount the component and initialize the state
+    if (contractsInitialized || selectedTokenChanged || isCorrectNetwork || accountChanged){
+      this.componentDidMount(true);
+      return false;
+    }
+
+    // Exit if web3 or contracts are not initialized
+    if (!this.props.web3 || !this.props.contractsInitialized){
+      return false;
+    }
+
+    const getTxsList = this.state.prevTxs === null || !Object.values(this.state.prevTxs).length;
+    const tokenBalanceChanged = this.props.accountBalanceToken !== this.state.tokenBalance;
+
+    // Show welcome modal
+    if (this.props.account && accountChanged){
+      let welcomeIsOpen = false;
+
+      if (globalConfigs.modals.welcome.enabled && localStorage && accountChanged){
+
+        // Check the last login of the wallet
+        const currTime = new Date().getTime();
+        const walletAddress = this.props.account.toLowerCase();
+        let lastLogin = localStorage.getItem('lastLogin') ? JSON.parse(localStorage.getItem('lastLogin')) : {};
+
+        if (!lastLogin[walletAddress]){
+          lastLogin[walletAddress] = {
+            'signedUp':false,
+            'lastTime':currTime
+          };
+          welcomeIsOpen = true;
+        } else if (!lastLogin[walletAddress].signedUp) {
+          const lastTime = parseInt(lastLogin[walletAddress].lastTime);
+          const timeFromLastLogin = (currTime-lastTime)/1000;
+          welcomeIsOpen = timeFromLastLogin>=globalConfigs.modals.welcome.frequency; // 1 day since last login
+        }
+
+        if (welcomeIsOpen){
+          lastLogin[walletAddress].lastTime = currTime;
+          this.functionsUtil.setLocalStorage('lastLogin',JSON.stringify(lastLogin));
+        }
+      }
+
+      this.setState({
+        activeModal: welcomeIsOpen ? 'welcome' : this.state.activeModal
+      });
+    }
+
+    const checkUpdateNeeded = this.props.account && !this.state.updateInProgress && (accountChanged || this.state.needsUpdate || selectedTokenChanged);
+
+    if (checkUpdateNeeded) {
+
+      // If the component is not mounted yet hang on
+      if (!this.state.componentMounted){
+        return this.setState({
+          updateAfterMount: true
+        });
+      }
+
+      const newState = {
+        needsUpdate:false,
+        updateInProgress:true,
+      };
+
+      if (accountChanged || selectedTokenChanged){
+        newState.earning=null;
+        newState.amountLent=null;
+        newState.tokenBalance=null;
+        newState.tokenToRedeemParsed=null;
+      }
+      // Reset funds and force loader
+      this.setState(newState);
+
+      this.functionsUtil.customLog('Call async functions...');
+
+      // Get TokenPrice
+      await this.getPriceInToken();
+
+      await Promise.all([
+        this.checkMigration(),
+        this.checkTokenApproved(),
+        this.getAprs().then(() => {
+          this.getAllocations()
+        }),
+        this.getTokenBalance(),
+        this.getIdleTokenBalance(),
+        (getTxsList ? this.getPrevTxs() : null)
+      ]);
+
+      this.functionsUtil.customLog('Async functions completed...');
+
+      // Keep this call seprated from others cause it needs getPrevTxs results
+      await this.getBalanceOf(this.props.tokenConfig.idle.token);
+
+      // console.log(prevState.tokenToRedeem,this.state.tokenBalance.toString(),this.state.tokenToRedeem.toString(),this.functionsUtil.BNify(this.state.tokenBalance).eq(0));
+      if (prevState.tokenToRedeem === null && this.props.selectedTab === '1' && this.functionsUtil.BNify(this.state.tokenBalance).eq(0) && this.functionsUtil.BNify(this.state.tokenToRedeem).gt(0)){
+        this.selectTab({ preventDefault:()=>{} },'2');
+      }
+
+      this.setState({
+        updateInProgress: false
+      });
+    }
+
+    if (this.props.selectedTab !== '2' && this.state.fundsTimeoutID){
+      this.functionsUtil.customLog("Clear funds timeout "+this.state.fundsTimeoutID);
+      clearTimeout(this.state.fundsTimeoutID);
+      this.setState({fundsTimeoutID:null});
+    }
+
+    if (tokenBalanceChanged){
+      this.setState({
+        tokenBalance: this.props.accountBalanceToken
+      });
+    }
+
+    // TO CHECK!!
+    const transactionsChanged = prevProps.transactions !== this.props.transactions;
+    if (transactionsChanged){
+
+      // Store transactions into Local Storage
+      if (localStorage){
+
+        // Look for txs object in localStorage
+        let storedTxs = localStorage && JSON.parse(localStorage.getItem('transactions')) ? JSON.parse(localStorage.getItem('transactions')) : {};
+
+        // Initialize txs for account
+        if (!storedTxs[this.props.account]){
+          storedTxs[this.props.account] = {};
+        }
+
+        // Initialize txs for selected token
+        if (!storedTxs[this.props.account][this.props.selectedToken]){
+          storedTxs[this.props.account][this.props.selectedToken] = {};
+        }
+
+        // Merge together stored and new transactions
+        storedTxs[this.props.account][this.props.selectedToken] = Object.assign(storedTxs[this.props.account][this.props.selectedToken],this.props.transactions);
+        this.functionsUtil.setLocalStorage('transactions',JSON.stringify(storedTxs));
+      }
+
+      this.processTransactionUpdates(prevProps.transactions);
+    }
+  }
+
   addResources = () => {
 
     if (!document.getElementById('script_0x_overlay_click')){
@@ -361,7 +668,7 @@ class SmartContractControls extends React.Component {
 
         // Set amountLent=0 if no idleToken balance
         if (idleTokenBalance.lte(0)){
-          newState.amountLent = 0;
+          newState.amountLent = this.functionsUtil.BNify(0);
         }
         this.setState(newState);
         return idleTokenBalance;
@@ -434,16 +741,27 @@ class SmartContractControls extends React.Component {
       const tokenToRedeem = balance.times(price);
       let earning = 0;
       let earningPerc = 0;
-      let amountLent = this.state.amountLent;
+      let amountLent = this.state.amountLent ? this.functionsUtil.BNify(this.state.amountLent) : this.functionsUtil.BNify(0);
+
+      // console.log('AmountLent 0',amountLent.toString());
 
       // this.functionsUtil.customLog('getBalanceOf 2','tokenToRedeem',tokenToRedeem.toString(),'amountLent',this.state.amountLent.toString());
 
-      if (amountLent && this.functionsUtil.trimEth(amountLent.toString())>0 && this.functionsUtil.trimEth(tokenToRedeem.toString())>0 && parseFloat(this.functionsUtil.trimEth(tokenToRedeem.toString()))<parseFloat(this.functionsUtil.trimEth(amountLent.toString()))){
+      if (amountLent && this.functionsUtil.trimEth(amountLent)>0 && this.functionsUtil.trimEth(tokenToRedeem.toString())>0 && parseFloat(this.functionsUtil.trimEth(tokenToRedeem.toString()))<parseFloat(this.functionsUtil.trimEth(amountLent.toString()))){
         // console.error('tokenToRedeem',tokenToRedeem.toString(),' less than amountLent',amountLent.toString());
-        amountLent = tokenToRedeem;
+        // amountLent = tokenToRedeem;
+        // console.log('AmountLent 1',amountLent.toString(),tokenToRedeem.toString());
+        if (count<2){
+          // console.log('call getBalanceOf in 1 second',amountLent.toString(),tokenToRedeem.toString());
+          setTimeout(() => {
+            this.getBalanceOf(contractName,count+1);
+          },1000);
+          return false;
+        }
       } else if (amountLent && amountLent.lte(0) && tokenToRedeem){
         // console.log('AmountLent 3',amountLent.toString(),tokenToRedeem.toString());
         amountLent = tokenToRedeem;
+        // console.log('AmountLent 2',amountLent.toString(),tokenToRedeem.toString());
       }
 
       // console.log((tokenToRedeem ? tokenToRedeem.toString() : null),(amountLent ? amountLent.toString() : null));
@@ -1031,25 +1349,53 @@ class SmartContractControls extends React.Component {
     });
   }
 
-  getPrevTxs = async (count) => {
+  getPrevTxs = async (count,endBlockNumber='latest') => {
     count = count ? count : 0;
 
     const requiredNetwork = globalConfigs.network.requiredNetwork;
     const etherscanInfo = globalConfigs.network.providers.etherscan;
-    let lastBlockNumber = this.state.lastBlockNumber;
+
+    // Take last block number, is null take first block number
+    let lastBlockNumber = this.state.firstBlockNumber;
+    if (this.state.lastBlockNumber){
+      lastBlockNumber = this.state.lastBlockNumber;
+    }
 
     let results = [];
-    let etherscanEndpoint = null;
     let cachedTxs = null;
+    let etherscanEndpoint = null;
+    let etherscanBaseEndpoint = null;
 
     // Check if etherscan is enabled for the required network
     if (etherscanInfo.enabled && etherscanInfo.endpoints[requiredNetwork]){
       const etherscanApiUrl = etherscanInfo.endpoints[requiredNetwork];
 
       // Add token variable to endpoint for separate cached requests between tokens
-      etherscanEndpoint = `${etherscanApiUrl}?apikey=${env.REACT_APP_ETHERSCAN_KEY}&token=${this.props.selectedToken}&module=account&action=tokentx&address=${this.props.account}&startblock=${lastBlockNumber}&endblock=999999999&sort=asc`;
+      etherscanEndpoint = `${etherscanApiUrl}?apikey=${env.REACT_APP_ETHERSCAN_KEY}&token=${this.props.selectedToken}&module=account&action=tokentx&address=${this.props.account}&startblock=${lastBlockNumber}&endblock=${endBlockNumber}&sort=asc`;
+      etherscanBaseEndpoint = `${etherscanApiUrl}?apikey=${env.REACT_APP_ETHERSCAN_KEY}&token=${this.props.selectedToken}&module=account&action=tokentx&address=${this.props.account}&startblock=${this.state.firstBlockNumber}&endblock=${endBlockNumber}&sort=asc`;
 
       cachedTxs = this.functionsUtil.getCachedRequest(etherscanEndpoint);
+
+      // Check if cached txs are not up-to-date by comparing lastBlockNumber
+      if (cachedTxs && cachedTxs.data.result && cachedTxs.data.result.length && !this.state.lastBlockNumber){
+        const lastCachedBlockNumber = parseInt(Object.assign([],cachedTxs.data.result).pop().blockNumber);
+
+        const etherscanEndpointLastBlock = `${etherscanApiUrl}?apikey=${env.REACT_APP_ETHERSCAN_KEY}&token=${this.props.selectedToken}&module=account&action=tokentx&address=${this.props.account}&startblock=${lastCachedBlockNumber}&endblock=${endBlockNumber}&sort=asc`;
+        let latestTxs = await this.functionsUtil.makeRequest(etherscanEndpointLastBlock);
+
+        if (latestTxs && latestTxs.data.result && latestTxs.data.result.length){
+          latestTxs = this.functionsUtil.filterEtherscanTxs(latestTxs.data.result);
+          if (latestTxs && latestTxs.length){
+            const lastTx = latestTxs.pop();
+            const lastRealBlockNumber = parseInt(lastTx.blockNumber);
+            // If real tx blockNumber differs from lastCachedBlockNumber
+            if (lastRealBlockNumber > lastCachedBlockNumber){
+              cachedTxs = null;
+            }
+          }
+        }
+      }
+
       let txs = cachedTxs;
 
       if (!txs){
@@ -1069,67 +1415,66 @@ class SmartContractControls extends React.Component {
         });
       }
 
-      if (!txs || !txs.data || !txs.data.result){
-        return this.setState({
-          earning:0,
-          prevTxs:{},
-          amountLent:0,
-          prevTxsError:true,
-        });
+      if (txs && txs.data && txs.data.result){
+        results = txs.data.result;
       }
-
-      results = txs.data.result;
     }
 
-    const tokenDecimals = await this.getTokenDecimals();
-
-    const migrationContractAddr = this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract ? this.props.tokenConfig.migration.migrationContract.address : null;
-    const migrationContractOldAddrs = this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract && this.props.tokenConfig.migration.migrationContract.oldAddresses ? this.props.tokenConfig.migration.migrationContract.oldAddresses : [];
-    const oldContractAddr = this.props.tokenConfig.migration && this.props.tokenConfig.migration.oldContract ? this.props.tokenConfig.migration.oldContract.address.replace('x','').toLowerCase() : null;
-
-    let etherscanTxs = null;
+    // Initialize prevTxs
+    let prevTxs = this.state.prevTxs ? Object.assign({},this.state.prevTxs) : {};
+    let etherscanTxs = [];
 
     if (cachedTxs){
-      etherscanTxs = cachedTxs.data.result;
+      etherscanTxs = results;
     } else {
-      etherscanTxs = {};
-      results.filter(
-          tx => {
-            const internalTxs = results.filter(r => r.hash === tx.hash);
-            const isSendTransferTx = internalTxs.length === 1 && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-            const isReceiveTransferTx = internalTxs.length === 1 && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-            const isMigrationTx = migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).indexOf(tx.from.toLowerCase()) !== -1 ) && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-            const isRightToken = internalTxs.length>1 && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase()).length;
-            const isDepositTx = isRightToken && !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-            const isRedeemTx = isRightToken && !isMigrationTx && tx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()).length && tx.to.toLowerCase() === this.props.account.toLowerCase();
-
-            return isSendTransferTx || isReceiveTransferTx || isMigrationTx || isDepositTx || isRedeemTx;
-        }
-      ).forEach(tx => {
-        if (etherscanTxs[tx.hash]){
-          etherscanTxs[tx.hash].value = etherscanTxs[tx.hash].value.plus(this.functionsUtil.fixTokenDecimals(tx.value,tokenDecimals));
-        } else {
-          etherscanTxs[tx.hash] = ({...tx, value: this.functionsUtil.fixTokenDecimals(tx.value,tokenDecimals)});
-        }
-      });
-      etherscanTxs = Object.values(etherscanTxs);
+      etherscanTxs = this.functionsUtil.filterEtherscanTxs(results);
 
       // Store filtered txs
-      if (etherscanEndpoint){
+      if (etherscanTxs.length && etherscanEndpoint){
         const cachedRequestData = {
           data:{
             result:etherscanTxs
           }
         };
         this.functionsUtil.saveCachedRequest(etherscanEndpoint,false,cachedRequestData);
+
+        // Merge base etherscan endpoint with new data
+        if (etherscanEndpoint !== etherscanBaseEndpoint){
+          let etherscanBaseTxs = this.functionsUtil.getCachedRequest(etherscanBaseEndpoint);
+          if (etherscanBaseTxs){
+            etherscanBaseTxs = etherscanBaseTxs.data.result;
+
+            let updateBaseTxs = false;
+            etherscanTxs.forEach((tx) => {
+              const txFound = etherscanBaseTxs.find(t => { return t.hash.toLowerCase() === tx.hash.toLowerCase(); });
+              if (!txFound){
+                // console.log('Add tx ',tx,'to base etherscan txs');
+                etherscanBaseTxs.push(tx);
+                updateBaseTxs = true;
+              }
+            });
+
+            if (updateBaseTxs){
+              const newEtherscanBaseTxs = {
+                data:{
+                  result:etherscanBaseTxs
+                }
+              };
+              this.functionsUtil.saveCachedRequest(etherscanBaseEndpoint,false,newEtherscanBaseTxs);
+            }
+          }
+        }
       }
     }
 
+    // Merge new txs with previous ones
+    if (etherscanTxs && etherscanTxs.length){
+      etherscanTxs.forEach((tx) => {
+        prevTxs[tx.hash] = tx;
+      });
+    }
 
     let amountLent = this.functionsUtil.BNify(0);
-
-    // Initialize prevTxs
-    let prevTxs = this.state.prevTxs ? Object.assign({},this.state.prevTxs) : {};
 
     // Take storedTxs from localStorage
     const storedTxs = localStorage && JSON.parse(localStorage.getItem('transactions')) ? JSON.parse(localStorage.getItem('transactions')) : {};
@@ -1147,18 +1492,20 @@ class SmartContractControls extends React.Component {
     let depositedTxs = 0;
     let avgBuyPrice = this.functionsUtil.BNify(0);
 
-    if (etherscanTxs && etherscanTxs.length){
+    const tokenDecimals = await this.getTokenDecimals();
+    const migrationContractAddr = this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract ? this.props.tokenConfig.migration.migrationContract.address : null;
+    const migrationContractOldAddrs = this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract && this.props.tokenConfig.migration.migrationContract.oldAddresses ? this.props.tokenConfig.migration.migrationContract.oldAddresses : [];
+    const oldContractAddr = this.props.tokenConfig.migration && this.props.tokenConfig.migration.oldContract ? this.props.tokenConfig.migration.oldContract.address.replace('x','').toLowerCase() : null;
 
-      // Merge new txs with previous ones
-      await this.functionsUtil.asyncForEach(etherscanTxs,async (tx,index) => {
-        prevTxs[tx.hash] = tx;
-      });
+    // console.log('prevTxs',prevTxs);
 
-      const lastTx = etherscanTxs[etherscanTxs.length-1];
+    if (prevTxs && Object.keys(prevTxs).length){
+
+      const lastTx = prevTxs[Object.keys(prevTxs).pop()];
 
       // Update last block number
-      if (lastTx && lastTx.blockNumber){
-        lastBlockNumber = lastTx.blockNumber;
+      if (lastTx && lastTx.blockNumber && (!this.state.lastBlockNumber || lastTx.blockNumber>this.state.lastBlockNumber)){
+        lastBlockNumber = parseInt(lastTx.blockNumber)+1;
       }
 
       // Loop through prevTxs to have all the history
@@ -1173,9 +1520,21 @@ class SmartContractControls extends React.Component {
         const isDepositTx = !isMigrationTx && !isSendTransferTx && !isReceiveTransferTx && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
         const isRedeemTx = !isMigrationTx && !isSendTransferTx && !isReceiveTransferTx && tx.to.toLowerCase() === this.props.account.toLowerCase();
 
-        let tokenPrice = await this.functionsUtil.genericContractCall(this.props.tokenConfig.idle.token, 'tokenPrice',[],{}, tx.blockNumber);
-        tokenPrice = this.functionsUtil.fixTokenDecimals(tokenPrice,this.props.tokenConfig.decimals);
+        let tokenPrice = null;
+        if (storedTx.tokenPrice){
+          tokenPrice = this.functionsUtil.BNify(storedTx.tokenPrice);
+        } else {
+          tokenPrice = await this.functionsUtil.genericContractCall(this.props.tokenConfig.idle.token, 'tokenPrice',[],{}, tx.blockNumber);
+          tokenPrice = this.functionsUtil.fixTokenDecimals(tokenPrice,this.props.tokenConfig.decimals);
+          storedTx.tokenPrice = tokenPrice;
+        }
+
         let tokensTransfered = tokenPrice.times(this.functionsUtil.BNify(tx.value));
+
+        // Add transactionHash to storedTx
+        if (!storedTx.transactionHash){
+          storedTx.transactionHash = tx.hash;
+        }
 
         // Deposited
         if (isSendTransferTx){
@@ -1188,7 +1547,6 @@ class SmartContractControls extends React.Component {
           if (amountLent.lte(0)){
             amountLent = this.functionsUtil.BNify(0);
             avgBuyPrice = this.functionsUtil.BNify(0);
-            // console.log(`Sent ${tokensTransfered} @${tokenPrice}, avgBuyPrice: ${avgBuyPrice}`);
           }
 
           // console.log(`Transfer sent of ${tx.value} (${tokensTransfered}) - amountLent: ${amountLent}`);
@@ -1203,7 +1561,6 @@ class SmartContractControls extends React.Component {
           // Calculate avgBuyPrice for current earnings
           avgBuyPrice = avgBuyPrice.plus(tokensTransfered);
 
-          // console.log(`Received ${tokensTransfered} @${tokenPrice}, avgBuyPrice: ${avgBuyPrice}`);
           // console.log(`Transfer received of ${tx.value} (${tokensTransfered}) - amountLent: ${amountLent}`);
 
           storedTx.value = tokensTransfered;
@@ -1218,6 +1575,7 @@ class SmartContractControls extends React.Component {
 
             // Init idleTokens amount
             storedTx.idleTokens = this.functionsUtil.BNify(tx.value);
+            storedTx.method = 'mintIdleToken';
 
             const decodeLogs = [
               {
@@ -1241,11 +1599,7 @@ class SmartContractControls extends React.Component {
           // Calculate avgBuyPrice for current earnings
           avgBuyPrice = avgBuyPrice.plus(tokensTransfered);
 
-          // console.log(`Deposited ${tx.value} @${tokenPrice}, AmountLent: ${amountLent}, avgBuyPrice: ${avgBuyPrice}`);
           // console.log(`Deposited ${tx.value} (${storedTx.idleTokens}), AmountLent: ${amountLent}`);
-
-          // Save new storedTx
-          storedTxs[this.props.account][this.props.selectedToken][txKey] = storedTx;
 
         // Redeemed
         } else if (isRedeemTx){
@@ -1264,20 +1618,25 @@ class SmartContractControls extends React.Component {
             avgBuyPrice = this.functionsUtil.BNify(0);
           }
 
-          // console.log(`Redeemed ${redeemedValueFixed} @${tokenPrice}, AmountLent: ${amountLent}, avgBuyPrice: ${avgBuyPrice}`);
+          // Set tx method
+          if (!storedTx.method){
+            storedTx.method = 'redeemIdleToken';
+          }
+
           // console.log(`Redeemed ${tx.value} (${redeemedValueFixed}), AmountLent: ${amountLent}`);
         // Migrated
         } else if (isMigrationTx){
 
-          let migrationValueFixed = this.functionsUtil.BNify(storedTx.value);
-          if (!storedTx.tokenPrice){
-            storedTx.tokenPrice = tokenPrice;
-            migrationValueFixed = migrationValueFixed.times(tokenPrice);
+          let migrationValueFixed = 0;
 
-            // Save Tx
-            storedTxs[this.props.account][this.props.selectedToken][txKey] = storedTx;
+          if (!storedTx.migrationValueFixed){
+            storedTx.method = 'bridgeIdleV1ToIdleV2';
+            migrationValueFixed = this.functionsUtil.BNify(tx.value).times(tokenPrice);
+            storedTx.migrationValueFixed = migrationValueFixed;
+          } else {
+            migrationValueFixed = this.functionsUtil.BNify(storedTx.migrationValueFixed);
           }
-
+ 
           tx.value = migrationValueFixed;
 
           amountLent = amountLent.plus(migrationValueFixed);
@@ -1286,8 +1645,11 @@ class SmartContractControls extends React.Component {
           tokensTransfered = tokenPrice.times(migrationValueFixed);
           avgBuyPrice = avgBuyPrice.plus(tokensTransfered);
 
-          // console.log(`Migrated ${migrationValueFixed} @${tokenPrice}, AmountLent: ${amountLent}, avgBuyPrice: ${avgBuyPrice}`);
+          // console.log(`Migrated ${migrationValueFixed} @${tokenPrice}, AmountLent: ${amountLent}`);
         }
+
+        // Save Tx
+        storedTxs[this.props.account][this.props.selectedToken][txKey] = storedTx;
 
         // Update transaction
         prevTxs[tx.hash] = tx;
@@ -1305,14 +1667,12 @@ class SmartContractControls extends React.Component {
         const tx = minedTxs[txKey];
         const isStoredTx = storedTxs && storedTxs[this.props.account] && storedTxs[this.props.account][this.props.selectedToken] && storedTxs[this.props.account][this.props.selectedToken][txKey];
 
-        let tokenPrice = await this.functionsUtil.genericContractCall(this.props.tokenConfig.idle.token, 'tokenPrice',[],{}, tx.blockNumber);
-        tokenPrice = this.functionsUtil.fixTokenDecimals(tokenPrice,18);
-
         const allowedMethods = ['mintIdleToken','redeemIdleToken','bridgeIdleV1ToIdleV2']
 
         // Skip invalid txs
         if (prevTxs[tx.transactionHash] || tx.status !== 'success' || !tx.transactionHash || allowedMethods.indexOf(tx.method)===-1){
-          return;
+          // console.log(`Skip stored Tx ${tx.transactionHash}, Processed: ${!!prevTxs[tx.transactionHash]}, status: ${tx.status}, method: ${tx.method}`);
+          return false;
         }
 
         let realTx = tx.realTx ? tx.realTx : null;
@@ -1334,8 +1694,12 @@ class SmartContractControls extends React.Component {
         // Skip txs from other wallets
         if (!realTx || realTx.from.toLowerCase() !== this.props.account.toLowerCase()){
           // this.functionsUtil.customLog('Skipped tx '+tx.transactionHash+' not from this account.');
-          return;
+          // console.log(`Skip stored Tx ${tx.transactionHash}, from: ${realTx.from}`);
+          return false;
         }
+
+        let tokenPrice = await this.functionsUtil.genericContractCall(this.props.tokenConfig.idle.token,'tokenPrice',[],{}, tx.blockNumber);
+        tokenPrice = this.functionsUtil.fixTokenDecimals(tokenPrice,18);
 
         realTx.contractAddress = this.props.tokenConfig.address;
         realTx.timeStamp = parseInt(tx.created/1000);
@@ -1349,15 +1713,14 @@ class SmartContractControls extends React.Component {
               if (isStoredTx){
                 delete storedTxs[this.props.account][this.props.selectedToken][txKey];
               }
-
               // this.functionsUtil.customLog('Skipped deposit tx '+tx.transactionHash+' - wrong contract');
-              return;
+              return false;
             }
 
             txValue = tx.params ? this.functionsUtil.fixTokenDecimals(tx.params[0],tokenDecimals).toString() : 0;
             if (!txValue){
               // this.functionsUtil.customLog('Skipped deposit tx '+tx.transactionHash+' - value is zero ('+txValue+')');
-              return;
+              return false;
             }
             
             depositedTxs++;
@@ -1366,15 +1729,13 @@ class SmartContractControls extends React.Component {
           break;
           case 'redeemIdleToken':
             if (!realTx.tokenPrice){
-              const redeemedValue = this.functionsUtil.BNify(tx.value).times(tokenPrice);
+              const redeemedValue = this.functionsUtil.BNify(tx.params[0]).times(tokenPrice);
               const redeemTokenDecimals = await this.getTokenDecimals();
               const redeemedValueFixed = this.functionsUtil.fixTokenDecimals(redeemedValue,redeemTokenDecimals);
               realTx.tokenPrice = tokenPrice;
               realTx.status = 'Redeemed';
               realTx.value = redeemedValueFixed.toString();
             }
-
-            // TODO: save tx to localstorage
           break;
           case 'bridgeIdleV1ToIdleV2':
 
@@ -1392,7 +1753,7 @@ class SmartContractControls extends React.Component {
             }
 
             if (!migrationTxReceipt){
-              return;
+              return false;
             }
 
             const contractAddress = this.props.tokenConfig.idle.address.toLowerCase().replace('x','');
@@ -1403,7 +1764,7 @@ class SmartContractControls extends React.Component {
               if (isStoredTx){
                 delete storedTxs[this.props.account][this.props.selectedToken][txKey];
               }
-              return;
+              return false;
             }
 
             // Save txReceipt into the tx
@@ -1417,7 +1778,7 @@ class SmartContractControls extends React.Component {
             const migrationTxInternalTransfers = migrationTxReceipt.logs.filter((tx) => { return tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${oldContractAddr}`; });
 
             if (!migrationTxInternalTransfers.length){
-              return;
+              return false;
             }
 
             const migrationInternalTransfer = migrationTxInternalTransfers.pop();
@@ -1453,38 +1814,42 @@ class SmartContractControls extends React.Component {
 
         realTx.tokenSymbol = this.props.selectedToken;
 
+        // console.log('Adding localStorage tx',realTx);
+
         // this.functionsUtil.customLog('realTx from localStorage:',realTx);
         const tokensTransfered = tokenPrice.times(this.functionsUtil.BNify(realTx.value));
 
-        if (tx.method==='mintIdleToken'){
-          amountLent = amountLent.plus(this.functionsUtil.BNify(realTx.value));
-          avgBuyPrice = avgBuyPrice.plus(tokensTransfered);
-          // console.log('Deposited (localStorage) '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
-          // console.log(`Deposited (localStorage) ${realTx.value} @${tokenPrice}, AmountLent: ${amountLent}, avgBuyPrice: ${avgBuyPrice}`);
-        } else if (tx.method==='redeemIdleToken'){
-          amountLent = amountLent.minus(this.functionsUtil.BNify(realTx.value));
-          avgBuyPrice = avgBuyPrice.minus(tokenPrice.times(this.functionsUtil.BNify(realTx.value)));
+        if (!isNaN(realTx.value) && parseFloat(realTx.value)){
+          if (tx.method==='mintIdleToken'){
+            amountLent = amountLent.plus(this.functionsUtil.BNify(realTx.value));
+            avgBuyPrice = avgBuyPrice.plus(tokensTransfered);
+            // console.log(`Deposited (localStorage) ${realTx.value} @${tokenPrice}, AmountLent: ${amountLent}`);
+          } else if (tx.method==='redeemIdleToken'){
+            amountLent = amountLent.minus(this.functionsUtil.BNify(realTx.value));
+            avgBuyPrice = avgBuyPrice.minus(tokenPrice.times(this.functionsUtil.BNify(realTx.value)));
 
-          if (amountLent.lt(0)){
-            amountLent = this.functionsUtil.BNify(0);
-            avgBuyPrice = this.functionsUtil.BNify(0);
+            if (amountLent.lt(0)){
+              amountLent = this.functionsUtil.BNify(0);
+              avgBuyPrice = this.functionsUtil.BNify(0);
+            }
+            // console.log(`Redeemed (localStorage) ${realTx.value} @${tokenPrice}, AmountLent: ${amountLent}`);
+          } else if (tx.method==='bridgeIdleV1ToIdleV2'){
+            amountLent = amountLent.plus(this.functionsUtil.BNify(realTx.value));
+            avgBuyPrice = avgBuyPrice.plus(tokensTransfered);
+            // console.log(`Migrated (localStorage) ${realTx.value} @${tokenPrice}, AmountLent: ${amountLent}`);
           }
-          // console.log('Redeemed (localStorage) '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
-          // console.log(`Redeemed (localStorage) ${realTx.value} @${tokenPrice}, AmountLent: ${amountLent}, avgBuyPrice: ${avgBuyPrice}`);
-        } else if (tx.method==='bridgeIdleV1ToIdleV2'){
-          amountLent = amountLent.plus(this.functionsUtil.BNify(realTx.value));
-          avgBuyPrice = avgBuyPrice.plus(tokensTransfered);
-          // console.log(`Migrated (localStorage) ${realTx.value} @${tokenPrice}, AmountLent: ${amountLent}, avgBuyPrice: ${avgBuyPrice}`);
-          // console.log('Migrated (localStorage) '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
-        }
 
-        // Save realTx and update localStorage
-        if (!tx.realTx){
-          tx.realTx = realTx;
-          storedTxs[this.props.account][this.props.selectedToken][txKey] = tx;
-        }
+          // Save realTx and update localStorage
+          if (!tx.realTx){
+            tx.realTx = realTx;
+            storedTxs[this.props.account][this.props.selectedToken][txKey] = tx;
+          }
 
-        prevTxs[realTx.hash] = realTx;
+          prevTxs[realTx.hash] = realTx;
+
+        } else if (isStoredTx){
+          delete storedTxs[this.props.account][this.props.selectedToken][txKey];
+        }
       });
   
       // Update localStorage
@@ -1524,28 +1889,33 @@ class SmartContractControls extends React.Component {
 
   // Check for updates to the transactions collection
   processTransactionUpdates = prevTxs => {
-    const transactions = this.state.prevTxs || {};
-    let update_txs = false;
+
     let refresh = false;
+    let update_txs = false;
     let needsUpdate = false;
+
     const executedTxs = {};
+    const transactions = this.state.prevTxs || {};
+
     if (Object.keys(this.props.transactions).length){
+
       Object.keys(this.props.transactions).forEach(key => {
         let newTx = this.props.transactions[key];
         // Check if it is a new transaction OR status changed
         if ((!prevTxs[key] || prevTxs[key].status !== newTx.status)){
+          const txSucceeded = newTx.status === 'success';
+          const txCompleted = txSucceeded || newTx.status === 'error';
 
-          needsUpdate = newTx.status === 'success';
-          refresh = needsUpdate || newTx.status === 'error';
+          // Delete pending transaction and add, if succeded, executed one
+          if (txCompleted) {
+            refresh = true;
+            // Delete pending transaction
+            delete transactions[key];
 
-          // Delete pending transaction if succeded or error
-          if (refresh) {
-              if (needsUpdate){
-                executedTxs[newTx.transactionHash] = newTx;
-              }
-
-              // Delete pending transaction
-              delete transactions[key];
+            if (txSucceeded){
+              needsUpdate = true;
+              executedTxs[newTx.transactionHash] = newTx;
+            }
           // Transaction is pending add it in the list
           } else {
             let tx = {
@@ -1571,161 +1941,26 @@ class SmartContractControls extends React.Component {
         }
       });
 
+      const needsUpdateCallback = () => {
+        if (needsUpdate){
+          this.getPrevTxs().then(() => {
+            this.getBalanceOf(this.props.tokenConfig.idle.token);
+          });
+        }
+      }
+
       if (refresh){
         this.setState({
           executedTxs,
           prevTxs: transactions,
-        });
+        },needsUpdateCallback);
       } else if (update_txs){
         this.setState({
           prevTxs: transactions,
-        });
-      }
-
-      if (needsUpdate){
-        // console.log('Txs updated - calling prevTxs');
-        this.getPrevTxs();
+        },needsUpdateCallback);
       }
     }
   };
-
-  async componentWillMount() {
-    this.initState();
-    this.loadUtils();
-  }
-
-  // Clear all the timeouts
-  async componentWillUnmount(){
-    componentUnmounted = true;
-
-    let id = window.setTimeout(function() {}, 0);
-
-    while (id--) {
-        window.clearTimeout(id); // will do nothing if no timeout with id is present
-    }
-  }
-
-  initState = async () => {
-    // Init state
-    return this.setState({
-      iDAIRate:0,
-      cDAIRate:0,
-      avgApr:null,
-      prevTxs:null, // Transactions from Etherscan
-      earning:null,
-      balance:null,
-      lendAmount:'',
-      redeemTx:null,
-      lendingTx:null,
-      cDAIToRedeem:0,
-      approveTx:null,
-      redeemAmount:'',
-      selectedTab:'1',
-      tokenPrice:null,
-      amountLent:null,
-      avgBuyPrice:null,
-      allocations:null,
-      earningPerc:null,
-      executedTxs:null,
-      activeModal:null,
-      fundsError:false,
-      idleDAICap:30000,
-      isMigrating:false,
-      migrationTx:false,
-      needsUpdate:false,
-      genericError:null,
-      exchangeRates:null,
-      IdleDAISupply:null,
-      earningPerDay:null,
-      showFundsInfo:true,
-      prevTxsError:false,
-      tokenToRedeem:null,
-      fundsTimeoutID:null,
-      earningPerYear:null,
-      buyTokenMessage:null,
-      isFirstDeposit:false,
-      totalAllocation:null,
-      migrationError:false,
-      idleTokenBalance:null,
-      isTokenApproved:false,
-      earningIntervalId:null,
-      contractIsPaused:false,
-      callMintCallback:false,
-      isApprovingToken:false,
-      componentMounted:false, // this trigger the general loading
-      updateAfterMount:false, // Launch componentDidUpdate after mount
-      redeemProcessing:false,
-      migrationEnabled:false,
-      updateInProgress:false,
-      protocolsBalances:null,
-      lendingProcessing:false,
-      disableLendButton:false,
-      isApprovingDAITest:true,
-      genericErrorRedeem:null,
-      oldContractBalance:null,
-      migrationApproveTx:null,
-      tokenToRedeemParsed:null,
-      underlyingTokensAmount:{},
-      disableRedeemButton:false,
-      lastBlockNumber:'8119247', // Idle inception block number
-      partialRedeemEnabled:true, // Partial redeem enabled by default
-      showEmptyWalletOverlay:true,
-      oldContractTokenDecimals:null,
-      migrationContractApproved:false,
-      calculatingShouldRebalance:true,
-      oldContractBalanceFormatted:null,
-      isApprovingMigrationContract:false,
-      tokenBalance:this.props.accountBalanceToken
-    });
-  }
-
-  async componentDidMount(needsUpdateEnabled) {
-
-    if (needsUpdateEnabled === undefined){
-      needsUpdateEnabled = true;
-    }
-
-    this.loadUtils();
-
-    await this.initState();
-
-    componentUnmounted = false;
-
-    window.jQuery = jQuery;
-
-    this.addResources();
-
-    if (!this.props.web3 || !this.props.contractsInitialized){
-      this.functionsUtil.customLog('Web3 or Contracts not initialized');
-      return false;
-    }
-
-    if (this.props.network && !this.props.network.isCorrectNetwork){
-      return false;
-    }
-
-    await Promise.all([
-      this.getAprs().then(() => {
-        this.getAllocations().then( () => {
-          this.rebalanceCheck()
-        })
-      }),
-      this.checkMigration(),
-      this.checkContractPaused(),
-      this.getPriceInToken(),
-      this.checkTokenApproved()
-    ]);
-
-    const newState = {
-      componentMounted: true,
-      updateAfterMount: false,
-      needsUpdate: this.props.account && (needsUpdateEnabled || this.state.updateAfterMount)
-    };
-
-    this.functionsUtil.customLog('componentDidMount',newState);
-
-    this.setState(newState);
-  }
 
   async checkMigrationContractApproved() {
     if (this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract){
@@ -1962,166 +2197,6 @@ class SmartContractControls extends React.Component {
     });
   }
 
-  async componentDidUpdate(prevProps, prevState) {
-
-    if (this.props.network && !this.props.network.isCorrectNetwork){
-      return false;
-    }
-
-    // Update util functions props
-    this.loadUtils();
-
-    // Remount the component if token changed
-    const contractsInitialized = this.props.contractsInitialized && prevProps.contractsInitialized !== this.props.contractsInitialized;
-    const isCorrectNetwork = !prevProps.network.isCorrectNetwork && this.props.network.isCorrectNetwork;
-    const selectedTokenChanged = prevProps.selectedToken !== this.props.selectedToken;
-    const accountChanged = prevProps.account !== this.props.account;
-
-    // Mount the component and initialize the state
-    if (contractsInitialized || selectedTokenChanged || isCorrectNetwork || accountChanged){
-      this.componentDidMount(true);
-      return false;
-    }
-
-    // Exit if web3 or contracts are not initialized
-    if (!this.props.web3 || !this.props.contractsInitialized){
-      return false;
-    }
-
-    const getTxsList = this.state.prevTxs === null || !Object.values(this.state.prevTxs).length;
-    const transactionsChanged = prevProps.transactions !== this.props.transactions;
-    const tokenBalanceChanged = this.props.accountBalanceToken !== this.state.tokenBalance;
-
-    // Show welcome modal
-    if (this.props.account && accountChanged){
-      let welcomeIsOpen = false;
-
-      if (globalConfigs.modals.welcome.enabled && localStorage && accountChanged){
-
-        // Check the last login of the wallet
-        const currTime = new Date().getTime();
-        const walletAddress = this.props.account.toLowerCase();
-        let lastLogin = localStorage.getItem('lastLogin') ? JSON.parse(localStorage.getItem('lastLogin')) : {};
-
-        if (!lastLogin[walletAddress]){
-          lastLogin[walletAddress] = {
-            'signedUp':false,
-            'lastTime':currTime
-          };
-          welcomeIsOpen = true;
-        } else if (!lastLogin[walletAddress].signedUp) {
-          const lastTime = parseInt(lastLogin[walletAddress].lastTime);
-          const timeFromLastLogin = (currTime-lastTime)/1000;
-          welcomeIsOpen = timeFromLastLogin>=globalConfigs.modals.welcome.frequency; // 1 day since last login
-        }
-
-        if (welcomeIsOpen){
-          lastLogin[walletAddress].lastTime = currTime;
-          this.functionsUtil.setLocalStorage('lastLogin',JSON.stringify(lastLogin));
-        }
-      }
-
-      this.setState({
-        activeModal: welcomeIsOpen ? 'welcome' : this.state.activeModal
-      });
-    }
-
-    const checkUpdateNeeded = this.props.account && !this.state.updateInProgress && (accountChanged || this.state.needsUpdate || selectedTokenChanged);
-
-    if (checkUpdateNeeded) {
-
-      // If the component is not mounted yet hang on
-      if (!this.state.componentMounted){
-        return this.setState({
-          updateAfterMount: true
-        });
-      }
-
-      const newState = {
-        needsUpdate:false,
-        updateInProgress:true,
-      };
-
-      if (accountChanged || selectedTokenChanged){
-        newState.earning=null;
-        newState.amountLent=null;
-        newState.tokenBalance=null;
-        newState.tokenToRedeemParsed=null;
-      }
-      // Reset funds and force loader
-      this.setState(newState);
-
-      this.functionsUtil.customLog('Call async functions...');
-
-      // Get TokenPrice
-      await this.getPriceInToken();
-
-      await Promise.all([
-        this.checkMigration(),
-        this.checkTokenApproved(),
-        this.getAprs().then(() => {
-          this.getAllocations()
-        }),
-        this.getTokenBalance(),
-        this.getIdleTokenBalance(),
-        (getTxsList ? this.getPrevTxs() : null)
-      ]);
-
-      this.functionsUtil.customLog('Async functions completed...');
-
-      // Keep this call seprated from others cause it needs getPrevTxs results
-      await this.getBalanceOf(this.props.tokenConfig.idle.token);
-
-      // console.log(prevState.tokenToRedeem,this.state.tokenBalance.toString(),this.state.tokenToRedeem.toString(),this.functionsUtil.BNify(this.state.tokenBalance).eq(0));
-      if (prevState.tokenToRedeem === null && this.props.selectedTab === '1' && this.functionsUtil.BNify(this.state.tokenBalance).eq(0) && this.functionsUtil.BNify(this.state.tokenToRedeem).gt(0)){
-        this.selectTab({ preventDefault:()=>{} },'2');
-      }
-
-      this.setState({
-        updateInProgress: false
-      });
-    }
-
-    if (this.props.selectedTab !== '2' && this.state.fundsTimeoutID){
-      this.functionsUtil.customLog("Clear funds timeout "+this.state.fundsTimeoutID);
-      clearTimeout(this.state.fundsTimeoutID);
-      this.setState({fundsTimeoutID:null});
-    }
-
-    if (tokenBalanceChanged){
-      this.setState({
-        tokenBalance: this.props.accountBalanceToken
-      });
-    }
-
-    // TO CHECK!!
-    if (transactionsChanged){
-
-      // Store transactions into Local Storage
-      if (localStorage){
-
-        // Look for txs object in localStorage
-        let storedTxs = localStorage && JSON.parse(localStorage.getItem('transactions')) ? JSON.parse(localStorage.getItem('transactions')) : {};
-
-        // Initialize txs for account
-        if (!storedTxs[this.props.account]){
-          storedTxs[this.props.account] = {};
-        }
-
-        // Initialize txs for selected token
-        if (!storedTxs[this.props.account][this.props.selectedToken]){
-          storedTxs[this.props.account][this.props.selectedToken] = {};
-        }
-
-        // Merge together stored and new transactions
-        storedTxs[this.props.account][this.props.selectedToken] = Object.assign(storedTxs[this.props.account][this.props.selectedToken],this.props.transactions);
-        this.functionsUtil.setLocalStorage('transactions',JSON.stringify(storedTxs));
-      }
-
-      this.processTransactionUpdates(prevProps.transactions);
-    }
-  }
-
   selectTab = async (e, tabIndex) => {
     e.preventDefault();
 
@@ -2195,11 +2270,11 @@ class SmartContractControls extends React.Component {
 
       const parsedValue = parseFloat(tx.value);
 
-      if (!parsedValue){
+      if (!parsedValue && status !== 'Pending'){
         return false;
       }
 
-      const value = parsedValue ? (this.props.isMobile ? parsedValue.toFixed(4) : parsedValue.toFixed(decimals)) : '-';
+      const value = parsedValue ? (this.props.isMobile ? parsedValue.toFixed(4) : parsedValue.toFixed(decimals))+' '+this.props.selectedToken : '-';
       const momentDate = moment(date);
       const formattedDate = momentDate.fromNow();
       const formattedDateAlt = momentDate.format('YYYY-MM-DD HH:mm:ss');
@@ -2259,7 +2334,7 @@ class SmartContractControls extends React.Component {
                 </Pill>
               </Box>
               <Box width={[6/12,3/12]}>
-                <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>{value} {this.props.selectedToken}</Text>
+                <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>{value}</Text>
               </Box>
               <Box width={3/12} display={['none','block']}>
                 <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>
