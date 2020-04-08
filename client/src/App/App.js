@@ -305,6 +305,7 @@ class App extends Component {
                     connectorName={this.state.connectorName}
                     walletProvider={this.state.walletProvider}
                     setConnector={this.setConnector.bind(this)}
+                    availableTokens={this.state.availableTokens}
                     callbackAfterLogin={this.state.callbackAfterLogin}
                     setCallbackAfterLogin={this.setCallbackAfterLogin.bind(this)}
                     enableUnderlyingWithdraw={this.state.enableUnderlyingWithdraw}

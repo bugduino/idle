@@ -60,6 +60,11 @@ export default {
     'near-white': '#f4f4f4',
     white: '#fff',
     transparent: 'transparent',
+    /*
+    NEW COLORS
+    */
+    cellTitle: '#a7a7a7',
+    cellText: '#acacac',
     blacks: [
       'rgba(0,0,0,.0125)',
       'rgba(0,0,0,.025)',

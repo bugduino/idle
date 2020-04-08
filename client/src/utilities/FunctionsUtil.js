@@ -485,6 +485,128 @@ class FunctionsUtil {
       await callback(array[index], index, array);
     }
   }
+  apr2apy = (apr) => {
+    return (this.BNify(1).plus(this.BNify(apr).div(12))).pow(12).minus(1);
+  }
+  getTokenAllocation = async (tokenConfig,protocolsAprs=false) => {
+
+    let totalAllocation = this.BNify(0);
+
+    const tokenAllocation = {
+      avgApr: null,
+      totalAllocation:null,
+      protocolsAllocations:null,
+      protocolsAllocationsPerc:null
+    };
+
+    const exchangeRates = {};
+    const protocolsBalances = {};
+    const protocolsAllocations = {};
+    const protocolsAllocationsPerc = {};
+
+    await this.asyncForEach(tokenConfig.protocols,async (protocolInfo,i) => {
+      const contractName = protocolInfo.token;
+      const protocolAddr = protocolInfo.address.toLowerCase();
+
+      let [protocolBalance, tokenDecimals, exchangeRate] = await Promise.all([
+        this.getProtocolBalance(contractName),
+        this.getTokenDecimals(contractName),
+        ( protocolInfo.functions.exchangeRate ? this.genericContractCall(contractName,protocolInfo.functions.exchangeRate.name,protocolInfo.functions.exchangeRate.params) : null )
+      ]);
+
+      if (!protocolBalance){
+        return;
+      }
+
+      if (exchangeRate && protocolInfo.decimals){
+        exchangeRates[protocolAddr] = exchangeRate;
+        exchangeRate = this.fixTokenDecimals(exchangeRate,protocolInfo.decimals);
+      }
+
+      const protocolAllocation = this.fixTokenDecimals(protocolBalance,tokenDecimals,exchangeRate);
+
+      totalAllocation = totalAllocation.plus(protocolAllocation);
+
+      protocolsBalances[protocolAddr] = protocolBalance;
+      protocolsAllocations[protocolAddr] = protocolAllocation;
+    });
+
+    Object.keys(protocolsAllocations).forEach((protocolAddr,i) => {
+      const protocolAllocation = protocolsAllocations[protocolAddr];
+      const protocolAllocationPerc = protocolAllocation.div(totalAllocation);
+      protocolsAllocationsPerc[protocolAddr] = protocolAllocationPerc;
+    });
+
+    tokenAllocation.totalAllocation = totalAllocation;
+    tokenAllocation.protocolsAllocations = protocolsAllocations;
+    tokenAllocation.protocolsAllocationsPerc = protocolsAllocationsPerc;
+
+    if (protocolsAprs){
+      tokenAllocation.avgApr = this.getAvgApr(protocolsAprs,protocolsAllocations,totalAllocation);
+    }
+
+    return tokenAllocation;
+  }
+  getTokenAprs = async (tokenConfig,tokenAllocation=false) => {
+    const Aprs = await this.genericIdleCall('getAPRs');
+
+    if (!Aprs){
+      return false;
+    }
+
+    if (!tokenAllocation){
+      tokenAllocation = await this.getTokenAllocation(tokenConfig);
+    }
+
+    if (!tokenAllocation){
+      return false;
+    }
+
+    const addresses = Aprs.addresses.map((addr,i) => { return addr.toString().toLowerCase() });
+    const aprs = Aprs.aprs;
+    const protocolsAprs = {};
+
+    tokenConfig.protocols.forEach((info,i) => {
+      // const protocolName = info.name;
+      const protocolAddr = info.address.toString().toLowerCase();
+      const addrIndex = addresses.indexOf(protocolAddr);
+      if ( addrIndex !== -1 ) {
+        const protocolApr = aprs[addrIndex];
+        protocolsAprs[protocolAddr] = this.BNify(+this.toEth(protocolApr));
+      }
+    });
+
+    const tokenAprs = {
+      avgApr: null,
+      protocolsAprs
+    };
+
+    if (tokenAllocation){
+      tokenAprs.avgApr = this.getAvgApr(protocolsAprs,tokenAllocation.protocolsAllocations,tokenAllocation.totalAllocation);
+    }
+
+    return tokenAprs;
+  };
+  abbreviateNumber(value,precision=3){
+    value = parseFloat(value);
+    let newValue = value;
+    if (value >= 1000) {
+      const intValue = parseInt(value);
+      const suffixes = ["", "k", "m", "b","t"];
+      const suffixNum = Math.floor( (""+intValue).length/4 );
+      let shortValue = '';
+      for (let precisionIndex = (precision+1); precisionIndex >= 1; precisionIndex--) {
+        shortValue = parseFloat( (suffixNum !== 0 ? (intValue / Math.pow(1000,suffixNum) ) : intValue).toPrecision(precisionIndex));
+        const dotLessShortValue = (shortValue + '').replace(/[^a-zA-Z 0-9]+/g,'');
+        if (dotLessShortValue.length <= (precision+1)) { break; }
+      }
+      if (shortValue % 1 !== 0)  shortValue = shortValue.toFixed(precision);
+      newValue = shortValue+suffixes[suffixNum];
+    } else {
+      newValue = parseFloat(value).toFixed(precision);
+    }
+    return newValue;
+  }
   getFormattedBalance(balance,label,decimals,maxLen,highlightedDecimals){
     const defaultValue = '-';
     decimals = !isNaN(decimals) ? decimals : 6;

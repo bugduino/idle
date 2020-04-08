@@ -748,58 +748,51 @@ class RimbleTransaction extends React.Component {
 
   initializeContracts = async () => {
 
-    const tokenConfig = this.props.tokenConfig;
-
     const initTokenContract = async () => {
-      // Initialize Token Contract
-      let foundTokenContract = this.state.contracts.find(c => c.name === this.props.selectedToken);
-      if (!foundTokenContract) {
-        this.functionsUtil.customLog('initializeContracts, init contract',this.props.selectedToken, tokenConfig.address);
-        await this.initContract(this.props.selectedToken, tokenConfig.address, tokenConfig.abi);
-      }
+      // Initialize Tokens Contracts
+      this.functionsUtil.asyncForEach(Object.keys(this.props.availableTokens),async (token) => {
+        const tokenConfig = this.props.availableTokens[token];
+        let foundTokenContract = this.state.contracts.find(c => c.name === token);
+        if (!foundTokenContract) {
+          this.functionsUtil.customLog('initializeContracts, init contract',token, tokenConfig.address);
+          await this.initContract(token, tokenConfig.address, tokenConfig.abi);
+        }
+
+        // Initialize idleTokens contracts
+        let foundIdleTokenContract = this.state.contracts.find(c => c.name === tokenConfig.idle.token);
+        if (!foundIdleTokenContract) {
+          this.functionsUtil.customLog('initializeContracts, init contract',tokenConfig.idle.token, tokenConfig.idle.address);
+          await this.initContract(tokenConfig.idle.token, tokenConfig.idle.address, tokenConfig.idle.abi);
+        }
+
+        // Initialize protocols contracts
+        tokenConfig.protocols.forEach(async (p,i) => {
+          let foundProtocolContract = this.state.contracts.find(c => c.name === p.token);
+          if (!foundProtocolContract) {
+            this.functionsUtil.customLog('initializeContracts, init '+p.token+' contract',p);
+            await this.initContract(p.token, p.address, p.abi);
+          }
+        });
+
+        // Check migration contract
+        if (tokenConfig.migration){
+
+          if (tokenConfig.migration.oldContract){
+            const oldContract = tokenConfig.migration.oldContract;
+            this.functionsUtil.customLog('initializeContracts, init '+oldContract.name+' contract',oldContract);
+            await this.initContract(oldContract.name, oldContract.address, oldContract.abi);
+          }
+
+          if (tokenConfig.migration.migrationContract){
+            const migrationContract = tokenConfig.migration.migrationContract;
+            this.functionsUtil.customLog('initializeContracts, init '+migrationContract.name+' contract',migrationContract);
+            await this.initContract(migrationContract.name, migrationContract.address, migrationContract.abi);
+          }
+        }
+      });
     };
 
-    const initIdleTokenContract = async () => {
-      // Initialize IdleToken Contract
-      let foundIdleTokenContract = this.state.contracts.find(c => c.name === tokenConfig.idle.token);
-      if (!foundIdleTokenContract) {
-        this.functionsUtil.customLog('initializeContracts, init contract',tokenConfig.idle.token, tokenConfig.idle.address);
-        await this.initContract(tokenConfig.idle.token, tokenConfig.idle.address, tokenConfig.idle.abi);
-      }
-    }
-
-    const initProtocolsContracts = async () => {
-      // Initialize protocols contracts
-      this.props.tokenConfig.protocols.forEach(async (p,i) => {
-        this.functionsUtil.customLog('initializeContracts, init '+p.token+' contract',p);
-        await this.initContract(p.token, p.address, p.abi);
-      });
-    }
-
-    const initMigrationContract = async () => {
-      // Check migration contract
-      if (this.props.tokenConfig.migration){
-
-        if (this.props.tokenConfig.migration.oldContract){
-          const oldContract = this.props.tokenConfig.migration.oldContract;
-          this.functionsUtil.customLog('initializeContracts, init '+oldContract.name+' contract',oldContract);
-          await this.initContract(oldContract.name, oldContract.address, oldContract.abi);
-        }
-
-        if (this.props.tokenConfig.migration.migrationContract){
-          const migrationContract = this.props.tokenConfig.migration.migrationContract;
-          this.functionsUtil.customLog('initializeContracts, init '+migrationContract.name+' contract',migrationContract);
-          await this.initContract(migrationContract.name, migrationContract.address, migrationContract.abi);
-        }
-      }
-    }
-
-    await Promise.all([
-      initTokenContract(),
-      initIdleTokenContract(),
-      initProtocolsContracts(),
-      initMigrationContract()
-    ]);
+    await initTokenContract();
 
     return this.setState({
       contractsInitialized:true

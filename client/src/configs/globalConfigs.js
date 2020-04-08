@@ -99,12 +99,21 @@ const globalConfigs = {
     },
     tokens:{
       DAI:{
+        color:{
+          hsl:['40', '95%', '59%']
+        },
         startTimestamp:'2020-02-11'
       },
       USDC:{
+        color:{
+          hsl:['211', '67%', '47%']
+        },
         startTimestamp:'2020-02-04'
       },
       SAI:{
+        color:{
+          hsl:['36', '92%', '63%']
+        },
         startTimestamp:'2020-02-04'
       }
     },

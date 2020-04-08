@@ -17,6 +17,7 @@ class Dashboard extends Component {
     currentRoute:null,
     pageComponent:null,
     selectedToken:null,
+    selectedStrategy:null,
     baseRoute:'/dashboard',
   };
 
@@ -111,9 +112,11 @@ class Dashboard extends Component {
     let currentRoute = this.state.baseRoute;
 
     let selectedToken = null;
+    let selectedStrategy = null;
 
     if (params.strategy){
-      currentRoute += '/'+params.strategy;
+      selectedStrategy = params.strategy;
+      currentRoute += '/'+selectedStrategy;
       if (params.asset){
         // Check if the asset is valid
         if (Object.keys(this.props.availableTokens).includes(params.asset.toUpperCase())){
@@ -154,7 +157,8 @@ class Dashboard extends Component {
       params,
       currentRoute,
       selectedToken,
-      pageComponent
+      pageComponent,
+      selectedStrategy
     });
   }
 
@@ -220,9 +224,14 @@ class Dashboard extends Component {
             </Flex>
           </Card>
         </Flex>
-        <Flex width={5/6} style={{overflow:'scroll'}}>
+        <Flex
+          width={5/6}
+          style={{overflow:'scroll'}}
+          py={[3,4]}
+          px={[3,5]}
+        >
           {
-            !this.props.accountInizialized ? (
+            !this.props.accountInizialized || !this.props.contractsInitialized? (
               <Flex
                 justifyContent={'center'}
                 alignItems={'center'}
@@ -230,7 +239,7 @@ class Dashboard extends Component {
                 width={1}
                 minHeight={'100vh'}
               >
-                <Loader size="40px" /> <Text ml={2}>Loading account...</Text>
+                <Loader size="30px" /> <Text ml={2}>Loading data...</Text>
               </Flex>
             ) : PageComponent &&
                   <PageComponent
@@ -245,7 +254,7 @@ class Dashboard extends Component {
                     tokenConfig={this.props.tokenConfig}
                     selectedToken={this.state.selectedToken}
                     availableTokens={this.props.availableTokens}
-                    contractsInitialized={this.props.contractsInitialized}
+                    selectedStrategy={this.state.selectedStrategy}
                     />
           }
         </Flex>
