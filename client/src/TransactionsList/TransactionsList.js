@@ -1,19 +1,24 @@
 import React, { Component } from 'react';
 // import style from './TransactionsList.module.scss';
-import globalConfigs from '../configs/globalConfigs';
+import TableRow from '../TableRow/TableRow';
+import TableHeader from '../TableHeader/TableHeader';
 import FunctionsUtil from '../utilities/FunctionsUtil';
-import { Flex, Box, Heading, Text, Link, Icon, Pill, Loader } from "rimble-ui";
-
-const env = process.env;
+import TransactionField from '../TransactionField/TransactionField';
+import { Flex, Box, Heading, Text, Link, Icon, Loader } from "rimble-ui";
 
 class TransactionsList extends Component {
 
   state = {
+    page:1,
+    txsPerPage:5,
     prevTxs:null,
     loading:false,
+    totalTxs:null,
+    totalPages:null,
     renderedTxs:null,
-    isFirstDeposit:false,
-    lastBlockNumber:null
+    processedTxs:null,
+    lastBlockNumber:null,
+    firstBlockNumber:8119247,
   };
 
   // Utils
@@ -27,6 +32,26 @@ class TransactionsList extends Component {
     }
   }
 
+  prevPage(e){
+    if (e){
+      e.preventDefault();
+    }
+    const page = Math.max(1,this.state.page-1);
+    this.setState({
+      page
+    });
+  }
+
+  nextPage(e){
+    if (e){
+      e.preventDefault();
+    }
+    const page = Math.min(this.state.totalPages,this.state.page+1);
+    this.setState({
+      page
+    });
+  }
+
   async componentDidMount(){
     this.loadUtils();
     this.loadTxs();
@@ -34,10 +59,14 @@ class TransactionsList extends Component {
 
   async componentDidUpdate(prevProps, prevState) {
     this.loadUtils();
+    const pageChanged = prevState.page !== this.state.page;
+    if (pageChanged){
+      this.processTxs();
+    }
   }
 
-  async loadTxs(count){
-    if (!this.props.selectedToken || !this.props.account){
+  async loadTxs(count,endBlockNumber='latest'){
+    if (!this.props.account){
       return false;
     }
 
@@ -47,100 +76,25 @@ class TransactionsList extends Component {
       loading:true
     });
 
+    // Take last block number, is null take first block number
+    let prevTxs = this.state.prevTxs ? Object.assign({},this.state.prevTxs) : {};
+    let lastBlockNumber = Math.max(this.state.firstBlockNumber,this.state.lastBlockNumber);
 
-    const requiredNetwork = globalConfigs.network.requiredNetwork;
-    const etherscanInfo = globalConfigs.network.providers.etherscan;
-    let lastBlockNumber = this.state.lastBlockNumber;
-
-    let results = [];
-    let etherscanEndpoint = null;
-    let cachedTxs = null;
-
-    // Check if etherscan is enabled for the required network
-    if (etherscanInfo.enabled && etherscanInfo.endpoints[requiredNetwork]){
-      const etherscanApiUrl = etherscanInfo.endpoints[requiredNetwork];
-
-      // Add token variable to endpoint for separate cached requests between tokens
-      etherscanEndpoint = `${etherscanApiUrl}?apikey=${env.REACT_APP_ETHERSCAN_KEY}&token=${this.props.selectedToken}&module=account&action=tokentx&address=${this.props.account}&startblock=${lastBlockNumber}&endblock=999999999&sort=asc`;
-
-      cachedTxs = this.functionsUtil.getCachedRequest(etherscanEndpoint);
-      let txs = cachedTxs;
-
-      if (!txs){
-        // Make request
-        const error_callback = (err) => {
-          this.functionsUtil.customLog('Error getting prev txs');
-          if (!count){
-            // console.log('Retrieving prevTxs',count);
-            setTimeout(() => {
-              this.loadTxs(count+1);
-            },1000);
-            return false;
-          }
-        };
-        txs = await this.functionsUtil.makeRequest(etherscanEndpoint,error_callback);
-      }
-
-      if (!txs || !txs.data || !txs.data.result){
-        return this.setState({
-          earning:0,
-          prevTxs:{},
-          amountLent:0,
-          prevTxsError:true,
-        });
-      }
-
-      results = txs.data.result;
+    let enabledTokens = this.props.enabledTokens;
+    if (!enabledTokens || !enabledTokens.length){
+      enabledTokens = Object.keys(this.props.availableTokens);
     }
 
-    const tokenDecimals = this.props.tokenConfig.decimals;
+    const etherscanTxs = await this.functionsUtil.getEtherscanTxs(this.props.account,lastBlockNumber,'latest',enabledTokens);
 
-    const migrationContractAddr = this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract ? this.props.tokenConfig.migration.migrationContract.address : null;
-    const migrationContractOldAddrs = this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract && this.props.tokenConfig.migration.migrationContract.oldAddresses ? this.props.tokenConfig.migration.migrationContract.oldAddresses : [];
-    // const oldContractAddr = this.props.tokenConfig.migration && this.props.tokenConfig.migration.oldContract ? this.props.tokenConfig.migration.oldContract.address.replace('x','').toLowerCase() : null;
-
-    let etherscanTxs = null;
-
-    if (cachedTxs){
-      etherscanTxs = cachedTxs.data.result;
-    } else {
-      etherscanTxs = {};
-      results.filter(
-          tx => {
-            const internalTxs = results.filter(r => r.hash === tx.hash);
-            const isSendTransferTx = internalTxs.length === 1 && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-            const isReceiveTransferTx = internalTxs.length === 1 && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-            const isMigrationTx = migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).indexOf(tx.from.toLowerCase()) !== -1 ) && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-            const isRightToken = internalTxs.length>1 && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase()).length;
-            const isDepositTx = isRightToken && !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-            const isRedeemTx = isRightToken && !isMigrationTx && tx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()).length && tx.to.toLowerCase() === this.props.account.toLowerCase();
-
-            return isSendTransferTx || isReceiveTransferTx || isMigrationTx || isDepositTx || isRedeemTx;
-        }
-      ).forEach(tx => {
-        if (etherscanTxs[tx.hash]){
-          etherscanTxs[tx.hash].value = etherscanTxs[tx.hash].value.plus(this.functionsUtil.fixTokenDecimals(tx.value,tokenDecimals));
-        } else {
-          etherscanTxs[tx.hash] = ({...tx, value: this.functionsUtil.fixTokenDecimals(tx.value,tokenDecimals)});
-        }
+    // Merge new txs with previous ones
+    if (etherscanTxs && etherscanTxs.length){
+      etherscanTxs.forEach((tx) => {
+        prevTxs[tx.hash] = tx;
       });
-      etherscanTxs = Object.values(etherscanTxs);
-
-      // Store filtered txs
-      if (etherscanEndpoint){
-        const cachedRequestData = {
-          data:{
-            result:etherscanTxs
-          }
-        };
-        this.functionsUtil.saveCachedRequest(etherscanEndpoint,false,cachedRequestData);
-      }
     }
 
     let amountLent = this.functionsUtil.BNify(0);
-
-    // Initialize prevTxs
-    let prevTxs = this.state.prevTxs ? Object.assign({},this.state.prevTxs) : {};
 
     // Take storedTxs from localStorage
     const storedTxs = localStorage && JSON.parse(localStorage.getItem('transactions')) ? JSON.parse(localStorage.getItem('transactions')) : {};
@@ -150,276 +104,390 @@ class TransactionsList extends Component {
       storedTxs[this.props.account] = {};
     }
 
-    if (typeof storedTxs[this.props.account][this.props.selectedToken] !== 'object'){
-      storedTxs[this.props.account][this.props.selectedToken] = {};
-    }
+    await this.functionsUtil.asyncForEach(enabledTokens,async (selectedToken) => {
 
-    // Check if this is the first interaction with Idle
-    let depositedTxs = 0;
+      const tokenConfig = this.props.availableTokens[selectedToken];
 
-    if (etherscanTxs && etherscanTxs.length){
-
-      // Merge new txs with previous ones
-      await this.functionsUtil.asyncForEach(etherscanTxs,async (tx,index) => {
-        prevTxs[tx.hash] = tx;
-      });
-
-      const lastTx = etherscanTxs[etherscanTxs.length-1];
-
-      // Update last block number
-      if (lastTx && lastTx.blockNumber){
-        lastBlockNumber = lastTx.blockNumber;
+      if (typeof storedTxs[this.props.account][selectedToken] !== 'object'){
+        storedTxs[this.props.account][selectedToken] = {};
       }
 
-      // Loop through prevTxs to have all the history
-      await this.functionsUtil.asyncForEach(Object.values(prevTxs),async (tx,index) => {
+      // Check if this is the first interaction with Idle
+      let avgBuyPrice = this.functionsUtil.BNify(0);
 
-        const txKey = `tx${tx.timeStamp}000`;
-        const storedTx = storedTxs[this.props.account][this.props.selectedToken][txKey] ? storedTxs[this.props.account][this.props.selectedToken][txKey] : tx;
-        // const isNewTx = etherscanTxs.indexOf(tx) !== -1; // Just fetched from etherscan
-        const isMigrationTx = migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).indexOf(tx.from.toLowerCase()) !== -1 ) && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-        const isSendTransferTx = !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-        const isReceiveTransferTx = !isMigrationTx && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-        const isDepositTx = !isMigrationTx && !isSendTransferTx && !isReceiveTransferTx && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-        const isRedeemTx = !isMigrationTx && !isSendTransferTx && !isReceiveTransferTx && tx.to.toLowerCase() === this.props.account.toLowerCase();
+      const tokenDecimals = tokenConfig.decimals;
+      const oldContractAddr = tokenConfig.migration && tokenConfig.migration.oldContract ? tokenConfig.migration.oldContract.address.replace('x','').toLowerCase() : null;
 
-        let tokenPrice = await this.functionsUtil.genericContractCall(this.props.tokenConfig.idle.token, 'tokenPrice',[],{}, tx.blockNumber);
-        tokenPrice = this.functionsUtil.fixTokenDecimals(tokenPrice,this.props.tokenConfig.decimals);
-        let tokensTransfered = tokenPrice.times(this.functionsUtil.BNify(tx.value));
+      // console.log('enabledTokens',enabledTokens);
+      const filteredTxs = Object.values(prevTxs).filter(tx => (tx.token === selectedToken));
 
-        // Deposited
-        if (isSendTransferTx){
-          // amountLent = amountLent.plus(this.functionsUtil.BNify(tx.value));
-          // depositedTxs++;
+      if (filteredTxs && filteredTxs.length){
 
-          // Decrese amountLent by the last idleToken price
-          amountLent = amountLent.minus(tokensTransfered);
+        const lastTx = filteredTxs[Object.values(filteredTxs).pop()];
 
-          if (amountLent.lte(0)){
-            amountLent = this.functionsUtil.BNify(0);
-          }
+        // Update last block number
+        if (lastTx && lastTx.blockNumber && (!this.state.lastBlockNumber || lastTx.blockNumber>this.state.lastBlockNumber)){
+          lastBlockNumber = parseInt(lastTx.blockNumber)+1;
+        }
 
-          // console.log(`Transfer sent of ${tx.value} (${tokensTransfered}) - amountLent: ${amountLent}`);
+        // Loop through filteredTxs to have all the history
+        await this.functionsUtil.asyncForEach(filteredTxs,async (tx,index) => {
 
-          storedTx.value = tokensTransfered;
+          const txKey = `tx${tx.timeStamp}000`;
+          const storedTx = storedTxs[this.props.account][selectedToken][txKey] ? storedTxs[this.props.account][selectedToken][txKey] : tx;
 
-        } else if (isReceiveTransferTx){
-
-          // Decrese amountLent by the last idleToken price
-          amountLent = amountLent.plus(tokensTransfered);
-          // console.log(`Transfer received of ${tx.value} (${tokensTransfered}) - amountLent: ${amountLent}`);
-
-          storedTx.value = tokensTransfered;
-
-        } else if (isDepositTx){
-
-          amountLent = amountLent.plus(this.functionsUtil.BNify(tx.value));
-
-          depositedTxs++;
-
-          if (!storedTx.idleTokens){
-
-            // Init idleTokens amount
-            storedTx.idleTokens = this.functionsUtil.BNify(tx.value);
-
-            const decodeLogs = [
-              {
-                "internalType": "uint256",
-                "name": "_tokenAmount",
-                "type": "uint256"
-              }
-            ];
-
-            const walletAddress = this.props.account.replace('x','').toLowerCase();
-            const res = await this.functionsUtil.getTxDecodedLogs(tx,walletAddress,decodeLogs,storedTx);
-
-            if (res){
-              const [txReceipt,logs] = res;
-
-              storedTx.idleTokens = this.functionsUtil.fixTokenDecimals(logs._tokenAmount,18);
-              storedTx.txReceipt = txReceipt;
-            }
-          }
-
-          // console.log(`Deposited ${tx.value} (${storedTx.idleTokens}), AmountLent: ${amountLent}`);
-
-          // Save new storedTx
-          storedTxs[this.props.account][this.props.selectedToken][txKey] = storedTx;
-
-        // Redeemed
-        } else if (isRedeemTx){
-
-          const redeemedValueFixed = this.functionsUtil.BNify(storedTx.value);
-
-          // Decrese amountLent by redeem amount
-          amountLent = amountLent.minus(redeemedValueFixed);
-
-          // Reset amountLent if below zero
-          if (amountLent.lt(0)){
-            amountLent = this.functionsUtil.BNify(0);
-          }
-          // console.log(`Redeemed ${tx.value} (${redeemedValueFixed}), AmountLent: ${amountLent}`);
-        // Migrated
-        } else if (isMigrationTx){
-
-          let migrationValueFixed = this.functionsUtil.BNify(storedTx.value);
-          if (!storedTx.tokenPrice){
+          let tokenPrice = null;
+          if (storedTx.tokenPrice){
+            tokenPrice = this.functionsUtil.BNify(storedTx.tokenPrice);
+          } else {
+            tokenPrice = await this.functionsUtil.genericContractCall(tokenConfig.idle.token, 'tokenPrice',[],{}, tx.blockNumber);
+            tokenPrice = this.functionsUtil.fixTokenDecimals(tokenPrice,tokenConfig.decimals);
             storedTx.tokenPrice = tokenPrice;
-            migrationValueFixed = migrationValueFixed.times(tokenPrice);
-
-            // Save Tx
-            storedTxs[this.props.account][this.props.selectedToken][txKey] = storedTx;
           }
 
-          tx.value = migrationValueFixed;
+          let tokensTransfered = tokenPrice.times(this.functionsUtil.BNify(tx.value));
 
-          amountLent = amountLent.plus(migrationValueFixed);
-        }
-
-        // Update transaction
-        prevTxs[tx.hash] = tx;
-      });
-    }
-
-    let minedTxs = storedTxs[this.props.account][this.props.selectedToken];
-
-    // Add missing executed transactions
-    if (minedTxs){
-
-      this.functionsUtil.customLog('getPrevTxs adding minedTxs',minedTxs);
-
-      await this.functionsUtil.asyncForEach(Object.keys(minedTxs),async (txKey,i) => {
-        const tx = minedTxs[txKey];
-        const isStoredTx = storedTxs && storedTxs[this.props.account] && storedTxs[this.props.account][this.props.selectedToken] && storedTxs[this.props.account][this.props.selectedToken][txKey];
-
-        let tokenPrice = await this.functionsUtil.genericContractCall(this.props.tokenConfig.idle.token, 'tokenPrice',[],{}, tx.blockNumber);
-        tokenPrice = this.functionsUtil.fixTokenDecimals(tokenPrice,18);
-
-        const allowedMethods = ['mintIdleToken','redeemIdleToken','bridgeIdleV1ToIdleV2']
-
-        // Skip invalid txs
-        if (prevTxs[tx.transactionHash] || tx.status !== 'success' || !tx.transactionHash || allowedMethods.indexOf(tx.method)===-1){
-          return;
-        }
-
-        let realTx = tx.realTx ? tx.realTx : null;
-
-        if (!realTx){
-          // console.log('getPrevTxs - getTransaction',tx.transactionHash);
-          realTx = await (new Promise( async (resolve, reject) => {
-            this.props.web3.eth.getTransaction(tx.transactionHash,(err,txReceipt)=>{
-              if (err){
-                reject(err);
-              }
-              resolve(txReceipt);
-            });
-          }));
-        }
-
-        this.functionsUtil.customLog('realTx (localStorage)',realTx);
-
-        // Skip txs from other wallets
-        if (!realTx || realTx.from.toLowerCase() !== this.props.account.toLowerCase()){
-          // this.functionsUtil.customLog('Skipped tx '+tx.transactionHash+' not from this account.');
-          return;
-        }
-
-        realTx.contractAddress = this.props.tokenConfig.address;
-        realTx.timeStamp = parseInt(tx.created/1000);
-
-        let txValue;
-        switch (tx.method){
-          case 'mintIdleToken':
-
-            if (realTx.to.toLowerCase() !== this.props.tokenConfig.idle.address.toLowerCase()){
-              // Remove wrong contract tx
-              if (isStoredTx){
-                delete storedTxs[this.props.account][this.props.selectedToken][txKey];
-              }
-
-              // this.functionsUtil.customLog('Skipped deposit tx '+tx.transactionHash+' - wrong contract');
-              return;
-            }
-
-            txValue = tx.params ? this.functionsUtil.fixTokenDecimals(tx.params[0],tokenDecimals).toString() : 0;
-            if (!txValue){
-              // this.functionsUtil.customLog('Skipped deposit tx '+tx.transactionHash+' - value is zero ('+txValue+')');
-              return;
-            }
-            
-            depositedTxs++;
-            realTx.status = 'Deposited';
-            realTx.value = txValue;
-          break;
-          case 'redeemIdleToken':
-            if (!realTx.tokenPrice){
-              const redeemedValue = this.functionsUtil.BNify(tx.value).times(tokenPrice);
-              const redeemTokenDecimals = this.props.tokenConfig.decimals;
-              const redeemedValueFixed = this.functionsUtil.fixTokenDecimals(redeemedValue,redeemTokenDecimals);
-              realTx.tokenPrice = tokenPrice;
-              realTx.status = 'Redeemed';
-              realTx.value = redeemedValueFixed.toString();
-            }
-
-            // TODO: save tx to localstorage
-          break;
-          case 'bridgeIdleV1ToIdleV2':
-
-            if (!realTx.tokenPrice){
-              const migratedValue = this.functionsUtil.BNify(tx.value).times(tokenPrice);
-              const migrationTokenDecimals = await this.functionsUtil.getTokenDecimals(this.props.tokenConfig.migration.oldContract.name);
-              const migratedValueFixed = this.functionsUtil.fixTokenDecimals(migratedValue,migrationTokenDecimals);
-              realTx.tokenPrice = tokenPrice;
-              realTx.status = 'Migrated';
-              realTx.value = migratedValueFixed.toString();
-            }
-          break;
-          default:
-          break;
-        }
-
-        realTx.tokenSymbol = this.props.selectedToken;
-
-        if (tx.method==='mintIdleToken'){
-          amountLent = amountLent.plus(this.functionsUtil.BNify(realTx.value));
-          // console.log('Deposited (localStorage) '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
-        } else if (tx.method==='redeemIdleToken'){
-          amountLent = amountLent.minus(this.functionsUtil.BNify(realTx.value));
-
-          if (amountLent.lt(0)){
-            amountLent = this.functionsUtil.BNify(0);
+          // Add transactionHash to storedTx
+          if (!storedTx.transactionHash){
+            storedTx.transactionHash = tx.hash;
           }
-          // console.log('Redeemed (localStorage) '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
-        } else if (tx.method==='bridgeIdleV1ToIdleV2'){
-          amountLent = amountLent.plus(this.functionsUtil.BNify(realTx.value));
-          // console.log('Migrated (localStorage) '+parseFloat(realTx.value),'AmountLent',amountLent.toString());
-        }
 
-        // Save realTx and update localStorage
-        if (!tx.realTx){
-          tx.realTx = realTx;
-          storedTxs[this.props.account][this.props.selectedToken][txKey] = tx;
-        }
+          // Deposited
+          switch (storedTx.action){
+            case 'Send':
+              // amountLent = amountLent.plus(this.functionsUtil.BNify(tx.value));
 
-        prevTxs[realTx.hash] = realTx;
-      });
-  
-      // Update localStorage
-      if (storedTxs && localStorage){
-        this.functionsUtil.setLocalStorage('transactions',JSON.stringify(storedTxs));
+              // Decrese amountLent by the last idleToken price
+              amountLent = amountLent.minus(tokensTransfered);
+
+              if (amountLent.lte(0)){
+                amountLent = this.functionsUtil.BNify(0);
+                avgBuyPrice = this.functionsUtil.BNify(0);
+              }
+
+              // console.log(`Transfer sent of ${tx.value} (${tokensTransfered}) - amountLent: ${amountLent}`);
+
+              storedTx.value = tokensTransfered;
+            break;
+            case 'Receive':
+
+              // Decrese amountLent by the last idleToken price
+              amountLent = amountLent.plus(tokensTransfered);
+
+              // Calculate avgBuyPrice for current earnings
+              avgBuyPrice = avgBuyPrice.plus(tokensTransfered);
+
+              // console.log(`Transfer received of ${tx.value} (${tokensTransfered}) - amountLent: ${amountLent}`);
+
+              storedTx.value = tokensTransfered;
+            break;
+            case 'Swap':
+              // Decrese amountLent by the last idleToken price
+              amountLent = amountLent.plus(tokensTransfered);
+
+              // Calculate avgBuyPrice for current earnings
+              avgBuyPrice = avgBuyPrice.plus(tokensTransfered);
+
+              storedTx.value = tokensTransfered;
+            break;
+            case 'Deposit':
+              amountLent = amountLent.plus(this.functionsUtil.BNify(tx.value));
+
+              if (!storedTx.idleTokens){
+
+                // Init idleTokens amount
+                storedTx.idleTokens = this.functionsUtil.BNify(tx.value);
+                storedTx.method = 'mintIdleToken';
+                storedTx.action = 'Deposit';
+
+                const decodeLogs = [
+                  {
+                    "internalType": "uint256",
+                    "name": "_tokenAmount",
+                    "type": "uint256"
+                  }
+                ];
+
+                const walletAddress = this.props.account.replace('x','').toLowerCase();
+                const res = await this.functionsUtil.getTxDecodedLogs(tx,walletAddress,decodeLogs,storedTx);
+
+                if (res){
+                  const [txReceipt,logs] = res;
+
+                  storedTx.idleTokens = this.functionsUtil.fixTokenDecimals(logs._tokenAmount,18);
+                  storedTx.txReceipt = txReceipt;
+                }
+              }
+
+              // Calculate avgBuyPrice for current earnings
+              avgBuyPrice = avgBuyPrice.plus(tokensTransfered);
+
+              // console.log(`Deposited ${tx.value} (${storedTx.idleTokens}), AmountLent: ${amountLent}`);
+            break;
+            case 'Redeem':
+
+              const redeemedValueFixed = this.functionsUtil.BNify(storedTx.value);
+
+              // Decrese amountLent by redeem amount
+              amountLent = amountLent.minus(redeemedValueFixed);
+              avgBuyPrice = avgBuyPrice.minus(tokensTransfered);
+
+              // Reset amountLent if below zero
+              if (amountLent.lt(0)){
+                amountLent = this.functionsUtil.BNify(0);
+
+                // Reset Avg Buy Price
+                avgBuyPrice = this.functionsUtil.BNify(0);
+              }
+
+              // Set tx method
+              if (!storedTx.method){
+                storedTx.method = 'redeemIdleToken';
+                storedTx.action = 'Redeem';
+              }
+            break;
+            case 'Migrate':
+
+              let migrationValueFixed = 0;
+
+              if (!storedTx.migrationValueFixed){
+                storedTx.method = 'bridgeIdleV1ToIdleV2';
+                migrationValueFixed = this.functionsUtil.BNify(tx.value).times(tokenPrice);
+                storedTx.migrationValueFixed = migrationValueFixed;
+                storedTx.action = 'Migrate';
+              } else {
+                migrationValueFixed = this.functionsUtil.BNify(storedTx.migrationValueFixed);
+              }
+     
+              tx.value = migrationValueFixed;
+
+              amountLent = amountLent.plus(migrationValueFixed);
+
+              // Calculate avgBuyPrice for current earnings
+              tokensTransfered = tokenPrice.times(migrationValueFixed);
+              avgBuyPrice = avgBuyPrice.plus(tokensTransfered);
+            break;
+            default:
+            break;
+          }
+
+          // Save Tx
+          storedTxs[this.props.account][selectedToken][txKey] = storedTx;
+
+          // Update transaction
+          prevTxs[tx.hash] = tx;
+        });
       }
-    }
+
+      let minedTxs = storedTxs[this.props.account][selectedToken];
+
+      // Add missing executed transactions
+      if (minedTxs){
+
+        this.functionsUtil.customLog('loadTxs adding minedTxs',minedTxs);
+
+        await this.functionsUtil.asyncForEach(Object.keys(minedTxs),async (txKey,i) => {
+          const tx = minedTxs[txKey];
+          const isStoredTx = storedTxs && storedTxs[this.props.account] && storedTxs[this.props.account][selectedToken] && storedTxs[this.props.account][selectedToken][txKey];
+
+          const allowedMethods = ['mintIdleToken','redeemIdleToken','bridgeIdleV1ToIdleV2']
+
+          // Skip invalid txs
+          if (prevTxs[tx.transactionHash] || tx.status !== 'success' || !tx.transactionHash || allowedMethods.indexOf(tx.method)===-1){
+            // console.log(`Skip stored Tx ${tx.transactionHash}, Processed: ${!!prevTxs[tx.transactionHash]}, status: ${tx.status}, method: ${tx.method}`);
+            return false;
+          }
+
+          let realTx = tx.realTx ? tx.realTx : null;
+
+          if (!realTx){
+            // console.log('loadTxs - getTransaction',tx.transactionHash);
+            realTx = await (new Promise( async (resolve, reject) => {
+              this.props.web3.eth.getTransaction(tx.transactionHash,(err,txReceipt)=>{
+                if (err){
+                  reject(err);
+                }
+                resolve(txReceipt);
+              });
+            }));
+          }
+
+          this.functionsUtil.customLog('realTx (localStorage)',realTx);
+
+          // Skip txs from other wallets
+          if (!realTx || realTx.from.toLowerCase() !== this.props.account.toLowerCase()){
+            // this.functionsUtil.customLog('Skipped tx '+tx.transactionHash+' not from this account.');
+            // console.log(`Skip stored Tx ${tx.transactionHash}, from: ${realTx.from}`);
+            return false;
+          }
+
+          let tokenPrice = await this.functionsUtil.genericContractCall(tokenConfig.idle.token,'tokenPrice',[],{}, tx.blockNumber);
+          tokenPrice = this.functionsUtil.fixTokenDecimals(tokenPrice,18);
+
+          realTx.contractAddress = tokenConfig.address;
+          realTx.timeStamp = parseInt(tx.created/1000);
+
+          let txValue;
+          switch (tx.method){
+            case 'mintIdleToken':
+
+              if (realTx.to.toLowerCase() !== tokenConfig.idle.address.toLowerCase()){
+                // Remove wrong contract tx
+                if (isStoredTx){
+                  delete storedTxs[this.props.account][selectedToken][txKey];
+                }
+                // this.functionsUtil.customLog('Skipped deposit tx '+tx.transactionHash+' - wrong contract');
+                return false;
+              }
+
+              txValue = tx.params ? this.functionsUtil.fixTokenDecimals(tx.params[0],tokenDecimals).toString() : 0;
+              if (!txValue){
+                // this.functionsUtil.customLog('Skipped deposit tx '+tx.transactionHash+' - value is zero ('+txValue+')');
+                return false;
+              }
+
+              realTx.status = 'Deposited';
+              realTx.value = txValue;
+            break;
+            case 'redeemIdleToken':
+              if (!realTx.tokenPrice){
+                const redeemedValue = this.functionsUtil.BNify(tx.params[0]).times(tokenPrice);
+                const redeemTokenDecimals = await this.getTokenDecimals();
+                const redeemedValueFixed = this.functionsUtil.fixTokenDecimals(redeemedValue,redeemTokenDecimals);
+                realTx.tokenPrice = tokenPrice;
+                realTx.status = 'Redeemed';
+                realTx.value = redeemedValueFixed.toString();
+              }
+            break;
+            case 'bridgeIdleV1ToIdleV2':
+
+              let migrationTxReceipt = tx.txReceipt ? tx.txReceipt : null;
+
+              if (!migrationTxReceipt){
+                migrationTxReceipt = await (new Promise( async (resolve, reject) => {
+                  this.props.web3.eth.getTransactionReceipt(tx.transactionHash,(err,tx)=>{
+                    if (err){
+                      reject(err);
+                    }
+                    resolve(tx);
+                  });
+                }));
+              }
+
+              if (!migrationTxReceipt){
+                return false;
+              }
+
+              const contractAddress = tokenConfig.idle.address.toLowerCase().replace('x','');
+              const isMigrationRightContract = migrationTxReceipt.logs.filter((tx) => { return tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${contractAddress}`; });
+
+              if (!isMigrationRightContract.length){
+                // Remove wrong contract tx
+                if (isStoredTx){
+                  delete storedTxs[this.props.account][selectedToken][txKey];
+                }
+                return false;
+              }
+
+              // Save txReceipt into the tx
+              if (!tx.txReceipt){
+                tx.txReceipt = migrationTxReceipt;
+                if (isStoredTx){
+                  storedTxs[this.props.account][selectedToken][txKey] = tx;
+                }
+              }
+
+              const migrationTxInternalTransfers = migrationTxReceipt.logs.filter((tx) => { return tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${oldContractAddr}`; });
+
+              if (!migrationTxInternalTransfers.length){
+                return false;
+              }
+
+              const migrationInternalTransfer = migrationTxInternalTransfers.pop();
+
+              const decodedLogs = this.props.web3.eth.abi.decodeLog([
+                {
+                  "internalType": "uint256",
+                  "name": "_idleToken",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_token",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "_price",
+                  "type": "uint256"
+                },
+              ],migrationInternalTransfer.data,migrationInternalTransfer.topics);
+
+              const migrationValue = decodedLogs._token;
+              const migrationTokenDecimals = this.state.oldContractTokenDecimals ? this.state.oldContractTokenDecimals : await this.functionsUtil.getTokenDecimals(tokenConfig.migration.oldContract.name);
+              const migrationValueFixed = this.functionsUtil.fixTokenDecimals(migrationValue,migrationTokenDecimals);
+
+              realTx.status = 'Migrated';
+              realTx.value = migrationValueFixed.toString();
+            break;
+            default:
+            break;
+          }
+
+          realTx.tokenSymbol = selectedToken;
+
+          // console.log('Adding localStorage tx',realTx);
+
+          // this.functionsUtil.customLog('realTx from localStorage:',realTx);
+          const tokensTransfered = tokenPrice.times(this.functionsUtil.BNify(realTx.value));
+
+          if (!isNaN(realTx.value) && parseFloat(realTx.value)){
+            if (tx.method==='mintIdleToken'){
+              amountLent = amountLent.plus(this.functionsUtil.BNify(realTx.value));
+              avgBuyPrice = avgBuyPrice.plus(tokensTransfered);
+              // console.log(`Deposited (localStorage) ${realTx.value} @${tokenPrice}, AmountLent: ${amountLent}`);
+            } else if (tx.method==='redeemIdleToken'){
+              amountLent = amountLent.minus(this.functionsUtil.BNify(realTx.value));
+              avgBuyPrice = avgBuyPrice.minus(tokenPrice.times(this.functionsUtil.BNify(realTx.value)));
+
+              if (amountLent.lt(0)){
+                amountLent = this.functionsUtil.BNify(0);
+                avgBuyPrice = this.functionsUtil.BNify(0);
+              }
+              // console.log(`Redeemed (localStorage) ${realTx.value} @${tokenPrice}, AmountLent: ${amountLent}`);
+            } else if (tx.method==='bridgeIdleV1ToIdleV2'){
+              amountLent = amountLent.plus(this.functionsUtil.BNify(realTx.value));
+              avgBuyPrice = avgBuyPrice.plus(tokensTransfered);
+              // console.log(`Migrated (localStorage) ${realTx.value} @${tokenPrice}, AmountLent: ${amountLent}`);
+            }
+
+            // Save realTx and update localStorage
+            if (!tx.realTx){
+              tx.realTx = realTx;
+              storedTxs[this.props.account][selectedToken][txKey] = tx;
+            }
+
+            prevTxs[realTx.hash] = realTx;
+
+          } else if (isStoredTx){
+            delete storedTxs[this.props.account][selectedToken][txKey];
+          }
+        });
+    
+        // Update localStorage
+        if (storedTxs && localStorage){
+          this.functionsUtil.setLocalStorage('transactions',JSON.stringify(storedTxs));
+        }
+      }
+    });
 
     if (amountLent.lte(0)){
       amountLent = this.functionsUtil.BNify(0);
     }
 
-    const isFirstDeposit = depositedTxs === 1;
-
     return this.setState({
       prevTxs,
       loading:false,
-      isFirstDeposit,
       lastBlockNumber
     }, () => {
       this.processTxs()
@@ -427,41 +495,27 @@ class TransactionsList extends Component {
   };
 
   processTxs(){
-    const txsIndexes = Object.keys(this.state.prevTxs);
-    const txsToShow = 99999999;
+
     // let totalInterestsAccrued = 0;
     let depositedSinceLastRedeem = 0;
     let totalRedeemed = 0;
-    const decimals = Math.min(this.props.tokenConfig.decimals,8);
 
-    const migrationContractAddr = this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract ? this.props.tokenConfig.migration.migrationContract.address : null;
-    const migrationContractOldAddrs = this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract && this.props.tokenConfig.migration.migrationContract.oldAddresses ? this.props.tokenConfig.migration.migrationContract.oldAddresses : [];
+    // Sort prevTxs by timeStamp
+    const txsIndexes = Object.values(this.state.prevTxs).sort((a,b) => (a.timeStamp > b.timeStamp) ? -1 : 1 );
 
-    let txs = txsIndexes.map((key, i) => {
+    // Calculate max number of pages
+    const totalTxs = txsIndexes.length;
+    const totalPages = Math.ceil(totalTxs/this.state.txsPerPage);
 
-      const tx = this.state.prevTxs[key];
+    const processedTxs = [];
 
-      const isMigrationTx = migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).indexOf(tx.from.toLowerCase()) !== -1 ) && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-      const isSendTransferTx = !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-      const isReceiveTransferTx = !isMigrationTx && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-      const isDepositTx = !isMigrationTx && !isSendTransferTx && !isReceiveTransferTx && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-      const isRedeemTx = !isMigrationTx && !isSendTransferTx && !isReceiveTransferTx && tx.to.toLowerCase() === this.props.account.toLowerCase();
-
+    txsIndexes.forEach((tx, i) => {
+      const selectedToken = tx.token;
+      const tokenConfig = this.props.availableTokens[selectedToken];
+      const decimals = Math.min(tokenConfig.decimals,8);
+      
       const date = new Date(tx.timeStamp*1000);
-      let status = tx.status ? tx.status : null;
-      if (!status){
-        if (isDepositTx){
-          status = 'Deposited';
-        } else if (isRedeemTx){
-          status = 'Redeemed';
-        } else if (isMigrationTx){
-          status = 'Migrated';
-        } else if (isSendTransferTx){
-          status = 'Transfer';
-        } else if (isReceiveTransferTx){
-          status = 'Received';
-        }
-      }
+      let action = tx.action ? tx.action : this.functionsUtil.getTxAction(tx,tokenConfig);
 
       const parsedValue = parseFloat(tx.value);
 
@@ -469,103 +523,53 @@ class TransactionsList extends Component {
         return false;
       }
 
-      const value = parsedValue ? (this.props.isMobile ? parsedValue.toFixed(4) : parsedValue.toFixed(decimals)) : '-';
+      const amount = parsedValue ? (this.props.isMobile ? parsedValue.toFixed(4) : parsedValue.toFixed(decimals)) : '-';
       const momentDate = this.functionsUtil.strToMoment(date);
-      const formattedDate = momentDate.fromNow();
-      const formattedDateAlt = momentDate.format('YYYY-MM-DD HH:mm:ss');
-      let color;
-      let icon;
       let interest = null;
-      switch (status) {
-        case 'Deposited':
-          color = 'blue';
-          icon = "ArrowDownward";
+      switch (action) {
+        case 'Deposit':
           depositedSinceLastRedeem+=parsedValue;
-          // totalRedeemed = 0;
         break;
-        case 'Redeemed':
-          color = 'green';
-          icon = "ArrowUpward";
+        case 'Redeem':
           totalRedeemed += Math.abs(parsedValue);
           if (totalRedeemed<depositedSinceLastRedeem){
             interest = null;
           } else {
             interest = totalRedeemed-depositedSinceLastRedeem;
-            interest = interest>0 ? '+'+(this.props.isMobile ? parseFloat(interest).toFixed(4) : parseFloat(interest).toFixed(decimals))+' '+this.props.selectedToken : null;
+            interest = interest>0 ? '+'+(this.props.isMobile ? parseFloat(interest).toFixed(4) : parseFloat(interest).toFixed(decimals))+' '+selectedToken : null;
             depositedSinceLastRedeem -= totalRedeemed;
             depositedSinceLastRedeem = Math.max(0,depositedSinceLastRedeem);
             totalRedeemed = 0;
           }
         break;
-        case 'Transfer':
-          color = 'green';
-          icon = "Send";
-        break;
-        case 'Received':
-          color = 'blue';
-          icon = "Redo";
-        break;
-        case 'Migrated':
-          color = 'blue';
-          icon = "Sync";
-          depositedSinceLastRedeem+=parsedValue;
-        break;
         default:
-          color = 'grey';
-          icon = "Refresh";
         break;
       }
 
-      if (i>=txsIndexes.length-txsToShow){
-        return (
-          <Link key={'tx_'+i} display={'block'} href={`https://etherscan.io/tx/${tx.hash}`} target={'_blank'} rel="nofollow noopener noreferrer">
-            <Flex alignItems={'center'} flexDirection={['row','row']} width={'100%'} p={[2,3]} borderBottom={'1px solid #D6D6D6'}>
-              <Box width={[1/12,1/12]} textAlign={'right'}>
-                  <Icon name={icon} color={color} style={{float:'left'}}></Icon>
-              </Box>
-              <Box width={[2/12,2/12]} display={['none','block']} textAlign={'center'}>
-                <Pill color={color}>
-                  {status}
-                </Pill>
-              </Box>
-              <Box width={[6/12,3/12]}>
-                <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>{value} {this.props.selectedToken}</Text>
-              </Box>
-              <Box width={3/12} display={['none','block']}>
-                <Text textAlign={'center'} fontSize={[2,2]} fontWeight={2}>
-                  {interest ? <Pill color={'green'}>{interest}</Pill> : '-'}
-                </Text>
-              </Box>
-              <Box width={[5/12,3/12]} textAlign={'center'}>
-                <Text alt={formattedDateAlt} textAlign={'center'} fontSize={[1,2]} fontWeight={2}>{formattedDate}</Text>
-              </Box>
-            </Flex>
-          </Link>
-        );
+      // Save new params
+      tx.status = tx.status ? tx.status : 'Completed';
+      tx.action = action;
+      tx.momentDate = momentDate;
+      tx.amount = amount;
+      tx.interest = interest;
+
+      if (i>=((this.state.page-1)*this.state.txsPerPage) && i<((this.state.page-1)*this.state.txsPerPage)+this.state.txsPerPage){
+        processedTxs.push(tx);
       }
-
-      return null;
     });
-
-    const renderedTxs = txs
-            .reverse()
-            .filter(function( element ) {
-               return (element !== undefined) && (element !== null);
-            });
-
-
+  
     this.setState({
-      renderedTxs
+      totalTxs,
+      totalPages,
+      processedTxs,
+      loading:false
     });
   }
 
   render() {
     return (
-      <Flex flexDirection={'column'} width={[1,'90%']} m={'0 auto'}>
-        <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'dark-gray'}>
-          Last transactions
-        </Heading.h3>
-        <Box maxHeight={'500px'} overflow={'auto'}>
+      <Flex flexDirection={'column'} width={1} m={'0 auto'}>
+        <Box overflow={'auto'}>
         {
           this.state.loading ? (
             <Flex
@@ -577,11 +581,64 @@ class TransactionsList extends Component {
             >
               <Loader size="40px" /> <Text ml={2}>Loading transactions...</Text>
             </Flex>
-          ) : this.state.renderedTxs && this.state.renderedTxs.length ?
-                this.state.renderedTxs
-              : (
+          ) : this.state.processedTxs && this.state.processedTxs.length ? (
+                <Flex id="transactions-list-container" width={1} flexDirection={'column'}>
+                  <TableHeader
+                    cols={this.props.cols}
+                  />
+                  <Flex id="transactions-list" flexDirection={'column'}>
+                    {
+                      this.state.processedTxs.map(transaction => {
+                        const transactionHash = transaction.hash;
+                        return (
+                          <TableRow
+                            {...this.props}
+                            hash={transactionHash}
+                            transaction={transaction}
+                            key={`tx-${transactionHash}`}
+                            fieldComponent={TransactionField}
+                          />
+                        );
+                      })
+                    }
+                  </Flex>
+                  <Flex
+                    height={'50px'}
+                    flexDirection={'row'}
+                    alignItems={'center'}
+                    justifyContent={'flex-end'}
+                    id="transactions-list-pagination"
+                  >
+                    <Flex mr={3}>
+                      <Link mr={1} onClick={ e => this.prevPage(e) }>
+                        <Icon
+                          name={'KeyboardArrowLeft'}
+                          size={'2em'}
+                          color={ this.state.page>1 ? '#4f4f4f' : '#d8d8d8' }
+                        />
+                      </Link>
+                      <Link onClick={ e => this.nextPage(e) }>
+                        <Icon
+                          name={'KeyboardArrowRight'}
+                          size={'2em'}
+                          color={ this.state.page<this.state.totalPages ? '#4f4f4f' : '#d8d8d8' }
+                        />
+                      </Link>
+                    </Flex>
+                    <Flex alignItems={'center'}>
+                      <Text 
+                        fontSize={1}
+                        fontWeight={3}
+                        color={'cellText'}
+                      >
+                        Page {this.state.page} of {this.state.totalPages}
+                      </Text>
+                    </Flex>
+                  </Flex>
+                </Flex>
+              ) : (
                 <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontWeight={2} fontSize={[2]} color={'dark-gray'}>
-                  There are no transactions for {this.props.selectedToken}
+                  There are no transactions
                 </Heading.h3>
               )
         }

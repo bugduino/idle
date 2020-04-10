@@ -8,6 +8,7 @@ import { Flex, Card, Image, Loader, Text } from 'rimble-ui';
 
 // Import page components
 import Stats from '../Stats/Stats';
+import DashboardHeader from '../DashboardHeader/DashboardHeader';
 import RiskAdjustedStrategy from '../RiskAdjustedStrategy/RiskAdjustedStrategy';
 // import BestYieldStrategy from {};
 
@@ -225,13 +226,13 @@ class Dashboard extends Component {
           </Card>
         </Flex>
         <Flex
-          width={5/6}
-          style={{overflow:'scroll'}}
           py={[3,4]}
           px={[3,5]}
+          width={5/6}
+          style={{overflow:'scroll'}}
         >
           {
-            !this.props.accountInizialized || !this.props.contractsInitialized? (
+            !this.props.accountInizialized || !this.props.contractsInitialized ? (
               <Flex
                 justifyContent={'center'}
                 alignItems={'center'}
@@ -241,21 +242,25 @@ class Dashboard extends Component {
               >
                 <Loader size="30px" /> <Text ml={2}>Loading data...</Text>
               </Flex>
-            ) : PageComponent &&
-                  <PageComponent
-                    match={{
-                      params:{}
-                    }}
-                    web3={this.props.web3}
-                    account={this.props.account}
-                    initWeb3={this.props.initWeb3}
-                    isMobile={this.props.isMobile}
-                    contracts={this.props.contracts}
-                    tokenConfig={this.props.tokenConfig}
-                    selectedToken={this.state.selectedToken}
-                    availableTokens={this.props.availableTokens}
-                    selectedStrategy={this.state.selectedStrategy}
-                    />
+            ) : (
+              <Flex
+                width={1}
+                flexDirection={'column'}
+              >
+                <DashboardHeader
+                  {...this.props}
+                />
+                {
+                  PageComponent &&
+                    <PageComponent
+                      {...this.props}
+                      match={{ params:{} }}
+                      selectedToken={this.state.selectedToken}
+                      selectedStrategy={this.state.selectedStrategy}
+                      />
+                }
+              </Flex>
+            )
           }
         </Flex>
       </Flex>

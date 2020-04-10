@@ -48,11 +48,21 @@ class AssetField extends Component {
           }
         break;
         case 'idleTokenBalance':
+        case 'depositedBalance':
           const idleTokenBalance = await this.functionsUtil.getTokenBalance(this.props.tokenConfig.idle.token,this.props.account);
           if (idleTokenBalance){
             this.setState({
               idleTokenBalance:idleTokenBalance.toString()
             });
+          }
+          if (fieldInfo.name === 'depositedBalance'){
+            const idleTokenPrice = await this.functionsUtil.genericContractCall(this.props.tokenConfig.idle.token, 'tokenPrice');
+            if (idleTokenBalance && idleTokenPrice){
+              const depositedBalance = this.functionsUtil.fixTokenDecimals(idleTokenBalance.times(idleTokenPrice),this.props.tokenConfig.decimals);
+              this.setState({
+                depositedBalance:depositedBalance.toString()
+              });
+            }
           }
         break;
         case 'apr':
@@ -106,6 +116,13 @@ class AssetField extends Component {
       case 'idleTokenBalance':
         output = this.state.idleTokenBalance ? (
           <SmartNumber {...fieldInfo.props} number={this.state.idleTokenBalance} />
+        ) : (
+          <Loader size="20px" />
+        );
+      break;
+      case 'depositedBalance':
+        output = this.state.depositedBalance ? (
+          <SmartNumber {...fieldInfo.props} number={this.state.depositedBalance} />
         ) : (
           <Loader size="20px" />
         );

@@ -1,0 +1,18 @@
+.gradientButton{
+  border-radius: 48px !important;
+  background: rgba(0,221,255,1) !important;
+  background: -moz-linear-gradient(left, rgba(0,221,255,1) 0%, rgba(0,169,254,1) 100%) !important;
+  background: -webkit-gradient(left top, right top, color-stop(0%, rgba(0,221,255,1)), color-stop(100%, rgba(0,169,254,1))) !important;
+  background: -webkit-linear-gradient(left, rgba(0,221,255,1) 0%, rgba(0,169,254,1) 100%) !important;
+  background: -o-linear-gradient(left, rgba(0,221,255,1) 0%, rgba(0,169,254,1) 100%) !important;
+  background: -ms-linear-gradient(left, rgba(0,221,255,1) 0%, rgba(0,169,254,1) 100%) !important;
+  background: linear-gradient(to right, rgba(0,221,255,1) 0%, rgba(0,169,254,1) 100%) !important;
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ddff', endColorstr='#00a9fe', GradientType=1 ) !important;
+}
+.gradientButton:before{
+  display:none !important;
+}
+.gradientButton.empty{
+  background: #fff !important;
+  border:1px solid #093dff;
+}

@@ -163,7 +163,7 @@ class PortfolioDonut extends Component {
       radialLabelsTextColor:'#333',
       radialLabelsSkipAngle:10,
       radialLabelsTextXOffset:0,
-      radialLabelsLinkOffset:-parseInt(this.state.parentWidth*0.22),
+      radialLabelsLinkOffset:-parseInt(this.state.parentWidth*0.2),
       radialLabelsLinkDiagonalLength:0,
       radialLabelsLinkHorizontalLength:0,
       radialLabelsLinkColor:{ from: 'color' },

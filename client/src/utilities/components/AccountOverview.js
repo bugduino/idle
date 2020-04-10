@@ -17,14 +17,39 @@ class AccountOverview extends React.Component {
     return null;
   }
   render() {
-    const roundedBalance = this.trimEth(this.props.accountBalance, 4);
-    const roundedTokenBalance = this.trimEth(this.props.accountBalanceToken, 2);
+    // const roundedBalance = this.trimEth(this.props.accountBalance, 4);
+    // const roundedTokenBalance = this.trimEth(this.props.accountBalanceToken, 2);
     const walletProvider = this.getWalletProvider();
 
     const connectorInfo = globalConfigs.connectors[walletProvider.toLowerCase()];
     const walletIcon = connectorInfo && connectorInfo.icon ? connectorInfo.icon : `${walletProvider.toLowerCase()}.svg`;
     return (
-      <Flex alignItems={"flex-start"} style={{cursor: 'pointer'}} mx={3} my={2} onClick={this.props.toggleModal}>
+      <Flex
+      my={2}
+      alignItems={'center'}
+      style={{cursor:'pointer'}}
+      onClick={this.props.toggleModal}
+    >
+        {
+          connectorInfo ? (
+            <Image
+              width={'58px'}
+              height={'58px'}
+              display={'inline-flex'}
+              mr={[0,'0.5rem']}
+              src={`images/${walletIcon}`}
+              alt={walletProvider.toLowerCase()}
+              className={styles.walletProvider}
+            />
+          ) : (
+            <Icon
+              name='AccountCircle'
+              size={'52'}
+              ml={2}
+              mt={[0, 0]}
+              color='copyColor' />
+          )
+        }
         {!this.props.isMobile &&
           <Box>
             {this.props.hasQRCode &&
@@ -36,42 +61,36 @@ class AccountOverview extends React.Component {
                 />
               </Flex>
             }
-            <Box>
-              <Text fontSize={1} color={'white'}>
-                User: &nbsp;
+            <Flex flexDirection={'column'}>
+              <Flex
+                width={1}
+                alignItems={'center'}
+                flexDirection={'row'}
+                justifyContent={'space-between'}
+              >
+                <Text
+                  fontSize={2}
+                  fontWeight={3}
+                  color={'copyColor'}
+                >
+                  Hello
+                </Text>
                 <ShortHash
-                  fontSize={1} color={'white'}
-                  hash={this.props.account} />
-              </Text>
+                  fontSize={2}
+                  fontWeight={3}
+                  color={'copyColor'}
+                  hash={this.props.account}
+                />
+              </Flex>
               <Text
                 fontSize={1}
-                color={this.props.accountBalanceLow ? 'white' : 'white'}
+                fontWeight={3}
+                color={'subColor'}
                 >
-                {isNaN(roundedBalance) ? '0' : roundedBalance} ETH
-                {roundedTokenBalance && !isNaN(roundedTokenBalance) ? `, ${roundedTokenBalance}` : ', 0'} {this.props.selectedToken}
+                Connected with {walletProvider}
               </Text>
-            </Box>
+            </Flex>
           </Box>
-        }
-        {
-          connectorInfo ? (
-            <Image
-              width={'42px'}
-              height={'42px'}
-              display={'inline-flex'}
-              mr={[0,'0.5rem']}
-              src={`images/${walletIcon}`}
-              alt={walletProvider.toLowerCase()}
-              className={styles.walletProvider}
-            />
-          ) : (
-            <Icon
-              name='AccountCircle'
-              size={'45'}
-              ml={2}
-              mt={[0, 0]}
-              color='white' />
-          )
         }
       </Flex>
     );

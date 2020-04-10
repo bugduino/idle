@@ -4,6 +4,7 @@ import moment from 'moment';
 import { Text } from "rimble-ui";
 import BigNumber from 'bignumber.js';
 import globalConfigs from '../configs/globalConfigs';
+// import availableTokens from '../configs/availableTokens';
 
 const env = process.env;
 
@@ -65,32 +66,202 @@ class FunctionsUtil {
      tmp.innerHTML = html;
      return tmp.textContent || tmp.innerText || "";
   }
-  filterEtherscanTxs = (results) => {
+  getTxAction = (tx,tokenConfig) => {
+
+    const migrationContractAddr = tokenConfig.migration && tokenConfig.migration.migrationContract ? tokenConfig.migration.migrationContract.address : null;
+    const migrationContractOldAddrs = tokenConfig.migration && tokenConfig.migration.migrationContract && tokenConfig.migration.migrationContract.oldAddresses ? tokenConfig.migration.migrationContract.oldAddresses : [];
+
+    const isMigrationTx = migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).indexOf(tx.from.toLowerCase()) !== -1 ) && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
+    const isSendTransferTx = !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
+    const isReceiveTransferTx = !isMigrationTx && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
+    const isDepositTx = !isMigrationTx && !isSendTransferTx && !isReceiveTransferTx && tx.to.toLowerCase() === tokenConfig.idle.address.toLowerCase();
+    const isRedeemTx = !isMigrationTx && !isSendTransferTx && !isReceiveTransferTx && tx.to.toLowerCase() === this.props.account.toLowerCase();
+    const isSwapTx = !isMigrationTx && !isSendTransferTx && !isReceiveTransferTx && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
+
+    let action = null;
+
+    if (isDepositTx){
+      action = 'Deposit';
+    } else if (isRedeemTx){
+      action = 'Redeem';
+    } else if (isMigrationTx){
+      action = 'Migrate';
+    } else if (isSendTransferTx){
+      action = 'Send';
+    } else if (isReceiveTransferTx){
+      action = 'Receive';
+    } else if (isSwapTx){
+      action = 'Swap';
+    }
+
+    return action;
+  }
+  getEtherscanTxs = async (account=false,firstBlockNumber=0,endBlockNumber='latest',enabledTokens=[],count=0) => {
+    account = account ? account : this.props.account;
+
+    if (!account || !enabledTokens || !enabledTokens.length){
+      return [];
+    }
+
+    count = count ? count : 0;
+
+    const requiredNetwork = globalConfigs.network.requiredNetwork;
+    const etherscanInfo = globalConfigs.network.providers.etherscan;
+
+    let results = [];
+    let cachedTxs = null;
+    let etherscanEndpoint = null;
+    let etherscanBaseEndpoint = null;
+
+    // Check if etherscan is enabled for the required network
+    if (etherscanInfo.enabled && etherscanInfo.endpoints[requiredNetwork]){
+      const etherscanApiUrl = etherscanInfo.endpoints[requiredNetwork];
+
+      // Add token variable to endpoint for separate cached requests between tokens
+      etherscanEndpoint = `${etherscanApiUrl}?apikey=${env.REACT_APP_ETHERSCAN_KEY}&token=${enabledTokens.join(',')}&module=account&action=tokentx&address=${account}&startblock=${firstBlockNumber}&endblock=${endBlockNumber}&sort=asc`;
+      etherscanBaseEndpoint = `${etherscanApiUrl}?apikey=${env.REACT_APP_ETHERSCAN_KEY}&token=${enabledTokens.join(',')}&module=account&action=tokentx&address=${account}&startblock=${firstBlockNumber}&endblock=${endBlockNumber}&sort=asc`;
+
+      cachedTxs = this.getCachedRequest(etherscanEndpoint);
+
+      // Check if cached txs are not up-to-date by comparing firstBlockNumber
+      if (cachedTxs && cachedTxs.data.result && cachedTxs.data.result.length && !firstBlockNumber){
+        const lastCachedBlockNumber = parseInt(Object.assign([],cachedTxs.data.result).pop().blockNumber);
+
+        const etherscanEndpointLastBlock = `${etherscanApiUrl}?apikey=${env.REACT_APP_ETHERSCAN_KEY}&token=${enabledTokens.join(',')}&module=account&action=tokentx&address=${account}&startblock=${lastCachedBlockNumber}&endblock=${endBlockNumber}&sort=asc`;
+        let latestTxs = await this.makeRequest(etherscanEndpointLastBlock);
+
+        if (latestTxs && latestTxs.data.result && latestTxs.data.result.length){
+          latestTxs = this.filterEtherscanTxs(latestTxs.data.result);
+          if (latestTxs && latestTxs.length){
+            const lastTx = latestTxs.pop();
+            const lastRealBlockNumber = parseInt(lastTx.blockNumber);
+            // If real tx blockNumber differs from lastCachedBlockNumber
+            if (lastRealBlockNumber > lastCachedBlockNumber){
+              cachedTxs = null;
+            }
+          }
+        }
+      }
+
+      let txs = cachedTxs;
+
+      if (!txs){
+        // Make request
+        txs = await this.makeRequest(etherscanEndpoint);
+      }
+
+      if (txs && txs.data && txs.data.result){
+        results = txs.data.result;
+      } else {
+        return [];
+      }
+    }
+
+    // Initialize prevTxs
+    let etherscanTxs = [];
+
+    if (cachedTxs){
+      etherscanTxs = results;
+    } else {
+      etherscanTxs = this.filterEtherscanTxs(results,enabledTokens);
+
+      // Store filtered txs
+      if (etherscanTxs.length && etherscanEndpoint){
+        const cachedRequestData = {
+          data:{
+            result:etherscanTxs
+          }
+        };
+        this.saveCachedRequest(etherscanEndpoint,false,cachedRequestData);
+
+        // Merge base etherscan endpoint with new data
+        if (etherscanEndpoint !== etherscanBaseEndpoint){
+          let etherscanBaseTxs = this.getCachedRequest(etherscanBaseEndpoint);
+          if (etherscanBaseTxs){
+            etherscanBaseTxs = etherscanBaseTxs.data.result;
+
+            let updateBaseTxs = false;
+            etherscanTxs.forEach((tx) => {
+              const txFound = etherscanBaseTxs.find(t => { return t.hash.toLowerCase() === tx.hash.toLowerCase(); });
+              if (!txFound){
+                // console.log('Add tx ',tx,'to base etherscan txs');
+                etherscanBaseTxs.push(tx);
+                updateBaseTxs = true;
+              }
+            });
+
+            if (updateBaseTxs){
+              const newEtherscanBaseTxs = {
+                data:{
+                  result:etherscanBaseTxs
+                }
+              };
+              this.saveCachedRequest(etherscanBaseEndpoint,false,newEtherscanBaseTxs);
+            }
+          }
+        }
+      }
+    }
+
+    return etherscanTxs;
+  }
+  filterEtherscanTxs = (results,tokens=[]) => {
     if (!results || !results.length){
       return [];
     }
 
-    const tokenDecimals = this.props.tokenConfig.decimals;
-    const migrationContractAddr = this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract ? this.props.tokenConfig.migration.migrationContract.address : null;
-    const migrationContractOldAddrs = this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract && this.props.tokenConfig.migration.migrationContract.oldAddresses ? this.props.tokenConfig.migration.migrationContract.oldAddresses : [];
+    if (!tokens || !tokens.length){
+      tokens = Object.keys(this.props.availableTokens);
+    }
+
     const etherscanTxs = {};
-    results.filter(
-      tx => {
-        const internalTxs = results.filter(r => r.hash === tx.hash);
-        const isSendTransferTx = internalTxs.length === 1 && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-        const isReceiveTransferTx = internalTxs.length === 1 && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-        const isMigrationTx = migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).indexOf(tx.from.toLowerCase()) !== -1 ) && tx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-        const isRightToken = internalTxs.length>1 && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase()).length;
-        const isDepositTx = isRightToken && !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.to.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase();
-        const isRedeemTx = isRightToken && !isMigrationTx && tx.contractAddress.toLowerCase() === this.props.tokenConfig.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.props.tokenConfig.idle.address.toLowerCase()).length && tx.to.toLowerCase() === this.props.account.toLowerCase();
-        return isSendTransferTx || isReceiveTransferTx || isMigrationTx || isDepositTx || isRedeemTx;
-      }
-    ).forEach(tx => {
-      if (etherscanTxs[tx.hash]){
-        etherscanTxs[tx.hash].value = etherscanTxs[tx.hash].value.plus(this.fixTokenDecimals(tx.value,tokenDecimals));
-      } else {
-        etherscanTxs[tx.hash] = ({...tx, value: this.fixTokenDecimals(tx.value,tokenDecimals)});
-      }
+
+    tokens.forEach(token => {
+      const tokenConfig = this.props.availableTokens[token];
+      const tokenDecimals = tokenConfig.decimals;
+      const migrationContractAddr = tokenConfig.migration && tokenConfig.migration.migrationContract ? tokenConfig.migration.migrationContract.address : null;
+      const migrationContractOldAddrs = tokenConfig.migration && tokenConfig.migration.migrationContract && tokenConfig.migration.migrationContract.oldAddresses ? tokenConfig.migration.migrationContract.oldAddresses : [];
+
+      results.forEach(
+        tx => {
+          const internalTxs = results.filter(r => r.hash === tx.hash);
+          const isSendTransferTx = internalTxs.length === 1 && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
+          const isReceiveTransferTx = internalTxs.length === 1 && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
+          const isMigrationTx = migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).indexOf(tx.from.toLowerCase()) !== -1 ) && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
+          const isRightToken = internalTxs.length>1 && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === tokenConfig.address.toLowerCase()).length>0;
+          const isDepositTx = isRightToken && !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.to.toLowerCase() === tokenConfig.idle.address.toLowerCase();
+          const isRedeemTx = isRightToken && !isMigrationTx && tx.contractAddress.toLowerCase() === tokenConfig.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase()).length && tx.to.toLowerCase() === this.props.account.toLowerCase();
+          const isSwapTx = !isReceiveTransferTx && !etherscanTxs[tx.hash] && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
+
+          if (isSendTransferTx || isReceiveTransferTx || isMigrationTx || isDepositTx || isRedeemTx || isSwapTx){
+            
+            let action = null;
+
+            if (isDepositTx){
+              action = 'Deposit';
+            } else if (isRedeemTx){
+              action = 'Redeem';
+            } else if (isMigrationTx){
+              action = 'Migrate';
+            } else if (isSendTransferTx){
+              action = 'Send';
+            } else if (isReceiveTransferTx){
+              action = 'Receive';
+            } else if (isSwapTx){
+              action = 'Swap';
+            }
+
+            if (etherscanTxs[tx.hash]){
+              const newValue = etherscanTxs[tx.hash].value.plus(this.fixTokenDecimals(tx.value,tokenDecimals));
+              // console.log(action,token,tokenDecimals,newValue.toString());
+              etherscanTxs[tx.hash].value = newValue;
+            } else {
+              // console.log(action,token,tokenDecimals,this.fixTokenDecimals(tx.value,tokenDecimals).toString());
+              etherscanTxs[tx.hash] = ({...tx, token, action, value: this.fixTokenDecimals(tx.value,tokenDecimals)});
+            }
+          }
+        }
+      )
     });
 
     return Object.values(etherscanTxs);
@@ -304,16 +475,6 @@ class FunctionsUtil {
       }
     }
     return false;
-  }
-  getEtherscanTxs = async (address,TTL) => {
-    const etherscanInfo = globalConfigs.network.providers.etherscan;
-    const etherscanApiUrl = etherscanInfo.endpoints[globalConfigs.network.requiredNetwork];
-    const endpoint = `${etherscanApiUrl}?apikey=${env.REACT_APP_ETHERSCAN_KEY}&module=account&action=tokentx&address=${address}&startblock=0&endblock=999999999&sort=asc`;
-    const txs = await this.makeCachedRequest(endpoint,TTL,true);
-    if (txs && txs.result){
-      return txs.result;
-    }
-    return null;
   }
   checkTokenApproved = async (token,contractAddr,walletAddr) => {
     const value = this.props.web3.utils.toWei('0','ether');
@@ -564,11 +725,11 @@ class FunctionsUtil {
 
     const addresses = Aprs.addresses.map((addr,i) => { return addr.toString().toLowerCase() });
     const aprs = Aprs.aprs;
+
     const protocolsAprs = {};
 
-    tokenConfig.protocols.forEach((info,i) => {
-      // const protocolName = info.name;
-      const protocolAddr = info.address.toString().toLowerCase();
+    tokenConfig.protocols.forEach((protocolInfo,i) => {
+      const protocolAddr = protocolInfo.address.toString().toLowerCase();
       const addrIndex = addresses.indexOf(protocolAddr);
       if ( addrIndex !== -1 ) {
         const protocolApr = aprs[addrIndex];
@@ -602,6 +763,7 @@ class FunctionsUtil {
       }
       if (shortValue % 1 !== 0)  shortValue = shortValue.toFixed(precision);
       newValue = shortValue+suffixes[suffixNum];
+      // newValue = newValue.replace('.',',');
     } else {
       newValue = parseFloat(value).toFixed(precision);
     }

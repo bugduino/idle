@@ -1,3 +1,4 @@
+import Title from '../Title/Title';
 import React, { Component } from 'react';
 import AssetsList from '../AssetsList/AssetsList';
 import FunctionsUtil from '../utilities/FunctionsUtil';
@@ -40,9 +41,7 @@ class RiskAdjustedStrategy extends Component {
 
     return (
       <Box width={1}>
-        <Heading.h1 color={'dark-gray'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]} mb={[3,5]} textAlign={'center'}>
-          Best-Yield Dashboard
-        </Heading.h1>
+        <Title my={[3,4]}>Best-Yield Dashboard</Title>
         <Flex id="portfolio-charts" width={1} flexDirection={['column','row']}>
           <Flex id="portfolio-composition" width={[1,0.35]} flexDirection={'column'}>
             <Heading.h4 color={'dark-gray'} fontWeight={4} lineHeight={'initial'} fontSize={2} textAlign={'left'}>
@@ -59,7 +58,8 @@ class RiskAdjustedStrategy extends Component {
             </Heading.h4>
           </Flex>
         </Flex>
-        <Flex id="available-assets" width={1} flexDirection={['column','row']}>
+        <Flex id="available-assets" width={1} flexDirection={'column'}>
+          <Title my={[3,4]}>Available assets</Title>
           <AssetsList
             cols={[
               {
@@ -100,7 +100,7 @@ class RiskAdjustedStrategy extends Component {
                 },
                 fields:[
                   {
-                    name:'idleTokenBalance',
+                    name:'depositedBalance',
                     props:cellTextProps
                   }
                 ]
@@ -130,12 +130,106 @@ class RiskAdjustedStrategy extends Component {
             {...this.props}
           />
         </Flex>
-        {
-        this.props.selectedToken &&
+        <Flex id="transactions" width={1} flexDirection={'column'}>
+          <Title my={[3,4]}>Transactions</Title>
           <TransactionsList
+            enabledTokens={[]}
+            cols={[
+              {
+                title:'TRANSACTIONS',
+                props:{
+                  width:0.22
+                },
+                fields:[
+                  {
+                    name:'icon',
+                    props:{
+                      mr:2
+                    }
+                  },
+                  {
+                    name:'hash',
+                    props:cellTextProps
+                  }
+                ]
+              },
+              {
+                title:'ACTION',
+                props:{
+                  width:0.15,
+                },
+                fields:[
+                  {
+                    name:'action',
+                    props:cellTextProps
+                  }
+                ]
+              },
+              {
+                title:'DATE',
+                props:{
+                  width:0.18,
+                },
+                fields:[
+                  {
+                    name:'date',
+                    props:cellTextProps
+                  }
+                ]
+              },
+              {
+                title:'STATUS',
+                props:{
+                  width:0.18,
+                },
+                fields:[
+                  {
+                    name:'statusIcon',
+                    props:{
+                      mr:2
+                    }
+                  },
+                  {
+                    name:'status',
+                    props:cellTextProps
+                  }
+                ]
+              },
+              {
+                title:'TOKEN',
+                props:{
+                  width:0.15,
+                },
+                fields:[
+                  {
+                    name:'tokenIcon',
+                    props:{
+                      mr:2,
+                      height:'1.5em',
+                    }
+                  },
+                  {
+                    name:'tokenName',
+                    props:cellTextProps
+                  },
+                ]
+              },
+              {
+                title:'AMOUNT',
+                props:{
+                  width:0.13,
+                },
+                fields:[
+                  {
+                    name:'amount',
+                    props:cellTextProps
+                  },
+                ]
+              },
+            ]}
             {...this.props}
           />
-        }
+        </Flex>
       </Box>
     );
   }

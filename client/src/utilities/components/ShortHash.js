@@ -12,7 +12,7 @@ class ShortHash extends React.Component {
   render() {
     const shortHash = this.shortenHash(this.props.hash);
 
-    return <Text display={'inline'} fontSize={this.props.fontSize} color={this.props.color}>{shortHash}</Text>;
+    return <Text display={'inline'} {...this.props}>{shortHash}</Text>;
   }
 }
 

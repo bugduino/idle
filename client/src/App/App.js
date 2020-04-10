@@ -34,7 +34,7 @@ class App extends Component {
     connectorName:null,
     tokenConfig: null,
     genericError: null,
-    customAddress:null,
+    customAddress:null,//'0xc0ba9fd6fd13b87f71cf6d665d7f1ebec592c7c0',
     walletProvider:null,
     selectedToken: null,
     availableTokens:null,
@@ -364,15 +364,41 @@ class App extends Component {
                               render={(props) => <Dashboard
                                                     {...props}
                                                     web3={web3}
+                                                    modals={modals}
+                                                    network={network}
+                                                    context={context}
                                                     account={account}
                                                     initWeb3={initWeb3}
                                                     isMobile={isMobile}
                                                     contracts={contracts}
+                                                    initAccount={initAccount}
+                                                    initContract={initContract}
+                                                    buyToken={this.state.buyToken}
+                                                    accountBalance={accountBalance}
+                                                    validateAccount={validateAccount}
+                                                    connecting={this.state.connecting}
+                                                    accountValidated={accountValidated}
+                                                    getTokenDecimals={getTokenDecimals}
+                                                    rejectValidation={rejectValidation}
                                                     tokenConfig={this.state.tokenConfig}
+                                                    getAccountBalance={getAccountBalance}
+                                                    accountBalanceLow={accountBalanceLow}
                                                     accountInizialized={accountInizialized}
                                                     selectedToken={this.state.selectedToken}
+                                                    connectorName={this.state.connectorName}
+                                                    userRejectedConnect={userRejectedConnect}
+                                                    accountBalanceToken={accountBalanceToken}
+                                                    walletProvider={this.state.walletProvider}
+                                                    buyModalOpened={this.state.buyModalOpened}
                                                     contractsInitialized={contractsInitialized}
+                                                    openBuyModal={this.openBuyModal.bind(this)}
+                                                    rejectAccountConnect={rejectAccountConnect}
+                                                    handleMenuClick={this.selectTab.bind(this)}
+                                                    setConnector={this.setConnector.bind(this)}
                                                     availableTokens={this.state.availableTokens}
+                                                    closeBuyModal={this.closeBuyModal.bind(this)}
+                                                    userRejectedValidation={userRejectedValidation}
+                                                    accountValidationPending={accountValidationPending}
                                                     connectAndValidateAccount={connectAndValidateAccount}
                                                     setSelectedToken={ e => { this.setSelectedToken(e) } }
                                                 />
