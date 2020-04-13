@@ -166,6 +166,7 @@ const globalConfigs = {
       4:'Rinkeby',
       42:'Kovan'
     },
+    firstBlockNumber:8119247,
     requiredConfirmations: 1,
     accountBalanceMinimum: 0, // in ETH for gas fees
     requiredNetwork: 1, // { 1: Mainnet, 3: Ropsten, 42: Kovan }

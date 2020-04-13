@@ -96,6 +96,155 @@ class FunctionsUtil {
 
     return action;
   }
+  getAmountLent = async (enabledTokens=[],account) => {
+    account = account ? account : this.props.account;
+
+    if (!account || !enabledTokens || !enabledTokens.length || !this.props.availableTokens){
+      return [];
+    }
+
+    const etherscanTxs = await this.getEtherscanTxs(account,0,'latest',enabledTokens);
+    const storedTxs = this.getStoredItem('transactions',true,{});
+
+    // Init storedTxs for pair account-token if empty
+    if (typeof storedTxs[account] !== 'object'){
+      storedTxs[account] = {};
+    }
+
+    const amountLents = {};
+
+    await this.asyncForEach(enabledTokens,async (selectedToken) => {
+
+      amountLents[selectedToken] = [];
+      let amountLent = this.BNify(0);
+
+      const tokenConfig = this.props.availableTokens[selectedToken];
+
+      // Init storedTxs for pair account-token if empty
+      if (typeof storedTxs[account][selectedToken] !== 'object'){
+        storedTxs[account][selectedToken] = {};
+      }
+
+      const filteredTxs = Object.values(etherscanTxs).filter(tx => (tx.token === selectedToken));
+      if (filteredTxs && filteredTxs.length){
+
+        await this.asyncForEach(filteredTxs,async (tx,index) => {
+
+          const txKey = `tx${tx.timeStamp}000`;
+          const storedTx = storedTxs[account][selectedToken][txKey] ? storedTxs[account][selectedToken][txKey] : tx;
+
+          let tokenPrice = null;
+          if (storedTx.tokenPrice){
+            tokenPrice = this.BNify(storedTx.tokenPrice);
+          } else {
+            tokenPrice = await this.genericContractCall(tokenConfig.idle.token, 'tokenPrice',[],{}, tx.blockNumber);
+            tokenPrice = this.fixTokenDecimals(tokenPrice,tokenConfig.decimals);
+            storedTx.tokenPrice = tokenPrice;
+          }
+
+          let tokensTransfered = tokenPrice.times(this.BNify(tx.value));
+
+          // Add transactionHash to storedTx
+          if (!storedTx.transactionHash){
+            storedTx.transactionHash = tx.hash;
+          }
+
+          // Deposited
+          switch (tx.action){
+            case 'Send':
+              // Decrese amountLent by the last idleToken price
+              amountLent = amountLent.minus(tokensTransfered);
+
+              if (amountLent.lte(0)){
+                amountLent = this.BNify(0);
+              }
+
+              storedTx.value = tokensTransfered;
+            break;
+            case 'Receive':
+              // Decrese amountLent by the last idleToken price
+              amountLent = amountLent.plus(tokensTransfered);
+              storedTx.value = tokensTransfered;
+            break;
+            case 'Swap':
+              // Decrese amountLent by the last idleToken price
+              amountLent = amountLent.plus(tokensTransfered);
+              storedTx.value = tokensTransfered;
+            break;
+            case 'Deposit':
+              amountLent = amountLent.plus(this.BNify(tx.value));
+              if (!storedTx.idleTokens){
+
+                // Init idleTokens amount
+                storedTx.idleTokens = this.BNify(tx.value);
+                storedTx.method = 'mintIdleToken';
+
+                const decodeLogs = [
+                  {
+                    "internalType": "uint256",
+                    "name": "_tokenAmount",
+                    "type": "uint256"
+                  }
+                ];
+
+                const walletAddress = account.replace('x','').toLowerCase();
+                const res = await this.getTxDecodedLogs(tx,walletAddress,decodeLogs,storedTx);
+
+                if (res){
+                  const [txReceipt,logs] = res;
+                  storedTx.idleTokens = this.fixTokenDecimals(logs._tokenAmount,18);
+                  storedTx.txReceipt = txReceipt;
+                }
+              }
+            break;
+            case 'Redeem':
+              const redeemedValueFixed = this.BNify(storedTx.value);
+
+              // Decrese amountLent by redeem amount
+              amountLent = amountLent.minus(redeemedValueFixed);
+
+              // Reset amountLent if below zero
+              if (amountLent.lt(0)){
+                amountLent = this.BNify(0);
+              }
+
+              // Set tx method
+              if (!storedTx.method){
+                storedTx.method = 'redeemIdleToken';
+              }
+            break;
+            case 'Migrate':
+              let migrationValueFixed = 0;
+
+              if (!storedTx.migrationValueFixed){
+                storedTx.method = 'bridgeIdleV1ToIdleV2';
+                migrationValueFixed = this.BNify(tx.value).times(tokenPrice);
+                storedTx.migrationValueFixed = migrationValueFixed;
+              } else {
+                migrationValueFixed = this.BNify(storedTx.migrationValueFixed);
+              }
+          
+              storedTx.value = migrationValueFixed;
+
+              amountLent = amountLent.plus(migrationValueFixed);
+            break;
+            default:
+            break;
+          }
+        });
+      }
+
+      // Add token Data
+      amountLents[selectedToken] = amountLent;
+
+      // Update Stored Txs
+      if (storedTxs){
+        this.setLocalStorage('transactions',JSON.stringify(storedTxs));
+      }
+    });
+
+    return amountLents;
+  }
   getEtherscanTxs = async (account=false,firstBlockNumber=0,endBlockNumber='latest',enabledTokens=[],count=0) => {
     account = account ? account : this.props.account;
 
@@ -355,6 +504,18 @@ class FunctionsUtil {
   getGlobalConfigs = () => {
     return globalConfigs;
   }
+  getGlobalConfig = (path,configs=false) => {
+    configs = configs ? configs : globalConfigs;
+    if (path.length>0){
+      const prop = path.shift();
+      if (!path.length){
+        return configs[prop] ? configs[prop] : null;
+      } else if (configs[prop]) {
+        return this.getGlobalConfig(path,configs[prop]);
+      }
+    }
+    return false;
+  }
   checkUrlOrigin = () => {
     return window.location.origin.toLowerCase().includes(globalConfigs.baseURL.toLowerCase());
   }
@@ -464,6 +625,22 @@ class FunctionsUtil {
       balance = balance.times(exchangeRate);
     }
     return balance;
+  }
+  getStoredItem = (key,parse_json=true,return_default=null) => {
+    let output = return_default;
+    if (window.localStorage){
+      const item = localStorage.getItem('transactions');
+      if (item){
+        output = item;
+        if (parse_json){
+          output = JSON.parse(item);
+        }
+      }
+    }
+    if (!output){
+      return return_default;
+    }
+    return output;
   }
   setLocalStorage = (key,value) => {
     if (window.localStorage){
@@ -756,14 +933,13 @@ class FunctionsUtil {
       const suffixes = ["", "k", "m", "b","t"];
       const suffixNum = Math.floor( (""+intValue).length/4 );
       let shortValue = '';
-      for (let precisionIndex = (precision+1); precisionIndex >= 1; precisionIndex--) {
+      for (let precisionIndex = (precision+3); precisionIndex >= 1; precisionIndex--) {
         shortValue = parseFloat( (suffixNum !== 0 ? (intValue / Math.pow(1000,suffixNum) ) : intValue).toPrecision(precisionIndex));
         const dotLessShortValue = (shortValue + '').replace(/[^a-zA-Z 0-9]+/g,'');
-        if (dotLessShortValue.length <= (precision+1)) { break; }
+        if (dotLessShortValue.length <= (precision+3)) { break; }
       }
       if (shortValue % 1 !== 0)  shortValue = shortValue.toFixed(precision);
       newValue = shortValue+suffixes[suffixNum];
-      // newValue = newValue.replace('.',',');
     } else {
       newValue = parseFloat(value).toFixed(precision);
     }

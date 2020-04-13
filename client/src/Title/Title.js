@@ -4,11 +4,11 @@ import React, { Component } from 'react';
 class Title extends Component {
   render() {
     const props = {
-      color:'dark-gray',
       fontWeight:4,
+      fontSize:[4,6],
+      color:'dark-gray',
+      textAlign:'center',
       lineHeight:'initial',
-      fontSize:[4,5],
-      textAlign:'center'
     };
 
     // Replace props

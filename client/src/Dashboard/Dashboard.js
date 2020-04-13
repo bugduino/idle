@@ -230,6 +230,7 @@ class Dashboard extends Component {
           px={[3,5]}
           width={5/6}
           style={{overflow:'scroll'}}
+          backgroundColor={'dashboardBg'}
         >
           {
             !this.props.accountInizialized || !this.props.contractsInitialized ? (

@@ -43,7 +43,7 @@ class PortfolioDonut extends Component {
     const iconSize = parseInt(this.state.parentWidth*0.065)
 
     if (prevState.chartData !== this.state.chartData){
-      const $radialLabels = window.jQuery('text').filter((index,label) => { return !isNaN(label.innerHTML); });
+      const $radialLabels = window.jQuery(`#${this.props.parentId} text`).filter((index,label) => { return !isNaN(label.innerHTML); });
       $radialLabels.each((index,label) => {
         const token = Object.keys(this.props.availableTokens)[parseInt(label.innerHTML)];
         const $g = window.jQuery(label).parent('g');
@@ -167,7 +167,7 @@ class PortfolioDonut extends Component {
       radialLabelsLinkDiagonalLength:0,
       radialLabelsLinkHorizontalLength:0,
       radialLabelsLinkColor:{ from: 'color' },
-      margin:{ top: 30, right: 50, bottom: 65, left: 50 },
+      margin:{ top: 30, right: 50, bottom: 60, left: 50 },
       legends:[
         {
           itemWidth: 60,

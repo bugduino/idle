@@ -17,8 +17,7 @@ class TransactionsList extends Component {
     totalPages:null,
     renderedTxs:null,
     processedTxs:null,
-    lastBlockNumber:null,
-    firstBlockNumber:8119247,
+    lastBlockNumber:null
   };
 
   // Utils
@@ -76,9 +75,11 @@ class TransactionsList extends Component {
       loading:true
     });
 
+    const firstBlockNumber = this.functionsUtil.getGlobalConfig(['network','firstBlockNumber']);
+
     // Take last block number, is null take first block number
     let prevTxs = this.state.prevTxs ? Object.assign({},this.state.prevTxs) : {};
-    let lastBlockNumber = Math.max(this.state.firstBlockNumber,this.state.lastBlockNumber);
+    let lastBlockNumber = Math.max(firstBlockNumber,this.state.lastBlockNumber);
 
     let enabledTokens = this.props.enabledTokens;
     if (!enabledTokens || !enabledTokens.length){
@@ -97,7 +98,7 @@ class TransactionsList extends Component {
     let amountLent = this.functionsUtil.BNify(0);
 
     // Take storedTxs from localStorage
-    const storedTxs = localStorage && JSON.parse(localStorage.getItem('transactions')) ? JSON.parse(localStorage.getItem('transactions')) : {};
+    const storedTxs = this.functionsUtil.getStoredItem('transactions',true,{});
     
     // Inizialize storedTxs for pair account-token if empty
     if (typeof storedTxs[this.props.account] !== 'object'){
@@ -198,7 +199,6 @@ class TransactionsList extends Component {
                 // Init idleTokens amount
                 storedTx.idleTokens = this.functionsUtil.BNify(tx.value);
                 storedTx.method = 'mintIdleToken';
-                storedTx.action = 'Deposit';
 
                 const decodeLogs = [
                   {
@@ -243,7 +243,6 @@ class TransactionsList extends Component {
               // Set tx method
               if (!storedTx.method){
                 storedTx.method = 'redeemIdleToken';
-                storedTx.action = 'Redeem';
               }
             break;
             case 'Migrate':
@@ -254,12 +253,11 @@ class TransactionsList extends Component {
                 storedTx.method = 'bridgeIdleV1ToIdleV2';
                 migrationValueFixed = this.functionsUtil.BNify(tx.value).times(tokenPrice);
                 storedTx.migrationValueFixed = migrationValueFixed;
-                storedTx.action = 'Migrate';
               } else {
                 migrationValueFixed = this.functionsUtil.BNify(storedTx.migrationValueFixed);
               }
      
-              tx.value = migrationValueFixed;
+              storedTx.value = migrationValueFixed;
 
               amountLent = amountLent.plus(migrationValueFixed);
 
@@ -473,11 +471,11 @@ class TransactionsList extends Component {
             delete storedTxs[this.props.account][selectedToken][txKey];
           }
         });
-    
-        // Update localStorage
-        if (storedTxs && localStorage){
-          this.functionsUtil.setLocalStorage('transactions',JSON.stringify(storedTxs));
-        }
+      }
+
+      // Update localStorage
+      if (storedTxs){
+        this.functionsUtil.setLocalStorage('transactions',JSON.stringify(storedTxs));
       }
     });
 

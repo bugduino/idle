@@ -7,7 +7,7 @@ class GenericChart extends Component {
   render() {
     const ChartType = this.props.type;
 
-    return this.props.showLoader && !this.props.data ? (
+    return this.props.showLoader && (!this.props.data || !this.props.width || !this.props.height) ? (
       <Flex
         width={1}
         alignItems={'center'}
@@ -15,7 +15,7 @@ class GenericChart extends Component {
         justifyContent={'center'}
         height={this.props.height}
       >
-        <Loader size="30px" /> <Text ml={2}>Loading graph data...</Text>
+        <Loader size="30px" mb={2} /> <Text ml={2}>Loading graph data...</Text>
       </Flex>
     ) : this.props.data && (
       <ChartType

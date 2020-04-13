@@ -8,11 +8,11 @@ class AssetRow extends Component {
       <Card
         pr={0}
         my={1}
+        width={1}
         pl={[3,4]}
         py={[2,3]}
-        width={1}
-        borderRadius={2}
         boxShadow={1}
+        borderRadius={2}
       >
         <Flex
           flexDirection={'row'}

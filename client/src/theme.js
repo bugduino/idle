@@ -5,7 +5,7 @@ import { tint, shade } from 'polished';
 export default {
   breakpoints: ['52em', '64em'],
   // breakpoints: ['40em', '52em', '64em', '80em'],
-  fontSizes: [12, 14, 16, 20, 24, 32, 48, 64, 78, 84, 116],
+  fontSizes: [12, 14, 16, 18, 24, 32, 38, 48, 54, 64, 72, 84],
   fontWeights: [0, 300, 400, 600, 700],
   letterSpacings: [0, 1, 2, 4, 8],
   lineHeights: {
@@ -64,8 +64,10 @@ export default {
     /*
     NEW COLORS
     */
-    cellTitle: '#a7a7a7',
-    cellText: '#acacac',
+    cardBg:'#fff',
+    dashboardBg: '#f9fafd',
+    cellTitle: '#a3a4a5',
+    cellText: '#a6a6a6',
     blacks: [
       'rgba(0,0,0,.0125)',
       'rgba(0,0,0,.025)',

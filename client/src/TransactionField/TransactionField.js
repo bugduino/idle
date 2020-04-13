@@ -155,15 +155,15 @@ class TransactionField extends Component {
       case 'statusIcon':
         switch (transaction.status) {
           case 'Completed':
-            color = '#4cde8a';
+            color = '#00b84a';
             icon = "Done";
           break;
           case 'Pending':
-            color = '#dadada';
+            color = '#a5a5a5';
             icon = "Timelapse";
           break;
           case 'Failed':
-            color = '#e26924';
+            color = '#fa6400';
             icon = "ErrorOutline";
           break;
           default:

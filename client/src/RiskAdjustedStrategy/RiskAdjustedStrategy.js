@@ -1,10 +1,12 @@
 import Title from '../Title/Title';
 import React, { Component } from 'react';
 import AssetsList from '../AssetsList/AssetsList';
+import { Flex, Box } from "rimble-ui";
 import FunctionsUtil from '../utilities/FunctionsUtil';
+import DashboardCard from '../DashboardCard/DashboardCard';
 import PortfolioDonut from '../PortfolioDonut/PortfolioDonut';
+import PortfolioEquity from '../PortfolioEquity/PortfolioEquity';
 import TransactionsList from '../TransactionsList/TransactionsList';
-import { Flex, Box, Heading } from "rimble-ui";
 
 // const env = process.env;
 
@@ -34,7 +36,7 @@ class RiskAdjustedStrategy extends Component {
   render() {
 
     const cellTextProps = {
-      fontSize:1,
+      fontSize:[1,2],
       fontWeight:3,
       color:'cellText'
     };
@@ -42,20 +44,33 @@ class RiskAdjustedStrategy extends Component {
     return (
       <Box width={1}>
         <Title my={[3,4]}>Best-Yield Dashboard</Title>
-        <Flex id="portfolio-charts" width={1} flexDirection={['column','row']}>
-          <Flex id="portfolio-composition" width={[1,0.35]} flexDirection={'column'}>
-            <Heading.h4 color={'dark-gray'} fontWeight={4} lineHeight={'initial'} fontSize={2} textAlign={'left'}>
-              Composition
-            </Heading.h4>
-            <PortfolioDonut
-              {...this.props}
-              parentId={'portfolio-composition'}
-            />
+        <Flex
+          width={1}
+          id={"portfolio-charts"}
+          justifyContent={'space-between'}
+          flexDirection={['column','row']}
+        >
+          <Flex id="portfolio-composition" width={[1,0.38]} flexDirection={'column'}>
+            <DashboardCard
+              title={'Composition'}
+            >
+              <PortfolioDonut
+                {...this.props}
+                parentId={'portfolio-composition'}
+              />
+            </DashboardCard>
           </Flex>
-          <Flex width={[1,0.65]} flexDirection={'column'}>
-            <Heading.h4 color={'dark-gray'} fontWeight={4} lineHeight={'initial'} fontSize={2} textAlign={'left'}>
-              Performance
-            </Heading.h4>
+          <Flex id="portfolio-performance" width={[1,0.60]} flexDirection={'column'}>
+            <DashboardCard
+              title={'Performance'}
+            >
+              <PortfolioEquity
+                {...this.props}
+                enabledTokens={[]}
+                parentId={'portfolio-performance'}
+                parentIdHeight={'portfolio-composition'}
+              />
+            </DashboardCard>
           </Flex>
         </Flex>
         <Flex id="available-assets" width={1} flexDirection={'column'}>
@@ -65,7 +80,7 @@ class RiskAdjustedStrategy extends Component {
               {
                 title:'CURRENCY',
                 props:{
-                  width:0.16
+                  width:0.13
                 },
                 fields:[
                   {
@@ -82,9 +97,9 @@ class RiskAdjustedStrategy extends Component {
                 ]
               },
               {
-                title:'WALLET BALANCE',
+                title:'BALANCE',
                 props:{
-                  width:0.23,
+                  width:0.14,
                 },
                 fields:[
                   {
@@ -94,13 +109,37 @@ class RiskAdjustedStrategy extends Component {
                 ]
               },
               {
-                title:'DEPOSITED FUNDS',
+                title:'DEPOSITED',
                 props:{
-                  width:0.23,
+                  width:0.14,
                 },
                 fields:[
                   {
-                    name:'depositedBalance',
+                    name:'amountLent',
+                    props:cellTextProps
+                  }
+                ]
+              },
+              {
+                title:'POOL',
+                props:{
+                  width:0.12,
+                },
+                fields:[
+                  {
+                    name:'pool',
+                    props:cellTextProps
+                  }
+                ]
+              },
+              {
+                title:'EARNINGS %',
+                props:{
+                  width:0.12,
+                },
+                fields:[
+                  {
+                    name:'earningsPerc',
                     props:cellTextProps
                   }
                 ]
@@ -122,7 +161,7 @@ class RiskAdjustedStrategy extends Component {
               {
                 title:'',
                 props:{
-                  width:0.28,
+                  width:0.25,
                 },
                 fields:[]
               }
@@ -196,9 +235,21 @@ class RiskAdjustedStrategy extends Component {
                 ]
               },
               {
-                title:'TOKEN',
+                title:'AMOUNT',
                 props:{
                   width:0.15,
+                },
+                fields:[
+                  {
+                    name:'amount',
+                    props:cellTextProps
+                  },
+                ]
+              },
+              {
+                title:'TOKEN',
+                props:{
+                  width:0.13,
                 },
                 fields:[
                   {
@@ -210,18 +261,6 @@ class RiskAdjustedStrategy extends Component {
                   },
                   {
                     name:'tokenName',
-                    props:cellTextProps
-                  },
-                ]
-              },
-              {
-                title:'AMOUNT',
-                props:{
-                  width:0.13,
-                },
-                fields:[
-                  {
-                    name:'amount',
                     props:cellTextProps
                   },
                 ]

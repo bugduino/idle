@@ -34,7 +34,7 @@ class App extends Component {
     connectorName:null,
     tokenConfig: null,
     genericError: null,
-    customAddress:null,//'0xc0ba9fd6fd13b87f71cf6d665d7f1ebec592c7c0',
+    customAddress:null,//'0x34aaa3d5a73d6f9594326d0422ce69748f09b14f',
     walletProvider:null,
     selectedToken: null,
     availableTokens:null,

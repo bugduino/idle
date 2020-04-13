@@ -6,7 +6,14 @@ class TableHeader extends Component {
 
     const TableCellHeader = (props) => (
       <Flex width={props.width}>
-        <Heading.h4 color={'cellTitle'} fontSize={2} fontWeight={4} py={3} {...props} style={{width:'100%'}}>
+        <Heading.h4
+          py={3}
+          {...props}
+          fontSize={[2,3]}
+          fontWeight={4}
+          color={'cellTitle'}
+          style={{width:'100%'}}
+        >
           {props.children}
         </Heading.h4>
       </Flex>
