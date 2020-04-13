@@ -1,4 +1,4 @@
-import { Text } from "rimble-ui";
+import { Flex, Text } from "rimble-ui";
 import React, { Component } from 'react';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 
@@ -20,9 +20,28 @@ class SmartNumber extends Component {
   }
 
   render() {
-    const formattedNumber = this.functionsUtil.abbreviateNumber(this.props.number,this.props.precision);
+    let formattedNumber = '-';
+    switch (this.props.type){
+      case 'money':
+        formattedNumber = this.functionsUtil.formatMoney(this.props.number,this.props.precision);
+      break;
+      default:
+        formattedNumber = this.functionsUtil.abbreviateNumber(this.props.number,this.props.decimals,this.props.maxPrecision,this.props.minPrecision);
+      break;
+    }
     return (
-      <Text {...this.props}>{formattedNumber}</Text>
+      <Flex
+        width={1}
+        alignItems={'center'}
+        flexDirection={'row'}
+        justifyContent={'center'}
+      >
+        <Text {...this.props}>{formattedNumber}</Text>
+        {
+          this.props.unit &&
+            <Text {...this.props.unitProps}>{this.props.unit}</Text>
+        }
+      </Flex>
     );
   }
 }

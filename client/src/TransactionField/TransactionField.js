@@ -101,6 +101,11 @@ class TransactionField extends Component {
             icon = "SwapHoriz";
             bgColor = '#dadada';
           break;
+          case 'Withdraw':
+            color = '#4f4f4f';
+            icon = "ArrowUpward";
+            bgColor = '#dadada';
+          break;
           default:
             color = '#4f4f4f';
             icon = "Refresh";

@@ -9,7 +9,7 @@ class AssetRow extends Component {
         pr={0}
         my={1}
         width={1}
-        pl={[3,4]}
+        px={[3,4]}
         py={[2,3]}
         boxShadow={1}
         borderRadius={2}
@@ -26,13 +26,15 @@ class AssetRow extends Component {
                 <Flex
                   alignItems={'center'}
                   flexDirection={'row'}
+                  {...colInfo.parentProps}
+                  key={`field-container-${colIndex}`}
                 >
                   {
-                  colInfo.fields.map(fieldInfo => (
+                  colInfo.fields.map((fieldInfo,fieldIndex) => (
                     <AssetField
                       {...this.props}
                       fieldInfo={fieldInfo}
-                      key={`field-${colIndex}-${fieldInfo.name}`}
+                      key={`field-${colIndex}-${fieldIndex}-${fieldInfo.name}`}
                     />
                   ))
                   }

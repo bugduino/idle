@@ -7,7 +7,7 @@ class TableHeader extends Component {
     const TableCellHeader = (props) => (
       <Flex width={props.width}>
         <Heading.h4
-          py={3}
+          pb={3}
           {...props}
           fontSize={[2,3]}
           fontWeight={4}
@@ -22,7 +22,7 @@ class TableHeader extends Component {
     return (
       <Flex
         width={1}
-        pl={[3,4]}
+        px={[3,4]}
         flexDirection={'row'}
       >
         {

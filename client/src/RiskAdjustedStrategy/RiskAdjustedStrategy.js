@@ -99,7 +99,7 @@ class RiskAdjustedStrategy extends Component {
               {
                 title:'BALANCE',
                 props:{
-                  width:0.14,
+                  width:0.13,
                 },
                 fields:[
                   {
@@ -111,7 +111,7 @@ class RiskAdjustedStrategy extends Component {
               {
                 title:'DEPOSITED',
                 props:{
-                  width:0.14,
+                  width:0.13,
                 },
                 fields:[
                   {
@@ -123,7 +123,7 @@ class RiskAdjustedStrategy extends Component {
               {
                 title:'POOL',
                 props:{
-                  width:0.12,
+                  width:0.10,
                 },
                 fields:[
                   {
@@ -147,7 +147,7 @@ class RiskAdjustedStrategy extends Component {
               {
                 title:'APY',
                 props:{
-                  width:0.1,
+                  width:0.11,
                   textAlign:'center',
                   justifyContent:'center'
                 },
@@ -161,15 +161,49 @@ class RiskAdjustedStrategy extends Component {
               {
                 title:'',
                 props:{
-                  width:0.25,
+                  width:0.28,
                 },
-                fields:[]
+                parentProps:{
+                  width:1
+                },
+                fields:[
+                  {
+                    name:'button',
+                    label:'Redeem',
+                    props:{
+                      width:1,
+                      mr:[0,1],
+                      fontWeight:3,
+                      height:'45px',
+                      borderRadius:4,
+                      boxShadow:null,
+                      mainColor:'redeem',
+                    }
+                  },
+                  {
+                    name:'button',
+                    label:'Deposit',
+                    props:{
+                      width:1,
+                      ml:[0,1],
+                      fontWeight:3,
+                      height:'45px',
+                      borderRadius:4,
+                      boxShadow:null,
+                      mainColor:'deposit'
+                    }
+                  }
+                ]
               }
             ]}
             {...this.props}
           />
         </Flex>
-        <Flex id="transactions" width={1} flexDirection={'column'}>
+        <Flex
+          width={1}
+          id="transactions"
+          flexDirection={'column'}
+        >
           <Title my={[3,4]}>Transactions</Title>
           <TransactionsList
             enabledTokens={[]}

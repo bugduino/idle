@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import { Image, Text, Loader } from "rimble-ui";
 import SmartNumber from '../SmartNumber/SmartNumber';
 import FunctionsUtil from '../utilities/FunctionsUtil';
+import { Image, Text, Loader, Button } from "rimble-ui";
 import VariationNumber from '../VariationNumber/VariationNumber';
 
 class AssetField extends Component {
@@ -185,27 +185,27 @@ class AssetField extends Component {
       break;
       case 'tokenBalance':
         output = this.state.tokenBalance ? (
-          <SmartNumber {...fieldInfo.props} number={this.state.tokenBalance} />
+          <SmartNumber {...fieldInfo.props} minPrecision={4} number={this.state.tokenBalance} />
         ) : loader
       break;
       case 'idleTokenBalance':
         output = this.state.idleTokenBalance ? (
-          <SmartNumber {...fieldInfo.props} number={this.state.idleTokenBalance} />
+          <SmartNumber {...fieldInfo.props} minPrecision={4} number={this.state.idleTokenBalance} />
         ) : loader
       break;
       case 'redeemableBalance':
         output = this.state.redeemableBalance ? (
-          <SmartNumber {...fieldInfo.props} number={this.state.redeemableBalance} />
+          <SmartNumber {...fieldInfo.props} minPrecision={4} number={this.state.redeemableBalance} />
         ) : loader
       break;
       case 'amountLent':
         output = this.state.amountLent ? (
-          <SmartNumber {...fieldInfo.props} number={this.state.amountLent} />
+          <SmartNumber {...fieldInfo.props} minPrecision={4} number={this.state.amountLent} />
         ) : loader
       break;
       case 'pool':
         output = this.state.poolSize ? (
-          <SmartNumber {...fieldInfo.props} number={this.state.poolSize} />
+          <SmartNumber {...fieldInfo.props} minPrecision={4} number={this.state.poolSize} />
         ) : loader
       break;
       case 'earningsPerc':
@@ -224,6 +224,11 @@ class AssetField extends Component {
         output = this.state.tokenAPY ? (
           <Text {...fieldInfo.props}>{this.state.tokenAPY}%</Text>
         ) : loader
+      break;
+      case 'button':
+        output = (
+          <Button {...fieldInfo.props}>{fieldInfo.label}</Button>
+        );
       break;
       default:
       break;

@@ -8,7 +8,7 @@ class TableRow extends Component {
       <Card
         pr={0}
         my={1}
-        pl={[3,4]}
+        px={[3,4]}
         py={[2,3]}
         width={1}
         borderRadius={2}
@@ -26,13 +26,14 @@ class TableRow extends Component {
                 <Flex
                   alignItems={'center'}
                   flexDirection={'row'}
+                  {...colInfo.parentProps}
                 >
                   {
-                  colInfo.fields.map(fieldInfo => (
+                  colInfo.fields.map((fieldInfo,fieldIndex) => (
                     <FieldComponent
                       {...this.props}
                       fieldInfo={fieldInfo}
-                      key={`field-${colIndex}-${fieldInfo.name}`}
+                      key={`field-${colIndex}-${fieldIndex}-${fieldInfo.name}`}
                     />
                   ))
                   }

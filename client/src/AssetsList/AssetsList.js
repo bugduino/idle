@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
-// import style from './AssetsList.module.scss';
-import AssetRow from '../AssetRow/AssetRow';
 import { Flex } from "rimble-ui";
+import React, { Component } from 'react';
+import TableRow from '../TableRow/TableRow';
+import AssetField from '../AssetField/AssetField';
 import TableHeader from '../TableHeader/TableHeader';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 
@@ -40,11 +40,12 @@ class AssetsList extends Component {
             Object.keys(this.props.availableTokens).map(token => {
               const tokenConfig = this.props.availableTokens[token];
               return (
-                <AssetRow
+                <TableRow
                   token={token}
                   {...this.props}
                   key={`asset-${token}`}
                   tokenConfig={tokenConfig}
+                  fieldComponent={AssetField}
                 />
               );
             })

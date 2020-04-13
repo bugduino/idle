@@ -68,6 +68,8 @@ export default {
     dashboardBg: '#f9fafd',
     cellTitle: '#a3a4a5',
     cellText: '#a6a6a6',
+    redeem: '#00a9fe',
+    deposit: '#0239ff',
     blacks: [
       'rgba(0,0,0,.0125)',
       'rgba(0,0,0,.025)',

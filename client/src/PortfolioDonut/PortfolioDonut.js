@@ -1,6 +1,9 @@
 import theme from '../theme';
 import { Pie } from '@nivo/pie';
+import { Flex, Text } from "rimble-ui";
 import React, { Component } from 'react';
+import AssetField from '../AssetField/AssetField';
+import SmartNumber from '../SmartNumber/SmartNumber';
 import globalConfigs from '../configs/globalConfigs';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import GenericChart from '../GenericChart/GenericChart';
@@ -8,7 +11,9 @@ import GenericChart from '../GenericChart/GenericChart';
 class PortfolioDonut extends Component {
   state = {
     chartData:null,
-    parentWidth:null
+    totalFunds:null,
+    parentWidth:null,
+    selectedToken:null
   };
 
   // Utils
@@ -36,10 +41,7 @@ class PortfolioDonut extends Component {
     this.handleWindowSizeChange();
   }
 
-  async componentDidUpdate(prevProps, prevState) {
-    this.loadUtils();
-    this.handleWindowSizeChange();
-
+  loadIcons(prevState){
     const iconSize = parseInt(this.state.parentWidth*0.065)
 
     if (prevState.chartData !== this.state.chartData){
@@ -52,6 +54,11 @@ class PortfolioDonut extends Component {
         }
       });
     }
+  }
+
+  async componentDidUpdate(prevProps, prevState) {
+    this.loadUtils();
+    this.handleWindowSizeChange();
   }
 
   handleWindowSizeChange(){
@@ -69,15 +76,19 @@ class PortfolioDonut extends Component {
   async loadPortfolio() {
 
     const portfolio = {};
-    let totalBalance = this.functionsUtil.BNify(0);
+    let totalFunds = this.functionsUtil.BNify(0);
 
     await this.functionsUtil.asyncForEach(Object.keys(this.props.availableTokens),async (token) => {
       const tokenConfig = this.props.availableTokens[token];
       const idleTokenBalance = await this.functionsUtil.getTokenBalance(tokenConfig.idle.token,this.props.account);
       if (idleTokenBalance){
-        portfolio[token] = idleTokenBalance;
+        const tokenPrice = await this.functionsUtil.getIdleTokenPrice(tokenConfig);
+        const tokenBalance = idleTokenBalance.times(tokenPrice);
+
+        portfolio[token] = tokenBalance;
+
         // Increment total balance
-        totalBalance = totalBalance.plus(idleTokenBalance);
+        totalFunds = totalFunds.plus(tokenBalance);
       }
     });
 
@@ -86,7 +97,7 @@ class PortfolioDonut extends Component {
     Object.keys(portfolio).forEach(token => {
       const tokenBalance = portfolio[token];
       if (tokenBalance.gt(0)){
-        const tokenPercentage = tokenBalance.div(totalBalance).times(100);
+        const tokenPercentage = tokenBalance.div(totalFunds).times(100);
         chartData.push({
           id:token,
           label:token.substr(0,1).toUpperCase()+token.substr(1),
@@ -95,27 +106,11 @@ class PortfolioDonut extends Component {
         });
       }
     });
-      
-    /*
-    const chartData = [
-      {
-        id:'DAI',
-        label:'DAI'.substr(0,1).toUpperCase()+'DAI'.substr(1),
-        value:parseFloat(5),
-        color:'hsl('+globalConfigs.stats.tokens['DAI'.toUpperCase()].color.hsl.join(',')+')'
-      },
-      {
-        id:'USDC',
-        label:'USDC'.substr(0,1).toUpperCase()+'USDC'.substr(1),
-        value:parseFloat(95),
-        color:'hsl('+globalConfigs.stats.tokens['USDC'.toUpperCase()].color.hsl.join(',')+')'
-      }
-    ];
-    */
 
     this.setState({
       portfolio,
-      chartData
+      chartData,
+      totalFunds
     });
   }
 
@@ -139,9 +134,14 @@ class PortfolioDonut extends Component {
         }
       },
       radialLabel: d => {
-        return Object.keys(this.props.availableTokens).indexOf(d.label.toUpperCase());
+        return null;//Object.keys(this.props.availableTokens).indexOf(d.label.toUpperCase());
       },
       theme:{
+        tooltip: {
+          container: {
+            display: 'none'
+          },
+        },
         labels:{
           text:{
             fontSize:16,
@@ -168,6 +168,16 @@ class PortfolioDonut extends Component {
       radialLabelsLinkHorizontalLength:0,
       radialLabelsLinkColor:{ from: 'color' },
       margin:{ top: 30, right: 50, bottom: 60, left: 50 },
+      onMouseEnter:(data, e) => {
+        this.setState({
+          selectedToken:data.id
+        });
+      },
+      onMouseLeave:(data, e) => {
+        this.setState({
+          selectedToken:null
+        });
+      },
       legends:[
         {
           itemWidth: 60,
@@ -190,15 +200,90 @@ class PortfolioDonut extends Component {
       ]
     };
 
+    const selectedToken = this.state.selectedToken !== null && this.state.portfolio[this.state.selectedToken] ? this.state.portfolio[this.state.selectedToken] : false;
+
     return (
-      <GenericChart
-        type={Pie}
-        {...chartProps}
-        showLoader={true}
-        width={this.state.parentWidth}
-        height={this.state.parentWidth}
-        data={this.state.chartData}
-      />
+      <Flex
+        width={1}
+      >
+        { 
+          (this.state.totalFunds || selectedToken) && 
+            <Flex
+              zIndex={0}
+              top={'35%'}
+              left={'27%'}
+              width={'46%'}
+              height={'35%'}
+              textAlign={'center'}
+              alignItems={'center'}
+              position={'absolute'}
+              flexDirection={'column'}
+              justifyContent={'center'}
+            >
+              {
+                selectedToken ? (
+                  <>
+                    <AssetField
+                      token={this.state.selectedToken}
+                      fieldInfo={{
+                        name:'icon',
+                        props:{
+                          mb:1,
+                          height:'2.2em'
+                        }
+                      }}
+                    />
+                    <SmartNumber
+                      fontSize={4}
+                      decimals={3}
+                      fontWeight={4}
+                      maxPrecision={5}
+                      number={this.state.portfolio[this.state.selectedToken]}
+                    />
+                    <Text
+                      fontSize={2}
+                      fontWeight={3}
+                      color={'cellTitle'}
+                    >
+                      {this.state.selectedToken}
+                    </Text>
+                  </>
+                ) : (
+                  <>
+                    <SmartNumber
+                      unit={'$'}
+                      unitProps={{
+                        ml:2,
+                        fontSize:4,
+                        fontWeight:3
+                      }}
+                      fontSize={4}
+                      decimals={3}
+                      fontWeight={4}
+                      maxPrecision={5}
+                      number={this.state.totalFunds}
+                    />
+                    <Text
+                      fontSize={2}
+                      fontWeight={3}
+                      color={'cellTitle'}
+                    >
+                      Total funds
+                    </Text>
+                  </>
+                )
+              }
+            </Flex>
+        }
+        <GenericChart
+          type={Pie}
+          {...chartProps}
+          showLoader={true}
+          width={this.state.parentWidth}
+          height={this.state.parentWidth}
+          data={this.state.chartData}
+        />
+      </Flex>
     );
   }
 }

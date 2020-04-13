@@ -213,6 +213,17 @@ class FunctionsUtil {
                 storedTx.method = 'redeemIdleToken';
               }
             break;
+            case 'Withdraw':
+              const withdrawValueFixed = this.BNify(storedTx.value);
+
+              // Decrese amountLent by redeem amount
+              amountLent = amountLent.minus(withdrawValueFixed);
+
+              // Reset amountLent if below zero
+              if (amountLent.lt(0)){
+                amountLent = this.BNify(0);
+              }
+            break;
             case 'Migrate':
               let migrationValueFixed = 0;
 
@@ -367,12 +378,12 @@ class FunctionsUtil {
 
     tokens.forEach(token => {
       const tokenConfig = this.props.availableTokens[token];
-      const tokenDecimals = tokenConfig.decimals;
       const migrationContractAddr = tokenConfig.migration && tokenConfig.migration.migrationContract ? tokenConfig.migration.migrationContract.address : null;
       const migrationContractOldAddrs = tokenConfig.migration && tokenConfig.migration.migrationContract && tokenConfig.migration.migrationContract.oldAddresses ? tokenConfig.migration.migrationContract.oldAddresses : [];
 
       results.forEach(
         tx => {
+          let tokenDecimals = tokenConfig.decimals;
           const internalTxs = results.filter(r => r.hash === tx.hash);
           const isSendTransferTx = internalTxs.length === 1 && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
           const isReceiveTransferTx = internalTxs.length === 1 && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
@@ -381,8 +392,9 @@ class FunctionsUtil {
           const isDepositTx = isRightToken && !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.to.toLowerCase() === tokenConfig.idle.address.toLowerCase();
           const isRedeemTx = isRightToken && !isMigrationTx && tx.contractAddress.toLowerCase() === tokenConfig.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase()).length && tx.to.toLowerCase() === this.props.account.toLowerCase();
           const isSwapTx = !isReceiveTransferTx && !etherscanTxs[tx.hash] && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
+          const isWithdrawTx = internalTxs.length>1 && internalTxs.filter(iTx => tokenConfig.protocols.map(p => p.address.toLowerCase()).includes(iTx.contractAddress.toLowerCase()) ).length>0 && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
 
-          if (isSendTransferTx || isReceiveTransferTx || isMigrationTx || isDepositTx || isRedeemTx || isSwapTx){
+          if (isSendTransferTx || isReceiveTransferTx || isMigrationTx || isDepositTx || isRedeemTx || isSwapTx || isWithdrawTx){
             
             let action = null;
 
@@ -398,6 +410,9 @@ class FunctionsUtil {
               action = 'Receive';
             } else if (isSwapTx){
               action = 'Swap';
+            } else if (isWithdrawTx){
+              action = 'Withdraw';
+              tokenDecimals = 18;
             }
 
             if (etherscanTxs[tx.hash]){
@@ -405,7 +420,7 @@ class FunctionsUtil {
               // console.log(action,token,tokenDecimals,newValue.toString());
               etherscanTxs[tx.hash].value = newValue;
             } else {
-              // console.log(action,token,tokenDecimals,this.fixTokenDecimals(tx.value,tokenDecimals).toString());
+              // console.log(action,token,tokenDecimals,tx.value,this.fixTokenDecimals(tx.value,tokenDecimals).toString());
               etherscanTxs[tx.hash] = ({...tx, token, action, value: this.fixTokenDecimals(tx.value,tokenDecimals)});
             }
           }
@@ -697,6 +712,10 @@ class FunctionsUtil {
       }
     });
   }
+  getIdleTokenPrice = async (tokenConfig,blockNumber='latest') => {
+    const tokenPrice = await this.genericContractCall(tokenConfig.idle.token,'tokenPrice',[],{},blockNumber);
+    return this.fixTokenDecimals(tokenPrice,tokenConfig.decimals);
+  }
   getTokenBalance = async (contractName,address) => {
     let tokenBalanceOrig = await this.getContractBalance(contractName,address);
     if (tokenBalanceOrig){
@@ -925,24 +944,24 @@ class FunctionsUtil {
 
     return tokenAprs;
   };
-  abbreviateNumber(value,precision=3){
-    value = parseFloat(value);
-    let newValue = value;
-    if (value >= 1000) {
-      const intValue = parseInt(value);
-      const suffixes = ["", "k", "m", "b","t"];
-      const suffixNum = Math.floor( (""+intValue).length/4 );
-      let shortValue = '';
-      for (let precisionIndex = (precision+3); precisionIndex >= 1; precisionIndex--) {
-        shortValue = parseFloat( (suffixNum !== 0 ? (intValue / Math.pow(1000,suffixNum) ) : intValue).toPrecision(precisionIndex));
-        const dotLessShortValue = (shortValue + '').replace(/[^a-zA-Z 0-9]+/g,'');
-        if (dotLessShortValue.length <= (precision+3)) { break; }
-      }
-      if (shortValue % 1 !== 0)  shortValue = shortValue.toFixed(precision);
-      newValue = shortValue+suffixes[suffixNum];
-    } else {
-      newValue = parseFloat(value).toFixed(precision);
+  abbreviateNumber(value,decimals=3,maxPrecision=5,minPrecision=0){
+    let newValue = parseFloat(value);
+    const suffixes = ["", "K", "M", "B","T"];
+    let suffixNum = 0;
+    while (newValue >= 1000) {
+      newValue /= 1000;
+      suffixNum++;
     }
+
+    maxPrecision = Math.max(1,maxPrecision);
+    newValue = newValue.toFixed(decimals);
+    if (parseFloat(newValue)>=1 && (newValue.length-1)>maxPrecision){
+      newValue = parseFloat(newValue).toPrecision(maxPrecision);
+    } else if ((newValue.length-1)<minPrecision) {
+      newValue = parseFloat(newValue).toPrecision(minPrecision);
+    }
+
+    newValue += suffixes[suffixNum];
     return newValue;
   }
   getFormattedBalance(balance,label,decimals,maxLen,highlightedDecimals){
