@@ -45,15 +45,16 @@ class AssetField extends Component {
       let tokenAprs = null;
       switch (fieldName){
         case 'tokenBalance':
-          const tokenBalance = await this.functionsUtil.getTokenBalance(this.props.token,this.props.account);
-          if (tokenBalance){
-            if (setState){
-              this.setState({
-                tokenBalance:tokenBalance.toString()
-              });
-            }
-            return tokenBalance;
+          let tokenBalance = await this.functionsUtil.getTokenBalance(this.props.token,this.props.account);
+          if (!tokenBalance){
+            tokenBalance = this.functionsUtil.BNify(0);
           }
+          if (setState){
+            this.setState({
+              tokenBalance:tokenBalance.toString()
+            });
+          }
+          return tokenBalance;
         break;
         case 'amountLent':
           const amountLents = await this.functionsUtil.getAmountLent([this.props.token],this.props.account);
@@ -97,15 +98,19 @@ class AssetField extends Component {
             this.loadField('amountLent'),
             this.loadField('redeemableBalance')
           ]);
-          if (amountLent1 && redeemableBalance1){
-            const earnings = redeemableBalance1.minus(amountLent1);
-            if (setState){
-              this.setState({
-                earnings:earnings.toString()
-              });
-            }
-            return earnings;
+          if (!amountLent1){
+            amountLent1 = this.functionsUtil.BNify(0);
           }
+          if (!redeemableBalance1){
+            redeemableBalance1 = this.functionsUtil.BNify(0);
+          }
+          const earnings = redeemableBalance1.minus(amountLent1);
+          if (setState){
+            this.setState({
+              earnings:earnings.toString()
+            });
+          }
+          return earnings;
         break;
         case 'pool':
           const tokenAllocation = await this.functionsUtil.getTokenAllocation(this.props.tokenConfig);
@@ -123,15 +128,18 @@ class AssetField extends Component {
             this.loadField('amountLent'),
             this.loadField('redeemableBalance')
           ]);
-          if (amountLent2 && redeemableBalance2){
-            const earningsPerc = redeemableBalance2.div(amountLent2).minus(1).times(100);
-            if (setState){
-              this.setState({
-                earningsPerc:parseFloat(earningsPerc).toFixed(3),
-                earningsPercDirection:parseFloat(earningsPerc)>0 ? 'up' : 'down'
-              });
-            }
+          
+          let earningsPerc = 0;
+          if (amountLent2.gt(0) && redeemableBalance2.gt(0)){
+            earningsPerc = redeemableBalance2.div(amountLent2).minus(1).times(100);
           }
+          if (setState){
+            this.setState({
+              earningsPerc:parseFloat(earningsPerc).toFixed(3),
+              earningsPercDirection:parseFloat(earningsPerc)>0 ? 'up' : 'down'
+            });
+          }
+          return earningsPerc;
         break;
         case 'apr':
           tokenAprs = await this.functionsUtil.getTokenAprs(this.props.tokenConfig);

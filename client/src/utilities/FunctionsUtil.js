@@ -1,6 +1,7 @@
 import React from "react";
 import axios from 'axios';
 import moment from 'moment';
+import { number } from 'mout';
 import { Text } from "rimble-ui";
 import BigNumber from 'bignumber.js';
 import globalConfigs from '../configs/globalConfigs';
@@ -58,8 +59,8 @@ class FunctionsUtil {
             .replace(/<p>/g,"")
             .replace(/<\/p>/g,"");
   }
-  strToMoment = date => {
-    return moment(date);
+  strToMoment = (date,format=null) => {
+    return moment(date,format);
   }
   stripHtml = (html) => {
      var tmp = document.createElement("DIV");
@@ -609,6 +610,27 @@ class FunctionsUtil {
       return null;
     }
   }
+  getTokenApiData = async (address,startTimestamp=null,endTimestamp=null) => {
+    const apiInfo = globalConfigs.stats.rates;
+    let endpoint = `${apiInfo.endpoint}${address}`;
+    if (startTimestamp || endTimestamp){
+      const params = [];
+      if (startTimestamp && parseInt(startTimestamp)){
+        const start = startTimestamp-(60*60*24*2); // Minus 1 day for Volume graph
+        params.push(`start=${start}`);
+      }
+      if (endTimestamp && parseInt(endTimestamp)){
+        params.push(`end=${endTimestamp}`);
+      }
+      endpoint += '?'+params.join('&');
+    }
+    const TTL = apiInfo.TTL ? apiInfo.TTL : 0;
+    let output = await this.makeCachedRequest(endpoint,TTL,true);
+    if (!output){
+      return [];
+    }
+    return output;
+  }
   getTokenDecimals = async (contractName) => {
     contractName = contractName ? contractName : this.props.selectedToken;
     return await this.genericContractCall(contractName,'decimals');
@@ -943,7 +965,7 @@ class FunctionsUtil {
     }
 
     return tokenAprs;
-  };
+  }
   abbreviateNumber(value,decimals=3,maxPrecision=5,minPrecision=0){
     let newValue = parseFloat(value);
     const suffixes = ["", "K", "M", "B","T"];
