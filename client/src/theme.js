@@ -72,6 +72,33 @@ export default {
     redeem: '#00a9fe',
     deposit: '#0239ff',
     legend: '#c9c9c9',
+    transactions:{
+      action:{
+        deposit:'#3d53c0',
+        redeem:'#10a0dd',
+        send:'#4f4f4f',
+        receive:'#4f4f4f',
+        migrate:'#4f4f4f',
+        swap:'#4f4f4f',
+        withdraw:'#4f4f4f',
+        default:'#4f4f4f'
+      },
+      actionBg:{
+        deposit:'#ced6ff',
+        redeem:'#ceeff6',
+        send:'#dadada',
+        receive:'#dadada',
+        migrate:'#dadada',
+        swap:'#dadada',
+        withdraw:'#dadada',
+        default:'#dadada'
+      },
+      status:{
+        completed:'#00b84a',
+        pending:'#a5a5a5',
+        failed:'#fa6400'
+      }
+    },
     blacks: [
       'rgba(0,0,0,.0125)',
       'rgba(0,0,0,.025)',

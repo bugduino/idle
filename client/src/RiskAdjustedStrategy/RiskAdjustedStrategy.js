@@ -517,7 +517,7 @@ class RiskAdjustedStrategy extends Component {
                               name:'tokenIcon',
                               props:{
                                 mr:2,
-                                height:'1.5em',
+                                height:'1.6em',
                               }
                             },
                             {

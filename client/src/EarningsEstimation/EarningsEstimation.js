@@ -136,7 +136,7 @@ class EarningsEstimation extends Component {
           textProps={{
             ml:2
           }}
-          text={'Loading assets...'}
+          text={'Loading estimations...'}
         />
       );
     }

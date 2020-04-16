@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import DashboardMenu from './DashboardMenu';
-import { Flex, Card, Image } from 'rimble-ui';
+import { Flex, Card } from 'rimble-ui';
 import FlexLoader from '../FlexLoader/FlexLoader';
-import { Link as RouterLink } from "react-router-dom";
 import FunctionsUtil from '../utilities/FunctionsUtil';
 
 // Import page components
@@ -33,6 +32,7 @@ class Dashboard extends Component {
 
   async loadMenu() {
     const menu = [
+      /*
       {
         icon:'Home',
         label:'Home',
@@ -40,15 +40,17 @@ class Dashboard extends Component {
         selected:false,
         submenu:[]
       },
+      */
       {
         icon:'VerifiedUser',
-        label:'Risk-Adjusted',
+        label:'Risk Adjusted',
         route:'/dashboard/risk',
         bgColor:'#2196F3',
         color:'#fff',
         selected:false,
         component:RiskAdjustedStrategy,
         submenu:[
+          /*
           {
             icon:null,
             label:'DAI',
@@ -63,6 +65,7 @@ class Dashboard extends Component {
             selected:false,
             submenu:[]
           },
+          */
         ]
       },
       {
@@ -70,10 +73,11 @@ class Dashboard extends Component {
         selected:false,
         icon:'Whatshot',
         bgColor:'#f32121',
-        label:'Best-Yield',
+        label:'Best Yield',
         component:null,
         route:'/dashboard/best',
         submenu:[
+          /*
           {
             icon:null,
             label:'DAI',
@@ -88,6 +92,7 @@ class Dashboard extends Component {
             selected:false,
             submenu:[]
           },
+          */
         ]
       },
       {
@@ -212,16 +217,7 @@ class Dashboard extends Component {
       <Flex flexDirection={'row'} width={'100%'} height={'100vh'} position={'fixed'}>
         <Flex flexDirection={'column'} width={1/6}>
           <Card height={'100vh'} p={0}>
-            <Flex flexDirection={'column'}>
-              <Flex p={3} pb={0} flexDirection={'row'} alignItems={'center'}>
-                <RouterLink to="/">
-                  <Image src="images/logo-gradient.svg"
-                    height={['35px','48px']}
-                    position={'relative'} />
-                </RouterLink>
-              </Flex>
-              <DashboardMenu menu={this.state.menu} />
-            </Flex>
+            <DashboardMenu menu={this.state.menu} />
           </Card>
         </Flex>
         <Flex

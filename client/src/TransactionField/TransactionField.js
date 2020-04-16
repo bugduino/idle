@@ -1,3 +1,4 @@
+import theme from '../theme';
 import React, { Component } from 'react';
 import SmartNumber from '../SmartNumber/SmartNumber';
 import { Flex, Text, Icon, Link, Image } from "rimble-ui";
@@ -64,52 +65,40 @@ class TransactionField extends Component {
   render(){
     let icon = null;
     let color = null;
-    let output = null;
-    let bgColor = null;
+    let output = theme.colors.transactions.action.default;
+    let bgColor = theme.colors.transactions.actionBg.default;
     const fieldInfo = this.props.fieldInfo;
     const transaction = this.props.transaction;
     switch (fieldInfo.name){
       case 'icon':
+        if (transaction.action){
+          color = theme.colors.transactions.action[transaction.action.toLowerCase()] ? theme.colors.transactions.action[transaction.action.toLowerCase()] : color;
+          bgColor = theme.colors.transactions.actionBg[transaction.action.toLowerCase()] ? theme.colors.transactions.actionBg[transaction.action.toLowerCase()] : bgColor;
+        }
         switch (transaction.action) {
           case 'Deposit':
-            color = '#3d53c0';
             icon = "ArrowForward";
-            bgColor = '#ced6ff';
           break;
           case 'Redeem':
-            color = '#10a0dd';
             icon = "ArrowBack";
-            bgColor = '#ceeff6';
           break;
           case 'Send':
-            color = '#4f4f4f';
             icon = "Send";
-            bgColor = '#dadada';
           break;
           case 'Receive':
-            color = '#4f4f4f';
             icon = "Redo";
-            bgColor = '#dadada';
           break;
           case 'Migrate':
-            color = '#4f4f4f';
             icon = "Sync";
-            bgColor = '#dadada';
           break;
           case 'Swap':
-            color = '#4f4f4f';
             icon = "SwapHoriz";
-            bgColor = '#dadada';
           break;
           case 'Withdraw':
-            color = '#4f4f4f';
             icon = "ArrowUpward";
-            bgColor = '#dadada';
           break;
           default:
-            color = '#4f4f4f';
             icon = "Refresh";
-            bgColor = '#dadada';
           break;
         }
         output = (
@@ -158,17 +147,15 @@ class TransactionField extends Component {
         );
       break;
       case 'statusIcon':
+        color = theme.colors.transactions.status[transaction.status.toLowerCase()];
         switch (transaction.status) {
           case 'Completed':
-            color = '#00b84a';
             icon = "Done";
           break;
           case 'Pending':
-            color = '#a5a5a5';
             icon = "Timelapse";
           break;
           case 'Failed':
-            color = '#fa6400';
             icon = "ErrorOutline";
           break;
           default:
