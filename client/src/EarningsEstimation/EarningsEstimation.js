@@ -190,7 +190,7 @@ class EarningsEstimation extends Component {
                           const estimationStep = estimationSteps[label];
                           const estimationStepEarnings = tokenEarnings.earningsYear.times(this.functionsUtil.BNify(estimationStep.perc));
                           return (
-                            <Flex key={`asset-estimate-${token}-${estimateIndex}`} width={estimationStep.width} borderRight={`2px solid ${theme.colors.divider}`} justifyContent={'flex-end'} pr={2}>
+                            <Flex key={`asset-estimate-${token}-${estimateIndex}`} width={estimationStep.width} borderRight={`1px solid ${theme.colors.divider}`} justifyContent={'flex-end'} pr={2}>
                               <Text fontWeight={4} fontSize={3} color={ tokenEarnings.earnings.gte(estimationStepEarnings) ? 'copyColor' : 'legend' }>{this.functionsUtil.formatMoney(estimationStepEarnings,2)}</Text>
                             </Flex>
                           );

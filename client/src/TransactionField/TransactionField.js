@@ -125,7 +125,7 @@ class TransactionField extends Component {
               align={'center'}
               name={ icon }
               color={ color }
-              size={"1.2em"}
+              size={"1.5em"}
             />
           </Flex>
         );
@@ -177,6 +177,8 @@ class TransactionField extends Component {
         output = (
           <Flex
             p={'1px'}
+            width={'26px'}
+            height={'26px'}
             borderRadius={'50%'}
             {...fieldInfo.props}
             alignItems={'center'}

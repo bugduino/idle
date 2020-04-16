@@ -600,6 +600,8 @@ class TransactionsList extends Component {
                             transaction={transaction}
                             key={`tx-${transactionHash}`}
                             fieldComponent={TransactionField}
+                            rowId={`tx-col-${transactionHash}`}
+                            cardId={`tx-card-${transactionHash}`}
                           />
                         );
                       })
