@@ -1,3 +1,4 @@
+import theme from '../theme';
 import { Line } from '@nivo/line';
 import React, { Component } from 'react';
 import FunctionsUtil from '../utilities/FunctionsUtil';
@@ -7,7 +8,7 @@ class PortfolioEquity extends Component {
   state = {
     chartData:null,
     chartwidth:null,
-    chartHeight:null
+    chartHeight:null,
   };
 
   // Utils
@@ -271,13 +272,6 @@ class PortfolioEquity extends Component {
     let aggregatedBalance = null;
     const currTimestamp = parseInt(new Date().getTime()/1000);
 
-    const frequency_seconds = {
-      hour:3600,
-      day:86400,
-      week:604800
-    };
-    const frequency = 'day';
-
     const tokensData = {};
 
     await this.functionsUtil.asyncForEach(Object.keys(tokensBalance),async (token) => {
@@ -286,7 +280,7 @@ class PortfolioEquity extends Component {
 
     const idleTokenBalance = {};
 
-    for (let timeStamp=firstTxTimestamp;timeStamp<=currTimestamp;timeStamp+=frequency_seconds[frequency]){
+    for (let timeStamp=firstTxTimestamp;timeStamp<=currTimestamp;timeStamp+=this.props.frequencySeconds){
       aggregatedBalance = this.functionsUtil.BNify(0);
 
       const foundBalances = {};
@@ -377,25 +371,6 @@ class PortfolioEquity extends Component {
       color: 'hsl('+ this.functionsUtil.getGlobalConfig(['stats','tokens','USDC','color','hsl']).join(',')+')',
       data:aggregatedBalances
     });
-      
-    /*
-    const chartData = [
-      {
-        id:'DAI',
-        label:'DAI'.substr(0,1).toUpperCase()+'DAI'.substr(1),
-        value:parseFloat(5),
-        color:'hsl('+globalConfigs.stats.tokens['DAI'.toUpperCase()].color.hsl.join(',')+')'
-      },
-      {
-        id:'USDC',
-        label:'USDC'.substr(0,1).toUpperCase()+'USDC'.substr(1),
-        value:parseFloat(95),
-        color:'hsl('+globalConfigs.stats.tokens['USDC'.toUpperCase()].color.hsl.join(',')+')'
-      }
-    ];
-    */
-
-    // console.log(chartData);
 
     this.setState({
       chartData
@@ -411,27 +386,17 @@ class PortfolioEquity extends Component {
         // precision: 'hour',
       },
       xFormat:'time:%b %d %H:%M',
-      yFormat:value => this.functionsUtil.formatMoney(value,0),
+      yFormat:value => this.functionsUtil.formatMoney(value,2),
       yScale:{
         type: 'linear',
         stacked: false
       },
       axisLeft:null,
-      /*{
-        format: v => this.functionsUtil.abbreviateNumber(v,1),
-        orient: 'left',
-        tickSize: 5,
-        tickPadding: 5,
-        tickRotation: 0,
-        legend: '',
-        legendOffset: -65,
-        legendPosition: 'middle'
-      },
-      */
+      areaOpacity:0.1,
       axisBottom:{
         legend: '',
         tickSize:0,
-        format: '%b %d',
+        tickPadding: 15,
         orient: 'bottom',
         legendOffset: 36,
         legendPosition: 'middle',
@@ -443,7 +408,7 @@ class PortfolioEquity extends Component {
       curve:'monotoneX',
       enableSlices:'x',
       enableGridX:false,
-      enableGridY:false,
+      enableGridY:true,
       colors:d => d.color,
       pointSize:0,
       pointColor:{ from: 'color', modifiers: []},
@@ -452,6 +417,24 @@ class PortfolioEquity extends Component {
       pointLabelYOffset:-12,
       useMesh:true,
       animate:false,
+      theme:{
+        axis: {
+          ticks: {
+            text: {
+              fontSize:12,
+              fontWeight:500,
+              color:theme.colors.legend,
+              textColor:theme.colors.legend,
+              fontFamily: theme.fonts.sansSerif
+            }
+          }
+        },
+        grid: {
+          line: {
+            stroke: '#dbdbdb', strokeDasharray: '8 4'
+          }
+        },
+      },
       margin:{ top: 30, right: 50, bottom: 65, left: 50 },
     };
 

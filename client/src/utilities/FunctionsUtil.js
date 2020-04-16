@@ -1,7 +1,6 @@
 import React from "react";
 import axios from 'axios';
 import moment from 'moment';
-import { number } from 'mout';
 import { Text } from "rimble-ui";
 import BigNumber from 'bignumber.js';
 import globalConfigs from '../configs/globalConfigs';
@@ -96,6 +95,40 @@ class FunctionsUtil {
     }
 
     return action;
+  }
+  getAccountPortfolio = async (availableTokens=null,account=null) => {
+
+    const portfolio = {
+      tokensBalance:{},
+      totalBalance:this.BNify(0)
+    };
+
+    availableTokens = availableTokens ? availableTokens : this.props.availableTokens;
+    account = account ? account : this.props.account;
+
+    if (!account || !availableTokens){
+      return portfolio;
+    }
+
+    await this.asyncForEach(Object.keys(availableTokens),async (token) => {
+      const tokenConfig = availableTokens[token];
+      const idleTokenBalance = await this.getTokenBalance(tokenConfig.idle.token,account);
+      if (idleTokenBalance){
+        const tokenPrice = await this.getIdleTokenPrice(tokenConfig);
+        const tokenBalance = idleTokenBalance.times(tokenPrice);
+
+        portfolio.tokensBalance[token] = {
+          tokenPrice,
+          tokenBalance,
+          idleTokenBalance
+        };
+
+        // Increment total balance
+        portfolio.totalBalance = portfolio.totalBalance.plus(tokenBalance);
+      }
+    });
+
+    return portfolio;
   }
   getAmountLent = async (enabledTokens=[],account) => {
     account = account ? account : this.props.account;
@@ -649,6 +682,14 @@ class FunctionsUtil {
     }
     return null;
   }
+  getFrequencySeconds = (frequency,quantity=1) => {
+    const frequency_seconds = {
+      hour:3600,
+      day:86400,
+      week:604800
+    };
+    return frequency_seconds[frequency]*quantity;
+  }
   getProtocolInfoByAddress = (addr) => {
     return this.props.tokenConfig.protocols.find(c => c.address.toLowerCase() === addr.toLowerCase());
   }
@@ -867,6 +908,9 @@ class FunctionsUtil {
   apr2apy = (apr) => {
     return (this.BNify(1).plus(this.BNify(apr).div(12))).pow(12).minus(1);
   }
+  /*
+  Get idleToken allocation between protocols
+  */
   getTokenAllocation = async (tokenConfig,protocolsAprs=false) => {
 
     let totalAllocation = this.BNify(0);
@@ -926,6 +970,9 @@ class FunctionsUtil {
 
     return tokenAllocation;
   }
+  /*
+  Get idleTokens aggregated APR
+  */
   getTokenAprs = async (tokenConfig,tokenAllocation=false) => {
     const Aprs = await this.genericIdleCall('getAPRs');
 

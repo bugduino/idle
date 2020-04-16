@@ -186,7 +186,7 @@ class PortfolioDonut extends Component {
           symbolSize: 10,
           anchor: 'bottom',
           direction: 'row',
-          itemTextColor: '#c9c9c9',
+          itemTextColor: theme.colors.legend,
           symbolShape: 'circle',
           effects: [
             {

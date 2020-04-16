@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
 // import style from './TransactionsList.module.scss';
 import TableRow from '../TableRow/TableRow';
+import FlexLoader from '../FlexLoader/FlexLoader';
 import TableHeader from '../TableHeader/TableHeader';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import TransactionField from '../TransactionField/TransactionField';
-import { Flex, Box, Heading, Text, Link, Icon, Loader } from "rimble-ui";
+import { Flex, Box, Heading, Text, Link, Icon } from "rimble-ui";
 
 class TransactionsList extends Component {
 
@@ -570,15 +571,19 @@ class TransactionsList extends Component {
         <Box overflow={'auto'}>
         {
           this.state.loading ? (
-            <Flex
-              justifyContent={'center'}
-              alignItems={'center'}
-              textAlign={'center'}
-              width={1}
-              minHeight={ this.props.height }
-            >
-              <Loader size="40px" /> <Text ml={2}>Loading transactions...</Text>
-            </Flex>
+            <FlexLoader
+              flexProps={{
+                flexDirection:'row',
+                minHeight:this.props.height
+              }}
+              loaderProps={{
+                size:'30px'
+              }}
+              textProps={{
+                ml:2
+              }}
+              text={'Loading transactions...'}
+            />
           ) : this.state.processedTxs && this.state.processedTxs.length ? (
                 <Flex id="transactions-list-container" width={1} flexDirection={'column'}>
                   <TableHeader

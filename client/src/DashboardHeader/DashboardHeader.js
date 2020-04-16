@@ -22,7 +22,8 @@ class DashboardHeader extends Component {
     return (
       <DashboardCard>
         <Flex
-          p={2}
+          py={1}
+          px={2}
           width={1}
         >
           {

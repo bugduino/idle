@@ -30,6 +30,11 @@ class AssetsList extends Component {
 
   render() {
 
+    let enabledTokens = this.props.enabledTokens;
+    if (!enabledTokens || !enabledTokens.length){
+      enabledTokens = Object.keys(this.props.availableTokens);
+    }
+
     return (
       <Flex id="assets-list-container" width={1} flexDirection={'column'}>
         <TableHeader
@@ -37,8 +42,11 @@ class AssetsList extends Component {
         />
         <Flex id="assets-list" flexDirection={'column'}>
           {
-            Object.keys(this.props.availableTokens).map(token => {
+            enabledTokens.map(token => {
               const tokenConfig = this.props.availableTokens[token];
+              if (!tokenConfig){
+                return null;
+              }
               return (
                 <TableRow
                   token={token}
@@ -46,6 +54,8 @@ class AssetsList extends Component {
                   key={`asset-${token}`}
                   tokenConfig={tokenConfig}
                   fieldComponent={AssetField}
+                  rowId={`asset-col-${token}`}
+                  cardId={`asset-card-${token}`}
                 />
               );
             })

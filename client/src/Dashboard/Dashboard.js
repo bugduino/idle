@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 import DashboardMenu from './DashboardMenu';
-// import styles from './Dashboard.module.scss';
-// import globalConfigs from '../configs/globalConfigs';
+import { Flex, Card, Image } from 'rimble-ui';
+import FlexLoader from '../FlexLoader/FlexLoader';
 import { Link as RouterLink } from "react-router-dom";
 import FunctionsUtil from '../utilities/FunctionsUtil';
-import { Flex, Card, Image, Loader, Text } from 'rimble-ui';
 
 // Import page components
 import Stats from '../Stats/Stats';
@@ -187,7 +186,7 @@ class Dashboard extends Component {
 
   checkAccountConnected(){
     if (this.props.accountInizialized && !this.props.account){
-      window.location = '/';
+      // window.location = '/';
       return false;
     }
     return true;
@@ -204,9 +203,9 @@ class Dashboard extends Component {
   }
 
   render() {
-    if (this.props.accountInizialized && !this.props.account){
-      return null;
-    }
+    // if (this.props.accountInizialized && !this.props.account){
+    //   return null;
+    // }
 
     const PageComponent = this.state.pageComponent ? this.state.pageComponent : null;
     return (
@@ -234,15 +233,21 @@ class Dashboard extends Component {
         >
           {
             !this.props.accountInizialized || !this.props.contractsInitialized ? (
-              <Flex
-                justifyContent={'center'}
-                alignItems={'center'}
-                textAlign={'center'}
-                width={1}
-                minHeight={'100vh'}
-              >
-                <Loader size="30px" /> <Text ml={2}>Loading data...</Text>
-              </Flex>
+              <FlexLoader
+                textProps={{
+                  textSize:4,
+                  fontWeight:2
+                }}
+                loaderProps={{
+                  mb:3,
+                  size:'40px'
+                }}
+                flexProps={{
+                  minHeight:'50vh',
+                  flexDirection:'column'
+                }}
+                text={'Loading contracts...'}
+              />
             ) : (
               <Flex
                 width={1}

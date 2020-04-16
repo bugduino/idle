@@ -100,18 +100,24 @@ const globalConfigs = {
     tokens:{
       DAI:{
         color:{
+          rgb:[250,184,51],
+          hex:'#F7B24A',
           hsl:['40', '95%', '59%']
         },
         startTimestamp:'2020-02-11'
       },
       USDC:{
         color:{
+          hex:'#2875C8',
+          rgb:[40,117,200],
           hsl:['211', '67%', '47%']
         },
         startTimestamp:'2020-02-04'
       },
       SAI:{
         color:{
+          hex:'#F7B24A',
+          rgb:[247,178,74],
           hsl:['36', '92%', '63%']
         },
         startTimestamp:'2020-02-04'

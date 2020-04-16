@@ -1,7 +1,11 @@
+import { linearGradientDef } from '@nivo/core'
+import { Line } from '@nivo/line';
 import React, { Component } from 'react';
 import SmartNumber from '../SmartNumber/SmartNumber';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import { Image, Text, Loader, Button } from "rimble-ui";
+import GenericChart from '../GenericChart/GenericChart';
+// import { patternDotsDef, patternLinesDef } from '@nivo/core'
 import VariationNumber from '../VariationNumber/VariationNumber';
 
 class AssetField extends Component {
@@ -41,42 +45,46 @@ class AssetField extends Component {
     if (!fieldName){
       fieldName = fieldInfo.name;
     }
-    if (this.props.token && this.props.account){
+    let output = null;
+    if (this.props.token){
       let tokenAprs = null;
       switch (fieldName){
         case 'tokenBalance':
-          let tokenBalance = await this.functionsUtil.getTokenBalance(this.props.token,this.props.account);
+          let tokenBalance = this.props.account ? await this.functionsUtil.getTokenBalance(this.props.token,this.props.account) : false;
           if (!tokenBalance){
-            tokenBalance = this.functionsUtil.BNify(0);
+            tokenBalance = '-';
           }
           if (setState){
             this.setState({
               tokenBalance:tokenBalance.toString()
             });
           }
-          return tokenBalance;
+          output = tokenBalance;
         break;
         case 'amountLent':
-          const amountLents = await this.functionsUtil.getAmountLent([this.props.token],this.props.account);
+          const amountLents = this.props.account ? await this.functionsUtil.getAmountLent([this.props.token],this.props.account) : false;
+          let amountLent = '-';
           if (amountLents && amountLents[this.props.token]){
-            if (setState){
-              this.setState({
-                amountLent:amountLents[this.props.token].toString()
-              });
-            }
-            return amountLents[this.props.token];
+            amountLent = amountLents[this.props.token];
           }
+          if (setState){
+            this.setState({
+              amountLent:amountLent.toString()
+            });
+          }
+          output = amountLent;
         break;
         case 'idleTokenBalance':
-          const idleTokenBalance1 = await this.functionsUtil.getTokenBalance(this.props.tokenConfig.idle.token,this.props.account);
-          if (idleTokenBalance1){
-            if (setState){
-              this.setState({
-                idleTokenBalance:idleTokenBalance1.toString()
-              });
-            }
-            return idleTokenBalance1;
+          let idleTokenBalance1 = this.props.account ? await this.functionsUtil.getTokenBalance(this.props.tokenConfig.idle.token,this.props.account) : false;
+          if (!idleTokenBalance1){
+            idleTokenBalance1 = '-';
           }
+          if (setState){
+            this.setState({
+              idleTokenBalance:idleTokenBalance1.toString()
+            });
+          }
+          output = idleTokenBalance1;
         break;
         case 'redeemableBalance':
           const [idleTokenBalance2,idleTokenPrice] = await Promise.all([
@@ -90,11 +98,11 @@ class AssetField extends Component {
                 redeemableBalance:redeemableBalance.toString()
               });
             }
-            return redeemableBalance;
+            output = redeemableBalance;
           }
         break;
         case 'earnings':
-          const [amountLent1,redeemableBalance1] = await Promise.all([
+          let [amountLent1,redeemableBalance1] = await Promise.all([
             this.loadField('amountLent'),
             this.loadField('redeemableBalance')
           ]);
@@ -110,7 +118,7 @@ class AssetField extends Component {
               earnings:earnings.toString()
             });
           }
-          return earnings;
+          output = earnings;
         break;
         case 'pool':
           const tokenAllocation = await this.functionsUtil.getTokenAllocation(this.props.tokenConfig);
@@ -120,7 +128,7 @@ class AssetField extends Component {
                 poolSize:tokenAllocation.totalAllocation.toString()
               })
             }
-            return tokenAllocation.totalAllocation;
+            output = tokenAllocation.totalAllocation;
           }
         break;
         case 'earningsPerc':
@@ -128,10 +136,11 @@ class AssetField extends Component {
             this.loadField('amountLent'),
             this.loadField('redeemableBalance')
           ]);
-          
+
           let earningsPerc = 0;
-          if (amountLent2.gt(0) && redeemableBalance2.gt(0)){
+          if (amountLent2 && redeemableBalance2 && amountLent2.gt(0) && redeemableBalance2.gt(0)){
             earningsPerc = redeemableBalance2.div(amountLent2).minus(1).times(100);
+            // console.log(amountLent2.toFixed(10),redeemableBalance2.toFixed(10),earningsPerc.toFixed(10));
           }
           if (setState){
             this.setState({
@@ -139,7 +148,7 @@ class AssetField extends Component {
               earningsPercDirection:parseFloat(earningsPerc)>0 ? 'up' : 'down'
             });
           }
-          return earningsPerc;
+          output = earningsPerc;
         break;
         case 'apr':
           tokenAprs = await this.functionsUtil.getTokenAprs(this.props.tokenConfig);
@@ -150,7 +159,7 @@ class AssetField extends Component {
                 tokenAPR:parseFloat(tokenAPR).toFixed(3)
               });
             }
-            return tokenAPR;
+            output = tokenAPR;
           }
         break;
         case 'apy':
@@ -166,12 +175,168 @@ class AssetField extends Component {
             return tokenAPY;
           }
         break;
-        default:
+        case 'aprChart':
 
+          const apiResultsAprChart = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,parseInt(new Date().getTime()/1000)-(60*60*24*7));
+
+          const aprChartData = [{
+            id:this.props.token,
+            color: 'hsl('+this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.token,'color','hsl']).join(',')+')',
+            data: []
+          }];
+
+          const frequencySeconds = this.functionsUtil.getFrequencySeconds('hour',12);
+
+          let prevTimestamp = null;
+          apiResultsAprChart.forEach((d,i) => {
+            if (prevTimestamp === null || d.timestamp-prevTimestamp>=frequencySeconds){
+              const x = this.functionsUtil.strToMoment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
+              const y = parseFloat(this.functionsUtil.fixTokenDecimals(d.idleRate,18));
+              aprChartData[0].data.push({ x, y });
+              prevTimestamp = d.timestamp;
+            }
+          });
+
+          let aprChartWidth = 0;
+          let aprChartHeight = 0;
+
+          const resizeAprChart = () => {
+            const $aprChartRowElement = window.jQuery(`#${this.props.parentId}`);
+            if ($aprChartRowElement.length){
+              aprChartWidth = $aprChartRowElement.innerWidth()-parseFloat($aprChartRowElement.css('padding-right'))-parseFloat($aprChartRowElement.css('padding-left'));
+              aprChartHeight = $aprChartRowElement.innerHeight();
+              if (aprChartWidth !== this.state.aprChartWidth || !this.state.aprChartHeight){
+                this.setState({
+                  aprChartWidth,
+                  aprChartHeight: this.state.aprChartHeight ? this.state.aprChartHeight : aprChartHeight
+                });
+              }
+            }
+          }
+
+          // Set chart width and Height and set listener
+          resizeAprChart();
+          window.removeEventListener('resize', resizeAprChart.bind(this));
+          window.addEventListener('resize', resizeAprChart.bind(this));
+
+          // Set chart type
+          const aprChartType = Line;
+
+          const aprChartProps = {
+            pointSize:0,
+            lineWidth:1,
+            useMesh:false,
+            axisLeft:null,
+            animate:false,
+            curve:'linear',
+            axisBottom:null,
+            enableArea:true,
+            areaOpacity:0.1,
+            enableGridX:false,
+            enableGridY:false,
+            pointBorderWidth:2,
+            enableSlices:false,
+            isInteractive:false,
+            colors:d => d.color,
+            defs:[
+              linearGradientDef('gradientArea', [
+                  { offset: 0, color: '#faf047' },
+                  { offset: 50, color: '#e4b400' },
+              ])
+            ],
+            fill:[
+              { match: { id: this.props.token } , id: 'gradientArea' },
+            ],
+            margin: { top: 10, right: 0, bottom: 0, left: 0 }
+          };
+
+          if (setState){
+            this.setState({
+              aprChartType,
+              aprChartData,
+              aprChartProps
+            });
+          }
+          output = aprChartData;
+        break;
+        case 'performanceChart':
+          let firstTokenPrice = null;
+          let firstIdleBlock = null;
+          let performanceChartWidth = 0;
+          let performanceChartHeight = 0;
+
+          const performanceChartRowElement = document.getElementById(this.props.rowId);
+          if (performanceChartRowElement){
+            performanceChartWidth = parseFloat(performanceChartRowElement.offsetWidth)>0 ? performanceChartRowElement.offsetWidth*this.props.colProps.width : 0;
+            performanceChartHeight = parseFloat(performanceChartRowElement.offsetHeight);
+          }
+
+          const aprEndTimeStamp = this.functionsUtil.strToMoment(this.functionsUtil.strToMoment(new Date()).substract(1,'day').format('YYYY-MM-DD 23:59'),'YYYY-MM-DD HH:mm');
+          const aprStartTimeStamp = aprEndTimeStamp.clone().subtract(1,'week')
+
+          const apiResultsPerformanceChart = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,aprStartTimeStamp,aprEndTimeStamp);
+
+          const idleTokenPerformance = apiResultsPerformanceChart.map((d,i) => {
+            let y = 0;
+            const x = this.functionsUtil.strToMoment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
+            const tokenPrice = this.functionsUtil.fixTokenDecimals(d.idlePrice,this.props.tokenConfig.decimals);
+
+            if (!firstTokenPrice){
+              firstTokenPrice = tokenPrice;
+            } else {
+              y = parseFloat(tokenPrice.div(firstTokenPrice).minus(1).times(100));
+            }
+
+            if (firstIdleBlock === null){
+              firstIdleBlock = parseInt(d.blocknumber);
+            }
+
+            return { x, y };
+          });
+
+          const performanceChartData = [{
+            id:'Idle',
+            color: 'hsl('+this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.token,'color','hsl']).join(',')+')',
+            data: idleTokenPerformance
+          }];
+
+          // Set chart type
+          const performanceChartType = Line;
+
+          const performanceChartProps = {
+            axisLeft:null,
+            axisBottom:null,
+            pointSize:0,
+            lineWidth:1,
+            useMesh:false,
+            animate:false,
+            curve:'monotoneX',
+            enableArea:true,
+            enableSlices:false,
+            enableGridX:false,
+            enableGridY:false,
+            pointBorderWidth:1,
+            colors:d => d.color,
+            pointLabelYOffset:-12,
+            margin: { top: 0, right: 0, bottom: 0, left: 0 }
+          };
+
+          if (setState){
+            this.setState({
+              performanceChartType,
+              performanceChartData,
+              performanceChartProps,
+              performanceChartWidth,
+              performanceChartHeight
+            });
+          }
+          output = performanceChartData;
+        break;
+        default:
         break;
       }
     }
-    return null;
+    return output;
   }
 
   render(){
@@ -237,6 +402,28 @@ class AssetField extends Component {
         output = (
           <Button {...fieldInfo.props}>{fieldInfo.label}</Button>
         );
+      break;
+      case 'performanceChart':
+        output = this.state.performanceChartData ? (
+          <GenericChart
+            {...this.state.performanceChartProps}
+            type={this.state.performanceChartType}
+            data={this.state.performanceChartData}
+            width={this.state.performanceChartWidth}
+            height={this.state.performanceChartHeight}
+          />
+        ) : loader
+      break;
+      case 'aprChart':
+        output = this.state.aprChartData ? (
+          <GenericChart
+            {...this.state.aprChartProps}
+            type={this.state.aprChartType}
+            data={this.state.aprChartData}
+            width={this.state.aprChartWidth}
+            height={this.state.aprChartHeight}
+          />
+        ) : loader
       break;
       default:
       break;

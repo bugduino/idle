@@ -20,14 +20,16 @@ class SmartNumber extends Component {
   }
 
   render() {
-    let formattedNumber = '-';
-    switch (this.props.type){
-      case 'money':
-        formattedNumber = this.functionsUtil.formatMoney(this.props.number,this.props.precision);
-      break;
-      default:
-        formattedNumber = this.functionsUtil.abbreviateNumber(this.props.number,this.props.decimals,this.props.maxPrecision,this.props.minPrecision);
-      break;
+    let formattedNumber = this.props.number;
+    if (!isNaN(this.props.number)){
+      switch (this.props.type){
+        case 'money':
+          formattedNumber = this.functionsUtil.formatMoney(this.props.number,this.props.precision);
+        break;
+        default:
+          formattedNumber = this.functionsUtil.abbreviateNumber(this.props.number,this.props.decimals,this.props.maxPrecision,this.props.minPrecision);
+        break;
+      }
     }
     return (
       <Flex
