@@ -284,6 +284,8 @@ class PortfolioEquity extends Component {
       aggregatedBalance = this.functionsUtil.BNify(0);
 
       const foundBalances = {};
+
+      // eslint-disable-next-line
       Object.keys(tokensBalance).forEach(token => {
 
         if (!idleTokenBalance[token]){

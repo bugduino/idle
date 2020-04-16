@@ -7,33 +7,50 @@ import FunctionsUtil from '../utilities/FunctionsUtil';
 class EarningsEstimation extends Component {
   state = {
     tokensEarnings:null,
+    estimationStepsPerc:null,
     estimationSteps:{
-      'Week':{
-        width:1/12,
-        perc:1/52
+      0:{
+        'Week':{
+          width:1/12,
+          perc:1/52
+        },
+        'Month':{
+          width:3/12,
+          perc:1/12
+        },
+        '3 months':{
+          width:8/12,
+          perc:3/12
+        }
       },
-      'Month':{
-        width:4/12,
-        perc:4/52
+      25:{
+        '3 months':{
+          width:3/12,
+          perc:3/12
+        },
+        '8 months':{
+          width:5/12,
+          perc:8/12
+        },
+        'Year':{
+          width:4/12,
+          perc:1
+        }
       },
-      '3 months':{
-        width:7/12,
-        perc:12/52
+      90:{
+        'Year':{
+          width:1/3,
+          perc:1
+        },
+        '2 Years':{
+          width:1/3,
+          perc:2
+        },
+        '5 Years':{
+          width:3/5,
+          perc:5
+        }
       }
-      /*
-      'Month':{
-        width:1/12,
-        perc:1/12
-      },
-      '3 months':{
-        width:3/12,
-        perc:3/12
-      },
-      '8 Month':{
-        width:8/12,
-        perc:8/12
-      }
-      */
     }
   };
 
@@ -59,15 +76,16 @@ class EarningsEstimation extends Component {
 
   async loadEarnings(){
     const tokensEarnings = {};
+    let estimationStepsPerc = 0;
 
     const amountLents = await this.functionsUtil.getAmountLent(this.props.enabledTokens,this.props.account);
     await this.functionsUtil.asyncForEach(Object.keys(amountLents),async (token) => {
       const amountLent = amountLents[token];
       const tokenConfig = this.props.availableTokens[token];
-      const idleTokenBalance = await this.functionsUtil.getTokenBalance(tokenConfig.idle.token,this.props.account);
-      const idleTokenPrice = await this.functionsUtil.genericContractCall(tokenConfig.idle.token, 'tokenPrice');
-      const redeemableBalance = this.functionsUtil.fixTokenDecimals(idleTokenBalance.times(idleTokenPrice),tokenConfig.decimals);
-      const earnings = redeemableBalance.minus(amountLent);
+      const avgBuyPrice = await this.functionsUtil.getAvgBuyPrice([token],this.props.account);
+      const idleTokenPrice = await this.functionsUtil.getIdleTokenPrice(tokenConfig);
+      const earningsPerc = idleTokenPrice.div(avgBuyPrice[token]).minus(1);
+      const earnings = amountLent.times(earningsPerc);
 
       let earningsYear = 0;
       const tokenAprs = await this.functionsUtil.getTokenAprs(this.props.tokenConfig);
@@ -77,11 +95,19 @@ class EarningsEstimation extends Component {
         earningsYear = amountLent.times(tokenAPY);
       }
 
+      const earningsPercStep = parseInt(earnings.div(earningsYear).times(100));
+      
+      const possibleSteps = Object.keys(this.state.estimationSteps).filter(perc => perc<earningsPercStep);
+      const maxPossibleStep = parseInt(possibleSteps.pop());
+      estimationStepsPerc = Math.max(estimationStepsPerc,maxPossibleStep);
+
+      // console.log(earningsPercStep,maxPossibleStep,estimationStepsPerc);
+
       tokensEarnings[token] = {
         amountLent,
-        idleTokenBalance,
+        // idleTokenBalance,
         idleTokenPrice,
-        redeemableBalance,
+        // redeemableBalance,
         earnings,
         earningsYear
       }
@@ -90,6 +116,7 @@ class EarningsEstimation extends Component {
     // console.log(tokensEarnings);
 
     this.setState({
+      estimationStepsPerc,
       tokensEarnings
     })
   }
@@ -114,6 +141,8 @@ class EarningsEstimation extends Component {
       );
     }
 
+    const estimationSteps = this.state.estimationSteps[this.state.estimationStepsPerc];
+
     return (
       <Card
         pr={0}
@@ -128,7 +157,7 @@ class EarningsEstimation extends Component {
           Object.keys(this.state.tokensEarnings).map((token,tokenIndex) => {
             const tokenRGBColor = this.functionsUtil.getGlobalConfig(['stats','tokens',token,'color','rgb']).join(',');
             const tokenEarnings = this.state.tokensEarnings[token];
-            const estimationStepPerc = this.functionsUtil.BNify(Object.values(this.state.estimationSteps).pop().perc);
+            const estimationStepPerc = this.functionsUtil.BNify(Object.values(estimationSteps).pop().perc);
             const finalEarnings = tokenEarnings.earningsYear.times(estimationStepPerc);
             const cursorPerc = Math.min(1,parseFloat(tokenEarnings.earnings.div(finalEarnings)));
             // console.log(tokenEarnings.earnings.toFixed(10),tokenEarnings.earningsYear.toFixed(10),finalEarnings.toFixed(10),cursorPerc.toFixed(10),estimationStepPerc.toFixed(10));
@@ -157,8 +186,8 @@ class EarningsEstimation extends Component {
                       flexDirection={'row'}
                     >
                       {
-                        Object.keys(this.state.estimationSteps).map((label,estimateIndex) => {
-                          const estimationStep = this.state.estimationSteps[label];
+                        Object.keys(estimationSteps).map((label,estimateIndex) => {
+                          const estimationStep = estimationSteps[label];
                           const estimationStepEarnings = tokenEarnings.earningsYear.times(this.functionsUtil.BNify(estimationStep.perc));
                           return (
                             <Flex key={`asset-estimate-${token}-${estimateIndex}`} width={estimationStep.width} borderRight={`2px solid ${theme.colors.divider}`} justifyContent={'flex-end'} pr={2}>
@@ -198,7 +227,7 @@ class EarningsEstimation extends Component {
                           height={'100%'}
                           width={'100%'}
                           borderRadius={2}
-                          style={{background:`linear-gradient(360deg, rgba(${tokenRGBColor},1) 0%, rgba(${tokenRGBColor},0.4) 100%)`}}
+                          style={{background:`linear-gradient(360deg, rgba(${tokenRGBColor},1) 0%, rgba(${tokenRGBColor},0.6) 100%)`}}
                         ></Flex>
                       </Flex>
                     </Flex>
@@ -231,8 +260,8 @@ class EarningsEstimation extends Component {
                 flexDirection={'row'}
               >
                 {
-                  Object.keys(this.state.estimationSteps).map((estimationLabel,estimateIndex) => {
-                    const estimationStep = this.state.estimationSteps[estimationLabel];
+                  Object.keys(estimationSteps).map((estimationLabel,estimateIndex) => {
+                    const estimationStep = estimationSteps[estimationLabel];
                     return (
                       <Flex key={`estimate-label-${estimateIndex}`} width={estimationStep.width} justifyContent={'flex-end'} pr={2}>
                         <Text color={'legend'} fontWeight={3} fontSize={2}>{estimationLabel}</Text>

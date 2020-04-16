@@ -132,16 +132,17 @@ class AssetField extends Component {
           }
         break;
         case 'earningsPerc':
-          const [amountLent2,redeemableBalance2] = await Promise.all([
-            this.loadField('amountLent'),
-            this.loadField('redeemableBalance')
+          const [avgBuyPrice,idleTokenPrice2] = await Promise.all([
+            this.functionsUtil.getAvgBuyPrice([this.props.token],this.props.account),
+            this.functionsUtil.getIdleTokenPrice(this.props.tokenConfig)
           ]);
 
           let earningsPerc = 0;
-          if (amountLent2 && redeemableBalance2 && amountLent2.gt(0) && redeemableBalance2.gt(0)){
-            earningsPerc = redeemableBalance2.div(amountLent2).minus(1).times(100);
-            // console.log(amountLent2.toFixed(10),redeemableBalance2.toFixed(10),earningsPerc.toFixed(10));
+          if (avgBuyPrice && avgBuyPrice[this.props.token] && avgBuyPrice[this.props.token].gt(0) && idleTokenPrice2){
+            earningsPerc = idleTokenPrice2.div(avgBuyPrice[this.props.token]).minus(1).times(100);
+            // console.log(this.props.token,avgBuyPrice[this.props.token].toFixed(5),idleTokenPrice2.toFixed(5),parseFloat(earningsPerc).toFixed(3));
           }
+
           if (setState){
             this.setState({
               earningsPerc:parseFloat(earningsPerc).toFixed(3),

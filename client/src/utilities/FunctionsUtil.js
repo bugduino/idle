@@ -130,6 +130,93 @@ class FunctionsUtil {
 
     return portfolio;
   }
+  getAvgBuyPrice = async (enabledTokens=[],account) => {
+    account = account ? account : this.props.account;
+
+    if (!account || !enabledTokens || !enabledTokens.length || !this.props.availableTokens){
+      return [];
+    }
+
+    const etherscanTxs = await this.getEtherscanTxs(account,0,'latest',enabledTokens);
+    const storedTxs = this.getStoredItem('transactions',true,{});
+
+    // Init storedTxs for pair account-token if empty
+    if (typeof storedTxs[account] !== 'object'){
+      storedTxs[account] = {};
+    }
+
+    const output = {};
+
+    await this.asyncForEach(enabledTokens,async (selectedToken) => {
+
+      output[selectedToken] = [];
+      let idleTokensBalance= this.BNify(0);
+      let avgBuyPrice = this.BNify(0);
+
+      const tokenConfig = this.props.availableTokens[selectedToken];
+
+      // Init storedTxs for pair account-token if empty
+      if (typeof storedTxs[account][selectedToken] !== 'object'){
+        storedTxs[account][selectedToken] = {};
+      }
+
+      const filteredTxs = Object.values(etherscanTxs).filter(tx => (tx.token === selectedToken));
+      if (filteredTxs && filteredTxs.length){
+
+        await this.asyncForEach(filteredTxs,async (tx,index) => {
+
+          const txKey = `tx${tx.timeStamp}000`;
+          const storedTx = storedTxs[account][selectedToken][txKey] ? storedTxs[account][selectedToken][txKey] : tx;
+
+          let tokenPrice = null;
+          if (storedTx.tokenPrice){
+            tokenPrice = this.BNify(storedTx.tokenPrice);
+          } else {
+            tokenPrice = await this.genericContractCall(tokenConfig.idle.token, 'tokenPrice',[],{}, tx.blockNumber);
+            tokenPrice = this.fixTokenDecimals(tokenPrice,tokenConfig.decimals);
+          }
+
+          let idleTokens = this.BNify(tx.value);
+          const prevAvgBuyPrice = avgBuyPrice;
+
+          // Deposited
+          switch (tx.action){
+            case 'Deposit':
+              idleTokens = idleTokens.div(tokenPrice);
+              avgBuyPrice = idleTokens.times(tokenPrice).plus(prevAvgBuyPrice.times(idleTokensBalance)).div(idleTokensBalance.plus(idleTokens));
+            break;
+            case 'Receive':
+            case 'Swap':
+            case 'Migrate':
+              avgBuyPrice = idleTokens.times(tokenPrice).plus(prevAvgBuyPrice.times(idleTokensBalance)).div(idleTokensBalance.plus(idleTokens));
+            break;
+            case 'Withdraw':
+              idleTokens = idleTokens.times(this.BNify(-1));
+            break;
+            case 'Send':
+            case 'Redeem':
+              idleTokens = idleTokens.div(tokenPrice).times(this.BNify(-1));
+            break;
+            default:
+            break;
+          }
+
+          // Update idleTokens balance
+          idleTokensBalance = idleTokensBalance.plus(idleTokens);
+          if (idleTokensBalance.lt(0)){
+            avgBuyPrice = this.BNify(0);
+            idleTokensBalance = this.BNify(0);
+          }
+          // console.log(selectedToken,tx.action,this.BNify(tx.value).toFixed(5),tokenPrice.toFixed(5),idleTokens.toFixed(5),idleTokensBalance.toFixed(5),avgBuyPrice.toFixed(5));
+        });
+      }
+
+      // Add token Data
+      output[selectedToken] = avgBuyPrice;
+    });
+
+    return output;
+  }
   getAmountLent = async (enabledTokens=[],account) => {
     account = account ? account : this.props.account;
 
