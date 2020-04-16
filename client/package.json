@@ -13,6 +13,7 @@
     "@ramp-network/ramp-instant-sdk": "^1.6.1",
     "@rimble/connection-banner": "^1.2.1",
     "@rimble/network-indicator": "^1.2.1",
+    "@sentry/browser": "^5.15.4",
     "@svgr/webpack": "2.4.1",
     "@terminal-packages/sdk": "^1.1.1",
     "@toruslabs/torus-embed": "^1.2.4",
