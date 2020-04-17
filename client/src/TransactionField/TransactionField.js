@@ -89,7 +89,8 @@ class TransactionField extends Component {
             icon = "Redo";
           break;
           case 'Migrate':
-            icon = "Sync";
+            // icon = "Sync";
+            icon = "Repeat";
           break;
           case 'Swap':
             icon = "SwapHoriz";
@@ -114,7 +115,7 @@ class TransactionField extends Component {
               align={'center'}
               name={ icon }
               color={ color }
-              size={"1.5em"}
+              size={"1.4em"}
             />
           </Flex>
         );

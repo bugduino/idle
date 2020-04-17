@@ -1,0 +1,8 @@
+.interactive{
+  cursor:pointer;
+}
+.interactive:hover{
+  background-color:#fbfbfb;
+  box-shadow:0px 0px 8px 1px rgba(0,54,255,0.3);
+  transition:all 0.2s ease-in-out;
+}

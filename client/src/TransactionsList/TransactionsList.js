@@ -4,8 +4,9 @@ import TableRow from '../TableRow/TableRow';
 import FlexLoader from '../FlexLoader/FlexLoader';
 import TableHeader from '../TableHeader/TableHeader';
 import FunctionsUtil from '../utilities/FunctionsUtil';
+import DashboardCard from '../DashboardCard/DashboardCard';
 import TransactionField from '../TransactionField/TransactionField';
-import { Flex, Box, Heading, Text, Link, Icon } from "rimble-ui";
+import { Flex, Box, Heading, Text, Link, Icon, Card } from "rimble-ui";
 
 class TransactionsList extends Component {
 
@@ -568,7 +569,6 @@ class TransactionsList extends Component {
   render() {
     return (
       <Flex flexDirection={'column'} width={1} m={'0 auto'}>
-        <Box overflow={'auto'}>
         {
           this.state.loading ? (
             <FlexLoader
@@ -585,69 +585,103 @@ class TransactionsList extends Component {
               text={'Loading transactions...'}
             />
           ) : this.state.processedTxs && this.state.processedTxs.length ? (
-                <Flex id="transactions-list-container" width={1} flexDirection={'column'}>
-                  <TableHeader
-                    cols={this.props.cols}
-                  />
-                  <Flex id="transactions-list" flexDirection={'column'}>
-                    {
-                      this.state.processedTxs.map(transaction => {
-                        const transactionHash = transaction.hash;
-                        return (
-                          <TableRow
-                            {...this.props}
-                            hash={transactionHash}
-                            transaction={transaction}
-                            key={`tx-${transactionHash}`}
-                            fieldComponent={TransactionField}
-                            rowId={`tx-col-${transactionHash}`}
-                            cardId={`tx-card-${transactionHash}`}
-                          />
-                        );
-                      })
-                    }
-                  </Flex>
+            <Flex id="transactions-list-container" width={1} flexDirection={'column'}>
+              <Flex
+                mb={3}
+                alignItems={'center'}
+                flexDirection={'row'}
+                justifyContent={'flex-start'}
+              >
+                <DashboardCard
+                  cardProps={{
+                    py:2,
+                    px:3,
+                    width:[1,1/6]
+                  }}
+                  isInteractive={true}
+                >
                   <Flex
-                    height={'50px'}
-                    flexDirection={'row'}
+                    width={1}
                     alignItems={'center'}
-                    justifyContent={'flex-end'}
-                    id="transactions-list-pagination"
+                    flexDirection={'row'}
+                    justifyContent={'space-between'}
                   >
-                    <Flex mr={3}>
-                      <Link mr={1} onClick={ e => this.prevPage(e) }>
-                        <Icon
-                          name={'KeyboardArrowLeft'}
-                          size={'2em'}
-                          color={ this.state.page>1 ? '#4f4f4f' : '#d8d8d8' }
-                        />
-                      </Link>
-                      <Link onClick={ e => this.nextPage(e) }>
-                        <Icon
-                          name={'KeyboardArrowRight'}
-                          size={'2em'}
-                          color={ this.state.page<this.state.totalPages ? '#4f4f4f' : '#d8d8d8' }
-                        />
-                      </Link>
-                    </Flex>
-                    <Flex alignItems={'center'}>
-                      <Text 
-                        fontSize={1}
-                        fontWeight={3}
-                        color={'cellText'}
-                      >
-                        Page {this.state.page} of {this.state.totalPages}
-                      </Text>
-                    </Flex>
+                    <Text
+                      fontSize={2}
+                      fontWeight={500}
+                      color={'copyColor'}
+                    >
+                      Filters
+                    </Text>
+                    <Icon
+                      size={'1.5em'}
+                      name={'Tune'}
+                      color={'copyColor'}
+                    />
                   </Flex>
+                </DashboardCard>
+              </Flex>
+              <TableHeader
+                cols={this.props.cols}
+              />
+              <Flex id="transactions-list" flexDirection={'column'}>
+                {
+                  this.state.processedTxs.map(transaction => {
+                    const transactionHash = transaction.hash;
+                    return (
+                      <TableRow
+                        {...this.props}
+                        hash={transactionHash}
+                        transaction={transaction}
+                        key={`tx-${transactionHash}`}
+                        fieldComponent={TransactionField}
+                        rowId={`tx-col-${transactionHash}`}
+                        cardId={`tx-card-${transactionHash}`}
+                      />
+                    );
+                  })
+                }
+              </Flex>
+              <Flex
+                height={'50px'}
+                flexDirection={'row'}
+                alignItems={'center'}
+                justifyContent={'flex-end'}
+                id="transactions-list-pagination"
+              >
+                <Flex mr={3}>
+                  <Link mr={1} onClick={ e => this.prevPage(e) }>
+                    <Icon
+                      name={'KeyboardArrowLeft'}
+                      size={'2em'}
+                      color={ this.state.page>1 ? '#4f4f4f' : '#d8d8d8' }
+                    />
+                  </Link>
+                  <Link onClick={ e => this.nextPage(e) }>
+                    <Icon
+                      name={'KeyboardArrowRight'}
+                      size={'2em'}
+                      color={ this.state.page<this.state.totalPages ? '#4f4f4f' : '#d8d8d8' }
+                    />
+                  </Link>
                 </Flex>
-              ) : (
-                <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontWeight={2} fontSize={[2]} color={'dark-gray'}>
-                  There are no transactions
-                </Heading.h3>
-              )
+                <Flex alignItems={'center'}>
+                  <Text 
+                    fontSize={1}
+                    fontWeight={3}
+                    color={'cellText'}
+                  >
+                    Page {this.state.page} of {this.state.totalPages}
+                  </Text>
+                </Flex>
+              </Flex>
+            </Flex>
+          ) : (
+            <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontWeight={2} fontSize={[2]} color={'dark-gray'}>
+              There are no transactions
+            </Heading.h3>
+          )
         }
-        </Box>
       </Flex>
     );
   }

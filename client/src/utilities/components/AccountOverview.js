@@ -33,8 +33,8 @@ class AccountOverview extends React.Component {
         {
           connectorInfo ? (
             <Image
-              width={'58px'}
-              height={'58px'}
+              width={'55px'}
+              height={'55px'}
               display={'inline-flex'}
               mr={[0,'0.5rem']}
               src={`images/${walletIcon}`}
@@ -44,7 +44,7 @@ class AccountOverview extends React.Component {
           ) : (
             <Icon
               name='AccountCircle'
-              size={'52'}
+              size={'50'}
               ml={2}
               mt={[0, 0]}
               color='copyColor' />

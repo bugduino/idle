@@ -9,11 +9,12 @@ class TableRow extends Component {
         pr={0}
         mb={2}
         px={[3,4]}
-        py={[2,3]}
+        py={[2,'20px']}
         width={1}
         boxShadow={1}
         borderRadius={2}
         id={this.props.cardId}
+        {...this.props.rowProps}
       >
         <Flex
           flexDirection={'row'}
