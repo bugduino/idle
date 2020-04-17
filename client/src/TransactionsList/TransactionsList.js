@@ -168,7 +168,7 @@ class TransactionsList extends Component {
                 avgBuyPrice = this.functionsUtil.BNify(0);
               }
 
-              // console.log(`Transfer sent of ${tx.value} (${tokensTransfered}) - amountLent: ${amountLent}`);
+              // console.log(`${selectedToken} - Send of ${tx.value} (${tokensTransfered}) - amountLent: ${amountLent}`);
 
               storedTx.value = tokensTransfered;
             break;
@@ -180,7 +180,7 @@ class TransactionsList extends Component {
               // Calculate avgBuyPrice for current earnings
               avgBuyPrice = avgBuyPrice.plus(tokensTransfered);
 
-              // console.log(`Transfer received of ${tx.value} (${tokensTransfered}) - amountLent: ${amountLent}`);
+              // console.log(`${selectedToken} - Receive of ${tx.value} (${tokensTransfered}) - amountLent: ${amountLent}`);
 
               storedTx.value = tokensTransfered;
             break;
@@ -192,6 +192,20 @@ class TransactionsList extends Component {
               avgBuyPrice = avgBuyPrice.plus(tokensTransfered);
 
               storedTx.value = tokensTransfered;
+
+              // console.log(`${selectedToken} - Swap In of ${tx.value} (${tokensTransfered}) - amountLent: ${amountLent}`);
+            break;
+            case 'SwapOut':
+              // Decrese amountLent by the last idleToken price
+              amountLent = amountLent.minus(tokensTransfered);
+
+              if (amountLent.lte(0)){
+                amountLent = this.functionsUtil.BNify(0);
+              }
+
+              storedTx.value = tokensTransfered;
+
+              // console.log(`${selectedToken} - Swap Out of ${tx.value} (${tokensTransfered}) - amountLent: ${amountLent}`);
             break;
             case 'Deposit':
               amountLent = amountLent.plus(this.functionsUtil.BNify(tx.value));
@@ -224,7 +238,7 @@ class TransactionsList extends Component {
               // Calculate avgBuyPrice for current earnings
               avgBuyPrice = avgBuyPrice.plus(tokensTransfered);
 
-              // console.log(`Deposited ${tx.value} (${storedTx.idleTokens}), AmountLent: ${amountLent}`);
+              // console.log(`${selectedToken} - Deposited ${tx.value} (${storedTx.idleTokens}), AmountLent: ${amountLent}`);
             break;
             case 'Redeem':
 
@@ -246,6 +260,8 @@ class TransactionsList extends Component {
               if (!storedTx.method){
                 storedTx.method = 'redeemIdleToken';
               }
+
+              // console.log(`${selectedToken} - Redeemed ${redeemedValueFixed} (${storedTx.idleTokens}), AmountLent: ${amountLent}`);
             break;
             case 'Migrate':
 
@@ -266,6 +282,8 @@ class TransactionsList extends Component {
               // Calculate avgBuyPrice for current earnings
               tokensTransfered = tokenPrice.times(migrationValueFixed);
               avgBuyPrice = avgBuyPrice.plus(tokensTransfered);
+
+              // console.log(`${selectedToken} - Migrated ${migrationValueFixed} (${storedTx.idleTokens}), AmountLent: ${amountLent}`);
             break;
             default:
             break;

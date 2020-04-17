@@ -92,6 +92,8 @@ class FunctionsUtil {
       action = 'Receive';
     } else if (isSwapTx){
       action = 'Swap';
+    } else if (isSwapTx){
+      action = 'SwapOut';
     }
 
     return action;
@@ -195,6 +197,7 @@ class FunctionsUtil {
             break;
             case 'Send':
             case 'Redeem':
+            case 'SwapOut':
               idleTokens = idleTokens.div(tokenPrice).times(this.BNify(-1));
             break;
             default:
@@ -288,8 +291,13 @@ class FunctionsUtil {
               storedTx.value = tokensTransfered;
             break;
             case 'Swap':
-              // Decrese amountLent by the last idleToken price
+              // Increase amountLent by the last idleToken price
               amountLent = amountLent.plus(tokensTransfered);
+              storedTx.value = tokensTransfered;
+            break;
+            case 'SwapOut':
+              // Decrease amountLent by the last idleToken price
+              amountLent = amountLent.minus(tokensTransfered);
               storedTx.value = tokensTransfered;
             break;
             case 'Deposit':
@@ -512,10 +520,15 @@ class FunctionsUtil {
           const isRightToken = internalTxs.length>1 && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === tokenConfig.address.toLowerCase()).length>0;
           const isDepositTx = isRightToken && !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.to.toLowerCase() === tokenConfig.idle.address.toLowerCase();
           const isRedeemTx = isRightToken && !isMigrationTx && tx.contractAddress.toLowerCase() === tokenConfig.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase()).length && tx.to.toLowerCase() === this.props.account.toLowerCase();
-          const isSwapTx = !isReceiveTransferTx && !etherscanTxs[tx.hash] && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
           const isWithdrawTx = internalTxs.length>1 && internalTxs.filter(iTx => tokenConfig.protocols.map(p => p.address.toLowerCase()).includes(iTx.contractAddress.toLowerCase()) ).length>0 && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
+          const isSwapTx = !isReceiveTransferTx && !etherscanTxs[tx.hash] && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
+          const isSwapOutTx = !isSendTransferTx && !isWithdrawTx && !etherscanTxs[tx.hash] && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
 
-          if (isSendTransferTx || isReceiveTransferTx || isMigrationTx || isDepositTx || isRedeemTx || isSwapTx || isWithdrawTx){
+          // if (tx.hash === '0xa40684acc30d7a418f43f690b54373609f1dd253d3fd40483af3cd1846326662'){
+          //   debugger;
+          // }
+
+          if (isSendTransferTx || isReceiveTransferTx || isMigrationTx || isDepositTx || isRedeemTx || isSwapTx || isSwapOutTx || isWithdrawTx){
             
             let action = null;
 
@@ -531,10 +544,19 @@ class FunctionsUtil {
               action = 'Receive';
             } else if (isSwapTx){
               action = 'Swap';
+            } else if (isSwapOutTx){
+              action = 'SwapOut';
             } else if (isWithdrawTx){
               action = 'Withdraw';
+            }
+
+            if (tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase()){
               tokenDecimals = 18;
             }
+
+            // if (tx.hash === '0xa40684acc30d7a418f43f690b54373609f1dd253d3fd40483af3cd1846326662'){
+            //   debugger;
+            // }
 
             if (etherscanTxs[tx.hash]){
               const newValue = etherscanTxs[tx.hash].value.plus(this.fixTokenDecimals(tx.value,tokenDecimals));

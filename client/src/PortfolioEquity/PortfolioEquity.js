@@ -8,7 +8,7 @@ class PortfolioEquity extends Component {
   state = {
     chartData:null,
     chartwidth:null,
-    chartHeight:null,
+    chartHeight:null
   };
 
   // Utils
@@ -155,8 +155,16 @@ class PortfolioEquity extends Component {
               storedTx.value = tokensTransfered;
             break;
             case 'Swap':
-              // Decrese amountLent by the last idleToken price
+              // Increase amountLent by the last idleToken price
               amountLent = amountLent.plus(tokensTransfered);
+              storedTx.value = tokensTransfered;
+            break;
+            case 'SwapOut':
+              // Decrese amountLent by the last idleToken price
+              amountLent = amountLent.minus(tokensTransfered);
+              if (amountLent.lte(0)){
+                amountLent = this.functionsUtil.BNify(0);
+              }
               storedTx.value = tokensTransfered;
             break;
             case 'Deposit':

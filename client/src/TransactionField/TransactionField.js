@@ -95,6 +95,9 @@ class TransactionField extends Component {
           case 'Swap':
             icon = "SwapHoriz";
           break;
+          case 'SwapOut':
+            icon = "SwapHoriz";
+          break;
           case 'Withdraw':
             icon = "ArrowUpward";
           break;
@@ -137,8 +140,19 @@ class TransactionField extends Component {
         );
       break;
       case 'action':
+        let action = transaction.action;
+        switch (transaction.action) {
+          case 'Swap':
+            action = "Swap In";
+          break;
+          case 'SwapOut':
+            action = "Swap Out";
+          break;
+          default:
+          break;
+        }
         output = (
-          <Text {...fieldInfo.props}>{transaction.action.toUpperCase()}</Text>
+          <Text {...fieldInfo.props}>{action.toUpperCase()}</Text>
         );
       break;
       case 'date':
