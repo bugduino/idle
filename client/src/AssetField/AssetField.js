@@ -401,7 +401,7 @@ class AssetField extends Component {
       break;
       case 'button':
         output = (
-          <Button {...fieldInfo.props}>{fieldInfo.label}</Button>
+          <Button {...fieldInfo.props} onClick={() => fieldInfo.props.handleClick(this.props) }>{fieldInfo.label}</Button>
         );
       break;
       case 'performanceChart':

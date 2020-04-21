@@ -945,6 +945,10 @@ class FunctionsUtil {
     address = address ? address : this.props.tokenConfig.idle.address;
     return await this.genericContractCall(contractName, 'balanceOf', [address]);
   }
+  getAprs = async (contractName) => {
+    contractName = contractName ? contractName : this.props.tokenConfig.idle.token;
+    return await this.genericContractCall(contractName, 'getAPRs');
+  }
   genericIdleCall = async (methodName, params = [], callParams = {}) => {
     return await this.genericContractCall(this.props.tokenConfig.idle.token, methodName, params, callParams).catch(err => {
       this.customLogError('Generic Idle call err:', err);
@@ -1041,7 +1045,7 @@ class FunctionsUtil {
       const protocolAddr = protocolInfo.address.toLowerCase();
 
       let [protocolBalance, tokenDecimals, exchangeRate] = await Promise.all([
-        this.getProtocolBalance(contractName),
+        this.getProtocolBalance(contractName,tokenConfig.idle.address),
         this.getTokenDecimals(contractName),
         ( protocolInfo.functions.exchangeRate ? this.genericContractCall(contractName,protocolInfo.functions.exchangeRate.name,protocolInfo.functions.exchangeRate.params) : null )
       ]);
@@ -1061,6 +1065,8 @@ class FunctionsUtil {
 
       protocolsBalances[protocolAddr] = protocolBalance;
       protocolsAllocations[protocolAddr] = protocolAllocation;
+
+      // console.log('getTokenAllocation',contractName,protocolAddr,protocolBalance.toString(),protocolAllocation.toString());
     });
 
     Object.keys(protocolsAllocations).forEach((protocolAddr,i) => {
@@ -1068,6 +1074,10 @@ class FunctionsUtil {
       const protocolAllocationPerc = protocolAllocation.div(totalAllocation);
       protocolsAllocationsPerc[protocolAddr] = protocolAllocationPerc;
     });
+
+    // if (totalAllocation.lte(0)){
+    //   debugger;
+    // }
 
     tokenAllocation.totalAllocation = totalAllocation;
     tokenAllocation.protocolsAllocations = protocolsAllocations;
@@ -1083,7 +1093,7 @@ class FunctionsUtil {
   Get idleTokens aggregated APR
   */
   getTokenAprs = async (tokenConfig,tokenAllocation=false) => {
-    const Aprs = await this.genericIdleCall('getAPRs');
+    const Aprs = await this.getAprs(tokenConfig.idle.token);
 
     if (!Aprs){
       return false;
@@ -1119,6 +1129,8 @@ class FunctionsUtil {
     if (tokenAllocation){
       tokenAprs.avgApr = this.getAvgApr(protocolsAprs,tokenAllocation.protocolsAllocations,tokenAllocation.totalAllocation);
     }
+
+    // console.log('getTokenAprs',tokenConfig.idle.token,tokenAprs.avgApr.toString());
 
     return tokenAprs;
   }

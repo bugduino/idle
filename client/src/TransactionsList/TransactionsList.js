@@ -60,6 +60,15 @@ class TransactionsList extends Component {
 
   async componentDidUpdate(prevProps, prevState) {
     this.loadUtils();
+    const tokenChanged = JSON.stringify(prevProps.enabledTokens) !== JSON.stringify(this.props.enabledTokens);
+    if (tokenChanged){
+      this.setState({
+        prevTxs:null
+      },()=>{
+        this.loadTxs();
+      })
+      return false;
+    }
     const pageChanged = prevState.page !== this.state.page;
     if (pageChanged){
       this.processTxs();

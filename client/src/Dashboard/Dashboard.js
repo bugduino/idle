@@ -6,6 +6,7 @@ import FunctionsUtil from '../utilities/FunctionsUtil';
 
 // Import page components
 import Stats from '../Stats/Stats';
+import AssetPage from '../AssetPage/AssetPage';
 import DashboardHeader from '../DashboardHeader/DashboardHeader';
 import RiskAdjustedStrategy from '../RiskAdjustedStrategy/RiskAdjustedStrategy';
 // import BestYieldStrategy from {};
@@ -114,10 +115,13 @@ class Dashboard extends Component {
 
   async loadParams() {
     const { match: { params } } = this.props;
-    let currentRoute = this.state.baseRoute;
+
+    const baseRoute = this.functionsUtil.getGlobalConfig(['dashboard','baseRoute']);
+    let currentRoute = baseRoute;
 
     let selectedToken = null;
     let selectedStrategy = null;
+    let pageComponent = null;
 
     if (params.strategy){
       selectedStrategy = params.strategy;
@@ -127,18 +131,21 @@ class Dashboard extends Component {
         if (Object.keys(this.props.availableTokens).includes(params.asset.toUpperCase())){
           selectedToken = params.asset.toUpperCase();
           currentRoute += '/'+selectedToken;
+          pageComponent = AssetPage;
         }
       }
     }
 
     const menu = this.state.menu;
-    let pageComponent = null;
 
     menu.forEach(m => {
       m.selected = false;
-      if (currentRoute.toLowerCase() === m.route.toLowerCase()){
+      const strategyRoute = baseRoute+'/'+selectedStrategy;
+      if (currentRoute.toLowerCase() === m.route.toLowerCase() || m.route.toLowerCase() === strategyRoute.toLowerCase()){
         m.selected = true;
-        pageComponent = m.component;
+        if (pageComponent === null){
+          pageComponent = m.component;
+        }
       } else if (m.submenu.length) {
         m.submenu.forEach(subm => {
           subm.selected = false;
@@ -147,10 +154,12 @@ class Dashboard extends Component {
             m.selected = true;
             subm.selected = true;
             // Set component, if null use parent
-            if (subm.component){
-              pageComponent = subm.component;
-            } else {
-              pageComponent = m.component;
+            if (pageComponent === null){
+              if (subm.component){
+                pageComponent = subm.component;
+              } else {
+                pageComponent = m.component;
+              }
             }
           }
         })
@@ -207,10 +216,20 @@ class Dashboard extends Component {
     }
   }
 
+  changeToken(selectedToken){
+    if (Object.keys(this.props.availableTokens).includes(selectedToken.toUpperCase())){
+      selectedToken = selectedToken.toUpperCase();
+      if (selectedToken !== this.state.selectedToken){
+        const baseRoute = this.functionsUtil.getGlobalConfig(['dashboard','baseRoute']);
+        window.location.hash=baseRoute+'/'+this.state.selectedStrategy+'/'+selectedToken;
+        // this.setState({
+        //   selectedToken
+        // });
+      }
+    }
+  }
+
   render() {
-    // if (this.props.accountInizialized && !this.props.account){
-    //   return null;
-    // }
 
     const PageComponent = this.state.pageComponent ? this.state.pageComponent : null;
     return (
@@ -258,6 +277,7 @@ class Dashboard extends Component {
                       {...this.props}
                       match={{ params:{} }}
                       selectedToken={this.state.selectedToken}
+                      changeToken={this.changeToken.bind(this)}
                       selectedStrategy={this.state.selectedStrategy}
                       />
                 }

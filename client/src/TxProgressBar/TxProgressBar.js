@@ -1,18 +1,19 @@
-import React, { Component } from 'react';
-import { Flex, Text, Progress, Loader } from 'rimble-ui'
 import axios from 'axios';
+import React, { Component } from 'react';
+import FlexLoader from '../FlexLoader/FlexLoader';
 import FunctionsUtil from '../utilities/FunctionsUtil';
+import { Flex, Text, Progress, Loader } from 'rimble-ui'
 
 class TxProgressBar extends Component {
   state = {
-    initialized:false,
-    txTimestamp:null,
-    estimatedTime:null,
-    remainingTime:null,
-    percentage:0,
-    ended:false,
+    web3:null,
     error:null,
-    web3:null
+    ended:false,
+    percentage:0,
+    txTimestamp:null,
+    initialized:false,
+    estimatedTime:null,
+    remainingTime:null
   };
 
   componentUnmounted = false;
@@ -371,30 +372,45 @@ class TxProgressBar extends Component {
             <>
               {
                 this.state.ended ? (
-                  <Flex
-                    justifyContent={'center'}
-                    alignItems={'center'}
-                    textAlign={'center'}>
-                    <Loader size="40px" /> <Text ml={2} color={ this.props.textColor ? this.props.textColor : 'dark-gray'}>{this.props.endMessage ? this.props.endMessage : 'Finalizing transaction...'}</Text>
-                  </Flex>
+                  <FlexLoader
+                    textProps={{
+                      ml:2,
+                      color:this.props.textColor ? this.props.textColor : 'copyColor'
+                    }}
+                    loaderProps={{
+                      size:'30px'
+                    }}
+                    flexProps={{
+                      textAlign:'center',
+                      alignItems:'center',
+                      justifyContent:'center',
+                    }}
+                    text={this.props.endMessage ? this.props.endMessage : 'Finalizing transaction...'}
+                  />
                 ): (
                   <>
-                    <Text mb={2} color={ this.props.textColor ? this.props.textColor : 'dark-gray'}>{ this.props.waitText ? this.props.waitText : 'Remaining time:' } <Text.span color={ this.props.textColor ? this.props.textColor : 'dark-gray'} fontWeight={3}>{ this.renderRemainingTime() }</Text.span></Text>
+                    <Text mb={2} color={ this.props.textColor ? this.props.textColor : 'copyColor'}>{ this.props.waitText ? this.props.waitText : 'Remaining time:' } <Text.span color={ this.props.textColor ? this.props.textColor : 'copyColor'} fontWeight={3}>{ this.renderRemainingTime() }</Text.span></Text>
                     <Progress value={ this.state.percentage } />
                   </>
                 )
               }
             </>
           ) : (
-            <Flex
-              justifyContent={'center'}
-              alignItems={'center'}
-              textAlign={'center'}>
-              <Loader size="40px" />
-              <Text color={ this.props.textColor ? this.props.textColor : 'dark-gray'} ml={2}>
-                { this.state.error ? this.state.error : (this.props.loadingMessage ? this.props.loadingMessage : 'Calculating estimated time...') }
-              </Text>
-            </Flex>
+            <FlexLoader
+              textProps={{
+                ml:2,
+                color:this.props.textColor ? this.props.textColor : 'copyColor'
+              }}
+              loaderProps={{
+                size:'30px'
+              }}
+              flexProps={{
+                textAlign:'center',
+                alignItems:'center',
+                justifyContent:'center',
+              }}
+              text={ this.state.error ? this.state.error : (this.props.loadingMessage ? this.props.loadingMessage : 'Calculating estimated time...') }
+            />
           )
         }
       </Flex>

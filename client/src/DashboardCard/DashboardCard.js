@@ -2,18 +2,21 @@ import React, { Component } from 'react';
 import { Heading, Card } from "rimble-ui";
 import styles from './DashboardCard.module.scss';
 
-
 class DashboardCard extends Component {
   render() {
+    const isDisabled = this.props.isDisabled;
+    const isInteractive = this.props.isInteractive && !isDisabled;
+    const isActive = this.props.isActive && !isDisabled;
     return (
       <Card
         p={0}
         boxShadow={1}
         borderRadius={2}
+        position={'relative'}
         minHeight={'initial'}
         background={'cardBg'}
         {...this.props.cardProps}
-        className={this.props.isInteractive ? styles.interactive : null}
+        className={[isDisabled ? styles.disabled : null,isInteractive ? styles.interactive : null,isActive ? styles.active : null]}
       >
         {
           this.props.title && this.props.title.length>0 &&

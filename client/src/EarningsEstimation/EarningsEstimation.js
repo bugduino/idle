@@ -88,20 +88,22 @@ class EarningsEstimation extends Component {
       const earnings = amountLent.times(earningsPerc);
 
       let earningsYear = 0;
-      const tokenAprs = await this.functionsUtil.getTokenAprs(this.props.tokenConfig);
+      let tokenAPR = 0;
+      let tokenAPY = 0;
+      const tokenAprs = await this.functionsUtil.getTokenAprs(tokenConfig);
       if (tokenAprs && tokenAprs.avgApr !== null){
-        const tokenAPR = tokenAprs.avgApr;
-        const tokenAPY = this.functionsUtil.apr2apy(tokenAPR.div(100));
+        tokenAPR = tokenAprs.avgApr;
+        tokenAPY = this.functionsUtil.apr2apy(tokenAPR.div(100));
         earningsYear = amountLent.times(tokenAPY);
       }
 
-      const earningsPercStep = parseInt(earnings.div(earningsYear).times(100));
+      const earningsPercStep = Math.floor(earnings.div(earningsYear).times(100));
       
       const possibleSteps = Object.keys(this.state.estimationSteps).filter(perc => perc<earningsPercStep);
       const maxPossibleStep = parseInt(possibleSteps.pop());
       estimationStepsPerc = Math.max(estimationStepsPerc,maxPossibleStep);
 
-      // console.log(earningsPercStep,maxPossibleStep,estimationStepsPerc);
+      // console.log(token,amountLent.toFixed(5),earnings.toFixed(5),earningsYear.toFixed(5),tokenConfig,tokenAprs,tokenAPR.toFixed(5),tokenAPY.toFixed(5),earningsPercStep,maxPossibleStep,estimationStepsPerc);
 
       tokensEarnings[token] = {
         amountLent,
@@ -141,7 +143,7 @@ class EarningsEstimation extends Component {
       );
     }
 
-    const estimationSteps = this.state.estimationSteps[this.state.estimationStepsPerc];
+    const estimationSteps = this.state.estimationSteps[this.state.estimationStepsPerc] ? this.state.estimationSteps[this.state.estimationStepsPerc] : this.state.estimationSteps[0];
 
     return (
       <Card

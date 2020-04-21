@@ -75,7 +75,7 @@ class RiskAdjustedStrategy extends Component {
 
     return (
       <Box width={1}>
-        <Title my={[3,4]}>Best-Yield strategy</Title>
+        <Title my={[3,4]}>Best-yield strategy</Title>
         {
           !this.state.portfolioLoaded ? (
             <FlexLoader
@@ -278,6 +278,10 @@ class RiskAdjustedStrategy extends Component {
                                   borderRadius:4,
                                   boxShadow:null,
                                   mainColor:'redeem',
+                                  handleClick:(props) => {
+                                    const baseRoute = this.functionsUtil.getGlobalConfig(['dashboard','baseRoute']);
+                                    window.location.hash=baseRoute+'/'+props.selectedStrategy+'/'+props.token;
+                                  }
                                 }
                               }
                             ]

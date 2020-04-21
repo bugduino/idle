@@ -92,6 +92,9 @@ const globalConfigs = {
       frequency:604800 // One week
     }
   },
+  dashboard:{
+    baseRoute:'/dashboard'
+  },
   stats:{
     rates:{
       endpoint:'https://api.idle.finance/rates/',

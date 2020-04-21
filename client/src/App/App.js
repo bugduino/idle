@@ -23,6 +23,7 @@ import ScrollToTop from "../ScrollToTop/ScrollToTop";
 import PageNotFound from "../PageNotFound/PageNotFound";
 import Web3Debugger from "../Web3Debugger/Web3Debugger";
 import availableTokens from '../configs/availableTokens';
+import TransactionToastUtil from "../utilities/TransactionToastUtil";
 import { ThemeProvider, Box, Text, Link, Image, Flex } from 'rimble-ui';
 
 class App extends Component {
@@ -34,7 +35,7 @@ class App extends Component {
     connectorName:null,
     tokenConfig: null,
     genericError: null,
-    customAddress:'0x1929a0454cdd4d925e8fc9b6c366ecd7844866f2',
+    customAddress:null,//'0x1929a0454cdd4d925e8fc9b6c366ecd7844866f2',
     walletProvider:null,
     selectedToken: null,
     availableTokens:null,
@@ -322,6 +323,7 @@ class App extends Component {
                         transaction,
                         initAccount,
                         initContract,
+                        transactions,
                         initSimpleID,
                         tokenDecimals,
                         accountBalance,
@@ -339,7 +341,8 @@ class App extends Component {
                         contractsInitialized,
                         userRejectedValidation,
                         accountValidationPending,
-                        connectAndValidateAccount
+                        connectAndValidateAccount,
+                        contractMethodSendWrapper
                       }) => {
                         return (
                         <Box>
@@ -373,6 +376,7 @@ class App extends Component {
                                                     contracts={contracts}
                                                     initAccount={initAccount}
                                                     initContract={initContract}
+                                                    transactions={transactions}
                                                     buyToken={this.state.buyToken}
                                                     accountBalance={accountBalance}
                                                     validateAccount={validateAccount}
@@ -400,6 +404,7 @@ class App extends Component {
                                                     userRejectedValidation={userRejectedValidation}
                                                     accountValidationPending={accountValidationPending}
                                                     connectAndValidateAccount={connectAndValidateAccount}
+                                                    contractMethodSendWrapper={contractMethodSendWrapper}
                                                     setSelectedToken={ e => { this.setSelectedToken(e) } }
                                                 />
                                               }
@@ -531,6 +536,7 @@ class App extends Component {
                               ) : null}
                             </Route>
                           </Switch>
+                          <TransactionToastUtil transactions={transactions} />
                         </Box>
                       )}}
                     </RimbleWeb3.Consumer>

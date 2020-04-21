@@ -75,30 +75,30 @@ class TransactionField extends Component {
           color = theme.colors.transactions.action[transaction.action.toLowerCase()] ? theme.colors.transactions.action[transaction.action.toLowerCase()] : color;
           bgColor = theme.colors.transactions.actionBg[transaction.action.toLowerCase()] ? theme.colors.transactions.actionBg[transaction.action.toLowerCase()] : bgColor;
         }
-        switch (transaction.action) {
-          case 'Deposit':
+        switch (transaction.action.toLowerCase()) {
+          case 'deposit':
             icon = "ArrowForward";
           break;
-          case 'Redeem':
+          case 'redeem':
             icon = "ArrowBack";
           break;
-          case 'Send':
+          case 'send':
             icon = "Send";
           break;
-          case 'Receive':
+          case 'receive':
             icon = "Redo";
           break;
-          case 'Migrate':
+          case 'migrate':
             // icon = "Sync";
             icon = "Repeat";
           break;
-          case 'Swap':
+          case 'swap':
             icon = "SwapHoriz";
           break;
-          case 'SwapOut':
+          case 'swapout':
             icon = "SwapHoriz";
           break;
-          case 'Withdraw':
+          case 'withdraw':
             icon = "ArrowUpward";
           break;
           default:
