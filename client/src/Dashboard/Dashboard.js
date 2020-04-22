@@ -14,6 +14,7 @@ import RiskAdjustedStrategy from '../RiskAdjustedStrategy/RiskAdjustedStrategy';
 class Dashboard extends Component {
   state = {
     menu:[],
+    tokenConfig:null,
     currentRoute:null,
     pageComponent:null,
     selectedToken:null,
@@ -166,9 +167,12 @@ class Dashboard extends Component {
       }
     });
 
+    const tokenConfig = selectedToken && this.props.availableTokens[selectedToken] ? this.props.availableTokens[selectedToken] : null;
+
     await this.setState({
       menu,
       params,
+      tokenConfig,
       currentRoute,
       selectedToken,
       pageComponent,
@@ -222,9 +226,6 @@ class Dashboard extends Component {
       if (selectedToken !== this.state.selectedToken){
         const baseRoute = this.functionsUtil.getGlobalConfig(['dashboard','baseRoute']);
         window.location.hash=baseRoute+'/'+this.state.selectedStrategy+'/'+selectedToken;
-        // this.setState({
-        //   selectedToken
-        // });
       }
     }
   }
@@ -276,6 +277,7 @@ class Dashboard extends Component {
                     <PageComponent
                       {...this.props}
                       match={{ params:{} }}
+                      tokenConfig={this.state.tokenConfig}
                       selectedToken={this.state.selectedToken}
                       changeToken={this.changeToken.bind(this)}
                       selectedStrategy={this.state.selectedStrategy}

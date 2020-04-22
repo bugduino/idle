@@ -13,7 +13,7 @@ class TransactionsList extends Component {
   state = {
     page:1,
     txsPerPage:5,
-    prevTxs:null,
+    prevTxs:{},
     loading:false,
     totalTxs:null,
     totalPages:null,
@@ -63,7 +63,8 @@ class TransactionsList extends Component {
     const tokenChanged = JSON.stringify(prevProps.enabledTokens) !== JSON.stringify(this.props.enabledTokens);
     if (tokenChanged){
       this.setState({
-        prevTxs:null
+        page:1,
+        prevTxs:{}
       },()=>{
         this.loadTxs();
       })

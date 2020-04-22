@@ -39,10 +39,18 @@ class PortfolioEquity extends Component {
   async componentDidUpdate(prevProps, prevState) {
     this.loadUtils();
     this.handleWindowSizeChange();
+
+    const tokenChanged = JSON.stringify(prevProps.enabledTokens) !== JSON.stringify(this.props.enabledTokens);
+    if (tokenChanged){
+      this.setState({
+        chartData:null
+      },() => {
+        this.componentDidMount();
+      });
+    }
   }
 
   handleWindowSizeChange(){
-
     const newState = {};
 
     if (this.props.parentId){
@@ -63,6 +71,8 @@ class PortfolioEquity extends Component {
           newState.chartHeight = chartHeight;
         }
       }
+    } else if (this.props.chartHeight && this.props.chartHeight !== this.state.chartHeight) {
+      newState.chartHeight = this.props.chartHeight;
     }
 
     if (Object.keys(newState).length>0){
@@ -375,10 +385,12 @@ class PortfolioEquity extends Component {
       prevBalances = foundBalances;
     }
 
+    const chartToken = this.props.chartToken ? this.props.chartToken.toUpperCase() : 'USD';
+
     // Add token Data
     chartData.push({
-      id:'USD',
-      color: 'hsl('+ this.functionsUtil.getGlobalConfig(['stats','tokens','USDC','color','hsl']).join(',')+')',
+      id:chartToken,
+      color: 'hsl('+ this.functionsUtil.getGlobalConfig(['stats','tokens',chartToken,'color','hsl']).join(',')+')',
       data:aggregatedBalances
     });
 

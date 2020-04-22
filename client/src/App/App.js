@@ -35,7 +35,7 @@ class App extends Component {
     connectorName:null,
     tokenConfig: null,
     genericError: null,
-    customAddress:null,//'0x1929a0454cdd4d925e8fc9b6c366ecd7844866f2',
+    customAddress:null,//'0x34aaa3d5a73d6f9594326d0422ce69748f09b14f',
     walletProvider:null,
     selectedToken: null,
     availableTokens:null,
@@ -384,7 +384,6 @@ class App extends Component {
                                                     accountValidated={accountValidated}
                                                     getTokenDecimals={getTokenDecimals}
                                                     rejectValidation={rejectValidation}
-                                                    tokenConfig={this.state.tokenConfig}
                                                     getAccountBalance={getAccountBalance}
                                                     accountBalanceLow={accountBalanceLow}
                                                     accountInizialized={accountInizialized}

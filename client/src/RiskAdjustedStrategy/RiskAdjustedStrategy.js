@@ -278,10 +278,7 @@ class RiskAdjustedStrategy extends Component {
                                   borderRadius:4,
                                   boxShadow:null,
                                   mainColor:'redeem',
-                                  handleClick:(props) => {
-                                    const baseRoute = this.functionsUtil.getGlobalConfig(['dashboard','baseRoute']);
-                                    window.location.hash=baseRoute+'/'+props.selectedStrategy+'/'+props.token;
-                                  }
+                                  handleClick:(props) => this.props.changeToken(props.token)
                                 }
                               }
                             ]
@@ -400,7 +397,8 @@ class RiskAdjustedStrategy extends Component {
                                   height:'45px',
                                   borderRadius:4,
                                   boxShadow:null,
-                                  mainColor:'deposit'
+                                  mainColor:'deposit',
+                                  handleClick:(props) => this.props.changeToken(props.token)
                                 }
                               }
                             ]

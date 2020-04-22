@@ -9,6 +9,7 @@ class VariationNumber extends Component {
         width={1}
         alignItems={'center'}
         flexDirection={'row'}
+        justifyContent={'center'}
       >
         <Icon
           size={'2.2em'}

@@ -409,7 +409,7 @@ class TxProgressBar extends Component {
                 alignItems:'center',
                 justifyContent:'center',
               }}
-              text={ this.state.error ? this.state.error : (this.props.loadingMessage ? this.props.loadingMessage : 'Calculating estimated time...') }
+              text={ this.state.error ? this.state.error : (this.props.hash ? (this.props.loadingMessage ? this.props.loadingMessage : 'Calculating estimated time...') : (this.props.sendingMessage ? this.props.sendingMessage : 'Sending transaction...') ) }
             />
           )
         }

@@ -1,11 +1,11 @@
-import { linearGradientDef } from '@nivo/core'
 import { Line } from '@nivo/line';
+import CountUp from 'react-countup';
 import React, { Component } from 'react';
+import { linearGradientDef } from '@nivo/core'
 import SmartNumber from '../SmartNumber/SmartNumber';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import { Image, Text, Loader, Button } from "rimble-ui";
 import GenericChart from '../GenericChart/GenericChart';
-// import { patternDotsDef, patternLinesDef } from '@nivo/core'
 import VariationNumber from '../VariationNumber/VariationNumber';
 
 class AssetField extends Component {
@@ -35,7 +35,9 @@ class AssetField extends Component {
     const accountChanged = prevProps.account !== this.props.account;
     const fieldChanged = prevProps.fieldInfo.name !== this.props.fieldInfo.name;
     if (fieldChanged || tokenChanged || accountChanged){
-      this.loadField();
+      this.setState({},() => {
+        this.loadField();
+      });
     }
   }
 
@@ -85,6 +87,47 @@ class AssetField extends Component {
             });
           }
           output = idleTokenBalance1;
+        break;
+        case 'redeemableBalanceCounter':
+          const [redeemableBalanceStart,tokenAPY1] = await Promise.all([
+            this.loadField('redeemableBalance'),
+            this.loadField('apy')
+          ]);
+          if (redeemableBalanceStart && tokenAPY1){
+            const earningPerYear = this.functionsUtil.BNify(redeemableBalanceStart).times(this.functionsUtil.BNify(tokenAPY1).div(100));
+            const redeemableBalanceEnd = this.functionsUtil.BNify(redeemableBalanceStart).plus(this.functionsUtil.BNify(earningPerYear));
+            if (setState){
+              this.setState({
+                redeemableBalanceEnd,
+                redeemableBalanceStart
+              });
+            }
+            return {
+              redeemableBalanceEnd,
+              redeemableBalanceStart
+            };
+          }
+        break;
+        case 'earningsCounter':
+          const [amountLent2,redeemableBalanceCounter] = await Promise.all([
+            this.loadField('amountLent'),
+            this.loadField('redeemableBalanceCounter')
+          ]);
+          if (amountLent2 && redeemableBalanceCounter){
+            const earningsStart = this.functionsUtil.BNify(redeemableBalanceCounter.redeemableBalanceStart).minus(this.functionsUtil.BNify(amountLent2));
+            const earningsEnd = this.functionsUtil.BNify(redeemableBalanceCounter.redeemableBalanceEnd).minus(this.functionsUtil.BNify(amountLent2));
+            // console.log('earningsCounter',earningsStart.toFixed(5),earningsEnd.toFixed(5),redeemableBalanceCounter.redeemableBalanceStart.toFixed(5),redeemableBalanceCounter.redeemableBalanceEnd.toFixed(5),amountLent2.toFixed(5));
+            if (setState){
+              this.setState({
+                earningsEnd,
+                earningsStart
+              });
+            }
+            return {
+              earningsEnd,
+              earningsStart
+            };
+          }
         break;
         case 'redeemableBalance':
           const [idleTokenBalance2,idleTokenPrice] = await Promise.all([
@@ -346,6 +389,8 @@ class AssetField extends Component {
 
     const loader = (<Loader size="20px" />);
 
+    const minPrecision = fieldInfo.props && fieldInfo.props.minPrecision ? fieldInfo.props.minPrecision : 4;
+
     switch (fieldInfo.name){
       case 'icon':
         output = (
@@ -359,27 +404,63 @@ class AssetField extends Component {
       break;
       case 'tokenBalance':
         output = this.state.tokenBalance ? (
-          <SmartNumber {...fieldInfo.props} minPrecision={4} number={this.state.tokenBalance} />
+          <SmartNumber {...fieldInfo.props} minPrecision={minPrecision} number={this.state.tokenBalance} />
         ) : loader
       break;
       case 'idleTokenBalance':
         output = this.state.idleTokenBalance ? (
-          <SmartNumber {...fieldInfo.props} minPrecision={4} number={this.state.idleTokenBalance} />
+          <SmartNumber {...fieldInfo.props} minPrecision={minPrecision} number={this.state.idleTokenBalance} />
+        ) : loader
+      break;
+      case 'redeemableBalanceCounter':
+        output = this.state.redeemableBalanceStart && this.state.redeemableBalanceEnd ? (
+          <CountUp
+            delay={0}
+            decimal={'.'}
+            separator={''}
+            useEasing={false}
+            duration={31536000}
+            decimals={fieldInfo.decimals}
+            end={parseFloat(this.state.redeemableBalanceEnd)}
+            start={parseFloat(this.state.redeemableBalanceStart)}
+          >
+            {({ countUpRef, start }) => (
+              <span {...fieldInfo.props} ref={countUpRef} />
+            )}
+          </CountUp>
+        ) : loader
+      break;
+      case 'earningsCounter':
+        output = this.state.earningsStart && this.state.earningsEnd ? (
+          <CountUp
+            delay={0}
+            decimal={'.'}
+            separator={''}
+            useEasing={false}
+            duration={31536000}
+            decimals={fieldInfo.decimals}
+            end={parseFloat(this.state.earningsEnd)}
+            start={parseFloat(this.state.earningsStart)}
+          >
+            {({ countUpRef, start }) => (
+              <span {...fieldInfo.props} ref={countUpRef} />
+            )}
+          </CountUp>
         ) : loader
       break;
       case 'redeemableBalance':
         output = this.state.redeemableBalance ? (
-          <SmartNumber {...fieldInfo.props} minPrecision={4} number={this.state.redeemableBalance} />
+          <SmartNumber {...fieldInfo.props} minPrecision={minPrecision} number={this.state.redeemableBalance} />
         ) : loader
       break;
       case 'amountLent':
         output = this.state.amountLent ? (
-          <SmartNumber {...fieldInfo.props} minPrecision={4} number={this.state.amountLent} />
+          <SmartNumber {...fieldInfo.props} minPrecision={minPrecision} number={this.state.amountLent} />
         ) : loader
       break;
       case 'pool':
         output = this.state.poolSize ? (
-          <SmartNumber {...fieldInfo.props} minPrecision={4} number={this.state.poolSize} />
+          <SmartNumber {...fieldInfo.props} minPrecision={minPrecision} number={this.state.poolSize} />
         ) : loader
       break;
       case 'earningsPerc':

@@ -109,6 +109,14 @@ const globalConfigs = {
         },
         startTimestamp:'2020-02-11'
       },
+      USD:{
+        color:{
+          hex:'#2875C8',
+          rgb:[40,117,200],
+          hsl:['211', '67%', '47%']
+        },
+        startTimestamp:'2020-02-04'
+      },
       USDC:{
         color:{
           hex:'#2875C8',

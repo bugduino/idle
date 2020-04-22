@@ -69,6 +69,7 @@ export default {
     cellTitle: '#a3a4a5',
     cellText: '#a6a6a6',
     divider: '#d8d8d8',
+    counter: '#5d5d5d',
     redeem: '#00a9fe',
     deposit: '#0239ff',
     legend: '#c9c9c9',

@@ -18,12 +18,14 @@ class Title extends Component {
       });
     }
 
+    const HeadingComponent = this.props.component ? this.props.component : Heading.h1;
+
     return (
-      <Heading.h1
+      <HeadingComponent
         {...props}
       >
         {this.props.children}
-      </Heading.h1>
+      </HeadingComponent>
     );
   }
 }
