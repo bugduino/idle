@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
-import styles from './DashboardHeader.module.scss';
+// import styles from './DashboardHeader.module.scss';
 import { Flex, Text, Icon, Link } from "rimble-ui";
 import FunctionsUtil from '../utilities/FunctionsUtil';
-import ButtonLoader from '../ButtonLoader/ButtonLoader';
+// import ButtonLoader from '../ButtonLoader/ButtonLoader';
 import DashboardCard from '../DashboardCard/DashboardCard';
 import AccountModal from "../utilities/components/AccountModal";
 import AccountOverview from "../utilities/components/AccountOverview";
@@ -56,7 +56,7 @@ class DashboardHeader extends Component {
   }
 
   render() {
-    const buttonSize = this.props.isMobile ? 'small' : 'medium';
+    // const buttonSize = this.props.isMobile ? 'small' : 'medium';
     return (
       <DashboardCard
         cardProps={{

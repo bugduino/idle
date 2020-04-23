@@ -28,17 +28,14 @@ class PortfolioDonut extends Component {
   }
 
   componentWillMount() {
-    window.addEventListener('resize', this.handleWindowSizeChange.bind(this));
   }
 
   componentWillUnmount() {
-    window.removeEventListener('resize', this.handleWindowSizeChange);
   }
 
   async componentDidMount(){
     this.loadUtils();
     this.loadPortfolio();
-    this.handleWindowSizeChange();
   }
 
   loadIcons(prevState){
@@ -58,20 +55,7 @@ class PortfolioDonut extends Component {
 
   async componentDidUpdate(prevProps, prevState) {
     this.loadUtils();
-    this.handleWindowSizeChange();
   }
-
-  handleWindowSizeChange(){
-    if (this.props.parentId){
-      const chartContainer = document.getElementById(this.props.parentId);
-      if (chartContainer && chartContainer.offsetWidth !== this.state.parentWidth){
-        const parentWidth = parseFloat(chartContainer.offsetWidth)>0 ? chartContainer.offsetWidth : 0;
-        return this.setState({
-          parentWidth
-        });
-      }
-    }
-  };
 
   async loadPortfolio() {
 
@@ -279,8 +263,8 @@ class PortfolioDonut extends Component {
           type={Pie}
           {...chartProps}
           showLoader={true}
-          width={this.state.parentWidth}
-          height={this.state.parentWidth}
+          parentId={this.props.parentId}
+          parentIdHeight={this.props.parentId}
           data={this.state.chartData}
         />
       </Flex>

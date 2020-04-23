@@ -353,17 +353,17 @@ class AssetField extends Component {
           const performanceChartType = Line;
 
           const performanceChartProps = {
-            axisLeft:null,
-            axisBottom:null,
             pointSize:0,
             lineWidth:1,
             useMesh:false,
             animate:false,
-            curve:'monotoneX',
+            axisLeft:null,
+            axisBottom:null,
             enableArea:true,
-            enableSlices:false,
             enableGridX:false,
             enableGridY:false,
+            curve:'monotoneX',
+            enableSlices:false,
             pointBorderWidth:1,
             colors:d => d.color,
             pointLabelYOffset:-12,

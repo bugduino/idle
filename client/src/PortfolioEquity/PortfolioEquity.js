@@ -22,23 +22,13 @@ class PortfolioEquity extends Component {
     }
   }
 
-  componentWillMount() {
-    window.addEventListener('resize', this.handleWindowSizeChange.bind(this));
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('resize', this.handleWindowSizeChange);
-  }
-
   async componentDidMount(){
     this.loadUtils();
     this.loadChartData();
-    this.handleWindowSizeChange();
   }
 
   async componentDidUpdate(prevProps, prevState) {
     this.loadUtils();
-    this.handleWindowSizeChange();
 
     const tokenChanged = JSON.stringify(prevProps.enabledTokens) !== JSON.stringify(this.props.enabledTokens);
     if (tokenChanged){
@@ -49,36 +39,6 @@ class PortfolioEquity extends Component {
       });
     }
   }
-
-  handleWindowSizeChange(){
-    const newState = {};
-
-    if (this.props.parentId){
-      const chartContainer = document.getElementById(this.props.parentId);
-      if (chartContainer){
-        const chartWidth = parseFloat(chartContainer.offsetWidth)>0 ? chartContainer.offsetWidth : 0;
-        if (chartWidth && chartWidth !== this.state.chartWidth){
-          newState.chartWidth = chartWidth;
-        }
-      }
-    }
-
-    if (this.props.parentIdHeight){
-      const chartContainerH = document.getElementById(this.props.parentIdHeight);
-      if (chartContainerH){
-        const chartHeight = parseFloat(chartContainerH.offsetWidth)>0 ? chartContainerH.offsetWidth : 0;
-        if (chartHeight && chartHeight !== this.state.chartHeight){
-          newState.chartHeight = chartHeight;
-        }
-      }
-    } else if (this.props.chartHeight && this.props.chartHeight !== this.state.chartHeight) {
-      newState.chartHeight = this.props.chartHeight;
-    }
-
-    if (Object.keys(newState).length>0){
-      this.setState(newState);
-    }
-  };
 
   async loadChartData() {
 
@@ -444,9 +404,8 @@ class PortfolioEquity extends Component {
           ticks: {
             text: {
               fontSize:12,
-              fontWeight:500,
-              color:theme.colors.legend,
-              textColor:theme.colors.legend,
+              fontWeight:600,
+              fill:theme.colors.legend,
               fontFamily: theme.fonts.sansSerif
             }
           }
@@ -465,9 +424,10 @@ class PortfolioEquity extends Component {
         type={Line}
         {...chartProps}
         showLoader={true}
-        width={this.state.chartWidth}
-        height={this.state.chartHeight}
         data={this.state.chartData}
+        parentId={this.props.parentId}
+        height={this.props.chartHeight}
+        parentIdHeight={this.props.parentIdHeight}
       />
     );
   }

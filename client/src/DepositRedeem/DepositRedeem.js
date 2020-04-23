@@ -126,7 +126,6 @@ class DepositRedeem extends Component {
 
         const callback = (tx,error) => {
           const txSucceeded = tx.status === 'success';
-          const needsUpdate = txSucceeded && !this.functionsUtil.checkTransactionAlreadyMined(tx);
 
           // Send Google Analytics event
           const eventData = {
@@ -182,6 +181,8 @@ class DepositRedeem extends Component {
           idleTokenToRedeem, _skipRebalance, _clientProtocolAmounts
         ], null, callback, callback_receipt, gasLimit);
       break;
+      default:
+      break;
     }
 
     this.setState((prevState) => ({
@@ -217,6 +218,8 @@ class DepositRedeem extends Component {
           // }
         }
       break;
+      default:
+      break;
     }
 
     if (action !== this.state.action){
@@ -247,6 +250,8 @@ class DepositRedeem extends Component {
         case 'redeem':
           buttonDisabled = buttonDisabled || amount.gt(this.props.idleTokenBalance);
         break;
+        default:
+        break;
       }
     }
     this.setState({
@@ -268,6 +273,8 @@ class DepositRedeem extends Component {
       break;
       case 'redeem':
         amount = this.props.idleTokenBalance ? this.functionsUtil.BNify(this.props.idleTokenBalance).times(selectedPercentage) : null;
+      break;
+      default:
       break;
     }
 
@@ -362,22 +369,6 @@ class DepositRedeem extends Component {
 
     const CustomIndicatorSeparator = props => null;
 
-    const CustomPlaceholder = props => {
-      return null;
-    }
-
-    const CustomMenuList = props => {
-      return (
-        <Flex
-          p={0}
-          width={1}
-          {...props.innerProps}
-        >
-          {props.children}
-        </Flex>
-      );
-    }
-
     const CustomMenu = props => {
       const cardProps = Object.assign(props.innerProps,{
         mt:2,
@@ -433,17 +424,6 @@ class DepositRedeem extends Component {
     }
 
     const CustomOption = (props) => {
-      const {
-        children,
-        className,
-        cx,
-        getStyles,
-        isDisabled,
-        isFocused,
-        isSelected,
-        innerRef,
-        innerProps,
-      } = props;
 
       // Don't show selected value
       if (props.selectProps.value.value === props.value){
@@ -704,7 +684,7 @@ class DepositRedeem extends Component {
               ) : null
             ) : (
               <Flex
-                mt={3}
+                mt={4}
                 flexDirection={'column'}
               >
                 <FlexLoader

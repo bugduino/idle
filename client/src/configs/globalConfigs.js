@@ -107,6 +107,9 @@ const globalConfigs = {
           hex:'#F7B24A',
           hsl:['40', '95%', '59%']
         },
+        chart:{
+          labelTextColorModifiers:['darker', 2]
+        },
         startTimestamp:'2020-02-11'
       },
       USD:{
@@ -114,6 +117,9 @@ const globalConfigs = {
           hex:'#2875C8',
           rgb:[40,117,200],
           hsl:['211', '67%', '47%']
+        },
+        chart:{
+          labelTextColorModifiers:['brighter', 2]
         },
         startTimestamp:'2020-02-04'
       },
@@ -123,6 +129,9 @@ const globalConfigs = {
           rgb:[40,117,200],
           hsl:['211', '67%', '47%']
         },
+        chart:{
+          labelTextColorModifiers:['brighter', 2]
+        },
         startTimestamp:'2020-02-04'
       },
       SAI:{
@@ -130,6 +139,9 @@ const globalConfigs = {
           hex:'#F7B24A',
           rgb:[247,178,74],
           hsl:['36', '92%', '63%']
+        },
+        chart:{
+          labelTextColorModifiers:['darker', 2]
         },
         startTimestamp:'2020-02-04'
       }

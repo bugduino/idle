@@ -1,14 +1,11 @@
-import theme from '../theme';
+import { Flex } from "rimble-ui";
 import Title from '../Title/Title';
 import React, { Component } from 'react';
-// import FlexLoader from '../FlexLoader/FlexLoader';
-import { Flex, Box, Heading } from "rimble-ui";
-import AssetField from '../AssetField/AssetField';
 import FunctionsUtil from '../utilities/FunctionsUtil';
-import DashboardCard from '../DashboardCard/DashboardCard';
+import FundsOverview from '../FundsOverview/FundsOverview';
 import DepositRedeem from '../DepositRedeem/DepositRedeem';
-import PortfolioEquity from '../PortfolioEquity/PortfolioEquity';
 import TransactionsList from '../TransactionsList/TransactionsList';
+import EstimatedEarnings from '../EstimatedEarnings/EstimatedEarnings';
 
 class AssetPage extends Component {
 
@@ -85,174 +82,35 @@ class AssetPage extends Component {
         </Flex>
         {
           userHasFunds &&
-            <Box
-              width={1}>
+            <Flex
+              mb={[3,4]}
+              width={1}
+              id={'funds-overview-container'}
+              flexDirection={'column'}
+            >
+              <Title my={[3,4]}>Funds Overview</Title>
+              <FundsOverview
+                {...this.props}
+              />
+            </Flex>
+          }
+          <Flex
+            mb={[3,4]}
+            width={1}
+            id={'funds-overview-container'}
+            flexDirection={'column'}
+          >
+            <Title my={[3,4]}>Estimated earnings</Title>
+            <EstimatedEarnings
+              {...this.props}
+            />
+          </Flex>
+          {
+            userHasFunds &&
               <Flex
                 mb={[3,4]}
                 width={1}
-                id={'transactions'}
-                flexDirection={'column'}
-              >
-                <Title my={[3,4]}>Funds Overview</Title>
-                <Flex
-                  id="funds-overview"
-                  width={1}
-                  flexDirection={'column'}
-                >
-                  <DashboardCard
-                    cardProps={{
-                      px:2,
-                      py:3
-                    }}
-                  >
-                    <Flex
-                      width={1}
-                    >
-                      <PortfolioEquity
-                        {...this.props}
-                        chartHeight={350}
-                        parentId={'funds-overview'}
-                        chartToken={this.props.selectedToken}
-                        enabledTokens={[this.props.selectedToken]}
-                        frequencySeconds={this.functionsUtil.getFrequencySeconds('day',1)}
-                      />
-                    </Flex>
-                    <Flex
-                      width={1}
-                      flexDirection={['column','row']}
-                    >
-                      <Flex
-                        width={[0.5,0.25]}
-                        alignItems={'center'}
-                        flexDirection={'column'}
-                        justifyContent={'flex-start'}
-                      >
-                        <Title
-                          mb={2}
-                          fontSize={[3,4]}
-                          component={Heading.h3}
-                        >
-                          Deposited Funds
-                        </Title>
-                        <AssetField
-                          {...this.props}
-                          token={this.props.selectedToken}
-                          fieldInfo={{
-                            name:'amountLent',
-                            props:{
-                              decimals:6,
-                              fontSize:'2.3em',
-                              fontWeight:300,
-                              color:theme.colors.counter
-                            }
-                          }}
-                        />
-                      </Flex>
-                      <Flex
-                        width={[0.5,0.25]}
-                        alignItems={'center'}
-                        flexDirection={'column'}
-                        justifyContent={'flex-start'}
-                      >
-                        <Title
-                          mb={2}
-                          fontSize={[3,4]}
-                          component={Heading.h3}
-                        >
-                          Redeemable Funds
-                        </Title>
-                        <AssetField
-                          {...this.props}
-                          token={this.props.selectedToken}
-                          fieldInfo={{
-                            name:'redeemableBalanceCounter',
-                            decimals:6,
-                            props:{
-                              style:{
-                                fontSize:'2.3em',
-                                fontWeight:300,
-                                color:theme.colors.counter
-                              }
-                            }
-                          }}
-                        />
-                        <AssetField
-                          {...this.props}
-                          token={this.props.selectedToken}
-                          fieldInfo={{
-                            name:'earningsPerc',
-                            props:{
-                              fontSize:1,
-                              fontWeight:2,
-                              color:'cellText'
-                            }
-                          }}
-                        />
-                      </Flex>
-                      <Flex
-                        width={[0.5,0.25]}
-                        alignItems={'center'}
-                        flexDirection={'column'}
-                        justifyContent={'flex-start'}
-                      >
-                        <Title
-                          mb={2}
-                          fontSize={[3,4]}
-                          component={Heading.h3}
-                        >
-                          Total Earned
-                        </Title>
-                        <AssetField
-                          {...this.props}
-                          token={this.props.selectedToken}
-                          fieldInfo={{
-                            name:'earningsCounter',
-                            decimals:6,
-                            props:{
-                              style:{
-                                fontSize:'2.3em',
-                                fontWeight:300,
-                                color:theme.colors.counter
-                              }
-                            }
-                          }}
-                        />
-                      </Flex>
-                      <Flex
-                        width={[0.5,0.25]}
-                        alignItems={'center'}
-                        flexDirection={'column'}
-                        justifyContent={'flex-start'}
-                      >
-                        <Title
-                          mb={2}
-                          fontSize={[3,4]}
-                          component={Heading.h3}
-                        >
-                          Current APY
-                        </Title>
-                        <AssetField
-                          {...this.props}
-                          token={this.props.selectedToken}
-                          fieldInfo={{
-                            name:'apy',
-                            props:{
-                              decimals:2,
-                              fontSize:'2.3em',
-                              fontWeight:300,
-                              color:theme.colors.counter
-                            }
-                          }}
-                        />
-                      </Flex>
-                    </Flex>
-                  </DashboardCard>
-                </Flex>
-              </Flex>
-              <Flex
-                mb={[3,4]}
-                width={1}
-                id={'transactions'}
+                id={'transactions-container'}
                 flexDirection={'column'}
               >
                 <Title my={[3,4]}>Transactions</Title>
@@ -354,8 +212,7 @@ class AssetPage extends Component {
                   ]}
                 />
               </Flex>
-            </Box>
-        }
+          }
       </Flex>
     );
   }

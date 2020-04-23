@@ -2,7 +2,7 @@ import axios from 'axios';
 import React, { Component } from 'react';
 import FlexLoader from '../FlexLoader/FlexLoader';
 import FunctionsUtil from '../utilities/FunctionsUtil';
-import { Flex, Text, Progress, Loader } from 'rimble-ui'
+import { Flex, Text, Progress } from 'rimble-ui'
 
 class TxProgressBar extends Component {
   state = {

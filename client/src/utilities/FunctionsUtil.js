@@ -672,7 +672,7 @@ class FunctionsUtil {
         return this.getGlobalConfig(path,configs[prop]);
       }
     }
-    return false;
+    return null;
   }
   checkUrlOrigin = () => {
     return window.location.origin.toLowerCase().includes(globalConfigs.baseURL.toLowerCase());
@@ -1089,6 +1089,13 @@ class FunctionsUtil {
 
     return tokenAllocation;
   }
+  getTokenApy = async (tokenConfig) => {
+    const tokenAprs = await this.getTokenAprs(tokenConfig);
+    if (tokenAprs && tokenAprs.avgApr !== null){
+      return this.apr2apy(tokenAprs.avgApr.div(100));
+    }
+    return null;
+  }
   /*
   Get idleTokens aggregated APR
   */
@@ -1144,7 +1151,12 @@ class FunctionsUtil {
     }
 
     maxPrecision = Math.max(1,maxPrecision);
-    newValue = newValue.toFixed(decimals);
+
+    // Prevent decimals on integer number
+    if (newValue%parseInt(newValue)!==0){
+      newValue = newValue.toFixed(decimals);
+    }
+
     if (parseFloat(newValue)>=1 && (newValue.length-1)>maxPrecision){
       newValue = parseFloat(newValue).toPrecision(maxPrecision);
     } else if ((newValue.length-1)<minPrecision) {
