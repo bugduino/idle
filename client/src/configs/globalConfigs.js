@@ -449,8 +449,8 @@ const globalConfigs = {
         captionPos: 'top',
         subcaption:`~ 1.5% fee ~\nGBP ONLY`,
         supportedMethods:['bank'],
-        supportedCountries:['GBR','IND'],
-        supportedTokens:['ETH','DAI','SAI','USDC'],
+        supportedCountries:['GBR','IND','EUR'],
+        supportedTokens:['ETH','DAI','USDC'],
         remoteResources:{'https://global.transak.com/v1/widget.js':{}},
         env:'prod',
         badge:{
@@ -472,10 +472,26 @@ const globalConfigs = {
           if (props.selectedCountry && props.selectedCountry.value){
             switch (props.selectedCountry.value.toUpperCase()){
               case 'GBR':
-                info.subcaption = `~ 1.5% fee ~\nGBP ONLY`;
+                info.badge = {
+                  text:'INSTANT',
+                  bgColor:'#0069ee'
+                };
+                info.subcaption = `~ 1.0% fee ~\nGBP ONLY`;
               break;
               case 'IND':
-                info.subcaption = `~ 1.5% fee ~\nINR ONLY`;
+                info.badge = {
+                  text:'INSTANT',
+                  bgColor:'#0069ee'
+                };
+                info.subcaption = `~ 1.0% fee ~\nINR ONLY`;
+              break;
+              case 'EUR':
+                info.badge = {
+                  text:'SEPA',
+                  color:'#f7cb05 ',
+                  bgColor:'#10288a'
+                };
+                info.subcaption = `~ 1.0% fee ~\nEUR ONLY`;
               break;
               default:
               break;
@@ -495,6 +511,11 @@ const globalConfigs = {
                 fiatCurrency = 'INR';
               break;
               case 'GBR':
+                fiatCurrency = 'GBP';
+              break;
+              case 'EUR':
+                fiatCurrency = 'EUR';
+              break;
               default:
                 fiatCurrency = 'GBP';
               break;
@@ -507,7 +528,7 @@ const globalConfigs = {
           const apiKey = envParams.apiKey;
           const walletAddress = props.account;
           const partnerCustomerId = props.account;
-          const disableWalletAddressForm = true;
+          const disableWalletAddressForm = false;
 
           return {
             apiKey,

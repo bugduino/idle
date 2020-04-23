@@ -420,7 +420,7 @@ class FunctionsUtil {
         let latestTxs = await this.makeRequest(etherscanEndpointLastBlock);
 
         if (latestTxs && latestTxs.data.result && latestTxs.data.result.length){
-          latestTxs = this.filterEtherscanTxs(latestTxs.data.result);
+          latestTxs = this.filterEtherscanTxs(latestTxs.data.result,enabledTokens);
           if (latestTxs && latestTxs.length){
             const lastTx = latestTxs.pop();
             const lastRealBlockNumber = parseInt(lastTx.blockNumber);
