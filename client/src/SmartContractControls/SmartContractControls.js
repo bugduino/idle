@@ -1384,7 +1384,7 @@ class SmartContractControls extends React.Component {
         let latestTxs = await this.functionsUtil.makeRequest(etherscanEndpointLastBlock);
 
         if (latestTxs && latestTxs.data.result && latestTxs.data.result.length){
-          latestTxs = this.functionsUtil.filterEtherscanTxs(latestTxs.data.result);
+          latestTxs = this.functionsUtil.filterEtherscanTxs(latestTxs.data.result,[this.props.selectedToken]);
           if (latestTxs && latestTxs.length){
             const lastTx = latestTxs.pop();
             const lastRealBlockNumber = parseInt(lastTx.blockNumber);
