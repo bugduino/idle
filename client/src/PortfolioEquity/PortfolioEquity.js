@@ -48,210 +48,72 @@ class PortfolioEquity extends Component {
     }
 
     const etherscanTxs = await this.functionsUtil.getEtherscanTxs(this.props.account,0,'latest',enabledTokens);
-    const storedTxs = this.functionsUtil.getStoredItem('transactions',true,{});
 
-    // Init storedTxs for pair account-token if empty
-    if (typeof storedTxs[this.props.account] !== 'object'){
-      storedTxs[this.props.account] = {};
-    }
-
+    const chartData = [];
     const tokensBalance = {};
     let firstTxTimestamp = null;
-    const chartData = [];
 
     await this.functionsUtil.asyncForEach(enabledTokens,async (selectedToken) => {
 
-      // const chartRow = {
-      //   id:selectedToken,
-      //   color: 'hsl('+ this.functionsUtil.getGlobalConfig(['stats','tokens',selectedToken,'color','hsl']).join(',')+')',
-      //   data: []
-      // };
-
       tokensBalance[selectedToken] = [];
-
-      const tokenConfig = this.props.availableTokens[selectedToken];
-
-      // Init storedTxs for pair account-token if empty
-      if (typeof storedTxs[this.props.account][selectedToken] !== 'object'){
-        storedTxs[this.props.account][selectedToken] = {};
-      }
 
       const filteredTxs = Object.values(etherscanTxs).filter(tx => (tx.token === selectedToken));
       if (filteredTxs && filteredTxs.length){
 
         let amountLent = this.functionsUtil.BNify(0);
 
-        await this.functionsUtil.asyncForEach(filteredTxs,async (tx,index) => {
-
+        filteredTxs.forEach((tx,index) => {
+          
           firstTxTimestamp = firstTxTimestamp ? Math.min(firstTxTimestamp,parseInt(tx.timeStamp)) : parseInt(tx.timeStamp);
 
-          const txKey = `tx${tx.timeStamp}000`;
-          const storedTx = storedTxs[this.props.account][selectedToken][txKey] ? storedTxs[this.props.account][selectedToken][txKey] : tx;
-
-          let tokenPrice = null;
-          if (storedTx.tokenPrice){
-            tokenPrice = this.functionsUtil.BNify(storedTx.tokenPrice);
-          } else {
-            tokenPrice = await this.functionsUtil.genericContractCall(tokenConfig.idle.token, 'tokenPrice',[],{}, tx.blockNumber);
-            tokenPrice = this.functionsUtil.fixTokenDecimals(tokenPrice,tokenConfig.decimals);
-            storedTx.tokenPrice = tokenPrice;
-          }
-
-          let idleTokens = this.functionsUtil.BNify(tx.value);
-          let tokensTransfered = tokenPrice.times(idleTokens);
-
-          // Add transactionHash to storedTx
-          if (!storedTx.transactionHash){
-            storedTx.transactionHash = tx.hash;
-          }
-
-          const action = tx.action;
-
-          // Deposited
-          switch (action){
-            case 'Send':
-              // Decrese amountLent by the last idleToken price
-              amountLent = amountLent.minus(tokensTransfered);
-
-              if (amountLent.lte(0)){
-                amountLent = this.functionsUtil.BNify(0);
-              }
-
-              storedTx.value = tokensTransfered;
-            break;
-            case 'Receive':
-              // Decrese amountLent by the last idleToken price
-              amountLent = amountLent.plus(tokensTransfered);
-              storedTx.value = tokensTransfered;
-            break;
+          switch (tx.action){
             case 'Swap':
-              // Increase amountLent by the last idleToken price
-              amountLent = amountLent.plus(tokensTransfered);
-              storedTx.value = tokensTransfered;
-            break;
-            case 'SwapOut':
-              // Decrese amountLent by the last idleToken price
-              amountLent = amountLent.minus(tokensTransfered);
-              if (amountLent.lte(0)){
-                amountLent = this.functionsUtil.BNify(0);
-              }
-              storedTx.value = tokensTransfered;
-            break;
             case 'Deposit':
-              amountLent = amountLent.plus(idleTokens);
-              if (!storedTx.idleTokens){
-
-                // Init idleTokens amoun
-                storedTx.idleTokens = idleTokens;
-                storedTx.method = 'mintIdleToken';
-
-                const decodeLogs = [
-                  {
-                    "internalType": "uint256",
-                    "name": "_tokenAmount",
-                    "type": "uint256"
-                  }
-                ];
-
-                const walletAddress = this.props.account.replace('x','').toLowerCase();
-                const res = await this.functionsUtil.getTxDecodedLogs(tx,walletAddress,decodeLogs,storedTx);
-
-                if (res){
-                  const [txReceipt,logs] = res;
-                  storedTx.idleTokens = this.functionsUtil.fixTokenDecimals(logs._tokenAmount,18);
-                  storedTx.txReceipt = txReceipt;
-                }
-              }
-              // Transform tokens in idleTokens
-              idleTokens = idleTokens.div(tokenPrice);
-            break;
-            case 'Redeem':
-              const redeemedValueFixed = this.functionsUtil.BNify(storedTx.value);
-
-              // Decrese amountLent by redeem amount
-              amountLent = amountLent.minus(redeemedValueFixed);
-
-              // Reset amountLent if below zero
-              if (amountLent.lt(0)){
-                amountLent = this.functionsUtil.BNify(0);
-              }
-
-              // Set tx method
-              if (!storedTx.method){
-                storedTx.method = 'redeemIdleToken';
-              }
-
-              // Transform tokens in idleTokens
-              idleTokens = idleTokens.div(tokenPrice);
-            break;
-            case 'Withdraw':
-              const withdrawValueFixed = this.functionsUtil.BNify(storedTx.value);
-
-              // Decrese amountLent by withdraw amount
-              amountLent = amountLent.minus(withdrawValueFixed);
-
-              // Reset amountLent if below zero
-              if (amountLent.lt(0)){
-                amountLent = this.functionsUtil.BNify(0);
-              }
-            break;
+            case 'Receive':
             case 'Migrate':
-              let migrationValueFixed = 0;
-
-              if (!storedTx.migrationValueFixed){
-                storedTx.method = 'bridgeIdleV1ToIdleV2';
-                migrationValueFixed = tokensTransfered;
-                storedTx.migrationValueFixed = migrationValueFixed;
-              } else {
-                migrationValueFixed = this.functionsUtil.BNify(storedTx.migrationValueFixed);
-              }
-          
-              storedTx.value = migrationValueFixed;
-
-              amountLent = amountLent.plus(migrationValueFixed);
+              amountLent = amountLent.plus(tx.tokenAmount);
+            break;
+            case 'Send':
+            case 'Redeem':
+            case 'SwapOut':
+            case 'Withdraw':
+              amountLent = amountLent.minus(tx.tokenAmount);
             break;
             default:
             break;
           }
 
-          // Save original tx value
-          storedTx.valueOrig = tx.value;
-          storedTxs[this.props.account][selectedToken][txKey] = storedTx;
+          // Reset amountLent if below zero
+          if (amountLent.lt(0)){
+            amountLent = this.functionsUtil.BNify(0);
+          }
+
+          const timeStamp = parseInt(tx.timeStamp);
+          const balance = amountLent;
+          const action = tx.action;
+          const tokenPrice = this.functionsUtil.BNify(tx.tokenPrice);
+          const idleTokens = this.functionsUtil.BNify(tx.idleTokens);
 
           tokensBalance[selectedToken].push({
-            timeStamp: parseInt(storedTx.timeStamp),
-            balance: amountLent,
             action,
+            balance,
+            timeStamp,
             tokenPrice,
-            tokens:storedTx.value,
             idleTokens
           });
-
-          // chartRow.data.push({
-          //   x: this.functionsUtil.strToMoment(storedTx.timeStamp*1000).format("YYYY/MM/DD HH:mm"),
-          //   y: parseInt(amountLent.toString())
-          // });
-
         });
       }
-
-      // Add token Data
-      // chartData.push(chartRow);
-
-      // Update Stored Txs
-      if (storedTxs){
-        this.functionsUtil.setLocalStorage('transactions',JSON.stringify(storedTxs));
-      }
     });
+
+    // debugger;
 
     const aggregatedBalances = [];
     let prevTimestamp = null;
     let prevBalances = {};
     let aggregatedBalance = null;
-    const currTimestamp = parseInt(new Date().getTime()/1000);
+    const currTimestamp = parseInt(new Date().getTime()/1000)+86400;
 
     const tokensData = {};
-
     await this.functionsUtil.asyncForEach(Object.keys(tokensBalance),async (token) => {
       tokensData[token] = await this.functionsUtil.getTokenApiData(this.props.availableTokens[token].address,firstTxTimestamp,currTimestamp);
     });
@@ -259,18 +121,30 @@ class PortfolioEquity extends Component {
     const idleTokenBalance = {};
 
     for (let timeStamp=firstTxTimestamp;timeStamp<=currTimestamp;timeStamp+=this.props.frequencySeconds){
+
+      timeStamp = Math.min(currTimestamp,timeStamp);
+
       aggregatedBalance = this.functionsUtil.BNify(0);
 
       const foundBalances = {};
 
+      // const tokensData = {};
+      // if (prevTimestamp){
+      //   await this.functionsUtil.asyncForEach(Object.keys(tokensBalance),async (token) => {
+      //     const tokenConfig = this.props.availableTokens[token];
+      //     tokensData[token] = await this.functionsUtil.getTokenApiData(tokenConfig.address,prevTimestamp,timeStamp);
+      //   });
+      // }
+
       // eslint-disable-next-line
-      Object.keys(tokensBalance).forEach(token => {
+      await this.functionsUtil.asyncForEach(Object.keys(tokensBalance),async (token) => {
 
         if (!idleTokenBalance[token]){
           idleTokenBalance[token] = this.functionsUtil.BNify(0);
         }
 
-        const tokenDecimals = this.props.availableTokens[token].decimals;
+        const tokenConfig = this.props.availableTokens[token];
+        const tokenDecimals = tokenConfig.decimals;
         let filteredBalances = tokensBalance[token].filter(tx => (tx.timeStamp<=timeStamp && (!prevTimestamp || tx.timeStamp>prevTimestamp)));
         
         if (!filteredBalances.length){
@@ -281,13 +155,14 @@ class PortfolioEquity extends Component {
             // Take idleToken price from API and calculate new balance
             if (currentBalance>0 && timeStamp>firstTxTimestamp){
               const filteredTokenData = tokensData[token].filter(tx => (tx.timestamp>=prevTimestamp && tx.timestamp<=timeStamp));
+              // const filteredTokenData = tokensData[token];
               if (filteredTokenData && filteredTokenData.length){
                 const lastTokenData = filteredTokenData.pop();
                 const idleTokens = idleTokenBalance[token];
                 const idlePrice = this.functionsUtil.fixTokenDecimals(lastTokenData.idlePrice,tokenDecimals);
                 const newBalance = idleTokens.times(idlePrice);
                 
-                // console.log(this.functionsUtil.strToMoment(timeStamp*1000).format('DD/MM/YYYY HH:mm'),'Old balance:'+parseFloat(lastFilteredTx.balance).toFixed(5)+',New balance:'+parseFloat(newBalance).toFixed(5)+',oldTokenPrice:'+parseFloat(lastFilteredTx.tokenPrice).toFixed(5)+',tokenPrice:'+parseFloat(idlePrice).toFixed(5));
+                // console.log(this.functionsUtil.strToMoment(timeStamp*1000).format('DD/MM/YYYY HH:mm'),token,'idleTokens:'+idleTokens.toFixed(5)+', Old balance:'+parseFloat(lastFilteredTx.balance).toFixed(5)+',New balance:'+parseFloat(newBalance).toFixed(5)+',oldTokenPrice:'+parseFloat(lastFilteredTx.tokenPrice).toFixed(5)+',tokenPrice:'+parseFloat(idlePrice).toFixed(5));
 
                 // Set new balance and tokenPrice
                 lastFilteredTx.balance = newBalance;
@@ -321,7 +196,7 @@ class PortfolioEquity extends Component {
             }
 
             // if (token==='DAI'){
-            //   console.log(token,tx.action,parseFloat(tx.tokenPrice).toFixed(5),parseFloat(tx.idleTokens).toFixed(5),parseFloat(idleTokenBalance[token]).toFixed(5));
+            // console.log(this.functionsUtil.strToMoment(tx.timeStamp*1000).format('DD/MM/YYYY HH:mm'),token,tx.action,tx.idleTokens.toFixed(5),idleTokenBalance[token].toFixed(5));
             // }
           });
         }
@@ -329,7 +204,8 @@ class PortfolioEquity extends Component {
         const lastTx = Object.assign([],filteredBalances).pop();
 
         aggregatedBalance = aggregatedBalance.plus(lastTx.balance);
-        // console.log(this.functionsUtil.strToMoment(timeStamp*1000).format('DD/MM/YYYY HH:mm'),token,lastTx.balance.toString(),aggregatedBalance.toString());
+        // console.log(aggregatedBalance.toFixed(5));
+        // console.log(this.functionsUtil.strToMoment(timeStamp*1000).format('DD/MM/YYYY HH:mm'),token,lastTx.balance.toFixed(5),aggregatedBalance.toFixed(5));
 
         foundBalances[token] = filteredBalances;
       });
@@ -339,7 +215,7 @@ class PortfolioEquity extends Component {
         y:parseFloat(aggregatedBalance)
       });
 
-      // console.log(this.functionsUtil.strToMoment(timeStamp*1000).format('DD/MM/YYYY HH:mm'),aggregatedBalance.toString(),this.functionsUtil.formatMoney(aggregatedBalance));
+      // console.log(this.functionsUtil.strToMoment(timeStamp*1000).format('DD/MM/YYYY HH:mm'),aggregatedBalance.toFixed(5),this.functionsUtil.formatMoney(aggregatedBalance));
 
       prevTimestamp = timeStamp;
       prevBalances = foundBalances;

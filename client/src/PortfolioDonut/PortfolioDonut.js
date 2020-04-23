@@ -73,6 +73,8 @@ class PortfolioDonut extends Component {
 
         // Increment total balance
         totalFunds = totalFunds.plus(tokenBalance);
+
+        // console.log(token,tokenPrice.toFixed(5),idleTokenBalance.toFixed(5),tokenBalance.toFixed(5),totalFunds.toFixed(5));
       }
     });
 
@@ -263,9 +265,9 @@ class PortfolioDonut extends Component {
           type={Pie}
           {...chartProps}
           showLoader={true}
+          data={this.state.chartData}
           parentId={this.props.parentId}
           parentIdHeight={this.props.parentId}
-          data={this.state.chartData}
         />
       </Flex>
     );

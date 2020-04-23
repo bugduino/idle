@@ -33,7 +33,7 @@ class RiskAdjustedStrategy extends Component {
 
   async componentDidMount(){
     this.loadUtils();
-    this.loadPortfolio();
+    await this.loadPortfolio();
   }
 
   async componentDidUpdate(prevProps, prevState) {
@@ -51,10 +51,17 @@ class RiskAdjustedStrategy extends Component {
         const remainingTokens = Object.keys(this.props.availableTokens).filter(token => !depositedTokens.includes(token) );
         this.setState({
           depositedTokens,
-          remainingTokens,
-          portfolioLoaded:true
+          remainingTokens
         });
       }
+
+      // Load and process Etherscan Txs
+      await this.functionsUtil.getEtherscanTxs(this.props.account,this.functionsUtil.getGlobalConfig(['network','firstBlockNumber']),'latest',Object.keys(this.props.availableTokens));
+
+      // Portfolio loaded
+      this.setState({
+        portfolioLoaded:true
+      });
     // Show available assets for not logged users
     } else {
       this.setState({
