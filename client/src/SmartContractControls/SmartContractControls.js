@@ -1427,7 +1427,7 @@ class SmartContractControls extends React.Component {
     if (cachedTxs){
       etherscanTxs = results;
     } else {
-      etherscanTxs = this.functionsUtil.filterEtherscanTxs(results);
+      etherscanTxs = this.functionsUtil.filterEtherscanTxs(results,[this.props.selectedToken]);
 
       // Store filtered txs
       if (etherscanTxs.length && etherscanEndpoint){
