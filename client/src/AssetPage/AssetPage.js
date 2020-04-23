@@ -119,7 +119,7 @@ class AssetPage extends Component {
                     </Flex>
                     <Flex
                       width={1}
-                      flexDirection={'row'}
+                      flexDirection={['column','row']}
                     >
                       <Flex
                         width={[0.5,0.25]}

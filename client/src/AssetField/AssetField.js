@@ -109,14 +109,19 @@ class AssetField extends Component {
           }
         break;
         case 'earningsCounter':
-          const [amountLent2,redeemableBalanceCounter] = await Promise.all([
+          const [amountLent2,idleTokenPrice3,avgBuyPrice2,tokenAPY2] = await Promise.all([
             this.loadField('amountLent'),
-            this.loadField('redeemableBalanceCounter')
+            this.functionsUtil.getIdleTokenPrice(this.props.tokenConfig),
+            this.functionsUtil.getAvgBuyPrice([this.props.token],this.props.account),
+            this.loadField('apy')
           ]);
-          if (amountLent2 && redeemableBalanceCounter){
-            const earningsStart = this.functionsUtil.BNify(redeemableBalanceCounter.redeemableBalanceStart).minus(this.functionsUtil.BNify(amountLent2));
-            const earningsEnd = this.functionsUtil.BNify(redeemableBalanceCounter.redeemableBalanceEnd).minus(this.functionsUtil.BNify(amountLent2));
-            // console.log('earningsCounter',earningsStart.toFixed(5),earningsEnd.toFixed(5),redeemableBalanceCounter.redeemableBalanceStart.toFixed(5),redeemableBalanceCounter.redeemableBalanceEnd.toFixed(5),amountLent2.toFixed(5));
+          if (amountLent2 && idleTokenPrice3 && avgBuyPrice2 && tokenAPY2){
+
+            const earningsPerc = idleTokenPrice3.div(avgBuyPrice2[this.props.token]).minus(1);
+
+            const earningsStart = amountLent2.times(earningsPerc);
+            const earningsEnd = amountLent2.times(tokenAPY2.div(100));
+            // console.log('earningsCounter',earningsStart.toFixed(5),earningsEnd.toFixed(5),amountLent2.toFixed(5));
             if (setState){
               this.setState({
                 earningsEnd,
