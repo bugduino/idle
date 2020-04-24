@@ -259,7 +259,7 @@ class FunctionsUtil {
     let results = [];
     let cachedTxs = null;
     let etherscanEndpoint = null;
-    // let etherscanBaseEndpoint = null;
+    let etherscanBaseEndpoint = null;
 
     // Check if etherscan is enabled for the required network
     if (etherscanInfo.enabled && etherscanInfo.endpoints[requiredNetwork]){
@@ -267,7 +267,7 @@ class FunctionsUtil {
 
       // Add token variable to endpoint for separate cached requests between tokens
       etherscanEndpoint = `${etherscanApiUrl}?apikey=${env.REACT_APP_ETHERSCAN_KEY}&module=account&action=tokentx&address=${account}&startblock=${firstBlockNumber}&endblock=${endBlockNumber}&sort=asc`;
-      // etherscanBaseEndpoint = `${etherscanApiUrl}?apikey=${env.REACT_APP_ETHERSCAN_KEY}&module=account&action=tokentx&address=${account}&startblock=${firstBlockNumber}&endblock=${endBlockNumber}&sort=asc`;
+      etherscanBaseEndpoint = `${etherscanApiUrl}?apikey=${env.REACT_APP_ETHERSCAN_KEY}&module=account&action=tokentx&address=${account}&startblock=${firstIdleBlockNumber}&endblock=${endBlockNumber}&sort=asc`;
 
       cachedTxs = this.getCachedRequest(etherscanEndpoint);
 
@@ -311,7 +311,10 @@ class FunctionsUtil {
     // Initialize prevTxs
     let etherscanTxs = [];
 
+    // debugger;
+
     if (cachedTxs){
+      // Filter txs for token
       etherscanTxs = results;
     } else {
       // Save base endpoint with all available tokens
@@ -327,11 +330,7 @@ class FunctionsUtil {
 
         this.saveCachedRequest(etherscanEndpoint,false,cachedRequestData);
 
-        // Filter txs for token
-        etherscanTxs = await this.filterEtherscanTxs(results,enabledTokens);
-
         // Merge base etherscan endpoint with new data
-        /*
         if (etherscanEndpoint !== etherscanBaseEndpoint){
           let etherscanBaseTxs = this.getCachedRequest(etherscanBaseEndpoint);
           if (etherscanBaseTxs){
@@ -357,9 +356,10 @@ class FunctionsUtil {
             }
           }
         }
-        */
       }
     }
+
+    etherscanTxs = etherscanTxs.filter(tx => (enabledTokens.includes(tx.token.toUpperCase())));
 
     return etherscanTxs;
   }
@@ -552,6 +552,10 @@ class FunctionsUtil {
             default:
             break;
           }
+
+            
+          // Save token for future filtering
+          storedTx.token = selectedToken;
 
           // Save processed tx
           etherscanTxs[tx.hash] = storedTx;
@@ -1332,9 +1336,9 @@ class FunctionsUtil {
     maxPrecision = Math.max(1,maxPrecision);
 
     // Prevent decimals on integer number
-    if (newValue%parseInt(newValue)!==0){
+    // if (newValue%parseInt(newValue)!==0){
       newValue = newValue.toFixed(decimals);
-    }
+    // }
 
     if (parseFloat(newValue)>=1 && (newValue.length-1)>maxPrecision){
       newValue = parseFloat(newValue).toPrecision(maxPrecision);
