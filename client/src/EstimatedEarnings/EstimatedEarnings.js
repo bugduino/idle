@@ -101,7 +101,7 @@ class EstimatedEarnings extends Component {
       minValue:0,
       maxValue:amountYear,
       axisLeft:{
-        format: v => this.functionsUtil.abbreviateNumber(v,1),
+        format: v => this.functionsUtil.abbreviateNumber(v,1,3),
         tickValues:4,
         orient: 'left',
         tickSize: 0,

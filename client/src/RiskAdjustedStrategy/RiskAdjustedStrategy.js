@@ -56,7 +56,8 @@ class RiskAdjustedStrategy extends Component {
       }
 
       // Load and process Etherscan Txs
-      await this.functionsUtil.getEtherscanTxs(this.props.account,this.functionsUtil.getGlobalConfig(['network','firstBlockNumber']),'latest',Object.keys(this.props.availableTokens));
+      const firstBlockNumber = this.functionsUtil.getGlobalConfig(['network','firstBlockNumber']);
+      await this.functionsUtil.getEtherscanTxs(this.props.account,firstBlockNumber,'latest',Object.keys(this.props.availableTokens));
 
       // Portfolio loaded
       this.setState({

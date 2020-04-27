@@ -3,10 +3,10 @@ import Select from 'react-select';
 import React, { Component } from 'react';
 import FlexLoader from '../FlexLoader/FlexLoader';
 import AssetField from '../AssetField/AssetField';
-import { Flex, Text, Input, Box } from "rimble-ui";
 import RoundButton from '../RoundButton/RoundButton';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import BuyModal from '../utilities/components/BuyModal';
+import { Flex, Text, Input, Box, Icon } from "rimble-ui";
 import DashboardCard from '../DashboardCard/DashboardCard';
 import TxProgressBar from '../TxProgressBar/TxProgressBar';
 import TransactionField from '../TransactionField/TransactionField';
@@ -33,36 +33,6 @@ class DepositRedeem extends Component {
     } else {
       this.functionsUtil = new FunctionsUtil(this.props);
     }
-  }
-
-  async loadTokenInfo(){
-    const newState = {...this.state};
-    newState.canDeposit = this.props.tokenBalance && this.functionsUtil.BNify(this.props.tokenBalance).gt(0);
-    newState.canRedeem = this.props.idleTokenBalance && this.functionsUtil.BNify(this.props.idleTokenBalance).gt(0);
-    newState.processing = {
-      'redeem':{
-        txHash:null,
-        sending:false
-      },
-      'deposit':{
-        txHash:null,
-        sending:false
-      }
-    };
-    newState.inputValue = {
-      'redeem':null,
-      'deposit':null
-    };
-    newState.fastBalanceSelector = {
-      'redeem':null,
-      'deposit':null
-    };
-
-    newState.componentMounted = true;
-
-    this.setState(newState,() => {
-      this.checkAction();
-    });
   }
 
   async componentWillMount(){
@@ -96,7 +66,122 @@ class DepositRedeem extends Component {
     }
   }
 
-  async executeAction(){
+  approveToken = async () => {
+
+    // Check if the token is already approved
+    const tokenApproved = await this.functionsUtil.checkTokenApproved(this.props.selectedToken,this.props.tokenConfig.idle.address,this.props.account);
+
+    if (tokenApproved){
+      return this.setState((prevState) => ({
+        tokenApproved,
+        processing: {
+          ...prevState.processing,
+          ['approve']:{
+            txHash:null,
+            loading:false
+          }
+        }
+      }));
+    }
+
+    const callbackApprove = (tx,error)=>{
+      // Send Google Analytics event
+      const eventData = {
+        eventCategory: 'Approve',
+        eventAction: this.props.selectedToken,
+        eventLabel: tx.status,
+      };
+
+      if (error){
+        eventData.eventLabel = this.functionsUtil.getTransactionError(error);
+      }
+
+      // Send Google Analytics event
+      if (error || eventData.status !== 'error'){
+        this.functionsUtil.sendGoogleAnalyticsEvent(eventData);
+      }
+
+      this.setState((prevState) => ({
+        tokenApproved: (tx.status === 'success'), // True
+        processing: {
+          ...prevState.processing,
+          ['approve']:{
+            txHash:null,
+            loading:false
+          }
+        }
+      }));
+    };
+
+    const callbackReceiptApprove = (tx) => {
+      const txHash = tx.transactionHash;
+      this.setState((prevState) => ({
+        processing: {
+          ...prevState.processing,
+          ['approve']:{
+            ...prevState.processing['approve'],
+            txHash
+          }
+        }
+      }));
+    };
+
+    this.functionsUtil.enableERC20(this.props.selectedToken,this.props.tokenConfig.idle.address,callbackApprove,callbackReceiptApprove);
+
+    this.setState((prevState) => ({
+      processing: {
+        ...prevState.processing,
+        ['approve']:{
+          txHash:null,
+          loading:true
+        }
+      }
+    }));
+  }
+
+  loadTokenInfo = async () => {
+
+    if (this.state.componentMounted){
+      this.setState({
+        componentMounted:false
+      });
+    }
+
+    const newState = {...this.state};
+    newState.canDeposit = this.props.tokenBalance && this.functionsUtil.BNify(this.props.tokenBalance).gt(0);
+    newState.canRedeem = this.props.idleTokenBalance && this.functionsUtil.BNify(this.props.idleTokenBalance).gt(0);
+    newState.tokenApproved = await this.functionsUtil.checkTokenApproved(this.props.selectedToken,this.props.tokenConfig.idle.address,this.props.account);
+    newState.processing = {
+      'redeem':{
+        txHash:null,
+        loading:false
+      },
+      'deposit':{
+        txHash:null,
+        loading:false
+      },
+      'approve':{
+        txHash:null,
+        loading:false
+      }
+    };
+    newState.inputValue = {
+      'redeem':null,
+      'deposit':null
+    };
+    newState.fastBalanceSelector = {
+      'redeem':null,
+      'deposit':null
+    };
+
+    newState.componentMounted = true;
+
+    this.setState(newState,() => {
+      this.checkAction();
+    });
+  }
+
+  executeAction = async () => {
 
     const inputValue = this.state.inputValue[this.state.action];
     if (this.state.buttonDisabled || !inputValue || this.functionsUtil.BNify(inputValue).lte(0)){
@@ -107,7 +192,90 @@ class DepositRedeem extends Component {
 
     switch (this.state.action){
       case 'deposit':
+        const tokensToDeposit = this.functionsUtil.normalizeTokenAmount(inputValue,this.props.tokenDecimals).toString();
 
+        // check if Idle is approved for DAI
+        if (this.props.account && !this.state.isTokenApproved) {
+          return this.setState({activeModal: 'approve'});
+        }
+
+        if (localStorage){
+          this.functionsUtil.setLocalStorage('redirectToFundsAfterLogged',0);
+        }
+
+        this.setState({
+          lendingProcessing: this.props.account,
+          lendAmount: '',
+          genericError: '',
+        });
+
+        let paramsForMint = null;
+
+        // Get amounts for best allocations
+        if (this.props.account){
+          const callParams = { from: this.props.account, gas: this.props.web3.utils.toBN(5000000) };
+          paramsForMint = await this.functionsUtil.genericIdleCall('getParamsForMintIdleToken',[tokensToDeposit],callParams);
+        }
+
+        const _clientProtocolAmountsDeposit = paramsForMint ? paramsForMint[1] : [];
+        const gasLimitDeposit = _clientProtocolAmountsDeposit.length && _clientProtocolAmountsDeposit.indexOf('0') === -1 ? this.functionsUtil.BNify(1500000) : this.functionsUtil.BNify(1000000);
+
+        const callbackDeposit = (tx,error) => {
+          const txSucceeded = tx.status === 'success';
+
+          const eventData = {
+            eventCategory: 'Deposit',
+            eventAction: this.props.selectedToken,
+            eventLabel: tx.status,
+            eventValue: parseInt(inputValue)
+          };
+
+          if (error){
+            eventData.eventLabel = this.functionsUtil.getTransactionError(error);
+          }
+
+          // Send Google Analytics event
+          if (error || eventData.status !== 'error'){
+            this.functionsUtil.sendGoogleAnalyticsEvent(eventData);
+          }
+
+          this.setState((prevState) => ({
+            processing: {
+              ...prevState.processing,
+              [this.state.action]:{
+                txHash:null,
+                loading:false
+              }
+            }
+          }));
+
+          if (txSucceeded){
+            this.setState((prevState) => ({
+              inputValue:{
+                ...prevState.inputValue,
+                [this.state.action]: this.functionsUtil.BNify(0)
+              }
+            }));
+          }
+        };
+
+        const callbackReceiptDeposit = (tx) => {
+          const txHash = tx.transactionHash;
+          this.setState((prevState) => ({
+            processing: {
+              ...prevState.processing,
+              [this.state.action]:{
+                ...prevState.processing[this.state.action],
+                txHash
+              }
+            }
+          }));
+        };
+
+        // No need for callback atm
+        this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'mintIdleToken', [
+          tokensToDeposit, _clientProtocolAmountsDeposit
+        ], null, callbackDeposit, callbackReceiptDeposit, gasLimitDeposit);
       break;
       case 'redeem':
         const idleTokenToRedeem = this.functionsUtil.normalizeTokenAmount(inputValue,18).toString();
@@ -121,10 +289,10 @@ class DepositRedeem extends Component {
           paramsForRedeem = await this.functionsUtil.genericIdleCall('getParamsForRedeemIdleToken',[idleTokenToRedeem, _skipRebalance],callParams);
         }
 
-        const _clientProtocolAmounts = paramsForRedeem ? paramsForRedeem[1] : [];
-        const gasLimit = _clientProtocolAmounts.length && _clientProtocolAmounts.indexOf('0') === -1 ? this.functionsUtil.BNify(1500000) : this.functionsUtil.BNify(1000000);
+        const _clientProtocolAmountsRedeem = paramsForRedeem ? paramsForRedeem[1] : [];
+        const gasLimitRedeem = _clientProtocolAmountsRedeem.length && _clientProtocolAmountsRedeem.indexOf('0') === -1 ? this.functionsUtil.BNify(1500000) : this.functionsUtil.BNify(1000000);
 
-        const callback = (tx,error) => {
+        const callbackRedeem = (tx,error) => {
           const txSucceeded = tx.status === 'success';
 
           // Send Google Analytics event
@@ -164,7 +332,7 @@ class DepositRedeem extends Component {
           }
         };
 
-        const callback_receipt = (tx) => {
+        const callbackReceiptRedeem = (tx) => {
           const txHash = tx.transactionHash;
           this.setState((prevState) => ({
             processing: {
@@ -178,8 +346,8 @@ class DepositRedeem extends Component {
         };
 
         this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'redeemIdleToken', [
-          idleTokenToRedeem, _skipRebalance, _clientProtocolAmounts
-        ], null, callback, callback_receipt, gasLimit);
+          idleTokenToRedeem, _skipRebalance, _clientProtocolAmountsRedeem
+        ], null, callbackRedeem, callbackReceiptRedeem, gasLimitRedeem);
       break;
       default:
       break;
@@ -196,7 +364,7 @@ class DepositRedeem extends Component {
     }));
   }
 
-  checkAction(){
+  checkAction = () => {
     let action = this.state.action;
 
     switch(action){
@@ -233,7 +401,7 @@ class DepositRedeem extends Component {
     }
   }
 
-  checkButtonDisabled(amount=null){
+  checkButtonDisabled = (amount=null) => {
     if (!this.state.action){
       return false;
     }
@@ -259,7 +427,7 @@ class DepositRedeem extends Component {
     });
   }
 
-  setInputValue(){
+  setInputValue = () => {
     if (!this.state.action || this.state.fastBalanceSelector[this.state.action] === null){
       return false;
     }
@@ -288,7 +456,7 @@ class DepositRedeem extends Component {
     }));
   }
 
-  setFastBalanceSelector(percentage){
+  setFastBalanceSelector = (percentage) => {
     if (!this.state.action){
       return false;
     }
@@ -300,7 +468,7 @@ class DepositRedeem extends Component {
     }));
   }
 
-  changeInputValue(e){
+  changeInputValue = (e) => {
     if (!this.state.action){
       return false;
     }
@@ -318,7 +486,7 @@ class DepositRedeem extends Component {
     }));
   }
 
-  setAction(action){
+  setAction = (action) => {
     switch (action.toLowerCase()){
       case 'deposit':
         // if (!this.state.canDeposit){
@@ -489,7 +657,9 @@ class DepositRedeem extends Component {
       );
     }
 
-    const showBuyFlow = this.state.action === 'deposit' && this.state.componentMounted && !this.state.canDeposit;
+    const tokenApproved = this.state.tokenApproved;
+    const showBuyFlow = tokenApproved && this.state.action === 'deposit' && this.state.componentMounted && !this.state.canDeposit;
+
     return (
       <Flex
         width={1}
@@ -519,7 +689,89 @@ class DepositRedeem extends Component {
             />
           </Flex>
           {
+            !this.props.account ? (
+              <DashboardCard
+                cardProps={{
+                  p:3,
+                  mt:3
+                }}
+              >
+                <Flex
+                  alignItems={'center'}
+                  flexDirection={'column'}
+                >
+                  <Icon
+                    size={'2.3em'}
+                    name={'Input'}
+                    color={'cellText'}
+                  />
+                  <Text
+                    mt={3}
+                    fontSize={2}
+                    color={'cellText'}
+                    textAlign={'center'}
+                  >
+                    Please connect with your wallet interact with Idle.
+                  </Text>
+                  <RoundButton
+                    buttonProps={{
+                      mt:3,
+                      width:[1,1/2]
+                    }}
+                    handleClick={this.props.connectAndValidateAccount}
+                  >
+                    Connect
+                  </RoundButton>
+                </Flex>
+              </DashboardCard>
+            ) :
             this.state.componentMounted ? (
+              !tokenApproved ? (
+                <DashboardCard
+                  cardProps={{
+                    p:3,
+                    mt:3
+                  }}
+                >
+                  {
+                    this.state.processing['approve'].loading ? (
+                      <Flex
+                        flexDirection={'column'}
+                      >
+                        <TxProgressBar web3={this.props.web3} waitText={`Approve estimated in`} endMessage={`Finalizing approve request...`} hash={this.state.processing['approve'].txHash} />
+                      </Flex>
+                    ) : (
+                      <Flex
+                        alignItems={'center'}
+                        flexDirection={'column'}
+                      >
+                        <Icon
+                          size={'2.3em'}
+                          name={'LockOpen'}
+                          color={'cellText'}
+                        />
+                        <Text
+                          mt={3}
+                          fontSize={2}
+                          color={'cellText'}
+                          textAlign={'center'}
+                        >
+                          To Deposit/Redeem your {this.props.selectedToken} into Idle you need to enable our Smart-Contract first.
+                        </Text>
+                        <RoundButton
+                          buttonProps={{
+                            mt:3,
+                            width:[1,1/2]
+                          }}
+                          handleClick={this.approveToken.bind(this)}
+                        >
+                          Enable
+                        </RoundButton>
+                      </Flex>
+                    )
+                  }
+                </DashboardCard>
+              ) :
               this.state.action ? (
                 <Box width={1}>
                   <Flex

@@ -254,7 +254,12 @@ class FunctionsUtil {
     const requiredNetwork = globalConfigs.network.requiredNetwork;
     const etherscanInfo = globalConfigs.network.providers.etherscan;
 
-    let storedLastBlockNumber = this.getStoredItem('lastBlockNumber',false,null);
+    let lastBlockNumber = this.getStoredItem('lastBlockNumber',true,{});
+    let storedLastBlockNumber = null;
+
+    if (lastBlockNumber[this.props.account]){
+      storedLastBlockNumber = lastBlockNumber[this.props.account];
+    }
 
     let results = [];
     let cachedTxs = null;
@@ -291,7 +296,11 @@ class FunctionsUtil {
           }
         }
 
-        this.setLocalStorage('lastBlockNumber',lastCachedBlockNumber);
+        const lastBlockNumber = {
+          ...lastBlockNumber,
+          [this.props.account]:lastCachedBlockNumber
+        };
+        this.setLocalStorage('lastBlockNumber',lastBlockNumber,true);
       }
 
       let txs = cachedTxs;
@@ -311,8 +320,6 @@ class FunctionsUtil {
     // Initialize prevTxs
     let etherscanTxs = [];
 
-    // debugger;
-
     if (cachedTxs){
       // Filter txs for token
       etherscanTxs = results;
@@ -329,33 +336,38 @@ class FunctionsUtil {
         };
 
         this.saveCachedRequest(etherscanEndpoint,false,cachedRequestData);
+      }
+    }
 
-        // Merge base etherscan endpoint with new data
-        if (etherscanEndpoint !== etherscanBaseEndpoint){
-          let etherscanBaseTxs = this.getCachedRequest(etherscanBaseEndpoint);
-          if (etherscanBaseTxs){
-            etherscanBaseTxs = etherscanBaseTxs.data.result;
+    // Merge base etherscan endpoint with new data
+    console.log(etherscanEndpoint,etherscanBaseEndpoint);
+    if (etherscanEndpoint !== etherscanBaseEndpoint){
+      let etherscanBaseTxs = this.getCachedRequest(etherscanBaseEndpoint);
+      if (etherscanBaseTxs){
+        etherscanBaseTxs = etherscanBaseTxs.data.result;
 
-            let updateBaseTxs = false;
-            etherscanTxs.forEach((tx) => {
-              const txFound = etherscanBaseTxs.find(t => { return t.hash.toLowerCase() === tx.hash.toLowerCase(); });
-              if (!txFound){
-                // console.log('Add tx ',tx,'to base etherscan txs');
-                etherscanBaseTxs.push(tx);
-                updateBaseTxs = true;
-              }
-            });
-
-            if (updateBaseTxs){
-              const newEtherscanBaseTxs = {
-                data:{
-                  result:etherscanBaseTxs
-                }
-              };
-              this.saveCachedRequest(etherscanBaseEndpoint,false,newEtherscanBaseTxs);
-            }
+        let updateBaseTxs = false;
+        etherscanTxs.forEach((tx) => {
+          const txFound = etherscanBaseTxs.find(t => { return t.hash.toLowerCase() === tx.hash.toLowerCase(); });
+          if (!txFound){
+            // console.log('Add tx ',tx,'to base etherscan txs');
+            etherscanBaseTxs.push(tx);
+            updateBaseTxs = true;
           }
+        });
+
+        if (updateBaseTxs){
+          const newEtherscanBaseTxs = {
+            data:{
+              result:etherscanBaseTxs
+            }
+          };
+          this.saveCachedRequest(etherscanBaseEndpoint,false,newEtherscanBaseTxs);
+
         }
+        
+        // Replace with new txs
+        etherscanTxs = etherscanBaseTxs;
       }
     }
 
@@ -1011,9 +1023,10 @@ class FunctionsUtil {
     }
     return output;
   }
-  setLocalStorage = (key,value) => {
+  setLocalStorage = (key,value,stringify=false) => {
     if (window.localStorage){
       try {
+        value = stringify ? JSON.stringify(value) : value;
         window.localStorage.setItem(key,value);
         return true;
       } catch (error) {
