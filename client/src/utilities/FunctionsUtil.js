@@ -56,6 +56,8 @@ class FunctionsUtil {
   normalizeSimpleIDNotification = (n) => {
     return n.replace(/<\/p><p>/g,"\n")
             .replace(/<p>/g,"")
+            .replace(/<br>/g,"")
+            .replace(/&nbsp;/g," ")
             .replace(/<\/p>/g,"");
   }
   strToMoment = (date,format=null) => {
@@ -266,17 +268,8 @@ class FunctionsUtil {
     const requiredNetwork = globalConfigs.network.requiredNetwork;
     const etherscanInfo = globalConfigs.network.providers.etherscan;
 
-    // let lastBlockNumber = this.getStoredItem('lastBlockNumber',true,{});
-    // let storedLastBlockNumber = null;
-
-    // if (lastBlockNumber[this.props.account]){
-    //   storedLastBlockNumber = lastBlockNumber[this.props.account];
-    // }
-
     let results = [];
-    // let cachedTxs = null;
     let etherscanBaseTxs = null;
-    let etherscanEndpoint = null;
     let etherscanBaseEndpoint = null;
 
     // Check if etherscan is enabled for the required network
@@ -288,7 +281,7 @@ class FunctionsUtil {
       etherscanBaseTxs = this.getCachedRequest(etherscanBaseEndpoint);
 
       // Check if the latest blockNumber is actually the latest one
-      if (etherscanBaseTxs && etherscanBaseTxs.data.result && etherscanBaseTxs.data.result.length){
+      if (etherscanBaseTxs && etherscanBaseTxs.data.result && Object.values(etherscanBaseTxs.data.result).length){
         const lastCachedBlockNumber = parseInt(Object.values(etherscanBaseTxs.data.result).pop().blockNumber)+1;
 
         const etherscanEndpointLastBlock = `${etherscanApiUrl}?apikey=${env.REACT_APP_ETHERSCAN_KEY}&module=account&action=tokentx&address=${account}&startblock=${lastCachedBlockNumber}&endblock=${endBlockNumber}&sort=asc`;
@@ -342,54 +335,16 @@ class FunctionsUtil {
       etherscanTxs = await this.filterEtherscanTxs(results,allAvailableTokens);
 
       // Store filtered txs
-      if (etherscanTxs.length && etherscanEndpoint){
+      if (etherscanTxs && Object.keys(etherscanTxs).length){
         const cachedRequestData = {
           data:{
             result:etherscanTxs
           }
         };
 
-        this.saveCachedRequest(etherscanEndpoint,false,cachedRequestData);
+        this.saveCachedRequest(etherscanBaseEndpoint,false,cachedRequestData);
       }
     }
-
-    /*
-    // Merge base etherscan endpoint with new data
-    if (etherscanEndpoint !== etherscanBaseEndpoint){
-      let etherscanBaseTxs = this.getCachedRequest(etherscanBaseEndpoint);
-      if (etherscanBaseTxs){
-        etherscanBaseTxs = etherscanBaseTxs.data.result;
-
-        const pendingTxs = etherscanTxs.filter(t => (!t.hash) );
-
-        let updateBaseTxs = false;
-        etherscanTxs.forEach((tx) => {
-          if (!tx.hash){
-            return false;
-          }
-          const txFound = etherscanBaseTxs.find(t => (t.hash.toLowerCase() === tx.hash.toLowerCase()) );
-          if (!txFound){
-            // console.log('Add tx ',tx,'to base etherscan txs');
-            etherscanBaseTxs.push(tx);
-            updateBaseTxs = true;
-          }
-        });
-
-        if (updateBaseTxs){
-          const newEtherscanBaseTxs = {
-            data:{
-              result:etherscanBaseTxs
-            }
-          };
-          this.saveCachedRequest(etherscanBaseEndpoint,false,newEtherscanBaseTxs);
-
-        }
-
-        // Replace with new txs and add pending txs
-        etherscanTxs = Object.assign(etherscanBaseTxs,pendingTxs);
-      }
-    }
-    */
 
     etherscanTxs = Object.values(etherscanTxs).filter(tx => {
       if (!tx.token){
@@ -1506,13 +1461,18 @@ class FunctionsUtil {
 
     // Prevent decimals on integer number
     // if (newValue%parseInt(newValue)!==0){
+    if (newValue>0){
+      const decimalPart = decimals ? parseInt(newValue%1*Math.pow(10,decimals)) : null;
+      newValue = parseFloat(parseInt(newValue)+( decimalPart ? '.'+decimalPart : '' ) );
+    } else {
       newValue = newValue.toFixed(decimals);
+    }
     // }
 
-    if (parseFloat(newValue)>=1 && (newValue.length-1)>maxPrecision){
-      newValue = parseFloat(newValue).toPrecision(maxPrecision);
+    if (newValue>=1 && (newValue.length-1)>maxPrecision){
+      newValue = newValue.toPrecision(maxPrecision);
     } else if ((newValue.length-1)<minPrecision) {
-      newValue = parseFloat(newValue).toPrecision(minPrecision);
+      newValue = newValue.toPrecision(minPrecision);
     }
 
     newValue += suffixes[suffixNum];

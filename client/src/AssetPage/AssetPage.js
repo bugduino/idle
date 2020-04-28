@@ -119,111 +119,114 @@ class AssetPage extends Component {
             {...this.props}
           />
         </Flex>
-        <Flex
-          mb={[3,4]}
-          width={1}
-          id={'transactions-container'}
-          flexDirection={'column'}
-        >
-          <Title my={[3,4]}>Transactions</Title>
-          <TransactionsList
-            {...this.props}
-            enabledTokens={[this.props.selectedToken]}
-            cols={[
-              {
-                title:'TRANSACTIONS',
-                props:{
-                  width:0.22
-                },
-                fields:[
+        {
+          this.props.account && 
+            <Flex
+              mb={[3,4]}
+              width={1}
+              id={'transactions-container'}
+              flexDirection={'column'}
+            >
+              <Title my={[3,4]}>Transactions</Title>
+              <TransactionsList
+                {...this.props}
+                enabledTokens={[this.props.selectedToken]}
+                cols={[
                   {
-                    name:'icon',
+                    title:'TRANSACTIONS',
                     props:{
-                      mr:2
-                    }
+                      width:0.22
+                    },
+                    fields:[
+                      {
+                        name:'icon',
+                        props:{
+                          mr:2
+                        }
+                      },
+                      {
+                        name:'hash',
+                        props:cellTextProps
+                      }
+                    ]
                   },
                   {
-                    name:'hash',
-                    props:cellTextProps
-                  }
-                ]
-              },
-              {
-                title:'ACTION',
-                props:{
-                  width:0.15,
-                },
-                fields:[
-                  {
-                    name:'action',
-                    props:cellTextProps
-                  }
-                ]
-              },
-              {
-                title:'DATE',
-                props:{
-                  width:0.18,
-                },
-                fields:[
-                  {
-                    name:'date',
-                    props:cellTextProps
-                  }
-                ]
-              },
-              {
-                title:'STATUS',
-                props:{
-                  width:0.18,
-                },
-                fields:[
-                  {
-                    name:'statusIcon',
+                    title:'ACTION',
                     props:{
-                      mr:2
-                    }
+                      width:0.15,
+                    },
+                    fields:[
+                      {
+                        name:'action',
+                        props:cellTextProps
+                      }
+                    ]
                   },
                   {
-                    name:'status',
-                    props:cellTextProps
-                  }
-                ]
-              },
-              {
-                title:'AMOUNT',
-                props:{
-                  width:0.15,
-                },
-                fields:[
-                  {
-                    name:'amount',
-                    props:cellTextProps
-                  },
-                ]
-              },
-              {
-                title:'TOKEN',
-                props:{
-                  width:0.13,
-                },
-                fields:[
-                  {
-                    name:'tokenIcon',
+                    title:'DATE',
                     props:{
-                      mr:2,
-                      height:'1.6em',
-                    }
+                      width:0.18,
+                    },
+                    fields:[
+                      {
+                        name:'date',
+                        props:cellTextProps
+                      }
+                    ]
                   },
                   {
-                    name:'tokenName',
-                    props:cellTextProps
+                    title:'STATUS',
+                    props:{
+                      width:0.18,
+                    },
+                    fields:[
+                      {
+                        name:'statusIcon',
+                        props:{
+                          mr:2
+                        }
+                      },
+                      {
+                        name:'status',
+                        props:cellTextProps
+                      }
+                    ]
                   },
-                ]
-              },
-            ]}
-          />
-        </Flex>
+                  {
+                    title:'AMOUNT',
+                    props:{
+                      width:0.15,
+                    },
+                    fields:[
+                      {
+                        name:'amount',
+                        props:cellTextProps
+                      },
+                    ]
+                  },
+                  {
+                    title:'TOKEN',
+                    props:{
+                      width:0.13,
+                    },
+                    fields:[
+                      {
+                        name:'tokenIcon',
+                        props:{
+                          mr:2,
+                          height:'1.6em',
+                        }
+                      },
+                      {
+                        name:'tokenName',
+                        props:cellTextProps
+                      },
+                    ]
+                  },
+                ]}
+              />
+            </Flex>
+        }
       </Flex>
     );
   }

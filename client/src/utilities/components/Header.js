@@ -1,14 +1,14 @@
 import React from "react";
-import BuyModal from "./BuyModal";
+// import BuyModal from "./BuyModal";
 import styles from './Header.module.scss';
-import AccountModal from "./AccountModal";
+// import AccountModal from "./AccountModal";
 import FunctionsUtil from '../FunctionsUtil';
 import AccountOverview from "./AccountOverview";
 import { Box, Flex, Button, Image } from "rimble-ui";
 import ButtonGroup from '../../ButtonGroup/ButtonGroup';
 import ConnectionErrorModal from './ConnectionErrorModal';
 import ButtonLoader from '../../ButtonLoader/ButtonLoader.js';
-import TokenSelector from '../../TokenSelector/TokenSelector';
+// import TokenSelector from '../../TokenSelector/TokenSelector';
 
 import {
   Link as RouterLink,
@@ -77,6 +77,7 @@ class Header extends React.Component {
         },
         value:'ADD FUNDS'
       },
+      /*
       {
         component:TokenSelector,
         props:{
@@ -85,6 +86,7 @@ class Header extends React.Component {
           availableTokens:this.props.availableTokens
         }
       }
+      */
     ];
 
     this.setState({
@@ -120,7 +122,7 @@ class Header extends React.Component {
 
     const accountUpdated = prevProps.account !== this.props.account;
     const tokenUpdated = prevProps.selectedToken !== this.props.selectedToken;
-    const accountBalanceUpdated = prevProps.accountBalanceToken !== this.props.accountBalanceToken;
+    // const accountBalanceUpdated = prevProps.accountBalanceToken !== this.props.accountBalanceToken;
 
     if (tokenUpdated || accountUpdated){
       this.setCurrentToken();
@@ -140,6 +142,7 @@ class Header extends React.Component {
       return false;
     }
 
+    /*
     if (this.props.account && (accountUpdated || accountBalanceUpdated)) {
 
       let idleTokenBalance = await this.functionsUtil.getProtocolBalance(this.props.tokenConfig.idle.token,this.props.account);
@@ -150,6 +153,7 @@ class Header extends React.Component {
         });
       }
     }
+    */
   }
 
   render() {
@@ -220,6 +224,9 @@ class Header extends React.Component {
           isOpen={this.state.isModalOpen==='error'}
         >
         </ConnectionErrorModal>
+        {
+          /*
+        }
         <BuyModal
           account={this.props.account}
           tokenConfig={this.props.tokenConfig}
@@ -248,6 +255,8 @@ class Header extends React.Component {
           setConnector={this.props.setConnector}
           closeModal={e => this.toggleModal('account') }
           network={this.props.network.current} />
+        */
+        }
       </Box>
     );
   }

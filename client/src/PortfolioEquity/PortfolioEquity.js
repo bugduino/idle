@@ -187,9 +187,9 @@ class PortfolioEquity extends Component {
           filteredBalances.forEach(tx => {
             
             // Skip transactions with no hash or pending
-            if (!tx.hash || (tx.status && tx.status === 'Pending')){
-              return false;
-            }
+            // if (!tx.hash || (tx.status && tx.status === 'Pending')){
+            //   return false;
+            // }
 
             switch (tx.action){
               case 'Deposit':

@@ -135,25 +135,24 @@ class RimbleTransaction extends React.Component {
   componentDidUpdate = async (prevProps, prevState) => {
 
     if (prevProps.connectorName !== this.props.connectorName && this.props.connectorName){
-      // console.log('RimbleWeb3 componentDidUpdate',prevProps.connectorName,this.props.connectorName);
       this.initWeb3();
     }
 
     // Context change
     if (prevProps.context !== this.props.context){
-      // console.log('Context changed',this.props.context,this.props.context.error,prevProps.connectorName,this.props.connectorName);
       if (this.props.context.error instanceof Error && this.props.context.error.message.length){
         this.state.modals.methods.openConnectionErrorModal(null,this.props.context.error.message);
       // WalletConnect double trigger initWeb3
       } else if (this.props.context.active && this.props.context.connectorName==='WalletConnect' && this.props.connectorName==='WalletConnect') {
         this.initWeb3();
-      }/* else if (!this.props.context.active && this.props.connectorName==='Injected') {
-        this.initWeb3();
-      }*/
+      }
     }
 
+    const tokenChanged = prevProps.selectedToken !== this.props.selectedToken;
+    const availableTokensChanged = prevProps.availableTokens && this.props.availableTokens && JSON.stringify(Object.keys(prevProps.availableTokens)) !== JSON.stringify(Object.keys(this.props.availableTokens));
+
     // Reset tokenDecimals if token is changed
-    if (prevProps.selectedToken !== this.props.selectedToken){
+    if (tokenChanged){
       this.setState({
         tokenDecimals: null
       });
@@ -177,7 +176,7 @@ class RimbleTransaction extends React.Component {
       }
     }
 
-    if (prevProps.selectedToken !== this.props.selectedToken){
+    if (tokenChanged || availableTokensChanged){
       await this.initializeContracts();
     }
 
@@ -341,7 +340,6 @@ class RimbleTransaction extends React.Component {
     if (web3 !== this.state.web3){
       this.setState({ web3 }, web3Callback);
     } else if (context.account){
-      console.log(context.account);
       web3Callback();
     }
 
@@ -474,6 +472,7 @@ class RimbleTransaction extends React.Component {
           eventLabel: walletProvider
         });
 
+        /*
         // Unsubscribes to all subscriptions
         if (this.state.web3SocketProvider && typeof this.state.web3SocketProvider.clearSubscriptions === 'function'){
           this.functionsUtil.customLog('Clear all web3SocketProvider subscriptions');
@@ -660,11 +659,12 @@ class RimbleTransaction extends React.Component {
         .on("changed", log => {
           
         });
+        */
 
         // Set custom account
         this.setState({
           account,
-          web3SocketProvider,
+          // web3SocketProvider,
           accountInizialized: true
         });
 
@@ -766,6 +766,10 @@ class RimbleTransaction extends React.Component {
   }
 
   initializeContracts = async () => {
+
+    if (!this.props.availableTokens){
+      return false;
+    }
 
     // Initialize Tokens Contracts
     await this.functionsUtil.asyncForEach(Object.keys(this.props.availableTokens),async (token) => {
@@ -1050,7 +1054,7 @@ class RimbleTransaction extends React.Component {
           // Update transaction with receipt details
           transaction.recentEvent = "confirmation";
           this.updateTransaction(transaction);
-          
+
           callback(transaction);
           this.functionsUtil.customLog('Confirmed', confirmationNumber, receipt, transaction);
         }

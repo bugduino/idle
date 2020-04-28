@@ -1,18 +1,18 @@
-import { Card, Flex } from "rimble-ui";
+import { Flex } from "rimble-ui";
 import React, { Component } from 'react';
+import DashboardCard from '../DashboardCard/DashboardCard';
 
 class TableRow extends Component {
   render() {
     const FieldComponent = this.props.fieldComponent;
     return (
-      <Card
-        pr={0}
-        mb={2}
-        px={[3,4]}
-        py={[2,'20px']}
-        width={1}
-        boxShadow={1}
-        borderRadius={2}
+      <DashboardCard
+        cardProps={{
+          mb:2,
+          px:[3,4],
+          py:[2,'20px'],
+          width:1
+        }}
         id={this.props.cardId}
         {...this.props.rowProps}
       >
@@ -48,7 +48,7 @@ class TableRow extends Component {
             ))
           }
         </Flex>
-      </Card>
+      </DashboardCard>
     );
   }
 }

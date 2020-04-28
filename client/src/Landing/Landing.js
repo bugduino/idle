@@ -2,13 +2,13 @@ import Faq from '../Faq/Faq';
 import Footer from '../Footer/Footer';
 import React, { Component } from 'react';
 import styles from './Landing.module.scss';
-import globalConfigs from '../configs/globalConfigs';
+// import globalConfigs from '../configs/globalConfigs';
 // import LandingForm from '../LandingForm/LandingForm';
 import ImageButton from '../ImageButton/ImageButton';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import NewsletterForm from '../NewsletterForm/NewsletterForm';
-import AllocationChart from '../AllocationChart/AllocationChart';
-import { Image, Flex, Box, Heading, Link, Text, Card, Icon } from 'rimble-ui'
+// import AllocationChart from '../AllocationChart/AllocationChart';
+import { Image, Flex, Box, Heading, Link, Text, Icon } from 'rimble-ui'
 import FloatingToastMessage from '../FloatingToastMessage/FloatingToastMessage';
 // import DefiScoreTable from '../DefiScoreTable/DefiScoreTable';
 // import Confetti from 'react-confetti';
@@ -108,10 +108,10 @@ class Landing extends Component {
     }
 
     if (this.props.contractsInitialized){
-      await Promise.all([
-        this.getAprs(),
-        this.getAllocations()
-      ]);
+      // await Promise.all([
+      //   this.getAprs(),
+      //   this.getAllocations()
+      // ]);
     }
   }
 
@@ -123,10 +123,10 @@ class Landing extends Component {
     const contractsInitialized = this.props.contractsInitialized && prevProps.contractsInitialized !== this.props.contractsInitialized;
 
     if (contractsInitialized) {
-      await Promise.all([
-        this.getAprs(),
-        this.getAllocations()
-      ]);
+      // await Promise.all([
+      //   this.getAprs(),
+      //   this.getAllocations()
+      // ]);
     }
   }
 
@@ -317,11 +317,11 @@ class Landing extends Component {
 
   render() {
     const { network } = this.props;
-    const maxOpacity = 0.6;
-    const minOpacity = 0.2;
-    const idleOpacity = maxOpacity;
-    const protocolLen = this.props.tokenConfig.protocols.length;
-    const avgApr = this.state.avgApr ? parseFloat(this.state.avgApr).toFixed(2) : null;
+    // const maxOpacity = 0.6;
+    // const minOpacity = 0.2;
+    // const idleOpacity = maxOpacity;
+    // const protocolLen = this.props.tokenConfig.protocols.length;
+    // const avgApr = this.state.avgApr ? parseFloat(this.state.avgApr).toFixed(2) : null;
 
     return (
       <Box
@@ -677,6 +677,8 @@ class Landing extends Component {
           </Flex>
         </Flex>
 
+        {
+        /*
         <Flex className={styles.gradientBackground} flexDirection={'column'} position={'relative'} justifyContent={'center'} alignItems={'center'} p={[3,6]} pb={[4,6]}>
           {
             this.props.isMobile ? (
@@ -890,7 +892,8 @@ class Landing extends Component {
             )
           }
         </Flex>
-
+        */
+        }
         {
         /*
         <Flex flexDirection={'column'} position={'relative'} justifyContent={'center'} alignItems={'center'} p={[3,5]} pb={[4,5]}>

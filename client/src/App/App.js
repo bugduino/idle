@@ -40,8 +40,10 @@ class App extends Component {
     selectedToken: null,
     availableTokens:null,
     buyModalOpened: false,
+    selectedStrategy:null,
     toastMessageProps:null,
     callbackAfterLogin:null,
+    availableStrategies:null,
     width: window.innerWidth,
     unsubscribeFromHistory:null,
     enableUnderlyingWithdraw:false
@@ -109,6 +111,49 @@ class App extends Component {
     return this.setState(state => ({...state, selectedTab: tabIndex}));
   }
 
+  async loadAvailableTokens() {
+    const newState = {};
+    const availableStrategies = {};
+    const requiredNetwork = globalConfigs.network.requiredNetwork;
+
+    // Load available strategies
+    Object.keys(availableTokens[requiredNetwork]).forEach((strategy) => {
+      availableStrategies[strategy] = availableTokens[requiredNetwork][strategy];
+    });
+
+    newState.availableStrategies = availableStrategies;
+
+    // Load strategy
+    const selectedStrategy = this.state.selectedStrategy ? this.state.selectedStrategy : null;
+    if (selectedStrategy && this.state.availableStrategies[selectedStrategy]){
+      newState.availableTokens = this.state.availableStrategies[selectedStrategy];
+
+      // Load token
+      const selectedToken = this.state.selectedToken ? this.state.selectedToken : null;
+      if (selectedToken && this.state.availableTokens[selectedToken]){
+        newState.tokenConfig = this.state.availableTokens[selectedToken];
+      }
+    }
+
+    await this.setState(newState);
+  }
+
+  async setStrategy(selectedStrategy){
+    if (selectedStrategy !== this.state.selectedStrategy && Object.keys(this.state.availableStrategies).includes(selectedStrategy)){
+      await this.setState({
+        selectedStrategy
+      });
+    }
+  }
+
+  async setToken(selectedToken){
+    if (selectedToken !== this.state.selectedToken && Object.keys(this.state.availableTokens).includes(selectedToken)){
+      await this.setState({
+        selectedToken
+      });
+    }
+  }
+
   async componentWillMount() {
 
     window.jQuery = jQuery;
@@ -122,36 +167,7 @@ class App extends Component {
         localStorage.removeItem('cachedRequests');
         localStorage.setItem('version',globalConfigs.version);
       }
-
     }
-
-    const requiredNetwork = globalConfigs.network.requiredNetwork;
-    const availableTokensNetwork = {};
-
-    Object.keys(availableTokens[requiredNetwork]).forEach((token) => {
-      const tokenInfo = availableTokens[requiredNetwork][token];
-      if (tokenInfo.enabled){
-        availableTokensNetwork[token] = tokenInfo;
-      }
-    });
-
-    await this.setState({ availableTokens: availableTokensNetwork });
-
-    let selectedToken = this.state.selectedToken;
-    if (!selectedToken){
-      selectedToken = localStorage ? localStorage.getItem('selectedToken') : null;
-
-      // Check if the stored token
-      if (selectedToken && availableTokens[selectedToken] && !availableTokens[selectedToken].enabled){
-        selectedToken = null;
-        localStorage.removeItem('selectedToken');
-      }
-
-      if (!selectedToken){
-        selectedToken = Object.keys(this.state.availableTokens)[0];
-      }
-    }
-    this.setSelectedToken(selectedToken);
 
     window.closeIframe = (w) => {
       const iFrames = document.getElementsByTagName('iframe');
@@ -164,10 +180,20 @@ class App extends Component {
     }
 
     window.addEventListener('resize', this.handleWindowSizeChange);
+
+    this.loadAvailableTokens();
   }
 
   componentWillUnmount() {
     window.removeEventListener('resize', this.handleWindowSizeChange);
+  }
+
+  componentDidUpdate(prevProps,prevState){
+    const tokenChanged = prevState.selectedToken !== this.state.selectedToken;
+    const strategyChanged = prevState.selectedStrategy !== this.state.selectedStrategy;
+    if (tokenChanged || strategyChanged){
+      this.loadAvailableTokens();
+    }
   }
 
   componentDidMount() {
@@ -260,28 +286,8 @@ class App extends Component {
     });
   }
 
-  setSelectedToken(selectedToken){
-    if (Object.keys(this.state.availableTokens).indexOf(selectedToken) !== -1){
-      const tokenConfig = this.state.availableTokens[selectedToken];
-      if (selectedToken !== this.state.selectedToken || tokenConfig !== this.state.tokenConfig){
-        if (localStorage){
-          localStorage.setItem('selectedToken',selectedToken);
-        }
-
-        return this.setState({
-          tokenConfig,
-          selectedToken
-        });
-      }
-    }
-  }
-
   render() {
     const isMobile = this.state.width <= 768;
-
-    if (!this.state.tokenConfig || !this.state.selectedToken){
-      return false;
-    }
 
     return (
       <Router>
@@ -358,7 +364,7 @@ class App extends Component {
                                                     selectedToken={this.state.selectedToken}
                                                     contractsInitialized={contractsInitialized}
                                                     availableTokens={this.state.availableTokens}
-                                                    setSelectedToken={ e => { this.setSelectedToken(e) } }
+                                                    setToken={ e => { this.setToken(e) } }
                                                   />}
                             >
                             </Route>
@@ -387,6 +393,7 @@ class App extends Component {
                                                     tokenConfig={this.state.tokenConfig}
                                                     getAccountBalance={getAccountBalance}
                                                     accountBalanceLow={accountBalanceLow}
+                                                    setToken={ e => { this.setToken(e) } }
                                                     accountInizialized={accountInizialized}
                                                     selectedToken={this.state.selectedToken}
                                                     connectorName={this.state.connectorName}
@@ -399,13 +406,14 @@ class App extends Component {
                                                     rejectAccountConnect={rejectAccountConnect}
                                                     handleMenuClick={this.selectTab.bind(this)}
                                                     setConnector={this.setConnector.bind(this)}
+                                                    setStrategy={ e => { this.setStrategy(e) } }
                                                     availableTokens={this.state.availableTokens}
                                                     closeBuyModal={this.closeBuyModal.bind(this)}
                                                     userRejectedValidation={userRejectedValidation}
                                                     accountValidationPending={accountValidationPending}
+                                                    availableStrategies={this.state.availableStrategies}
                                                     connectAndValidateAccount={connectAndValidateAccount}
                                                     contractMethodSendWrapper={contractMethodSendWrapper}
-                                                    setSelectedToken={ e => { this.setSelectedToken(e) } }
                                                 />
                                               }
                             >
@@ -447,7 +455,7 @@ class App extends Component {
                                 userRejectedValidation={userRejectedValidation}
                                 accountValidationPending={accountValidationPending}
                                 connectAndValidateAccount={connectAndValidateAccount}
-                                setSelectedToken={ e => { this.setSelectedToken(e) } }
+                                setToken={ e => { this.setToken(e) } }
                               />
 
                               {this.state.route === "onboarding" ? (
@@ -502,7 +510,7 @@ class App extends Component {
                                           updateSelectedTab={this.selectTab.bind(this)}
                                           toastMessageProps={this.state.toastMessageProps}
                                           connectAndValidateAccount={connectAndValidateAccount}
-                                          setSelectedToken={ e => { this.setSelectedToken(e) } }
+                                          setToken={ e => { this.setToken(e) } }
                                           network={network} />
 
                                         <CookieConsent

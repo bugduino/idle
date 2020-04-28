@@ -409,10 +409,11 @@ const globalConfigs = {
         getInitParams: (props,globalConfigs,buyParams) => {
         	return {
 	          hostAppName: 'Idle',
-	          hostLogoUrl: `${globalConfigs.baseURL}/images/idle-round.png`,
-	          swapAsset: buyParams.selectedToken ? buyParams.selectedToken : ( props.tokenConfig.ramp && props.tokenConfig.ramp.swapAsset ? props.tokenConfig.ramp.swapAsset : props.selectedToken ),
-	          userAddress: props.account,
-	          variant: props.isMobile ? 'mobile' : 'desktop',
+            userAddress: props.account,
+            hostApiKey: env.REACT_APP_RAMP_KEY,
+            variant: props.isMobile ? 'mobile' : 'desktop',
+            hostLogoUrl: `${globalConfigs.baseURL}/images/idle-round.png`,
+            swapAsset: buyParams.selectedToken ? buyParams.selectedToken : ( props.tokenConfig.ramp && props.tokenConfig.ramp.swapAsset ? props.tokenConfig.ramp.swapAsset : props.selectedToken )
         	};
         },
         render: (initParams,amount,props,globalConfigs) => {

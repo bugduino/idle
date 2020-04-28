@@ -122,16 +122,16 @@ class Dashboard extends Component {
     let selectedStrategy = null;
     let pageComponent = null;
 
+    // Set strategy
     if (params.strategy){
       selectedStrategy = params.strategy;
       currentRoute += '/'+selectedStrategy;
+
+      // Set token
       if (params.asset){
-        // Check if the asset is valid
-        if (Object.keys(this.props.availableTokens).includes(params.asset.toUpperCase())){
-          selectedToken = params.asset.toUpperCase();
-          currentRoute += '/'+selectedToken;
-          pageComponent = AssetPage;
-        }
+        selectedToken = params.asset.toUpperCase();
+        currentRoute += '/'+selectedToken;
+        pageComponent = AssetPage;
       }
     }
 
@@ -165,10 +165,12 @@ class Dashboard extends Component {
       }
     });
 
-    const tokenConfig = selectedToken && this.props.availableTokens[selectedToken] ? this.props.availableTokens[selectedToken] : null;
+    if (selectedStrategy){
+      await this.props.setStrategy(selectedStrategy);
+    }
 
-    if (tokenConfig){
-      this.props.setSelectedToken(selectedToken);
+    if (selectedToken){
+      await this.props.setToken(selectedToken);
     }
 
     await this.setState({
@@ -221,12 +223,11 @@ class Dashboard extends Component {
   }
 
   changeToken(selectedToken){
-    if (Object.keys(this.props.availableTokens).includes(selectedToken.toUpperCase())){
-      selectedToken = selectedToken.toUpperCase();
-      // if (selectedToken !== this.props.selectedToken){
-        const baseRoute = this.functionsUtil.getGlobalConfig(['dashboard','baseRoute']);
-        window.location.hash=baseRoute+'/'+this.state.selectedStrategy+'/'+selectedToken;
-      // }
+    selectedToken = selectedToken.toUpperCase();
+    if (Object.keys(this.props.availableTokens).includes(selectedToken)){
+      const baseRoute = this.functionsUtil.getGlobalConfig(['dashboard','baseRoute']);
+      window.location.hash=baseRoute+'/'+this.state.selectedStrategy+'/'+selectedToken;
+      window.scrollTo(0, 0);
     }
   }
 

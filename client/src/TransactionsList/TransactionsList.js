@@ -266,6 +266,9 @@ class TransactionsList extends Component {
                     return (
                       <TableRow
                         {...this.props}
+                        rowProps={{
+                          isInteractive:true
+                        }}
                         hash={transactionHash}
                         transaction={transaction}
                         key={`tx-${transactionHash}`}
