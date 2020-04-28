@@ -97,8 +97,10 @@ class RimbleTransaction extends React.Component {
     const props = Object.assign({},this.props);
     props.contracts = this.state.contracts;
     if (this.functionsUtil){
+      props.account = this.state.account;
       this.functionsUtil.setProps(props);
     } else {
+      props.account = this.state.account;
       this.functionsUtil = new FunctionsUtil(props);
     }
   }
@@ -109,6 +111,23 @@ class RimbleTransaction extends React.Component {
 
     // console.log('RimbleWeb3 componentDidMount');
     this.initWeb3();
+
+    window.testTransaction = (method) => {
+      const transaction = this.createTransaction();
+      transaction.method = method;
+      this.addTransaction(transaction);
+      return transaction;
+    }
+
+    window.updateTransaction = (transaction,hash,status,params) => {
+      // Add meta data to transaction
+      transaction.type = "contract";
+      transaction.status = status;
+      transaction.params = params;
+      transaction.transactionHash = hash;
+      this.updateTransaction(transaction);
+      return transaction;
+    }
 
     // window.initWeb3 = this.initWeb3;
   }
@@ -1026,11 +1045,12 @@ class RimbleTransaction extends React.Component {
           // Confidence threshold met
         }
 
-        // Update transaction with receipt details
-        transaction.recentEvent = "confirmation";
-        this.updateTransaction(transaction);
 
-        if (call_callback) {
+        if (call_callback){
+          // Update transaction with receipt details
+          transaction.recentEvent = "confirmation";
+          this.updateTransaction(transaction);
+          
           callback(transaction);
           this.functionsUtil.customLog('Confirmed', confirmationNumber, receipt, transaction);
         }
@@ -1164,6 +1184,7 @@ class RimbleTransaction extends React.Component {
     transaction.lastUpdated = Date.now();
     transaction.status = "initialized";
     transaction.confirmationCount = 0;
+    transaction.token = this.props.selectedToken;
 
     return transaction;
   }
@@ -1181,6 +1202,13 @@ class RimbleTransaction extends React.Component {
     transaction.lastUpdated = Date.now();
     transactions[`tx${updatedTransaction.created}`] = transaction;
     this.setState({ transactions });
+
+    // Save transactions in localStorage only if pending or succeeded
+    if (['pending','success','confirmed'].includes(transaction.status)){
+      this.functionsUtil.addStoredTransaction(`tx${transaction.created}`,transaction);
+    }
+
+    return transaction;
   }
 
   // CONNECTION MODAL METHODS

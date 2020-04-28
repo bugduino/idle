@@ -76,7 +76,7 @@ class DepositRedeem extends Component {
         tokenApproved,
         processing: {
           ...prevState.processing,
-          ['approve']:{
+          approve:{
             txHash:null,
             loading:false
           }
@@ -105,7 +105,7 @@ class DepositRedeem extends Component {
         tokenApproved: (tx.status === 'success'), // True
         processing: {
           ...prevState.processing,
-          ['approve']:{
+          approve:{
             txHash:null,
             loading:false
           }
@@ -118,7 +118,7 @@ class DepositRedeem extends Component {
       this.setState((prevState) => ({
         processing: {
           ...prevState.processing,
-          ['approve']:{
+          approve:{
             ...prevState.processing['approve'],
             txHash
           }
@@ -131,7 +131,7 @@ class DepositRedeem extends Component {
     this.setState((prevState) => ({
       processing: {
         ...prevState.processing,
-        ['approve']:{
+        approve:{
           txHash:null,
           loading:true
         }
@@ -152,26 +152,26 @@ class DepositRedeem extends Component {
     newState.canRedeem = this.props.idleTokenBalance && this.functionsUtil.BNify(this.props.idleTokenBalance).gt(0);
     newState.tokenApproved = await this.functionsUtil.checkTokenApproved(this.props.selectedToken,this.props.tokenConfig.idle.address,this.props.account);
     newState.processing = {
-      'redeem':{
+      redeem:{
         txHash:null,
         loading:false
       },
-      'deposit':{
+      deposit:{
         txHash:null,
         loading:false
       },
-      'approve':{
+      approve:{
         txHash:null,
         loading:false
       }
     };
     newState.inputValue = {
-      'redeem':null,
-      'deposit':null
+      redeem:null,
+      deposit:null
     };
     newState.fastBalanceSelector = {
-      'redeem':null,
-      'deposit':null
+      redeem:null,
+      deposit:null
     };
 
     newState.componentMounted = true;
@@ -184,6 +184,7 @@ class DepositRedeem extends Component {
   executeAction = async () => {
 
     const inputValue = this.state.inputValue[this.state.action];
+
     if (this.state.buttonDisabled || !inputValue || this.functionsUtil.BNify(inputValue).lte(0)){
       return false;
     }
@@ -192,12 +193,9 @@ class DepositRedeem extends Component {
 
     switch (this.state.action){
       case 'deposit':
-        const tokensToDeposit = this.functionsUtil.normalizeTokenAmount(inputValue,this.props.tokenDecimals).toString();
+        const tokensToDeposit = this.functionsUtil.normalizeTokenAmount(inputValue,this.props.tokenConfig.decimals).toString();
 
-        // check if Idle is approved for DAI
-        if (this.props.account && !this.state.isTokenApproved) {
-          return this.setState({activeModal: 'approve'});
-        }
+        // console.log(inputValue.toString(),tokensToDeposit.toString());
 
         if (localStorage){
           this.functionsUtil.setLocalStorage('redirectToFundsAfterLogged',0);
@@ -734,7 +732,7 @@ class DepositRedeem extends Component {
                   }}
                 >
                   {
-                    this.state.processing['approve'].loading ? (
+                    this.state.processing['approve'] && this.state.processing['approve'].loading ? (
                       <Flex
                         flexDirection={'column'}
                       >

@@ -384,6 +384,7 @@ class App extends Component {
                                                     accountValidated={accountValidated}
                                                     getTokenDecimals={getTokenDecimals}
                                                     rejectValidation={rejectValidation}
+                                                    tokenConfig={this.state.tokenConfig}
                                                     getAccountBalance={getAccountBalance}
                                                     accountBalanceLow={accountBalanceLow}
                                                     accountInizialized={accountInizialized}

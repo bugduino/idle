@@ -63,6 +63,11 @@ class PortfolioEquity extends Component {
         let amountLent = this.functionsUtil.BNify(0);
 
         filteredTxs.forEach((tx,index) => {
+
+          // Skip transactions with no hash or pending
+          if (!tx.hash || (tx.status && tx.status === 'Pending')){
+            return false;
+          }
           
           firstTxTimestamp = firstTxTimestamp ? Math.min(firstTxTimestamp,parseInt(tx.timeStamp)) : parseInt(tx.timeStamp);
 
@@ -180,6 +185,12 @@ class PortfolioEquity extends Component {
           // const endDate = this.functionsUtil.strToMoment(timeStamp*1000).format('DD/MM/YYYY HH:mm');
           // console.log(startDate,endDate,this.functionsUtil.strToMoment(filteredBalances[0].timeStamp*1000).format('DD/MM/YYYY HH:mm'),filteredBalances[0].action+',tokens:'+parseFloat(filteredBalances[0].tokens).toFixed(5)+',Old balance:'+parseFloat(filteredBalances[0].balance).toFixed(5)+',tokenPrice:'+parseFloat(filteredBalances[0].tokenPrice).toFixed(5)+',idleTokens:'+parseFloat(filteredBalances[0].idleTokens).toFixed(5));
           filteredBalances.forEach(tx => {
+            
+            // Skip transactions with no hash or pending
+            if (!tx.hash || (tx.status && tx.status === 'Pending')){
+              return false;
+            }
+
             switch (tx.action){
               case 'Deposit':
               case 'Migrate':

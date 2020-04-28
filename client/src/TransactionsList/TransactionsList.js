@@ -60,8 +60,10 @@ class TransactionsList extends Component {
 
   async componentDidUpdate(prevProps, prevState) {
     this.loadUtils();
+    const transactionsChanged = JSON.stringify(prevProps.transactions) !== JSON.stringify(this.props.transactions);
     const tokenChanged = JSON.stringify(prevProps.enabledTokens) !== JSON.stringify(this.props.enabledTokens);
-    if (tokenChanged){
+
+    if (tokenChanged || transactionsChanged){
       this.setState({
         page:1,
         prevTxs:{}
@@ -103,9 +105,15 @@ class TransactionsList extends Component {
     // Merge new txs with previous ones
     if (etherscanTxs && etherscanTxs.length){
       etherscanTxs.forEach((tx) => {
-        prevTxs[tx.hash] = tx;
+        if (tx.hash){
+          prevTxs[tx.hash] = tx;
+        } else {
+          prevTxs[`t${tx.timeStamp}`] = tx;
+        }
       });
     }
+
+    // console.log('prevTxs',prevTxs);
 
     const lastTx = Object.values(prevTxs).pop();
 
@@ -130,7 +138,9 @@ class TransactionsList extends Component {
     let totalRedeemed = 0;
 
     // Sort prevTxs by timeStamp
-    const txsIndexes = Object.values(this.state.prevTxs).sort((a,b) => (a.timeStamp > b.timeStamp) ? -1 : 1 );
+    const txsIndexes = Object.values(this.state.prevTxs)
+                        .filter(tx => (!!parseFloat(tx.value)))
+                        .sort((a,b) => (a.timeStamp > b.timeStamp) ? -1 : 1 );
 
     // Calculate max number of pages
     const totalTxs = txsIndexes.length;
@@ -147,10 +157,6 @@ class TransactionsList extends Component {
       let action = tx.action ? tx.action : this.functionsUtil.getTxAction(tx,tokenConfig);
 
       const parsedValue = parseFloat(tx.value);
-
-      if (!parsedValue){
-        return false;
-      }
 
       const amount = parsedValue ? (this.props.isMobile ? parsedValue.toFixed(4) : parsedValue.toFixed(decimals)) : '-';
       const momentDate = this.functionsUtil.strToMoment(date);

@@ -65,7 +65,7 @@ class TransactionField extends Component {
   render(){
     let icon = null;
     let color = null;
-    let output = theme.colors.transactions.action.default;
+    let output = null;
     let bgColor = theme.colors.transactions.actionBg.default;
     const fieldInfo = this.props.fieldInfo;
     const transaction = this.props.transaction;
@@ -124,20 +124,22 @@ class TransactionField extends Component {
         );
       break;
       case 'hash':
-        output = (
-          <Link
-            href={`https://etherscan.io/tx/${transaction.hash}`}
-            target={'_blank'}
-            rel="nofollow noopener noreferrer"
-          >
-            <ShortHash
-              fontSize={1}
-              color={'white'}
-              {...fieldInfo.props}
-              hash={transaction.hash}
-            />
-          </Link>
-        );
+        if (transaction.hash){
+          output = (
+            <Link
+              href={`https://etherscan.io/tx/${transaction.hash}`}
+              target={'_blank'}
+              rel="nofollow noopener noreferrer"
+            >
+              <ShortHash
+                fontSize={1}
+                color={'white'}
+                {...fieldInfo.props}
+                hash={transaction.hash}
+              />
+            </Link>
+          );
+        }
       break;
       case 'action':
         let action = transaction.action;

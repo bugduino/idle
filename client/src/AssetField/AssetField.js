@@ -34,7 +34,8 @@ class AssetField extends Component {
     const tokenChanged = prevProps.token !== this.props.token;
     const accountChanged = prevProps.account !== this.props.account;
     const fieldChanged = prevProps.fieldInfo.name !== this.props.fieldInfo.name;
-    if (fieldChanged || tokenChanged || accountChanged){
+    const transactionsChanged = prevProps.transactions && this.props.transactions && Object.values(prevProps.transactions).filter(tx => (tx.status==='success')).length !== Object.values(this.props.transactions).filter(tx => (tx.status==='success')).length;
+    if (fieldChanged || tokenChanged || accountChanged || transactionsChanged){
       this.setState({},() => {
         this.loadField();
       });
@@ -115,13 +116,11 @@ class AssetField extends Component {
             this.functionsUtil.getAvgBuyPrice([this.props.token],this.props.account),
             this.loadField('apy')
           ]);
-          if (amountLent2 && idleTokenPrice3 && avgBuyPrice2 && tokenAPY2){
-
+          if (amountLent2 && idleTokenPrice3 && avgBuyPrice2 && avgBuyPrice2[this.props.token] && tokenAPY2){
             const earningsPerc = idleTokenPrice3.div(avgBuyPrice2[this.props.token]).minus(1);
-
-            const earningsStart = amountLent2.times(earningsPerc);
-            const earningsEnd = amountLent2.times(tokenAPY2.div(100));
-            // console.log('earningsCounter',earningsStart.toFixed(5),earningsEnd.toFixed(5),amountLent2.toFixed(5));
+            const earningsStart = amountLent2.gt(0) ? amountLent2.times(earningsPerc) : 0;
+            const earningsEnd = amountLent2.gt(0) ? amountLent2.times(tokenAPY2.div(100)) : 0;
+            // console.log('earningsCounter',earningsStart.toFixed(5),earningsEnd.toFixed(5),earningsPerc.toFixed(5),amountLent2.toFixed(5),idleTokenPrice3.toFixed(5),avgBuyPrice2[this.props.token].toFixed(5),tokenAPY2.toFixed(5));
             if (setState){
               this.setState({
                 earningsEnd,

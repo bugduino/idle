@@ -142,7 +142,7 @@ class FunctionsUtil {
     const output = {};
     const etherscanTxs = await this.getEtherscanTxs(account,0,'latest',enabledTokens);
 
-    await this.asyncForEach(enabledTokens,async (selectedToken) => {
+    enabledTokens.forEach((selectedToken) => {
 
       output[selectedToken] = [];
       let avgBuyPrice = this.BNify(0);
@@ -151,7 +151,12 @@ class FunctionsUtil {
 
       if (filteredTxs && filteredTxs.length){
 
-        await this.asyncForEach(filteredTxs,async (tx,index) => {
+        filteredTxs.forEach((tx,index) => {
+
+          // Skip transactions with no hash or pending
+          if (!tx.hash || (tx.status && tx.status === 'Pending') || !tx.idleTokens || !tx.tokenPrice){
+            return false;
+          }
 
           const prevAvgBuyPrice = avgBuyPrice;
           let idleTokens = this.BNify(tx.idleTokens);
@@ -208,6 +213,11 @@ class FunctionsUtil {
       if (filteredTxs && filteredTxs.length){
 
         filteredTxs.forEach((tx,index) => {
+          // Skip transactions with no hash or pending
+          if (!tx.hash || (tx.status && tx.status === 'Pending') || !tx.tokenAmount){
+            return false;
+          }
+
           switch (tx.action){
             case 'Swap':
             case 'Deposit':
@@ -245,6 +255,8 @@ class FunctionsUtil {
       return [];
     }
 
+    const allAvailableTokens = Object.keys(this.props.availableTokens);
+
     // Check if firstBlockNumber is less that firstIdleBlockNumber
     const firstIdleBlockNumber = this.getGlobalConfig(['network','firstBlockNumber']);
     firstBlockNumber = Math.max(firstIdleBlockNumber,firstBlockNumber);
@@ -254,15 +266,16 @@ class FunctionsUtil {
     const requiredNetwork = globalConfigs.network.requiredNetwork;
     const etherscanInfo = globalConfigs.network.providers.etherscan;
 
-    let lastBlockNumber = this.getStoredItem('lastBlockNumber',true,{});
-    let storedLastBlockNumber = null;
+    // let lastBlockNumber = this.getStoredItem('lastBlockNumber',true,{});
+    // let storedLastBlockNumber = null;
 
-    if (lastBlockNumber[this.props.account]){
-      storedLastBlockNumber = lastBlockNumber[this.props.account];
-    }
+    // if (lastBlockNumber[this.props.account]){
+    //   storedLastBlockNumber = lastBlockNumber[this.props.account];
+    // }
 
     let results = [];
-    let cachedTxs = null;
+    // let cachedTxs = null;
+    let etherscanBaseTxs = null;
     let etherscanEndpoint = null;
     let etherscanBaseEndpoint = null;
 
@@ -270,44 +283,45 @@ class FunctionsUtil {
     if (etherscanInfo.enabled && etherscanInfo.endpoints[requiredNetwork]){
       const etherscanApiUrl = etherscanInfo.endpoints[requiredNetwork];
 
-      // Add token variable to endpoint for separate cached requests between tokens
-      etherscanEndpoint = `${etherscanApiUrl}?apikey=${env.REACT_APP_ETHERSCAN_KEY}&module=account&action=tokentx&address=${account}&startblock=${firstBlockNumber}&endblock=${endBlockNumber}&sort=asc`;
+      // Get base endpoint cached transactions
       etherscanBaseEndpoint = `${etherscanApiUrl}?apikey=${env.REACT_APP_ETHERSCAN_KEY}&module=account&action=tokentx&address=${account}&startblock=${firstIdleBlockNumber}&endblock=${endBlockNumber}&sort=asc`;
+      etherscanBaseTxs = this.getCachedRequest(etherscanBaseEndpoint);
 
-      cachedTxs = this.getCachedRequest(etherscanEndpoint);
-
-      // Check if cached txs are not up-to-date by comparing firstBlockNumber
-      if (cachedTxs && cachedTxs.data.result && cachedTxs.data.result.length && !storedLastBlockNumber){
-        let lastCachedBlockNumber = parseInt(Object.assign([],cachedTxs.data.result).pop().blockNumber);
+      // Check if the latest blockNumber is actually the latest one
+      if (etherscanBaseTxs && etherscanBaseTxs.data.result && etherscanBaseTxs.data.result.length){
+        const lastCachedBlockNumber = parseInt(Object.values(etherscanBaseTxs.data.result).pop().blockNumber)+1;
 
         const etherscanEndpointLastBlock = `${etherscanApiUrl}?apikey=${env.REACT_APP_ETHERSCAN_KEY}&module=account&action=tokentx&address=${account}&startblock=${lastCachedBlockNumber}&endblock=${endBlockNumber}&sort=asc`;
         let latestTxs = await this.makeRequest(etherscanEndpointLastBlock);
 
         if (latestTxs && latestTxs.data.result && latestTxs.data.result.length){
-          latestTxs = await this.filterEtherscanTxs(latestTxs.data.result,enabledTokens,false);
+          latestTxs = await this.filterEtherscanTxs(latestTxs.data.result,enabledTokens);
           if (latestTxs && latestTxs.length){
-            const lastTx = latestTxs.pop();
+            const lastTx = Object.values(latestTxs).pop();
             const lastRealBlockNumber = parseInt(lastTx.blockNumber);
-            // If real tx blockNumber differs from lastCachedBlockNumber
-            if (lastRealBlockNumber > lastCachedBlockNumber){
-              lastCachedBlockNumber = lastRealBlockNumber;
-              cachedTxs = null;
+
+            // If real tx blockNumber differs from last blockNumber
+            if (lastRealBlockNumber >= lastCachedBlockNumber){
+              // Merge latest Txs with etherscanBaseTxs
+              latestTxs.forEach((tx) => {
+                const txFound = etherscanBaseTxs.data.result.find(t => (t.hash.toLowerCase() === tx.hash.toLowerCase()) );
+                if (!txFound){
+                  etherscanBaseTxs.data.result.push(tx);
+                }
+              });
+
+              // Save new etherscan txs
+              this.saveCachedRequest(etherscanBaseEndpoint,false,etherscanBaseTxs);
             }
           }
         }
-
-        const lastBlockNumber = {
-          ...lastBlockNumber,
-          [this.props.account]:lastCachedBlockNumber
-        };
-        this.setLocalStorage('lastBlockNumber',lastBlockNumber,true);
       }
 
-      let txs = cachedTxs;
+      let txs = etherscanBaseTxs;
 
       if (!txs){
         // Make request
-        txs = await this.makeRequest(etherscanEndpoint);
+        txs = await this.makeRequest(etherscanBaseEndpoint);
       }
 
       if (txs && txs.data && txs.data.result){
@@ -318,14 +332,14 @@ class FunctionsUtil {
     }
 
     // Initialize prevTxs
-    let etherscanTxs = [];
+    let etherscanTxs = {};
 
-    if (cachedTxs){
+    if (etherscanBaseTxs){
       // Filter txs for token
-      etherscanTxs = results;
+      etherscanTxs = await this.processStoredTxs(results,enabledTokens);
     } else {
       // Save base endpoint with all available tokens
-      etherscanTxs = await this.filterEtherscanTxs(results,Object.keys(this.props.availableTokens));
+      etherscanTxs = await this.filterEtherscanTxs(results,allAvailableTokens);
 
       // Store filtered txs
       if (etherscanTxs.length && etherscanEndpoint){
@@ -339,16 +353,21 @@ class FunctionsUtil {
       }
     }
 
+    /*
     // Merge base etherscan endpoint with new data
-    console.log(etherscanEndpoint,etherscanBaseEndpoint);
     if (etherscanEndpoint !== etherscanBaseEndpoint){
       let etherscanBaseTxs = this.getCachedRequest(etherscanBaseEndpoint);
       if (etherscanBaseTxs){
         etherscanBaseTxs = etherscanBaseTxs.data.result;
 
+        const pendingTxs = etherscanTxs.filter(t => (!t.hash) );
+
         let updateBaseTxs = false;
         etherscanTxs.forEach((tx) => {
-          const txFound = etherscanBaseTxs.find(t => { return t.hash.toLowerCase() === tx.hash.toLowerCase(); });
+          if (!tx.hash){
+            return false;
+          }
+          const txFound = etherscanBaseTxs.find(t => (t.hash.toLowerCase() === tx.hash.toLowerCase()) );
           if (!txFound){
             // console.log('Add tx ',tx,'to base etherscan txs');
             etherscanBaseTxs.push(tx);
@@ -365,13 +384,21 @@ class FunctionsUtil {
           this.saveCachedRequest(etherscanBaseEndpoint,false,newEtherscanBaseTxs);
 
         }
-        
-        // Replace with new txs
-        etherscanTxs = etherscanBaseTxs;
+
+        // Replace with new txs and add pending txs
+        etherscanTxs = Object.assign(etherscanBaseTxs,pendingTxs);
       }
     }
+    */
 
-    etherscanTxs = etherscanTxs.filter(tx => (enabledTokens.includes(tx.token.toUpperCase())));
+    etherscanTxs = Object.values(etherscanTxs).filter(tx => {
+      if (!tx.token){
+        debugger;
+      }
+      return enabledTokens.includes(tx.token.toUpperCase());
+    });
+
+    // console.log('etherscanTxs',enabledTokens,etherscanTxs);
 
     return etherscanTxs;
   }
@@ -471,18 +498,60 @@ class FunctionsUtil {
       etherscanTxs = await this.processEtherscanTransactions(etherscanTxs,enabledTokens);
     }
 
-    return Object.values(etherscanTxs);
+    return etherscanTxs;
   }
-  getStoredTransactions = (account=false,token=false) => {
-    let transactions = this.getStoredItem('transactions',true,{});
-    if (account && transactions[account]){
-      transactions = transactions[account];
+  addStoredTransaction = (txKey,transaction) => {
+
+    const account = this.props && this.props.account ? this.props.account : null;
+    const selectedToken = this.props && this.props.selectedToken ? this.props.selectedToken : null;
+
+    if (!account || !selectedToken){
+      return false;
+    }
+
+    let storedTxs = this.getStoredTransactions();
+    if (!storedTxs[account]){
+      storedTxs[account] = {};
+    }
+
+    if (!storedTxs[account][selectedToken]){
+      storedTxs[account][selectedToken] = {};
+    }
+
+    storedTxs[account][selectedToken][txKey] = transaction;
+    this.updateStoredTransactions(storedTxs);
+  }
+  updateStoredTransactions = transactions => {
+    this.setLocalStorage('transactions',JSON.stringify(transactions));
+  }
+  /*
+  Merge storedTxs with this.props.transactions
+  */
+  getStoredTransactions = (account=null,token=null) => {
+    const storedTxs = this.getStoredItem('transactions',true,{});
+    const transactions = this.props.transactions ? { ...this.props.transactions } : {};
+    let output = storedTxs;
+
+    if (account && storedTxs[account]){
+      output = storedTxs[account];
       if (token){
-        return transactions[token] ? transactions[token] : {};
+        token = token.toUpperCase();
+        output = storedTxs[token] ? storedTxs[token] : {};
       }
     }
-    return transactions;
+
+    if (token){
+      Object.keys(transactions).forEach(txKey => {
+        const tx = transactions[txKey];
+        if (!output[txKey] && tx.token.toUpperCase() === token.toUpperCase()){
+          output[txKey] = transactions[txKey];
+        }
+      });
+    }
+
+    return output;
   }
+
   processEtherscanTransactions = async (etherscanTxs,enabledTokens=[]) => {
 
     if (!enabledTokens || !enabledTokens.length){
@@ -495,7 +564,6 @@ class FunctionsUtil {
     if (typeof storedTxs[this.props.account] !== 'object'){
       storedTxs[this.props.account] = {};
     }
-
 
     await this.asyncForEach(enabledTokens,async (selectedToken) => {
 
@@ -522,6 +590,7 @@ class FunctionsUtil {
             tokenPrice = await this.genericContractCall(tokenConfig.idle.token, 'tokenPrice',[],{}, tx.blockNumber);
             tokenPrice = this.fixTokenDecimals(tokenPrice,tokenConfig.decimals);
             storedTx.tokenPrice = tokenPrice;
+            // console.log(tx.blockNumber,tokenPrice,tokenPrice.toString());
           }
 
           const idleTokens = this.BNify(tx.value);
@@ -580,14 +649,98 @@ class FunctionsUtil {
         });
       }
 
-      await this.asyncForEach(Object.keys(minedTxs),async (txKey,i) => {
-        const tx = minedTxs[txKey];
+      // Process Stored txs
+      etherscanTxs = await this.processStoredTxs(etherscanTxs,[selectedToken],this.props.transactions);
+    });
+
+    // Update Stored txs
+    if (storedTxs){
+      this.updateStoredTransactions(storedTxs);
+    }
+
+    return etherscanTxs;
+  }
+  processStoredTxs = async (etherscanTxs,enabledTokens=[],txsToProcess=null) => {
+
+    if (!enabledTokens || !enabledTokens.length){
+      enabledTokens = Object.keys(this.props.availableTokens);
+    }
+
+    let storedTxs = this.getStoredItem('transactions',true,{})
+
+    // Init storedTxs
+    if (!storedTxs[this.props.account]){
+      storedTxs[this.props.account] = {};
+    }
+
+    // console.log('Processing stored txs',enabledTokens);
+
+    await this.asyncForEach(enabledTokens,async (selectedToken) => {
+
+      // Init storedTxs
+      if (!storedTxs[this.props.account][selectedToken]){
+        storedTxs[this.props.account][selectedToken] = {};
+      }
+
+      txsToProcess = txsToProcess && Object.values(txsToProcess).length ? txsToProcess : this.getStoredTransactions(this.props.account,selectedToken);
+      
+      // console.log('txsToProcess',selectedToken,txsToProcess);
+
+      // if (!Object.values(txsToProcess).length && selectedToken==='DAI' && Object.values(this.props.transactions).length>0){
+      //   debugger;
+      // }
+
+      const tokenConfig = this.props.availableTokens[selectedToken];
+
+      // Remove Pending txs
+
+      await this.asyncForEach(Object.keys(txsToProcess),async (txKey,i) => {
+        const tx = txsToProcess[txKey];
+
+        // Skip wrong token
+        if (tx.token.toUpperCase() !== selectedToken.toUpperCase()){
+          return false;
+        }
+
         const isStoredTx = storedTxs && storedTxs[this.props.account] && storedTxs[this.props.account][selectedToken] && storedTxs[this.props.account][selectedToken][txKey];
 
-        const allowedMethods = ['mintIdleToken','redeemIdleToken','bridgeIdleV1ToIdleV2']
+        const allowedMethods = {
+          mintIdleToken:'Deposit',
+          redeemIdleToken:'Redeem',
+          bridgeIdleV1ToIdleV2:'Migrated'
+        };
+        const pendingStatus = ['pending','started'];
+
+        const txHash = tx.transactionHash ? tx.transactionHash : null;
+        const txSucceeded = tx.status === 'success';
+        const txPending = pendingStatus.indexOf(tx.status)!==-1;
+        const methodIsAllowed = Object.keys(allowedMethods).indexOf(tx.method)!==-1;
+
+        // Skip transaction if already present in etherscanTxs with same status
+        if (txHash && etherscanTxs[txHash]){
+          return false;
+        }
+        // const txFound = etherscanTxs.find(etherscanTx => (etherscanTx.hash === tx.transactionHash && etherscanTx.status === tx.status) );
+        // if (txFound){
+        //   return false;
+        // }
+
+        if (txPending && methodIsAllowed && tx.params.length){
+          // console.log('processStoredTxs',tx.method,tx.status,tx.params);
+          etherscanTxs[`t${tx.created}`] = {
+            status:'Pending',
+            token:selectedToken,
+            hash:txHash ? tx.transactionHash : null,
+            tokenSymbol:selectedToken,
+            action:allowedMethods[tx.method],
+            timeStamp:parseInt(tx.created/1000),
+            value: this.fixTokenDecimals(tx.params[0],tokenConfig.decimals).toString()
+          };
+          return false;
+        }
 
         // Skip invalid txs
-        if (tx.status !== 'success' || !tx.transactionHash || allowedMethods.indexOf(tx.method)===-1){
+        if (!txSucceeded || !txHash || !methodIsAllowed){
           return false;
         }
 
@@ -605,7 +758,7 @@ class FunctionsUtil {
           }));
         }
 
-        this.customLog('realTx (localStorage)',realTx);
+        // this.customLog('realTx (localStorage)',realTx);
 
         // Skip txs from other wallets
         if (!realTx || realTx.from.toLowerCase() !== this.props.account.toLowerCase()){
@@ -615,6 +768,8 @@ class FunctionsUtil {
         let tokenPrice = await this.genericContractCall(tokenConfig.idle.token,'tokenPrice',[],{}, tx.blockNumber);
         tokenPrice = this.fixTokenDecimals(tokenPrice,18);
 
+        realTx.status = 'Completed';
+        realTx.action = allowedMethods[tx.method];
         realTx.contractAddress = tokenConfig.address;
         realTx.timeStamp = parseInt(tx.created/1000);
 
@@ -643,7 +798,6 @@ class FunctionsUtil {
               return false;
             }
 
-            realTx.status = 'Deposited';
             realTx.value = txValue;
             realTx.tokenAmount = txValue;
           break;
@@ -660,7 +814,6 @@ class FunctionsUtil {
               const redeemTokenDecimals = await this.getTokenDecimals(selectedToken);
               const redeemedValueFixed = this.fixTokenDecimals(redeemedValue,redeemTokenDecimals);
               realTx.tokenPrice = tokenPrice;
-              realTx.status = 'Redeemed';
               realTx.value = redeemedValueFixed;
               realTx.tokenAmount = redeemedValueFixed;
             }
@@ -739,18 +892,19 @@ class FunctionsUtil {
             const migrationTokenDecimals = oldContractTokenDecimals ? oldContractTokenDecimals : await this.getTokenDecimals(tokenConfig.migration.oldContract.name);
             const migrationValueFixed = this.fixTokenDecimals(migrationValue,migrationTokenDecimals);
 
-            realTx.status = 'Migrated';
             realTx.value = migrationValueFixed.toString();
           break;
           default:
           break;
         }
 
+        realTx.token = selectedToken;
         realTx.tokenSymbol = selectedToken;
         realTx.idleTokens = tokenPrice.times(this.BNify(realTx.value));
 
         // Save processed tx
-        etherscanTxs[tx.transactionHash] = realTx;
+        etherscanTxs[txHash] = realTx;
+        // etherscanTxs.push(realTx);
 
         // Store processed Tx
         if (!tx.realTx){
@@ -762,7 +916,7 @@ class FunctionsUtil {
 
     // Update Stored Txs
     if (storedTxs){
-      this.setLocalStorage('transactions',JSON.stringify(storedTxs));
+      this.updateStoredTransactions(storedTxs);
     }
 
     return etherscanTxs;
@@ -947,6 +1101,9 @@ class FunctionsUtil {
     }
   }
   getTokenApiData = async (address,startTimestamp=null,endTimestamp=null) => {
+    if (globalConfigs.network.requiredNetwork!==1){
+      return [];
+    }
     const apiInfo = globalConfigs.stats.rates;
     let endpoint = `${apiInfo.endpoint}${address}`;
     if (startTimestamp || endTimestamp){
@@ -960,7 +1117,6 @@ class FunctionsUtil {
       }
       endpoint += '?'+params.join('&');
     }
-    // const TTL = apiInfo.TTL ? apiInfo.TTL : 0;
     let output = await this.makeRequest(endpoint);
     if (!output){
       return [];
@@ -1010,7 +1166,7 @@ class FunctionsUtil {
   getStoredItem = (key,parse_json=true,return_default=null) => {
     let output = return_default;
     if (window.localStorage){
-      const item = localStorage.getItem('transactions');
+      const item = localStorage.getItem(key);
       if (item){
         output = item;
         if (parse_json){
