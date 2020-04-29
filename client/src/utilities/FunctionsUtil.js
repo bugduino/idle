@@ -55,6 +55,8 @@ class FunctionsUtil {
   normalizeSimpleIDNotification = (n) => {
     return n.replace(/<\/p><p>/g,"\n")
             .replace(/<p>/g,"")
+            .replace(/<br>/g,"")
+            .replace(/&nbsp;/g," ")
             .replace(/<\/p>/g,"");
   }
   stripHtml = (html) => {
