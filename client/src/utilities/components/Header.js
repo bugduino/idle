@@ -93,21 +93,21 @@ class Header extends React.Component {
             justifyContent={"flex-end"}
           >
             <Link
-              href={'/#contacts'}
-              textAlign={['center','left']}
-              fontFamily={'sansSerif'}
               fontSize={3}
               color={'white'}
+              href={'/#contacts'}
               hoverColor={'white'}
+              fontFamily={'sansSerif'}
+              textAlign={['center','left']}
             >Contact Us</Link>
             <Link
-              ml={3}
-              href={'/#faq'}
-              textAlign={['center','left']}
-              fontFamily={'sansSerif'}
+              ml={4}
               fontSize={3}
+              href={'/#faq'}
               color={'white'}
               hoverColor={'white'}
+              fontFamily={'sansSerif'}
+              textAlign={['center','left']}
             >FAQs</Link>
           </Flex>
         </Flex>

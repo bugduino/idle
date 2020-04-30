@@ -99,13 +99,13 @@ const globalConfigs = {
     risk:{
       token:'DAI',
       title:'Risk-adjusted',
-      desc:'Always get the best compromise between Risk and Yield',
+      desc:'Always get the best mix between Risk and Yield',
       icon:'images/strategies/risk.svg',
     },
     best:{
       token:'USDC',
       title:'Best-yield',
-      desc:'Always get the best yield available',
+      desc:'Always get the Best yield available without compromises',
       icon:'images/strategies/best.svg',
     }
   },
