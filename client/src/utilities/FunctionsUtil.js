@@ -1061,6 +1061,7 @@ class FunctionsUtil {
     }
     const apiInfo = globalConfigs.stats.rates;
     let endpoint = `${apiInfo.endpoint}${address}`;
+
     if (startTimestamp || endTimestamp){
       const params = [];
       if (startTimestamp && parseInt(startTimestamp)){
@@ -1070,7 +1071,9 @@ class FunctionsUtil {
       if (endTimestamp && parseInt(endTimestamp)){
         params.push(`end=${endTimestamp}`);
       }
-      endpoint += '?'+params.join('&');
+      if (params.length){
+        endpoint += '?'+params.join('&');
+      }
     }
     let output = await this.makeRequest(endpoint);
     if (!output){
@@ -1150,9 +1153,9 @@ class FunctionsUtil {
   checkTokenApproved = async (token,contractAddr,walletAddr) => {
     const value = this.props.web3.utils.toWei('0','ether');
     const allowance = await this.getAllowance(token,contractAddr,walletAddr);
-    if (allowance){
-      this.customLog('checkTokenApproved',token,contractAddr,walletAddr,allowance);
-    }
+    // if (allowance){
+    //   console.log('checkTokenApproved',token,contractAddr,walletAddr,allowance);
+    // }
     return allowance && this.BNify(allowance).gt(this.BNify(value.toString()));
   }
   getAllowance = async (token,contractAddr,walletAddr) => {

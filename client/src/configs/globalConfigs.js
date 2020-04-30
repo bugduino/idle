@@ -93,7 +93,21 @@ const globalConfigs = {
     }
   },
   dashboard:{
-    baseRoute:'/dashboard'
+    baseRoute:'/dashboard',
+  },
+  strategies:{
+    risk:{
+      token:'DAI',
+      title:'Risk-adjusted',
+      desc:'Always get the best compromise between Risk and Yield',
+      icon:'images/strategies/risk.svg',
+    },
+    best:{
+      token:'USDC',
+      title:'Best-yield',
+      desc:'Always get the best yield available',
+      icon:'images/strategies/best.svg',
+    }
   },
   stats:{
     rates:{

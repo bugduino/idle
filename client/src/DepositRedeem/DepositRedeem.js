@@ -53,7 +53,9 @@ class DepositRedeem extends Component {
     const tokenBalanceChanged = prevProps.tokenBalance !== this.props.tokenBalance && this.props.tokenBalance !== null;
 
     const tokenChanged = prevProps.selectedToken !== this.props.selectedToken;
+
     if (tokenChanged || tokenBalanceChanged){
+
       this.loadTokenInfo();
       return false;
     }
@@ -151,6 +153,7 @@ class DepositRedeem extends Component {
     newState.canDeposit = this.props.tokenBalance && this.functionsUtil.BNify(this.props.tokenBalance).gt(0);
     newState.canRedeem = this.props.idleTokenBalance && this.functionsUtil.BNify(this.props.idleTokenBalance).gt(0);
     newState.tokenApproved = await this.functionsUtil.checkTokenApproved(this.props.selectedToken,this.props.tokenConfig.idle.address,this.props.account);
+    // console.log('loadTokenInfo',this.props.selectedToken,this.props.tokenConfig.idle,newState.tokenApproved);
     newState.processing = {
       redeem:{
         txHash:null,

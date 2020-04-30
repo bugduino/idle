@@ -148,9 +148,11 @@ class App extends Component {
 
   async setToken(selectedToken){
     if (selectedToken !== this.state.selectedToken && Object.keys(this.state.availableTokens).includes(selectedToken)){
-      await this.setState({
+      const newState = {
         selectedToken
-      });
+      };
+      newState.tokenConfig = this.state.availableTokens[selectedToken];
+      await this.setState(newState);
     }
   }
 
@@ -191,6 +193,7 @@ class App extends Component {
   componentDidUpdate(prevProps,prevState){
     const tokenChanged = prevState.selectedToken !== this.state.selectedToken;
     const strategyChanged = prevState.selectedStrategy !== this.state.selectedStrategy;
+
     if (tokenChanged || strategyChanged){
       this.loadAvailableTokens();
     }
@@ -314,6 +317,7 @@ class App extends Component {
                     setConnector={this.setConnector.bind(this)}
                     availableTokens={this.state.availableTokens}
                     callbackAfterLogin={this.state.callbackAfterLogin}
+                    availableStrategies={this.state.availableStrategies}
                     setCallbackAfterLogin={this.setCallbackAfterLogin.bind(this)}
                     enableUnderlyingWithdraw={this.state.enableUnderlyingWithdraw}
                   >
@@ -361,10 +365,10 @@ class App extends Component {
                                                     isMobile={isMobile}
                                                     contracts={contracts}
                                                     tokenConfig={this.state.tokenConfig}
+                                                    setToken={ e => { this.setToken(e) } }
                                                     selectedToken={this.state.selectedToken}
                                                     contractsInitialized={contractsInitialized}
                                                     availableTokens={this.state.availableTokens}
-                                                    setToken={ e => { this.setToken(e) } }
                                                   />}
                             >
                             </Route>
@@ -509,6 +513,7 @@ class App extends Component {
                                           availableTokens={this.state.availableTokens}
                                           updateSelectedTab={this.selectTab.bind(this)}
                                           toastMessageProps={this.state.toastMessageProps}
+                                          availableStrategies={this.state.availableStrategies}
                                           connectAndValidateAccount={connectAndValidateAccount}
                                           setToken={ e => { this.setToken(e) } }
                                           network={network} />

@@ -23,8 +23,11 @@ class AssetField extends Component {
     }
   }
 
-  async componentDidMount(){
+  async componentWillMount(){
     this.loadUtils();
+  }
+
+  async componentDidMount(){
     this.loadField();
   }
 
@@ -34,8 +37,9 @@ class AssetField extends Component {
     const tokenChanged = prevProps.token !== this.props.token;
     const accountChanged = prevProps.account !== this.props.account;
     const fieldChanged = prevProps.fieldInfo.name !== this.props.fieldInfo.name;
+    const contractInitialized = prevProps.contractsInitialized !== this.props.contractsInitialized && this.props.contractsInitialized;
     const transactionsChanged = prevProps.transactions && this.props.transactions && Object.values(prevProps.transactions).filter(tx => (tx.status==='success')).length !== Object.values(this.props.transactions).filter(tx => (tx.status==='success')).length;
-    if (fieldChanged || tokenChanged || accountChanged || transactionsChanged){
+    if (fieldChanged || tokenChanged || accountChanged || transactionsChanged || contractInitialized){
       this.setState({},() => {
         this.loadField();
       });
@@ -249,8 +253,9 @@ class AssetField extends Component {
           let aprChartHeight = 0;
 
           const resizeAprChart = () => {
-            const $aprChartRowElement = window.jQuery(`#${this.props.parentId}`);
-            if ($aprChartRowElement.length){
+            const aprChartRowElement = document.getElementById(this.props.parentId) ? document.getElementById(this.props.parentId) : document.getElementById(this.props.rowId);
+            if (aprChartRowElement){
+              const $aprChartRowElement = window.jQuery(aprChartRowElement);
               aprChartWidth = $aprChartRowElement.innerWidth()-parseFloat($aprChartRowElement.css('padding-right'))-parseFloat($aprChartRowElement.css('padding-left'));
               aprChartHeight = $aprChartRowElement.innerHeight();
               if (aprChartWidth !== this.state.aprChartWidth || !this.state.aprChartHeight){
@@ -298,11 +303,22 @@ class AssetField extends Component {
             margin: { top: 10, right: 0, bottom: 0, left: 0 }
           };
 
+          if (this.props.chartProps){
+            // Replace props
+            if (this.props.chartProps && Object.keys(this.props.chartProps).length){
+              Object.keys(this.props.chartProps).forEach(p => {
+                aprChartProps[p] = this.props.chartProps[p];
+              });
+            }
+          }
+
           if (setState){
             this.setState({
               aprChartType,
               aprChartData,
-              aprChartProps
+              aprChartProps,
+              aprChartWidth,
+              aprChartHeight
             });
           }
           output = aprChartData;
@@ -310,19 +326,47 @@ class AssetField extends Component {
         case 'performanceChart':
           let firstTokenPrice = null;
           let firstIdleBlock = null;
+          /*
           let performanceChartWidth = 0;
           let performanceChartHeight = 0;
 
-          const performanceChartRowElement = document.getElementById(this.props.rowId);
+          const performanceChartRowElement = document.getElementById(this.props.rowId) ? document.getElementById(this.props.rowId) : document.getElementById(this.props.parentId);
           if (performanceChartRowElement){
-            performanceChartWidth = parseFloat(performanceChartRowElement.offsetWidth)>0 ? performanceChartRowElement.offsetWidth*this.props.colProps.width : 0;
+            performanceChartWidth = parseFloat(performanceChartRowElement.offsetWidth)>0 ? performanceChartRowElement.offsetWidth* (this.props.colProps ? this.props.colProps.width : 1) : 0;
             performanceChartHeight = parseFloat(performanceChartRowElement.offsetHeight);
           }
+          */
 
-          const aprEndTimeStamp = this.functionsUtil.strToMoment(this.functionsUtil.strToMoment(new Date()).substract(1,'day').format('YYYY-MM-DD 23:59'),'YYYY-MM-DD HH:mm');
-          const aprStartTimeStamp = aprEndTimeStamp.clone().subtract(1,'week')
+          let performanceChartWidth = 0;
+          let performanceChartHeight = 0;
 
-          const apiResultsPerformanceChart = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,aprStartTimeStamp,aprEndTimeStamp);
+          const resizePerformanceChart = () => {
+            const PerformanceChartRowElement = document.getElementById(this.props.parentId) ? document.getElementById(this.props.parentId) : document.getElementById(this.props.rowId);
+            if (PerformanceChartRowElement){
+              const $PerformanceChartRowElement = window.jQuery(PerformanceChartRowElement);
+              performanceChartWidth = $PerformanceChartRowElement.innerWidth()-parseFloat($PerformanceChartRowElement.css('padding-right'))-parseFloat($PerformanceChartRowElement.css('padding-left'));
+              performanceChartHeight = $PerformanceChartRowElement.innerHeight();
+              if (performanceChartWidth !== this.state.performanceChartWidth || !this.state.performanceChartHeight){
+                this.setState({
+                  performanceChartWidth,
+                  performanceChartHeight: this.state.performanceChartHeight ? this.state.performanceChartHeight : performanceChartHeight
+                });
+              }
+            }
+          }
+
+          // Set chart width and Height and set listener
+          resizePerformanceChart();
+          window.removeEventListener('resize', resizePerformanceChart.bind(this));
+          window.addEventListener('resize', resizePerformanceChart.bind(this));
+
+          const apr_end_date = this.functionsUtil.strToMoment(this.functionsUtil.strToMoment(new Date()).subtract(1,'day').format('YYYY-MM-DD 23:59'),'YYYY-MM-DD HH:mm');
+          const apr_start_date = apr_end_date.clone().subtract(1,'week');
+
+          const apr_start_timestamp = parseInt(apr_start_date._d.getTime()/1000);
+          const apr_end_timestamp = parseInt(apr_end_date._d.getTime()/1000);
+
+          const apiResultsPerformanceChart = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,apr_start_timestamp,apr_end_timestamp);
 
           const idleTokenPerformance = apiResultsPerformanceChart.map((d,i) => {
             let y = 0;
@@ -368,6 +412,15 @@ class AssetField extends Component {
             pointLabelYOffset:-12,
             margin: { top: 0, right: 0, bottom: 0, left: 0 }
           };
+
+          if (this.props.chartProps){
+            // Replace props
+            if (this.props.chartProps && Object.keys(this.props.chartProps).length){
+              Object.keys(this.props.chartProps).forEach(p => {
+                performanceChartProps[p] = this.props.chartProps[p];
+              });
+            }
+          }
 
           if (setState){
             this.setState({

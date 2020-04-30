@@ -262,7 +262,7 @@ const availableTokens = {
         },
         idle:{
           abi:idleToken,
-          token:'idleDAI',
+          token:'idleDAIRisk',
           address:'0x10eC0D497824e342bCB0EDcE00959142aAa766dD'
         },
         migration:{
@@ -356,7 +356,7 @@ const availableTokens = {
         },
         idle:{
           abi:idleToken,
-          token:'idleUSDC',
+          token:'idleUSDCRisk',
           address:'0xeB66ACc3d011056B00ea521F8203580C2E5d3991'
         },
         protocols:[
@@ -428,7 +428,7 @@ const availableTokens = {
         },
         idle:{
           abi:idleToken,
-          token:'idleDAI',
+          token:'idleDAIBest',
           address:'0x10eC0D497824e342bCB0EDcE00959142aAa766dD'
         },
         migration:{
@@ -522,7 +522,7 @@ const availableTokens = {
         },
         idle:{
           abi:idleToken,
-          token:'idleUSDC',
+          token:'idleUSDCBest',
           address:'0xeB66ACc3d011056B00ea521F8203580C2E5d3991'
         },
         protocols:[

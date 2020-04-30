@@ -2,7 +2,7 @@ import React from "react";
 import { Flex, Icon, Box, Text, QR, Image } from "rimble-ui";
 import ShortHash from "./ShortHash";
 import BigNumber from 'bignumber.js';
-import styles from './AccountOverview.module.scss';
+// import styles from './AccountOverview.module.scss';
 import globalConfigs from '../../configs/globalConfigs';
 
 class AccountOverview extends React.Component {
@@ -35,11 +35,10 @@ class AccountOverview extends React.Component {
             <Image
               width={'55px'}
               height={'55px'}
-              display={'inline-flex'}
               mr={[0,'0.5rem']}
+              display={'inline-flex'}
               src={`images/${walletIcon}`}
               alt={walletProvider.toLowerCase()}
-              className={styles.walletProvider}
             />
           ) : (
             <Icon

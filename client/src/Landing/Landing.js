@@ -2,17 +2,13 @@ import Faq from '../Faq/Faq';
 import Footer from '../Footer/Footer';
 import React, { Component } from 'react';
 import styles from './Landing.module.scss';
-// import globalConfigs from '../configs/globalConfigs';
-// import LandingForm from '../LandingForm/LandingForm';
-import ImageButton from '../ImageButton/ImageButton';
+import globalConfigs from '../configs/globalConfigs';
+import StrategyBox from '../StrategyBox/StrategyBox';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import NewsletterForm from '../NewsletterForm/NewsletterForm';
 // import AllocationChart from '../AllocationChart/AllocationChart';
 import { Image, Flex, Box, Heading, Link, Text, Icon } from 'rimble-ui'
 import FloatingToastMessage from '../FloatingToastMessage/FloatingToastMessage';
-// import DefiScoreTable from '../DefiScoreTable/DefiScoreTable';
-// import Confetti from 'react-confetti';
-// import DefiPrimeEquityChart from '../DefiPrimeEquityChart/DefiPrimeEquityChart';
 
 let scrolling = false;
 let scrollTimeoutID;
@@ -355,9 +351,22 @@ class Landing extends Component {
                 Maximize your lending returns by investing in a single token
               </Heading.h2>
             </Flex>
-            <Flex flexDirection={'row'} justifyContent={'center'} maxWidth={["50em", "50em"]} mx={'auto'} textAlign={'center'}>
-              <ImageButton handleClick={ e => this.connectAndGoToRoute('/dashboard/risk') } isMobile={this.props.isMobile} imageSrc={`images/strategies/risk.svg`} imageProps={ this.props.isMobile ? {height:'42px'} : {p:[2,3],height:'80px'}} caption={'Risk-Adjusted'} />
-              <ImageButton handleClick={ e => this.connectAndGoToRoute('/dashboard/best') } isMobile={this.props.isMobile} imageSrc={`images/strategies/best.svg`} imageProps={ this.props.isMobile ? {height:'42px'} : {p:[2,3],height:'80px'}} caption={'Best Yield'} />
+            <Flex
+              mx={'auto'}
+              textAlign={'center'}
+              flexDirection={'row'}
+              maxWidth={["50em", "50em"]}
+              justifyContent={'space-between'}
+            >
+              {
+                Object.keys(globalConfigs.strategies).map(strategy => (
+                  <StrategyBox
+                    {...this.props}
+                    strategy={strategy}
+                    key={`strategy_${strategy}`}
+                  />
+                ))
+              }
             </Flex>
             {
               /*
@@ -916,7 +925,7 @@ class Landing extends Component {
           </Box>
         </Box>
 
-        <Flex id="newsletter" flexDirection={'column'} position={'relative'} justifyContent={'center'} alignItems={'center'} pb={[3,6]} px={[3,6]}>
+        <Flex id="contacts" flexDirection={'column'} position={'relative'} justifyContent={'center'} alignItems={'center'} pb={[3,6]} px={[3,6]}>
           <Flex flexDirection={'column'} justifyContent={['center','flex-start']} alignItems={['center','flex-start']} width={1} maxWidth={['35em','70em']}>
             <Heading.h3 color={'blue'} textAlign={['center','left']} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]}>
               Don't be shy, let's talk.
