@@ -1464,7 +1464,7 @@ class FunctionsUtil {
 
     // Prevent decimals on integer number
     // if (newValue%parseInt(newValue)!==0){
-    if (newValue>0){
+    if (value>=1000){
       const decimalPart = decimals ? parseInt(newValue%1*Math.pow(10,decimals)) : null;
       newValue = parseFloat(parseInt(newValue)+( decimalPart ? '.'+decimalPart : '' ) );
     } else {
@@ -1473,9 +1473,9 @@ class FunctionsUtil {
     // }
 
     if (newValue>=1 && (newValue.length-1)>maxPrecision){
-      newValue = newValue.toPrecision(maxPrecision);
+      newValue = parseFloat(newValue).toPrecision(maxPrecision);
     } else if ((newValue.length-1)<minPrecision) {
-      newValue = newValue.toPrecision(minPrecision);
+      newValue = parseFloat(newValue).toPrecision(minPrecision);
     }
 
     newValue += suffixes[suffixNum];

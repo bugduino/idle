@@ -86,6 +86,14 @@ class EstimatedEarnings extends Component {
 
     let labelTextColorModifiers = this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.selectedToken,'chart','labelTextColorModifiers']);
 
+    const maxGridLines = 4;
+    const gridYStep = amountYear/maxGridLines;
+    const gridYValues = [0];
+    for (let i=1;i<=maxGridLines;i++){
+      const gridYValue = i*gridYStep;
+      gridYValues.push(gridYValue);
+    }
+
     const chartProps = {
       padding: 0.2,
       animate: false,
@@ -99,10 +107,11 @@ class EstimatedEarnings extends Component {
       colors: ({ id, data }) => data[`${id}Color`],
       isInteractive:false,
       minValue:0,
-      maxValue:amountYear,
+      gridYValues,
+      // maxValue:amountYear,
       axisLeft:{
         format: v => this.functionsUtil.abbreviateNumber(v,1,3),
-        tickValues:4,
+        tickValues:gridYValues,
         orient: 'left',
         tickSize: 0,
         tickPadding: 5,

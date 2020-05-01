@@ -23,6 +23,10 @@ class AssetField extends Component {
     }
   }
 
+  async componentWillUnmount(){
+    
+  }
+
   async componentWillMount(){
     this.loadUtils();
   }

@@ -6,9 +6,10 @@ import GenericChart from '../GenericChart/GenericChart';
 
 class PortfolioEquity extends Component {
   state = {
+    gridYValues:[],
     chartData:null,
     chartwidth:null,
-    chartHeight:null
+    chartHeight:null,
   };
 
   // Utils
@@ -112,6 +113,7 @@ class PortfolioEquity extends Component {
 
     // debugger;
 
+    let maxChartValue = 0;
     const aggregatedBalances = [];
     let prevTimestamp = null;
     let prevBalances = {};
@@ -230,6 +232,8 @@ class PortfolioEquity extends Component {
 
       prevTimestamp = timeStamp;
       prevBalances = foundBalances;
+
+      maxChartValue = Math.max(maxChartValue,aggregatedBalance);
     }
 
     const chartToken = this.props.chartToken ? this.props.chartToken.toUpperCase() : 'USD';
@@ -241,8 +245,18 @@ class PortfolioEquity extends Component {
       data:aggregatedBalances
     });
 
+    // Add 5% to the max grid value
+    // maxChartValue += maxChartValue*0.1;
+    const maxGridLines = 5;
+    const gridYStep = parseInt(maxChartValue/maxGridLines);
+    const gridYValues = [];
+    for (let i=1;i<=5;i++){
+      gridYValues.push(i*gridYStep);
+    }
+
     this.setState({
-      chartData
+      chartData,
+      gridYValues
     });
   }
 
@@ -273,6 +287,7 @@ class PortfolioEquity extends Component {
           return v.getDay() === 0 ? this.functionsUtil.strToMoment(v,'YYYY/MM/DD HH:mm').format('MMM DD') : null;
         }
       },
+      gridYValues:this.state.gridYValues,
       enableArea:true,
       curve:'monotoneX',
       enableSlices:'x',

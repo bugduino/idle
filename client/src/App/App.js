@@ -347,6 +347,7 @@ class App extends Component {
                         accountInizialized,
                         accountBalanceToken,
                         userRejectedConnect,
+                        initializeContracts,
                         rejectAccountConnect,
                         contractsInitialized,
                         userRejectedValidation,
@@ -403,6 +404,7 @@ class App extends Component {
                                                     connectorName={this.state.connectorName}
                                                     userRejectedConnect={userRejectedConnect}
                                                     accountBalanceToken={accountBalanceToken}
+                                                    initializeContracts={initializeContracts}
                                                     walletProvider={this.state.walletProvider}
                                                     buyModalOpened={this.state.buyModalOpened}
                                                     contractsInitialized={contractsInitialized}

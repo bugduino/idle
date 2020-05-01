@@ -183,8 +183,6 @@ class Dashboard extends Component {
   }
 
   async componentWillMount() {
-    this.checkAccountConnected();
-
     this.loadUtils();
     await this.loadMenu();
     this.loadParams();
@@ -192,11 +190,13 @@ class Dashboard extends Component {
 
   async componentDidMount() {
 
-    this.checkAccountConnected();
-
     if (!this.props.web3){
       this.props.initWeb3();
       return false;
+    } else if (!this.props.accountInizialized){
+      this.props.initAccount();
+    } else if (!this.props.contractsInitialized){
+      this.props.initializeContracts();
     }
 
     this.loadUtils();
@@ -204,17 +204,7 @@ class Dashboard extends Component {
     this.loadParams();
   }
 
-  checkAccountConnected(){
-    if (this.props.accountInizialized && !this.props.account){
-      // window.location = '/';
-      return false;
-    }
-    return true;
-  }
-
   async componentDidUpdate(prevProps,prevState) {
-    this.checkAccountConnected();
-
     const prevParams = prevProps.match.params;
     const params = this.props.match.params;
     if (JSON.stringify(prevParams) !== JSON.stringify(params)){
@@ -232,17 +222,25 @@ class Dashboard extends Component {
   }
 
   render() {
-
     const PageComponent = this.state.pageComponent ? this.state.pageComponent : null;
+    // console.log('accountInizialized','contractsInitialized',this.props.accountInizialized,this.props.contractsInitialized);
     return (
-      <Flex flexDirection={'row'} width={'100%'} height={'100vh'} position={'fixed'}>
+      <Flex
+        width={'100%'}
+        height={'100vh'}
+        position={'fixed'}
+        flexDirection={'row'}
+      >
         <Flex flexDirection={'column'} width={1/6}>
           <Card height={'100vh'} p={0}>
-            <DashboardMenu menu={this.state.menu} />
+            <DashboardMenu
+              {...this.props}
+              menu={this.state.menu}
+            />
           </Card>
         </Flex>
         <Flex
-          py={[3,4]}
+          py={3}
           px={[3,5]}
           width={5/6}
           style={{overflow:'scroll'}}

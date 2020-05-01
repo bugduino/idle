@@ -1,8 +1,8 @@
 import theme from '../theme';
 import React, { Component } from 'react';
 import SmartNumber from '../SmartNumber/SmartNumber';
-import { Flex, Text, Icon, Link, Image } from "rimble-ui";
 import FunctionsUtil from '../utilities/FunctionsUtil';
+import { Flex, Text, Icon, Link, Image } from "rimble-ui";
 import ShortHash from "../utilities/components/ShortHash";
 
 class TransactionField extends Component {
@@ -77,10 +77,10 @@ class TransactionField extends Component {
         }
         switch (transaction.action.toLowerCase()) {
           case 'deposit':
-            icon = "ArrowForward";
+            icon = "ArrowDownward";
           break;
           case 'redeem':
-            icon = "ArrowBack";
+            icon = "ArrowUpward";
           break;
           case 'send':
             icon = "Send";
@@ -127,9 +127,9 @@ class TransactionField extends Component {
         if (transaction.hash){
           output = (
             <Link
-              href={`https://etherscan.io/tx/${transaction.hash}`}
               target={'_blank'}
-              rel="nofollow noopener noreferrer"
+              rel={'nofollow noopener noreferrer'}
+              href={`https://etherscan.io/tx/${transaction.hash}`}
             >
               <ShortHash
                 fontSize={1}

@@ -83,7 +83,7 @@ class RiskAdjustedStrategy extends Component {
 
     return (
       <Box width={1}>
-        <Title my={[3,4]}>Risk-adjusted strategy</Title>
+        <Title mb={[3,4]}>Risk-adjusted strategy</Title>
         {
           !this.state.portfolioLoaded ? (
             <FlexLoader

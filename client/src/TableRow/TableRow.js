@@ -15,6 +15,7 @@ class TableRow extends Component {
         }}
         id={this.props.cardId}
         {...this.props.rowProps}
+        handleClick={this.props.handleClick}
       >
         <Flex
           flexDirection={'row'}

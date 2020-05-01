@@ -16,6 +16,7 @@ class DashboardCard extends Component {
         minHeight={'initial'}
         background={'cardBg'}
         {...this.props.cardProps}
+        onClick={this.props.handleClick}
         className={[isDisabled ? styles.disabled : null,isInteractive ? styles.interactive : null,isActive ? styles.active : null]}
       >
         {

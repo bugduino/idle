@@ -263,6 +263,9 @@ class TransactionsList extends Component {
                 {
                   this.state.processedTxs.map(transaction => {
                     const transactionHash = transaction.hash;
+                    const handleClick = (e) => {
+                      return (transactionHash ? window.open(`https://etherscan.io/tx/${transactionHash}`) : null);
+                    };
                     return (
                       <TableRow
                         {...this.props}
@@ -271,6 +274,7 @@ class TransactionsList extends Component {
                         }}
                         hash={transactionHash}
                         transaction={transaction}
+                        handleClick={handleClick}
                         key={`tx-${transactionHash}`}
                         fieldComponent={TransactionField}
                         rowId={`tx-col-${transactionHash}`}

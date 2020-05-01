@@ -20,7 +20,6 @@ class AccountOverview extends React.Component {
     // const roundedBalance = this.trimEth(this.props.accountBalance, 4);
     // const roundedTokenBalance = this.trimEth(this.props.accountBalanceToken, 2);
     const walletProvider = this.getWalletProvider();
-
     const connectorInfo = globalConfigs.connectors[walletProvider.toLowerCase()];
     const walletIcon = connectorInfo && connectorInfo.icon ? connectorInfo.icon : `${walletProvider.toLowerCase()}.svg`;
     return (

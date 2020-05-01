@@ -1,10 +1,31 @@
 import React, { Component } from 'react';
 import styles from './Dashboard.module.scss';
+import MenuAccount from '../MenuAccount/MenuAccount';
 import { Link as RouterLink } from "react-router-dom";
+import FunctionsUtil from '../utilities/FunctionsUtil';
 import { Flex, Box, Icon, Text, Image } from 'rimble-ui';
 
 class DashboardMenu extends Component {
   state = {};
+
+  // Utils
+  functionsUtil = null;
+
+  loadUtils(){
+    if (this.functionsUtil){
+      this.functionsUtil.setProps(this.props);
+    } else {
+      this.functionsUtil = new FunctionsUtil(this.props);
+    }
+  }
+
+  async componentWillMount(){
+    this.loadUtils();
+  }
+
+  async componentDidUpdate(prevProps, prevState) {
+    this.loadUtils();
+  }
 
   render() {
     if (!this.props.menu.length){
@@ -32,17 +53,27 @@ class DashboardMenu extends Component {
           </RouterLink>
         </Flex>
         {
+        /*
+        <MenuAccount {...this.props} />
+        */
+        }
+        {
         this.props.menu.map((menuLink,menuIndex) => (
           <Box
             my={3}
-            key={`menu-${menuIndex}`}>
-            <RouterLink to={menuLink.route} style={{textDecoration:'none'}}>
+            key={`menu-${menuIndex}`}
+          >
+            <RouterLink
+              to={menuLink.route}
+              style={{textDecoration:'none'}}
+            >
               <Flex
                 p={3}
                 borderRadius={2}
                 flexDirection={'row'}
                 alignItems={'center'}
-                boxShadow={menuLink.selected ? 4 : null}
+                backgroundColor={ menuLink.selected ? '#f3f6ff' : 'transparent' }
+                boxShadow={menuLink.selected ? '0px 0px 4px 2px rgba(0,54,255,0.3)' : null}
               >
                 <Flex
                   flexDirection={'row'}

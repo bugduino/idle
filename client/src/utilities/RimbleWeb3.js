@@ -28,6 +28,7 @@ const RimbleTransactionContext = React.createContext({
   checkPreflight: () => {},
   initContract: () => {},
   initAccount: () => {},
+  initializeContracts: () => {},
   getAccountBalance: () => {},
   getTokenDecimals: () => {},
   rejectAccountConnect: () => {},
@@ -136,16 +137,15 @@ class RimbleTransaction extends React.Component {
 
     if (prevProps.connectorName !== this.props.connectorName && this.props.connectorName){
       this.initWeb3();
-    }
-
-    // Context change
-    if (prevProps.context !== this.props.context){
+    } else if (prevProps.context !== this.props.context){
       if (this.props.context.error instanceof Error && this.props.context.error.message.length){
         this.state.modals.methods.openConnectionErrorModal(null,this.props.context.error.message);
       // WalletConnect double trigger initWeb3
       } else if (this.props.context.active && this.props.context.connectorName==='WalletConnect' && this.props.connectorName==='WalletConnect') {
         this.initWeb3();
       }
+    } else if ( prevProps.customAddress !== this.props.customAddress){
+      this.initWeb3();
     }
 
     const tokenChanged = prevProps.selectedToken !== this.props.selectedToken;
@@ -166,10 +166,6 @@ class RimbleTransaction extends React.Component {
       });
     }
 
-    if ( prevProps.customAddress !== this.props.customAddress){
-      this.initWeb3();
-    }
-
     if (localStorage){
       const context = JSON.parse(localStorage.getItem('context'));
       if (!context || (this.props.context.active !== context.active || this.props.context.connectorName !== context.connectorName)){
@@ -177,7 +173,7 @@ class RimbleTransaction extends React.Component {
       }
     }
 
-    if (tokenChanged || availableTokensChanged || availableStrategiesChanged){
+    if (tokenChanged/* || availableTokensChanged*/ || availableStrategiesChanged){
       await this.initializeContracts();
     }
 
@@ -415,6 +411,8 @@ class RimbleTransaction extends React.Component {
           account = wallets[0];
         }
       }
+
+      // console.log('initAccount',account);
 
       if (!account || this.state.account === account){
         this.setState({
@@ -662,6 +660,8 @@ class RimbleTransaction extends React.Component {
         });
         */
 
+        // console.log('initAccount',account);
+
         // Set custom account
         this.setState({
           account,
@@ -779,7 +779,7 @@ class RimbleTransaction extends React.Component {
 
       await this.functionsUtil.asyncForEach(Object.keys(availableTokens),async (token) => {
         const tokenConfig = availableTokens[token];
-        
+
         let foundTokenContract = this.state.contracts.find(c => c.name === token);
         if (!foundTokenContract) {
           this.functionsUtil.customLog('initializeContracts, init contract',token, tokenConfig.address);
@@ -1414,6 +1414,7 @@ class RimbleTransaction extends React.Component {
     rejectValidation: this.rejectValidation,
     getTokenDecimals: this.getTokenDecimals,
     getAccountBalance: this.getAccountBalance,
+    initializeContracts: this.initializeContracts,
     rejectAccountConnect: this.rejectAccountConnect,
     contractMethodSendWrapper: this.contractMethodSendWrapper,
     connectAndValidateAccount: this.connectAndValidateAccount,

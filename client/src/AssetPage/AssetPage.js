@@ -83,7 +83,11 @@ class AssetPage extends Component {
         flexDirection={'column'}
         justifyContent={'center'}
       >
-        <Title my={[3,4]}>Deposit / Redeem</Title>
+        <Title
+          mb={[3,4]}
+        >
+          Deposit / Redeem
+        </Title>
         <Flex
           width={1}
         >
