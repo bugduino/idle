@@ -2407,6 +2407,7 @@ class SmartContractControls extends React.Component {
     const earningAtEndOfYear = !isNaN(this.functionsUtil.trimEth(this.state.earning)) ? parseFloat(this.functionsUtil.BNify(this.state.earning).plus(this.functionsUtil.BNify(this.state.earningPerYear))) : 0;
 
     const idleTokenPrice = parseFloat(this.state.idleTokenPrice);
+    const idleTokenPriceFormatted = this.functionsUtil.getFormattedBalance(this.state.idleTokenPrice,this.props.selectedToken,6,9);
     const idleTokenPriceEndOfYear = idleTokenPrice && avgApr !== null ? parseFloat(this.functionsUtil.BNify(idleTokenPrice).plus(this.functionsUtil.BNify(idleTokenPrice).times(this.functionsUtil.BNify(this.state.avgApr.div(100))))) : idleTokenPrice;
 
     const fundsAreReady = this.state.fundsError || (!this.state.updateInProgress && !isNaN(parseFloat(this.state.tokenToRedeemParsed)) && !isNaN(this.functionsUtil.trimEth(this.state.earning)) && !isNaN(this.functionsUtil.trimEth(this.state.amountLent)));
@@ -2908,7 +2909,7 @@ class SmartContractControls extends React.Component {
                                         <Heading.h3 fontWeight={2} textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
                                           Redeemable Funds
                                         </Heading.h3>
-                                        <Heading.h3 fontFamily={'counter'} fontSize={[4,5]} mb={[2,0]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                        <Heading.h3 style={{display:'flex',alignItems:'baseline',justifyContent:'center'}} fontFamily={'counter'} letterSpacing={'-1px'} fontSize={[4,5]} mb={[2,0]} fontWeight={2} color={'black'} textAlign={'center'}>
                                           {
                                             <CountUp
                                               start={currentReedemableFunds}
@@ -2918,10 +2919,10 @@ class SmartContractControls extends React.Component {
                                               delay={0}
                                               separator=""
                                               decimals={ counterDecimals }
-                                              decimal="."
+                                              decimal={'.'}
                                             >
                                               {({ countUpRef, start }) => (
-                                                <><span ref={countUpRef} /> <span style={{fontSize:'16px',fontWeight:'400',lineHeight:'1.5',color:'#3F3D4B'}}>{this.props.selectedToken}</span></>
+                                                <><span ref={countUpRef} /><Text.span pl={2} fontSize={'16px'} fontWeight={400} lineHeight={'1.5'} color={'#3F3D4B'} fontFamily={'sansSerif'}>{this.props.selectedToken}</Text.span></>
                                               )}
                                             </CountUp>
                                           }
@@ -2931,7 +2932,7 @@ class SmartContractControls extends React.Component {
                                         <Heading.h3 fontWeight={2} textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
                                           Current earnings
                                         </Heading.h3>
-                                        <Heading.h3 fontFamily={'counter'} fontSize={[4,5]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                        <Heading.h3 style={{display:'flex',alignItems:'baseline',justifyContent:'center'}} fontFamily={'counter'} letterSpacing={'-1px'} fontSize={[4,5]} fontWeight={2} color={'black'} textAlign={'center'}>
                                           {
                                             <CountUp
                                               start={currentEarning}
@@ -2941,11 +2942,11 @@ class SmartContractControls extends React.Component {
                                               delay={0}
                                               separator=""
                                               decimals={ counterDecimals }
-                                              decimal="."
+                                              decimal={'.'}
                                               // formattingFn={(n)=>{ return this.formatCountUp(n); }}
                                             >
                                               {({ countUpRef, start }) => (
-                                                <><span ref={countUpRef} /> <span style={{fontSize:'16px',fontWeight:'400',lineHeight:'1.5',color:'#3F3D4B'}}>{this.props.selectedToken}</span></>
+                                                <><span ref={countUpRef} /> <Text.span pl={2} fontSize={'16px'} fontWeight={400} lineHeight={'1.5'} color={'#3F3D4B'} fontFamily={'sansSerif'}>{this.props.selectedToken}</Text.span></>
                                               )}
                                             </CountUp>
                                           }
@@ -3210,25 +3211,8 @@ class SmartContractControls extends React.Component {
                                           />
                                         </Tooltip>
                                       </Flex>
-                                      <Heading.h3 fontFamily={'counter'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
-                                        {
-                                          idleTokenPrice ? (
-                                            <CountUp
-                                              start={idleTokenPrice}
-                                              end={idleTokenPriceEndOfYear}
-                                              useEasing={false}
-                                              duration={31536000}
-                                              delay={0}
-                                              separator=""
-                                              decimals={ 6 }
-                                              decimal="."
-                                            >
-                                              {({ countUpRef, start }) => (
-                                                <><span ref={countUpRef} /> <span style={{fontSize:'16px',fontWeight:'400',lineHeight:'1.5',color:'#3F3D4B'}}>{this.props.selectedToken}</span></>
-                                              )}
-                                            </CountUp>
-                                          ) : '-'
-                                        }
+                                      <Heading.h3 fontFamily={'sansSerif'} letterSpacing={'-1px'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                        {idleTokenPriceFormatted}
                                       </Heading.h3>
                                     </Box>
                                   </Flex>
@@ -3369,7 +3353,7 @@ class SmartContractControls extends React.Component {
                               {
                                 protocolEnabled ? (
                                   <Flex flexDirection={'column'}>
-                                    <Heading.h3 fontFamily={'counter'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'} style={{whiteSpace:'nowrap'}}>
+                                    <Heading.h3 style={{display:'flex',alignItems:'baseline',justifyContent:'center'}} fontFamily={'counter'} letterSpacing={'-1px'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'} style={{whiteSpace:'nowrap'}}>
                                       {protocolAllocation ?
                                         <CountUp
                                           start={protocolAllocation}
@@ -3379,10 +3363,13 @@ class SmartContractControls extends React.Component {
                                           delay={0}
                                           separator=""
                                           decimals={rebalanceCounterDecimals}
-                                          decimal="."
+                                          decimal={'.'}
                                         >
                                           {({ countUpRef, start }) => (
-                                            <><span ref={countUpRef} /> <span style={{fontSize:'16px',fontWeight:'400',lineHeight:'1.5',color:'#3F3D4B'}}>{this.props.selectedToken}</span></>
+                                            <>
+                                              <span ref={countUpRef} />
+                                              <Text.span pl={2} fontSize={'16px'} fontWeight={400} lineHeight={'1.5'} color={'#3F3D4B'} fontFamily={'sansSerif'}>{this.props.selectedToken}</Text.span>
+                                            </>
                                           )}
                                         </CountUp>
                                         : parseInt(0).toFixed(6)
