@@ -288,18 +288,21 @@ class FunctionsUtil {
         let latestTxs = await this.makeRequest(etherscanEndpointLastBlock);
 
         if (latestTxs && latestTxs.data.result && latestTxs.data.result.length){
+          
           latestTxs = await this.filterEtherscanTxs(latestTxs.data.result,enabledTokens);
-          if (latestTxs && latestTxs.length){
+
+          if (latestTxs && Object.values(latestTxs).length){
+
             const lastTx = Object.values(latestTxs).pop();
             const lastRealBlockNumber = parseInt(lastTx.blockNumber);
 
             // If real tx blockNumber differs from last blockNumber
             if (lastRealBlockNumber >= lastCachedBlockNumber){
               // Merge latest Txs with etherscanBaseTxs
-              latestTxs.forEach((tx) => {
-                const txFound = etherscanBaseTxs.data.result.find(t => (t.hash.toLowerCase() === tx.hash.toLowerCase()) );
+              Object.values(latestTxs).forEach((tx) => {
+                const txFound = Object.keys(etherscanBaseTxs.data.result).includes(tx.hash.toLowerCase());
                 if (!txFound){
-                  etherscanBaseTxs.data.result.push(tx);
+                  etherscanBaseTxs.data.result[tx.hash.toLowerCase()] = tx;
                 }
               });
 
@@ -487,21 +490,23 @@ class FunctionsUtil {
     const transactions = this.props.transactions ? { ...this.props.transactions } : {};
     let output = storedTxs;
 
-    if (account && storedTxs[account]){
-      output = storedTxs[account];
-      if (token){
-        token = token.toUpperCase();
-        output = storedTxs[token] ? storedTxs[token] : {};
-      }
-    }
+    if (account){
+      if (storedTxs[account]){
+        output = storedTxs[account];
+        if (token){
+          token = token.toUpperCase();
+          output = storedTxs[token] ? storedTxs[token] : {};
 
-    if (token){
-      Object.keys(transactions).forEach(txKey => {
-        const tx = transactions[txKey];
-        if (!output[txKey] && tx.token.toUpperCase() === token.toUpperCase()){
-          output[txKey] = transactions[txKey];
+          Object.keys(transactions).forEach(txKey => {
+            const tx = transactions[txKey];
+            if (!output[txKey] && tx.token.toUpperCase() === token.toUpperCase()){
+              output[txKey] = transactions[txKey];
+            }
+          });
         }
-      });
+      } else {
+        output = {};
+      }
     }
 
     return output;
