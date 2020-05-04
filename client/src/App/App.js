@@ -133,7 +133,7 @@ class App extends Component {
       selectedToken = localStorage ? localStorage.getItem('selectedToken') : null;
 
       // Check if the stored token
-      if (selectedToken && availableTokens[selectedToken] && !availableTokens[selectedToken].enabled){
+      if (selectedToken && (!availableTokens[selectedToken.toUpperCase()] || !availableTokens[selectedToken.toUpperCase()].enabled)){
         selectedToken = null;
         localStorage.removeItem('selectedToken');
       }
