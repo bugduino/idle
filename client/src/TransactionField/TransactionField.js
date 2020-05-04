@@ -69,6 +69,20 @@ class TransactionField extends Component {
     let bgColor = theme.colors.transactions.actionBg.default;
     const fieldInfo = this.props.fieldInfo;
     const transaction = this.props.transaction;
+
+    const fieldProps = {
+      fontSize:[1,2],
+      fontWeight:3,
+      color:'cellText'
+    };
+
+    // Replace props
+    if (fieldInfo.props && Object.keys(fieldInfo.props).length){
+      Object.keys(fieldInfo.props).forEach(p => {
+        fieldProps[p] = fieldInfo.props[p];
+      });
+    }
+
     switch (fieldInfo.name){
       case 'icon':
         if (transaction.action){
@@ -109,7 +123,7 @@ class TransactionField extends Component {
           <Flex
             p={'5px'}
             borderRadius={'50%'}
-            {...fieldInfo.props}
+            {...fieldProps}
             alignItems={'center'}
             backgroundColor={bgColor}
             justifyContent={'center'}
@@ -134,7 +148,7 @@ class TransactionField extends Component {
               <ShortHash
                 fontSize={1}
                 color={'white'}
-                {...fieldInfo.props}
+                {...fieldProps}
                 hash={transaction.hash}
               />
             </Link>
@@ -154,13 +168,13 @@ class TransactionField extends Component {
           break;
         }
         output = (
-          <Text {...fieldInfo.props}>{action.toUpperCase()}</Text>
+          <Text {...fieldProps}>{action.toUpperCase()}</Text>
         );
       break;
       case 'date':
         const formattedDate = transaction.momentDate.format('DD MMM, YYYY');
         output = (
-          <Text {...fieldInfo.props}>{formattedDate}</Text>
+          <Text {...fieldProps}>{formattedDate}</Text>
         );
       break;
       case 'statusIcon':
@@ -184,7 +198,7 @@ class TransactionField extends Component {
             width={'26px'}
             height={'26px'}
             borderRadius={'50%'}
-            {...fieldInfo.props}
+            {...fieldProps}
             alignItems={'center'}
             border={`2px solid ${color}`}
             justifyContent={'center'}
@@ -200,22 +214,22 @@ class TransactionField extends Component {
       break;
       case 'status':
         output = (
-          <Text {...fieldInfo.props}>{transaction.status}</Text>
+          <Text {...fieldProps}>{transaction.status}</Text>
         );
       break;
       case 'amount':
         output = (
-          <SmartNumber {...fieldInfo.props} number={transaction.amount} />
+          <SmartNumber {...fieldProps} number={transaction.amount} />
         );
       break;
       case 'tokenIcon':
         output = (
-          <Image src={`images/tokens/${transaction.tokenSymbol}.svg`} {...fieldInfo.props} />
+          <Image src={`images/tokens/${transaction.tokenSymbol}.svg`} {...fieldProps} />
         );
       break;
       case 'tokenName':
         output = (
-          <Text {...fieldInfo.props}>{transaction.tokenSymbol}</Text>
+          <Text {...fieldProps}>{transaction.tokenSymbol}</Text>
         );
       break;
       default:

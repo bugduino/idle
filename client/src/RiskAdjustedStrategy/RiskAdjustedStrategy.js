@@ -201,8 +201,7 @@ class RiskAdjustedStrategy extends Component {
                                 }
                               },
                               {
-                                name:'tokenName',
-                                props:cellTextProps
+                                name:'tokenName'
                               }
                             ]
                           },
@@ -213,8 +212,7 @@ class RiskAdjustedStrategy extends Component {
                             },
                             fields:[
                               {
-                                name:'tokenBalance',
-                                props:cellTextProps
+                                name:'tokenBalance'
                               }
                             ]
                           },
@@ -225,8 +223,7 @@ class RiskAdjustedStrategy extends Component {
                             },
                             fields:[
                               {
-                                name:'pool',
-                                props:cellTextProps
+                                name:'pool'
                               }
                             ]
                           },
@@ -237,8 +234,7 @@ class RiskAdjustedStrategy extends Component {
                             },
                             fields:[
                               {
-                                name:'apy',
-                                props:cellTextProps
+                                name:'apy'
                               }
                             ]
                           },
@@ -249,8 +245,7 @@ class RiskAdjustedStrategy extends Component {
                             },
                             fields:[
                               {
-                                name:'amountLent',
-                                props:cellTextProps
+                                name:'amountLent'
                               }
                             ]
                           },
@@ -261,8 +256,7 @@ class RiskAdjustedStrategy extends Component {
                             },
                             fields:[
                               {
-                                name:'earningsPerc',
-                                props:cellTextProps
+                                name:'earningsPerc'
                               }
                             ]
                           },
@@ -330,8 +324,7 @@ class RiskAdjustedStrategy extends Component {
                                 }
                               },
                               {
-                                name:'tokenName',
-                                props:cellTextProps
+                                name:'tokenName'
                               }
                             ]
                           },
@@ -342,8 +335,7 @@ class RiskAdjustedStrategy extends Component {
                             },
                             fields:[
                               {
-                                name:'tokenBalance',
-                                props:cellTextProps
+                                name:'tokenBalance'
                               }
                             ]
                           },
@@ -354,8 +346,7 @@ class RiskAdjustedStrategy extends Component {
                             },
                             fields:[
                               {
-                                name:'pool',
-                                props:cellTextProps
+                                name:'pool'
                               }
                             ]
                           },
@@ -366,8 +357,7 @@ class RiskAdjustedStrategy extends Component {
                             },
                             fields:[
                               {
-                                name:'apy',
-                                props:cellTextProps
+                                name:'apy'
                               }
                             ]
                           },

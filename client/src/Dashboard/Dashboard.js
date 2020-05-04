@@ -16,7 +16,7 @@ class Dashboard extends Component {
     menu:[],
     currentRoute:null,
     pageComponent:null,
-    selectedStrategy:null,
+    currentSection:null,
     baseRoute:'/dashboard',
   };
 
@@ -118,20 +118,37 @@ class Dashboard extends Component {
     const baseRoute = this.functionsUtil.getGlobalConfig(['dashboard','baseRoute']);
     let currentRoute = baseRoute;
 
-    let selectedToken = null;
-    let selectedStrategy = null;
     let pageComponent = null;
+    let selectedToken = null;
+    let currentSection = null;
+    let selectedSection = null;
+    let selectedStrategy = null;
 
     // Set strategy
-    if (params.strategy){
-      selectedStrategy = params.strategy;
-      currentRoute += '/'+selectedStrategy;
+    if (params.section){
 
-      // Set token
-      if (params.asset){
-        selectedToken = params.asset.toUpperCase();
-        currentRoute += '/'+selectedToken;
-        pageComponent = AssetPage;
+      currentSection = params.section;
+      const param1 = params.param1;
+      const param2 = params.param2;
+
+      const section_is_strategy = Object.keys(this.props.availableStrategies).includes(currentSection.toLowerCase());
+      const param1_is_strategy = param1 && Object.keys(this.props.availableStrategies).includes(param1.toLowerCase());
+
+      if (section_is_strategy || param1_is_strategy){
+        selectedStrategy = section_is_strategy ? currentSection : param1;
+        currentRoute += '/'+selectedStrategy;
+
+        // Set token
+        const param1_is_token = param1 && Object.keys(this.props.availableStrategies[selectedStrategy]).includes(param1.toUpperCase());
+        const param2_is_token = param2 && Object.keys(this.props.availableStrategies[selectedStrategy]).includes(param2.toUpperCase());
+        if (param1_is_token || param2_is_token){
+          selectedToken = param1_is_token ? param1.toUpperCase() : param2.toUpperCase();
+          currentRoute += '/'+selectedToken;
+
+          if (section_is_strategy){
+            pageComponent = AssetPage;
+          }
+        }
       }
     }
 
@@ -139,8 +156,8 @@ class Dashboard extends Component {
 
     menu.forEach(m => {
       m.selected = false;
-      const strategyRoute = baseRoute+'/'+selectedStrategy;
-      if (currentRoute.toLowerCase() === m.route.toLowerCase() || m.route.toLowerCase() === strategyRoute.toLowerCase()){
+      const sectionRoute = baseRoute+'/'+params.section;
+      if (currentRoute.toLowerCase() === m.route.toLowerCase() || m.route.toLowerCase() === sectionRoute.toLowerCase()){
         m.selected = true;
         if (pageComponent === null){
           pageComponent = m.component;
@@ -165,20 +182,17 @@ class Dashboard extends Component {
       }
     });
 
-    if (selectedStrategy){
-      await this.props.setStrategy(selectedStrategy);
-    }
+    // console.log('currentSection',currentSection,'selectedStrategy',selectedStrategy,'selectedToken',selectedToken,'currentRoute',currentRoute);
 
-    if (selectedToken){
-      await this.props.setToken(selectedToken);
-    }
+    await this.props.setStrategy(selectedStrategy);
+    await this.props.setToken(selectedToken);
 
     await this.setState({
       menu,
       params,
       currentRoute,
       pageComponent,
-      selectedStrategy
+      currentSection
     });
   }
 
@@ -208,7 +222,11 @@ class Dashboard extends Component {
     const prevParams = prevProps.match.params;
     const params = this.props.match.params;
     if (JSON.stringify(prevParams) !== JSON.stringify(params)){
-      this.loadParams();
+      await this.setState({
+        pageComponent:null
+      }, () => {
+        this.loadParams();
+      });
     }
   }
 
@@ -216,14 +234,27 @@ class Dashboard extends Component {
     selectedToken = selectedToken.toUpperCase();
     if (Object.keys(this.props.availableTokens).includes(selectedToken)){
       const baseRoute = this.functionsUtil.getGlobalConfig(['dashboard','baseRoute']);
-      window.location.hash=baseRoute+'/'+this.state.selectedStrategy+'/'+selectedToken;
+
+      let newRoute = baseRoute;
+
+      // Add section
+      if (this.state.currentSection.toLowerCase() !== this.props.selectedStrategy.toLowerCase()){
+        newRoute+='/'+this.state.currentSection;
+      }
+
+      // Add strategy
+      newRoute+='/'+this.props.selectedStrategy; 
+
+      // Add token
+      newRoute+='/'+selectedToken;
+
+      window.location.hash=newRoute;
       window.scrollTo(0, 0);
     }
   }
 
   render() {
     const PageComponent = this.state.pageComponent ? this.state.pageComponent : null;
-    // console.log('accountInizialized','contractsInitialized',this.props.accountInizialized,this.props.contractsInitialized);
     return (
       <Flex
         width={'100%'}
@@ -247,7 +278,7 @@ class Dashboard extends Component {
           backgroundColor={'dashboardBg'}
         >
           {
-            !this.props.accountInizialized || !this.props.contractsInitialized ? (
+            !this.props.accountInizialized || !this.props.contractsInitialized || !PageComponent ? (
               <FlexLoader
                 textProps={{
                   textSize:4,
@@ -261,7 +292,7 @@ class Dashboard extends Component {
                   minHeight:'50vh',
                   flexDirection:'column'
                 }}
-                text={'Loading contracts...'}
+                text={ !this.props.accountInizialized ? 'Loading account...' : ( !this.props.contractsInitialized ? 'Loading contracts...' : 'Loading assets...' )}
               />
             ) : (
               <Flex
@@ -276,10 +307,7 @@ class Dashboard extends Component {
                     <PageComponent
                       {...this.props}
                       match={{ params:{} }}
-                      tokenConfig={this.props.tokenConfig}
-                      selectedToken={this.props.selectedToken}
                       changeToken={this.changeToken.bind(this)}
-                      selectedStrategy={this.state.selectedStrategy}
                       />
                 }
               </Flex>

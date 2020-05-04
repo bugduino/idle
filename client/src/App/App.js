@@ -124,12 +124,12 @@ class App extends Component {
     newState.availableStrategies = availableStrategies;
 
     // Load strategy
-    const selectedStrategy = this.state.selectedStrategy ? this.state.selectedStrategy : null;
+    const selectedStrategy = this.state.selectedStrategy;
     if (selectedStrategy && this.state.availableStrategies[selectedStrategy]){
       newState.availableTokens = this.state.availableStrategies[selectedStrategy];
 
       // Load token
-      const selectedToken = this.state.selectedToken ? this.state.selectedToken : null;
+      const selectedToken = this.state.selectedToken;
       if (selectedToken && this.state.availableTokens[selectedToken]){
         newState.tokenConfig = this.state.availableTokens[selectedToken];
       }
@@ -139,7 +139,12 @@ class App extends Component {
   }
 
   async setStrategy(selectedStrategy){
-    if (selectedStrategy !== this.state.selectedStrategy && Object.keys(this.state.availableStrategies).includes(selectedStrategy)){
+    if (selectedStrategy && selectedStrategy !== this.state.selectedStrategy && Object.keys(this.state.availableStrategies).includes(selectedStrategy.toLowerCase())){
+      selectedStrategy = selectedStrategy.toLowerCase();
+      await this.setState({
+        selectedStrategy
+      });
+    } else if (!selectedStrategy) {
       await this.setState({
         selectedStrategy
       });
@@ -147,12 +152,18 @@ class App extends Component {
   }
 
   async setToken(selectedToken){
-    if (selectedToken !== this.state.selectedToken && Object.keys(this.state.availableTokens).includes(selectedToken)){
+    if (selectedToken && selectedToken !== this.state.selectedToken && Object.keys(this.state.availableTokens).includes(selectedToken.toUpperCase())){
+      selectedToken = selectedToken.toUpperCase();
       const newState = {
         selectedToken
       };
       newState.tokenConfig = this.state.availableTokens[selectedToken];
       await this.setState(newState);
+    } else if(!selectedToken) {
+      await this.setState({
+        selectedToken,
+        tokenConfig:null
+      });
     }
   }
 
@@ -374,7 +385,7 @@ class App extends Component {
                             >
                             </Route>
                             <Route
-                              path="/dashboard/:strategy?/:asset?"
+                              path="/dashboard/:section?/:param1?/:param2?"
                               render={(props) => <Dashboard
                                                     {...props}
                                                     web3={web3}
@@ -398,10 +409,11 @@ class App extends Component {
                                                     tokenConfig={this.state.tokenConfig}
                                                     getAccountBalance={getAccountBalance}
                                                     accountBalanceLow={accountBalanceLow}
-                                                    setToken={ e => { this.setToken(e) } }
+                                                    setToken={this.setToken.bind(this)}
                                                     accountInizialized={accountInizialized}
                                                     selectedToken={this.state.selectedToken}
                                                     connectorName={this.state.connectorName}
+                                                    setStrategy={this.setStrategy.bind(this)}
                                                     userRejectedConnect={userRejectedConnect}
                                                     accountBalanceToken={accountBalanceToken}
                                                     initializeContracts={initializeContracts}
@@ -412,9 +424,9 @@ class App extends Component {
                                                     rejectAccountConnect={rejectAccountConnect}
                                                     handleMenuClick={this.selectTab.bind(this)}
                                                     setConnector={this.setConnector.bind(this)}
-                                                    setStrategy={ e => { this.setStrategy(e) } }
                                                     availableTokens={this.state.availableTokens}
                                                     closeBuyModal={this.closeBuyModal.bind(this)}
+                                                    selectedStrategy={this.state.selectedStrategy}
                                                     userRejectedValidation={userRejectedValidation}
                                                     accountValidationPending={accountValidationPending}
                                                     availableStrategies={this.state.availableStrategies}

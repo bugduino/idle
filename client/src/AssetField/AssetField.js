@@ -453,27 +453,40 @@ class AssetField extends Component {
 
     const loader = (<Loader size="20px" />);
 
-    const minPrecision = fieldInfo.props && fieldInfo.props.minPrecision ? fieldInfo.props.minPrecision : 4;
+    const fieldProps = {
+      fontSize:[1,2],
+      fontWeight:3,
+      color:'cellText'
+    };
+
+    // Replace props
+    if (fieldInfo.props && Object.keys(fieldInfo.props).length){
+      Object.keys(fieldInfo.props).forEach(p => {
+        fieldProps[p] = fieldInfo.props[p];
+      });
+    }
+
+    const minPrecision = fieldProps && fieldProps.minPrecision ? fieldProps.minPrecision : 4;
 
     switch (fieldInfo.name){
       case 'icon':
         output = (
-          <Image src={`images/tokens/${this.props.token}.svg`} {...fieldInfo.props} />
+          <Image src={`images/tokens/${this.props.token}.svg`} {...fieldProps} />
         );
       break;
       case 'tokenName':
         output = (
-          <Text {...fieldInfo.props}>{this.props.token}</Text>
+          <Text {...fieldProps}>{this.props.token}</Text>
         );
       break;
       case 'tokenBalance':
         output = this.state.tokenBalance ? (
-          <SmartNumber {...fieldInfo.props} minPrecision={minPrecision} number={this.state.tokenBalance} />
+          <SmartNumber {...fieldProps} minPrecision={minPrecision} number={this.state.tokenBalance} />
         ) : loader
       break;
       case 'idleTokenBalance':
         output = this.state.idleTokenBalance ? (
-          <SmartNumber {...fieldInfo.props} minPrecision={minPrecision} number={this.state.idleTokenBalance} />
+          <SmartNumber {...fieldProps} minPrecision={minPrecision} number={this.state.idleTokenBalance} />
         ) : loader
       break;
       case 'redeemableBalanceCounter':
@@ -489,7 +502,7 @@ class AssetField extends Component {
             start={parseFloat(this.state.redeemableBalanceStart)}
           >
             {({ countUpRef, start }) => (
-              <span {...fieldInfo.props} ref={countUpRef} />
+              <span {...fieldProps} ref={countUpRef} />
             )}
           </CountUp>
         ) : loader
@@ -507,46 +520,46 @@ class AssetField extends Component {
             start={parseFloat(this.state.earningsStart)}
           >
             {({ countUpRef, start }) => (
-              <span {...fieldInfo.props} ref={countUpRef} />
+              <span {...fieldProps} ref={countUpRef} />
             )}
           </CountUp>
         ) : loader
       break;
       case 'redeemableBalance':
         output = this.state.redeemableBalance ? (
-          <SmartNumber {...fieldInfo.props} minPrecision={minPrecision} number={this.state.redeemableBalance} />
+          <SmartNumber {...fieldProps} minPrecision={minPrecision} number={this.state.redeemableBalance} />
         ) : loader
       break;
       case 'amountLent':
         output = this.state.amountLent ? (
-          <SmartNumber {...fieldInfo.props} minPrecision={minPrecision} number={this.state.amountLent} />
+          <SmartNumber {...fieldProps} minPrecision={minPrecision} number={this.state.amountLent} />
         ) : loader
       break;
       case 'pool':
         output = this.state.poolSize ? (
-          <SmartNumber {...fieldInfo.props} minPrecision={minPrecision} number={this.state.poolSize} />
+          <SmartNumber {...fieldProps} minPrecision={minPrecision} number={this.state.poolSize} />
         ) : loader
       break;
       case 'earningsPerc':
         output = this.state.earningsPerc ? (
           <VariationNumber direction={this.state.earningsPercDirection}>
-            <Text {...fieldInfo.props}>{this.state.earningsPerc}%</Text>
+            <Text {...fieldProps}>{this.state.earningsPerc}%</Text>
           </VariationNumber>
         ) : loader
       break;
       case 'apr':
         output = this.state.tokenAPR ? (
-          <Text {...fieldInfo.props}>{this.state.tokenAPR}%</Text>
+          <Text {...fieldProps}>{this.state.tokenAPR}%</Text>
         ) : loader
       break;
       case 'apy':
         output = this.state.tokenAPY ? (
-          <Text {...fieldInfo.props}>{this.state.tokenAPY}%</Text>
+          <Text {...fieldProps}>{this.state.tokenAPY}%</Text>
         ) : loader
       break;
       case 'button':
         output = (
-          <Button {...fieldInfo.props} onClick={() => fieldInfo.props.handleClick(this.props) }>{fieldInfo.label}</Button>
+          <Button {...fieldProps} onClick={() => fieldProps.handleClick(this.props) }>{fieldInfo.label}</Button>
         );
       break;
       case 'performanceChart':

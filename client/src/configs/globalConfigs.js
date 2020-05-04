@@ -1,7 +1,8 @@
 import { Web3Versions } from '@terminal-packages/sdk';
 import FunctionsUtil from '../utilities/FunctionsUtil';
-import IdleRebalancerManaged from '../contracts/IdleRebalancerManaged.json';
 import { RampInstantSDK } from '@ramp-network/ramp-instant-sdk';
+import IdleRebalancerManaged from '../contracts/IdleRebalancerManaged.json';
+
 const env = process.env;
 
 const globalConfigs = {

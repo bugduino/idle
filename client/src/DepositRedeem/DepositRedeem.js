@@ -513,6 +513,10 @@ class DepositRedeem extends Component {
 
   render() {
 
+    if (!this.props.selectedToken || !this.props.tokenConfig){
+      return null;
+    }
+
     const options = Object.keys(this.props.availableTokens).map(token => ({value:token,label:token}));
 
     const defaultValue = options.find(v => (v.value === this.props.selectedToken.toUpperCase()));

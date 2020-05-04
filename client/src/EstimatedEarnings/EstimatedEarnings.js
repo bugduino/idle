@@ -168,6 +168,11 @@ class EstimatedEarnings extends Component {
   }
 
   render() {
+
+    if (!this.props.selectedToken || !this.props.tokenConfig){
+      return null;
+    }
+
     return (
       <DashboardCard
         cardProps={{

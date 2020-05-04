@@ -1,14 +1,17 @@
 import moment from 'moment';
+import Title from '../Title/Title';
 import StatsChart from './StatsChart';
 import React, { Component } from 'react';
 import Toggler from '../Toggler/Toggler';
+import AssetsList from '../AssetsList/AssetsList';
 import ButtonGroup from '../ButtonGroup/ButtonGroup';
 import globalConfigs from '../configs/globalConfigs';
 import { Link as RouterLink } from "react-router-dom";
 import FunctionsUtil from '../utilities/FunctionsUtil';
+import availableTokens from '../configs/availableTokens';
 import TokenSelector from '../TokenSelector/TokenSelector';
 import DateRangeModal from '../utilities/components/DateRangeModal';
-import { Flex, Card, Text, Heading, Image, Button } from 'rimble-ui';
+import { Box, Flex, Card, Text, Heading, Image, Button } from 'rimble-ui';
 
 class Stats extends Component {
   state = {
@@ -24,14 +27,12 @@ class Stats extends Component {
     apiResults:null,
     minStartTime:null,
     endTimestamp:null,
-    showAdvanced:false,
+    showAdvanced:true,
     startTimestamp:null,
     endTimestampObj:null,
     startTimestampObj:null,
     apiResults_unfiltered:null,
-    dateRangeModalOpened:false,
-    tokenConfig:this.props.tokenConfig,
-    selectedToken:this.props.selectedToken
+    dateRangeModalOpened:false
   };
 
   // Utils
@@ -45,6 +46,11 @@ class Stats extends Component {
   }
 
   async loadParams() {
+
+    if (!this.props.selectedToken || !this.props.tokenConfig){
+      return false;
+    }
+
     const newState = Object.assign({},this.state);
     const { match: { params } } = this.props;
 
@@ -57,12 +63,12 @@ class Stats extends Component {
     }
 
     newState.tokenConfig = this.props.availableTokens[newState.selectedToken];
-    newState.minStartTime = moment(globalConfigs.stats.tokens[this.state.selectedToken].startTimestamp,'YYYY-MM-DD');
+    newState.minStartTime = moment(globalConfigs.stats.tokens[this.props.selectedToken].startTimestamp,'YYYY-MM-DD');
     newState.endTimestampObj = moment(moment().format('YYYY-MM-DD 23:59'),'YYYY-MM-DD HH:mm');
     newState.endTimestamp = parseInt(newState.endTimestampObj._d.getTime()/1000);
 
     // Set start date
-    newState.startTimestampObj = newState.endTimestampObj.clone().subtract(1,'month');
+    newState.startTimestampObj = newState.endTimestampObj.clone().subtract(2,'week');
     newState.startTimestamp = parseInt(newState.startTimestampObj._d.getTime()/1000);
 
     newState.minDate = newState.minStartTime._d;
@@ -86,7 +92,7 @@ class Stats extends Component {
 
   setDateRange = ranges => {
 
-    const minStartTime = moment(globalConfigs.stats.tokens[this.state.selectedToken].startTimestamp);
+    const minStartTime = moment(globalConfigs.stats.tokens[this.props.selectedToken].startTimestamp);
 
     let startTimestampObj = moment(ranges.startDate).isSameOrAfter(minStartTime) ? moment(ranges.startDate) : minStartTime;
     let endTimestampObj = moment(ranges.endDate);
@@ -129,6 +135,11 @@ class Stats extends Component {
   }
 
   updateButtonGroup = async () => {
+
+    if (!this.props.selectedToken || !this.props.tokenConfig){
+      return false;
+    }
+
     const buttonGroups = [
       [
         {
@@ -160,7 +171,7 @@ class Stats extends Component {
           component:TokenSelector,
           props:{
             setSelectedToken:this.props.setSelectedToken,
-            selectedToken:this.state.selectedToken,
+            selectedToken:this.props.selectedToken,
             availableTokens:this.props.availableTokens,
             color:'dark-gray',
             size:'big'
@@ -198,7 +209,7 @@ class Stats extends Component {
 
   async componentDidUpdate(prevProps,prevState) {
     const contractsInitialized = prevProps.contractsInitialized !== this.props.contractsInitialized;
-    const tokenChanged = prevProps.tokenConfig !== this.props.tokenConfig;
+    const tokenChanged = prevProps.selectedToken !== this.props.selectedToken || prevProps.tokenConfig !== this.props.tokenConfig;
     const dateChanged = prevState.startTimestamp !== this.state.startTimestamp || prevState.endTimestamp !== this.state.endTimestamp;
 
     if (contractsInitialized || tokenChanged){
@@ -245,7 +256,12 @@ class Stats extends Component {
   }
 
   loadApiData = async () => {
-    const apiResults_unfiltered = await this.getTokenData(this.state.tokenConfig.address,false);
+
+    if (!this.props.selectedToken || !this.props.tokenConfig){
+      return false;
+    }
+
+    const apiResults_unfiltered = await this.getTokenData(this.props.tokenConfig.address,false);
     const apiResults = this.filterTokenData(apiResults_unfiltered);
 
     if (!apiResults){
@@ -261,22 +277,22 @@ class Stats extends Component {
     days = Math.max(days,1);
 
     const idleTokens = this.functionsUtil.fixTokenDecimals(lastResult.idleSupply,18);
-    const firstIdlePrice = this.functionsUtil.fixTokenDecimals(firstResult.idlePrice,this.state.tokenConfig.decimals);
-    const lastIdlePrice = this.functionsUtil.fixTokenDecimals(lastResult.idlePrice,this.state.tokenConfig.decimals);
+    const firstIdlePrice = this.functionsUtil.fixTokenDecimals(firstResult.idlePrice,this.props.tokenConfig.decimals);
+    const lastIdlePrice = this.functionsUtil.fixTokenDecimals(lastResult.idlePrice,this.props.tokenConfig.decimals);
     const aum = this.functionsUtil.formatMoney(parseFloat(idleTokens.times(lastIdlePrice)));
     const earning = lastIdlePrice.div(firstIdlePrice).minus(1).times(100);
     const apr = earning.times(365).div(days).toFixed(2);
 
     // console.log(moment(firstResult.timestamp*1000).format('YYYY-MM-DD HH:mm'),moment(lastResult.timestamp*1000).format('YYYY-MM-DD HH:mm'));
 
-    const compoundInfo = this.state.tokenConfig.protocols.filter((p) => { return p.name === 'compound' })[0];
+    const compoundInfo = this.props.tokenConfig.protocols.filter((p) => { return p.name === 'compound' })[0];
     const firstCompoundData = firstResult.protocolsData.filter((p) => { return p.protocolAddr.toLowerCase() === compoundInfo.address.toLowerCase() })[0];
     const lastCompoundData = lastResult.protocolsData.filter((p) => { return p.protocolAddr.toLowerCase() === compoundInfo.address.toLowerCase() })[0];
 
     let delta = null;
     if (firstCompoundData && lastCompoundData){
-      const firstCompoundPrice = this.functionsUtil.fixTokenDecimals(firstCompoundData.price,this.state.tokenConfig.decimals);
-      const lastCompoundPrice = this.functionsUtil.fixTokenDecimals(lastCompoundData.price,this.state.tokenConfig.decimals);
+      const firstCompoundPrice = this.functionsUtil.fixTokenDecimals(firstCompoundData.price,this.props.tokenConfig.decimals);
+      const lastCompoundPrice = this.functionsUtil.fixTokenDecimals(lastCompoundData.price,this.props.tokenConfig.decimals);
       const compoundApr = lastCompoundPrice.div(firstCompoundPrice).minus(1).times(100);
       delta = earning.minus(compoundApr).times(365).div(days).toFixed(2);
     }
@@ -288,21 +304,21 @@ class Stats extends Component {
         const prevRow = apiResults[index-1];
 
         const totalAllocation = row.protocolsData.reduce((accumulator,protocolAllocation) => {
-          const allocation = this.functionsUtil.fixTokenDecimals(protocolAllocation.allocation,this.state.tokenConfig.decimals);
+          const allocation = this.functionsUtil.fixTokenDecimals(protocolAllocation.allocation,this.props.tokenConfig.decimals);
           return this.functionsUtil.BNify(accumulator).plus(allocation);
         },0);
 
         const prevTotalAllocation = prevRow.protocolsData.reduce((accumulator,protocolAllocation) => {
-          const allocation = this.functionsUtil.fixTokenDecimals(protocolAllocation.allocation,this.state.tokenConfig.decimals);
+          const allocation = this.functionsUtil.fixTokenDecimals(protocolAllocation.allocation,this.props.tokenConfig.decimals);
           return this.functionsUtil.BNify(accumulator).plus(allocation);
         },0);
 
         const firstProtocol = row.protocolsData[0];
-        const allocation = this.functionsUtil.fixTokenDecimals(firstProtocol.allocation,this.state.tokenConfig.decimals);
+        const allocation = this.functionsUtil.fixTokenDecimals(firstProtocol.allocation,this.props.tokenConfig.decimals);
         const allocationPerc = parseInt(allocation.div(totalAllocation).times(10000).toFixed(0));
 
         const prevFirstProtocol = prevRow.protocolsData.find(prevProtocol => { return prevProtocol.protocolAddr === firstProtocol.protocolAddr });
-        const prevAllocation = this.functionsUtil.fixTokenDecimals(prevFirstProtocol.allocation,this.state.tokenConfig.decimals);
+        const prevAllocation = this.functionsUtil.fixTokenDecimals(prevFirstProtocol.allocation,this.props.tokenConfig.decimals);
         const prevAllocationPerc = parseInt(prevAllocation.div(prevTotalAllocation).times(10000).toFixed(0));
 
         if (allocationPerc !== prevAllocationPerc){
@@ -322,217 +338,367 @@ class Stats extends Component {
     });
   }
 
+  selectToken = async (strategy,token) => {
+    await this.props.setStrategy(strategy);
+    await this.props.setToken(token);
+    this.props.changeToken(token);
+  }
+
   render() {
-    return (
-      <Flex width={'100%'} flexDirection={'column'} px={[3,5]} py={[3,4]}>
-        <Flex position={['absolute','relative']} left={0} px={[3,0]} zIndex={10} width={1} flexDirection={'row'} mb={[0,3]}>
-          <Flex alignItems={'center'} width={[2/3,1/2]}>
-            <RouterLink to="/">
-              <Image src="images/logo-gradient.svg"
-                height={['35px','48px']}
-                position={'relative'} />
-            </RouterLink>
-            <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={3} lineHeight={'initial'} fontSize={[4,5]} ml={[1,2]}>
-              <Text.span fontSize={'80%'}>|</Text.span> Stats
-            </Heading.h3>
-          </Flex>
-          <Flex flexDirection={'row'} width={[1/3,1/2]} justifyContent={'flex-end'} alignItems={'center'}>
-            {
-              this.state.buttonGroups && 
-                this.props.isMobile ? (
-                  <ButtonGroup
-                    isMobile={this.props.isMobile}
-                    components={ this.state.buttonGroups.reduce((components,array) => components.concat(array),[]) }
-                    theme={'light'}
-                  />
-                ) :
-                this.state.buttonGroups.map((buttonGroup,i) => (
-                  <ButtonGroup
-                    key={`buttonGroup_${i}`}
-                    isMobile={this.props.isMobile}
-                    components={buttonGroup}
-                    theme={'light'}
-                  />
-                ))
-            }
-          </Flex>
-        </Flex>
-        <Flex flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'} width={1} mt={[5,0]} mb={[2,3]}>
+
+    if (!this.props.selectedToken){
+      const strategies = this.functionsUtil.getGlobalConfig(['strategies']);
+      return (
+        <Box width={1}>
           {
-            this.state.showAdvanced &&
-              <Flex width={[1,1/4]} flexDirection={'column'} pr={[0,2]}>
-                <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
-                  <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                    <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Asset Under Management</Text.span>
-                    <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
-                      {this.state.aum}
-                      <Text.span color={'copyColor'} fontWeight={3} fontSize={['90%','70%']} pl={2}>{this.state.selectedToken}</Text.span>
-                    </Text>
-                  </Flex>
-                </Card>
-              </Flex>
+            Object.keys(strategies).map(strategy => {
+              const strategyInfo = strategies[strategy];
+              const availableTokens = this.props.availableStrategies[strategy];
+              if (!availableTokens){
+                return false;
+              }
+              return (
+                <Flex
+                  mb={3}
+                  width={1}
+                  flexDirection={'column'}
+                  justifyContent={'center'}
+                  key={`strategy-container-${strategy}`}
+                >
+                  <Title
+                    mt={3}
+                    mb={4}
+                  >
+                    {strategyInfo.title}
+                  </Title>
+                  <AssetsList
+                    enabledTokens={[]}
+                    cols={[
+                      {
+                        title:'CURRENCY',
+                        props:{
+                          width:0.15
+                        },
+                        fields:[
+                          {
+                            name:'icon',
+                            props:{
+                              mr:2,
+                              height:'2.3em'
+                            }
+                          },
+                          {
+                            name:'tokenName'
+                          }
+                        ]
+                      },
+                      {
+                        title:'BALANCE',
+                        props:{
+                          width:0.15,
+                        },
+                        fields:[
+                          {
+                            name:'tokenBalance'
+                          }
+                        ]
+                      },
+                      {
+                        title:'POOL',
+                        props:{
+                          width:0.14,
+                        },
+                        fields:[
+                          {
+                            name:'pool'
+                          }
+                        ]
+                      },
+                      {
+                        title:'APY',
+                        props:{
+                          width:0.11,
+                        },
+                        fields:[
+                          {
+                            name:'apy'
+                          }
+                        ]
+                      },
+                      {
+                        title:'DEPOSITED',
+                        props:{
+                          width:0.14,
+                        },
+                        fields:[
+                          {
+                            name:'amountLent'
+                          }
+                        ]
+                      },
+                      {
+                        title:'EARNINGS %',
+                        props:{
+                          width:0.14,
+                        },
+                        fields:[
+                          {
+                            name:'earningsPerc'
+                          }
+                        ]
+                      },
+                      {
+                        title:'',
+                        props:{
+                          width:0.17,
+                        },
+                        parentProps:{
+                          width:1
+                        },
+                        fields:[
+                          {
+                            name:'button',
+                            label:'View stats',
+                            props:{
+                              width:1,
+                              fontSize:3,
+                              fontWeight:3,
+                              height:'45px',
+                              borderRadius:4,
+                              boxShadow:null,
+                              mainColor:'redeem',
+                              handleClick:(props) => this.selectToken(strategy,props.token)
+                            }
+                          }
+                        ]
+                      }
+                    ]}
+                    {...this.props}
+                    availableTokens={availableTokens}
+                  />
+                </Flex>
+              );
+            })
           }
-          <Flex width={[1,this.state.showAdvanced ? 1/4 : 0.4]} flexDirection={'column'} pl={[0, this.state.showAdvanced ? 2 : 0]} pr={[0,2]}>
-            <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
-              <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Avg APY</Text.span>
-                <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
-                  {this.state.apr}
-                  <Text.span color={'copyColor'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
-                </Text>
-              </Flex>
-            </Card>
-          </Flex>
-          <Flex width={[1,this.state.showAdvanced ? 1/4 : 0.4]} flexDirection={'column'} pl={[0,2]} pr={[0,this.state.showAdvanced ? 2 : 0]}>
-            <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
-              <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Overperformance on Compound</Text.span>
-                <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
-                  {this.state.delta}
-                  <Text.span color={'copyColor'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
-                </Text>
-              </Flex>
-            </Card>
-          </Flex>
-          {
-            this.state.showAdvanced &&
-              <Flex width={[1,1/4]} flexDirection={'column'} pl={[0,2]}>
-                <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
-                  <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                    <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Rebalances</Text.span>
-                    <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
-                      {this.state.rebalances}
-                    </Text>
-                  </Flex>
-                </Card>
-              </Flex>
-          }
+        </Box>
+      );
+    } else {
+      return (
+        <Flex width={'100%'} flexDirection={'column'} px={0} py={[3,4]}>
           {
           /*
-          <Flex width={[1,1/4]} flexDirection={'column'} px={[0,2]}>
-            <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
-              <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Current APR</Text.span>
-                <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
-                  {this.state.currApr}
-                  <Text.span color={'copyColor'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
-                </Text>
-              </Flex>
-            </Card>
-          </Flex>
-          <Flex width={[1,1/4]} flexDirection={'column'} px={[0,2]}>
-            <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
-              <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Days Live</Text.span>
-                <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
-                  {this.state.days}
-                </Text>
-              </Flex>
-            </Card>
+          }
+          <Flex position={['absolute','relative']} left={0} px={[3,0]} zIndex={10} width={1} flexDirection={'row'} mb={[0,3]}>
+            <Flex alignItems={'center'} width={[2/3,1/2]}>
+              <RouterLink to="/">
+                <Image src="images/logo-gradient.svg"
+                  height={['35px','48px']}
+                  position={'relative'} />
+              </RouterLink>
+              <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={3} lineHeight={'initial'} fontSize={[4,5]} ml={[1,2]}>
+                <Text.span fontSize={'80%'}>|</Text.span> Stats
+              </Heading.h3>
+            </Flex>
+            <Flex flexDirection={'row'} width={[1/3,1/2]} justifyContent={'flex-end'} alignItems={'center'}>
+              {
+                this.state.buttonGroups && 
+                  this.props.isMobile ? (
+                    <ButtonGroup
+                      isMobile={this.props.isMobile}
+                      components={ this.state.buttonGroups.reduce((components,array) => components.concat(array),[]) }
+                      theme={'light'}
+                    />
+                  ) :
+                  this.state.buttonGroups.map((buttonGroup,i) => (
+                    <ButtonGroup
+                      key={`buttonGroup_${i}`}
+                      isMobile={this.props.isMobile}
+                      components={buttonGroup}
+                      theme={'light'}
+                    />
+                  ))
+              }
+            </Flex>
           </Flex>
           */
           }
-        </Flex>
-        <Flex justifyContent={this.state.showAdvanced ? 'space-between' : 'center'} style={{flexWrap:'wrap'}}>
-          <Flex id='chart-PRICE' width={[1,this.state.showAdvanced ? 0.49 : 0.8]} mb={3}>
-            <Card p={[2,3]} boxShadow={0} pb={0} borderRadius={'10px'}>
-              <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                <Text color={'copyColor'} fontWeight={2} fontSize={3}>
-                  Historical Performance
-                </Text>
-                <StatsChart contracts={this.props.contracts} apiResults_unfiltered={this.state.apiResults_unfiltered} apiResults={this.state.apiResults} isMobile={this.props.isMobile} chartMode={'PRICE'} {...this.state} parentId={'chart-PRICE'} height={ 350 } />
-              </Flex>
-            </Card>
-          </Flex>
-          {
-            this.state.showAdvanced &&
-            <Flex id='chart-AUM' width={[1,0.49]} mb={3}>
-              <Card p={[2,3]} boxShadow={0} pb={0} borderRadius={'10px'}>
+          <Flex flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'} width={1} mt={[5,0]} mb={[2,3]}>
+            {
+              this.state.showAdvanced &&
+                <Flex width={[1,1/4]} flexDirection={'column'} pr={[0,2]}>
+                  <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
+                    <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
+                      <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Asset Under Management</Text.span>
+                      <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
+                        {this.state.aum}
+                        <Text.span color={'copyColor'} fontWeight={3} fontSize={['90%','70%']} pl={2}>{this.props.selectedToken}</Text.span>
+                      </Text>
+                    </Flex>
+                  </Card>
+                </Flex>
+            }
+            <Flex width={[1,this.state.showAdvanced ? 1/4 : 0.4]} flexDirection={'column'} pl={[0, this.state.showAdvanced ? 2 : 0]} pr={[0,2]}>
+              <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
                 <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                  <Text color={'copyColor'} fontWeight={2} fontSize={3}>
-                    Asset Under Management
+                  <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Avg APY</Text.span>
+                  <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
+                    {this.state.apr}
+                    <Text.span color={'copyColor'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
                   </Text>
-                  <StatsChart contracts={this.props.contracts} apiResults_unfiltered={this.state.apiResults_unfiltered} apiResults={this.state.apiResults} isMobile={this.props.isMobile} chartMode={'AUM'} {...this.state} parentId={'chart-AUM'} height={ 350 } />
                 </Flex>
               </Card>
             </Flex>
-          }
-        </Flex>
-        {
-          this.state.showAdvanced &&
-            <Flex justifyContent={'space-between'} style={{flexWrap:'wrap'}}>
-              <Flex id='chart-ALL' width={[1,0.49]} mb={3}>
-                <Card p={[2,3]} boxShadow={0} pb={0} borderRadius={'10px'}>
-                  <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                    <Text color={'copyColor'} fontWeight={2} fontSize={3}>
-                      Allocation
-                    </Text>
-                    <StatsChart contracts={this.props.contracts} apiResults_unfiltered={this.state.apiResults_unfiltered} apiResults={this.state.apiResults} isMobile={this.props.isMobile} chartMode={'ALL'} {...this.state} parentId={'chart-ALL'} height={ 350 } />
-                  </Flex>
-                </Card>
-              </Flex>
-              <Flex id='chart-ALL_PERC' width={[1,0.49]} mb={3}>
-                <Card p={[2,3]} boxShadow={0} pb={0} borderRadius={'10px'}>
-                  <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                    <Text color={'copyColor'} fontWeight={2} fontSize={3}>
-                      Allocation Percentage
-                    </Text>
-                    <StatsChart contracts={this.props.contracts} apiResults_unfiltered={this.state.apiResults_unfiltered} apiResults={this.state.apiResults} isMobile={this.props.isMobile} chartMode={'ALL_PERC'} {...this.state} parentId={'chart-ALL_PERC'} height={ 350 } />
-                  </Flex>
-                </Card>
-              </Flex>
-              <Flex id='chart-APR' width={[1,0.49]} mb={3}>
-                <Card p={[2,3]} boxShadow={0} pb={0} borderRadius={'10px'}>
-                  <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                    <Text color={'copyColor'} fontWeight={2} fontSize={3}>
-                      APRs
-                    </Text>
-                    <StatsChart contracts={this.props.contracts} apiResults_unfiltered={this.state.apiResults_unfiltered} apiResults={this.state.apiResults} isMobile={this.props.isMobile} chartMode={'APR'} {...this.state} parentId={'chart-APR'} height={ 350 } />
-                  </Flex>
-                </Card>
-              </Flex>
-              <Flex id='chart-VOL' width={[1,0.49]} mb={3}>
-                <Card p={[2,3]} boxShadow={0} pb={0} borderRadius={'10px'}>
-                  <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                    <Text color={'copyColor'} fontWeight={2} fontSize={3}>
-                      Volume
-                    </Text>
-                    <StatsChart contracts={this.props.contracts} apiResults_unfiltered={this.state.apiResults_unfiltered} apiResults={this.state.apiResults} isMobile={this.props.isMobile} chartMode={'VOL'} {...this.state} parentId={'chart-VOL'} height={ 350 } />
-                  </Flex>
-                </Card>
-              </Flex>
+            <Flex width={[1,this.state.showAdvanced ? 1/4 : 0.4]} flexDirection={'column'} pl={[0,2]} pr={[0,this.state.showAdvanced ? 2 : 0]}>
+              <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
+                <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
+                  <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Overperformance on Compound</Text.span>
+                  <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
+                    {this.state.delta}
+                    <Text.span color={'copyColor'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
+                  </Text>
+                </Flex>
+              </Card>
             </Flex>
-        }
-        {
-          /*
-          <Flex flexDirection={'column'} mt={2} alignItems={'center'}>
-            <Link
-              href="#"
-              fontSize={2}
-              display={'flex'}
-              color={'dark-gray'}
-              hoverColor={'primary'}
-              style={{width:'100%'}}
-              onClick={e => this.toggleAdvancedCharts(e) }
-            >
-              <Flex width={1} justifyContent={'center'}>
-                { this.state.showAdvanced ? 'hide' : 'show' } more stats
-              </Flex>
-            </Link>
+            {
+              this.state.showAdvanced &&
+                <Flex width={[1,1/4]} flexDirection={'column'} pl={[0,2]}>
+                  <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
+                    <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
+                      <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Rebalances</Text.span>
+                      <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
+                        {this.state.rebalances}
+                      </Text>
+                    </Flex>
+                  </Card>
+                </Flex>
+            }
+            {
+            /*
+            <Flex width={[1,1/4]} flexDirection={'column'} px={[0,2]}>
+              <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
+                <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
+                  <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Current APR</Text.span>
+                  <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
+                    {this.state.currApr}
+                    <Text.span color={'copyColor'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
+                  </Text>
+                </Flex>
+              </Card>
+            </Flex>
+            <Flex width={[1,1/4]} flexDirection={'column'} px={[0,2]}>
+              <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
+                <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
+                  <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Days Live</Text.span>
+                  <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
+                    {this.state.days}
+                  </Text>
+                </Flex>
+              </Card>
+            </Flex>
+            */
+            }
           </Flex>
-          */
-        }
+          <Flex justifyContent={this.state.showAdvanced ? 'space-between' : 'center'} style={{flexWrap:'wrap'}}>
+            <Flex id='chart-PRICE' width={[1,this.state.showAdvanced ? 0.49 : 0.8]} mb={3}>
+              <Card p={[2,3]} boxShadow={0} pb={0} borderRadius={'10px'}>
+                <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
+                  <Text color={'copyColor'} fontWeight={2} fontSize={3}>
+                    Historical Performance
+                  </Text>
+                  <StatsChart contracts={this.props.contracts} apiResults_unfiltered={this.state.apiResults_unfiltered} apiResults={this.state.apiResults} isMobile={this.props.isMobile} chartMode={'PRICE'} {...this.state} parentId={'chart-PRICE'} height={ 350 } />
+                </Flex>
+              </Card>
+            </Flex>
+            {
+              this.state.showAdvanced &&
+              <Flex id='chart-AUM' width={[1,0.49]} mb={3}>
+                <Card p={[2,3]} boxShadow={0} pb={0} borderRadius={'10px'}>
+                  <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
+                    <Text color={'copyColor'} fontWeight={2} fontSize={3}>
+                      Asset Under Management
+                    </Text>
+                    <StatsChart contracts={this.props.contracts} apiResults_unfiltered={this.state.apiResults_unfiltered} apiResults={this.state.apiResults} isMobile={this.props.isMobile} chartMode={'AUM'} {...this.state} parentId={'chart-AUM'} height={ 350 } />
+                  </Flex>
+                </Card>
+              </Flex>
+            }
+          </Flex>
+          {
+            this.state.showAdvanced &&
+              <Flex justifyContent={'space-between'} style={{flexWrap:'wrap'}}>
+                <Flex id='chart-ALL' width={[1,0.49]} mb={3}>
+                  <Card p={[2,3]} boxShadow={0} pb={0} borderRadius={'10px'}>
+                    <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
+                      <Text color={'copyColor'} fontWeight={2} fontSize={3}>
+                        Allocation
+                      </Text>
+                      <StatsChart contracts={this.props.contracts} apiResults_unfiltered={this.state.apiResults_unfiltered} apiResults={this.state.apiResults} isMobile={this.props.isMobile} chartMode={'ALL'} {...this.state} parentId={'chart-ALL'} height={ 350 } />
+                    </Flex>
+                  </Card>
+                </Flex>
+                <Flex id='chart-ALL_PERC' width={[1,0.49]} mb={3}>
+                  <Card p={[2,3]} boxShadow={0} pb={0} borderRadius={'10px'}>
+                    <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
+                      <Text color={'copyColor'} fontWeight={2} fontSize={3}>
+                        Allocation Percentage
+                      </Text>
+                      <StatsChart contracts={this.props.contracts} apiResults_unfiltered={this.state.apiResults_unfiltered} apiResults={this.state.apiResults} isMobile={this.props.isMobile} chartMode={'ALL_PERC'} {...this.state} parentId={'chart-ALL_PERC'} height={ 350 } />
+                    </Flex>
+                  </Card>
+                </Flex>
+                <Flex id='chart-APR' width={[1,0.49]} mb={3}>
+                  <Card p={[2,3]} boxShadow={0} pb={0} borderRadius={'10px'}>
+                    <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
+                      <Text color={'copyColor'} fontWeight={2} fontSize={3}>
+                        APRs
+                      </Text>
+                      <StatsChart contracts={this.props.contracts} apiResults_unfiltered={this.state.apiResults_unfiltered} apiResults={this.state.apiResults} isMobile={this.props.isMobile} chartMode={'APR'} {...this.state} parentId={'chart-APR'} height={ 350 } />
+                    </Flex>
+                  </Card>
+                </Flex>
+                <Flex id='chart-VOL' width={[1,0.49]} mb={3}>
+                  <Card p={[2,3]} boxShadow={0} pb={0} borderRadius={'10px'}>
+                    <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
+                      <Text color={'copyColor'} fontWeight={2} fontSize={3}>
+                        Volume
+                      </Text>
+                      <StatsChart contracts={this.props.contracts} apiResults_unfiltered={this.state.apiResults_unfiltered} apiResults={this.state.apiResults} isMobile={this.props.isMobile} chartMode={'VOL'} {...this.state} parentId={'chart-VOL'} height={ 350 } />
+                    </Flex>
+                  </Card>
+                </Flex>
+              </Flex>
+          }
+          {
+            /*
+            <Flex flexDirection={'column'} mt={2} alignItems={'center'}>
+              <Link
+                href="#"
+                fontSize={2}
+                display={'flex'}
+                color={'dark-gray'}
+                hoverColor={'primary'}
+                style={{width:'100%'}}
+                onClick={e => this.toggleAdvancedCharts(e) }
+              >
+                <Flex width={1} justifyContent={'center'}>
+                  { this.state.showAdvanced ? 'hide' : 'show' } more stats
+                </Flex>
+              </Link>
+            </Flex>
+            */
+          }
 
-        <DateRangeModal
-          minDate={this.state.minDate}
-          maxDate={this.state.maxDate}
-          startDate={this.state.startTimestampObj ? this.state.startTimestampObj._d : null}
-          endDate={this.state.endTimestampObj ? this.state.endTimestampObj._d : null}
-          handleSelect={this.setDateRange}
-          isOpen={this.state.dateRangeModalOpened}
-          closeModal={e => this.setDateRangeModal(false)} />
-      </Flex>
-    );
+          <DateRangeModal
+            minDate={this.state.minDate}
+            maxDate={this.state.maxDate}
+            startDate={this.state.startTimestampObj ? this.state.startTimestampObj._d : null}
+            endDate={this.state.endTimestampObj ? this.state.endTimestampObj._d : null}
+            handleSelect={this.setDateRange}
+            isOpen={this.state.dateRangeModalOpened}
+            closeModal={e => this.setDateRangeModal(false)} />
+        </Flex>
+      );
+    }
   }
 }
 
