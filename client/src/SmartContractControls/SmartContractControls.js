@@ -2908,7 +2908,7 @@ class SmartContractControls extends React.Component {
                                         <Heading.h3 fontWeight={2} textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
                                           Redeemable Funds
                                         </Heading.h3>
-                                        <Heading.h3 fontFamily={'sansSerif'} fontSize={[4,5]} mb={[2,0]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                        <Heading.h3 fontFamily={'counter'} fontSize={[4,5]} mb={[2,0]} fontWeight={2} color={'black'} textAlign={'center'}>
                                           {
                                             <CountUp
                                               start={currentReedemableFunds}
@@ -2931,7 +2931,7 @@ class SmartContractControls extends React.Component {
                                         <Heading.h3 fontWeight={2} textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
                                           Current earnings
                                         </Heading.h3>
-                                        <Heading.h3 fontFamily={'sansSerif'} fontSize={[4,5]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                        <Heading.h3 fontFamily={'counter'} fontSize={[4,5]} fontWeight={2} color={'black'} textAlign={'center'}>
                                           {
                                             <CountUp
                                               start={currentEarning}
@@ -3210,7 +3210,7 @@ class SmartContractControls extends React.Component {
                                           />
                                         </Tooltip>
                                       </Flex>
-                                      <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
+                                      <Heading.h3 fontFamily={'counter'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
                                         {
                                           idleTokenPrice ? (
                                             <CountUp
@@ -3369,7 +3369,7 @@ class SmartContractControls extends React.Component {
                               {
                                 protocolEnabled ? (
                                   <Flex flexDirection={'column'}>
-                                    <Heading.h3 fontFamily={'sansSerif'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'} style={{whiteSpace:'nowrap'}}>
+                                    <Heading.h3 fontFamily={'counter'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'} style={{whiteSpace:'nowrap'}}>
                                       {protocolAllocation ?
                                         <CountUp
                                           start={protocolAllocation}

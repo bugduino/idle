@@ -16,6 +16,7 @@ export default {
   fonts: {
     serif: '"georgia regular", athelas, times, serif',
     sansSerif: '"Inter", -apple-system, sans-serif',
+    counter: 'Arial, -apple-system, sans-serif'
   },
   space: [0, 4, 8, 16, 32, 64, 128, 256],
   radii: ['0', '4px', '8px', '16px', '2rem'],
