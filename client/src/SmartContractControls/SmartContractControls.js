@@ -2406,9 +2406,9 @@ class SmartContractControls extends React.Component {
     const currentEarning = !isNaN(this.state.earning) ? parseFloat(this.state.earning) : 0;
     const earningAtEndOfYear = !isNaN(this.functionsUtil.trimEth(this.state.earning)) ? parseFloat(this.functionsUtil.BNify(this.state.earning).plus(this.functionsUtil.BNify(this.state.earningPerYear))) : 0;
 
-    const idleTokenPrice = parseFloat(this.state.idleTokenPrice);
+    // const idleTokenPrice = parseFloat(this.state.idleTokenPrice);
     const idleTokenPriceFormatted = this.functionsUtil.getFormattedBalance(this.state.idleTokenPrice,this.props.selectedToken,6,9);
-    const idleTokenPriceEndOfYear = idleTokenPrice && avgApr !== null ? parseFloat(this.functionsUtil.BNify(idleTokenPrice).plus(this.functionsUtil.BNify(idleTokenPrice).times(this.functionsUtil.BNify(this.state.avgApr.div(100))))) : idleTokenPrice;
+    // const idleTokenPriceEndOfYear = idleTokenPrice && avgApr !== null ? parseFloat(this.functionsUtil.BNify(idleTokenPrice).plus(this.functionsUtil.BNify(idleTokenPrice).times(this.functionsUtil.BNify(this.state.avgApr.div(100))))) : idleTokenPrice;
 
     const fundsAreReady = this.state.fundsError || (!this.state.updateInProgress && !isNaN(parseFloat(this.state.tokenToRedeemParsed)) && !isNaN(this.functionsUtil.trimEth(this.state.earning)) && !isNaN(this.functionsUtil.trimEth(this.state.amountLent)));
     const transactionsAreReady = this.state.prevTxs !== null;
@@ -3353,7 +3353,7 @@ class SmartContractControls extends React.Component {
                               {
                                 protocolEnabled ? (
                                   <Flex flexDirection={'column'}>
-                                    <Heading.h3 style={{display:'flex',alignItems:'baseline',justifyContent:'center'}} fontFamily={'counter'} letterSpacing={'-1px'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'} style={{whiteSpace:'nowrap'}}>
+                                    <Heading.h3 style={{display:'flex',alignItems:'baseline',justifyContent:'center',whiteSpace:'nowrap'}} fontFamily={'counter'} letterSpacing={'-1px'} fontSize={[3,4]} fontWeight={2} color={'black'} textAlign={'center'}>
                                       {protocolAllocation ?
                                         <CountUp
                                           start={protocolAllocation}
