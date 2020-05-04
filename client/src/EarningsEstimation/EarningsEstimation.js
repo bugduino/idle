@@ -180,10 +180,12 @@ class EarningsEstimation extends Component {
                     flexDirection={'row'}
                     justifyContent={'center'}
                   >
-                    <Flex width={1/15}>
+                    <Flex
+                      width={0.1}
+                    >
                     </Flex>
                     <Flex
-                      width={14/15}
+                      width={0.9}
                       height={'100%'}
                       flexDirection={'row'}
                     >
@@ -191,9 +193,22 @@ class EarningsEstimation extends Component {
                         Object.keys(estimationSteps).map((label,estimateIndex) => {
                           const estimationStep = estimationSteps[label];
                           const estimationStepEarnings = tokenEarnings.earningsYear.times(this.functionsUtil.BNify(estimationStep.perc));
+                          const estimationStepEarningsFormatted = this.functionsUtil.formatMoney(estimationStepEarnings,2);
                           return (
-                            <Flex key={`asset-estimate-${token}-${estimateIndex}`} width={estimationStep.width} borderRight={`1px solid ${theme.colors.divider}`} justifyContent={'flex-end'} pr={2}>
-                              <Text fontWeight={4} fontSize={3} color={ tokenEarnings.earnings.gte(estimationStepEarnings) ? 'copyColor' : 'legend' }>{this.functionsUtil.formatMoney(estimationStepEarnings,2)}</Text>
+                            <Flex
+                              pr={2}
+                              justifyContent={'flex-end'}
+                              width={estimationStep.width}
+                              key={`asset-estimate-${token}-${estimateIndex}`}
+                              borderRight={`1px solid ${theme.colors.divider}`}
+                            >
+                              <Text
+                                fontWeight={4}
+                                fontSize={[2,'1.2em']}
+                                color={tokenEarnings.earnings.gte(estimationStepEarnings) ? 'copyColor' : 'legend'}
+                              >
+                                {estimationStepEarningsFormatted}
+                              </Text>
                             </Flex>
                           );
                         })
@@ -202,48 +217,62 @@ class EarningsEstimation extends Component {
                   </Flex>
                   <Flex
                     width={1}
-                    pt={4}
-                    pb={ tokenIndex<Object.keys(this.state.tokensEarnings).length-1 ? 3 : 0 }
+                    pt={'2.2em'}
                     alignItems={'center'}
                     flexDirection={'row'}
                     justifyContent={'center'}
+                    pb={ tokenIndex<Object.keys(this.state.tokensEarnings).length-1 ? '1.5em' : 0 }
                   >
-                    <Flex width={1/15}>
-                      <Image src={`images/tokens/${token}.svg`} height={'2.6em'} />
+                    <Flex
+                      width={0.1}
+                      justifyContent={'flex-end'}
+                    >
+                      <Text
+                        pr={1}
+                        fontSize={3}
+                        fontWeight={4}
+                      >
+                        {token}
+                      </Text>
                     </Flex>
                     <Flex
-                      height={'60px'}
-                      width={14/15}
-                      borderRadius={2}
+                      width={0.9}
+                      height={'35px'}
+                      flexDirection={'row'}
                       alignItems={'flex-start'}
-                      boxShadow={'inset 0px 0px 10px -5px rgba(0, 0, 0, 0.2)'}
-                      backgroundColor={'#eeeeee'}
                     >
                       <Flex
                         height={'100%'}
                         width={cursorPerc}
-                        borderRadius={2}
                         backgroundColor={'#ffffff'}
                       >
                         <Flex
                           height={'100%'}
                           width={'100%'}
-                          borderRadius={2}
-                          style={{background:`linear-gradient(360deg, rgba(${tokenRGBColor},1) 0%, rgba(${tokenRGBColor},0.6) 100%)`}}
+                          borderRadius={'0 35px 35px 0'}
+                          style={{background:`linear-gradient(90deg, rgba(${tokenRGBColor},0) 0%, rgba(${tokenRGBColor},0.1) 30%, rgba(${tokenRGBColor},1) 100%)`}}
                         ></Flex>
+                      </Flex>
+                      <Flex
+                        pl={3}
+                        width={'auto'}
+                        height={'100%'}
+                        alignItems={'center'}
+                        justifyContent={'flex-start'}
+                      >
+                        <Image src={`images/tokens/${token}.svg`} height={'2.4em'} />
                       </Flex>
                     </Flex>
                   </Flex>
                 </Flex>
                 <Flex width={0.07} alignItems={'flex-start'} justifyContent={'flex-end'}>
-                  <Text fontWeight={4} fontSize={3}>{token}</Text>
+                  
                 </Flex>
               </Flex>
             )
           })
         }
         <Flex
-          pt={1}
           flexDirection={'row'}
         >
           <Flex
@@ -256,16 +285,23 @@ class EarningsEstimation extends Component {
               flexDirection={'row'}
               justifyContent={'center'}
             >
-              <Flex width={1/15}></Flex>
+              <Flex width={0.1}></Flex>
               <Flex
-                width={14/15}
+                width={0.9}
                 flexDirection={'row'}
               >
                 {
                   Object.keys(estimationSteps).map((estimationLabel,estimateIndex) => {
                     const estimationStep = estimationSteps[estimationLabel];
                     return (
-                      <Flex key={`estimate-label-${estimateIndex}`} width={estimationStep.width} justifyContent={'flex-end'} pr={2}>
+                      <Flex
+                        pt={2}
+                        pr={2}
+                        justifyContent={'flex-end'}
+                        width={estimationStep.width}
+                        key={`estimate-label-${estimateIndex}`}
+                        borderRight={`1px solid ${theme.colors.divider}`}
+                      >
                         <Text color={'legend'} fontWeight={3} fontSize={2}>{estimationLabel}</Text>
                       </Flex>
                     );

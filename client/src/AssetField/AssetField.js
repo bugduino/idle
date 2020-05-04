@@ -14,6 +14,7 @@ class AssetField extends Component {
 
   // Utils
   functionsUtil = null;
+  componentUnmounted = false;
 
   loadUtils(){
     if (this.functionsUtil){
@@ -24,7 +25,7 @@ class AssetField extends Component {
   }
 
   async componentWillUnmount(){
-    
+    this.componentUnmounted = true;
   }
 
   async componentWillMount(){
@@ -65,7 +66,7 @@ class AssetField extends Component {
           if (!tokenBalance){
             tokenBalance = '-';
           }
-          if (setState){
+          if (setState && !this.componentUnmounted){
             this.setState({
               tokenBalance:tokenBalance.toString()
             });
@@ -78,7 +79,7 @@ class AssetField extends Component {
           if (amountLents && amountLents[this.props.token]){
             amountLent = amountLents[this.props.token];
           }
-          if (setState){
+          if (setState && !this.componentUnmounted){
             this.setState({
               amountLent:amountLent.toString()
             });
@@ -90,7 +91,7 @@ class AssetField extends Component {
           if (!idleTokenBalance1){
             idleTokenBalance1 = '-';
           }
-          if (setState){
+          if (setState && !this.componentUnmounted){
             this.setState({
               idleTokenBalance:idleTokenBalance1.toString()
             });
@@ -105,7 +106,7 @@ class AssetField extends Component {
           if (redeemableBalanceStart && tokenAPY1){
             const earningPerYear = this.functionsUtil.BNify(redeemableBalanceStart).times(this.functionsUtil.BNify(tokenAPY1).div(100));
             const redeemableBalanceEnd = this.functionsUtil.BNify(redeemableBalanceStart).plus(this.functionsUtil.BNify(earningPerYear));
-            if (setState){
+            if (setState && !this.componentUnmounted){
               this.setState({
                 redeemableBalanceEnd,
                 redeemableBalanceStart
@@ -129,7 +130,7 @@ class AssetField extends Component {
             const earningsStart = amountLent2.gt(0) ? amountLent2.times(earningsPerc) : 0;
             const earningsEnd = amountLent2.gt(0) ? amountLent2.times(tokenAPY2.div(100)) : 0;
             // console.log('earningsCounter',earningsStart.toFixed(5),earningsEnd.toFixed(5),earningsPerc.toFixed(5),amountLent2.toFixed(5),idleTokenPrice3.toFixed(5),avgBuyPrice2[this.props.token].toFixed(5),tokenAPY2.toFixed(5));
-            if (setState){
+            if (setState && !this.componentUnmounted){
               this.setState({
                 earningsEnd,
                 earningsStart
@@ -148,7 +149,7 @@ class AssetField extends Component {
           ]);
           if (idleTokenBalance2 && idleTokenPrice){
             const redeemableBalance = this.functionsUtil.fixTokenDecimals(idleTokenBalance2.times(idleTokenPrice),this.props.tokenConfig.decimals);
-            if (setState){
+            if (setState && !this.componentUnmounted){
               this.setState({
                 redeemableBalance:redeemableBalance.toString()
               });
@@ -168,7 +169,7 @@ class AssetField extends Component {
             redeemableBalance1 = this.functionsUtil.BNify(0);
           }
           const earnings = redeemableBalance1.minus(amountLent1);
-          if (setState){
+          if (setState && !this.componentUnmounted){
             this.setState({
               earnings:earnings.toString()
             });
@@ -178,7 +179,7 @@ class AssetField extends Component {
         case 'pool':
           const tokenAllocation = await this.functionsUtil.getTokenAllocation(this.props.tokenConfig);
           if (tokenAllocation && tokenAllocation.totalAllocation){
-            if (setState){
+            if (setState && !this.componentUnmounted){
               this.setState({
                 poolSize:tokenAllocation.totalAllocation.toString()
               })
@@ -198,7 +199,7 @@ class AssetField extends Component {
             // console.log(this.props.token,avgBuyPrice[this.props.token].toFixed(5),idleTokenPrice2.toFixed(5),parseFloat(earningsPerc).toFixed(3));
           }
 
-          if (setState){
+          if (setState && !this.componentUnmounted){
             this.setState({
               earningsPerc:parseFloat(earningsPerc).toFixed(3),
               earningsPercDirection:parseFloat(earningsPerc)>0 ? 'up' : 'down'
@@ -210,7 +211,7 @@ class AssetField extends Component {
           tokenAprs = await this.functionsUtil.getTokenAprs(this.props.tokenConfig);
           if (tokenAprs && tokenAprs.avgApr !== null){
             const tokenAPR = tokenAprs.avgApr;
-            if (setState){
+            if (setState && !this.componentUnmounted){
               this.setState({
                 tokenAPR:parseFloat(tokenAPR).toFixed(3)
               });
@@ -222,7 +223,7 @@ class AssetField extends Component {
           const tokenAPR = await this.loadField('apr');
           if (tokenAPR){
             const tokenAPY = this.functionsUtil.apr2apy(tokenAPR.div(100)).times(100);
-            if (setState){
+            if (setState && !this.componentUnmounted){
               this.setState({
                 tokenAPR:parseFloat(tokenAPR).toFixed(3),
                 tokenAPY:parseFloat(tokenAPY).toFixed(3)
@@ -316,7 +317,7 @@ class AssetField extends Component {
             }
           }
 
-          if (setState){
+          if (setState && !this.componentUnmounted){
             this.setState({
               ready:true,
               aprChartType,
@@ -427,7 +428,7 @@ class AssetField extends Component {
             }
           }
 
-          if (setState){
+          if (setState && !this.componentUnmounted){
             this.setState({
               ready:true,
               performanceChartType,
