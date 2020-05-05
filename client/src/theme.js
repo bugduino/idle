@@ -64,8 +64,9 @@ export default {
     /*
     NEW COLORS
     */
-    cardBg:'#fff',
+    lineChartStroke:'#dbdbdb',
     dashboardBg: '#f9fafd',
+    statValue: '#959595',
     cellTitle: '#a3a4a5',
     cellText: '#a6a6a6',
     divider: '#d8d8d8',
@@ -73,6 +74,7 @@ export default {
     redeem: '#00a9fe',
     deposit: '#0239ff',
     legend: '#c9c9c9',
+    cardBg:'#fff',
     transactions:{
       action:{
         deposit:'#3d53c0',

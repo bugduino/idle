@@ -3,6 +3,7 @@ import Title from '../Title/Title';
 import StatsChart from './StatsChart';
 import React, { Component } from 'react';
 import Toggler from '../Toggler/Toggler';
+import StatsCard from '../StatsCard/StatsCard';
 import AssetsList from '../AssetsList/AssetsList';
 import ButtonGroup from '../ButtonGroup/ButtonGroup';
 import globalConfigs from '../configs/globalConfigs';
@@ -10,6 +11,9 @@ import { Link as RouterLink } from "react-router-dom";
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import availableTokens from '../configs/availableTokens';
 import TokenSelector from '../TokenSelector/TokenSelector';
+import DashboardCard from '../DashboardCard/DashboardCard';
+import AssetSelector from '../AssetSelector/AssetSelector';
+import VariationNumber from '../VariationNumber/VariationNumber';
 import DateRangeModal from '../utilities/components/DateRangeModal';
 import { Box, Flex, Card, Text, Heading, Image, Button } from 'rimble-ui';
 
@@ -484,7 +488,11 @@ class Stats extends Component {
       );
     } else {
       return (
-        <Flex width={'100%'} flexDirection={'column'} px={0} py={[3,4]}>
+        <Flex
+          p={0}
+          width={1}
+          flexDirection={'column'}
+        >
           {
           /*
           }
@@ -522,56 +530,106 @@ class Stats extends Component {
           </Flex>
           */
           }
-          <Flex flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'} width={1} mt={[5,0]} mb={[2,3]}>
-            {
-              this.state.showAdvanced &&
-                <Flex width={[1,1/4]} flexDirection={'column'} pr={[0,2]}>
-                  <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
-                    <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                      <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Asset Under Management</Text.span>
-                      <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
-                        {this.state.aum}
-                        <Text.span color={'copyColor'} fontWeight={3} fontSize={['90%','70%']} pl={2}>{this.props.selectedToken}</Text.span>
-                      </Text>
-                    </Flex>
-                  </Card>
-                </Flex>
-            }
-            <Flex width={[1,this.state.showAdvanced ? 1/4 : 0.4]} flexDirection={'column'} pl={[0, this.state.showAdvanced ? 2 : 0]} pr={[0,2]}>
-              <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
-                <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                  <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Avg APY</Text.span>
-                  <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
+          <Flex
+            mb={4}
+            flexDirection={['column','row']}
+          >
+            <Flex
+              width={[1,0.6]}
+              id={'breadcrumb'}
+            >
+            </Flex>
+            <Flex
+              width={[1,0.4]}
+              flexDirection={['column','row']}
+              justifyContent={['center','space-between']}
+            >
+              <Flex
+                width={[1,0.48]}
+                flexDirection={'column'}
+              >
+                <AssetSelector
+                  innerProps={{
+                    p:1
+                  }}
+                  {...this.props}
+                />
+              </Flex>
+              <Flex
+                width={[1,0.48]}
+                flexDirection={'column'}
+              >
+              </Flex>
+            </Flex>
+          </Flex>
+          <Flex
+            width={1}
+            mt={[5,0]}
+            mb={[2,3]}
+            alignItems={'center'}
+            justifyContent={'center'}
+            flexDirection={['column','row']}
+          >
+            <Flex width={[1,1/4]} flexDirection={'column'} pr={[0,2]}>
+              <StatsCard
+                value={this.state.aum}
+                title={'Asset Under Management'}
+                label={this.props.selectedToken}
+              />
+            </Flex>
+            <Flex width={[1,1/4]} flexDirection={'column'} pr={[0,2]}>
+              <StatsCard
+                title={'Avg APY'}
+                label={'Annualized'}
+              >
+                <VariationNumber
+                  direction={'up'}
+                  iconPos={'right'}
+                  iconSize={'1.8em'}
+                  justifyContent={'flex-start'}
+                  >
+                  <Text
+                    lineHeight={1}
+                    fontWeight={[3,4]}
+                    color={'statValue'}
+                    fontSize={[4,5]}
+                  >
                     {this.state.apr}
-                    <Text.span color={'copyColor'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
+                    <Text.span color={'statValue'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
                   </Text>
-                </Flex>
-              </Card>
+                </VariationNumber>
+              </StatsCard>
             </Flex>
-            <Flex width={[1,this.state.showAdvanced ? 1/4 : 0.4]} flexDirection={'column'} pl={[0,2]} pr={[0,this.state.showAdvanced ? 2 : 0]}>
-              <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
-                <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                  <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Overperformance on Compound</Text.span>
-                  <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
+            <Flex width={[1,1/4]} flexDirection={'column'} pr={[0,2]}>
+              <StatsCard
+                title={'Overperformance on Compound'}
+                label={'Annualized'}
+              >
+                <VariationNumber
+                  direction={'up'}
+                  iconPos={'right'}
+                  iconSize={'1.8em'}
+                  justifyContent={'flex-start'}
+                  >
+                  <Text
+                    lineHeight={1}
+                    fontWeight={[3,4]}
+                    color={'statValue'}
+                    fontSize={[4,5]}
+                  >
                     {this.state.delta}
-                    <Text.span color={'copyColor'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
+                    <Text.span color={'statValue'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
                   </Text>
-                </Flex>
-              </Card>
+                </VariationNumber>
+              </StatsCard>
             </Flex>
-            {
-              this.state.showAdvanced &&
-                <Flex width={[1,1/4]} flexDirection={'column'} pl={[0,2]}>
-                  <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
-                    <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                      <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Rebalances</Text.span>
-                      <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
-                        {this.state.rebalances}
-                      </Text>
-                    </Flex>
-                  </Card>
-                </Flex>
-            }
+            <Flex width={[1,1/4]} flexDirection={'column'} pr={[0,2]}>
+              <StatsCard
+                label={' '}
+                title={'Rebalances'}
+                value={this.state.rebalances.toString()}
+              />
+            </Flex>
             {
             /*
             <Flex width={[1,1/4]} flexDirection={'column'} px={[0,2]}>
@@ -598,16 +656,25 @@ class Stats extends Component {
             */
             }
           </Flex>
-          <Flex justifyContent={this.state.showAdvanced ? 'space-between' : 'center'} style={{flexWrap:'wrap'}}>
-            <Flex id='chart-PRICE' width={[1,this.state.showAdvanced ? 0.49 : 0.8]} mb={3}>
-              <Card p={[2,3]} boxShadow={0} pb={0} borderRadius={'10px'}>
-                <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                  <Text color={'copyColor'} fontWeight={2} fontSize={3}>
-                    Historical Performance
-                  </Text>
-                  <StatsChart contracts={this.props.contracts} apiResults_unfiltered={this.state.apiResults_unfiltered} apiResults={this.state.apiResults} isMobile={this.props.isMobile} chartMode={'PRICE'} {...this.state} parentId={'chart-PRICE'} height={ 350 } />
-                </Flex>
-              </Card>
+          <Flex justifyContent={'center'} style={{flexWrap:'wrap'}}>
+            <Flex id='chart-PRICE' width={1} mb={3}>
+              <DashboardCard
+                title={'Historical Performance'}
+                titleProps={{
+                  mb:2
+                }}
+              >
+                <StatsChart
+                  height={ 350 }
+                  {...this.state}
+                  chartMode={'PRICE'}
+                  parentId={'chart-PRICE'}
+                  isMobile={this.props.isMobile}
+                  contracts={this.props.contracts}
+                  apiResults={this.state.apiResults}
+                  apiResults_unfiltered={this.state.apiResults_unfiltered}
+                />
+              </DashboardCard>
             </Flex>
             {
               this.state.showAdvanced &&

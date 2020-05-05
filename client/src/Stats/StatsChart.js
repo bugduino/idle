@@ -1,4 +1,5 @@
 import moment from 'moment';
+import theme from '../theme';
 import colors from '../colors';
 import { Bar } from '@nivo/bar';
 import { Line } from '@nivo/line';
@@ -714,6 +715,7 @@ class StatsChart extends Component {
 
         let firstTokenPrice = null;
         let firstIdleBlock = null;
+        let maxChartValue = 0;
 
         const idleChartData = apiResults.map((d,i) => {
           const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
@@ -736,15 +738,15 @@ class StatsChart extends Component {
             firstIdleBlock = parseInt(d.blocknumber);
           }
 
+          maxChartValue = Math.max(maxChartValue,y);
+
           return { x, y, apy, blocknumber: d.blocknumber };
         });
-
-        // const aave_data = {};
 
         await this.functionsUtil.asyncForEach(this.props.tokenConfig.protocols,async (p) => {
 
           const chartRow = {
-            id:p.name,
+            id:this.functionsUtil.capitalize(p.name),
             color: 'hsl('+globalConfigs.stats.protocols[p.name].color.hsl.join(',')+')',
             data: []
           };
@@ -829,6 +831,7 @@ class StatsChart extends Component {
                   apy = earning.times(365).div(days).toFixed(2);
                 }
 
+                maxChartValue = Math.max(maxChartValue,y);
 
                 rowData = {
                   x,
@@ -846,10 +849,12 @@ class StatsChart extends Component {
           chartData.push(chartRow);
         });
 
-        // if (Object.values(aave_data).length){
-        //   aave_data[Object.keys(aave_data)[0]] = 1;
-        //   console.log(JSON.stringify(aave_data));
-        // }
+        const maxGridLines = 5;
+        const gridYStep = parseFloat(maxChartValue/maxGridLines);
+        const gridYValues = [0];
+        for (let i=1;i<=5;i++){
+          gridYValues.push(i*gridYStep);
+        }
 
         chartData.push({
           id:'Idle',
@@ -874,23 +879,27 @@ class StatsChart extends Component {
             // min: 1
           },
           axisLeft:{
-            format: value => parseFloat(value).toFixed(2)+'%',
-            orient: 'left',
-            tickSize: 5,
-            tickPadding: 5,
-            tickRotation: 0,
             legend: '',
+            tickSize: 0,
+            orient: 'left',
+            tickPadding: 10,
+            tickRotation: 0,
             legendOffset: -70,
-            legendPosition: 'middle'
+            tickValues:gridYValues,
+            legendPosition: 'middle',
+            format: value => parseFloat(value).toFixed(2)+'%',
           },
           axisBottom:{
+            tickSize: 0,
             format: '%b %d',
+            tickPadding: 10,
             tickValues: this.props.isMobile ? 'every 4 days' : ( this.props.showAdvanced ? 'every 3 days' : 'every 2 days'),
             orient: 'bottom',
             legend: '',
-            legendOffset: 36,
+            legendOffset: 0,
             legendPosition: 'middle'
           },
+          gridYValues,
           pointSize:0,
           useMesh:true,
           animate:false,
@@ -898,13 +907,58 @@ class StatsChart extends Component {
           curve:'linear',
           enableArea:false,
           enableSlices:'x',
-          enableGridX:true,
-          enableGridY:false,
+          enableGridX:false,
+          enableGridY:true,
           pointBorderWidth:1,
           colors:d => d.color,
           pointLabelYOffset:-12,
+          legends:[
+            {
+              itemWidth: 80,
+              itemHeight: 18,
+              translateY: 65,
+              symbolSize: 10,
+              itemsSpacing: 5,
+              direction: 'row',
+              anchor: 'bottom-left',
+              symbolShape: 'circle',
+              itemTextColor: theme.colors.legend,
+              effects: [
+                {
+                  on: 'hover',
+                  style: {
+                    itemTextColor: '#000'
+                  }
+                }
+              ]
+            }
+          ],
+          theme:{
+            axis: {
+              ticks: {
+                text: {
+                  fontSize:14,
+                  fontWeight:600,
+                  fill:theme.colors.legend,
+                  fontFamily: theme.fonts.sansSerif
+                }
+              }
+            },
+            grid: {
+              line: {
+                stroke: theme.colors.lineChartStroke, strokeDasharray: '10 6'
+              }
+            },
+            legends:{
+              text:{
+                fontSize:14,
+                fontWeight:500,
+                fontFamily: theme.fonts.sansSerif
+              }
+            }
+          },
           pointColor:{ from: 'color', modifiers: []},
-          margin: this.props.isMobile ? { top: 20, right: 20, bottom: 40, left: 50 } : { top: 20, right: 40, bottom: 40, left: 80 },
+          margin: this.props.isMobile ? { top: 20, right: 20, bottom: 80, left: 50 } : { top: 20, right: 40, bottom: 80, left: 80 },
           sliceTooltip:(slideData) => {
             const { slice } = slideData;
             return (

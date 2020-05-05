@@ -8,6 +8,7 @@ import FunctionsUtil from '../utilities/FunctionsUtil';
 import BuyModal from '../utilities/components/BuyModal';
 import { Flex, Text, Input, Box, Icon } from "rimble-ui";
 import DashboardCard from '../DashboardCard/DashboardCard';
+import AssetSelector from '../AssetSelector/AssetSelector';
 import TxProgressBar from '../TxProgressBar/TxProgressBar';
 import TransactionField from '../TransactionField/TransactionField';
 
@@ -517,127 +518,6 @@ class DepositRedeem extends Component {
       return null;
     }
 
-    const options = Object.keys(this.props.availableTokens).map(token => ({value:token,label:token}));
-
-    const defaultValue = options.find(v => (v.value === this.props.selectedToken.toUpperCase()));
-
-    const ControlComponent = props => {
-      const cardProps = Object.assign(props.innerProps,{p:2,style:{cursor:'pointer'}});
-      if (props.menuIsOpen){
-        cardProps.boxShadow = 4;
-      }
-      return (
-        <DashboardCard
-          cardProps={cardProps}
-        >
-          <Flex
-            width={1}
-            flexDirection={'row'}
-          >
-            {props.children}
-          </Flex>
-        </DashboardCard>
-      );
-    };
-
-    const CustomIndicatorSeparator = props => null;
-
-    const CustomMenu = props => {
-      const cardProps = Object.assign(props.innerProps,{
-        mt:2,
-        zIndex:1,
-        boxShadow:null,
-        position:'absolute'
-      });
-      return (
-        <DashboardCard
-          cardProps={cardProps}
-        >
-          {props.children}
-        </DashboardCard>
-      );
-    }
-
-    const CustomValueContainer = props => {
-      return (
-        <Flex
-          {...props.innerProps}
-        >
-          <Flex
-            p={0}
-            width={1}
-            {...props.innerProps}
-            alignItems={'center'}
-            flexDirection={'row'}
-            style={{cursor:'pointer'}}
-            justifyContent={'flex-start'}
-          >
-            <AssetField token={props.selectProps.value.value} fieldInfo={{
-                name:'icon',
-                props:{
-                  mr:2,
-                  height:'2em'
-                }
-              }}
-            />
-            <AssetField
-              token={props.selectProps.value.value}
-              fieldInfo={{
-                name:'tokenName',
-                props:{
-                  fontSize:[1,2],
-                  fontWeight:500,
-                  color:'copyColor'
-                }
-              }}
-            />
-          </Flex>
-        </Flex>
-      );
-    }
-
-    const CustomOption = (props) => {
-
-      // Don't show selected value
-      if (props.selectProps.value.value === props.value){
-        return null;
-      }
-
-      return (
-        <Flex
-          px={3}
-          py={2}
-          width={1}
-          {...props.innerProps}
-          alignItems={'center'}
-          flexDirection={'row'}
-          style={{cursor:'pointer'}}
-          justifyContent={'flex-start'}
-          backgroundColor={ props.isFocused ? '#fbfbfb' : '#ffffff' }
-        >
-          <AssetField token={props.value} fieldInfo={{
-              name:'icon',
-              props:{
-                mr:2,
-                height:'2em'
-              }
-            }}
-          />
-          <AssetField
-            token={props.value}
-            fieldInfo={{
-              name:'tokenName',
-              props:{
-                fontSize:[1,2],
-                fontWeight:500,
-                color:'copyColor'
-              }
-            }}
-          />
-        </Flex>
-      );
-    }
-
     const FastBalanceSelectorComponent = props => {
       const isActive = this.state.fastBalanceSelector[this.state.action] === parseInt(props.percentage);
       return (
@@ -684,13 +564,8 @@ class DepositRedeem extends Component {
             <Text mb={1}>
               Select your asset:
             </Text>
-            <Select
-              name={"assets"}
-              options={options}
-              isSearchable={false}
-              defaultValue={defaultValue}
-              onChange={(v) => this.props.changeToken(v.value) }
-              components={{ Control: ControlComponent, Option: CustomOption, IndicatorSeparator: CustomIndicatorSeparator, SingleValue: CustomValueContainer, Menu: CustomMenu }}
+            <AssetSelector
+              {...this.props}
             />
           </Flex>
           {

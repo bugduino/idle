@@ -21,7 +21,16 @@ class DashboardCard extends Component {
       >
         {
           this.props.title && this.props.title.length>0 &&
-            <Heading.h4 mt={[3,4]} ml={[3,4]} color={'dark-gray'} fontWeight={4} lineHeight={'initial'} fontSize={[2,3]} textAlign={'left'}>
+            <Heading.h4
+              mt={[3,4]}
+              ml={[3,4]}
+              fontWeight={4}
+              fontSize={[2,3]}
+              textAlign={'left'}
+              color={'dark-gray'}
+              lineHeight={'initial'}
+              {...this.props.titleProps}
+            >
               {this.props.title}
             </Heading.h4>
         }

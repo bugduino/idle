@@ -60,6 +60,9 @@ class FunctionsUtil {
             .replace(/&nbsp;/g," ")
             .replace(/<\/p>/g,"");
   }
+  capitalize = (str) => {
+    return str.substr(0,1).toUpperCase()+str.substr(1);
+  }
   strToMoment = (date,format=null) => {
     return moment(date,format);
   }
