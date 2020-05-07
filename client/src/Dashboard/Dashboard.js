@@ -274,7 +274,10 @@ class Dashboard extends Component {
           py={3}
           px={[3,5]}
           width={5/6}
-          style={{overflow:'scroll'}}
+          style={{
+            overflowY:'scroll',
+            overflowX:'hidden'
+          }}
           backgroundColor={'dashboardBg'}
         >
           {

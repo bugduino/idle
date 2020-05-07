@@ -6,6 +6,7 @@ import Toggler from '../Toggler/Toggler';
 import StatsCard from '../StatsCard/StatsCard';
 import AssetsList from '../AssetsList/AssetsList';
 import ButtonGroup from '../ButtonGroup/ButtonGroup';
+import RoundButton from '../RoundButton/RoundButton';
 import globalConfigs from '../configs/globalConfigs';
 import { Link as RouterLink } from "react-router-dom";
 import FunctionsUtil from '../utilities/FunctionsUtil';
@@ -14,8 +15,9 @@ import TokenSelector from '../TokenSelector/TokenSelector';
 import DashboardCard from '../DashboardCard/DashboardCard';
 import AssetSelector from '../AssetSelector/AssetSelector';
 import VariationNumber from '../VariationNumber/VariationNumber';
+import AllocationChart from '../AllocationChart/AllocationChart';
 import DateRangeModal from '../utilities/components/DateRangeModal';
-import { Box, Flex, Card, Text, Heading, Image, Button } from 'rimble-ui';
+import { Box, Flex, Card, Text, Heading, Image, Button, Icon } from 'rimble-ui';
 
 class Stats extends Component {
   state = {
@@ -26,14 +28,17 @@ class Stats extends Component {
     earning:null,
     minDate:null,
     maxDate:null,
+    carouselMax:1,
     rebalances:'-',
     buttonGroups:[],
     apiResults:null,
+    carouselIndex:0,
     minStartTime:null,
     endTimestamp:null,
     showAdvanced:true,
     startTimestamp:null,
     endTimestampObj:null,
+    carouselOffsetLeft:0,
     startTimestampObj:null,
     apiResults_unfiltered:null,
     dateRangeModalOpened:false
@@ -348,6 +353,23 @@ class Stats extends Component {
     this.props.changeToken(token);
   }
 
+  handleCarousel = action => {
+    let carouselIndex = this.state.carouselIndex;
+    if (action==='next' && carouselIndex<this.state.carouselMax){
+      carouselIndex++;
+    } else if (action==='back' && carouselIndex>0){
+      carouselIndex--;
+    }
+
+    const $element = window.jQuery(`#carousel-cursor > div:eq(${carouselIndex})`);
+    const carouselOffsetLeft = -parseFloat($element.position().left)+'px';
+
+    this.setState({
+      carouselIndex,
+      carouselOffsetLeft
+    });
+  }
+
   render() {
 
     if (!this.props.selectedToken){
@@ -531,7 +553,7 @@ class Stats extends Component {
           */
           }
           <Flex
-            mb={4}
+            mb={[3,4]}
             flexDirection={['column','row']}
           >
             <Flex
@@ -562,10 +584,11 @@ class Stats extends Component {
               </Flex>
             </Flex>
           </Flex>
+
           <Flex
             width={1}
             mt={[5,0]}
-            mb={[2,3]}
+            mb={[3,4]}
             alignItems={'center'}
             justifyContent={'center'}
             flexDirection={['column','row']}
@@ -656,104 +679,257 @@ class Stats extends Component {
             */
             }
           </Flex>
-          <Flex justifyContent={'center'} style={{flexWrap:'wrap'}}>
+
+
+          <DashboardCard
+            title={'Historical Performance'}
+            titleProps={{
+              mb:2
+            }}
+            cardProps={{
+              mb:[3,4]
+            }}
+          >
             <Flex id='chart-PRICE' width={1} mb={3}>
+              <StatsChart
+                height={ 350 }
+                {...this.state}
+                chartMode={'PRICE'}
+                parentId={'chart-PRICE'}
+                isMobile={this.props.isMobile}
+                contracts={this.props.contracts}
+                apiResults={this.state.apiResults}
+                apiResults_unfiltered={this.state.apiResults_unfiltered}
+              />
+            </Flex>
+          </DashboardCard>
+
+          <DashboardCard
+            cardProps={{
+              mb:[3,4]
+            }}
+          >
+            <Flex
+              flexDirection={'row'}
+              justifyContent={'space-between'}
+            >
+            <Flex
+              pt={[3,4]}
+              width={[1,1/3]}
+              id={'allocation-chart'}
+              alignItems={'flex-start'}
+            >
+              <AllocationChart
+                {...this.props}
+                height={'350px'}
+                parentId={'allocation-chart'}
+              />
+            </Flex>
+            <Flex id='chart-ALL' width={[1,2/3]} mb={3}>
+              <Flex alignItems={'flex-start'} justifyContent={'flex-start'} flexDirection={'column'} width={1}>
+                <Heading.h4
+                  mb={2}
+                  ml={3}
+                  mt={[3,4]}
+                  fontWeight={4}
+                  fontSize={[2,3]}
+                  textAlign={'left'}
+                  color={'dark-gray'}
+                  lineHeight={'initial'}
+                >
+                  Allocations over time
+                </Heading.h4>
+                <StatsChart contracts={this.props.contracts} apiResults_unfiltered={this.state.apiResults_unfiltered} apiResults={this.state.apiResults} isMobile={this.props.isMobile} chartMode={'ALL'} {...this.state} parentId={'chart-ALL'} height={ 350 } />
+              </Flex>
+            </Flex>
+            </Flex>
+          </DashboardCard>
+
+          <Flex
+            position={'relative'}
+          >
+            <Flex
+              width={1}
+              id={'carousel-container'}
+              justifyContent={'flex-end'}
+            >
+              <RoundButton
+                buttonProps={{
+                  p:0,
+                  boxShadow:1,
+                  width:'40px',
+                  height:'40px',
+                  minWidth:'40px',
+                  mainColor:'white',
+                  borderRadius:'50%',
+                  disabled: this.state.carouselIndex === 0
+                }}
+                handleClick={ e => this.handleCarousel('back') }
+              >
+                <Icon
+                  size={'1.3em'}
+                  name={'ArrowBack'}
+                  color={'copyColor'}
+                />
+              </RoundButton>
+              <RoundButton
+                buttonProps={{
+                  p:0,
+                  ml:3,
+                  boxShadow:1,
+                  width:'40px',
+                  height:'40px',
+                  minWidth:'40px',
+                  mainColor:'white',
+                  borderRadius:'50%',
+                  disabled: this.state.carouselIndex === this.state.carouselMax
+                }}
+                handleClick={ e => this.handleCarousel('next') }
+              >
+                <Icon
+                  size={'1.3em'}
+                  color={'copyColor'}
+                  name={'ArrowForward'}
+                />
+              </RoundButton>
+            </Flex>
+            <Flex
+              mt={5}
+              width={'150%'}
+              height={'400px'}
+              position={'absolute'}
+              id={'carousel-cursor'}
+              justifyContent={'flex-start'}
+              left={this.state.carouselOffsetLeft}
+              style={{
+                transition:'left 0.3s ease-in-out'
+              }}
+            >
               <DashboardCard
-                title={'Historical Performance'}
-                titleProps={{
-                  mb:2
+                cardProps={{
+                  mr:4,
+                  height:'fit-content',
+                  style:this.props.isMobile ? {width:'100%'} : {width:'32vw'}
                 }}
               >
-                <StatsChart
-                  height={ 350 }
-                  {...this.state}
-                  chartMode={'PRICE'}
-                  parentId={'chart-PRICE'}
-                  isMobile={this.props.isMobile}
-                  contracts={this.props.contracts}
-                  apiResults={this.state.apiResults}
-                  apiResults_unfiltered={this.state.apiResults_unfiltered}
-                />
+                <Flex
+                  width={1}
+                  id='chart-AUM'
+                >
+                  <Flex
+                    mb={3}
+                    width={1}
+                    flexDirection={'column'}
+                    alignItems={'flex-start'}
+                    justifyContent={'center'}
+                  >
+                    <Heading.h4
+                      ml={3}
+                      mt={3}
+                      mb={2}
+                      fontWeight={4}
+                      fontSize={[2,3]}
+                      textAlign={'left'}
+                      color={'dark-gray'}
+                      lineHeight={'initial'}
+                    >
+                      Asset Under Management
+                    </Heading.h4>
+                    <StatsChart
+                      height={300}
+                      {...this.state}
+                      chartMode={'AUM'}
+                      parentId={'chart-AUM'}
+                      isMobile={this.props.isMobile}
+                      contracts={this.props.contracts}
+                      apiResults={this.state.apiResults}
+                      apiResults_unfiltered={this.state.apiResults_unfiltered}
+                    />
+                  </Flex>
+                </Flex>
+              </DashboardCard>
+              <DashboardCard
+                cardProps={{
+                  mr:4,
+                  height:'fit-content',
+                  style:this.props.isMobile ? {width:'100%'} : {width:'32vw'}
+                }}
+              >
+                <Flex id='chart-APR' width={1}>
+                  <Flex
+                    mb={3}
+                    width={1}
+                    flexDirection={'column'}
+                    alignItems={'flex-start'}
+                    justifyContent={'center'}
+                  >
+                    <Heading.h4
+                      mb={2}
+                      ml={3}
+                      mt={3}
+                      fontWeight={4}
+                      fontSize={[2,3]}
+                      textAlign={'left'}
+                      color={'dark-gray'}
+                      lineHeight={'initial'}
+                    >
+                      APRs
+                    </Heading.h4>
+                    <StatsChart
+                      height={300}
+                      {...this.state}
+                      chartMode={'APR'}
+                      parentId={'chart-APR'}
+                      isMobile={this.props.isMobile}
+                      contracts={this.props.contracts}
+                      apiResults={this.state.apiResults}
+                      apiResults_unfiltered={this.state.apiResults_unfiltered}
+                    />
+                  </Flex>
+                </Flex>
+              </DashboardCard>
+              <DashboardCard
+                cardProps={{
+                  mr:4,
+                  height:'fit-content',
+                  style:this.props.isMobile ? {width:'100%'} : {width:'32vw'}
+                }}
+              >
+                <Flex id='chart-VOL' width={1}>
+                  <Flex
+                    mb={3}
+                    width={1}
+                    flexDirection={'column'}
+                    alignItems={'flex-start'}
+                    justifyContent={'center'}
+                  >
+                    <Heading.h4
+                      mb={2}
+                      ml={3}
+                      mt={3}
+                      fontWeight={4}
+                      fontSize={[2,3]}
+                      textAlign={'left'}
+                      color={'dark-gray'}
+                      lineHeight={'initial'}
+                    >
+                      Volume
+                    </Heading.h4>
+                    <StatsChart
+                      height={300}
+                      {...this.state}
+                      chartMode={'VOL'}
+                      parentId={'chart-VOL'}
+                      isMobile={this.props.isMobile}
+                      contracts={this.props.contracts}
+                      apiResults={this.state.apiResults}
+                      apiResults_unfiltered={this.state.apiResults_unfiltered}
+                    />
+                  </Flex>
+                </Flex>
               </DashboardCard>
             </Flex>
-            {
-              this.state.showAdvanced &&
-              <Flex id='chart-AUM' width={[1,0.49]} mb={3}>
-                <Card p={[2,3]} boxShadow={0} pb={0} borderRadius={'10px'}>
-                  <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                    <Text color={'copyColor'} fontWeight={2} fontSize={3}>
-                      Asset Under Management
-                    </Text>
-                    <StatsChart contracts={this.props.contracts} apiResults_unfiltered={this.state.apiResults_unfiltered} apiResults={this.state.apiResults} isMobile={this.props.isMobile} chartMode={'AUM'} {...this.state} parentId={'chart-AUM'} height={ 350 } />
-                  </Flex>
-                </Card>
-              </Flex>
-            }
           </Flex>
-          {
-            this.state.showAdvanced &&
-              <Flex justifyContent={'space-between'} style={{flexWrap:'wrap'}}>
-                <Flex id='chart-ALL' width={[1,0.49]} mb={3}>
-                  <Card p={[2,3]} boxShadow={0} pb={0} borderRadius={'10px'}>
-                    <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                      <Text color={'copyColor'} fontWeight={2} fontSize={3}>
-                        Allocation
-                      </Text>
-                      <StatsChart contracts={this.props.contracts} apiResults_unfiltered={this.state.apiResults_unfiltered} apiResults={this.state.apiResults} isMobile={this.props.isMobile} chartMode={'ALL'} {...this.state} parentId={'chart-ALL'} height={ 350 } />
-                    </Flex>
-                  </Card>
-                </Flex>
-                <Flex id='chart-ALL_PERC' width={[1,0.49]} mb={3}>
-                  <Card p={[2,3]} boxShadow={0} pb={0} borderRadius={'10px'}>
-                    <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                      <Text color={'copyColor'} fontWeight={2} fontSize={3}>
-                        Allocation Percentage
-                      </Text>
-                      <StatsChart contracts={this.props.contracts} apiResults_unfiltered={this.state.apiResults_unfiltered} apiResults={this.state.apiResults} isMobile={this.props.isMobile} chartMode={'ALL_PERC'} {...this.state} parentId={'chart-ALL_PERC'} height={ 350 } />
-                    </Flex>
-                  </Card>
-                </Flex>
-                <Flex id='chart-APR' width={[1,0.49]} mb={3}>
-                  <Card p={[2,3]} boxShadow={0} pb={0} borderRadius={'10px'}>
-                    <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                      <Text color={'copyColor'} fontWeight={2} fontSize={3}>
-                        APRs
-                      </Text>
-                      <StatsChart contracts={this.props.contracts} apiResults_unfiltered={this.state.apiResults_unfiltered} apiResults={this.state.apiResults} isMobile={this.props.isMobile} chartMode={'APR'} {...this.state} parentId={'chart-APR'} height={ 350 } />
-                    </Flex>
-                  </Card>
-                </Flex>
-                <Flex id='chart-VOL' width={[1,0.49]} mb={3}>
-                  <Card p={[2,3]} boxShadow={0} pb={0} borderRadius={'10px'}>
-                    <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                      <Text color={'copyColor'} fontWeight={2} fontSize={3}>
-                        Volume
-                      </Text>
-                      <StatsChart contracts={this.props.contracts} apiResults_unfiltered={this.state.apiResults_unfiltered} apiResults={this.state.apiResults} isMobile={this.props.isMobile} chartMode={'VOL'} {...this.state} parentId={'chart-VOL'} height={ 350 } />
-                    </Flex>
-                  </Card>
-                </Flex>
-              </Flex>
-          }
-          {
-            /*
-            <Flex flexDirection={'column'} mt={2} alignItems={'center'}>
-              <Link
-                href="#"
-                fontSize={2}
-                display={'flex'}
-                color={'dark-gray'}
-                hoverColor={'primary'}
-                style={{width:'100%'}}
-                onClick={e => this.toggleAdvancedCharts(e) }
-              >
-                <Flex width={1} justifyContent={'center'}>
-                  { this.state.showAdvanced ? 'hide' : 'show' } more stats
-                </Flex>
-              </Link>
-            </Flex>
-            */
-          }
 
           <DateRangeModal
             minDate={this.state.minDate}

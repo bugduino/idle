@@ -68,37 +68,24 @@ class StatsChart extends Component {
     return (parseInt(value)>=1000 ? parseFloat(value/1000).toFixed(1)+'K' : parseFloat(value) )+' '+this.props.selectedToken
   }
 
-  abbreviateNumber = (value) => {
-    let newValue = value;
-    if (value >= 1000) {
-      const suffixes = ["", "k", "m", "b","t"];
-      const suffixNum = Math.floor( (""+value).length/4 );
-      let shortValue = '';
-      for (let precision = 3; precision >= 1; precision--) {
-        shortValue = parseFloat( (suffixNum !== 0 ? (value / Math.pow(1000,suffixNum) ) : value).toPrecision(precision));
-        const dotLessShortValue = (shortValue + '').replace(/[^a-zA-Z 0-9]+/g,'');
-        if (dotLessShortValue.length <= 3) { break; }
-      }
-      if (shortValue % 1 !== 0)  shortValue = shortValue.toFixed(2);
-      newValue = shortValue+suffixes[suffixNum];
-    }
-    return newValue;
-  }
-
   loadApiData = async () => {
 
     if (!this.props.tokenConfig || !this.props.selectedToken || !this.props.chartMode || !this.props.apiResults){
       return false;
     }
 
-    const apiResults_unfiltered = this.props.apiResults_unfiltered;
+    const maxGridLines = 4;
     const apiResults = this.props.apiResults;
+    const apiResults_unfiltered = this.props.apiResults_unfiltered;
 
+    let keys = {};
+    let tempData = {};
+    let gridYStep = 0;
     let chartData = [];
     let chartProps = {};
     let chartType = Line;
-    let keys = {};
-    let tempData = {};
+    let gridYValues = [];
+    let maxChartValue = 0;
     let axisBottomIndex = 0;
 
     switch (this.props.chartMode){
@@ -142,10 +129,13 @@ class StatsChart extends Component {
               // Deposits
               if (diff.gte(0)){
                 divergingData[date].deposits+=parseFloat(diff);
+                maxChartValue = Math.max(maxChartValue,divergingData[date].deposits);
               } else {
                 divergingData[date].redeems+=parseFloat(diff);
+                maxChartValue = Math.max(maxChartValue,Math.abs(divergingData[date].deposits));
               }
             }
+
           } else {
             divergingData[date].deposits+=parseFloat(idleTokens);
           }
@@ -166,63 +156,135 @@ class StatsChart extends Component {
 
         axisBottomIndex = 0;
 
+        gridYStep = parseFloat(maxChartValue/maxGridLines);
+        gridYValues = [0];
+        for (let i=1;i<=5;i++){
+          gridYValues.push(i*gridYStep);
+        }
+
         chartProps = {
           indexBy: 'date',
           enableLabel: false,
-          enableGridX: true,
-          enableGridY: false,
           minValue:-maxRange,
           maxValue:maxRange,
           label: d => {
             return Math.abs(d.value);
           },
           axisBottom:{
+            tickSize: 0,
             legend: '',
             format: (value) => {
               if (axisBottomIndex++ % 3 === 0){
                 return moment(value,'YYYY/MM/DD HH:mm').format('MMM DD')
               }
             },
+            tickPadding: 15,
             orient: 'bottom',
-            legendOffset: 36,
+            legendOffset: 0,
             legendPosition: 'middle',
-            tickValues: 'every 3 days'
+            tickValues: 'every 3 days',
           },
           axisLeft: null,
           axisRight: {
-            format: v => this.abbreviateNumber(Math.abs(v))
+            legend: '',
+            tickSize: 0,
+            orient: 'left',
+            tickPadding: 10,
+            tickRotation: 0,
+            legendOffset: -70,
+            tickValues:8,
+            legendPosition: 'middle',
+            format: v => this.functionsUtil.abbreviateNumber(Math.abs(v),0)
           },
           markers: [
             {
               axis: 'y',
               value: 0,
               lineStyle: { strokeOpacity: 0 },
-              textStyle: { fill: colors.blue },
+              textStyle: { fill: theme.colors.transactions.action.deposit },
               legend: 'deposits',
               legendPosition: 'top-left',
               legendOrientation: 'vertical',
               // legendOffsetY: 120,
-              legendOffsetX: -10
+              legendOffsetX: -20
             },
             {
               axis: 'y',
               value: 0,
-              lineStyle: { stroke: colors.red, strokeWidth: 1 },
-              textStyle: { fill: colors.green },
+              lineStyle: { stroke: theme.colors['dark-gray'], strokeDasharray: '5 3' },
+              textStyle: { fill: theme.colors.transactions.action.redeem },
               legend: 'redeems',
               legendPosition: 'bottom-left',
               legendOrientation: 'vertical',
               // legendOffsetY: 120,
-              legendOffsetX: -10
+              legendOffsetX: -20
             },
           ],
           keys:['deposits','redeems'],
           padding:0.4,
-          colors:[colors.blue, colors.green],
-          margin: this.props.isMobile ? { top: 20, right: 20, bottom: 40, left: 50 } : { top: 20, right: 60, bottom: 40, left: 60 },
+          colors:[theme.colors.transactions.action.deposit, theme.colors.transactions.action.redeem],
           labelTextColor: 'inherit:darker(1.4)',
           labelSkipWidth: 16,
           labelSkipHeight: 16,
+          pointSize:0,
+          useMesh:true,
+          animate:false,
+          pointLabel:"y",
+          curve:'linear',
+          enableArea:false,
+          enableSlices:'x',
+          enableGridX:false,
+          enableGridY:true,
+          pointBorderWidth:1,
+          pointLabelYOffset:-12,
+          legends:[
+            {
+              dataFrom:'keys',
+              itemWidth: 100,
+              itemHeight: 18,
+              translateY: 65,
+              symbolSize: 10,
+              itemsSpacing: 0,
+              direction: 'row',
+              anchor: 'bottom-left',
+              symbolShape: 'circle',
+              itemTextColor: theme.colors.legend,
+              effects: [
+                {
+                  on: 'hover',
+                  style: {
+                    itemTextColor: '#000'
+                  }
+                }
+              ]
+            }
+          ],
+          theme:{
+            axis: {
+              ticks: {
+                text: {
+                  fontSize:14,
+                  fontWeight:600,
+                  fill:theme.colors.legend,
+                  fontFamily: theme.fonts.sansSerif
+                }
+              }
+            },
+            grid: {
+              line: {
+                stroke: theme.colors.lineChartStroke, strokeDasharray: '10 6'
+              }
+            },
+            legends:{
+              text:{
+                fontSize:14,
+                fontWeight:500,
+                fontFamily: theme.fonts.sansSerif
+              }
+            }
+          },
+          pointColor:{ from: 'color', modifiers: []},
+          margin: this.props.isMobile ? { top: 20, right: 50, bottom: 70, left: 40 } : { top: 20, right: 70, bottom: 70, left: 40 },
           tooltip:({ id, value, color }) => {
             value = this.functionsUtil.formatMoney(value,0);
             return (
@@ -278,7 +340,7 @@ class StatsChart extends Component {
             stacked: false
           },
           axisLeft:{
-            format: v => this.abbreviateNumber(v),
+            format: v => this.functionsUtil.abbreviateNumber(v),
             orient: 'left',
             tickSize: 5,
             tickPadding: 5,
@@ -313,17 +375,22 @@ class StatsChart extends Component {
       break;
       */
       case 'AUM':
+
+        maxChartValue = 0;
+
         chartData.push({
           id:'AUM',
-          color: 'hsl('+globalConfigs.stats.protocols.idle.color.hsl.join(',')+')',
+          color: 'hsl('+globalConfigs.stats.tokens[this.props.selectedToken].color.hsl.join(',')+')',
           data: apiResults.map((d,i) => {
             const idleTokens = this.functionsUtil.fixTokenDecimals(d.idleSupply,18);
             const idlePrice = this.functionsUtil.fixTokenDecimals(d.idlePrice,this.props.tokenConfig.decimals);
             const aum = idleTokens.times(idlePrice);
-            return {
-              x: moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm"),
-              y: parseInt(aum.toString())
-            };
+            const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
+            const y = parseInt(aum.toString());
+
+            maxChartValue = Math.max(maxChartValue,y);
+
+            return { x,y };
           })
         });
 
@@ -338,6 +405,9 @@ class StatsChart extends Component {
               if (!protocolPaused){
                 const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
                 const y = parseInt(this.functionsUtil.fixTokenDecimals(protocolAllocation.allocation,this.props.tokenConfig.decimals));
+
+                maxChartValue = Math.max(maxChartValue,y);
+
                 let foundItem = chartData[0].data.filter(item => { return item.x === x });
                 if (foundItem){
                   foundItem = foundItem[0];
@@ -357,6 +427,12 @@ class StatsChart extends Component {
         // Set chart type
         chartType = Line;
 
+        gridYStep = parseFloat(maxChartValue/maxGridLines);
+        gridYValues = [0];
+        for (let i=1;i<=5;i++){
+          gridYValues.push(i*gridYStep);
+        }
+
         chartProps = {
           xScale:{
             type: 'time',
@@ -370,37 +446,86 @@ class StatsChart extends Component {
             stacked: false
           },
           axisLeft:{
-            format: v => this.abbreviateNumber(v),
-            orient: 'left',
-            tickSize: 5,
-            tickPadding: 5,
-            tickRotation: 0,
             legend: '',
-            legendOffset: -65,
-            legendPosition: 'middle'
+            tickSize: 0,
+            orient: 'left',
+            tickPadding: 10,
+            tickRotation: 0,
+            legendOffset: -70,
+            tickValues:gridYValues,
+            legendPosition: 'middle',
+            format: v => this.functionsUtil.abbreviateNumber(v,0),
           },
           axisBottom:{
+            tickSize: 0,
             format: '%b %d',
-            tickValues: this.props.isMobile ? 'every 4 days' : 'every 3 days',
+            tickPadding: 15,
+            tickValues: this.props.isMobile ? 'every 4 days' : ( this.props.showAdvanced ? 'every 3 days' : 'every 2 days'),
             orient: 'bottom',
             legend: '',
-            legendOffset: 36,
+            legendOffset: 0,
             legendPosition: 'middle'
           },
-          enableArea:true,
-          curve:"linear",
-          enableSlices:'x',
-          enableGridX:true,
-          enableGridY:false,
-          colors:d => d.color,
+          gridYValues,
           pointSize:0,
-          pointColor:{ from: 'color', modifiers: []},
-          pointBorderWidth:1,
-          pointLabel:"y",
-          pointLabelYOffset:-12,
           useMesh:true,
           animate:false,
-          margin: this.props.isMobile ? { top: 20, right: 20, bottom: 40, left: 50 } : { top: 20, right: 40, bottom: 40, left: 60 },
+          pointLabel:"y",
+          curve:'linear',
+          enableArea:true,
+          enableSlices:'x',
+          enableGridX:false,
+          enableGridY:true,
+          pointBorderWidth:1,
+          colors:d => d.color,
+          pointLabelYOffset:-12,
+          legends:[
+            {
+              itemWidth: 80,
+              itemHeight: 18,
+              translateY: 65,
+              symbolSize: 10,
+              itemsSpacing: 5,
+              direction: 'row',
+              anchor: 'bottom-left',
+              symbolShape: 'circle',
+              itemTextColor: theme.colors.legend,
+              effects: [
+                {
+                  on: 'hover',
+                  style: {
+                    itemTextColor: '#000'
+                  }
+                }
+              ]
+            }
+          ],
+          theme:{
+            axis: {
+              ticks: {
+                text: {
+                  fontSize:14,
+                  fontWeight:600,
+                  fill:theme.colors.legend,
+                  fontFamily: theme.fonts.sansSerif
+                }
+              }
+            },
+            grid: {
+              line: {
+                stroke: theme.colors.lineChartStroke, strokeDasharray: '10 6'
+              }
+            },
+            legends:{
+              text:{
+                fontSize:14,
+                fontWeight:500,
+                fontFamily: theme.fonts.sansSerif
+              }
+            }
+          },
+          pointColor:{ from: 'color', modifiers: []},
+          margin: this.props.isMobile ? { top: 20, right: 20, bottom: 70, left: 50 } : { top: 20, right: 40, bottom: 70, left: 70 },
           sliceTooltip:(slideData) => {
             const { slice } = slideData;
             const point = slice.points[0];
@@ -468,16 +593,18 @@ class StatsChart extends Component {
 
           d.protocolsData.forEach((protocolData) => {
             const protocolPaused = this.functionsUtil.BNify(protocolData.rate).eq(0);
-            const protocolName = this.props.tokenConfig.protocols.filter((p) => { return p.address.toLowerCase() === protocolData.protocolAddr.toLowerCase() })[0].name;
+            const protocolName = this.functionsUtil.capitalize(this.props.tokenConfig.protocols.filter((p) => { return p.address.toLowerCase() === protocolData.protocolAddr.toLowerCase() })[0].name);
             if (!protocolPaused){
               const allocation = parseInt(this.functionsUtil.fixTokenDecimals(protocolData.allocation,this.props.tokenConfig.decimals));
               keys[protocolName] = 1;
               row[protocolName] = allocation;
-              row[`${protocolName}Color`] = 'hsl('+globalConfigs.stats.protocols[protocolName].color.hsl.join(',')+')';
+              row[`${protocolName}Color`] = 'hsl('+globalConfigs.stats.protocols[protocolName.toLowerCase()].color.hsl.join(',')+')';
+              maxChartValue = Math.max(maxChartValue,allocation);
             } else {
               row[protocolName] = 0;
             }
           });
+
 
           tempData[date] = row;
         });
@@ -489,6 +616,12 @@ class StatsChart extends Component {
 
         axisBottomIndex = 0;
 
+        gridYStep = parseFloat(maxChartValue/maxGridLines);
+        gridYValues = [0];
+        for (let i=1;i<=5;i++){
+          gridYValues.push(i*gridYStep);
+        }
+
         chartProps = {
           padding: 0.2,
           animate: false,
@@ -498,18 +631,19 @@ class StatsChart extends Component {
           labelSkipHeight: 16,
           keys: Object.keys(keys),
           labelTextColor: 'inherit:darker(1.4)',
-          margin: this.props.isMobile ? { top: 20, right: 20, bottom: 40, left: 50 } : { top: 20, right: 40, bottom: 40, left: 60 },
           colors: ({ id, data }) => data[`${id}Color`],
           axisLeft:{
-            format: v => this.abbreviateNumber(v),
+            format: v => this.functionsUtil.abbreviateNumber(v,0),
             orient: 'left',
-            tickSize: 5,
-            tickPadding: 5,
+            tickSize: 0,
+            tickPadding: 10,
             tickRotation: 0,
             legend: '',
             legendOffset: -65,
+            tickValues:gridYValues,
             legendPosition: 'middle'
           },
+          gridYValues,
           axisBottom:{
             legend: '',
             format: (value) => {
@@ -517,11 +651,61 @@ class StatsChart extends Component {
                 return moment(value,'YYYY/MM/DD HH:mm').format('MMM DD')
               }
             },
-            orient: 'bottom',
+            tickSize: 0,
+            tickPadding: 10,
+            orient: 'bottom-left',
             legendOffset: 36,
             legendPosition: 'middle',
             tickValues: 'every 3 days'
           },
+          legends:[
+            {
+              dataFrom:'keys',
+              itemWidth: 80,
+              itemHeight: 18,
+              translateY: 65,
+              symbolSize: 10,
+              itemsSpacing: 5,
+              direction: 'row',
+              anchor: 'bottom-left',
+              symbolShape: 'circle',
+              itemTextColor: theme.colors.legend,
+              effects: [
+                {
+                  on: 'hover',
+                  style: {
+                    itemTextColor: '#000'
+                  }
+                }
+              ]
+            }
+          ],
+          theme:{
+            axis: {
+              ticks: {
+                text: {
+                  fontSize:14,
+                  fontWeight:600,
+                  fill:theme.colors.legend,
+                  fontFamily: theme.fonts.sansSerif
+                }
+              }
+            },
+            grid: {
+              line: {
+                stroke: theme.colors.lineChartStroke, strokeDasharray: '10 6'
+              }
+            },
+            legends:{
+              text:{
+                fontSize:14,
+                fontWeight:500,
+                fontFamily: theme.fonts.sansSerif
+              }
+            }
+          },
+          pointColor:{ from: 'color', modifiers: []},
+          margin: this.props.isMobile ? { top: 20, right: 20, bottom: 70, left: 50 } : { top: 20, right: 40, bottom: 70, left: 60 },
           tooltip:({ id, value, color }) => {
             const allocation = this.functionsUtil.formatMoney(value,0);
             return (
@@ -628,6 +812,9 @@ class StatsChart extends Component {
         }
       break;
       case 'APR':
+
+        maxChartValue = 0;
+
         this.props.tokenConfig.protocols.forEach((p,j) => {
           if (chartData.filter(d => { return d.name === p.name; }).length){
             return;
@@ -644,6 +831,9 @@ class StatsChart extends Component {
                 if (!protocolPaused){
                   const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
                   const y = parseFloat(this.functionsUtil.fixTokenDecimals(protocolAllocation.rate,18));
+
+                  maxChartValue = Math.max(maxChartValue,y);
+
                   return { x, y };
                 }
                 return undefined;
@@ -658,12 +848,21 @@ class StatsChart extends Component {
           data: apiResults.map((d,i) => {
             const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
             const y = parseFloat(this.functionsUtil.fixTokenDecimals(d.idleRate,18));
+
+            maxChartValue = Math.max(maxChartValue,y);
+
             return { x, y };
           })
         });
 
         // Set chart type
         chartType = Line;
+
+        gridYStep = parseFloat(maxChartValue/maxGridLines);
+        gridYValues = [0];
+        for (let i=1;i<=5;i++){
+          gridYValues.push(i*gridYStep);
+        }
 
         chartProps = {
           xScale:{
@@ -678,23 +877,27 @@ class StatsChart extends Component {
             stacked: false
           },
           axisLeft:{
-            format: value => parseInt(value)+'%',
-            orient: 'left',
-            tickSize: 5,
-            tickPadding: 5,
-            tickRotation: 0,
             legend: '',
+            tickSize: 0,
+            orient: 'left',
+            tickPadding: 10,
+            tickRotation: 0,
             legendOffset: -70,
-            legendPosition: 'middle'
+            tickValues:gridYValues,
+            legendPosition: 'middle',
+            format:value => parseFloat(value).toFixed(1)+'%',
           },
           axisBottom:{
+            tickSize: 0,
             format: '%b %d',
-            tickValues: this.props.isMobile ? 'every 4 days' : 'every 3 days',
+            tickPadding: 15,
+            tickValues: this.props.isMobile ? 'every 4 days' : ( this.props.showAdvanced ? 'every 3 days' : 'every 2 days'),
             orient: 'bottom',
             legend: '',
-            legendOffset: 36,
+            legendOffset: 0,
             legendPosition: 'middle'
           },
+          gridYValues,
           pointSize:0,
           useMesh:true,
           animate:false,
@@ -702,20 +905,64 @@ class StatsChart extends Component {
           curve:'linear',
           enableArea:false,
           enableSlices:'x',
-          enableGridX:true,
-          enableGridY:false,
+          enableGridX:false,
+          enableGridY:true,
           pointBorderWidth:1,
           colors:d => d.color,
           pointLabelYOffset:-12,
+          legends:[
+            {
+              itemWidth: 80,
+              itemHeight: 18,
+              translateY: 65,
+              symbolSize: 10,
+              itemsSpacing: 0,
+              direction: 'row',
+              anchor: 'bottom-left',
+              symbolShape: 'circle',
+              itemTextColor: theme.colors.legend,
+              effects: [
+                {
+                  on: 'hover',
+                  style: {
+                    itemTextColor: '#000'
+                  }
+                }
+              ]
+            }
+          ],
+          theme:{
+            axis: {
+              ticks: {
+                text: {
+                  fontSize:14,
+                  fontWeight:600,
+                  fill:theme.colors.legend,
+                  fontFamily: theme.fonts.sansSerif
+                }
+              }
+            },
+            grid: {
+              line: {
+                stroke: theme.colors.lineChartStroke, strokeDasharray: '10 6'
+              }
+            },
+            legends:{
+              text:{
+                fontSize:14,
+                fontWeight:500,
+                fontFamily: theme.fonts.sansSerif
+              }
+            }
+          },
           pointColor:{ from: 'color', modifiers: []},
-          margin: this.props.isMobile ? { top: 20, right: 20, bottom: 40, left: 50 } : { top: 20, right: 40, bottom: 40, left: 60 },
+          margin: this.props.isMobile ? { top: 20, right: 20, bottom: 70, left: 50 } : { top: 20, right: 40, bottom: 70, left: 70 },
         };
       break;
       case 'PRICE':
 
         let firstTokenPrice = null;
         let firstIdleBlock = null;
-        let maxChartValue = 0;
 
         const idleChartData = apiResults.map((d,i) => {
           const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
@@ -849,9 +1096,8 @@ class StatsChart extends Component {
           chartData.push(chartRow);
         });
 
-        const maxGridLines = 5;
-        const gridYStep = parseFloat(maxChartValue/maxGridLines);
-        const gridYValues = [0];
+        gridYStep = parseFloat(maxChartValue/maxGridLines);
+        gridYValues = [0];
         for (let i=1;i<=5;i++){
           gridYValues.push(i*gridYStep);
         }
