@@ -94,7 +94,7 @@ class AllocationChart extends Component {
         },
         labels:{
           text:{
-            fontSize:17,
+            fontSize:16,
             fontWeight:600,
             fontFamily: theme.fonts.sansSerif
           }
@@ -126,7 +126,7 @@ class AllocationChart extends Component {
       const protocolLoaded = totalAllocation && protocolsAllocations && protocolsAllocations[protocolAddr];
       const protocolAllocation = protocolLoaded ? parseFloat(protocolsAllocations[protocolAddr].toString()) : null;
       const protocolAllocationPerc = protocolAllocation !== null ? parseFloat(protocolAllocation)/parseFloat(totalAllocation.toString()) : null;
-      const protocolAllocationPercParsed = protocolAllocationPerc === null ? 0 : parseFloat((protocolAllocationPerc*100).toFixed(2));
+      const protocolAllocationPercParsed = protocolAllocationPerc === null ? 0 : parseFloat((protocolAllocationPerc*100).toFixed(1));
 
       return {
         id:protocolAddr,
