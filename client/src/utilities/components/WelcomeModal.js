@@ -47,10 +47,18 @@ class WelcomeModal extends React.Component {
 
     const callback = () => {
       this.setState({
+        email:null,
+        error:false,
         sendingForm:false,
         subscribed:true
       });
-      window.setTimeout(this.props.closeModal,2500);
+      window.setTimeout(()=>{
+        this.setState({
+          subscribed:false
+        },() => {
+          this.props.closeModal()
+        });
+      },2500);
     };
 
     this.functionsUtil.simpleIDPassUserInfo({email:this.state.email});
