@@ -210,10 +210,10 @@ class SmartContractControls extends React.Component {
     const tokenBalanceChanged = this.props.accountBalanceToken !== this.state.tokenBalance;
 
     // Show welcome modal
-    if (this.props.account && accountChanged){
+    if (this.props.account){
       let welcomeIsOpen = false;
 
-      if (globalConfigs.modals.welcome.enabled && localStorage && accountChanged){
+      if (globalConfigs.modals.welcome.enabled && localStorage){
 
         // Check the last login of the wallet
         const currTime = new Date().getTime();
@@ -238,9 +238,12 @@ class SmartContractControls extends React.Component {
         }
       }
 
-      this.setState({
-        activeModal: welcomeIsOpen ? 'welcome' : this.state.activeModal
-      });
+      if (welcomeIsOpen && this.state.activeModal !== 'welcome'){
+        this.setState({
+          activeModal: welcomeIsOpen ? 'welcome' : this.state.activeModal
+        });
+      }
+
     }
 
     const checkUpdateNeeded = this.props.account && !this.state.updateInProgress && (accountChanged || this.state.needsUpdate || selectedTokenChanged);
