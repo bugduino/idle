@@ -5327,17 +5327,10 @@ buffer@^5.0.5, buffer@^5.2.1:
     base64-js "^1.0.2"
     ieee754 "^1.1.4"
 
-buffer@^5.4.2, buffer@^5.5.0, buffer@^5.6.0:
+buffer@^5.4.2, buffer@^5.4.3, buffer@^5.5.0, buffer@^5.6.0:
   version "5.6.0"
   resolved "https://registry.yarnpkg.com/buffer/-/buffer-5.6.0.tgz#a31749dc7d81d84db08abf937b6b8c4033f62786"
   integrity sha512-/gDYp/UtU0eA1ys8bOs9J6a+E/KWIY+DZ+Q2WESNUA0jFRsJOc0SNUO6xJ5SGA1xueg3NL65W6s+NY5l9cunuw==
-  dependencies:
-    base64-js "^1.0.2"
-    ieee754 "^1.1.4"
-
-buffer@^5.4.3:
-  version "5.4.3"
-  resolved "https://registry.yarnpkg.com/buffer/-/buffer-5.4.3.tgz#3fbc9c69eb713d323e3fc1a895eee0710c072115"
   dependencies:
     base64-js "^1.0.2"
     ieee754 "^1.1.4"
@@ -13227,14 +13220,16 @@ lodash@^4.17.13, lodash@^4.17.14, lodash@^4.17.15:
 loglevel-plugin-prefix@^0.8.4:
   version "0.8.4"
   resolved "https://registry.yarnpkg.com/loglevel-plugin-prefix/-/loglevel-plugin-prefix-0.8.4.tgz#2fe0e05f1a820317d98d8c123e634c1bd84ff644"
+  integrity sha512-WpG9CcFAOjz/FtNht+QJeGpvVl/cdR6P0z6OcXSkr8wFJOsV2GRj2j10JLfjuA4aYkcKCNIEqRGCyTife9R8/g==
 
 loglevel@^1.4.1:
   version "1.6.1"
   resolved "https://registry.yarnpkg.com/loglevel/-/loglevel-1.6.1.tgz#e0fc95133b6ef276cdc8887cdaf24aa6f156f8fa"
 
 loglevel@^1.6.6:
-  version "1.6.6"
-  resolved "https://registry.yarnpkg.com/loglevel/-/loglevel-1.6.6.tgz#0ee6300cc058db6b3551fa1c4bf73b83bb771312"
+  version "1.6.8"
+  resolved "https://registry.yarnpkg.com/loglevel/-/loglevel-1.6.8.tgz#8a25fb75d092230ecd4457270d80b54e28011171"
+  integrity sha512-bsU7+gc9AJ2SqpzxwU3+1fedl8zAntbtC5XYlt3s2j1hJcn2PsXSmgN8TaLG/J1/2mod4+cE/3vNL70/c1RNCA==
 
 loglevel@^1.6.7:
   version "1.6.7"
@@ -14135,9 +14130,9 @@ nanoid@^2.0.0, nanoid@^2.1.0, nanoid@^2.1.11:
   integrity sha512-s/snB+WGm6uwi0WjsZdaVcuf3KJXlfGl2LcxgwkEwJF0D/BWzVWAZW/XY4bFaiR7s0Jk3FPvlnepg1H1b1UwlA==
 
 nanoid@^3.0.2:
-  version "3.1.5"
-  resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.1.5.tgz#56da1bb76b619391fc61625e8b4e4bff309b9942"
-  integrity sha512-77yYm8wPy8igTpUQv9fA0VzEb5Ohxt5naC3zTK1oAb+u1MiyITtx0jpYrYRFfgJlefwJy2SkCaojZvxSYq6toA==
+  version "3.1.6"
+  resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.1.6.tgz#f591cc886c14e5b2c4da753db0ac547fac1fee6a"
+  integrity sha512-Kp/sUTkDjStVFvT4W0OO1Z1jJWhnxIa1TNJ1F+G27IPC+FOc3aqbX8OMptcZE4vRrzREjttOHut5PbC11F7KBQ==
 
 nanomatch@^1.2.9:
   version "1.2.13"
