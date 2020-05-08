@@ -75,7 +75,7 @@
     "resolve": "1.8.1",
     "rimble-ui": "^0.10.0",
     "sass-loader": "7.1.0",
-    "simpleid-js-sdk": "^1.0.0",
+    "simpleid-js-sdk": "^1.2.1",
     "style-loader": "0.23.0",
     "styled-components": "^4.3.1",
     "terser-webpack-plugin": "1.1.0",
