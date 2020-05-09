@@ -21,6 +21,7 @@ export default function Web3ConnectionButtons(props) {
   } else {
     customLog('context success', context);
   }
+
   const setConnector = async (connectorName,name) => {
     let walletProvider = connectorName === 'Injected' ? name : connectorName;
     if (localStorage) {
@@ -40,6 +41,7 @@ export default function Web3ConnectionButtons(props) {
     return connectorName;
     // return await context.setConnector(connectorName);
   };
+
   const unsetConnector = async () => {
     if (props.setConnector && typeof props.setConnector === 'function'){
       props.setConnector('Infura','Infura');
@@ -62,7 +64,6 @@ export default function Web3ConnectionButtons(props) {
       connectors.Portis.options.registerPageByDefault = false;
     }
   }
-
 
   let basicConnectorsName = Object.keys(connectors).filter(c => c !== 'Infura');
 
@@ -130,18 +131,20 @@ export default function Web3ConnectionButtons(props) {
             Generic wallet option is used for Ethereum browsers only.
           </Text.p>
         )}
-        {(context.active || (context.error && context.connectorName)) && context.connectorName !== 'Infura' && (
-          <Button.Outline
-            width={[1/2]}
-            className={[styles.button]}
-            mb={[1, 3]}
-            size={'large'}
-            key={'reset'}
-            onClick={async () => await unsetConnector()}
-          >
-            {context.active ? "Deactivate Connector" : "Reset"}
-          </Button.Outline>
-        )}
+        {
+          (context.active || (context.error && context.connectorName)) && context.connectorName !== 'Infura' && (
+            <Button.Outline
+              width={[1,1/2]}
+              className={[styles.button]}
+              mb={[1, 3]}
+              size={['medium','large']}
+              key={'reset'}
+              onClick={async () => await unsetConnector()}
+            >
+              Deactivate Connector
+            </Button.Outline>
+          )
+        }
       </Flex>
       <Flex flexDirection={'row'} flexWrap={'wrap'} justifyContent={'space-between'}>
         {buttons}
