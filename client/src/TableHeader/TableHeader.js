@@ -1,24 +1,9 @@
+import { Flex } from "rimble-ui";
 import React, { Component } from 'react';
-import { Flex, Heading } from "rimble-ui";
+import TableCellHeader from '../TableCellHeader/TableCellHeader';
 
 class TableHeader extends Component {
   render() {
-
-    const TableCellHeader = (props) => (
-      <Flex width={props.width}>
-        <Heading.h4
-          pb={3}
-          {...props}
-          fontSize={[2,3]}
-          fontWeight={4}
-          color={'cellTitle'}
-          style={{width:'100%'}}
-        >
-          {props.children}
-        </Heading.h4>
-      </Flex>
-    );
-
     return (
       <Flex
         width={1}

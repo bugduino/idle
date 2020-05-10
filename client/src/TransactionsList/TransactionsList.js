@@ -7,16 +7,40 @@ import FunctionsUtil from '../utilities/FunctionsUtil';
 import DashboardCard from '../DashboardCard/DashboardCard';
 import { Flex, Heading, Text, Link, Icon } from "rimble-ui";
 import TransactionField from '../TransactionField/TransactionField';
+import TransactionListFilters from '../TransactionListFilters/TransactionListFilters';
 
 class TransactionsList extends Component {
 
   state = {
     page:1,
-    txsPerPage:5,
     prevTxs:{},
+    txsPerPage:5,
     loading:false,
     totalTxs:null,
     totalPages:null,
+    activeFilters:{
+      status:null,
+      assets:null,
+      actions:null,
+    },
+    filters:{
+      actions:{
+        deposit:'Deposit',
+        redeem:'Redeem',
+        send:'Send',
+        receive:'Receive',
+        migrate:'Migrate',
+        swap:'Swap-In',
+        swapout:'Swap-Out',
+        withdraw:'Withdraw',
+      },
+      status:{
+        completed:'Completed',
+        pending:'Pending',
+        failed:'Failed'
+      },
+      assets:{}
+    },
     renderedTxs:null,
     processedTxs:null,
     lastBlockNumber:null
@@ -56,6 +80,26 @@ class TransactionsList extends Component {
   async componentDidMount(){
     this.loadUtils();
     this.loadTxs();
+  }
+
+  applyFilters = activeFilters => {
+    this.setState({
+      activeFilters
+    },() => {
+      this.processTxs();
+    });
+  }
+
+  resetFilters = () => {
+    this.setState({
+      activeFilters:{
+        status:null,
+        assets:null,
+        actions:null,
+      }
+    },() => {
+      this.processTxs();
+    });
   }
 
   async componentDidUpdate(prevProps, prevState) {
@@ -100,6 +144,12 @@ class TransactionsList extends Component {
       enabledTokens = Object.keys(this.props.availableTokens);
     }
 
+    const assets = {...this.state.filters.assets};
+
+    enabledTokens.forEach((token) => {
+      assets[token] = token;
+    });
+
     const etherscanTxs = await this.functionsUtil.getEtherscanTxs(this.props.account,lastBlockNumber,'latest',enabledTokens);
 
     // Merge new txs with previous ones
@@ -122,11 +172,15 @@ class TransactionsList extends Component {
       lastBlockNumber = parseInt(lastTx.blockNumber)+1;
     }
 
-    return this.setState({
+    return this.setState( prevState => ({
       prevTxs,
       loading:false,
-      lastBlockNumber
-    }, () => {
+      lastBlockNumber,
+      filters:{
+        ...prevState.filters,
+        assets
+      }
+    }), () => {
       this.processTxs()
     });
   };
@@ -139,7 +193,12 @@ class TransactionsList extends Component {
 
     // Sort prevTxs by timeStamp
     const txsIndexes = Object.values(this.state.prevTxs)
-                        .filter(tx => (!!parseFloat(tx.value)))
+                        .filter(tx => (!!parseFloat(tx.value))) // Filter txs with value
+                        .filter(tx => ( 
+                          (this.state.activeFilters.status === null || tx.status.toLowerCase() === this.state.activeFilters.status.toLowerCase()) && 
+                          (this.state.activeFilters.actions === null || tx.action.toLowerCase() === this.state.activeFilters.actions.toLowerCase()) && 
+                          (this.state.activeFilters.assets === null || tx.token.toLowerCase() === this.state.activeFilters.assets.toLowerCase())
+                        )) // Filter by activeFilters
                         .sort((a,b) => (a.timeStamp > b.timeStamp) ? -1 : 1 );
 
     // Calculate max number of pages
@@ -202,6 +261,9 @@ class TransactionsList extends Component {
   }
 
   render() {
+
+    const hasActiveFilters = Object.values(this.state.activeFilters).filter( v => (v !== null) ).length>0;
+
     return (
       <Flex flexDirection={'column'} width={1} m={'0 auto'}>
         {
@@ -219,109 +281,96 @@ class TransactionsList extends Component {
               }}
               text={'Loading transactions...'}
             />
-          ) : this.state.processedTxs && this.state.processedTxs.length ? (
-            <Flex id="transactions-list-container" width={1} flexDirection={'column'}>
-              <Flex
-                mb={3}
-                alignItems={'center'}
-                flexDirection={'row'}
-                justifyContent={'flex-start'}
-              >
-                <DashboardCard
-                  cardProps={{
-                    py:2,
-                    px:3,
-                    width:[1,1/6]
-                  }}
-                  isInteractive={true}
-                >
+          ) : (
+            <Flex
+              width={1}
+              pt={[0, hasActiveFilters ? '116px' : 5]}
+              position={'relative'}
+              flexDirection={'column'}
+              id={"transactions-list-container"}
+            >
+              <TransactionListFilters
+                {...this.props}
+                filters={this.state.filters}
+                activeFilters={this.state.activeFilters}
+                resetFilters={this.resetFilters.bind(this)}
+                applyFilters={this.applyFilters.bind(this)}
+              />
+              {
+                this.state.processedTxs && this.state.processedTxs.length ? (
                   <Flex
                     width={1}
-                    alignItems={'center'}
-                    flexDirection={'row'}
-                    justifyContent={'space-between'}
+                    flexDirection={'column'}
                   >
-                    <Text
-                      fontSize={2}
-                      fontWeight={500}
-                      color={'copyColor'}
+                    <TableHeader
+                      cols={this.props.cols}
+                    />
+                    <Flex id="transactions-list" flexDirection={'column'}>
+                      {
+                        this.state.processedTxs.map(transaction => {
+                          const transactionHash = transaction.hash;
+                          const handleClick = (e) => {
+                            return (transactionHash ? window.open(`https://etherscan.io/tx/${transactionHash}`) : null);
+                          };
+                          return (
+                            <TableRow
+                              {...this.props}
+                              rowProps={{
+                                isInteractive:true
+                              }}
+                              hash={transactionHash}
+                              transaction={transaction}
+                              handleClick={handleClick}
+                              key={`tx-${transactionHash}`}
+                              fieldComponent={TransactionField}
+                              rowId={`tx-col-${transactionHash}`}
+                              cardId={`tx-card-${transactionHash}`}
+                            />
+                          );
+                        })
+                      }
+                    </Flex>
+                    <Flex
+                      height={'50px'}
+                      flexDirection={'row'}
+                      alignItems={'center'}
+                      justifyContent={'flex-end'}
+                      id="transactions-list-pagination"
                     >
-                      Filters
-                    </Text>
-                    <Icon
-                      size={'1.5em'}
-                      name={'Tune'}
-                      color={'copyColor'}
-                    />
+                      <Flex mr={3}>
+                        <Link mr={1} onClick={ e => this.prevPage(e) }>
+                          <Icon
+                            name={'KeyboardArrowLeft'}
+                            size={'2em'}
+                            color={ this.state.page>1 ? '#4f4f4f' : '#d8d8d8' }
+                          />
+                        </Link>
+                        <Link onClick={ e => this.nextPage(e) }>
+                          <Icon
+                            name={'KeyboardArrowRight'}
+                            size={'2em'}
+                            color={ this.state.page<this.state.totalPages ? '#4f4f4f' : '#d8d8d8' }
+                          />
+                        </Link>
+                      </Flex>
+                      <Flex alignItems={'center'}>
+                        <Text 
+                          fontSize={1}
+                          fontWeight={3}
+                          color={'cellText'}
+                        >
+                          Page {this.state.page} of {this.state.totalPages}
+                        </Text>
+                      </Flex>
+                    </Flex>
                   </Flex>
-                </DashboardCard>
-              </Flex>
-              <TableHeader
-                cols={this.props.cols}
-              />
-              <Flex id="transactions-list" flexDirection={'column'}>
-                {
-                  this.state.processedTxs.map(transaction => {
-                    const transactionHash = transaction.hash;
-                    const handleClick = (e) => {
-                      return (transactionHash ? window.open(`https://etherscan.io/tx/${transactionHash}`) : null);
-                    };
-                    return (
-                      <TableRow
-                        {...this.props}
-                        rowProps={{
-                          isInteractive:true
-                        }}
-                        hash={transactionHash}
-                        transaction={transaction}
-                        handleClick={handleClick}
-                        key={`tx-${transactionHash}`}
-                        fieldComponent={TransactionField}
-                        rowId={`tx-col-${transactionHash}`}
-                        cardId={`tx-card-${transactionHash}`}
-                      />
-                    );
-                  })
-                }
-              </Flex>
-              <Flex
-                height={'50px'}
-                flexDirection={'row'}
-                alignItems={'center'}
-                justifyContent={'flex-end'}
-                id="transactions-list-pagination"
-              >
-                <Flex mr={3}>
-                  <Link mr={1} onClick={ e => this.prevPage(e) }>
-                    <Icon
-                      name={'KeyboardArrowLeft'}
-                      size={'2em'}
-                      color={ this.state.page>1 ? '#4f4f4f' : '#d8d8d8' }
-                    />
-                  </Link>
-                  <Link onClick={ e => this.nextPage(e) }>
-                    <Icon
-                      name={'KeyboardArrowRight'}
-                      size={'2em'}
-                      color={ this.state.page<this.state.totalPages ? '#4f4f4f' : '#d8d8d8' }
-                    />
-                  </Link>
-                </Flex>
-                <Flex alignItems={'center'}>
-                  <Text 
-                    fontSize={1}
-                    fontWeight={3}
-                    color={'cellText'}
-                  >
-                    Page {this.state.page} of {this.state.totalPages}
-                  </Text>
-                </Flex>
-              </Flex>
+                ) : (
+                  <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontWeight={2} fontSize={[2]} color={'dark-gray'}>
+                    There are no transactions
+                  </Heading.h3>
+                )
+              }
             </Flex>
-          ) : (
-            <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontWeight={2} fontSize={[2]} color={'dark-gray'}>
-              There are no transactions
-            </Heading.h3>
           )
         }
       </Flex>

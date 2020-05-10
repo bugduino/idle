@@ -432,7 +432,7 @@ class Stats extends Component {
                       {
                         title:'POOL',
                         props:{
-                          width:0.14,
+                          width:0.15,
                         },
                         fields:[
                           {
@@ -443,7 +443,7 @@ class Stats extends Component {
                       {
                         title:'APY',
                         props:{
-                          width:0.11,
+                          width: this.state.depositedTokens.length>0 ? 0.11 : 0.14,
                         },
                         fields:[
                           {
@@ -452,24 +452,17 @@ class Stats extends Component {
                         ]
                       },
                       {
-                        title:'DEPOSITED',
+                        title:'APR LAST WEEK',
                         props:{
-                          width:0.14,
+                          width: this.state.depositedTokens.length>0 ? 0.28 : 0.25,
+                        },
+                        parentProps:{
+                          width:1,
+                          pr:[2,4]
                         },
                         fields:[
                           {
-                            name:'amountLent'
-                          }
-                        ]
-                      },
-                      {
-                        title:'EARNINGS %',
-                        props:{
-                          width:0.14,
-                        },
-                        fields:[
-                          {
-                            name:'earningsPerc'
+                            name:'aprChart',
                           }
                         ]
                       },
