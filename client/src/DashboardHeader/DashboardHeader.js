@@ -5,9 +5,9 @@ import { Flex, Text, Icon, Link } from "rimble-ui";
 import MenuAccount from '../MenuAccount/MenuAccount';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 // import ButtonLoader from '../ButtonLoader/ButtonLoader';
-import DashboardCard from '../DashboardCard/DashboardCard';
+// import DashboardCard from '../DashboardCard/DashboardCard';
 import AccountModal from "../utilities/components/AccountModal";
-import AccountOverview from "../utilities/components/AccountOverview";
+// import AccountOverview from "../utilities/components/AccountOverview";
 
 class DashboardHeader extends Component {
 

@@ -5,19 +5,20 @@ import React, { Component } from 'react';
 import Toggler from '../Toggler/Toggler';
 import StatsCard from '../StatsCard/StatsCard';
 import AssetsList from '../AssetsList/AssetsList';
-import ButtonGroup from '../ButtonGroup/ButtonGroup';
-import RoundButton from '../RoundButton/RoundButton';
+import Breadcrumb from '../Breadcrumb/Breadcrumb';
+// import ButtonGroup from '../ButtonGroup/ButtonGroup';
 import globalConfigs from '../configs/globalConfigs';
-import { Link as RouterLink } from "react-router-dom";
+// import { Link as RouterLink } from "react-router-dom";
 import FunctionsUtil from '../utilities/FunctionsUtil';
-import availableTokens from '../configs/availableTokens';
+// import availableTokens from '../configs/availableTokens';
 import TokenSelector from '../TokenSelector/TokenSelector';
 import DashboardCard from '../DashboardCard/DashboardCard';
 import AssetSelector from '../AssetSelector/AssetSelector';
+import { Box, Flex, Text, Heading, Button } from 'rimble-ui';
+import RoundIconButton from '../RoundIconButton/RoundIconButton';
 import VariationNumber from '../VariationNumber/VariationNumber';
 import AllocationChart from '../AllocationChart/AllocationChart';
 import DateRangeModal from '../utilities/components/DateRangeModal';
-import { Box, Flex, Card, Text, Heading, Image, Button, Icon } from 'rimble-ui';
 
 class Stats extends Component {
   state = {
@@ -36,12 +37,20 @@ class Stats extends Component {
     minStartTime:null,
     endTimestamp:null,
     showAdvanced:true,
+    quickSelection:null,
     startTimestamp:null,
     endTimestampObj:null,
     carouselOffsetLeft:0,
     startTimestampObj:null,
     apiResults_unfiltered:null,
     dateRangeModalOpened:false
+  };
+
+  quickSelections = {
+    day:'Last day',
+    week:'Last week',
+    weeks:'Last 2 weeks',
+    month:'Last month'
   };
 
   // Utils
@@ -99,7 +108,7 @@ class Stats extends Component {
     }
   }
 
-  setDateRange = ranges => {
+  setDateRange = (ranges,quickSelection=null) => {
 
     const minStartTime = moment(globalConfigs.stats.tokens[this.props.selectedToken].startTimestamp);
 
@@ -118,6 +127,7 @@ class Stats extends Component {
     const newState = {
       minStartTime,
       endTimestamp,
+      quickSelection,
       startTimestamp,
       endTimestampObj,
       startTimestampObj
@@ -443,7 +453,7 @@ class Stats extends Component {
                       {
                         title:'APY',
                         props:{
-                          width: this.state.depositedTokens.length>0 ? 0.11 : 0.14,
+                          width: 0.14,
                         },
                         fields:[
                           {
@@ -454,7 +464,7 @@ class Stats extends Component {
                       {
                         title:'APR LAST WEEK',
                         props:{
-                          width: this.state.depositedTokens.length>0 ? 0.28 : 0.25,
+                          width: 0.25,
                         },
                         parentProps:{
                           width:1,
@@ -551,8 +561,12 @@ class Stats extends Component {
           >
             <Flex
               width={[1,0.6]}
-              id={'breadcrumb'}
             >
+              <Breadcrumb
+                text={'ASSETS OVERVIEW'}
+                path={[this.functionsUtil.getGlobalConfig(['strategies',this.props.selectedStrategy,'title']),this.props.selectedToken]}
+                handleClick={ e => this.props.goToSection('stats') }
+              />
             </Flex>
             <Flex
               width={[1,0.4]}
@@ -574,10 +588,33 @@ class Stats extends Component {
                 width={[1,0.48]}
                 flexDirection={'column'}
               >
+                <DashboardCard
+                  cardProps={{
+                    p:1,
+                    height:'100%',
+                    display:'flex',
+                    alignItems:'center',
+                    justifyContent:'center'
+                  }}
+                  isInteractive={true}
+                  handleClick={ e => this.setDateRangeModal(true) }
+                >
+                  <Text
+                    fontWeight={3}
+                    color={'copyColor'}
+                  >
+                  {
+                    this.state.quickSelection
+                    ?
+                      this.quickSelections[this.state.quickSelection]
+                    : this.state.startTimestampObj && this.state.endTimestampObj &&
+                      `${this.state.startTimestampObj.format('DD/MM/YY')} - ${this.state.endTimestampObj.format('DD/MM/YY')}`
+                  }
+                  </Text>
+                </DashboardCard>
               </Flex>
             </Flex>
           </Flex>
-
           <Flex
             width={1}
             mt={[5,0]}
@@ -746,45 +783,19 @@ class Stats extends Component {
               id={'carousel-container'}
               justifyContent={'flex-end'}
             >
-              <RoundButton
+              <RoundIconButton
                 buttonProps={{
-                  p:0,
-                  boxShadow:1,
-                  width:'40px',
-                  height:'40px',
-                  minWidth:'40px',
-                  mainColor:'white',
-                  borderRadius:'50%',
-                  disabled: this.state.carouselIndex === 0
+                  mr:3
                 }}
+                iconName={'ArrowBack'}
+                disabled={this.state.carouselIndex === 0}
                 handleClick={ e => this.handleCarousel('back') }
-              >
-                <Icon
-                  size={'1.3em'}
-                  name={'ArrowBack'}
-                  color={'copyColor'}
-                />
-              </RoundButton>
-              <RoundButton
-                buttonProps={{
-                  p:0,
-                  ml:3,
-                  boxShadow:1,
-                  width:'40px',
-                  height:'40px',
-                  minWidth:'40px',
-                  mainColor:'white',
-                  borderRadius:'50%',
-                  disabled: this.state.carouselIndex === this.state.carouselMax
-                }}
+              />
+              <RoundIconButton
+                iconName={'ArrowForward'}
                 handleClick={ e => this.handleCarousel('next') }
-              >
-                <Icon
-                  size={'1.3em'}
-                  color={'copyColor'}
-                  name={'ArrowForward'}
-                />
-              </RoundButton>
+                disabled={this.state.carouselIndex === this.state.carouselMax}
+              />
             </Flex>
             <Flex
               mt={5}
@@ -927,11 +938,12 @@ class Stats extends Component {
           <DateRangeModal
             minDate={this.state.minDate}
             maxDate={this.state.maxDate}
-            startDate={this.state.startTimestampObj ? this.state.startTimestampObj._d : null}
-            endDate={this.state.endTimestampObj ? this.state.endTimestampObj._d : null}
             handleSelect={this.setDateRange}
             isOpen={this.state.dateRangeModalOpened}
-            closeModal={e => this.setDateRangeModal(false)} />
+            closeModal={e => this.setDateRangeModal(false)}
+            startDate={this.state.startTimestampObj ? this.state.startTimestampObj._d : null}
+            endDate={this.state.endTimestampObj ? this.state.endTimestampObj._d : null}
+          />
         </Flex>
       );
     }

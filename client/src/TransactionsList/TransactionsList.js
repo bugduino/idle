@@ -4,7 +4,6 @@ import TableRow from '../TableRow/TableRow';
 import FlexLoader from '../FlexLoader/FlexLoader';
 import TableHeader from '../TableHeader/TableHeader';
 import FunctionsUtil from '../utilities/FunctionsUtil';
-import DashboardCard from '../DashboardCard/DashboardCard';
 import { Flex, Heading, Text, Link, Icon } from "rimble-ui";
 import TransactionField from '../TransactionField/TransactionField';
 import TransactionListFilters from '../TransactionListFilters/TransactionListFilters';

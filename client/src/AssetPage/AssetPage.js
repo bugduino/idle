@@ -1,6 +1,7 @@
 import { Flex } from "rimble-ui";
 import Title from '../Title/Title';
 import React, { Component } from 'react';
+import Breadcrumb from '../Breadcrumb/Breadcrumb';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import FundsOverview from '../FundsOverview/FundsOverview';
 import DepositRedeem from '../DepositRedeem/DepositRedeem';
@@ -83,6 +84,17 @@ class AssetPage extends Component {
         flexDirection={'column'}
         justifyContent={'center'}
       >
+        <Flex
+          width={1}
+          mb={[3,4]}
+          justifyContent={'flex-start'}
+        >
+          <Breadcrumb
+            path={[this.props.selectedToken]}
+            handleClick={ e => this.props.goToSection(this.props.selectedStrategy) }
+            text={this.functionsUtil.getGlobalConfig(['strategies',this.props.selectedStrategy,'title'])}
+          />
+        </Flex>
         <Title
           mb={[3,4]}
         >

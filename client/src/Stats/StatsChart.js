@@ -1,13 +1,13 @@
 import moment from 'moment';
 import theme from '../theme';
-import colors from '../colors';
 import { Bar } from '@nivo/bar';
 import { Line } from '@nivo/line';
 import React, { Component } from 'react';
-import { Flex, Loader, Text } from 'rimble-ui';
+import { Flex, Loader, Text, Box } from 'rimble-ui';
 import globalConfigs from '../configs/globalConfigs';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import GenericChart from '../GenericChart/GenericChart';
+import DashboardCard from '../DashboardCard/DashboardCard';
 
 class StatsChart extends Component {
   state = {
@@ -73,6 +73,100 @@ class StatsChart extends Component {
     if (!this.props.tokenConfig || !this.props.selectedToken || !this.props.chartMode || !this.props.apiResults){
       return false;
     }
+
+    const CustomTooltipRow = props => (
+      <Flex
+        mb={2}
+        width={1}
+        alignItems={'center'}
+        flexDirection={'row'}
+      >
+        <Flex
+          pr={2}
+          style={{
+            flexBasis:'0',
+            flex:'1 1 0px'
+          }}
+          alignItems={'center'}
+          justifyContent={'flex-start'}
+        > 
+          {
+            props.color && 
+            <Box
+              mr={2}
+              width={'10px'}
+              height={'10px'}
+              borderRadius={'50%'}
+              backgroundColor={props.color}
+            >
+            </Box>
+          }
+          <Text
+            fontSize={1}
+            fontWeight={2}
+            textAlign={'left'}
+            color={'dark-gray'}
+            style={{
+              textTransform:'capitalize'
+            }}
+          >
+            {props.label}
+          </Text>
+        </Flex>
+        <Flex
+          style={{
+            flexBasis:'0',
+            flex:'1 1 0px'
+          }}
+          alignItems={'center'}
+          justifyContent={'flex-end'}
+        >
+          <Text
+            fontSize={1}
+            fontWeight={3}
+            color={'cellText'}
+            textAlign={'right'}
+            style={{
+              whiteSpace:'nowrap'
+            }}
+            dangerouslySetInnerHTML={{
+              __html: props.value
+            }}
+          >
+          </Text>
+        </Flex>
+      </Flex>
+    );
+
+    const CustomTooltip = props => (
+      <DashboardCard
+        key={props.point.id}
+        cardProps={{
+          py:2,
+          px:3,
+          width:1
+        }}
+      >
+        <Flex
+          width={1}
+          flexDirection={'column'}
+        >
+          {
+            props.point.data.xFormatted && 
+              <Text
+                mb={2}
+                fontSize={1}
+                fontWeight={3}
+                color={'cellText'}
+                textAlign={'left'}
+              >
+                {props.point.data.xFormatted}
+              </Text>
+          }
+          {props.children}
+        </Flex>
+      </DashboardCard>
+    );
 
     const maxGridLines = 4;
     const apiResults = this.props.apiResults;
@@ -281,27 +375,43 @@ class StatsChart extends Component {
                 fontWeight:500,
                 fontFamily: theme.fonts.sansSerif
               }
+            },
+            tooltip:{
+              container:{
+                boxShadow:null,
+                background:null
+              }
             }
           },
           pointColor:{ from: 'color', modifiers: []},
           margin: this.props.isMobile ? { top: 20, right: 50, bottom: 70, left: 40 } : { top: 20, right: 70, bottom: 70, left: 40 },
-          tooltip:({ id, value, color }) => {
-            value = this.functionsUtil.formatMoney(value,0);
+          tooltip:(data) => {
+            const xFormatted = this.functionsUtil.strToMoment(data.indexValue).format('MMM DD HH:mm');
+            const point = {
+              id:data.id,
+              data:{
+                xFormatted
+              }
+            };
+            const depositFormatted = this.functionsUtil.abbreviateNumber(data.data.deposits,2)+' '+this.props.selectedToken;
+            const redeemFormatted = this.functionsUtil.abbreviateNumber(data.data.redeems,2)+' '+this.props.selectedToken;
             return (
-              <table style={{width:'100%',borderCollapse:'collapse'}}>
-                <tbody>
-                  <tr>
-                    <td style={{padding:'3px 5px'}}>
-                      <span style={{display:'block', width: '12px', height: '12px', background: color}}></span>
-                    </td>
-                    <td style={{padding:'3px 5px',textTransform:'capitalize'}}>{id}</td>
-                    <td style={{padding:'3px 5px'}}><strong>{value} {this.props.selectedToken}</strong></td>
-                  </tr>
-                </tbody>
-              </table>
+              <CustomTooltip
+                point={point}
+              >
+                <CustomTooltipRow
+                  label={'Deposits'}
+                  color={theme.colors.deposit}
+                  value={depositFormatted}
+                />
+                <CustomTooltipRow
+                  label={'Redeem'}
+                  color={theme.colors.redeem}
+                  value={redeemFormatted}
+                />
+              </CustomTooltip>
             );
           }
-          // labelFormat:v => `${v}%`
         };
       break;
       /*
@@ -531,6 +641,34 @@ class StatsChart extends Component {
             const point = slice.points[0];
             if (typeof point === 'object' && typeof point.data === 'object'){
               return (
+                <CustomTooltip
+                  point={point}
+                >
+                  <CustomTooltipRow
+                    label={point.serieId}
+                    color={point.serieColor}
+                    value={point.data.yFormatted}
+                  />
+                  {
+                    point.data.allocations && typeof point.data.allocations === 'object' &&
+                      Object.keys(point.data.allocations).map(protocolName => {
+                        const protocolColor = 'hsl('+globalConfigs.stats.protocols[protocolName].color.hsl.join(',')+')';
+                        const protocolAllocation = this.functionsUtil.formatMoney(point.data.allocations[protocolName],0);
+                        const protocolAllocationPerc = this.functionsUtil.BNify(point.data.allocations[protocolName]).div(this.functionsUtil.BNify(point.data.y)).times(100).toFixed(0)+'%';
+                        return (
+                          <CustomTooltipRow
+                            label={protocolName}
+                            color={protocolColor}
+                            key={`${point.id}_${protocolName}`}
+                            value={`${protocolAllocation} (${protocolAllocationPerc})`}
+                          />
+                        );
+                      })
+                  }
+                </CustomTooltip>
+              );
+              /*
+              return (
                 <div
                     key={point.id}
                     style={{
@@ -574,6 +712,7 @@ class StatsChart extends Component {
                   </div>
                 </div>
               );
+              */
             }
 
             return null;
@@ -957,6 +1096,32 @@ class StatsChart extends Component {
           },
           pointColor:{ from: 'color', modifiers: []},
           margin: this.props.isMobile ? { top: 20, right: 20, bottom: 70, left: 50 } : { top: 20, right: 40, bottom: 70, left: 70 },
+          sliceTooltip:(slideData) => {
+            const { slice } = slideData;
+            const point = slice.points[0];
+            return (
+              <CustomTooltip
+                point={point}
+              >
+                {
+                typeof slice.points === 'object' && slice.points.length &&
+                  slice.points.map(point => {
+                    const protocolName = point.serieId;
+                    const protocolEarning = point.data.yFormatted;
+                    // const protocolApy = point.data.apy;
+                    return (
+                      <CustomTooltipRow
+                        key={point.id}
+                        color={point.color}
+                        label={protocolName}
+                        value={protocolEarning}
+                      />
+                    );
+                  })
+                }
+              </CustomTooltip>
+            );
+          }
         };
       break;
       case 'PRICE':
@@ -1207,42 +1372,28 @@ class StatsChart extends Component {
           margin: this.props.isMobile ? { top: 20, right: 20, bottom: 80, left: 50 } : { top: 20, right: 40, bottom: 80, left: 80 },
           sliceTooltip:(slideData) => {
             const { slice } = slideData;
+            const point = slice.points[0];
             return (
-              <div
-                  key={`slice_${slice.id}`}
-                  style={{
-                    background: 'white',
-                    color: 'inherit',
-                    fontSize: 'inherit',
-                    borderRadius: '2px',
-                    boxShadow: 'rgba(0, 0, 0, 0.25) 0px 1px 2px',
-                    padding: '5px 9px'
-                  }}
+              <CustomTooltip
+                point={point}
               >
-                <div>
-                  <table style={{width:'100%',borderCollapse:'collapse'}}>
-                    <tbody>
-                      {
-                        typeof slice.points === 'object' && slice.points.length &&
-                          slice.points.map(point => {
-                            const protocolName = point.serieId;
-                            const protocolEarning = point.data.yFormatted;
-                            const protocolApy = point.data.apy;
-                            return (
-                              <tr key={`${point.id}_${protocolName}`}>
-                                <td style={{padding:'3px 5px'}}>
-                                  <span style={{display:'block', width: '12px', height: '12px', background: point.color}}></span>
-                                </td>
-                                <td style={{padding:'3px 5px',textTransform:'capitalize'}}>{protocolName}</td>
-                                <td style={{padding:'3px 5px'}}><strong>{protocolEarning}</strong> ({protocolApy}<small>% APY</small>)</td>
-                              </tr>
-                            );
-                          })
-                      }
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+                {
+                typeof slice.points === 'object' && slice.points.length &&
+                  slice.points.map(point => {
+                    const protocolName = point.serieId;
+                    const protocolEarning = point.data.yFormatted;
+                    const protocolApy = point.data.apy;
+                    return (
+                      <CustomTooltipRow
+                        key={point.id}
+                        label={protocolName}
+                        color={point.color}
+                        value={`${protocolEarning} <small>(${protocolApy}% APY)</small>`}
+                      />
+                    );
+                  })
+                }
+              </CustomTooltip>
             );
           }
         };

@@ -44,6 +44,7 @@ class GenericSelector extends Component {
       }
       return (
         <DashboardCard
+          isInteractive={true}
           cardProps={cardProps}
         >
           <Flex

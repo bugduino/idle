@@ -2,7 +2,6 @@ import theme from '../theme';
 import { Pie } from '@nivo/pie';
 import React, { Component } from 'react';
 import { Flex, Text, Image } from "rimble-ui";
-import AssetField from '../AssetField/AssetField';
 import SmartNumber from '../SmartNumber/SmartNumber';
 import globalConfigs from '../configs/globalConfigs';
 import FunctionsUtil from '../utilities/FunctionsUtil';

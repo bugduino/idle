@@ -264,9 +264,10 @@ const availableTokens = {
         idle:{
           abi:idleTokenV2,
           token:'idleDAIRisk',
-          address:'0x627ca78b2b693364223fb2c24c19cee03a45da60'
-          // address:'0x10eC0D497824e342bCB0EDcE00959142aAa766dD'
+          // address:'0x627ca78b2b693364223fb2c24c19cee03a45da60'
+          address:'0x10eC0D497824e342bCB0EDcE00959142aAa766dD'
         },
+        /*
         migration:{
           enabled:true,
           oldContract:{
@@ -289,7 +290,7 @@ const availableTokens = {
             ]
           }
         },
-        /*
+        */
         migration:{
           enabled:true,
           oldContract:{
@@ -317,7 +318,6 @@ const availableTokens = {
             ]
           }
         },
-        */
         protocols:[
           {
             name:'compound',

@@ -1,8 +1,6 @@
 import theme from '../theme';
-import Select from 'react-select';
 import React, { Component } from 'react';
 import FlexLoader from '../FlexLoader/FlexLoader';
-import AssetField from '../AssetField/AssetField';
 import RoundButton from '../RoundButton/RoundButton';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import BuyModal from '../utilities/components/BuyModal';

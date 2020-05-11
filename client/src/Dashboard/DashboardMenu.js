@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import styles from './Dashboard.module.scss';
-import MenuAccount from '../MenuAccount/MenuAccount';
+// import MenuAccount from '../MenuAccount/MenuAccount';
 import { Link as RouterLink } from "react-router-dom";
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import { Flex, Box, Icon, Text, Image } from 'rimble-ui';

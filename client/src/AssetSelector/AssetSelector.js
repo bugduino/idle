@@ -1,5 +1,4 @@
 import { Flex } from "rimble-ui";
-import Select from 'react-select';
 import React, { Component } from 'react';
 import AssetField from '../AssetField/AssetField';
 import FunctionsUtil from '../utilities/FunctionsUtil';
@@ -35,6 +34,7 @@ class AssetSelector extends Component {
       return (
         <Flex
           width={1}
+          alignItems={'center'}
           flexDirection={'row'}
         >
           <AssetField token={props.value} fieldInfo={{

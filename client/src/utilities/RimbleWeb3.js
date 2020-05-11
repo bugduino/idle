@@ -149,7 +149,7 @@ class RimbleTransaction extends React.Component {
     }
 
     const tokenChanged = prevProps.selectedToken !== this.props.selectedToken;
-    const availableTokensChanged = prevProps.availableTokens && this.props.availableTokens && JSON.stringify(Object.keys(prevProps.availableTokens)) !== JSON.stringify(Object.keys(this.props.availableTokens));
+    // const availableTokensChanged = prevProps.availableTokens && this.props.availableTokens && JSON.stringify(Object.keys(prevProps.availableTokens)) !== JSON.stringify(Object.keys(this.props.availableTokens));
     const availableStrategiesChanged = prevProps.availableStrategies && this.props.availableStrategies && JSON.stringify(Object.keys(prevProps.availableStrategies)) !== JSON.stringify(Object.keys(this.props.availableStrategies));
 
     // Reset tokenDecimals if token is changed

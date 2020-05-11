@@ -1,11 +1,11 @@
 import theme from '../theme';
 import React, { Component } from 'react';
-import RoundButton from '../RoundButton/RoundButton';
+// import RoundButton from '../RoundButton/RoundButton';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import ShortHash from "../utilities/components/ShortHash";
 import DashboardCard from '../DashboardCard/DashboardCard';
 import AccountModal from "../utilities/components/AccountModal";
-import { Flex, Icon, Image, Text, Button, Box } from "rimble-ui";
+import { Flex, Icon, Image, Text, Box } from "rimble-ui";
 
 class MenuAccount extends Component {
 

@@ -14,10 +14,10 @@ import RiskAdjustedStrategy from '../RiskAdjustedStrategy/RiskAdjustedStrategy';
 class Dashboard extends Component {
   state = {
     menu:[],
+    baseRoute:null,
     currentRoute:null,
     pageComponent:null,
     currentSection:null,
-    baseRoute:'/dashboard',
   };
 
   // Utils
@@ -121,7 +121,6 @@ class Dashboard extends Component {
     let pageComponent = null;
     let selectedToken = null;
     let currentSection = null;
-    let selectedSection = null;
     let selectedStrategy = null;
 
     // Set strategy
@@ -190,6 +189,7 @@ class Dashboard extends Component {
     await this.setState({
       menu,
       params,
+      baseRoute,
       currentRoute,
       pageComponent,
       currentSection
@@ -230,26 +230,29 @@ class Dashboard extends Component {
     }
   }
 
+  goToSection(section){
+    const newRoute = this.state.baseRoute+'/'+section;
+    window.location.hash=newRoute;
+    window.scrollTo(0, 0);
+  }
+
   changeToken(selectedToken){
     selectedToken = selectedToken.toUpperCase();
     if (Object.keys(this.props.availableTokens).includes(selectedToken)){
-      const baseRoute = this.functionsUtil.getGlobalConfig(['dashboard','baseRoute']);
-
-      let newRoute = baseRoute;
+      const routeParts = [];
 
       // Add section
       if (this.state.currentSection.toLowerCase() !== this.props.selectedStrategy.toLowerCase()){
-        newRoute+='/'+this.state.currentSection;
+        routeParts.push(this.state.currentSection);
       }
 
       // Add strategy
-      newRoute+='/'+this.props.selectedStrategy; 
+      routeParts.push(this.props.selectedStrategy); 
 
       // Add token
-      newRoute+='/'+selectedToken;
+      routeParts.push(selectedToken);
 
-      window.location.hash=newRoute;
-      window.scrollTo(0, 0);
+      this.goToSection(routeParts.join('/'));
     }
   }
 
@@ -311,6 +314,7 @@ class Dashboard extends Component {
                       {...this.props}
                       match={{ params:{} }}
                       changeToken={this.changeToken.bind(this)}
+                      goToSection={this.goToSection.bind(this)}
                       />
                 }
               </Flex>

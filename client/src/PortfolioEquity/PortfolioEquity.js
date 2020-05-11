@@ -1,8 +1,10 @@
 import theme from '../theme';
 import { Line } from '@nivo/line';
+import { Flex, Text } from "rimble-ui";
 import React, { Component } from 'react';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import GenericChart from '../GenericChart/GenericChart';
+import DashboardCard from '../DashboardCard/DashboardCard';
 
 class PortfolioEquity extends Component {
   state = {
@@ -319,6 +321,44 @@ class PortfolioEquity extends Component {
         },
       },
       margin:{ top: 30, right: 50, bottom: 65, left: 50 },
+      sliceTooltip:(slideData) => {
+        const { slice: {points} } = slideData;
+        const point = points[0];
+        // const formattedDate = this.functionsUtil.strToMoment(point.data.x).format('DD MMM, YYYY');
+        return (
+          <DashboardCard
+            key={point.id}
+            cardProps={{
+              py:2,
+              px:3
+            }}
+          >
+            <Flex
+              width={1}
+              flexDirection={'column'}
+            >
+              <Text
+                mb={2}
+                fontSize={1}
+                fontWeight={3}
+                color={'cellText'}
+                textAlign={'right'}
+              >
+                {point.data.xFormatted}
+              </Text>
+              <Text
+                mb={2}
+                fontWeight={3}
+                fontSize={[1,2]}
+                textAlign={'right'}
+                color={'copyColor'}
+              >
+                 {point.data.yFormatted} {point.serieId}
+              </Text>
+            </Flex>
+          </DashboardCard>
+        );
+      }
     };
 
     return (

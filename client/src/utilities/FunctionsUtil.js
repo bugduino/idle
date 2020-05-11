@@ -1063,10 +1063,15 @@ class FunctionsUtil {
       return null;
     }
   }
+
   getTokenApiData = async (address,startTimestamp=null,endTimestamp=null) => {
     if (globalConfigs.network.requiredNetwork!==1){
       return [];
     }
+
+    // TO REMOVE
+    return [];
+
     const apiInfo = globalConfigs.stats.rates;
     let endpoint = `${apiInfo.endpoint}${address}`;
 
@@ -1460,7 +1465,8 @@ class FunctionsUtil {
     return tokenAprs;
   }
   abbreviateNumber(value,decimals=3,maxPrecision=5,minPrecision=0){
-    let newValue = parseFloat(value);
+    const isNegative = parseFloat(value)<0;
+    let newValue = Math.abs(parseFloat(value));
     const suffixes = ["", "K", "M", "B","T"];
     let suffixNum = 0;
     while (newValue >= 1000) {
@@ -1484,6 +1490,11 @@ class FunctionsUtil {
       newValue = parseFloat(newValue).toPrecision(maxPrecision);
     } else if ((newValue.length-1)<minPrecision) {
       newValue = parseFloat(newValue).toPrecision(minPrecision);
+    }
+
+    // Add minus if number is negative
+    if (isNegative){
+      newValue = '-'+newValue;
     }
 
     newValue += suffixes[suffixNum];

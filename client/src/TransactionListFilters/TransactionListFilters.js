@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import styles from './TransactionListFilters.module.scss';
 import DashboardCard from '../DashboardCard/DashboardCard';
 import TableCellHeader from '../TableCellHeader/TableCellHeader';
-import { Flex, Heading, Text, Icon, Radio, Button, Link } from "rimble-ui";
+import { Flex, Text, Icon, Radio, Button, Link } from "rimble-ui";
 
 class TransactionListFilters extends Component {
 
@@ -93,6 +93,7 @@ class TransactionListFilters extends Component {
             }
           }}
           isInteractive={ !this.state.isOpened }
+          handleClick={ !this.state.isOpened ? this.toggleOpened : null }
         >
           <Flex
             width={1}
@@ -101,8 +102,8 @@ class TransactionListFilters extends Component {
             }}
             alignItems={'center'}
             flexDirection={'row'}
-            onClick={this.toggleOpened}
             justifyContent={'space-between'}
+            onClick={ this.state.isOpened ? this.toggleOpened : null }
           >
             <Text
               fontSize={2}
