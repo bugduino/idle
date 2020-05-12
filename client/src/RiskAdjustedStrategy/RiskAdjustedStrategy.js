@@ -15,6 +15,7 @@ import EarningsEstimation from '../EarningsEstimation/EarningsEstimation';
 class RiskAdjustedStrategy extends Component {
 
   state = {
+    tokensToMigrate:[],
     depositedTokens:null,
     remainingTokens:null,
     portfolioLoaded:false
@@ -43,29 +44,49 @@ class RiskAdjustedStrategy extends Component {
   async loadPortfolio(){
     // Load portfolio if account is set
     if (this.props.account){
+
+      const newState = {};
+
       const portfolio = await this.functionsUtil.getAccountPortfolio(this.props.availableTokens,this.props.account);
+
       if (portfolio){
         const depositedTokens = Object.keys(portfolio.tokensBalance).filter(token => {
           return this.functionsUtil.BNify(portfolio.tokensBalance[token].idleTokenBalance).gt(0);
         });
         const remainingTokens = Object.keys(this.props.availableTokens).filter(token => !depositedTokens.includes(token) );
-        this.setState({
-          depositedTokens,
-          remainingTokens
-        });
+
+        newState.depositedTokens = depositedTokens;
+        newState.remainingTokens = remainingTokens;
       }
+
+      const tokensToMigrate = [];
+      await this.functionsUtil.asyncForEach(Object.keys(this.props.availableTokens),async (token) => {
+        const tokenConfig = this.props.availableTokens[token];
+        const {
+          migrationEnabled,
+          oldContractBalance,
+          oldContractTokenDecimals,
+          oldContractBalanceFormatted,
+        } = await this.functionsUtil.checkMigration(tokenConfig,this.props.account);
+        
+        if (migrationEnabled){
+          tokensToMigrate.push(token);
+        }
+      });
+
+      newState.tokensToMigrate = tokensToMigrate;
+      newState.portfolioLoaded = true;
 
       // Load and process Etherscan Txs
       const firstBlockNumber = this.functionsUtil.getGlobalConfig(['network','firstBlockNumber']);
       await this.functionsUtil.getEtherscanTxs(this.props.account,firstBlockNumber,'latest',Object.keys(this.props.availableTokens));
 
       // Portfolio loaded
-      this.setState({
-        portfolioLoaded:true
-      });
+      this.setState(newState);
     // Show available assets for not logged users
     } else {
       this.setState({
+        tokensToMigrate:[],
         depositedTokens:[],
         portfolioLoaded:true,
         remainingTokens:Object.keys(this.props.availableTokens),
@@ -387,7 +408,9 @@ class RiskAdjustedStrategy extends Component {
                             fields:[
                               {
                                 name:'button',
-                                label:'Deposit',
+                                label: (props) => {
+                                  return this.state.tokensToMigrate.includes(props.token) ? 'Migrate' : 'Deposit';
+                                },
                                 props:{
                                   width:1,
                                   fontSize:3,
@@ -395,7 +418,7 @@ class RiskAdjustedStrategy extends Component {
                                   height:'45px',
                                   borderRadius:4,
                                   boxShadow:null,
-                                  mainColor:'deposit',
+                                  mainColor: 'deposit',
                                   handleClick:(props) => this.props.changeToken(props.token)
                                 }
                               }

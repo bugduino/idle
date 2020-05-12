@@ -462,6 +462,10 @@ class AssetField extends Component {
     // Replace props
     if (fieldInfo.props && Object.keys(fieldInfo.props).length){
       Object.keys(fieldInfo.props).forEach(p => {
+        // if (typeof fieldInfo.props[p]==='function'){
+        //   fieldProps[p] = fieldInfo.props[p](this.props);
+        // } else {
+        // }
         fieldProps[p] = fieldInfo.props[p];
       });
     }
@@ -558,8 +562,9 @@ class AssetField extends Component {
         ) : loader
       break;
       case 'button':
+        const buttonLabel = typeof fieldInfo.label === 'function' ? fieldInfo.label(this.props) : fieldInfo.label;
         output = (
-          <Button {...fieldProps} onClick={() => fieldProps.handleClick(this.props) }>{fieldInfo.label}</Button>
+          <Button {...fieldProps} onClick={() => fieldProps.handleClick(this.props) }>{buttonLabel}</Button>
         );
       break;
       case 'performanceChart':

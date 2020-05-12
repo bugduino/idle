@@ -1163,6 +1163,56 @@ class FunctionsUtil {
     }
     return false;
   }
+  checkMigration = async (tokenConfig,account) => {
+
+    if (!tokenConfig || !account){
+      return false;
+    }
+
+    let migrationEnabled = false;
+    let oldContractBalance = null;
+    let oldContractTokenDecimals = null;
+    // let migrationContractApproved = false;
+    let oldContractBalanceFormatted = null;
+
+    // Check migration contract enabled and balance
+    if (tokenConfig.migration && tokenConfig.migration.enabled){
+      const oldContractName = tokenConfig.migration.oldContract.name;
+      const oldContract = this.getContractByName(oldContractName);
+      const migrationContract = this.getContractByName(tokenConfig.migration.migrationContract.name);
+
+      if (oldContract && migrationContract){
+        // Get old contract token decimals
+        oldContractTokenDecimals = await this.getTokenDecimals(oldContractName);
+
+        // console.log('Migration - token decimals',oldContractTokenDecimals ? oldContractTokenDecimals.toString() : null);
+
+        // Check migration contract approval
+        // migrationContractApproved = await this.checkMigrationContractApproved();
+
+        // console.log('Migration - approved',migrationContractApproved ? migrationContractApproved.toString() : null);
+
+        // Check old contractBalance
+        oldContractBalance = await this.getContractBalance(oldContractName,account);
+
+        // console.log('Migration - oldContractBalance',oldContractBalance ? oldContractBalance.toString() : null);
+        if (oldContractBalance){
+          oldContractBalanceFormatted = this.fixTokenDecimals(oldContractBalance,oldContractTokenDecimals);
+          // Enable migration if old contract balance if greater than 0
+          migrationEnabled = this.BNify(oldContractBalance).gt(0);
+        }
+      }
+    }
+
+    // Set migration contract balance
+    return {
+      migrationEnabled,
+      oldContractBalance,
+      oldContractTokenDecimals,
+      // migrationContractApproved,
+      oldContractBalanceFormatted,
+    };
+  }
   checkTokenApproved = async (token,contractAddr,walletAddr) => {
     const value = this.props.web3.utils.toWei('0','ether');
     const allowance = await this.getAllowance(token,contractAddr,walletAddr);
