@@ -1,4 +1,5 @@
 import theme from '../theme';
+import Migrate from '../Migrate/Migrate';
 import React, { Component } from 'react';
 import FlexLoader from '../FlexLoader/FlexLoader';
 import RoundButton from '../RoundButton/RoundButton';
@@ -54,7 +55,6 @@ class DepositRedeem extends Component {
     const tokenChanged = prevProps.selectedToken !== this.props.selectedToken;
 
     if (tokenChanged || tokenBalanceChanged){
-
       this.loadTokenInfo();
       return false;
     }
@@ -566,272 +566,276 @@ class DepositRedeem extends Component {
               {...this.props}
             />
           </Flex>
-          {
-            !this.props.account ? (
-              <DashboardCard
-                cardProps={{
-                  p:3,
-                  mt:3
-                }}
-              >
-                <Flex
-                  alignItems={'center'}
-                  flexDirection={'column'}
-                >
-                  <Icon
-                    size={'2.3em'}
-                    name={'Input'}
-                    color={'cellText'}
-                  />
-                  <Text
-                    mt={3}
-                    fontSize={2}
-                    color={'cellText'}
-                    textAlign={'center'}
-                  >
-                    Please connect with your wallet interact with Idle.
-                  </Text>
-                  <RoundButton
-                    buttonProps={{
-                      mt:3,
-                      width:[1,1/2]
-                    }}
-                    handleClick={this.props.connectAndValidateAccount}
-                  >
-                    Connect
-                  </RoundButton>
-                </Flex>
-              </DashboardCard>
-            ) :
-            this.state.componentMounted ? (
-              !tokenApproved ? (
+          <Migrate
+            {...this.props}
+          >
+            {
+              !this.props.account ? (
                 <DashboardCard
                   cardProps={{
                     p:3,
                     mt:3
                   }}
                 >
-                  {
-                    this.state.processing['approve'] && this.state.processing['approve'].loading ? (
-                      <Flex
-                        flexDirection={'column'}
-                      >
-                        <TxProgressBar web3={this.props.web3} waitText={`Approve estimated in`} endMessage={`Finalizing approve request...`} hash={this.state.processing['approve'].txHash} />
-                      </Flex>
-                    ) : (
-                      <Flex
-                        alignItems={'center'}
-                        flexDirection={'column'}
-                      >
-                        <Icon
-                          size={'2.3em'}
-                          name={'LockOpen'}
-                          color={'cellText'}
-                        />
-                        <Text
-                          mt={3}
-                          fontSize={2}
-                          color={'cellText'}
-                          textAlign={'center'}
-                        >
-                          To Deposit/Redeem your {this.props.selectedToken} into Idle you need to enable our Smart-Contract first.
-                        </Text>
-                        <RoundButton
-                          buttonProps={{
-                            mt:3,
-                            width:[1,1/2]
-                          }}
-                          handleClick={this.approveToken.bind(this)}
-                        >
-                          Enable
-                        </RoundButton>
-                      </Flex>
-                    )
-                  }
-                </DashboardCard>
-              ) :
-              this.state.action ? (
-                <Box width={1}>
                   <Flex
-                    mt={3}
+                    alignItems={'center'}
                     flexDirection={'column'}
                   >
-                    <Text mb={2}>
-                      Choose the action:
-                    </Text>
-                    <Flex
-                      alignItems={'center'}
-                      flexDirection={'row'}
-                      justifyContent={'space-between'}
+                    <Icon
+                      size={'2.3em'}
+                      name={'Input'}
+                      color={'cellText'}
+                    />
+                    <Text
+                      mt={3}
+                      fontSize={2}
+                      color={'cellText'}
+                      textAlign={'center'}
                     >
-                      <DashboardCard
-                        cardProps={{
-                          p:3,
-                          width:0.48,
-                          onMouseDown:() => {
-                            this.setAction('deposit');
-                          }
-                        }}
-                        isInteractive={true}
-                        isActive={ this.state.action === 'deposit' }
-                      >
-                        <Flex
-                          my={1}
-                          alignItems={'center'}
-                          flexDirection={'row'}
-                          justifyContent={'center'}
-                        >
-                          <TransactionField
-                            transaction={{
-                              action:'deposit'
-                            }}
-                            fieldInfo={{
-                              name:'icon',
-                              props:{
-                                mr:3
-                              }
-                            }}
-                          />
-                          <Text
-                            fontSize={3}
-                            fontWeight={3}
-                          >
-                            Deposit
-                          </Text>
-                        </Flex>
-                      </DashboardCard>
-                      <DashboardCard
-                        cardProps={{
-                          p:3,
-                          width:0.48,
-                          onMouseDown:() => {
-                            this.setAction('redeem');
-                          }
-                        }}
-                        isInteractive={true}
-                        isActive={ this.state.action === 'redeem' }
-                        isDisabled={ !this.state.canRedeem }
-                      >
-                        <Flex
-                          my={1}
-                          alignItems={'center'}
-                          flexDirection={'row'}
-                          justifyContent={'center'}
-                        >
-                          <TransactionField
-                            transaction={{
-                              action:'redeem'
-                            }}
-                            fieldInfo={{
-                              name:'icon',
-                              props:{
-                                mr:3
-                              }
-                            }}
-                          />
-                          <Text
-                            fontSize={3}
-                            fontWeight={3}
-                          >
-                            Redeem
-                          </Text>
-                        </Flex>
-                      </DashboardCard>
-                    </Flex>
+                      Please connect with your wallet interact with Idle.
+                    </Text>
+                    <RoundButton
+                      buttonProps={{
+                        mt:3,
+                        width:[1,1/2]
+                      }}
+                      handleClick={this.props.connectAndValidateAccount}
+                    >
+                      Connect
+                    </RoundButton>
                   </Flex>
-                  {
-                    !showBuyFlow && (
-                      !this.state.processing[this.state.action].loading ? (
+                </DashboardCard>
+              ) :
+              this.state.componentMounted ? (
+                !tokenApproved ? (
+                  <DashboardCard
+                    cardProps={{
+                      p:3,
+                      mt:3
+                    }}
+                  >
+                    {
+                      this.state.processing['approve'] && this.state.processing['approve'].loading ? (
                         <Flex
-                          mt={3}
                           flexDirection={'column'}
                         >
-                          <Input
-                            min={0}
-                            type={"number"}
-                            required={true}
-                            height={'3.4em'}
-                            borderRadius={2}
-                            fontWeight={500}
-                            onChange={this.changeInputValue.bind(this)}
-                            boxShadow={'none !important'}
-                            border={`1px solid ${theme.colors.divider}`}
-                            placeholder={`Insert ${this.props.selectedToken.toUpperCase()} amount`}
-                            value={this.state.inputValue[this.state.action] !== null ? this.functionsUtil.BNify(this.state.inputValue[this.state.action]).toString() : ''}
-                          />
-                          <Flex
-                            mt={3}
-                            alignItems={'center'}
-                            flexDirection={'row'}
-                            justifyContent={'space-between'}
-                          >
-                            <FastBalanceSelectorComponent
-                              percentage={25}
-                              onMouseDown={()=>this.setFastBalanceSelector(25)}
-                            />
-                            <FastBalanceSelectorComponent
-                              percentage={50}
-                              onMouseDown={()=>this.setFastBalanceSelector(50)}
-                            />
-                            <FastBalanceSelectorComponent
-                              percentage={75}
-                              onMouseDown={()=>this.setFastBalanceSelector(75)}
-                            />
-                            <FastBalanceSelectorComponent
-                              percentage={100}
-                              onMouseDown={()=>this.setFastBalanceSelector(100)}
-                            />
-                          </Flex>
-                          <Flex
-                            mt={3}
-                            justifyContent={'center'}
-                          >
-                            <RoundButton
-                              buttonProps={{
-                                width:[1,1/2],
-                                disabled:this.state.buttonDisabled,
-                                style:{
-                                  textTransform:'capitalize'
-                                }
-                              }}
-                              handleClick={this.state.buttonDisabled ? null : this.executeAction.bind(this) }
-                            >
-                              {this.state.action}
-                            </RoundButton>
-                          </Flex>
+                          <TxProgressBar web3={this.props.web3} waitText={`Approve estimated in`} endMessage={`Finalizing approve request...`} hash={this.state.processing['approve'].txHash} />
                         </Flex>
                       ) : (
                         <Flex
-                          mt={4}
+                          alignItems={'center'}
                           flexDirection={'column'}
                         >
-                          <TxProgressBar web3={this.props.web3} waitText={`${this.state.action} estimated in`} endMessage={`Finalizing ${this.state.action} request...`} hash={this.state.processing[this.state.action].txHash} />
+                          <Icon
+                            size={'2.3em'}
+                            name={'LockOpen'}
+                            color={'cellText'}
+                          />
+                          <Text
+                            mt={3}
+                            fontSize={2}
+                            color={'cellText'}
+                            textAlign={'center'}
+                          >
+                            To Deposit/Redeem your {this.props.selectedToken} into Idle you need to enable our Smart-Contract first.
+                          </Text>
+                          <RoundButton
+                            buttonProps={{
+                              mt:3,
+                              width:[1,1/2]
+                            }}
+                            handleClick={this.approveToken.bind(this)}
+                          >
+                            Enable
+                          </RoundButton>
                         </Flex>
                       )
-                    )
-                  }
-                </Box>
-              ) : null
-            ) : (
-              <Flex
-                mt={4}
-                flexDirection={'column'}
-              >
-                <FlexLoader
-                  flexProps={{
-                    flexDirection:'row'
-                  }}
-                  loaderProps={{
-                    size:'30px'
-                  }}
-                  textProps={{
-                    ml:2
-                  }}
-                  text={'Loading asset info...'}
-                />
-              </Flex>
-            )
-          }
+                    }
+                  </DashboardCard>
+                ) :
+                this.state.action ? (
+                  <Box width={1}>
+                    <Flex
+                      mt={3}
+                      flexDirection={'column'}
+                    >
+                      <Text mb={2}>
+                        Choose the action:
+                      </Text>
+                      <Flex
+                        alignItems={'center'}
+                        flexDirection={'row'}
+                        justifyContent={'space-between'}
+                      >
+                        <DashboardCard
+                          cardProps={{
+                            p:3,
+                            width:0.48,
+                            onMouseDown:() => {
+                              this.setAction('deposit');
+                            }
+                          }}
+                          isInteractive={true}
+                          isActive={ this.state.action === 'deposit' }
+                        >
+                          <Flex
+                            my={1}
+                            alignItems={'center'}
+                            flexDirection={'row'}
+                            justifyContent={'center'}
+                          >
+                            <TransactionField
+                              transaction={{
+                                action:'deposit'
+                              }}
+                              fieldInfo={{
+                                name:'icon',
+                                props:{
+                                  mr:3
+                                }
+                              }}
+                            />
+                            <Text
+                              fontSize={3}
+                              fontWeight={3}
+                            >
+                              Deposit
+                            </Text>
+                          </Flex>
+                        </DashboardCard>
+                        <DashboardCard
+                          cardProps={{
+                            p:3,
+                            width:0.48,
+                            onMouseDown:() => {
+                              this.setAction('redeem');
+                            }
+                          }}
+                          isInteractive={true}
+                          isActive={ this.state.action === 'redeem' }
+                          isDisabled={ !this.state.canRedeem }
+                        >
+                          <Flex
+                            my={1}
+                            alignItems={'center'}
+                            flexDirection={'row'}
+                            justifyContent={'center'}
+                          >
+                            <TransactionField
+                              transaction={{
+                                action:'redeem'
+                              }}
+                              fieldInfo={{
+                                name:'icon',
+                                props:{
+                                  mr:3
+                                }
+                              }}
+                            />
+                            <Text
+                              fontSize={3}
+                              fontWeight={3}
+                            >
+                              Redeem
+                            </Text>
+                          </Flex>
+                        </DashboardCard>
+                      </Flex>
+                    </Flex>
+                    {
+                      !showBuyFlow && (
+                        !this.state.processing[this.state.action].loading ? (
+                          <Flex
+                            mt={3}
+                            flexDirection={'column'}
+                          >
+                            <Input
+                              min={0}
+                              type={"number"}
+                              required={true}
+                              height={'3.4em'}
+                              borderRadius={2}
+                              fontWeight={500}
+                              onChange={this.changeInputValue.bind(this)}
+                              boxShadow={'none !important'}
+                              border={`1px solid ${theme.colors.divider}`}
+                              placeholder={`Insert ${this.props.selectedToken.toUpperCase()} amount`}
+                              value={this.state.inputValue[this.state.action] !== null ? this.functionsUtil.BNify(this.state.inputValue[this.state.action]).toString() : ''}
+                            />
+                            <Flex
+                              mt={3}
+                              alignItems={'center'}
+                              flexDirection={'row'}
+                              justifyContent={'space-between'}
+                            >
+                              <FastBalanceSelectorComponent
+                                percentage={25}
+                                onMouseDown={()=>this.setFastBalanceSelector(25)}
+                              />
+                              <FastBalanceSelectorComponent
+                                percentage={50}
+                                onMouseDown={()=>this.setFastBalanceSelector(50)}
+                              />
+                              <FastBalanceSelectorComponent
+                                percentage={75}
+                                onMouseDown={()=>this.setFastBalanceSelector(75)}
+                              />
+                              <FastBalanceSelectorComponent
+                                percentage={100}
+                                onMouseDown={()=>this.setFastBalanceSelector(100)}
+                              />
+                            </Flex>
+                            <Flex
+                              mt={3}
+                              justifyContent={'center'}
+                            >
+                              <RoundButton
+                                buttonProps={{
+                                  width:[1,1/2],
+                                  disabled:this.state.buttonDisabled,
+                                  style:{
+                                    textTransform:'capitalize'
+                                  }
+                                }}
+                                handleClick={this.state.buttonDisabled ? null : this.executeAction.bind(this) }
+                              >
+                                {this.state.action}
+                              </RoundButton>
+                            </Flex>
+                          </Flex>
+                        ) : (
+                          <Flex
+                            mt={4}
+                            flexDirection={'column'}
+                          >
+                            <TxProgressBar web3={this.props.web3} waitText={`${this.state.action} estimated in`} endMessage={`Finalizing ${this.state.action} request...`} hash={this.state.processing[this.state.action].txHash} />
+                          </Flex>
+                        )
+                      )
+                    }
+                  </Box>
+                ) : null
+              ) : (
+                <Flex
+                  mt={4}
+                  flexDirection={'column'}
+                >
+                  <FlexLoader
+                    flexProps={{
+                      flexDirection:'row'
+                    }}
+                    loaderProps={{
+                      size:'30px'
+                    }}
+                    textProps={{
+                      ml:2
+                    }}
+                    text={'Loading asset info...'}
+                  />
+                </Flex>
+              )
+            }
+          </Migrate>
         </Flex>
         {
           showBuyFlow &&

@@ -3,7 +3,7 @@ import cDAI from '../abis/compound/cDAI';
 import iDAI from '../abis/fulcrum/iToken.json';
 import aToken from '../abis/aave/AToken.json';
 import idleDAIv1 from '../contracts/IdleDAI.json';
-import idleTokenV2 from '../contracts/IdleTokenV2.json';
+import IdleTokenV2 from '../contracts/IdleTokenV2.json';
 import IdleTokenV3 from '../contracts/IdleTokenV3.json';
 import IdleMcdBridgeV1 from '../contracts/IdleMcdBridgeV1.json';
 
@@ -32,7 +32,7 @@ const availableTokens = {
         token:'sai',
       },
       idle:{
-        abi:idleTokenV2,
+        abi:IdleTokenV2,
         token:'idleSAI',
         address:'0x5266C66FC100d2FBE5dbCfE8a8789568D2d2F720'
       },
@@ -118,7 +118,7 @@ const availableTokens = {
         token:'dai'
       },
       idle:{
-        abi:idleTokenV2,
+        abi:IdleTokenV2,
         token:'idleDAI',
         address:'0x199e7c55B44fFBD2934bFC3bDeE05F6EC2b547CF'
       },
@@ -200,7 +200,7 @@ const availableTokens = {
         token:'usdc'
       },
       idle:{
-        abi:idleTokenV2,
+        abi:IdleTokenV2,
         token:'idleUSDC',
         address:'0x17c5efC8dbd9b1b34457eE46c3C8e0F928e80dbE'
       },
@@ -262,16 +262,15 @@ const availableTokens = {
           token:'dai'
         },
         idle:{
-          abi:idleTokenV2,
+          abi:IdleTokenV3,
           token:'idleDAIRisk',
-          // address:'0x627ca78b2b693364223fb2c24c19cee03a45da60'
-          address:'0x10eC0D497824e342bCB0EDcE00959142aAa766dD'
+          address:'0x627ca78b2b693364223fb2c24c19cee03a45da60'
+          // address:'0x10eC0D497824e342bCB0EDcE00959142aAa766dD'
         },
-        /*
         migration:{
           enabled:true,
           oldContract:{
-            abi:idleDAIv1.abi,
+            abi:IdleTokenV2,
             token:'idleDAI',
             name:'oldContract',
             address:'0x10eC0D497824e342bCB0EDcE00959142aAa766dD',
@@ -279,18 +278,18 @@ const availableTokens = {
           migrationContract:{
             abi:IdleMcdBridgeV1,
             token:'idleDAI',
-            name:'migrationContract',
+            name:'migrateIdleDAI',
             address:'0x7aB2a7ed1a0C58DEa84DE880b4F1710229137211',
             functions:[
               {
-                name:'bridgeIdleV1ToIdleV2',
-                label:'MIGRATE TO idleDAI v2',
+                label:'Migrate',
+                name:'bridgeIdleV2ToIdleV3',
                 params:['0x10eC0D497824e342bCB0EDcE00959142aAa766dD','0x627ca78b2b693364223fb2c24c19cee03a45da60']
               },
             ]
           }
         },
-        */
+        /*
         migration:{
           enabled:true,
           oldContract:{
@@ -318,6 +317,7 @@ const availableTokens = {
             ]
           }
         },
+        */
         protocols:[
           {
             name:'compound',
@@ -381,7 +381,7 @@ const availableTokens = {
           token:'usdc'
         },
         idle:{
-          abi:idleTokenV2,
+          abi:IdleTokenV2,
           token:'idleUSDCRisk',
           address:'0xeB66ACc3d011056B00ea521F8203580C2E5d3991'
         },
@@ -453,7 +453,7 @@ const availableTokens = {
           token:'dai'
         },
         idle:{
-          abi:idleTokenV2,
+          abi:IdleTokenV2,
           token:'idleDAIBest',
           address:'0x10eC0D497824e342bCB0EDcE00959142aAa766dD'
         },
@@ -547,7 +547,7 @@ const availableTokens = {
           token:'usdc'
         },
         idle:{
-          abi:idleTokenV2,
+          abi:IdleTokenV2,
           token:'idleUSDCBest',
           address:'0xeB66ACc3d011056B00ea521F8203580C2E5d3991'
         },

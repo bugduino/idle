@@ -32,12 +32,14 @@ class Breadcrumb extends Component {
        </Link>
        {
         this.props.path && this.props.path.length>0 &&
-          this.props.path.map((path) => (
+          this.props.path.map((path,index) => (
            <Text
              ml={3}
              pl={3}
              fontSize={2}
              fontWeight={3}
+             color={'statValue'}
+             key={`breadcrumb_path_${index}`}
              borderLeft={`1px solid ${theme.colors.divider}`}
            >
              {path}

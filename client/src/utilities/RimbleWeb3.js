@@ -1185,6 +1185,10 @@ class RimbleTransaction extends React.Component {
       if ( this.functionsUtil.checkUrlOrigin() && isError && !isDeniedTx){
         Sentry.captureException(error);
       }
+
+      if (callback) {
+        callback(transaction,error);
+      }
     }
   }
 
