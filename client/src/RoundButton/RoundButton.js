@@ -8,8 +8,8 @@ class RoundButton extends Component {
       fontSize:3,
       fontWeight:3,
       height:'45px',
-      borderRadius:4,
       boxShadow:null,
+      borderRadius:4,
       mainColor:'primary'
     },this.props.buttonProps);
 

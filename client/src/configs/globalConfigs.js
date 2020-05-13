@@ -111,6 +111,7 @@ const globalConfigs = {
     }
   },
   stats:{
+    enabled:false, // Enable endpoint
     rates:{
       endpoint:'https://api.idle.finance/rates/',
       TTL:3600 // 1 hour

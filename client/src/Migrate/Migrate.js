@@ -1,12 +1,10 @@
-import theme from '../theme';
 import React, { Component } from 'react';
 import FlexLoader from '../FlexLoader/FlexLoader';
-import { Flex, Link, Text, Icon } from "rimble-ui";
+import { Flex, Text, Icon } from "rimble-ui";
 import RoundButton from '../RoundButton/RoundButton';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import DashboardCard from '../DashboardCard/DashboardCard';
 import TxProgressBar from '../TxProgressBar/TxProgressBar';
-import RoundIconButton from '../RoundIconButton/RoundIconButton';
 
 class Migrate extends Component {
 
@@ -252,8 +250,6 @@ class Migrate extends Component {
           if (error || eventData.status !== 'error'){
             this.functionsUtil.sendGoogleAnalyticsEvent(eventData);
           }
-
-          console.log('callbackMigrate',tx,error);
 
           if (tx.status === 'success'){
             // Toast message

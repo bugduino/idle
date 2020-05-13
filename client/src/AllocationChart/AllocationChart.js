@@ -93,7 +93,7 @@ class AllocationChart extends Component {
         },
         labels:{
           text:{
-            fontSize:16,
+            fontSize:15,
             fontWeight:600,
             fontFamily: theme.fonts.sansSerif
           }
@@ -115,7 +115,7 @@ class AllocationChart extends Component {
       radialLabelsLinkDiagonalLength:0,
       radialLabelsLinkHorizontalLength:0,
       radialLabelsLinkColor:{ from: 'color' },
-      margin:{ top: 0, right: 35, bottom: 35, left: 35 },
+      margin:{ top: 10, right: 35, bottom: 0, left: 35 },
       borderColor:{ from: 'color', modifiers: [ [ 'darker', 0.2 ] ] },
     };
 
@@ -160,7 +160,7 @@ class AllocationChart extends Component {
               top={'25%'}
               left={'27%'}
               width={'46%'}
-              height={'35%'}
+              height={'46%'}
               textAlign={'center'}
               alignItems={'center'}
               position={'absolute'}
@@ -236,6 +236,7 @@ class AllocationChart extends Component {
         <GenericChart
           type={Pie}
           {...this.props}
+          showLoader={true}
           {...this.state.chartProps}
           data={this.state.chartData}
         />

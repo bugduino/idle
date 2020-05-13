@@ -71,15 +71,13 @@ class GenericChart extends Component {
       width
     }
 
-    // console.log(this.props.parentId,width,height);
-
     return chartProps.showLoader && (!chartProps.data || !width || !height) ? (
       <Flex
         width={1}
+        height={height}
         alignItems={'center'}
         flexDirection={'column'}
         justifyContent={'center'}
-        height={height}
       >
         <Loader size="30px" mb={2} /> <Text ml={2}>Loading graph data...</Text>
       </Flex>

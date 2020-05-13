@@ -1315,7 +1315,7 @@ class StatsChart extends Component {
           useMesh:true,
           animate:false,
           pointLabel:"y",
-          curve:'linear',
+          curve:'monotoneX',
           enableArea:false,
           enableSlices:'x',
           enableGridX:false,

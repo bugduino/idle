@@ -3,6 +3,7 @@ import Title from '../Title/Title';
 import StatsChart from './StatsChart';
 import React, { Component } from 'react';
 import Toggler from '../Toggler/Toggler';
+import Rebalance from '../Rebalance/Rebalance';
 import StatsCard from '../StatsCard/StatsCard';
 import AssetsList from '../AssetsList/AssetsList';
 import Breadcrumb from '../Breadcrumb/Breadcrumb';
@@ -40,6 +41,7 @@ class Stats extends Component {
     quickSelection:null,
     startTimestamp:null,
     endTimestampObj:null,
+    shouldRebalance:null,
     carouselOffsetLeft:0,
     startTimestampObj:null,
     apiResults_unfiltered:null,
@@ -228,7 +230,7 @@ class Stats extends Component {
 
   async componentDidUpdate(prevProps,prevState) {
     const contractsInitialized = prevProps.contractsInitialized !== this.props.contractsInitialized;
-    const tokenChanged = prevProps.selectedToken !== this.props.selectedToken || prevProps.tokenConfig !== this.props.tokenConfig;
+    const tokenChanged = prevProps.selectedToken !== this.props.selectedToken || JSON.stringify(prevProps.tokenConfig) !== JSON.stringify(this.props.tokenConfig);
     const dateChanged = prevState.startTimestamp !== this.state.startTimestamp || prevState.endTimestamp !== this.state.endTimestamp;
 
     if (contractsInitialized || tokenChanged){
@@ -243,31 +245,6 @@ class Stats extends Component {
     }
   }
 
-  getTokenData = async (address,filter=true) => {
-    const apiInfo = globalConfigs.stats.rates;
-    let endpoint = `${apiInfo.endpoint}${address}`;
-    if (this.state.startTimestamp || this.state.endTimestamp){
-      const params = [];
-      if (this.state.startTimestamp && parseInt(this.state.startTimestamp)){
-        const start = this.state.startTimestamp-(60*60*24*2); // Minus 1 day for Volume graph
-        params.push(`start=${start}`);
-      }
-      if (this.state.endTimestamp && parseInt(this.state.endTimestamp)){
-        params.push(`end=${this.state.endTimestamp}`);
-      }
-      endpoint += '?'+params.join('&');
-    }
-    const TTL = apiInfo.TTL ? apiInfo.TTL : 0;
-    let output = await this.functionsUtil.makeCachedRequest(endpoint,TTL,true);
-    if (!output){
-      return [];
-    }
-    if (!filter){
-      return output;
-    }
-    return this.filterTokenData(output);
-  }
-
   filterTokenData = (apiResults) => {
     return apiResults.filter((r,i) => {
       return (!this.state.startTimestamp || r.timestamp >= this.state.startTimestamp) && (!this.state.endTimestamp || r.timestamp <= this.state.endTimestamp);
@@ -280,10 +257,10 @@ class Stats extends Component {
       return false;
     }
 
-    const apiResults_unfiltered = await this.getTokenData(this.props.tokenConfig.address,false);
+    const apiResults_unfiltered = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address);
     const apiResults = this.filterTokenData(apiResults_unfiltered);
 
-    if (!apiResults){
+    if (!apiResults || !apiResults_unfiltered || !apiResults.length || !apiResults_unfiltered.length){
       return false;
     }
 
@@ -736,6 +713,7 @@ class Stats extends Component {
 
           <DashboardCard
             cardProps={{
+              pb:3,
               mb:[3,4]
             }}
           >
@@ -744,15 +722,20 @@ class Stats extends Component {
               justifyContent={'space-between'}
             >
             <Flex
-              pt={[3,4]}
+              pt={2}
               width={[1,1/3]}
               id={'allocation-chart'}
+              flexDirection={'column'}
               alignItems={'flex-start'}
+              justifyContent={'flex-start'}
             >
               <AllocationChart
+                height={310}
                 {...this.props}
-                height={'350px'}
                 parentId={'allocation-chart'}
+              />
+              <Rebalance
+                {...this.props}
               />
             </Flex>
             <Flex id='chart-ALL' width={[1,2/3]} mb={3}>

@@ -62,12 +62,7 @@ class RiskAdjustedStrategy extends Component {
       const tokensToMigrate = [];
       await this.functionsUtil.asyncForEach(Object.keys(this.props.availableTokens),async (token) => {
         const tokenConfig = this.props.availableTokens[token];
-        const {
-          migrationEnabled,
-          oldContractBalance,
-          oldContractTokenDecimals,
-          oldContractBalanceFormatted,
-        } = await this.functionsUtil.checkMigration(tokenConfig,this.props.account);
+        const {migrationEnabled} = await this.functionsUtil.checkMigration(tokenConfig,this.props.account);
         
         if (migrationEnabled){
           tokensToMigrate.push(token);
@@ -168,11 +163,7 @@ class RiskAdjustedStrategy extends Component {
                       fontWeight={2}
                       textAlign={'center'}
                     >
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-                      dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                      ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
-                      eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
-                      deserunt mollit anim id est laborum.
+                      The Yield-Optimizer allocation strategy allows to maximize the interest rate returns by detecting the change of the interest rate on different lending protocols. Idle’s monitoring system automatically triggers a rebalance if it spots a better-performing allocation: this includes taking account of the total liquidity within the pool, incorporating underlying protocol rate functions and levels of supply and demand. As a user, you will end up with an higher return without constantly checking rates and burning gas on every transfer. Unlock your funds from a single protocol performance with this strategy.
                     </Text>
                   </Flex>
                 )

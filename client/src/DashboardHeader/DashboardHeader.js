@@ -54,7 +54,13 @@ class DashboardHeader extends Component {
   }
 
   async logout(){
-    await this.setConnector('Infura');
+    // Logout
+    if (this.props.account){
+      await this.setConnector('Infura');
+    // Exit dashboard
+    } else {
+      this.props.goToSection('/',false);
+    }
   }
 
   render() {
@@ -78,27 +84,26 @@ class DashboardHeader extends Component {
             {...this.props}
           />
           {
-            this.props.account &&
-              <Link
-                pr={2}
-                display={'flex'}
-                onClick={ (e) => { this.logout() } }
-                style={{alignItems:'center',justifyContent:'space-between'}}
+            <Link
+              pr={2}
+              display={'flex'}
+              onClick={ (e) => { this.logout() } }
+              style={{alignItems:'center',justifyContent:'space-between'}}
+            >
+              <Icon
+                mr={2}
+                size={'1.8em'}
+                name={'ExitToApp'}
+                color={'copyColor'}
+              />
+              <Text
+                fontSize={2}
+                fontWeight={3}
+                color={'copyColor'}
               >
-                <Icon
-                  mr={2}
-                  size={'1.8em'}
-                  name={'ExitToApp'}
-                  color={'copyColor'}
-                />
-                <Text
-                  fontSize={2}
-                  fontWeight={3}
-                  color={'copyColor'}
-                >
-                  Logout
-                </Text>
-              </Link>
+                {this.props.account ? 'Logout' : 'Exit'}
+              </Text>
+            </Link>
           }
         </Flex>
         <AccountModal

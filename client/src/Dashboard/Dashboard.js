@@ -230,8 +230,8 @@ class Dashboard extends Component {
     }
   }
 
-  goToSection(section){
-    const newRoute = this.state.baseRoute+'/'+section;
+  goToSection(section,isDashboard=true){
+    const newRoute = isDashboard ? this.state.baseRoute+'/'+section : section;
     window.location.hash=newRoute;
     window.scrollTo(0, 0);
   }
@@ -306,6 +306,7 @@ class Dashboard extends Component {
                 flexDirection={'column'}
               >
                 <DashboardHeader
+                  goToSection={this.goToSection.bind(this)}
                   {...this.props}
                 />
                 {

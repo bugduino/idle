@@ -86,7 +86,7 @@ class MenuAccount extends Component {
       ) : (
         <Flex
           width={1}
-          justifyContent={'flex-end'}
+          justifyContent={'flex-start'}
         >
           <DashboardCard
             cardProps={{
