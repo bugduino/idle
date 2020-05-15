@@ -56,7 +56,7 @@ class MenuAccount extends Component {
                 <Image
                   width={'2em'}
                   height={'2em'}
-                  mr={[0,'0.5rem']}
+                  mr={[2,'0.5rem']}
                   display={'inline-flex'}
                   src={`images/${walletIcon}`}
                   alt={walletProvider.toLowerCase()}

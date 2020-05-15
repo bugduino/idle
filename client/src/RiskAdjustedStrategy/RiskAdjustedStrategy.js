@@ -90,13 +90,6 @@ class RiskAdjustedStrategy extends Component {
   }
 
   render() {
-
-    const cellTextProps = {
-      fontSize:[1,2],
-      fontWeight:3,
-      color:'cellText'
-    };
-
     return (
       <Box width={1}>
         <Title mb={[3,4]}>Risk-adjusted strategy</Title>
@@ -127,7 +120,12 @@ class RiskAdjustedStrategy extends Component {
                     justifyContent={'space-between'}
                     flexDirection={['column','row']}
                   >
-                    <Flex id="portfolio-composition" width={[1,0.38]} flexDirection={'column'}>
+                    <Flex
+                      mb={[3,0]}
+                      width={[1,0.38]}
+                      flexDirection={'column'}
+                      id={"portfolio-composition"}
+                    >
                       <DashboardCard
                         title={'Composition'}
                       >
@@ -161,6 +159,7 @@ class RiskAdjustedStrategy extends Component {
                   >
                     <Text
                       fontWeight={2}
+                      fontSize={[1,2]}
                       textAlign={'center'}
                     >
                       The Yield-Optimizer allocation strategy allows to maximize the interest rate returns by detecting the change of the interest rate on different lending protocols. Idle’s monitoring system automatically triggers a rebalance if it spots a better-performing allocation: this includes taking account of the total liquidity within the pool, incorporating underlying protocol rate functions and levels of supply and demand. As a user, you will end up with an higher return without constantly checking rates and burning gas on every transfer. Unlock your funds from a single protocol performance with this strategy.
@@ -179,7 +178,7 @@ class RiskAdjustedStrategy extends Component {
                     <Flex
                       mb={ this.state.remainingTokens.length>0 ? [3,4] : 0 }
                       width={1}
-                      id="deposited-assets"
+                      id={"deposited-assets"}
                       flexDirection={'column'}
                     >
                       <Flex
@@ -190,7 +189,7 @@ class RiskAdjustedStrategy extends Component {
                         borderBottom={'1px solid transparent'}
                       >
                         <Heading.h4
-                          fontSize={4}
+                          fontSize={[2,4]}
                           fontWeight={[3,4]}
                         >
                           Deposited assets
@@ -198,18 +197,19 @@ class RiskAdjustedStrategy extends Component {
                       </Flex>
                       <AssetsList
                         enabledTokens={this.state.depositedTokens}
+                        handleClick={(props) => this.props.changeToken(props.token)}
                         cols={[
                           {
                             title:'CURRENCY',
                             props:{
-                              width:0.15
+                              width:[0.28,0.15]
                             },
                             fields:[
                               {
                                 name:'icon',
                                 props:{
                                   mr:2,
-                                  height:'2.3em'
+                                  height:['1.4em','2.3em']
                                 }
                               },
                               {
@@ -219,6 +219,7 @@ class RiskAdjustedStrategy extends Component {
                           },
                           {
                             title:'BALANCE',
+                            mobile:false,
                             props:{
                               width:0.15,
                             },
@@ -230,6 +231,7 @@ class RiskAdjustedStrategy extends Component {
                           },
                           {
                             title:'POOL',
+                            mobile:false,
                             props:{
                               width:0.14,
                             },
@@ -242,7 +244,7 @@ class RiskAdjustedStrategy extends Component {
                           {
                             title:'APY',
                             props:{
-                              width:0.11,
+                              width:[0.18,0.11],
                             },
                             fields:[
                               {
@@ -253,7 +255,7 @@ class RiskAdjustedStrategy extends Component {
                           {
                             title:'DEPOSITED',
                             props:{
-                              width:0.14,
+                              width:[0.27,0.14],
                             },
                             fields:[
                               {
@@ -264,7 +266,7 @@ class RiskAdjustedStrategy extends Component {
                           {
                             title:'EARNINGS %',
                             props:{
-                              width:0.14,
+                              width:[0.27,0.14],
                             },
                             fields:[
                               {
@@ -274,6 +276,7 @@ class RiskAdjustedStrategy extends Component {
                           },
                           {
                             title:'',
+                            mobile:false,
                             props:{
                               width:0.17,
                             },
@@ -313,7 +316,7 @@ class RiskAdjustedStrategy extends Component {
                         borderBottom={'1px solid transparent'}
                       >
                         <Heading.h4
-                          fontSize={4}
+                          fontSize={[2,4]}
                           fontWeight={[3,4]}
                         >
                           Available assets
@@ -321,18 +324,19 @@ class RiskAdjustedStrategy extends Component {
                       </Flex>
                       <AssetsList
                         enabledTokens={this.state.remainingTokens}
+                        handleClick={(props) => this.props.changeToken(props.token)}
                         cols={[
                           {
                             title:'CURRENCY',
                             props:{
-                              width:0.15
+                              width:[0.28, this.props.account === null ? 0.23 : 0.15]
                             },
                             fields:[
                               {
                                 name:'icon',
                                 props:{
                                   mr:2,
-                                  height:'2.3em'
+                                  height:['1.4em','2.3em']
                                 }
                               },
                               {
@@ -342,8 +346,9 @@ class RiskAdjustedStrategy extends Component {
                           },
                           {
                             title:'BALANCE',
+                            visible:this.props.account !== null,
                             props:{
-                              width:0.15,
+                              width:[0.27,0.15],
                             },
                             fields:[
                               {
@@ -354,7 +359,7 @@ class RiskAdjustedStrategy extends Component {
                           {
                             title:'POOL',
                             props:{
-                              width:0.15,
+                              width:[this.props.account === null ? 0.25 : 0.27, this.props.account === null ? 0.18 : 0.15],
                             },
                             fields:[
                               {
@@ -365,7 +370,7 @@ class RiskAdjustedStrategy extends Component {
                           {
                             title:'APY',
                             props:{
-                              width: this.state.depositedTokens.length>0 ? 0.11 : 0.14,
+                              width:[0.18,this.state.depositedTokens.length>0 ? 0.11 : this.props.account === null ? 0.17 : 0.14],
                             },
                             fields:[
                               {
@@ -375,6 +380,7 @@ class RiskAdjustedStrategy extends Component {
                           },
                           {
                             title:'APR LAST WEEK',
+                            mobile:false,
                             props:{
                               width: this.state.depositedTokens.length>0 ? 0.28 : 0.25,
                             },
@@ -390,8 +396,9 @@ class RiskAdjustedStrategy extends Component {
                           },
                           {
                             title:'',
+                            mobile:this.props.account === null,
                             props:{
-                              width:0.17,
+                              width:[ this.props.account === null ? 0.29 : 0 ,0.17],
                             },
                             parentProps:{
                               width:1
@@ -410,6 +417,7 @@ class RiskAdjustedStrategy extends Component {
                                   borderRadius:4,
                                   boxShadow:null,
                                   mainColor: 'deposit',
+                                  size: this.props.isMobile ? 'small' : 'medium',
                                   handleClick:(props) => this.props.changeToken(props.token)
                                 }
                               }
@@ -441,7 +449,7 @@ class RiskAdjustedStrategy extends Component {
                   <Flex
                     mb={[3,4]}
                     width={1}
-                    id="transactions"
+                    id={'transactions'}
                     flexDirection={'column'}
                   >
                     <Title my={[3,4]}>Transactions</Title>
@@ -450,44 +458,43 @@ class RiskAdjustedStrategy extends Component {
                       enabledTokens={[]}
                       cols={[
                         {
-                          title:'TRANSACTIONS',
+                          title: this.props.isMobile ? '' : 'HASH',
                           props:{
-                            width:0.22
+                            width:[0.15,0.22]
                           },
                           fields:[
                             {
                               name:'icon',
                               props:{
-                                mr:2
+                                mr:[0,2]
                               }
                             },
                             {
                               name:'hash',
-                              props:cellTextProps
+                              mobile:false
                             }
                           ]
                         },
                         {
                           title:'ACTION',
+                          mobile:false,
                           props:{
                             width:0.15,
                           },
                           fields:[
                             {
-                              name:'action',
-                              props:cellTextProps
+                              name:'action'
                             }
                           ]
                         },
                         {
                           title:'DATE',
                           props:{
-                            width:0.18,
+                            width:0.32,
                           },
                           fields:[
                             {
-                              name:'date',
-                              props:cellTextProps
+                              name:'date'
                             }
                           ]
                         },
@@ -495,48 +502,49 @@ class RiskAdjustedStrategy extends Component {
                           title:'STATUS',
                           props:{
                             width:0.18,
+                            justifyContent:['center','flex-start']
                           },
                           fields:[
                             {
                               name:'statusIcon',
                               props:{
-                                mr:2
+                                mr:[0,2]
                               }
                             },
                             {
-                              name:'status',
-                              props:cellTextProps
+                              mobile:false,
+                              name:'status'
                             }
                           ]
                         },
                         {
                           title:'AMOUNT',
                           props:{
-                            width:0.15,
+                            width:0.21,
                           },
                           fields:[
                             {
-                              name:'amount',
-                              props:cellTextProps
+                              name:'amount'
                             },
                           ]
                         },
                         {
-                          title:'TOKEN',
+                          title:'ASSET',
                           props:{
-                            width:0.13,
+                            width:0.15,
+                            justifyContent:['center','flex-start']
                           },
                           fields:[
                             {
                               name:'tokenIcon',
                               props:{
-                                mr:2,
-                                height:'1.6em',
+                                mr:[0,2],
+                                height:['1.4em','1.6em']
                               }
                             },
                             {
-                              name:'tokenName',
-                              props:cellTextProps
+                              mobile:false,
+                              name:'tokenName'
                             },
                           ]
                         },

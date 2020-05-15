@@ -102,18 +102,18 @@ class PortfolioEquity extends Component {
           const tokenPrice = this.functionsUtil.BNify(tx.tokenPrice);
           const idleTokens = this.functionsUtil.BNify(tx.idleTokens);
 
-          tokensBalance[selectedToken].push({
-            action,
-            balance,
-            timeStamp,
-            tokenPrice,
-            idleTokens
-          });
+          if (!tokenPrice.isNaN() && !tokenPrice.isNaN()){
+            tokensBalance[selectedToken].push({
+              action,
+              balance,
+              timeStamp,
+              tokenPrice,
+              idleTokens
+            });
+          }
         });
       }
     });
-
-    // debugger;
 
     let maxChartValue = 0;
     const aggregatedBalances = [];
@@ -320,7 +320,7 @@ class PortfolioEquity extends Component {
           }
         },
       },
-      margin:{ top: 30, right: 50, bottom: 65, left: 50 },
+      margin: this.props.isMobile ? { top: 20, right: 20, bottom: 45, left: 20 } : { top: 30, right: 50, bottom: 65, left: 50 },
       sliceTooltip:(slideData) => {
         const { slice: {points} } = slideData;
         const point = points[0];

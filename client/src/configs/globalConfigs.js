@@ -228,6 +228,13 @@ const globalConfigs = {
           42: 'https://api-kovan.etherscan.io/api'
         }
       },
+      biconomy:{
+        enabled:false,
+        supportedNetworks:[1,42],
+        params:{
+          apiKey: '3fSPg48Sk.4e482757-47f7-4091-9ee5-7d9ac61366b8'
+        }
+      },
       terminal:{
         enabled:false,
         supportedNetworks:[1,42],

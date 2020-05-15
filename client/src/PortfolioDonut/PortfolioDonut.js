@@ -69,10 +69,12 @@ class PortfolioDonut extends Component {
         const tokenPrice = await this.functionsUtil.getIdleTokenPrice(tokenConfig);
         const tokenBalance = idleTokenBalance.times(tokenPrice);
 
-        portfolio[token] = tokenBalance;
+        if (tokenBalance.gt(0)){
+          portfolio[token] = tokenBalance;
 
-        // Increment total balance
-        totalFunds = totalFunds.plus(tokenBalance);
+          // Increment total balance
+          totalFunds = totalFunds.plus(tokenBalance);
+        }
 
         // console.log(token,tokenPrice.toFixed(5),idleTokenBalance.toFixed(5),tokenBalance.toFixed(5),totalFunds.toFixed(5));
       }
@@ -153,7 +155,7 @@ class PortfolioDonut extends Component {
       radialLabelsLinkDiagonalLength:0,
       radialLabelsLinkHorizontalLength:0,
       radialLabelsLinkColor:{ from: 'color' },
-      margin:{ top: 30, right: 50, bottom: 60, left: 50 },
+      margin: this.props.isMobile ? { top: 15, right: 25, bottom: 30, left: 25 } : { top: 30, right: 50, bottom: 60, left: 50 },
       onMouseEnter:(data, e) => {
         this.setState({
           selectedToken:data.id
@@ -168,7 +170,7 @@ class PortfolioDonut extends Component {
         {
           itemWidth: 60,
           itemHeight: 18,
-          translateY: 50,
+          translateY: this.props.isMobile ? 25 : 50,
           symbolSize: 10,
           anchor: 'bottom',
           direction: 'row',
@@ -196,10 +198,10 @@ class PortfolioDonut extends Component {
           (this.state.totalFunds || selectedToken) && 
             <Flex
               zIndex={0}
-              top={'35%'}
               left={'27%'}
               width={'46%'}
               height={'35%'}
+              top={['32%','35%']}
               textAlign={'center'}
               alignItems={'center'}
               position={'absolute'}
@@ -220,15 +222,15 @@ class PortfolioDonut extends Component {
                       }}
                     />
                     <SmartNumber
-                      fontSize={4}
                       decimals={3}
-                      fontWeight={4}
+                      fontSize={[3,4]}
                       maxPrecision={5}
+                      fontWeight={[3,4]}
                       number={this.state.portfolio[this.state.selectedToken]}
                     />
                     <Text
-                      fontSize={2}
                       fontWeight={3}
+                      fontSize={[1,2]}
                       color={'cellTitle'}
                     >
                       {this.state.selectedToken}
@@ -243,15 +245,15 @@ class PortfolioDonut extends Component {
                         fontSize:4,
                         fontWeight:3
                       }}
-                      fontSize={4}
                       decimals={3}
-                      fontWeight={4}
+                      fontSize={[3,4]}
                       maxPrecision={5}
+                      fontWeight={[3,4]}
                       number={this.state.totalFunds}
                     />
                     <Text
-                      fontSize={2}
                       fontWeight={3}
+                      fontSize={[1,2]}
                       color={'cellTitle'}
                     >
                       Total funds

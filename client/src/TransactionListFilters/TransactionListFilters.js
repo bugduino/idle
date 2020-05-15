@@ -113,8 +113,8 @@ class TransactionListFilters extends Component {
               Filters
             </Text>
             <Icon
-              size={'1.5em'}
               color={'copyColor'}
+              size={ this.props.isMobile ? '1.3em' : '1.5em'}
               name={ this.state.isOpened ? 'Close' : 'Tune' }
             />
           </Flex>
@@ -148,7 +148,7 @@ class TransactionListFilters extends Component {
                       <TableCellHeader
                         pb={2}
                         fontWeight={3}
-                        fontSize={[1,2]}
+                        fontSize={[0,2]}
                         color={'cellText'}
                       >
                         {filterCategory.toUpperCase()}
@@ -160,6 +160,7 @@ class TransactionListFilters extends Component {
                           return (
                             <Radio
                               my={2}
+                              fontSize={[0,2]}
                               label={filterLabel}
                               checked={isChecked}
                               className={styles.radioBtn}
@@ -214,9 +215,10 @@ class TransactionListFilters extends Component {
                     return (
                       <DashboardCard
                         cardProps={{
-                          mr:3,
                           py:2,
                           px:3,
+                          mb:[2,0],
+                          mr:[0,3],
                           width:[1,this.state.minWidth]
                         }}
                         isInteractive={true}
@@ -243,9 +245,9 @@ class TransactionListFilters extends Component {
                             {filterLabel}
                           </Text>
                           <Icon
-                            size={'1.5em'}
                             name={'Close'}
                             color={'cellText'}
+                            size={ this.props.isMobile ? '1.3em' : '1.5em'}
                           />
                         </Flex>
                       </DashboardCard>
@@ -255,10 +257,12 @@ class TransactionListFilters extends Component {
                 })
               }
               <Link
-                fontSize={2}
+                mt={[2,0]}
                 fontWeight={2}
+                fontWeight={[3,2]}
                 color={'dark-gray'}
                 hoverColor={'copyColor'}
+                textAlign={['center','left']}
                 onClick={ e => this.resetFilters(false) }
               >
                 Clear all filters

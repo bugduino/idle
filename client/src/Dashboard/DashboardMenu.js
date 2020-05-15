@@ -34,41 +34,40 @@ class DashboardMenu extends Component {
 
     return (
       <Flex
-        p={3}
-        flexDirection={'column'}
+        p={0}
+        flexDirection={['row','column']}
       >
-        <Flex
-          p={3}
-          mb={3}
-          flexDirection={'row'}
-          alignItems={'center'}
-          justifyContent={'center'}
-        >
-          <RouterLink to="/">
-            <Image
-              position={'relative'}
-              height={['35px','38px']}
-              src="images/logo-gradient.svg"
-            />
-          </RouterLink>
-        </Flex>
         {
-        /*
-        <MenuAccount {...this.props} />
-        */
+          !this.props.isMobile &&
+            <Flex
+              p={3}
+              mb={3}
+              flexDirection={'row'}
+              alignItems={'center'}
+              justifyContent={'center'}
+            >
+              <RouterLink to="/">
+                <Image
+                  position={'relative'}
+                  height={['35px','38px']}
+                  src="images/logo-gradient.svg"
+                />
+              </RouterLink>
+            </Flex>
         }
         {
         this.props.menu.map((menuLink,menuIndex) => (
           <Box
-            my={3}
+            my={[0,3]}
             key={`menu-${menuIndex}`}
+            width={[1/this.props.menu.length,'auto']}
           >
             <RouterLink
               to={menuLink.route}
               style={{textDecoration:'none'}}
             >
               <Flex
-                p={3}
+                p={[2,3]}
                 borderRadius={2}
                 flexDirection={'row'}
                 alignItems={'center'}
@@ -76,25 +75,30 @@ class DashboardMenu extends Component {
                 boxShadow={menuLink.selected ? '0px 0px 4px 2px rgba(0,54,255,0.3)' : null}
               >
                 <Flex
-                  flexDirection={'row'}
                   alignItems={'center'}
-                  justifyContent={'flex-start'}
+                  flexDirection={['column','row']}
+                  justifyContent={['center','flex-start']}
                   width={ menuLink.submenu.length>0 ? 3/4 : 1}
                 >
                   {menuLink.icon &&
                     <Icon
-                      mr={3}
-                      ml={2}
-                      size={'1.6em'}
+                      mr={[0,3]}
+                      ml={[0,2]}
+                      mb={[1,0]}
                       align={'center'}
                       name={menuLink.icon}
+                      size={ this.props.isMobile ? '1.2em' : '1.6em' }
                       color={ menuLink.selected ? menuLink.bgColor : 'copyColor' }
                     />
                   }
                   <Text
-                    fontSize={2}
                     fontWeight={3}
+                    fontSize={[1,2]}
                     color={'copyColor'}
+                    textAlign={'center'}
+                    style={{
+                      whiteSpace:'nowrap'
+                    }}
                   >
                     {menuLink.label}
                   </Text>

@@ -155,57 +155,6 @@ class Stats extends Component {
     }
   }
 
-  updateButtonGroup = async () => {
-
-    if (!this.props.selectedToken || !this.props.tokenConfig){
-      return false;
-    }
-
-    const buttonGroups = [
-      [
-        {
-          component:Toggler,
-          props:{
-            checked:this.state.showAdvanced,
-            handleClick:this.toggleAdvancedCharts,
-            label:'Mode: Basic',
-            labelChecked:'Mode: Advanced'
-          },
-        }
-      ],
-      [
-        {
-          component:Button,
-          props:{
-            icon:'Today',
-            iconpos:'right',
-            color:'dark-gray',
-            mainColor:'transparent',
-            contrastColor:'dark-gray',
-            onClick: (e) => { this.setDateRangeModal(true) }
-          },
-          value:this.state.startTimestampObj.format('DD/MM/YYYY')+' - '+this.state.endTimestampObj.format('DD/MM/YYYY')
-        }
-      ],
-      [
-        {
-          component:TokenSelector,
-          props:{
-            setSelectedToken:this.props.setSelectedToken,
-            selectedToken:this.props.selectedToken,
-            availableTokens:this.props.availableTokens,
-            color:'dark-gray',
-            size:'big'
-          }
-        }
-      ]
-    ];
-
-    await this.setState({
-      buttonGroups
-    });
-  }
-
   async componentDidMount() {
 
     if (!this.props.web3){
@@ -224,23 +173,32 @@ class Stats extends Component {
 
     this.loadUtils();
     await this.loadParams();
-    await this.updateButtonGroup();
     this.loadApiData();
+    this.loadCarousel();
+  }
+
+  loadCarousel(){
+    const carouselMax = this.props.isMobile ? 2 :1;
+    this.setState({
+      carouselMax
+    });
   }
 
   async componentDidUpdate(prevProps,prevState) {
     const contractsInitialized = prevProps.contractsInitialized !== this.props.contractsInitialized;
     const tokenChanged = prevProps.selectedToken !== this.props.selectedToken || JSON.stringify(prevProps.tokenConfig) !== JSON.stringify(this.props.tokenConfig);
     const dateChanged = prevState.startTimestamp !== this.state.startTimestamp || prevState.endTimestamp !== this.state.endTimestamp;
+    const mobileChanged = prevProps.isMobile !== this.props.isMobile;
+
+    if (mobileChanged){
+      this.loadCarousel();
+    }
 
     if (contractsInitialized || tokenChanged){
       await this.componentDidMount();
     } else {
       if (dateChanged){
-        this.updateButtonGroup();
         this.loadApiData();
-      } else if (prevState.showAdvanced !== this.state.showAdvanced){
-        this.updateButtonGroup();
       }
     }
   }
@@ -380,24 +338,25 @@ class Stats extends Component {
                 >
                   <Title
                     mt={3}
-                    mb={4}
+                    mb={[3,4]}
                   >
                     {strategyInfo.title}
                   </Title>
                   <AssetsList
                     enabledTokens={[]}
+                    handleClick={(props) => this.selectToken(strategy,props.token)}
                     cols={[
                       {
                         title:'CURRENCY',
                         props:{
-                          width:0.15
+                          width:[0.3,0.25]
                         },
                         fields:[
                           {
                             name:'icon',
                             props:{
                               mr:2,
-                              height:'2.3em'
+                              height:['1.4em','2.3em']
                             }
                           },
                           {
@@ -406,20 +365,9 @@ class Stats extends Component {
                         ]
                       },
                       {
-                        title:'BALANCE',
-                        props:{
-                          width:0.15,
-                        },
-                        fields:[
-                          {
-                            name:'tokenBalance'
-                          }
-                        ]
-                      },
-                      {
                         title:'POOL',
                         props:{
-                          width:0.15,
+                          width:[0.21,0.16],
                         },
                         fields:[
                           {
@@ -430,7 +378,7 @@ class Stats extends Component {
                       {
                         title:'APY',
                         props:{
-                          width: 0.14,
+                          width: [0.19,0.14],
                         },
                         fields:[
                           {
@@ -440,6 +388,7 @@ class Stats extends Component {
                       },
                       {
                         title:'APR LAST WEEK',
+                        mobile:false,
                         props:{
                           width: 0.25,
                         },
@@ -456,7 +405,7 @@ class Stats extends Component {
                       {
                         title:'',
                         props:{
-                          width:0.17,
+                          width:[0.3,0.20],
                         },
                         parentProps:{
                           width:1
@@ -473,6 +422,7 @@ class Stats extends Component {
                               borderRadius:4,
                               boxShadow:null,
                               mainColor:'redeem',
+                              size: this.props.isMobile ? 'small' : 'medium',
                               handleClick:(props) => this.selectToken(strategy,props.token)
                             }
                           }
@@ -541,11 +491,13 @@ class Stats extends Component {
             >
               <Breadcrumb
                 text={'ASSETS OVERVIEW'}
+                isMobile={this.props.isMobile}
                 path={[this.functionsUtil.getGlobalConfig(['strategies',this.props.selectedStrategy,'title']),this.props.selectedToken]}
                 handleClick={ e => this.props.goToSection('stats') }
               />
             </Flex>
             <Flex
+              mt={[3,0]}
               width={[1,0.4]}
               flexDirection={['column','row']}
               justifyContent={['center','space-between']}
@@ -562,15 +514,16 @@ class Stats extends Component {
                 />
               </Flex>
               <Flex
+                mt={[2,0]}
                 width={[1,0.48]}
                 flexDirection={'column'}
               >
                 <DashboardCard
                   cardProps={{
                     p:1,
-                    height:'100%',
                     display:'flex',
                     alignItems:'center',
+                    height:['46px','100%'],
                     justifyContent:'center'
                   }}
                   isInteractive={true}
@@ -594,20 +547,30 @@ class Stats extends Component {
           </Flex>
           <Flex
             width={1}
-            mt={[5,0]}
+            mt={[3,0]}
             mb={[3,4]}
             alignItems={'center'}
             justifyContent={'center'}
             flexDirection={['column','row']}
           >
-            <Flex width={[1,1/4]} flexDirection={'column'} pr={[0,2]}>
+            <Flex
+              mb={[2,0]}
+              pr={[0,2]}
+              width={[1,1/4]}
+              flexDirection={'column'}
+            >
               <StatsCard
                 value={this.state.aum}
                 title={'Asset Under Management'}
                 label={this.props.selectedToken}
               />
             </Flex>
-            <Flex width={[1,1/4]} flexDirection={'column'} pr={[0,2]}>
+            <Flex
+              mb={[2,0]}
+              pr={[0,2]}
+              width={[1,1/4]}
+              flexDirection={'column'}
+            >
               <StatsCard
                 title={'Avg APY'}
                 label={'Annualized'}
@@ -630,7 +593,12 @@ class Stats extends Component {
                 </VariationNumber>
               </StatsCard>
             </Flex>
-            <Flex width={[1,1/4]} flexDirection={'column'} pr={[0,2]}>
+            <Flex
+              mb={[2,0]}
+              pr={[0,2]}
+              width={[1,1/4]}
+              flexDirection={'column'}
+            >
               <StatsCard
                 title={'Overperformance on Compound'}
                 label={'Annualized'}
@@ -653,7 +621,12 @@ class Stats extends Component {
                 </VariationNumber>
               </StatsCard>
             </Flex>
-            <Flex width={[1,1/4]} flexDirection={'column'} pr={[0,2]}>
+            <Flex
+              mb={[2,0]}
+              pr={[0,2]}
+              width={[1,1/4]}
+              flexDirection={'column'}
+            >
               <StatsCard
                 label={' '}
                 title={'Rebalances'}
@@ -718,7 +691,7 @@ class Stats extends Component {
             }}
           >
             <Flex
-              flexDirection={'row'}
+              flexDirection={['column','row']}
               justifyContent={'space-between'}
             >
             <Flex
@@ -763,6 +736,7 @@ class Stats extends Component {
           >
             <Flex
               width={1}
+              pb={[5,0]}
               id={'carousel-container'}
               justifyContent={'flex-end'}
             >
@@ -782,10 +756,10 @@ class Stats extends Component {
             </Flex>
             <Flex
               mt={5}
-              width={'150%'}
               height={'400px'}
               position={'absolute'}
               id={'carousel-cursor'}
+              width={['333%','150%']}
               justifyContent={'flex-start'}
               left={this.state.carouselOffsetLeft}
               style={{

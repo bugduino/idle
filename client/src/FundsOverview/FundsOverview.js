@@ -58,7 +58,7 @@ class FundsOverview extends Component {
             flexDirection={['column','row']}
           >
             <Flex
-              width={[0.5,0.25]}
+              width={[1,0.25]}
               alignItems={'center'}
               flexDirection={'column'}
               justifyContent={'flex-start'}
@@ -77,15 +77,15 @@ class FundsOverview extends Component {
                   name:'amountLent',
                   props:{
                     decimals:6,
-                    fontSize:'2.3em',
                     fontWeight:300,
+                    fontSize:['1.6em','2.3em'],
                     color:theme.colors.counter
                   }
                 }}
               />
             </Flex>
             <Flex
-              width={[0.5,0.25]}
+              width={[1,0.25]}
               alignItems={'center'}
               flexDirection={'column'}
               justifyContent={'flex-start'}
@@ -105,8 +105,8 @@ class FundsOverview extends Component {
                   decimals:6,
                   props:{
                     style:{
-                      fontSize:'2.3em',
                       fontWeight:300,
+                      fontSize: this.props.isMobile ? '1.6em' : '2.3em',
                       color:theme.colors.counter
                     }
                   }
@@ -126,7 +126,7 @@ class FundsOverview extends Component {
               />
             </Flex>
             <Flex
-              width={[0.5,0.25]}
+              width={[1,0.25]}
               alignItems={'center'}
               flexDirection={'column'}
               justifyContent={'flex-start'}
@@ -146,8 +146,8 @@ class FundsOverview extends Component {
                   decimals:6,
                   props:{
                     style:{
-                      fontSize:'2.3em',
                       fontWeight:300,
+                      fontSize: this.props.isMobile ? '1.6em' : '2.3em',
                       color:theme.colors.counter
                     }
                   }
@@ -155,7 +155,7 @@ class FundsOverview extends Component {
               />
             </Flex>
             <Flex
-              width={[0.5,0.25]}
+              width={[1,0.25]}
               alignItems={'center'}
               flexDirection={'column'}
               justifyContent={'flex-start'}
@@ -174,8 +174,8 @@ class FundsOverview extends Component {
                   name:'apy',
                   props:{
                     decimals:2,
-                    fontSize:'2.3em',
                     fontWeight:300,
+                    fontSize:['1.6em','2.3em'],
                     color:theme.colors.counter
                   }
                 }}

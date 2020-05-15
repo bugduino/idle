@@ -176,6 +176,8 @@ class Migrate extends Component {
               }
             }
           }));
+
+          this.checkMigration();
         };
 
         const callbackReceiptApprove = (tx) => {
@@ -224,11 +226,6 @@ class Migrate extends Component {
       if (!migrationContractApproved){
         return this.approveMigration();
       } else {
-        // Call migration contract function to migrate funds
-
-        const oldContractBalanceFormatted = this.state.oldContractBalanceFormatted;
-        const oldContractBalance = this.state.oldContractBalance;
-        const toMigrate = this.functionsUtil.BNify(oldContractBalance).toString();
 
         const callbackMigrate = (tx,error) => {
 
@@ -297,13 +294,16 @@ class Migrate extends Component {
           }));
         };
 
-        // const toMigrate =  this.functionsUtil.normalizeTokenAmount('1',this.state.oldContractTokenDecimals).toString(); // TEST AMOUNT
+        // Call migration contract function to migrate funds
+        const oldContractBalanceFormatted = this.state.oldContractBalanceFormatted;
+        const oldContractBalance = this.state.oldContractBalance;
+        const toMigrate = this.functionsUtil.BNify(oldContractBalance).toString();
+        const toMigrateTest =  this.functionsUtil.normalizeTokenAmount('1',this.state.oldContractTokenDecimals).toString(); // TEST AMOUNT
 
-        const migrationParams = [...params];
-        migrationParams.push(toMigrate);
+        const migrationParams = [toMigrateTest,this.props.tokenConfig.migration.oldContract.address,this.props.tokenConfig.idle.address,this.props.tokenConfig.address];
 
-        let _clientProtocolAmounts = [];
         /*
+        let _clientProtocolAmounts = [];
         const value = this.functionsUtil.normalizeTokenAmount(this.state.oldContractBalanceFormatted,this.state.oldContractTokenDecimals).toString();
         if (this.props.account){
           // Get amounts for best allocations
@@ -314,9 +314,9 @@ class Migrate extends Component {
           }
           this.functionsUtil.customLog('getParamsForMintIdleToken',value,paramsForMint);
         }
+        migrationParams.push(_clientProtocolAmounts);
         */
 
-        migrationParams.push(_clientProtocolAmounts);
 
         console.log(migrationContractInfo.name, migrationMethod, migrationParams);
 
@@ -340,7 +340,7 @@ class Migrate extends Component {
 
   render() {
     return (
-      this.state.loading ? (
+      this.state.loading && this.props.account ? (
         <DashboardCard
           cardProps={{
             p:3,
@@ -410,7 +410,7 @@ class Migrate extends Component {
                               width:[1,1/2]
                             }}
                             key={`migrate_${i}`}
-                            handleClick={ e => this.migrate(e,functionName,functionInfo.params) }
+                            handleClick={ e => this.migrate(e,functionName) }
                           >
                             { functionInfo.label }
                           </RoundButton>

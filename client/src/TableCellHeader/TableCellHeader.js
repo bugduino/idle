@@ -8,11 +8,15 @@ class TableCellHeader extends Component {
         width={this.props.width}
       >
         <Heading.h4
-          pb={3}
-          fontSize={[2,3]}
-          fontWeight={4}
+          pb={[2,3]}
+          fontSize={['10px',3]}
+          fontWeight={[3,4]}
           color={'cellTitle'}
-          style={{width:'100%'}}
+          lineHeight={'initial'}
+          style={{
+            width:'100%',
+            whiteSpace:'nowrap'
+          }}
           {...this.props}
         >
           {this.props.children}

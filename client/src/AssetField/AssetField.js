@@ -129,7 +129,6 @@ class AssetField extends Component {
             const earningsPerc = idleTokenPrice3.div(avgBuyPrice2[this.props.token]).minus(1);
             const earningsStart = amountLent2.gt(0) ? amountLent2.times(earningsPerc) : 0;
             const earningsEnd = amountLent2.gt(0) ? amountLent2.times(tokenAPY2.div(100)) : 0;
-            // console.log('earningsCounter',earningsStart.toFixed(5),earningsEnd.toFixed(5),earningsPerc.toFixed(5),amountLent2.toFixed(5),idleTokenPrice3.toFixed(5),avgBuyPrice2[this.props.token].toFixed(5),tokenAPY2.toFixed(5));
             if (setState && !this.componentUnmounted){
               this.setState({
                 earningsEnd,
@@ -201,8 +200,8 @@ class AssetField extends Component {
 
           if (setState && !this.componentUnmounted){
             this.setState({
-              earningsPerc:parseFloat(earningsPerc).toFixed(3),
-              earningsPercDirection:parseFloat(earningsPerc)>0 ? 'up' : 'down'
+              earningsPercDirection:parseFloat(earningsPerc)>0 ? 'up' : 'down',
+              earningsPerc:parseFloat(earningsPerc).toFixed(this.props.isMobile ? 2 : 3)
             });
           }
           output = earningsPerc;
@@ -213,7 +212,7 @@ class AssetField extends Component {
             const tokenAPR = tokenAprs.avgApr;
             if (setState && !this.componentUnmounted){
               this.setState({
-                tokenAPR:parseFloat(tokenAPR).toFixed(3)
+                tokenAPR:parseFloat(tokenAPR).toFixed(this.props.isMobile ? 2 : 3)
               });
             }
             output = tokenAPR;
@@ -225,8 +224,8 @@ class AssetField extends Component {
             const tokenAPY = this.functionsUtil.apr2apy(tokenAPR.div(100)).times(100);
             if (setState && !this.componentUnmounted){
               this.setState({
-                tokenAPR:parseFloat(tokenAPR).toFixed(3),
-                tokenAPY:parseFloat(tokenAPY).toFixed(3)
+                tokenAPR:parseFloat(tokenAPR).toFixed(this.props.isMobile ? 2 : 3),
+                tokenAPY:parseFloat(tokenAPY).toFixed(this.props.isMobile ? 2 : 3)
               });
             }
             return tokenAPY;
@@ -454,7 +453,7 @@ class AssetField extends Component {
     const loader = (<Loader size="20px" />);
 
     const fieldProps = {
-      fontSize:[1,2],
+      fontSize:[0,2],
       fontWeight:3,
       color:'cellText'
     };
@@ -462,15 +461,12 @@ class AssetField extends Component {
     // Replace props
     if (fieldInfo.props && Object.keys(fieldInfo.props).length){
       Object.keys(fieldInfo.props).forEach(p => {
-        // if (typeof fieldInfo.props[p]==='function'){
-        //   fieldProps[p] = fieldInfo.props[p](this.props);
-        // } else {
-        // }
         fieldProps[p] = fieldInfo.props[p];
       });
     }
 
-    const minPrecision = fieldProps && fieldProps.minPrecision ? fieldProps.minPrecision : 4;
+    const minPrecision = fieldProps && fieldProps.minPrecision ? fieldProps.minPrecision : ( this.props.isMobile ? 3 : 4 );
+    const decimals = fieldProps && fieldProps.decimals ? fieldProps.decimals : ( this.props.isMobile ? 2 : 3 );
 
     switch (fieldInfo.name){
       case 'icon':
@@ -531,22 +527,25 @@ class AssetField extends Component {
       break;
       case 'redeemableBalance':
         output = this.state.redeemableBalance ? (
-          <SmartNumber {...fieldProps} minPrecision={minPrecision} number={this.state.redeemableBalance} />
+          <SmartNumber {...fieldProps} decimals={decimals} minPrecision={minPrecision} number={this.state.redeemableBalance} />
         ) : loader
       break;
       case 'amountLent':
         output = this.state.amountLent ? (
-          <SmartNumber {...fieldProps} minPrecision={minPrecision} number={this.state.amountLent} />
+          <SmartNumber {...fieldProps} decimals={decimals} minPrecision={minPrecision} number={this.state.amountLent} />
         ) : loader
       break;
       case 'pool':
         output = this.state.poolSize ? (
-          <SmartNumber {...fieldProps} minPrecision={minPrecision} number={this.state.poolSize} />
+          <SmartNumber {...fieldProps} decimals={decimals} minPrecision={minPrecision} number={this.state.poolSize} />
         ) : loader
       break;
       case 'earningsPerc':
         output = this.state.earningsPerc ? (
-          <VariationNumber direction={this.state.earningsPercDirection}>
+          <VariationNumber
+            isMobile={this.props.isMobile}
+            direction={this.state.earningsPercDirection}
+          >
             <Text {...fieldProps}>{this.state.earningsPerc}%</Text>
           </VariationNumber>
         ) : loader

@@ -265,8 +265,18 @@ class Dashboard extends Component {
         position={'fixed'}
         flexDirection={'row'}
       >
-        <Flex flexDirection={'column'} width={1/6}>
-          <Card height={'100vh'} p={0}>
+        <Flex
+          bottom={0}
+          zIndex={1}
+          width={[1,1/6]}
+          flexDirection={'column'}
+          position={['fixed','relative']}
+        >
+          <Card
+            p={[0,3]}
+            width={['100vw','auto']}
+            height={['auto','100vh']}
+            >
             <DashboardMenu
               {...this.props}
               menu={this.state.menu}
@@ -276,7 +286,9 @@ class Dashboard extends Component {
         <Flex
           py={3}
           px={[3,5]}
-          width={5/6}
+          pb={[3,0]}
+          mb={['60px',0]}
+          width={[1,5/6]}
           style={{
             overflowY:'scroll',
             overflowX:'hidden'

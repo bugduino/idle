@@ -5,6 +5,7 @@
   "homepage": "https://idle.finance",
   "dependencies": {
     "@babel/core": "^7.4.5",
+    "@biconomy/mexa": "^1.5.10",
     "@nivo/bar": "^0.59.2",
     "@nivo/line": "^0.61.1",
     "@nivo/pie": "^0.61.1",
@@ -74,7 +75,7 @@
     "resolve": "1.8.1",
     "rimble-ui": "^0.10.0",
     "sass-loader": "7.1.0",
-    "simpleid-js-sdk": "^1.0.0",
+    "simpleid-js-sdk": "^1.2.1",
     "style-loader": "0.23.0",
     "styled-components": "^5.1.0",
     "terser-webpack-plugin": "1.1.0",

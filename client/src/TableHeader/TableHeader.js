@@ -7,13 +7,22 @@ class TableHeader extends Component {
     return (
       <Flex
         width={1}
-        px={[3,4]}
+        px={[2,4]}
         flexDirection={'row'}
       >
         {
           this.props.cols.map((colInfo,colIndex) => {
+            // Skip non-mobile columns
+            if (colInfo.visible === false || (colInfo.mobile === false && this.props.isMobile)){
+              return null;
+            }
             return (colInfo.title && colInfo.title.length) ? (
-              <TableCellHeader key={`col-header-${colIndex}`} {...colInfo.props}>{colInfo.title}</TableCellHeader>
+              <TableCellHeader
+                {...colInfo.props}
+                key={`col-header-${colIndex}`}
+              >
+                {colInfo.title}
+              </TableCellHeader>
             ) : (
               <Flex key={`col-header-${colIndex}`} {...colInfo.props}></Flex>
             )

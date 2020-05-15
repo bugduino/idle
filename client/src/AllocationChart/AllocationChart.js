@@ -115,7 +115,7 @@ class AllocationChart extends Component {
       radialLabelsLinkDiagonalLength:0,
       radialLabelsLinkHorizontalLength:0,
       radialLabelsLinkColor:{ from: 'color' },
-      margin:{ top: 10, right: 35, bottom: 0, left: 35 },
+      margin: this.props.isMobile ? { top: 10, right: 10, bottom: 0, left: 10 } : { top: 10, right: 35, bottom: 0, left: 35 },
       borderColor:{ from: 'color', modifiers: [ [ 'darker', 0.2 ] ] },
     };
 

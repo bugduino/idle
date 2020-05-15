@@ -1,6 +1,7 @@
 import Web3 from "web3";
 import React from 'react';
 import BigNumber from 'bignumber.js';
+import Biconomy from "@biconomy/mexa";
 import SimpleID from 'simpleid-js-sdk';
 import NetworkUtil from "./NetworkUtil";
 import * as Sentry from '@sentry/browser';
@@ -22,6 +23,7 @@ const RimbleTransactionContext = React.createContext({
   tokenConfig: {},
   web3: {},
   initWeb3: () => {},
+  biconomy: {},
   simpleID: {},
   initSimpleID: () => {},
   transactions: {},
@@ -304,11 +306,6 @@ class RimbleTransaction extends React.Component {
       }
     }
 
-    // window.web3Injected = web3;
-    // console.log('web3Provider',web3Provider,web3);
-
-    // alert(web3.version);
-
     const web3Callback = async () => {
       // After setting the web3 provider, check network
       await this.checkNetwork();
@@ -339,6 +336,40 @@ class RimbleTransaction extends React.Component {
     } else if (context.account){
       web3Callback();
     }
+
+    const biconomyInfo = globalConfigs.network.providers.biconomy;
+    if (biconomyInfo && biconomyInfo.enabled && biconomyInfo.supportedNetworks.includes(globalConfigs.network.requiredNetwork) ){
+
+      const biconomyWeb3Provider = web3Provider ? web3Provider : web3Host;
+      const biconomy = new Biconomy(biconomyWeb3Provider,biconomyInfo.params);
+      web3 = new Web3(biconomy);
+
+      biconomy.onEvent(biconomy.READY, () => {
+        console.log('Biconomy is ready');
+        const newState = {
+          biconomy
+        };
+        if (web3 !== this.state.web3){
+          newState.web3 = web3;
+        }
+        this.setState(newState, web3Callback);
+
+      }).onEvent(biconomy.ERROR, (error, message) => {
+        // Handle error while initializing mexa
+        console.log('Biconomy error',error,message);
+      });
+    } else {
+      if (web3 !== this.state.web3){
+        this.setState({ web3 }, web3Callback);
+      } else if (context.account){
+        web3Callback();
+      }
+    }
+
+    // window.web3Injected = web3;
+    // console.log('web3Provider',web3Provider,web3);
+
+    // alert(web3.version);
 
     return web3;
   }
@@ -1396,6 +1427,7 @@ class RimbleTransaction extends React.Component {
     context:null,
     account: null,
     contracts: [],
+    biconomy: null,
     simpleID: null,
     transactions: {},
     CrispClient: null,

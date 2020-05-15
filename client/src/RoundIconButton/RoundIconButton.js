@@ -9,11 +9,12 @@ class RoundIconButton extends Component {
       boxShadow:1,
       width:'40px',
       height:'40px',
-      minWidth:'auto',
       mainColor:'white',
       borderRadius:'50%',
       disabled:this.props.disabled
     },this.props.buttonProps);
+
+    buttonProps.minWidth = buttonProps.width;
 
     return (
        <RoundButton

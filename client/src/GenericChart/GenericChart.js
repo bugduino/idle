@@ -3,6 +3,7 @@ Theming: https://github.com/plouc/nivo/issues/308
 */
 import React, { Component } from 'react';
 import { Loader, Flex, Text } from 'rimble-ui';
+import FlexLoader from '../FlexLoader/FlexLoader';
 
 class GenericChart extends Component {
   state = {
@@ -72,15 +73,19 @@ class GenericChart extends Component {
     }
 
     return chartProps.showLoader && (!chartProps.data || !width || !height) ? (
-      <Flex
-        width={1}
-        height={height}
-        alignItems={'center'}
-        flexDirection={'column'}
-        justifyContent={'center'}
-      >
-        <Loader size="30px" mb={2} /> <Text ml={2}>Loading graph data...</Text>
-      </Flex>
+      <FlexLoader
+        flexProps={{
+          flexDirection:'row',
+          minHeight:height
+        }}
+        loaderProps={{
+          size:'30px'
+        }}
+        textProps={{
+          ml:2
+        }}
+        text={'Loading graph data...'}
+      />
     ) : this.props.data && (
       <ChartType
         {...chartProps}

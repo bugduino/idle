@@ -124,14 +124,16 @@ class FunctionsUtil {
         const tokenPrice = await this.getIdleTokenPrice(tokenConfig);
         const tokenBalance = idleTokenBalance.times(tokenPrice);
 
-        portfolio.tokensBalance[token] = {
-          tokenPrice,
-          tokenBalance,
-          idleTokenBalance
-        };
+        if (!tokenPrice.isNaN() && !tokenBalance.isNaN()){
+          portfolio.tokensBalance[token] = {
+            tokenPrice,
+            tokenBalance,
+            idleTokenBalance
+          };
 
-        // Increment total balance
-        portfolio.totalBalance = portfolio.totalBalance.plus(tokenBalance);
+          // Increment total balance
+          portfolio.totalBalance = portfolio.totalBalance.plus(tokenBalance);
+        }
       }
     });
 

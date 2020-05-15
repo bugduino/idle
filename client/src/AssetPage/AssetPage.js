@@ -149,44 +149,43 @@ class AssetPage extends Component {
                 enabledTokens={[this.props.selectedToken]}
                 cols={[
                   {
-                    title:'TRANSACTIONS',
+                    title: this.props.isMobile ? '' : 'HASH',
                     props:{
-                      width:0.22
+                      width:[0.15,0.22]
                     },
                     fields:[
                       {
                         name:'icon',
                         props:{
-                          mr:2
+                          mr:[0,2]
                         }
                       },
                       {
                         name:'hash',
-                        props:cellTextProps
+                        mobile:false
                       }
                     ]
                   },
                   {
                     title:'ACTION',
+                    mobile:false,
                     props:{
                       width:0.15,
                     },
                     fields:[
                       {
-                        name:'action',
-                        props:cellTextProps
+                        name:'action'
                       }
                     ]
                   },
                   {
                     title:'DATE',
                     props:{
-                      width:0.18,
+                      width:0.32,
                     },
                     fields:[
                       {
-                        name:'date',
-                        props:cellTextProps
+                        name:'date'
                       }
                     ]
                   },
@@ -194,48 +193,49 @@ class AssetPage extends Component {
                     title:'STATUS',
                     props:{
                       width:0.18,
+                      justifyContent:['center','flex-start']
                     },
                     fields:[
                       {
                         name:'statusIcon',
                         props:{
-                          mr:2
+                          mr:[0,2]
                         }
                       },
                       {
-                        name:'status',
-                        props:cellTextProps
+                        mobile:false,
+                        name:'status'
                       }
                     ]
                   },
                   {
                     title:'AMOUNT',
                     props:{
-                      width:0.15,
+                      width:0.21,
                     },
                     fields:[
                       {
-                        name:'amount',
-                        props:cellTextProps
+                        name:'amount'
                       },
                     ]
                   },
                   {
-                    title:'TOKEN',
+                    title:'ASSET',
                     props:{
-                      width:0.13,
+                      width:0.15,
+                      justifyContent:['center','flex-start']
                     },
                     fields:[
                       {
                         name:'tokenIcon',
                         props:{
-                          mr:2,
-                          height:'1.6em',
+                          mr:[0,2],
+                          height:['1.4em','1.6em']
                         }
                       },
                       {
-                        name:'tokenName',
-                        props:cellTextProps
+                        mobile:false,
+                        name:'tokenName'
                       },
                     ]
                   },

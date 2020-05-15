@@ -21,9 +21,9 @@ class Breadcrumb extends Component {
          handleClick={this.props.handleClick}
        />
        <Link
-         ml={3}
-         fontSize={2}
+         ml={[2,3]}
          fontWeight={3}
+         fontSize={[1,2]}
          color={'cellText'}
          hoverColor={'copyColor'}
          onClick={this.props.handleClick}
@@ -31,13 +31,13 @@ class Breadcrumb extends Component {
         {this.props.text}
        </Link>
        {
-        this.props.path && this.props.path.length>0 &&
+        !this.props.isMobile && this.props.path && this.props.path.length>0 &&
           this.props.path.map((path,index) => (
            <Text
-             ml={3}
-             pl={3}
-             fontSize={2}
+             pl={[1,3]}
+             ml={[1,3]}
              fontWeight={3}
+             fontSize={[1,2]}
              color={'statValue'}
              key={`breadcrumb_path_${index}`}
              borderLeft={`1px solid ${theme.colors.divider}`}

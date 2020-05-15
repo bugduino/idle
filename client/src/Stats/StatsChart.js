@@ -1410,22 +1410,9 @@ class StatsChart extends Component {
   }
 
   render() {
-    if (!this.state.chartType || !this.state.chartData || !this.state.chartProps || !this.props.apiResults){
-      return (
-        <Flex
-          justifyContent={'center'}
-          alignItems={'center'}
-          textAlign={'center'}
-          width={1}
-          minHeight={ this.props.height }
-        >
-          <Loader size="40px" /> <Text ml={2}>Loading graph data...</Text>
-        </Flex>
-      );
-    }
-
     return(
       <GenericChart
+        showLoader={true}
         {...this.state.chartProps}
         height={this.props.height}
         type={this.state.chartType}

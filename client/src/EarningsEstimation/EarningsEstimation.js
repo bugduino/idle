@@ -105,13 +105,13 @@ class EarningsEstimation extends Component {
 
       // console.log(token,amountLent.toFixed(5),earnings.toFixed(5),earningsYear.toFixed(5),tokenConfig,tokenAprs,tokenAPR.toFixed(5),tokenAPY.toFixed(5),earningsPercStep,maxPossibleStep,estimationStepsPerc);
 
-      tokensEarnings[token] = {
-        amountLent,
-        // idleTokenBalance,
-        idleTokenPrice,
-        // redeemableBalance,
-        earnings,
-        earningsYear
+      if (!amountLent.isNaN() && !idleTokenPrice.isNaN() && !earnings.isNaN()){
+        tokensEarnings[token] = {
+          earnings,
+          amountLent,
+          earningsYear,
+          idleTokenPrice
+        };
       }
     });
 
@@ -169,7 +169,7 @@ class EarningsEstimation extends Component {
                 flexDirection={'row'}
               >
                 <Flex
-                  width={0.93}
+                  width={[1,0.93]}
                   position={'relative'}
                 >
                   <Flex
@@ -181,11 +181,11 @@ class EarningsEstimation extends Component {
                     justifyContent={'center'}
                   >
                     <Flex
-                      width={0.1}
+                      width={[0.15,0.1]}
                     >
                     </Flex>
                     <Flex
-                      width={0.9}
+                      width={[0.85,0.9]}
                       height={'100%'}
                       flexDirection={'row'}
                     >
@@ -203,8 +203,8 @@ class EarningsEstimation extends Component {
                               borderRight={`1px solid ${theme.colors.divider}`}
                             >
                               <Text
-                                fontWeight={4}
-                                fontSize={[2,'1.2em']}
+                                fontWeight={[3,4]}
+                                fontSize={[0,'1.2em']}
                                 color={tokenEarnings.earnings.gte(estimationStepEarnings) ? 'copyColor' : 'legend'}
                               >
                                 {estimationStepEarningsFormatted}
@@ -224,21 +224,21 @@ class EarningsEstimation extends Component {
                     pb={ tokenIndex<Object.keys(this.state.tokensEarnings).length-1 ? '1.5em' : 0 }
                   >
                     <Flex
-                      width={0.1}
-                      justifyContent={'flex-end'}
+                      width={[0.15,0.1]}
+                      justifyContent={['flex-start','flex-end']}
                     >
                       <Text
-                        pr={1}
-                        fontSize={3}
-                        fontWeight={4}
+                        pr={[0,1]}
+                        fontSize={[0,3]}
+                        fontWeight={[3,4]}
                       >
                         {token}
                       </Text>
                     </Flex>
                     <Flex
-                      width={0.9}
-                      height={'35px'}
+                      width={[0.85,0.9]}
                       flexDirection={'row'}
+                      height={['20px','35px']}
                       alignItems={'flex-start'}
                     >
                       <Flex
@@ -249,25 +249,27 @@ class EarningsEstimation extends Component {
                         <Flex
                           height={'100%'}
                           width={'100%'}
-                          borderRadius={'0 35px 35px 0'}
+                          borderRadius={['0 20px 20px 0','0 35px 35px 0']}
                           style={{background:`linear-gradient(90deg, rgba(${tokenRGBColor},0) 0%, rgba(${tokenRGBColor},0.1) 30%, rgba(${tokenRGBColor},1) 100%)`}}
                         ></Flex>
                       </Flex>
                       <Flex
-                        pl={3}
+                        pl={[2,3]}
                         width={'auto'}
                         height={'100%'}
                         alignItems={'center'}
                         justifyContent={'flex-start'}
                       >
-                        <Image src={`images/tokens/${token}.svg`} height={'2.4em'} />
+                        <Image src={`images/tokens/${token}.svg`} height={['1.4em','2.4em']} />
                       </Flex>
                     </Flex>
                   </Flex>
                 </Flex>
-                <Flex width={0.07} alignItems={'flex-start'} justifyContent={'flex-end'}>
-                  
-                </Flex>
+                {
+                  !this.props.isMobile && 
+                    <Flex width={0.07} alignItems={'flex-start'} justifyContent={'flex-end'}>
+                    </Flex>
+                }
               </Flex>
             )
           })
@@ -276,7 +278,7 @@ class EarningsEstimation extends Component {
           flexDirection={'row'}
         >
           <Flex
-            width={0.93}
+            width={[1,0.93]}
             position={'relative'}
           >
             <Flex
@@ -285,9 +287,9 @@ class EarningsEstimation extends Component {
               flexDirection={'row'}
               justifyContent={'center'}
             >
-              <Flex width={0.1}></Flex>
+              <Flex width={[0.15,0.1]}></Flex>
               <Flex
-                width={0.9}
+                width={[0.85,0.9]}
                 flexDirection={'row'}
               >
                 {
@@ -296,13 +298,19 @@ class EarningsEstimation extends Component {
                     return (
                       <Flex
                         pt={2}
-                        pr={2}
+                        pr={[1,2]}
                         justifyContent={'flex-end'}
                         width={estimationStep.width}
                         key={`estimate-label-${estimateIndex}`}
                         borderRight={`1px solid ${theme.colors.divider}`}
                       >
-                        <Text color={'legend'} fontWeight={3} fontSize={2}>{estimationLabel}</Text>
+                        <Text
+                          fontWeight={3}
+                          fontSize={[0,2]}
+                          color={'legend'}
+                        >
+                          {estimationLabel}
+                        </Text>
                       </Flex>
                     );
                   })
@@ -310,9 +318,12 @@ class EarningsEstimation extends Component {
               </Flex>
             </Flex>
           </Flex>
-          <Flex width={0.07} alignItems={'flex-start'} justifyContent={'center'}>
-            <Text fontWeight={4} fontSize={3}></Text>
-          </Flex>
+          {
+            !this.props.isMobile && 
+              <Flex width={0.07} alignItems={'flex-start'} justifyContent={'center'}>
+                <Text fontWeight={4} fontSize={3}></Text>
+              </Flex>
+          }
         </Flex>
       </Card>
     );

@@ -71,8 +71,8 @@ class TransactionField extends Component {
     const transaction = this.props.transaction;
 
     const fieldProps = {
-      fontSize:[1,2],
       fontWeight:3,
+      fontSize:[0,2],
       color:'cellText'
     };
 
@@ -129,10 +129,10 @@ class TransactionField extends Component {
             justifyContent={'center'}
           >
             <Icon
+              name={icon}
+              color={color}
               align={'center'}
-              name={ icon }
-              color={ color }
-              size={"1.4em"}
+              size={this.props.isMobile ? '1em' : '1.4em'}
             />
           </Flex>
         );
@@ -194,20 +194,20 @@ class TransactionField extends Component {
         }
         output = (
           <Flex
-            p={'1px'}
-            width={'26px'}
-            height={'26px'}
+            p={[0,'1px']}
             borderRadius={'50%'}
             {...fieldProps}
             alignItems={'center'}
-            border={`2px solid ${color}`}
+            width={['24px','26px']}
+            height={['24px','26px']}
             justifyContent={'center'}
+            border={ this.props.isMobile ? `1px solid ${color}` : `2px solid ${color}` }
           >
             <Icon
+              name={icon}
+              color={color}
               align={'center'}
-              name={ icon }
-              color={ color }
-              size={"1.2em"}
+              size={ this.props.isMobile ? '1em' : '1.2em'}
             />
           </Flex>
         );

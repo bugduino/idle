@@ -39,6 +39,7 @@ class AssetsList extends Component {
       <Flex id="assets-list-container" width={1} flexDirection={'column'}>
         <TableHeader
           cols={this.props.cols}
+          isMobile={this.props.isMobile}
         />
         <Flex id="assets-list" flexDirection={'column'}>
           {

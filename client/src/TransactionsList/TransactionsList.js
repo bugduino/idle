@@ -303,6 +303,7 @@ class TransactionsList extends Component {
                   >
                     <TableHeader
                       cols={this.props.cols}
+                      isMobile={this.props.isMobile}
                     />
                     <Flex id="transactions-list" flexDirection={'column'}>
                       {

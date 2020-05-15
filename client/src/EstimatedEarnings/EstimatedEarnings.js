@@ -35,11 +35,13 @@ class EstimatedEarnings extends Component {
 
   async componentDidMount(){
     const tokenApy = await this.functionsUtil.getTokenApy(this.props.tokenConfig);
-    this.setState({
-      tokenApy
-    },() => {
-      this.loadChart();
-    });
+    if (tokenApy && !tokenApy.isNaN()){
+      this.setState({
+        tokenApy
+      },() => {
+        this.loadChart();
+      });
+    }
   }
 
   async componentDidUpdate(prevProps,prevState){
@@ -150,7 +152,7 @@ class EstimatedEarnings extends Component {
           }
         },
       },
-      margin:{ top: 10, right: 0, bottom: 50, left: 65 },
+      margin: this.props.isMobile ? { top: 0, right: 0, bottom: 30, left: 0 } : { top: 10, right: 0, bottom: 50, left: 65 }
     }
 
     this.setState({
@@ -182,7 +184,7 @@ class EstimatedEarnings extends Component {
       >
         <Flex
           width={1}
-          flexDirection={'row'}
+          flexDirection={['column','row']}
         >
           <Flex
             width={[1,0.3]}
@@ -247,8 +249,9 @@ class EstimatedEarnings extends Component {
             </Flex>
           </Flex>
           <Flex
+            mt={[3,0]}
             width={[1,0.7]}
-            id="estimated-earnings-container"
+            id={'estimated-earnings-container'}
           >
             <GenericChart
               type={Bar}
