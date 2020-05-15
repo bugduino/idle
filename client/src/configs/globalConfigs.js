@@ -2,6 +2,7 @@ import { Web3Versions } from '@terminal-packages/sdk';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import { RampInstantSDK } from '@ramp-network/ramp-instant-sdk';
 import IdleRebalancerManaged from '../contracts/IdleRebalancerManaged.json';
+import RiskAdjustedStrategy from '../RiskAdjustedStrategy/RiskAdjustedStrategy';
 
 const env = process.env;
 
@@ -99,19 +100,27 @@ const globalConfigs = {
   strategies:{
     risk:{
       token:'DAI',
+      color:'#2196F3',
+      iconName:'Security',
       title:'Risk-adjusted',
+      component: RiskAdjustedStrategy,
+      icon:'images/strategies/risk-on.svg',
+      iconInactive:'images/strategies/risk-off.svg',
       desc:'Minimize your risk exposure across DeFi protocols',
-      icon:'images/strategies/risk.svg',
     },
     best:{
-      token:'USDC',
+      token:'DAI',
+      color:'#f32121',
       title:'Best-yield',
+      iconName:'Whatshot',
+      component: RiskAdjustedStrategy,
+      icon:'images/strategies/best-on.svg',
+      iconInactive:'images/strategies/best-off.svg',
       desc:'Maximize your returns across DeFi protocols',
-      icon:'images/strategies/best.svg',
     }
   },
   stats:{
-    enabled:false, // Enable endpoint
+    enabled:true, // Enable endpoint
     rates:{
       endpoint:'https://api.idle.finance/rates/',
       TTL:3600 // 1 hour

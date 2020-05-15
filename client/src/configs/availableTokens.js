@@ -332,6 +332,7 @@ const availableTokens = {
           }
         ]
       },
+      /*
       USDC:{
         decimals:6,
         enabled:true,
@@ -399,6 +400,7 @@ const availableTokens = {
           }
         ]
       }
+      */
     },
     best:{
       DAI:{

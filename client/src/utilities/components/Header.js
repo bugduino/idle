@@ -86,30 +86,33 @@ class Header extends React.Component {
                 position={'relative'} />
             </RouterLink>
           </Flex>
-          <Flex
-            width={[1,8/12]}
-            alignItems={"center"}
-            flexDirection={'row'}
-            justifyContent={"flex-end"}
-          >
-            <Link
-              fontSize={3}
-              color={'white'}
-              href={'/#contacts'}
-              hoverColor={'white'}
-              fontFamily={'sansSerif'}
-              textAlign={['center','left']}
-            >Contact Us</Link>
-            <Link
-              ml={4}
-              fontSize={3}
-              href={'/#faq'}
-              color={'white'}
-              hoverColor={'white'}
-              fontFamily={'sansSerif'}
-              textAlign={['center','left']}
-            >FAQs</Link>
-          </Flex>
+          {
+            !this.props.isMobile &&
+              <Flex
+                width={[1,8/12]}
+                alignItems={"center"}
+                flexDirection={'row'}
+                justifyContent={"flex-end"}
+              >
+                <Link
+                  fontSize={3}
+                  color={'white'}
+                  href={'/#contacts'}
+                  hoverColor={'white'}
+                  fontFamily={'sansSerif'}
+                  textAlign={['center','left']}
+                >Contact Us</Link>
+                <Link
+                  ml={4}
+                  fontSize={3}
+                  href={'/#faq'}
+                  color={'white'}
+                  hoverColor={'white'}
+                  fontFamily={'sansSerif'}
+                  textAlign={['center','left']}
+                >FAQs</Link>
+              </Flex>
+          }
         </Flex>
         <ConnectionErrorModal
           modals={this.props.modals}

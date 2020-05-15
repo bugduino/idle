@@ -58,6 +58,7 @@ class FundsOverview extends Component {
             flexDirection={['column','row']}
           >
             <Flex
+              mb={[2,0]}
               width={[1,0.25]}
               alignItems={'center'}
               flexDirection={'column'}
@@ -78,13 +79,14 @@ class FundsOverview extends Component {
                   props:{
                     decimals:6,
                     fontWeight:300,
-                    fontSize:['1.6em','2.3em'],
+                    fontSize:['1.8em','2.3em'],
                     color:theme.colors.counter
                   }
                 }}
               />
             </Flex>
             <Flex
+              mb={[2,0]}
               width={[1,0.25]}
               alignItems={'center'}
               flexDirection={'column'}
@@ -106,7 +108,7 @@ class FundsOverview extends Component {
                   props:{
                     style:{
                       fontWeight:300,
-                      fontSize: this.props.isMobile ? '1.6em' : '2.3em',
+                      fontSize: this.props.isMobile ? '1.8em' : '2.3em',
                       color:theme.colors.counter
                     }
                   }
@@ -126,6 +128,7 @@ class FundsOverview extends Component {
               />
             </Flex>
             <Flex
+              mb={[2,0]}
               width={[1,0.25]}
               alignItems={'center'}
               flexDirection={'column'}
@@ -147,7 +150,7 @@ class FundsOverview extends Component {
                   props:{
                     style:{
                       fontWeight:300,
-                      fontSize: this.props.isMobile ? '1.6em' : '2.3em',
+                      fontSize:this.props.isMobile ? '1.8em' : '2.3em',
                       color:theme.colors.counter
                     }
                   }
@@ -155,6 +158,7 @@ class FundsOverview extends Component {
               />
             </Flex>
             <Flex
+              mb={[2,0]}
               width={[1,0.25]}
               alignItems={'center'}
               flexDirection={'column'}
@@ -175,7 +179,7 @@ class FundsOverview extends Component {
                   props:{
                     decimals:2,
                     fontWeight:300,
-                    fontSize:['1.6em','2.3em'],
+                    fontSize:['1.8em','2.3em'],
                     color:theme.colors.counter
                   }
                 }}

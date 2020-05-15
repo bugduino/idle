@@ -1,5 +1,5 @@
-import { Flex } from "rimble-ui";
 import Select from 'react-select';
+import { Flex, Text } from "rimble-ui";
 import React, { Component } from 'react';
 import AssetField from '../AssetField/AssetField';
 import FunctionsUtil from '../utilities/FunctionsUtil';
@@ -27,7 +27,6 @@ class GenericSelector extends Component {
   }
 
   render() {
-
     const ControlComponent = props => {
       const cardProps = Object.assign(
         props.innerProps,
@@ -75,45 +74,39 @@ class GenericSelector extends Component {
       );
     }
 
-    const CustomValueContainer = props => {
+    const CustomValueContainer = this.props.CustomValueContainer ? this.props.CustomValueContainer : props => {
       return (
         <Flex
           {...props.innerProps}
         >
           <Flex
-            p={0}
             width={1}
-            {...props.innerProps}
             alignItems={'center'}
             flexDirection={'row'}
-            style={{cursor:'pointer'}}
-            justifyContent={'flex-start'}
           >
-            <AssetField token={props.selectProps.value.value} fieldInfo={{
-                name:'icon',
-                props:{
-                  mr:2,
-                  height:'2em'
-                }
-              }}
-            />
-            <AssetField
-              token={props.selectProps.value.value}
-              fieldInfo={{
-                name:'tokenName',
-                props:{
-                  fontSize:[1,2],
-                  fontWeight:500,
-                  color:'copyColor'
-                }
-              }}
-            />
+            <Text
+              fontWeight={3}
+            >
+              {props.selectProps.value.label}
+            </Text>
           </Flex>
         </Flex>
       );
     }
 
-    const CustomOptionValue = this.props.CustomOptionValue;
+    const CustomOptionValue = this.props.CustomOptionValue ? this.props.CustomOptionValue : (props) => {
+      return (
+        <Flex
+          width={1}
+          alignItems={'center'}
+          flexDirection={'row'}
+        >
+          <Text>
+            {props.label}
+          </Text>
+        </Flex>
+      );
+    };
 
     const CustomOption = (props) => {
 

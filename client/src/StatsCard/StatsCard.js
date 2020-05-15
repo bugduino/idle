@@ -64,11 +64,15 @@ class StatsCard extends Component {
                 {this.props.value}
               </Text>
           }
-          {this.props.children ? this.props.children : null}
+          {
+            this.props.children ?
+              this.props.children
+            : null
+          }
           {
             (this.props.label && this.props.label.toString().length>0) && 
               <Text
-                mt={2}
+                mt={[3,2]}
                 fontSize={1}
                 fontWeight={3}
                 color={'legend'}

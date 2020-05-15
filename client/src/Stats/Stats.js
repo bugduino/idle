@@ -711,7 +711,7 @@ class Stats extends Component {
                 {...this.props}
               />
             </Flex>
-            <Flex id='chart-ALL' width={[1,2/3]} mb={3}>
+            <Flex id='chart-ALL' width={[1,2/3]} mb={[0,3]}>
               <Flex alignItems={'flex-start'} justifyContent={'flex-start'} flexDirection={'column'} width={1}>
                 <Heading.h4
                   mb={2}
@@ -736,7 +736,6 @@ class Stats extends Component {
           >
             <Flex
               width={1}
-              pb={[5,0]}
               id={'carousel-container'}
               justifyContent={'flex-end'}
             >

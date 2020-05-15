@@ -198,13 +198,13 @@ class PortfolioDonut extends Component {
           (this.state.totalFunds || selectedToken) && 
             <Flex
               zIndex={0}
-              left={'27%'}
-              width={'46%'}
-              height={'35%'}
               top={['32%','35%']}
+              left={['23%','27%']}
               textAlign={'center'}
               alignItems={'center'}
+              width={['55%','46%']}
               position={'absolute'}
+              height={['40%','35%']}
               flexDirection={'column'}
               justifyContent={'center'}
             >

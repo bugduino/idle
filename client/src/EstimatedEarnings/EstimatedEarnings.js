@@ -66,22 +66,34 @@ class EstimatedEarnings extends Component {
     const chartData = [
       {
         label:'MONTH',
+        value:amountMonth,
+        perc:1/12,
         month:amountMonth,
+        color:this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.selectedToken,'color','rgb']).join(','),
         monthColor:'hsl('+ this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.selectedToken,'color','hsl']).join(',')+')',
       },
       {
         label:'3 MONTHS',
+        perc:3/12,
+        value:amount3Months,
         month3:amount3Months,
+        color:this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.selectedToken,'color','rgb']).join(','),
         month3Color:'hsl('+ this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.selectedToken,'color','hsl']).join(',')+')',
       },
       {
         label:'6 MONTHS',
+        perc:6/12,
+        value:amount6Months,
         month6:amount6Months,
+        color:this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.selectedToken,'color','rgb']).join(','),
         month6Color:'hsl('+ this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.selectedToken,'color','hsl']).join(',')+')',
       },
       {
         label:'YEAR',
+        perc:1,
         year:amountYear,
+        value:amountYear,
+        color:this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.selectedToken,'color','rgb']).join(','),
         yearColor:'hsl('+ this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.selectedToken,'color','hsl']).join(',')+')',
       }
     ];
@@ -178,8 +190,7 @@ class EstimatedEarnings extends Component {
     return (
       <DashboardCard
         cardProps={{
-          px:4,
-          py:4
+          p:[3,4]
         }}
       >
         <Flex
@@ -223,7 +234,7 @@ class EstimatedEarnings extends Component {
                 max={this.state.maxInputValue}
                 type={"number"}
                 required={true}
-                height={'3.4em'}
+                height={['3em','3.4em']}
                 borderRadius={2}
                 fontWeight={500}
                 textAlign={'center'}
@@ -251,16 +262,81 @@ class EstimatedEarnings extends Component {
           <Flex
             mt={[3,0]}
             width={[1,0.7]}
-            id={'estimated-earnings-container'}
+            id={'estimated-earnings-chart'}
           >
-            <GenericChart
-              type={Bar}
-              height={250}
-              showLoader={true}
-              {...this.state.chartProps}
-              data={this.state.chartData}
-              parentId={'estimated-earnings-container'}
-            />
+            {
+              this.props.isMobile ? (
+                <Flex
+                  width={1}
+                  flexDirection={'column'}
+                >
+                  {
+                    this.state.chartData !== null && this.state.chartData.map((v) => (
+                      <Flex
+                        py={2}
+                        my={2}
+                        width={1}
+                        flexDirection={'row'}
+                      >
+                        <Flex
+                          width={0.35}
+                          alignItems={'center'}
+                          justifyContent={'flex-start'}
+                        >
+                          <Text
+                            fontSize={1}
+                            fontWeight={3}
+                            color={'legend'}
+                          >
+                            {v.label}
+                          </Text>
+                        </Flex>
+                        <Flex
+                          width={0.65}
+                          position={'relative'}
+                          alignItems={'center'}
+                          minHeight={['20px','35px']}
+                          justifyContent={'center'}
+                        >
+                          <Flex
+                            zIndex={1}
+                            position={'relative'}
+                            alignItems={'center'}
+                            flexDirection={'column'}
+                            justifyContent={'center'}
+                          >
+                            <Text
+                              fontSize={1}
+                              fontWeight={3}
+                              color={'counter'}
+                            >
+                              {this.functionsUtil.abbreviateNumber(v.value,2,4)} {this.props.selectedToken}
+                            </Text>
+                          </Flex>
+                          <Flex
+                            right={0}
+                            width={v.perc}
+                            position={'absolute'}
+                            height={['20px','35px']}
+                            borderRadius={['20px 0 0 20px','35px 0 0 35px']}
+                            style={{background:`linear-gradient(-90deg, rgba(${v.color},0) 0%, rgba(${v.color},1) 100%)`}}
+                          ></Flex>
+                        </Flex>
+                      </Flex>
+                    ))
+                  }
+                </Flex>
+              ) : (
+                <GenericChart
+                  type={Bar}
+                  height={250}
+                  showLoader={true}
+                  {...this.state.chartProps}
+                  data={this.state.chartData}
+                  parentId={'estimated-earnings-chart'}
+                />
+              )
+            }
           </Flex>
         </Flex>
       </DashboardCard>

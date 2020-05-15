@@ -8,7 +8,6 @@ import FunctionsUtil from '../utilities/FunctionsUtil';
 import Stats from '../Stats/Stats';
 import AssetPage from '../AssetPage/AssetPage';
 import DashboardHeader from '../DashboardHeader/DashboardHeader';
-import RiskAdjustedStrategy from '../RiskAdjustedStrategy/RiskAdjustedStrategy';
 // import BestYieldStrategy from {};
 
 class Dashboard extends Component {
@@ -31,70 +30,22 @@ class Dashboard extends Component {
   }
 
   async loadMenu() {
-    const menu = [
-      /*
-      {
-        icon:'Home',
-        label:'Home',
-        route:'/',
-        selected:false,
-        submenu:[]
-      },
-      */
-      {
-        icon:'VerifiedUser',
-        label:'Risk Adjusted',
-        route:'/dashboard/risk',
-        bgColor:'#2196F3',
+    const baseRoute = this.functionsUtil.getGlobalConfig(['dashboard','baseRoute']);
+    const strategies = this.functionsUtil.getGlobalConfig(['strategies']);
+    const menu = Object.keys(strategies).map(strategy => ({
+        submenu:[],
         color:'#fff',
         selected:false,
-        component:RiskAdjustedStrategy,
-        submenu:[
-          /*
-          {
-            icon:null,
-            label:'DAI',
-            route:'DAI',
-            selected:false,
-            submenu:[]
-          },
-          {
-            icon:null,
-            label:'USDC',
-            route:'USDC',
-            selected:false,
-            submenu:[]
-          },
-          */
-        ]
-      },
-      {
-        color:'#fff',
-        selected:false,
-        icon:'Whatshot',
-        bgColor:'#f32121',
-        label:'Best Yield',
-        component:null,
-        route:'/dashboard/best',
-        submenu:[
-          /*
-          {
-            icon:null,
-            label:'DAI',
-            route:'DAI',
-            selected:false,
-            submenu:[]
-          },
-          {
-            icon:null,
-            label:'USDC',
-            route:'USDC',
-            selected:false,
-            submenu:[]
-          },
-          */
-        ]
-      },
+        route:baseRoute+'/'+strategy,
+        label:strategies[strategy].title,
+        image:strategies[strategy].icon,
+        imageInactive:strategies[strategy].iconInactive,
+        bgColor:strategies[strategy].color,
+        component:strategies[strategy].component
+      })
+    );
+
+    menu.push(
       {
         icon:'Equalizer',
         label:'Stats',
@@ -105,7 +56,7 @@ class Dashboard extends Component {
         selected:false,
         submenu:[]
       }
-    ];
+    );
 
     await this.setState({
       menu
@@ -264,6 +215,7 @@ class Dashboard extends Component {
         height={'100vh'}
         position={'fixed'}
         flexDirection={'row'}
+        backgroundColor={['dashboardBg','white']}
       >
         <Flex
           bottom={0}
@@ -286,8 +238,7 @@ class Dashboard extends Component {
         <Flex
           py={3}
           px={[3,5]}
-          pb={[3,0]}
-          mb={['60px',0]}
+          mb={['74px',0]}
           width={[1,5/6]}
           style={{
             overflowY:'scroll',

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="72px" height="87px" viewBox="0 0 72 87" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <defs>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-2">
+            <stop stop-color="#73717d" offset="0%"></stop>
+            <stop stop-color="#5b5967" offset="53.1355574%"></stop>
+            <stop stop-color="#3F3D4B" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="Tickers" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="shield">
+            <g id="noun_Shield_874633"></g>
+            <g id="Group" fill="url(#linearGradient-2)">
+                <path d="M35.9999461,0.1125345 C24.9695344,7.34231433 13.9409227,11.4341538 2.91051092,13.8559562 C-5.47220388,41.2746216 3.86239429,74.9460047 35.9999461,86.8018202 C68.137607,74.9460047 77.4722052,41.2746216 69.0894904,13.8559562 C58.0590787,11.4341538 47.0303579,7.34231433 35.9999461,0.1125345 Z" id="Path"></path>
+            </g>
+        </g>
+    </g>
+</svg>

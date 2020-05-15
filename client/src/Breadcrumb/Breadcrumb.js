@@ -21,9 +21,9 @@ class Breadcrumb extends Component {
          handleClick={this.props.handleClick}
        />
        <Link
-         ml={[2,3]}
+         ml={3}
+         fontSize={2}
          fontWeight={3}
-         fontSize={[1,2]}
          color={'cellText'}
          hoverColor={'copyColor'}
          onClick={this.props.handleClick}

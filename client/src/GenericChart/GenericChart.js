@@ -23,6 +23,12 @@ class GenericChart extends Component {
     this.handleWindowSizeChange();
   }
 
+  componentDidUpdate(prevProps){
+    if (prevProps.isMobile !== this.props.isMobile){
+      this.handleWindowSizeChange();
+    }
+  }
+
   handleWindowSizeChange(){
     const newState = {...this.state};
 
@@ -30,6 +36,7 @@ class GenericChart extends Component {
       const chartContainer = document.getElementById(this.props.parentId);
       if (chartContainer){
         const chartWidth = parseFloat(chartContainer.offsetWidth)>0 ? chartContainer.offsetWidth : 0;
+
         if (chartWidth && chartWidth !== newState.width){
           newState.width = chartWidth;
         }

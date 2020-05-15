@@ -354,8 +354,8 @@ class Landing extends Component {
             <Flex
               mx={'auto'}
               textAlign={'center'}
-              flexDirection={'row'}
               maxWidth={["50em", "50em"]}
+              flexDirection={['column','row']}
               justifyContent={'space-between'}
             >
               {

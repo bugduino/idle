@@ -60,6 +60,44 @@ class AssetSelector extends Component {
       );
     }
 
+    const CustomValueContainer = props => {
+      return (
+        <Flex
+          {...props.innerProps}
+        >
+          <Flex
+            p={0}
+            width={1}
+            {...props.innerProps}
+            alignItems={'center'}
+            flexDirection={'row'}
+            style={{cursor:'pointer'}}
+            justifyContent={'flex-start'}
+          >
+            <AssetField token={props.selectProps.value.value} fieldInfo={{
+                name:'icon',
+                props:{
+                  mr:2,
+                  height:'2em'
+                }
+              }}
+            />
+            <AssetField
+              token={props.selectProps.value.value}
+              fieldInfo={{
+                name:'tokenName',
+                props:{
+                  fontSize:[1,2],
+                  fontWeight:500,
+                  color:'copyColor'
+                }
+              }}
+            />
+          </Flex>
+        </Flex>
+      );
+    }
+
     return (
       <GenericSelector
         name={"assets"}
@@ -68,6 +106,7 @@ class AssetSelector extends Component {
         onChange={this.props.changeToken}
         innerProps={this.props.innerProps}
         CustomOptionValue={CustomOptionValue}
+        CustomValueContainer={CustomValueContainer}
       />
     );
   }

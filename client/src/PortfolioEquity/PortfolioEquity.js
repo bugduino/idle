@@ -9,6 +9,7 @@ import DashboardCard from '../DashboardCard/DashboardCard';
 class PortfolioEquity extends Component {
   state = {
     gridYValues:[],
+    startDate:null,
     chartData:null,
     chartwidth:null,
     chartHeight:null,
@@ -30,11 +31,42 @@ class PortfolioEquity extends Component {
     this.loadChartData();
   }
 
+  handleQuickDateSelection(quickDateSelection){
+    let startDate = this.functionsUtil.strToMoment(new Date());
+    switch (quickDateSelection){
+      case 'week':
+        startDate = startDate.subtract(1,'week');
+      break;
+      case 'month':
+        startDate = startDate.subtract(1,'month');
+      break;
+      case 'month3':
+        startDate = startDate.subtract(3,'month');
+      break;
+      case 'month6':
+        startDate = startDate.subtract(6,'month');
+      break;
+      case 'all':
+        startDate = null;
+      break;
+    }
+
+    this.setState({
+      startDate
+    });
+  }
+
   async componentDidUpdate(prevProps, prevState) {
     this.loadUtils();
 
+    const quickDateSelectionChanged = prevProps.quickDateSelection !== this.props.quickDateSelection;
+    if (quickDateSelectionChanged){
+      this.handleQuickDateSelection(this.props.quickDateSelection);
+    }
+
+    const startDateChanged = prevState.startDate !== this.state.startDate;
     const tokenChanged = JSON.stringify(prevProps.enabledTokens) !== JSON.stringify(this.props.enabledTokens);
-    if (tokenChanged){
+    if (tokenChanged || startDateChanged){
       this.setState({
         chartData:null
       },() => {
@@ -224,11 +256,14 @@ class PortfolioEquity extends Component {
 
         foundBalances[token] = filteredBalances;
       });
-
-      aggregatedBalances.push({
-        x:this.functionsUtil.strToMoment(timeStamp*1000).format('YYYY/MM/DD HH:mm'),
-        y:parseFloat(aggregatedBalance)
-      });
+  
+      const momentDate = this.functionsUtil.strToMoment(timeStamp*1000);
+      if (!this.state.startDate || momentDate.isSameOrAfter(this.state.startDate)){
+        aggregatedBalances.push({
+          x:momentDate.format('YYYY/MM/DD HH:mm'),
+          y:parseFloat(aggregatedBalance)
+        });
+      }
 
       // console.log(this.functionsUtil.strToMoment(timeStamp*1000).format('DD/MM/YYYY HH:mm'),aggregatedBalance.toFixed(5),this.functionsUtil.formatMoney(aggregatedBalance));
 
@@ -268,7 +303,6 @@ class PortfolioEquity extends Component {
       xScale:{
         type: 'time',
         format: '%Y/%m/%d %H:%M',
-        // precision: 'hour',
       },
       xFormat:'time:%b %d %H:%M',
       yFormat:value => this.functionsUtil.formatMoney(value,2),
@@ -278,7 +312,7 @@ class PortfolioEquity extends Component {
       },
       axisLeft:null,
       areaOpacity:0.1,
-      axisBottom:{
+      axisBottom: this.props.isMobile ? null : {
         legend: '',
         tickSize:0,
         tickPadding: 15,
@@ -286,7 +320,23 @@ class PortfolioEquity extends Component {
         legendOffset: 36,
         legendPosition: 'middle',
         format: v => {
-          return v.getDay() === 0 ? this.functionsUtil.strToMoment(v,'YYYY/MM/DD HH:mm').format('MMM DD') : null;
+          switch (this.props.quickDateSelection){
+            case 'week':
+              return this.functionsUtil.strToMoment(v,'YYYY/MM/DD HH:mm').format('MMM DD');
+            break;
+            case 'month':
+              return v.getDay() === 0 ? this.functionsUtil.strToMoment(v,'YYYY/MM/DD HH:mm').format('MMM DD') : null;
+            break;
+            case 'month3':
+              return v.getDay() === 0 ? this.functionsUtil.strToMoment(v,'YYYY/MM/DD HH:mm').format('MMM DD') : null;
+            break;
+            case 'month6':
+              return v.getDate() === 1 ? this.functionsUtil.strToMoment(v,'YYYY/MM/DD HH:mm').format('MMM DD') : null;
+            break;
+            case 'all':
+              return v.getDate() === 1 ? this.functionsUtil.strToMoment(v,'YYYY/MM/DD HH:mm').format('MMM') : null;
+            break;
+          }
         }
       },
       gridYValues:this.state.gridYValues,
@@ -320,7 +370,7 @@ class PortfolioEquity extends Component {
           }
         },
       },
-      margin: this.props.isMobile ? { top: 20, right: 20, bottom: 45, left: 20 } : { top: 30, right: 50, bottom: 65, left: 50 },
+      margin: this.props.isMobile ? { top: 20, right: 25, bottom: 25, left: 20 } : { top: 30, right: 50, bottom: 45, left: 50 },
       sliceTooltip:(slideData) => {
         const { slice: {points} } = slideData;
         const point = points[0];

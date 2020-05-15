@@ -90,6 +90,7 @@ class AssetPage extends Component {
           justifyContent={'flex-start'}
         >
           <Breadcrumb
+            isMobile={this.props.isMobile}
             path={[this.props.selectedToken]}
             handleClick={ e => this.props.goToSection(this.props.selectedStrategy) }
             text={this.functionsUtil.getGlobalConfig(['strategies',this.props.selectedStrategy,'title'])}
@@ -113,10 +114,10 @@ class AssetPage extends Component {
         {
           userHasFunds &&
             <Flex
-              mb={[3,4]}
+              mb={[0,4]}
               width={1}
-              id={'funds-overview-container'}
               flexDirection={'column'}
+              id={'funds-overview-container'}
             >
               <Title my={[3,4]}>Funds Overview</Title>
               <FundsOverview
@@ -124,124 +125,127 @@ class AssetPage extends Component {
               />
             </Flex>
         }
-        <Flex
-          mb={[3,4]}
-          width={1}
-          id={'funds-overview-container'}
-          flexDirection={'column'}
-        >
-          <Title my={[3,4]}>Estimated earnings</Title>
-          <EstimatedEarnings
-            {...this.props}
-          />
-        </Flex>
         {
-          this.props.account && 
-            <Flex
-              mb={[3,4]}
-              width={1}
-              id={'transactions-container'}
-              flexDirection={'column'}
-            >
-              <Title my={[3,4]}>Transactions</Title>
-              <TransactionsList
-                {...this.props}
-                enabledTokens={[this.props.selectedToken]}
-                cols={[
-                  {
-                    title: this.props.isMobile ? '' : 'HASH',
-                    props:{
-                      width:[0.15,0.22]
-                    },
-                    fields:[
-                      {
-                        name:'icon',
-                        props:{
-                          mr:[0,2]
-                        }
-                      },
-                      {
-                        name:'hash',
-                        mobile:false
+        this.props.account && 
+          <Flex
+            mb={[3,4]}
+            width={1}
+            flexDirection={'column'}
+            id={'estimated-earnings-container'}
+          >
+            <Title my={[3,4]}>Estimated earnings</Title>
+            <EstimatedEarnings
+              {...this.props}
+            />
+          </Flex>
+        }
+        {
+        this.props.account && 
+          <Flex
+            mb={[3,4]}
+            width={1}
+            id={'transactions-container'}
+            flexDirection={'column'}
+          >
+            <Title my={[3,4]}>Transactions</Title>
+            <TransactionsList
+              {...this.props}
+              enabledTokens={[this.props.selectedToken]}
+              cols={[
+                {
+                  title: this.props.isMobile ? '' : 'HASH',
+                  props:{
+                    width:[0.15,0.22]
+                  },
+                  fields:[
+                    {
+                      name:'icon',
+                      props:{
+                        mr:[0,2]
                       }
-                    ]
-                  },
-                  {
-                    title:'ACTION',
-                    mobile:false,
-                    props:{
-                      width:0.15,
                     },
-                    fields:[
-                      {
-                        name:'action'
+                    {
+                      name:'hash',
+                      mobile:false
+                    }
+                  ]
+                },
+                {
+                  title:'ACTION',
+                  mobile:false,
+                  props:{
+                    width:0.15,
+                  },
+                  fields:[
+                    {
+                      name:'action'
+                    }
+                  ]
+                },
+                {
+                  title:'DATE',
+                  props:{
+                    width:0.32,
+                  },
+                  fields:[
+                    {
+                      name:'date'
+                    }
+                  ]
+                },
+                {
+                  title:'STATUS',
+                  props:{
+                    width:0.18,
+                    justifyContent:['center','flex-start']
+                  },
+                  fields:[
+                    {
+                      name:'statusIcon',
+                      props:{
+                        mr:[0,2]
                       }
-                    ]
-                  },
-                  {
-                    title:'DATE',
-                    props:{
-                      width:0.32,
                     },
-                    fields:[
-                      {
-                        name:'date'
+                    {
+                      mobile:false,
+                      name:'status'
+                    }
+                  ]
+                },
+                {
+                  title:'AMOUNT',
+                  props:{
+                    width:0.21,
+                  },
+                  fields:[
+                    {
+                      name:'amount'
+                    },
+                  ]
+                },
+                {
+                  title:'ASSET',
+                  props:{
+                    width:0.15,
+                    justifyContent:['center','flex-start']
+                  },
+                  fields:[
+                    {
+                      name:'tokenIcon',
+                      props:{
+                        mr:[0,2],
+                        height:['1.4em','1.6em']
                       }
-                    ]
-                  },
-                  {
-                    title:'STATUS',
-                    props:{
-                      width:0.18,
-                      justifyContent:['center','flex-start']
                     },
-                    fields:[
-                      {
-                        name:'statusIcon',
-                        props:{
-                          mr:[0,2]
-                        }
-                      },
-                      {
-                        mobile:false,
-                        name:'status'
-                      }
-                    ]
-                  },
-                  {
-                    title:'AMOUNT',
-                    props:{
-                      width:0.21,
+                    {
+                      mobile:false,
+                      name:'tokenName'
                     },
-                    fields:[
-                      {
-                        name:'amount'
-                      },
-                    ]
-                  },
-                  {
-                    title:'ASSET',
-                    props:{
-                      width:0.15,
-                      justifyContent:['center','flex-start']
-                    },
-                    fields:[
-                      {
-                        name:'tokenIcon',
-                        props:{
-                          mr:[0,2],
-                          height:['1.4em','1.6em']
-                        }
-                      },
-                      {
-                        mobile:false,
-                        name:'tokenName'
-                      },
-                    ]
-                  },
-                ]}
-              />
-            </Flex>
+                  ]
+                },
+              ]}
+            />
+          </Flex>
         }
       </Flex>
     );

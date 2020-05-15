@@ -11,7 +11,7 @@ class TableRow extends Component {
           mb:2,
           width:1,
           px:[2,4],
-          py:[2,'20px']
+          py:[2,'12px']
         }}
         id={this.props.cardId}
         {...this.props.rowProps}

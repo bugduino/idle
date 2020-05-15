@@ -228,7 +228,7 @@ class EarningsEstimation extends Component {
                       justifyContent={['flex-start','flex-end']}
                     >
                       <Text
-                        pr={[0,1]}
+                        pr={[0,2]}
                         fontSize={[0,3]}
                         fontWeight={[3,4]}
                       >

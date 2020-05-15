@@ -68,7 +68,7 @@ class DashboardMenu extends Component {
             >
               <Flex
                 p={[2,3]}
-                borderRadius={2}
+                borderRadius={[0,2]}
                 flexDirection={'row'}
                 alignItems={'center'}
                 backgroundColor={ menuLink.selected ? '#f3f6ff' : 'transparent' }
@@ -80,6 +80,16 @@ class DashboardMenu extends Component {
                   justifyContent={['center','flex-start']}
                   width={ menuLink.submenu.length>0 ? 3/4 : 1}
                 >
+                  {menuLink.image &&
+                    <Image
+                      mr={[0,3]}
+                      ml={[0,2]}
+                      mb={[1,0]}
+                      align={'center'}
+                      src={ menuLink.selected ? menuLink.image : (menuLink.imageInactive ? menuLink.imageInactive : menuLink.image)}
+                      height={['1.2em','1.6em']}
+                    />
+                  }
                   {menuLink.icon &&
                     <Icon
                       mr={[0,3]}
@@ -87,13 +97,13 @@ class DashboardMenu extends Component {
                       mb={[1,0]}
                       align={'center'}
                       name={menuLink.icon}
-                      size={ this.props.isMobile ? '1.2em' : '1.6em' }
+                      size={ this.props.isMobile ? '1.4em' : '1.6em' }
                       color={ menuLink.selected ? menuLink.bgColor : 'copyColor' }
                     />
                   }
                   <Text
                     fontWeight={3}
-                    fontSize={[1,2]}
+                    fontSize={[0,2]}
                     color={'copyColor'}
                     textAlign={'center'}
                     style={{

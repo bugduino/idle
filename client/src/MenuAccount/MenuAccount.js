@@ -91,8 +91,8 @@ class MenuAccount extends Component {
           <DashboardCard
             cardProps={{
               py:1,
-              px:3,
               width:'auto',
+              px:['12px',3],
             }}
             isInteractive={true}
             handleClick={this.props.connectAndValidateAccount}
@@ -105,21 +105,21 @@ class MenuAccount extends Component {
             >
               <Flex
                 mr={2}
-                p={'7px'}
+                p={['4px','7px']}
                 borderRadius={'50%'}
                 alignItems={'center'}
                 justifyContent={'center'}
                 backgroundColor={ theme.colors.transactions.actionBg.redeem }
               >
                 <Icon
-                  name={'Input'}
-                  size={"1.4em"}
+                  name={'Power'}
                   align={'center'}
                   color={'redeem'}
+                  size={ this.props.isMobile ? '1.2em' : '1.4em' }
                 />
               </Flex>
               <Text
-                fontSize={3}
+                fontSize={[2,3]}
                 fontWeight={3}
               >
                 Connect

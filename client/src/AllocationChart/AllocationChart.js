@@ -51,6 +51,8 @@ class AllocationChart extends Component {
       },() => {
         this.loadData();
       });
+    } else if (prevProps.isMobile !== this.props.isMobile){
+      this.loadData()
     }
   }
 
@@ -93,7 +95,7 @@ class AllocationChart extends Component {
         },
         labels:{
           text:{
-            fontSize:15,
+            fontSize:this.props.isMobile ? 13 : 15,
             fontWeight:600,
             fontFamily: theme.fonts.sansSerif
           }
@@ -115,7 +117,7 @@ class AllocationChart extends Component {
       radialLabelsLinkDiagonalLength:0,
       radialLabelsLinkHorizontalLength:0,
       radialLabelsLinkColor:{ from: 'color' },
-      margin: this.props.isMobile ? { top: 10, right: 10, bottom: 0, left: 10 } : { top: 10, right: 35, bottom: 0, left: 35 },
+      margin: this.props.isMobile ? { top: 10, right: 15, bottom: 0, left: 15 } : { top: 10, right: 35, bottom: 0, left: 35 },
       borderColor:{ from: 'color', modifiers: [ [ 'darker', 0.2 ] ] },
     };
 
@@ -157,13 +159,13 @@ class AllocationChart extends Component {
           this.state.totalAllocation &&
             <Flex
               zIndex={0}
-              top={'25%'}
-              left={'27%'}
-              width={'46%'}
-              height={'46%'}
+              top={['23%','25%']}
+              left={['20%','27%']}
               textAlign={'center'}
               alignItems={'center'}
               position={'absolute'}
+              width={['60%','46%']}
+              height={['53%','46%']}
               flexDirection={'column'}
               justifyContent={'center'}
             >
@@ -177,19 +179,19 @@ class AllocationChart extends Component {
                   >
                     <Image
                       mb={1}
-                      width={'2em'}
-                      height={'2em'}
+                      width={['1.8em','2em']}
+                      height={['1.8em','2em']}
                       src={`/images/protocols/${this.state.selectedSlice.label.toLowerCase()}.svg`}
                     />
                     <SmartNumber
-                      fontSize={4}
+                      fontSize={[3,4]}
                       decimals={3}
                       fontWeight={4}
                       maxPrecision={5}
                       number={selectedSlice}
                     />
                     <Text
-                      fontSize={2}
+                      fontSize={[1,2]}
                       fontWeight={3}
                       color={'cellTitle'}
                     >
@@ -205,25 +207,25 @@ class AllocationChart extends Component {
                   >
                     <Image
                       mb={1}
-                      width={'2em'}
-                      height={'2em'}
+                      width={['1.8em','2em']}
+                      height={['1.8em','2em']}
                       src={`/images/idle-mark.png`}
                     />
                     <SmartNumber
                       unitProps={{
                         ml:2,
-                        fontSize:4,
-                        fontWeight:3
+                        fontWeight:3,
+                        fontSize:[3,4]
                       }}
-                      fontSize={4}
                       decimals={3}
                       fontWeight={4}
+                      fontSize={[3,4]}
                       maxPrecision={5}
                       number={this.state.totalAllocation}
                     />
                     <Text
-                      fontSize={2}
                       fontWeight={3}
+                      fontSize={[1,2]}
                       color={'cellTitle'}
                     >
                       Total funds

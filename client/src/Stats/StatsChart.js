@@ -17,14 +17,6 @@ class StatsChart extends Component {
     chartWidth:null
   };
 
-  async componentWillMount() {
-    window.addEventListener('resize', this.handleWindowSizeChange);
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('resize', this.handleWindowSizeChange);
-  }
-
   async componentDidMount() {
     this.setState({
       chartData:null,
@@ -32,27 +24,17 @@ class StatsChart extends Component {
       chartProps:null,
     });
     this.loadUtils();
-    this.handleWindowSizeChange();
     this.loadApiData();
   }
 
   async componentDidUpdate(prevProps) {
     const showAdvancedChanged = prevProps.showAdvanced !== this.props.showAdvanced;
     const apiResultsChanged = prevProps.apiResults !== this.props.apiResults;
-    if (apiResultsChanged || showAdvancedChanged){
+    const tokenChanged = prevProps.selectedToken !== this.props.selectedToken || JSON.stringify(prevProps.tokenConfig) !== JSON.stringify(this.props.tokenConfig);
+    if (apiResultsChanged || showAdvancedChanged || tokenChanged){
       this.componentDidMount();
     }
   }
-
-  handleWindowSizeChange = () => {
-    const chartContainer = document.getElementById(this.props.parentId);
-    if (chartContainer && chartContainer.offsetWidth !== this.state.chartWidth){
-      const chartWidth = parseFloat(chartContainer.offsetWidth)>0 ? chartContainer.offsetWidth : 0;
-      return this.setState({
-        chartWidth
-      });
-    }
-  };
 
   // Utils
   functionsUtil = null;
@@ -264,7 +246,7 @@ class StatsChart extends Component {
           label: d => {
             return Math.abs(d.value);
           },
-          axisBottom:{
+          axisBottom: this.props.isMobile ? null : {
             tickSize: 0,
             legend: '',
             format: (value) => {
@@ -334,9 +316,10 @@ class StatsChart extends Component {
           legends:[
             {
               dataFrom:'keys',
-              itemWidth: 100,
+              itemWidth: this.props.isMobile ? 80 : 100,
               itemHeight: 18,
-              translateY: 65,
+              translateX: 0,
+              translateY: this.props.isMobile ? 40 : 65,
               symbolSize: 10,
               itemsSpacing: 0,
               direction: 'row',
@@ -357,7 +340,7 @@ class StatsChart extends Component {
             axis: {
               ticks: {
                 text: {
-                  fontSize:14,
+                  fontSize: this.props.isMobile ? 12: 14,
                   fontWeight:600,
                   fill:theme.colors.legend,
                   fontFamily: theme.fonts.sansSerif
@@ -371,7 +354,7 @@ class StatsChart extends Component {
             },
             legends:{
               text:{
-                fontSize:14,
+                fontSize: this.props.isMobile ? 12: 14,
                 fontWeight:500,
                 fontFamily: theme.fonts.sansSerif
               }
@@ -384,9 +367,9 @@ class StatsChart extends Component {
             }
           },
           pointColor:{ from: 'color', modifiers: []},
-          margin: this.props.isMobile ? { top: 20, right: 50, bottom: 70, left: 40 } : { top: 20, right: 70, bottom: 70, left: 40 },
+          margin: this.props.isMobile ? { top: 20, right: 50, bottom: 45, left: 50 } : { top: 20, right: 70, bottom: 70, left: 50 },
           tooltip:(data) => {
-            const xFormatted = this.functionsUtil.strToMoment(data.indexValue).format('MMM DD HH:mm');
+            const xFormatted = this.functionsUtil.strToMoment(data.indexValue).format('MMM DD');
             const point = {
               id:data.id,
               data:{
@@ -459,7 +442,7 @@ class StatsChart extends Component {
             legendOffset: -65,
             legendPosition: 'middle'
           },
-          axisBottom:{
+          axisBottom: this.props.isMobile ? null : {
             format: '%b %d',
             tickValues: this.props.isMobile ? 'every 4 days' : 'every 3 days',
             orient: 'bottom',
@@ -566,7 +549,7 @@ class StatsChart extends Component {
             legendPosition: 'middle',
             format: v => this.functionsUtil.abbreviateNumber(v,0),
           },
-          axisBottom:{
+          axisBottom: this.props.isMobile ? null : {
             tickSize: 0,
             format: '%b %d',
             tickPadding: 15,
@@ -591,9 +574,10 @@ class StatsChart extends Component {
           pointLabelYOffset:-12,
           legends:[
             {
-              itemWidth: 80,
+              itemWidth: this.props.isMobile ? 70 : 80,
               itemHeight: 18,
-              translateY: 65,
+              translateX: this.props.isMobile ? -35 : 0,
+              translateY: this.props.isMobile ? 40 : 65,
               symbolSize: 10,
               itemsSpacing: 5,
               direction: 'row',
@@ -614,7 +598,7 @@ class StatsChart extends Component {
             axis: {
               ticks: {
                 text: {
-                  fontSize:14,
+                  fontSize: this.props.isMobile ? 12: 14,
                   fontWeight:600,
                   fill:theme.colors.legend,
                   fontFamily: theme.fonts.sansSerif
@@ -628,14 +612,14 @@ class StatsChart extends Component {
             },
             legends:{
               text:{
-                fontSize:14,
+                fontSize: this.props.isMobile ? 12: 14,
                 fontWeight:500,
                 fontFamily: theme.fonts.sansSerif
               }
             }
           },
           pointColor:{ from: 'color', modifiers: []},
-          margin: this.props.isMobile ? { top: 20, right: 20, bottom: 70, left: 50 } : { top: 20, right: 40, bottom: 70, left: 70 },
+          margin: this.props.isMobile ? { top: 20, right: 20, bottom: 40, left: 65 } : { top: 20, right: 40, bottom: 70, left: 70 },
           sliceTooltip:(slideData) => {
             const { slice } = slideData;
             const point = slice.points[0];
@@ -783,7 +767,7 @@ class StatsChart extends Component {
             legendPosition: 'middle'
           },
           gridYValues,
-          axisBottom:{
+          axisBottom: this.props.isMobile ? null : {
             legend: '',
             format: (value) => {
               if (axisBottomIndex++ % 3 === 0){
@@ -800,9 +784,10 @@ class StatsChart extends Component {
           legends:[
             {
               dataFrom:'keys',
-              itemWidth: 80,
+              itemWidth: this.props.isMobile ? 70 : 80,
               itemHeight: 18,
-              translateY: 65,
+              translateX: this.props.isMobile ? -35 : 0,
+              translateY: this.props.isMobile ? 40 : 65,
               symbolSize: 10,
               itemsSpacing: 5,
               direction: 'row',
@@ -823,7 +808,7 @@ class StatsChart extends Component {
             axis: {
               ticks: {
                 text: {
-                  fontSize:14,
+                  fontSize:this.props.isMobile ? 12 : 14,
                   fontWeight:600,
                   fill:theme.colors.legend,
                   fontFamily: theme.fonts.sansSerif
@@ -837,14 +822,14 @@ class StatsChart extends Component {
             },
             legends:{
               text:{
-                fontSize:14,
+                fontSize:this.props.isMobile ? 12 : 14,
                 fontWeight:500,
                 fontFamily: theme.fonts.sansSerif
               }
             }
           },
           pointColor:{ from: 'color', modifiers: []},
-          margin: this.props.isMobile ? { top: 20, right: 20, bottom: 70, left: 50 } : { top: 20, right: 40, bottom: 70, left: 60 },
+          margin: this.props.isMobile ? { top: 20, right: 20, bottom: 40, left: 65 } : { top: 20, right: 40, bottom: 70, left: 60 },
           tooltip:({ id, value, color }) => {
             const allocation = this.functionsUtil.formatMoney(value,0);
             return (
@@ -920,7 +905,7 @@ class StatsChart extends Component {
           axisLeft:{
             format: v => parseInt(v)+'%'
           },
-          axisBottom:{
+          axisBottom: this.props.isMobile ? null : {
             legend: '',
             format: (value) => {
               if (axisBottomIndex++ % 3 === 0){
@@ -1026,7 +1011,7 @@ class StatsChart extends Component {
             legendPosition: 'middle',
             format:value => parseFloat(value).toFixed(1)+'%',
           },
-          axisBottom:{
+          axisBottom: this.props.isMobile ? null : {
             tickSize: 0,
             format: '%b %d',
             tickPadding: 15,
@@ -1051,9 +1036,10 @@ class StatsChart extends Component {
           pointLabelYOffset:-12,
           legends:[
             {
-              itemWidth: 80,
+              itemWidth: this.props.isMobile ? 70 : 80,
               itemHeight: 18,
-              translateY: 65,
+              translateX: this.props.isMobile ? -35 : 0,
+              translateY: this.props.isMobile ? 40 : 65,
               symbolSize: 10,
               itemsSpacing: 0,
               direction: 'row',
@@ -1074,7 +1060,7 @@ class StatsChart extends Component {
             axis: {
               ticks: {
                 text: {
-                  fontSize:14,
+                  fontSize: this.props.isMobile ? 12: 14,
                   fontWeight:600,
                   fill:theme.colors.legend,
                   fontFamily: theme.fonts.sansSerif
@@ -1088,14 +1074,14 @@ class StatsChart extends Component {
             },
             legends:{
               text:{
-                fontSize:14,
+                fontSize: this.props.isMobile ? 12: 14,
                 fontWeight:500,
                 fontFamily: theme.fonts.sansSerif
               }
             }
           },
           pointColor:{ from: 'color', modifiers: []},
-          margin: this.props.isMobile ? { top: 20, right: 20, bottom: 70, left: 50 } : { top: 20, right: 40, bottom: 70, left: 70 },
+          margin: this.props.isMobile ? { top: 20, right: 20, bottom: 40, left: 65 } : { top: 20, right: 40, bottom: 70, left: 70 },
           sliceTooltip:(slideData) => {
             const { slice } = slideData;
             const point = slice.points[0];
@@ -1300,7 +1286,7 @@ class StatsChart extends Component {
             legendPosition: 'middle',
             format: value => parseFloat(value).toFixed(2)+'%',
           },
-          axisBottom:{
+          axisBottom: this.props.isMobile ? null : {
             tickSize: 0,
             format: '%b %d',
             tickPadding: 10,
@@ -1325,9 +1311,10 @@ class StatsChart extends Component {
           pointLabelYOffset:-12,
           legends:[
             {
-              itemWidth: 80,
+              itemWidth: this.props.isMobile ? 70 : 80,
               itemHeight: 18,
-              translateY: 65,
+              translateX: this.props.isMobile ? -35 : 0,
+              translateY: this.props.isMobile ? 40 : 65,
               symbolSize: 10,
               itemsSpacing: 5,
               direction: 'row',
@@ -1348,7 +1335,7 @@ class StatsChart extends Component {
             axis: {
               ticks: {
                 text: {
-                  fontSize:14,
+                  fontSize: this.props.isMobile ? 12: 14,
                   fontWeight:600,
                   fill:theme.colors.legend,
                   fontFamily: theme.fonts.sansSerif
@@ -1362,14 +1349,14 @@ class StatsChart extends Component {
             },
             legends:{
               text:{
-                fontSize:14,
+                fontSize: this.props.isMobile ? 12: 14,
                 fontWeight:500,
                 fontFamily: theme.fonts.sansSerif
               }
             }
           },
           pointColor:{ from: 'color', modifiers: []},
-          margin: this.props.isMobile ? { top: 20, right: 20, bottom: 80, left: 50 } : { top: 20, right: 40, bottom: 80, left: 80 },
+          margin: this.props.isMobile ? { top: 20, right: 20, bottom: 40, left: 65 } : { top: 20, right: 40, bottom: 80, left: 80 },
           sliceTooltip:(slideData) => {
             const { slice } = slideData;
             const point = slice.points[0];
@@ -1418,6 +1405,9 @@ class StatsChart extends Component {
         type={this.state.chartType}
         data={this.state.chartData}
         width={this.state.chartWidth}
+        isMobile={this.props.isMobile}
+        parentId={this.props.parentId}
+        parentIdHeight={this.props.parentIdHeight}
       />
     );
   }

@@ -36,6 +36,7 @@ class StrategyBox extends Component {
       <DashboardCard
         cardProps={{
           pt:[3,4],
+          mb:[3,0],
           mx:[0,'0.5em'],
           alignItems:'center',
           flexDirection:'column',
@@ -43,10 +44,9 @@ class StrategyBox extends Component {
         }}
       >
         <Flex
-          my={2}
           justifyContent={'center'}
         >
-          <Image src={strategyInfo.icon} height={'2.7em'} />
+          <Image src={strategyInfo.icon} height={['2.2em','2.5em']} />
         </Flex>
         <Flex
           my={2}
@@ -62,7 +62,7 @@ class StrategyBox extends Component {
           justifyContent={'center'}
         >
           <Text
-            px={3}
+            px={[3,4]}
             fontWeight={2}
             textAlign={'center'}
           >

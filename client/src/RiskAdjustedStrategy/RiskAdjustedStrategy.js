@@ -6,6 +6,7 @@ import { Flex, Box, Heading, Text } from "rimble-ui";
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import DashboardCard from '../DashboardCard/DashboardCard';
 import PortfolioDonut from '../PortfolioDonut/PortfolioDonut';
+import GenericSelector from '../GenericSelector/GenericSelector';
 import PortfolioEquity from '../PortfolioEquity/PortfolioEquity';
 import TransactionsList from '../TransactionsList/TransactionsList';
 import EarningsEstimation from '../EarningsEstimation/EarningsEstimation';
@@ -18,7 +19,9 @@ class RiskAdjustedStrategy extends Component {
     tokensToMigrate:[],
     depositedTokens:null,
     remainingTokens:null,
-    portfolioLoaded:false
+    portfolioLoaded:false,
+    portfolioEquityStartDate:null,
+    portfolioEquityQuickSelection:'month3'
   };
 
   // Utils
@@ -39,6 +42,31 @@ class RiskAdjustedStrategy extends Component {
 
   async componentDidUpdate(prevProps, prevState) {
     this.loadUtils();
+  }
+
+  setPortfolioEquityStartDate(portfolioEquityQuickSelection){
+    let portfolioEquityStartDate = this.functionsUtil.strToMoment(new Date());
+    switch (portfolioEquityQuickSelection){
+      case 'week':
+        portfolioEquityStartDate = portfolioEquityStartDate.subtract(1,'week');
+      break;
+      case 'month':
+        portfolioEquityStartDate = portfolioEquityStartDate.subtract(1,'month');
+      break;
+      case 'month3':
+        portfolioEquityStartDate = portfolioEquityStartDate.subtract(3,'month');
+      break;
+      case 'month6':
+        portfolioEquityStartDate = portfolioEquityStartDate.subtract(6,'month');
+      break;
+      case 'all':
+        portfolioEquityStartDate = null;
+      break;
+    }
+
+    this.setState({
+      portfolioEquityQuickSelection
+    })
   }
 
   async loadPortfolio(){
@@ -136,14 +164,57 @@ class RiskAdjustedStrategy extends Component {
                       </DashboardCard>
                     </Flex>
                     <Flex id="portfolio-performance" width={[1,0.60]} flexDirection={'column'}>
-                      <DashboardCard
-                        title={'Performance'}
-                      >
+                      <DashboardCard>
+                        <Flex
+                          pt={[3,4]}
+                          px={[3,4]}
+                          aligItems={'center'}
+                          flexDirection={['column','row']}
+                        >
+                          <Flex
+                            width={[1,0.7]}
+                            flexDirection={'column'}
+                            justifyContent={'flex-start'}
+                          >
+                            <Title
+                              fontWeight={4}
+                              fontSize={[2,3]}
+                              textAlign={'left'}
+                            >
+                              Performance
+                            </Title>
+                          </Flex>
+                          <Flex
+                            width={[1,0.3]}
+                            flexDirection={'column'}
+                            justifyContent={'flex-end'}
+                          >
+                            <GenericSelector
+                              innerProps={{
+                                p:0,
+                                px:1
+                              }}
+                              defaultValue={
+                                {value:'month3',label:'3 Months'}
+                              }
+                              name={'performance-time'}
+                              options={[
+                                {value:'week',label:'Week'},
+                                {value:'month',label:'Month'},
+                                {value:'month3',label:'3 Months'},
+                                {value:'month6',label:'6 Months'},
+                                {value:'all',label:'All'},
+                              ]}
+                              onChange={ v => this.setPortfolioEquityStartDate(v) }
+                            />
+                          </Flex>
+                        </Flex>
                         <PortfolioEquity
                           {...this.props}
                           enabledTokens={[]}
                           parentId={'portfolio-performance'}
                           parentIdHeight={'portfolio-composition'}
+                          quickDateSelection={this.state.portfolioEquityQuickSelection}
                           frequencySeconds={this.functionsUtil.getFrequencySeconds('day',1)}
                         />
                       </DashboardCard>
@@ -162,7 +233,11 @@ class RiskAdjustedStrategy extends Component {
                       fontSize={[1,2]}
                       textAlign={'center'}
                     >
-                      The Yield-Optimizer allocation strategy allows to maximize the interest rate returns by detecting the change of the interest rate on different lending protocols. Idle’s monitoring system automatically triggers a rebalance if it spots a better-performing allocation: this includes taking account of the total liquidity within the pool, incorporating underlying protocol rate functions and levels of supply and demand. As a user, you will end up with an higher return without constantly checking rates and burning gas on every transfer. Unlock your funds from a single protocol performance with this strategy.
+                      The Yield-Optimizer allocation strategy allows to maximize the interest rate returns by detecting the interest rate changes on different lending protocols.
+                      {
+                        !this.props.isMobile && 
+                          'Idle’s monitoring system automatically triggers a rebalance if it spots a better-performing allocation: this includes taking account of the total liquidity within the pool, incorporating underlying protocol rate functions and levels of supply and demand. As a user, you will end up with an higher return without constantly checking rates and burning gas on every transfer. Unlock your funds from a single protocol performance with this strategy.'
+                      }
                     </Text>
                   </Flex>
                 )
@@ -479,7 +554,7 @@ class RiskAdjustedStrategy extends Component {
                           title:'ACTION',
                           mobile:false,
                           props:{
-                            width:0.15,
+                            width:[0.15,0.15],
                           },
                           fields:[
                             {
@@ -490,7 +565,7 @@ class RiskAdjustedStrategy extends Component {
                         {
                           title:'DATE',
                           props:{
-                            width:0.32,
+                            width:[0.32,0.18],
                           },
                           fields:[
                             {
@@ -501,7 +576,7 @@ class RiskAdjustedStrategy extends Component {
                         {
                           title:'STATUS',
                           props:{
-                            width:0.18,
+                            width:[0.18,0.18],
                             justifyContent:['center','flex-start']
                           },
                           fields:[
@@ -520,7 +595,7 @@ class RiskAdjustedStrategy extends Component {
                         {
                           title:'AMOUNT',
                           props:{
-                            width:0.21,
+                            width:[0.21,0.14],
                           },
                           fields:[
                             {
@@ -531,7 +606,7 @@ class RiskAdjustedStrategy extends Component {
                         {
                           title:'ASSET',
                           props:{
-                            width:0.15,
+                            width:[0.15,0.13],
                             justifyContent:['center','flex-start']
                           },
                           fields:[
