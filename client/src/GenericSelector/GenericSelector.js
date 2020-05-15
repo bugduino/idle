@@ -1,7 +1,6 @@
 import Select from 'react-select';
 import { Flex, Text } from "rimble-ui";
 import React, { Component } from 'react';
-import AssetField from '../AssetField/AssetField';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import DashboardCard from '../DashboardCard/DashboardCard';
 

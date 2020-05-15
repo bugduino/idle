@@ -296,11 +296,11 @@ class Migrate extends Component {
 
         // Call migration contract function to migrate funds
         const oldContractBalanceFormatted = this.state.oldContractBalanceFormatted;
-        const oldContractBalance = this.state.oldContractBalance;
-        const toMigrate = this.functionsUtil.BNify(oldContractBalance).toString();
-        const toMigrateTest =  this.functionsUtil.normalizeTokenAmount('1',this.state.oldContractTokenDecimals).toString(); // TEST AMOUNT
+        // const oldContractBalance = this.state.oldContractBalance;
+        // const toMigrate = this.functionsUtil.BNify(oldContractBalance).toString();
+        const toMigrate =  this.functionsUtil.normalizeTokenAmount('1',this.state.oldContractTokenDecimals).toString(); // TEST AMOUNT
 
-        const migrationParams = [toMigrateTest,this.props.tokenConfig.migration.oldContract.address,this.props.tokenConfig.idle.address,this.props.tokenConfig.address];
+        const migrationParams = [toMigrate,this.props.tokenConfig.migration.oldContract.address,this.props.tokenConfig.idle.address,this.props.tokenConfig.address];
 
         /*
         let _clientProtocolAmounts = [];

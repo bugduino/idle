@@ -258,7 +258,6 @@ class TransactionListFilters extends Component {
               }
               <Link
                 mt={[2,0]}
-                fontWeight={2}
                 fontWeight={[3,2]}
                 color={'dark-gray'}
                 hoverColor={'copyColor'}

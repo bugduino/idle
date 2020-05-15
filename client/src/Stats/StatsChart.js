@@ -3,7 +3,7 @@ import theme from '../theme';
 import { Bar } from '@nivo/bar';
 import { Line } from '@nivo/line';
 import React, { Component } from 'react';
-import { Flex, Loader, Text, Box } from 'rimble-ui';
+import { Flex, Text, Box } from 'rimble-ui';
 import globalConfigs from '../configs/globalConfigs';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import GenericChart from '../GenericChart/GenericChart';

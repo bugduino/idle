@@ -220,15 +220,25 @@ class AssetField extends Component {
         break;
         case 'apy':
           const tokenAPR = await this.loadField('apr');
-          if (tokenAPR){
-            const tokenAPY = this.functionsUtil.apr2apy(tokenAPR.div(100)).times(100);
-            if (setState && !this.componentUnmounted){
-              this.setState({
-                tokenAPR:parseFloat(tokenAPR).toFixed(this.props.isMobile ? 2 : 3),
-                tokenAPY:parseFloat(tokenAPY).toFixed(this.props.isMobile ? 2 : 3)
-              });
+          if (tokenAPR !== null){
+            if (!tokenAPR.isNaN()){
+              const tokenAPY = this.functionsUtil.apr2apy(tokenAPR.div(100)).times(100);
+              if (setState && !this.componentUnmounted){
+                this.setState({
+                  tokenAPR:parseFloat(tokenAPR).toFixed(this.props.isMobile ? 2 : 3),
+                  tokenAPY:parseFloat(tokenAPY).toFixed(this.props.isMobile ? 2 : 3)
+                });
+              }
+              return tokenAPY;
+            } else {
+              if (setState && !this.componentUnmounted){
+                this.setState({
+                  tokenAPR:false,
+                  tokenAPY:false
+                });
+              }
+              return false;
             }
-            return tokenAPY;
           }
         break;
         case 'aprChart':
@@ -556,8 +566,8 @@ class AssetField extends Component {
         ) : loader
       break;
       case 'apy':
-        output = this.state.tokenAPY ? (
-          <Text {...fieldProps}>{this.state.tokenAPY}%</Text>
+        output = this.state.tokenAPY !== undefined ? (
+          <Text {...fieldProps}>{this.state.tokenAPY !== false ? this.state.tokenAPY : '-' }%</Text>
         ) : loader
       break;
       case 'button':

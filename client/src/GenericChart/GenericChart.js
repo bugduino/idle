@@ -2,7 +2,6 @@
 Theming: https://github.com/plouc/nivo/issues/308
 */
 import React, { Component } from 'react';
-import { Loader, Flex, Text } from 'rimble-ui';
 import FlexLoader from '../FlexLoader/FlexLoader';
 
 class GenericChart extends Component {

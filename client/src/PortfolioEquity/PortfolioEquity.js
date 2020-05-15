@@ -49,6 +49,9 @@ class PortfolioEquity extends Component {
       case 'all':
         startDate = null;
       break;
+      default:
+        startDate = null;
+      break;
     }
 
     this.setState({
@@ -320,23 +323,27 @@ class PortfolioEquity extends Component {
         legendOffset: 36,
         legendPosition: 'middle',
         format: v => {
+          let formattedDate = null;
           switch (this.props.quickDateSelection){
             case 'week':
-              return this.functionsUtil.strToMoment(v,'YYYY/MM/DD HH:mm').format('MMM DD');
+              formattedDate = this.functionsUtil.strToMoment(v,'YYYY/MM/DD HH:mm').format('MMM DD');
             break;
             case 'month':
-              return v.getDay() === 0 ? this.functionsUtil.strToMoment(v,'YYYY/MM/DD HH:mm').format('MMM DD') : null;
+              formattedDate = v.getDay() === 0 ? this.functionsUtil.strToMoment(v,'YYYY/MM/DD HH:mm').format('MMM DD') : null;
             break;
             case 'month3':
-              return v.getDay() === 0 ? this.functionsUtil.strToMoment(v,'YYYY/MM/DD HH:mm').format('MMM DD') : null;
+              formattedDate = v.getDay() === 0 ? this.functionsUtil.strToMoment(v,'YYYY/MM/DD HH:mm').format('MMM DD') : null;
             break;
             case 'month6':
-              return v.getDate() === 1 ? this.functionsUtil.strToMoment(v,'YYYY/MM/DD HH:mm').format('MMM DD') : null;
+              formattedDate = v.getDate() === 1 ? this.functionsUtil.strToMoment(v,'YYYY/MM/DD HH:mm').format('MMM DD') : null;
             break;
             case 'all':
-              return v.getDate() === 1 ? this.functionsUtil.strToMoment(v,'YYYY/MM/DD HH:mm').format('MMM') : null;
+            default:
+              formattedDate = v.getDate() === 1 ? this.functionsUtil.strToMoment(v,'YYYY/MM/DD HH:mm').format('MMM') : null;
             break;
           }
+
+          return formattedDate;
         }
       },
       gridYValues:this.state.gridYValues,

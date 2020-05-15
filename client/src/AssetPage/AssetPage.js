@@ -69,12 +69,6 @@ class AssetPage extends Component {
 
   render() {
 
-    const cellTextProps = {
-      fontSize:[1,2],
-      fontWeight:3,
-      color:'cellText'
-    };
-
     const userHasFunds = this.props.account && this.state.idleTokenBalance[this.props.selectedToken] && this.functionsUtil.BNify(this.state.idleTokenBalance[this.props.selectedToken]).gt(0);
 
     return (

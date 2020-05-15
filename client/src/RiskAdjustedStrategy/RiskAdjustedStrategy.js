@@ -44,29 +44,10 @@ class RiskAdjustedStrategy extends Component {
     this.loadUtils();
   }
 
-  setPortfolioEquityStartDate(portfolioEquityQuickSelection){
-    let portfolioEquityStartDate = this.functionsUtil.strToMoment(new Date());
-    switch (portfolioEquityQuickSelection){
-      case 'week':
-        portfolioEquityStartDate = portfolioEquityStartDate.subtract(1,'week');
-      break;
-      case 'month':
-        portfolioEquityStartDate = portfolioEquityStartDate.subtract(1,'month');
-      break;
-      case 'month3':
-        portfolioEquityStartDate = portfolioEquityStartDate.subtract(3,'month');
-      break;
-      case 'month6':
-        portfolioEquityStartDate = portfolioEquityStartDate.subtract(6,'month');
-      break;
-      case 'all':
-        portfolioEquityStartDate = null;
-      break;
-    }
-
+  setPortfolioEquityQuickSelection(portfolioEquityQuickSelection){
     this.setState({
       portfolioEquityQuickSelection
-    })
+    });
   }
 
   async loadPortfolio(){
@@ -205,7 +186,7 @@ class RiskAdjustedStrategy extends Component {
                                 {value:'month6',label:'6 Months'},
                                 {value:'all',label:'All'},
                               ]}
-                              onChange={ v => this.setPortfolioEquityStartDate(v) }
+                              onChange={ v => this.setPortfolioEquityQuickSelection(v) }
                             />
                           </Flex>
                         </Flex>
