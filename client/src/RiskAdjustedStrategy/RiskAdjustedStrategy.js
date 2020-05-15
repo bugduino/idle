@@ -501,7 +501,7 @@ class RiskAdjustedStrategy extends Component {
                   </Flex>
               }
               {
-                this.props.account && 
+                this.props.account && this.state.depositedTokens.length>0 && 
                   <Flex
                     mb={[3,4]}
                     width={1}
