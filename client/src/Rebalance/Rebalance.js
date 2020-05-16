@@ -50,6 +50,7 @@ class Rebalance extends Component {
     });
 
     const shouldRebalance = await this.functionsUtil.checkRebalance(this.props.tokenConfig);
+
     this.setState({
       loading:false,
       shouldRebalance

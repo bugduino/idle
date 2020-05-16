@@ -1,14 +1,14 @@
 import { Web3Versions } from '@terminal-packages/sdk';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import { RampInstantSDK } from '@ramp-network/ramp-instant-sdk';
-import IdleRebalancerManaged from '../contracts/IdleRebalancerManaged.json';
+import IdleRebalancerV3 from '../contracts/IdleRebalancerV3.json';
 import RiskAdjustedStrategy from '../RiskAdjustedStrategy/RiskAdjustedStrategy';
 
 const env = process.env;
 
 const globalConfigs = {
   appName: 'Idle',
-  version: 'v2.1',
+  version: 'v2.2',
   baseURL: 'https://idle.finance',
   baseToken: 'ETH',
   countries:{
@@ -184,6 +184,18 @@ const globalConfigs = {
           hsl:['197', '98%', '38%']
         }
       },
+      dsr:{
+        color:{
+          rgb:[222, 52, 67],
+          hsl:['355', '72%', '54%']
+        }
+      },
+      dydx:{
+        color:{
+          rgb:[28, 29, 34],
+          hsl:['230', '10%', '12%']
+        }
+      },
       aave:{
         color:{
           rgb:[181, 79, 157],
@@ -209,7 +221,7 @@ const globalConfigs = {
       },
       rebalance:{
         enabled:true,
-        abi:IdleRebalancerManaged
+        abi:IdleRebalancerV3
       }
     }
   },

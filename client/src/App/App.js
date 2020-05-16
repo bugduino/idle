@@ -303,6 +303,8 @@ class App extends Component {
   render() {
     const isMobile = this.state.width <= 768;
 
+    // console.log(this.state.selectedToken,this.state.tokenConfig);
+
     return (
       <Router>
         <ScrollToTop />

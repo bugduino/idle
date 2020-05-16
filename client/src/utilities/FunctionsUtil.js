@@ -262,6 +262,7 @@ class FunctionsUtil {
       return [];
     }
 
+    const selectedStrategy = this.props.selectedStrategy;
     const allAvailableTokens = Object.keys(this.props.availableTokens);
 
     // Check if firstBlockNumber is less that firstIdleBlockNumber
@@ -282,14 +283,14 @@ class FunctionsUtil {
       const etherscanApiUrl = etherscanInfo.endpoints[requiredNetwork];
 
       // Get base endpoint cached transactions
-      etherscanBaseEndpoint = `${etherscanApiUrl}?apikey=${env.REACT_APP_ETHERSCAN_KEY}&module=account&action=tokentx&address=${account}&startblock=${firstIdleBlockNumber}&endblock=${endBlockNumber}&sort=asc`;
+      etherscanBaseEndpoint = `${etherscanApiUrl}?strategy=${selectedStrategy}&apikey=${env.REACT_APP_ETHERSCAN_KEY}&module=account&action=tokentx&address=${account}&startblock=${firstIdleBlockNumber}&endblock=${endBlockNumber}&sort=asc`;
       etherscanBaseTxs = this.getCachedRequest(etherscanBaseEndpoint);
 
       // Check if the latest blockNumber is actually the latest one
       if (etherscanBaseTxs && etherscanBaseTxs.data.result && Object.values(etherscanBaseTxs.data.result).length){
         const lastCachedBlockNumber = parseInt(Object.values(etherscanBaseTxs.data.result).pop().blockNumber)+1;
 
-        const etherscanEndpointLastBlock = `${etherscanApiUrl}?apikey=${env.REACT_APP_ETHERSCAN_KEY}&module=account&action=tokentx&address=${account}&startblock=${lastCachedBlockNumber}&endblock=${endBlockNumber}&sort=asc`;
+        const etherscanEndpointLastBlock = `${etherscanApiUrl}?strategy=${selectedStrategy}&apikey=${env.REACT_APP_ETHERSCAN_KEY}&module=account&action=tokentx&address=${account}&startblock=${lastCachedBlockNumber}&endblock=${endBlockNumber}&sort=asc`;
         let latestTxs = await this.makeRequest(etherscanEndpointLastBlock);
 
         if (latestTxs && latestTxs.data.result && latestTxs.data.result.length){
@@ -468,20 +469,23 @@ class FunctionsUtil {
     const account = this.props && this.props.account ? this.props.account : null;
     const selectedToken = this.props && this.props.selectedToken ? this.props.selectedToken : null;
 
-    if (!account || !selectedToken){
+    if (!account || !selectedToken || !this.props.availableTokens || !this.props.availableTokens[selectedToken]){
       return false;
     }
+
+    const tokenConfig = this.props.availableTokens[selectedToken];
+    const tokenKey = tokenConfig.idle.token;
 
     let storedTxs = this.getStoredTransactions();
     if (!storedTxs[account]){
       storedTxs[account] = {};
     }
 
-    if (!storedTxs[account][selectedToken]){
-      storedTxs[account][selectedToken] = {};
+    if (!storedTxs[account][tokenKey]){
+      storedTxs[account][tokenKey] = {};
     }
 
-    storedTxs[account][selectedToken][txKey] = transaction;
+    storedTxs[account][tokenKey][txKey] = transaction;
     this.updateStoredTransactions(storedTxs);
   }
   updateStoredTransactions = transactions => {
@@ -533,20 +537,21 @@ class FunctionsUtil {
     await this.asyncForEach(enabledTokens,async (selectedToken) => {
 
       const tokenConfig = this.props.availableTokens[selectedToken];
+      const tokenKey = tokenConfig.idle.token;
 
       // Init storedTxs for pair account-token if empty
-      if (typeof storedTxs[this.props.account][selectedToken] !== 'object'){
-        storedTxs[this.props.account][selectedToken] = {};
+      if (typeof storedTxs[this.props.account][tokenKey] !== 'object'){
+        storedTxs[this.props.account][tokenKey] = {};
       }
 
-      const minedTxs = {...storedTxs[this.props.account][selectedToken]};
+      const minedTxs = {...storedTxs[this.props.account][tokenKey]};
 
       const filteredTxs = Object.values(etherscanTxs).filter(tx => (tx.token === selectedToken));
       if (filteredTxs && filteredTxs.length){
 
         await this.asyncForEach(filteredTxs,async (tx,index) => {
           const txKey = `tx${tx.timeStamp}000`;
-          const storedTx = storedTxs[this.props.account][selectedToken][txKey] ? storedTxs[this.props.account][selectedToken][txKey] : tx;
+          const storedTx = storedTxs[this.props.account][tokenKey][txKey] ? storedTxs[this.props.account][tokenKey][txKey] : tx;
 
           let tokenPrice = null;
           if (storedTx.tokenPrice){
@@ -607,7 +612,7 @@ class FunctionsUtil {
           etherscanTxs[tx.hash] = storedTx;
 
           // Store processed Tx
-          storedTxs[this.props.account][selectedToken][txKey] = storedTx;
+          storedTxs[this.props.account][tokenKey][txKey] = storedTx;
 
           // Remove from minted Txs
           delete minedTxs[txKey];
@@ -642,20 +647,21 @@ class FunctionsUtil {
 
     await this.asyncForEach(enabledTokens,async (selectedToken) => {
 
+      const tokenConfig = this.props.availableTokens[selectedToken];
+      const tokenKey = tokenConfig.idle.token;
+
       // Init storedTxs
-      if (!storedTxs[this.props.account][selectedToken]){
-        storedTxs[this.props.account][selectedToken] = {};
+      if (!storedTxs[this.props.account][tokenKey]){
+        storedTxs[this.props.account][tokenKey] = {};
       }
 
-      txsToProcess = txsToProcess && Object.values(txsToProcess).length ? txsToProcess : this.getStoredTransactions(this.props.account,selectedToken);
+      txsToProcess = txsToProcess && Object.values(txsToProcess).length ? txsToProcess : this.getStoredTransactions(this.props.account,tokenKey);
       
       // console.log('txsToProcess',selectedToken,txsToProcess);
 
       // if (!Object.values(txsToProcess).length && selectedToken==='DAI' && Object.values(this.props.transactions).length>0){
       //   debugger;
       // }
-
-      const tokenConfig = this.props.availableTokens[selectedToken];
 
       // Remove Pending txs
 
@@ -667,7 +673,7 @@ class FunctionsUtil {
           return false;
         }
 
-        const isStoredTx = storedTxs && storedTxs[this.props.account] && storedTxs[this.props.account][selectedToken] && storedTxs[this.props.account][selectedToken][txKey];
+        const isStoredTx = storedTxs && storedTxs[this.props.account] && storedTxs[this.props.account][tokenKey] && storedTxs[this.props.account][tokenKey][txKey];
 
         const allowedMethods = {
           mintIdleToken:'Deposit',
@@ -743,7 +749,7 @@ class FunctionsUtil {
           case 'mintIdleToken':
             if (!tx.params){
               if (isStoredTx){
-                storedTxs[this.props.account][selectedToken][txKey] = tx;
+                storedTxs[this.props.account][tokenKey][txKey] = tx;
               }
               return false;
             }
@@ -751,7 +757,7 @@ class FunctionsUtil {
             if (realTx.to.toLowerCase() !== tokenConfig.idle.address.toLowerCase()){
               // Remove wrong contract tx
               if (isStoredTx){
-                delete storedTxs[this.props.account][selectedToken][txKey];
+                delete storedTxs[this.props.account][tokenKey][txKey];
               }
               // this.customLog('Skipped deposit tx '+tx.transactionHash+' - wrong contract');
               return false;
@@ -769,7 +775,7 @@ class FunctionsUtil {
           case 'redeemIdleToken':
             if (!tx.params){
               if (isStoredTx){
-                storedTxs[this.props.account][selectedToken][txKey] = tx;
+                storedTxs[this.props.account][tokenKey][txKey] = tx;
               }
               return false;
             }
@@ -811,7 +817,7 @@ class FunctionsUtil {
             if (!isMigrationRightContract.length){
               // Remove wrong contract tx
               if (isStoredTx){
-                delete storedTxs[this.props.account][selectedToken][txKey];
+                delete storedTxs[this.props.account][tokenKey][txKey];
               }
               return false;
             }
@@ -820,7 +826,7 @@ class FunctionsUtil {
             if (!tx.txReceipt){
               tx.txReceipt = migrationTxReceipt;
               if (isStoredTx){
-                storedTxs[this.props.account][selectedToken][txKey] = tx;
+                storedTxs[this.props.account][tokenKey][txKey] = tx;
               }
             }
 
@@ -874,7 +880,7 @@ class FunctionsUtil {
         // Store processed Tx
         if (!tx.realTx){
           tx.realTx = realTx;
-          storedTxs[this.props.account][selectedToken][txKey] = tx;
+          storedTxs[this.props.account][tokenKey][txKey] = tx;
         }
       });
     });
@@ -1099,7 +1105,7 @@ class FunctionsUtil {
   }
   getAvgApr = (aprs,allocations,totalAllocation) => {
     if (aprs && allocations && totalAllocation){
-      let avgApr = Object.keys(allocations).reduce((aprWeighted,protocolAddr) => {
+      let avgApr = Object.keys(aprs).reduce((aprWeighted,protocolAddr) => {
         const allocation = this.BNify(allocations[protocolAddr]);
         const apr = this.BNify(aprs[protocolAddr]);
         return this.BNify(aprWeighted).plus(allocation.times(apr));
@@ -1180,6 +1186,7 @@ class FunctionsUtil {
 
     const idleRebalancerInstance = await this.createContract('idleRebalancerInstance',rebalancer,globalConfigs.contract.methods.rebalance.abi);
 
+
     if (!idleRebalancerInstance || !idleRebalancerInstance.contract){
       return false;
     }
@@ -1190,33 +1197,44 @@ class FunctionsUtil {
 
     for (let protocolIndex=0;protocolIndex<tokenConfig.protocols.length;protocolIndex++){
       const allocationPromise = new Promise( async (resolve, reject) => {
-        const allocation = await idleRebalancerInstance.contract.methods['lastAmounts'](protocolIndex).call().catch(error => {
-          reject(error);
-        });
-        resolve({
-          allocation,
-          protocolIndex
-        });
+        try{
+          const allocation = await idleRebalancerInstance.contract.methods.lastAmounts(protocolIndex).call();
+          resolve({
+            allocation,
+            protocolIndex
+          });
+        } catch (error){
+          resolve(null);
+        }
       });
       allocationsPromises.push(allocationPromise);
 
       const availableTokenPromise = new Promise( async (resolve, reject) => {
-        try{
-          // const protocolAddr = await this.genericIdleCall('allAvailableTokens',[protocolIndex]);
+        try {
           const protocolAddr = await this.genericContractCall(tokenConfig.idle.token, 'allAvailableTokens', [protocolIndex]);
           resolve({
             protocolAddr,
             protocolIndex
           });
-        } catch (err) {
-          reject(err);
+        } catch (error){
+          resolve(null);
         }
       });
       availableTokensPromises.push(availableTokenPromise);
     }
 
-    const nextAllocations = await Promise.all(allocationsPromises);
-    const allAvailableTokens = await Promise.all(availableTokensPromises);
+    let nextAllocations = null;
+    let allAvailableTokens = null;
+
+    try{
+      nextAllocations = await Promise.all(allocationsPromises);
+      allAvailableTokens = await Promise.all(availableTokensPromises);
+    } catch (error){
+      
+    }
+
+    nextAllocations = nextAllocations && nextAllocations.length ? nextAllocations.filter(v => (v !== null)) : null;
+    allAvailableTokens = allAvailableTokens && allAvailableTokens.length ? allAvailableTokens.filter(v => (v !== null)) : null;
 
     if ((!allAvailableTokens || !allAvailableTokens.length) || (!nextAllocations || !nextAllocations.length)){
       return false;
@@ -1239,24 +1257,27 @@ class FunctionsUtil {
     // Check if newAllocations differs from currentAllocations
     let shouldRebalance = false;
 
-    const {protocolsAllocationsPerc} = await this.getTokenAllocation(tokenConfig);
+    const tokenAllocation = await this.getTokenAllocation(tokenConfig);
+    const protocolsAllocationsPerc = tokenAllocation ? tokenAllocation.protocolsAllocationsPerc : null;
 
     if (typeof protocolsAllocationsPerc === 'object'){
       Object.keys(protocolsAllocationsPerc).forEach((protocolAddr) => {
 
         // Get current protocol allocation percentage
-        const protocolAllocationPerc = parseFloat(protocolsAllocationsPerc[protocolAddr]).toFixed(3);
+        const protocolAllocation = protocolsAllocationsPerc[protocolAddr];
+        const protocolAllocationPerc = parseFloat(protocolAllocation).toFixed(3);
         
         // Calculate new protocol allocation percentage
-        const newProtocolAllocation = newProtocolsAllocations[protocolAddr.toLowerCase()] ? newProtocolsAllocations[protocolAddr.toLowerCase()] : 0;
-        const newProtocolAllocationPerc = newProtocolAllocation ? parseFloat(newProtocolAllocation.div(newTotalAllocation)).toFixed(3) : 0;
+        const newProtocolAllocation = newProtocolsAllocations[protocolAddr.toLowerCase()] ? newProtocolsAllocations[protocolAddr.toLowerCase()] : this.BNify(0);
+        const newProtocolAllocationPerc = newProtocolAllocation ? parseFloat(newProtocolAllocation.div(newTotalAllocation)).toFixed(3) : this.BNify(0);
+
+        // console.log(protocolAddr,protocolAllocation.toString(),newProtocolAllocation.toString(),newTotalAllocation.toString(),protocolAllocationPerc,newProtocolAllocationPerc);
 
         if (protocolAllocationPerc !== newProtocolAllocationPerc){
           shouldRebalance = true;
         }
       });
     }
-
 
     return shouldRebalance;
   }
@@ -1535,7 +1556,7 @@ class FunctionsUtil {
       protocolsBalances[protocolAddr] = protocolBalance;
       protocolsAllocations[protocolAddr] = protocolAllocation;
 
-      // console.log('getTokenAllocation',contractName,protocolAddr,protocolBalance.toString(),protocolAllocation.toString());
+      // console.log('getTokenAllocation',contractName,protocolAddr,protocolBalance.toString(),protocolAllocation.toString(),exchangeRate ? exchangeRate.toString() : null);
     });
 
     Object.keys(protocolsAllocations).forEach((protocolAddr,i) => {
@@ -1543,10 +1564,6 @@ class FunctionsUtil {
       const protocolAllocationPerc = protocolAllocation.div(totalAllocation);
       protocolsAllocationsPerc[protocolAddr] = protocolAllocationPerc;
     });
-
-    // if (totalAllocation.lte(0)){
-    //   debugger;
-    // }
 
     tokenAllocation.totalAllocation = totalAllocation;
     tokenAllocation.protocolsAllocations = protocolsAllocations;
@@ -1604,9 +1621,10 @@ class FunctionsUtil {
 
     if (tokenAllocation){
       tokenAprs.avgApr = this.getAvgApr(protocolsAprs,tokenAllocation.protocolsAllocations,tokenAllocation.totalAllocation);
+      if (!tokenAprs.avgApr || tokenAprs.avgApr.isNaN()){
+        debugger;
+      }
     }
-
-    // console.log('getTokenAprs',tokenConfig.idle.token,tokenAprs.avgApr.toString());
 
     return tokenAprs;
   }

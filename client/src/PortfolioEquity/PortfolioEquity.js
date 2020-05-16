@@ -8,9 +8,9 @@ import DashboardCard from '../DashboardCard/DashboardCard';
 
 class PortfolioEquity extends Component {
   state = {
-    gridYValues:[],
     startDate:null,
     chartData:null,
+    chartProps:null,
     chartwidth:null,
     chartHeight:null,
   };
@@ -31,45 +31,12 @@ class PortfolioEquity extends Component {
     this.loadChartData();
   }
 
-  handleQuickDateSelection(quickDateSelection){
-    let startDate = this.functionsUtil.strToMoment(new Date());
-    switch (quickDateSelection){
-      case 'week':
-        startDate = startDate.subtract(1,'week');
-      break;
-      case 'month':
-        startDate = startDate.subtract(1,'month');
-      break;
-      case 'month3':
-        startDate = startDate.subtract(3,'month');
-      break;
-      case 'month6':
-        startDate = startDate.subtract(6,'month');
-      break;
-      case 'all':
-        startDate = null;
-      break;
-      default:
-        startDate = null;
-      break;
-    }
-
-    this.setState({
-      startDate
-    });
-  }
-
   async componentDidUpdate(prevProps, prevState) {
     this.loadUtils();
 
     const quickDateSelectionChanged = prevProps.quickDateSelection !== this.props.quickDateSelection;
-    if (quickDateSelectionChanged){
-      this.handleQuickDateSelection(this.props.quickDateSelection);
-    }
-
-    const startDateChanged = prevState.startDate !== this.state.startDate;
     const tokenChanged = JSON.stringify(prevProps.enabledTokens) !== JSON.stringify(this.props.enabledTokens);
-    if (tokenChanged || startDateChanged){
+    if (tokenChanged || quickDateSelectionChanged){
       this.setState({
         chartData:null
       },() => {
@@ -150,6 +117,29 @@ class PortfolioEquity extends Component {
       }
     });
 
+    // Calculate Start Date
+    let startDate = null;
+    const currentDate = this.functionsUtil.strToMoment(new Date());
+
+    switch (this.props.quickDateSelection){
+      case 'week':
+        startDate = currentDate.clone().subtract(1,'week');
+      break;
+      case 'month':
+        startDate = currentDate.clone().subtract(1,'month');
+      break;
+      case 'month3':
+        startDate = currentDate.clone().subtract(3,'month');
+      break;
+      case 'month6':
+        startDate = currentDate.clone().subtract(6,'month');
+      break;
+      default:
+        startDate = null;
+      break;
+    }
+
+    const days = {};
     let maxChartValue = 0;
     const aggregatedBalances = [];
     let prevTimestamp = null;
@@ -260,20 +250,35 @@ class PortfolioEquity extends Component {
         foundBalances[token] = filteredBalances;
       });
   
+  
       const momentDate = this.functionsUtil.strToMoment(timeStamp*1000);
-      if (!this.state.startDate || momentDate.isSameOrAfter(this.state.startDate)){
+      if (startDate === null || momentDate.isSameOrAfter(startDate)){
+        // Save days for axisBottom format
+        days[momentDate.format('YYYY/MM/DD')] = 1;
         aggregatedBalances.push({
           x:momentDate.format('YYYY/MM/DD HH:mm'),
           y:parseFloat(aggregatedBalance)
         });
+
+        maxChartValue = Math.max(maxChartValue,aggregatedBalance);
       }
 
       // console.log(this.functionsUtil.strToMoment(timeStamp*1000).format('DD/MM/YYYY HH:mm'),aggregatedBalance.toFixed(5),this.functionsUtil.formatMoney(aggregatedBalance));
 
       prevTimestamp = timeStamp;
       prevBalances = foundBalances;
+    }
 
-      maxChartValue = Math.max(maxChartValue,aggregatedBalance);
+    // Add day before to start with zero balance
+    const firstTxMomentDate = this.functionsUtil.strToMoment(firstTxTimestamp*1000);
+    if ((startDate === null || startDate.isSameOrBefore(firstTxMomentDate)) && aggregatedBalances.length){
+      const firstItem = aggregatedBalances[0];
+      const firstDate = this.functionsUtil.strToMoment(firstItem.x,'YYYY/MM/DD HH:mm');
+      firstDate.subtract(1,'day');
+      aggregatedBalances.unshift({
+        x:firstDate.format('YYYY/MM/DD HH:mm'),
+        y:0
+      });
     }
 
     const chartToken = this.props.chartToken ? this.props.chartToken.toUpperCase() : 'USD';
@@ -294,13 +299,9 @@ class PortfolioEquity extends Component {
       gridYValues.push(i*gridYStep);
     }
 
-    this.setState({
-      chartData,
-      gridYValues
-    });
-  }
-
-  render() {
+    let insertedDays = [];
+    const daysCount = Object.values(days).length;
+    const axisBottomMaxValues = 10;
 
     const chartProps = {
       xScale:{
@@ -322,31 +323,22 @@ class PortfolioEquity extends Component {
         orient: 'bottom',
         legendOffset: 36,
         legendPosition: 'middle',
-        format: v => {
+        format: date => {
           let formattedDate = null;
-          switch (this.props.quickDateSelection){
-            case 'week':
-              formattedDate = this.functionsUtil.strToMoment(v,'YYYY/MM/DD HH:mm').format('MMM DD');
-            break;
-            case 'month':
-              formattedDate = v.getDay() === 0 ? this.functionsUtil.strToMoment(v,'YYYY/MM/DD HH:mm').format('MMM DD') : null;
-            break;
-            case 'month3':
-              formattedDate = v.getDay() === 0 ? this.functionsUtil.strToMoment(v,'YYYY/MM/DD HH:mm').format('MMM DD') : null;
-            break;
-            case 'month6':
-              formattedDate = v.getDate() === 1 ? this.functionsUtil.strToMoment(v,'YYYY/MM/DD HH:mm').format('MMM DD') : null;
-            break;
-            case 'all':
-            default:
-              formattedDate = v.getDate() === 1 ? this.functionsUtil.strToMoment(v,'YYYY/MM/DD HH:mm').format('MMM') : null;
-            break;
+          const lastMomentDate = Object.values(insertedDays).pop();
+          const frequency = Math.ceil(daysCount/axisBottomMaxValues);
+          const momentDate = this.functionsUtil.strToMoment(date,'YYYY/MM/DD HH:mm');
+          const lastMomentDateDiff = lastMomentDate ? (momentDate.diff(lastMomentDate,'days')) : 0;
+
+          if (!lastMomentDate || lastMomentDateDiff>=frequency){
+            formattedDate = momentDate.format('MMM DD');
+            insertedDays.push(momentDate);
           }
 
           return formattedDate;
         }
       },
-      gridYValues:this.state.gridYValues,
+      gridYValues,
       enableArea:true,
       curve:'monotoneX',
       enableSlices:'x',
@@ -384,7 +376,6 @@ class PortfolioEquity extends Component {
         // const formattedDate = this.functionsUtil.strToMoment(point.data.x).format('DD MMM, YYYY');
         return (
           <DashboardCard
-            key={point.id}
             cardProps={{
               py:2,
               px:3
@@ -418,11 +409,18 @@ class PortfolioEquity extends Component {
       }
     };
 
+    this.setState({
+      chartData,
+      chartProps
+    });
+  }
+
+  render() {
     return (
       <GenericChart
         type={Line}
-        {...chartProps}
         showLoader={true}
+        {...this.state.chartProps}
         data={this.state.chartData}
         parentId={this.props.parentId}
         height={this.props.chartHeight}

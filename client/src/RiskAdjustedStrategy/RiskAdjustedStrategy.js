@@ -35,8 +35,11 @@ class RiskAdjustedStrategy extends Component {
     }
   }
 
-  async componentDidMount(){
+  componentWillMount(){
     this.loadUtils();
+  }
+
+  async componentDidMount(){
     await this.loadPortfolio();
   }
 
@@ -101,7 +104,7 @@ class RiskAdjustedStrategy extends Component {
   render() {
     return (
       <Box width={1}>
-        <Title mb={[3,4]}>Risk-adjusted strategy</Title>
+        <Title mb={[3,4]}>{this.functionsUtil.getGlobalConfig(['strategies',this.props.selectedStrategy,'title'])} strategy</Title>
         {
           !this.state.portfolioLoaded ? (
             <FlexLoader
@@ -137,6 +140,11 @@ class RiskAdjustedStrategy extends Component {
                     >
                       <DashboardCard
                         title={'Composition'}
+                        titleProps={ !this.props.isMobile ? {
+                          style:{
+                            minHeight:'39px'
+                          }
+                        } : null}
                       >
                         <PortfolioDonut
                           {...this.props}
@@ -166,6 +174,7 @@ class RiskAdjustedStrategy extends Component {
                             </Title>
                           </Flex>
                           <Flex
+                            mt={[2,0]}
                             width={[1,0.3]}
                             flexDirection={'column'}
                             justifyContent={'flex-end'}
@@ -351,6 +360,7 @@ class RiskAdjustedStrategy extends Component {
                                   borderRadius:4,
                                   boxShadow:null,
                                   mainColor:'redeem',
+                                  size: this.props.isMobile ? 'small' : 'medium',
                                   handleClick:(props) => this.props.changeToken(props.token)
                                 }
                               }

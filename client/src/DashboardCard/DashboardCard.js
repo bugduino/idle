@@ -7,15 +7,25 @@ class DashboardCard extends Component {
     const isDisabled = this.props.isDisabled;
     const isInteractive = this.props.isInteractive && !isDisabled;
     const isActive = this.props.isActive && !isDisabled;
+
+    const cardProps = {
+      p:0,
+      boxShadow:1,
+      borderRadius:2,
+      position:'relative',
+      minHeight:'initial',
+      background:'cardBg'
+    };
+
+    // Replace props
+    if (this.props.cardProps && Object.keys(this.props.cardProps).length){
+      Object.keys(this.props.cardProps).forEach(p => {
+        cardProps[p] = this.props.cardProps[p];
+      });
+    }
     return (
       <Card
-        p={0}
-        boxShadow={1}
-        borderRadius={2}
-        position={'relative'}
-        minHeight={'initial'}
-        background={'cardBg'}
-        {...this.props.cardProps}
+        {...cardProps}
         onClick={this.props.handleClick}
         className={[isDisabled ? styles.disabled : null,isInteractive ? styles.interactive : null,isActive ? styles.active : null]}
       >

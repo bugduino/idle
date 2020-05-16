@@ -105,7 +105,7 @@ class EarningsEstimation extends Component {
 
       // console.log(token,amountLent.toFixed(5),earnings.toFixed(5),earningsYear.toFixed(5),tokenConfig,tokenAprs,tokenAPR.toFixed(5),tokenAPY.toFixed(5),earningsPercStep,maxPossibleStep,estimationStepsPerc);
 
-      if (!amountLent.isNaN() && !idleTokenPrice.isNaN() && !earnings.isNaN()){
+      if (!amountLent.isNaN() && !idleTokenPrice.isNaN() && !earnings.isNaN() && !earningsYear.isNaN()){
         tokensEarnings[token] = {
           earnings,
           amountLent,

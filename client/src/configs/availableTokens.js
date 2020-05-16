@@ -1,7 +1,9 @@
-import ERC20 from '../abis/tokens/DAI.js';
 import cDAI from '../abis/compound/cDAI';
+import ERC20 from '../abis/tokens/DAI.js';
+import CHAI from '../abis/chai/CHAI.json';
 import iDAI from '../abis/fulcrum/iToken.json';
 import aToken from '../abis/aave/AToken.json';
+import yToken from '../abis/dydx/yToken.json';
 import idleDAIv1 from '../contracts/IdleDAI.json';
 import IdleTokenV2 from '../contracts/IdleTokenV2.json';
 import IdleTokenV3 from '../contracts/IdleTokenV3.json';
@@ -241,7 +243,7 @@ const availableTokens = {
           // address:'0x10eC0D497824e342bCB0EDcE00959142aAa766dD'
         },
         migration:{
-          enabled:true,
+          enabled:false,
           oldContract:{
             abi:IdleTokenV2,
             token:'idleDAI',
@@ -491,6 +493,31 @@ const availableTokens = {
             functions:{
 
             }
+          },
+          {
+            name:'dsr',
+            enabled:true,
+            abi:CHAI,
+            address:'0x06AF07097C9Eeb7fD685c692751D5C66dB49c215',
+            token:'CHAI',
+            decimals:18,
+            functions:{
+
+            }
+          },
+          {
+            name:'dydx',
+            enabled:true,
+            abi:yToken,
+            address:'0xF424B10e1e9691ae5FB530FE4c3e6b9971013D49',
+            token:'yxDAI',
+            decimals:18,
+            functions:{
+              exchangeRate:{
+                name:'price',
+                params:[]
+              }
+            }
           }
         ]
       },
@@ -557,6 +584,20 @@ const availableTokens = {
             decimals:6,
             functions:{
               
+            }
+          },
+          {
+            name:'dydx',
+            enabled:true,
+            abi:yToken,
+            address:'0x0d81b042bb9939b4d32cdf7861774c442a2685ce',
+            token:'yxUSDC',
+            decimals:6,
+            functions:{
+              exchangeRate:{
+                name:'price',
+                params:[]
+              }
             }
           }
         ]
