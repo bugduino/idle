@@ -430,7 +430,7 @@ const availableTokens = {
         },
         idle:{
           abi:IdleTokenV3,
-          token:'idleDAIBest',
+          token:'idleDAIYield',
           address:'0x78751b12da02728f467a44eac40f5cbc16bd7934'
         },
         migration:{
@@ -543,7 +543,7 @@ const availableTokens = {
         },
         idle:{
           abi:IdleTokenV3,
-          token:'idleUSDCBest',
+          token:'idleUSDCYield',
           address:'0x99233bE51Ac3c0a8611E4bbf8c4Bf8E81A914397'
         },
         migration:{
@@ -602,7 +602,7 @@ const availableTokens = {
             abi:aToken,
             address:'0x9bA00D6856a4eDF4665BcA2C2309936572473B7E',
             token:'aUSDC',
-            decimals:6,
+            decimals:18,
             functions:{
               
             }
@@ -613,7 +613,7 @@ const availableTokens = {
             abi:yToken,
             address:'0x0d81b042bb9939b4d32cdf7861774c442a2685ce',
             token:'yxUSDC',
-            decimals:6,
+            decimals:18,
             functions:{
               exchangeRate:{
                 name:'price',

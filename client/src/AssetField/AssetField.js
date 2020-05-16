@@ -44,7 +44,7 @@ class AssetField extends Component {
     const fieldChanged = prevProps.fieldInfo.name !== this.props.fieldInfo.name;
     const contractInitialized = prevProps.contractsInitialized !== this.props.contractsInitialized && this.props.contractsInitialized;
     const transactionsChanged = prevProps.transactions && this.props.transactions && Object.values(prevProps.transactions).filter(tx => (tx.status==='success')).length !== Object.values(this.props.transactions).filter(tx => (tx.status==='success')).length;
-    
+
     if (fieldChanged || tokenChanged || accountChanged || transactionsChanged || (contractInitialized && !this.state.ready)){
       this.setState({},() => {
         this.loadField();

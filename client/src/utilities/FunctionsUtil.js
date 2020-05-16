@@ -1556,7 +1556,7 @@ class FunctionsUtil {
       protocolsBalances[protocolAddr] = protocolBalance;
       protocolsAllocations[protocolAddr] = protocolAllocation;
 
-      // console.log('getTokenAllocation',contractName,protocolAddr,protocolBalance.toString(),protocolAllocation.toString(),exchangeRate ? exchangeRate.toString() : null);
+      // console.log('getTokenAllocation',contractName,protocolAddr,protocolAllocation.toString(),exchangeRate ? exchangeRate.toString() : null,totalAllocation.toString());
     });
 
     Object.keys(protocolsAllocations).forEach((protocolAddr,i) => {
