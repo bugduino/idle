@@ -271,12 +271,13 @@ class EstimatedEarnings extends Component {
                   flexDirection={'column'}
                 >
                   {
-                    this.state.chartData !== null && this.state.chartData.map((v) => (
+                    this.state.chartData !== null && this.state.chartData.map((v,index) => (
                       <Flex
                         py={2}
                         my={2}
                         width={1}
                         flexDirection={'row'}
+                        key={`earnings_${index}`}
                       >
                         <Flex
                           width={0.35}
