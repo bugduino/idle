@@ -1621,9 +1621,9 @@ class FunctionsUtil {
 
     if (tokenAllocation){
       tokenAprs.avgApr = this.getAvgApr(protocolsAprs,tokenAllocation.protocolsAllocations,tokenAllocation.totalAllocation);
-      if (!tokenAprs.avgApr || tokenAprs.avgApr.isNaN()){
-        debugger;
-      }
+      // if (!tokenAprs.avgApr || tokenAprs.avgApr.isNaN()){
+      //   debugger;
+      // }
     }
 
     return tokenAprs;

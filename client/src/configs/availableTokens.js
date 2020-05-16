@@ -542,9 +542,30 @@ const availableTokens = {
           token:'usdc'
         },
         idle:{
-          abi:IdleTokenV2,
+          abi:IdleTokenV3,
           token:'idleUSDCBest',
-          address:'0xeB66ACc3d011056B00ea521F8203580C2E5d3991'
+          address:'0x99233bE51Ac3c0a8611E4bbf8c4Bf8E81A914397'
+        },
+        migration:{
+          enabled:true,
+          oldContract:{
+            abi:IdleTokenV2,
+            token:'idleUSDC',
+            name:'oldContract',
+            address:'0xeB66ACc3d011056B00ea521F8203580C2E5d3991',
+          },
+          migrationContract:{
+            abi:IdleConverter,
+            token:'idleUSDC',
+            name:'migrateIdleUSDC',
+            address:'0x54e7E67A3E152A1d6a10fc50b6B3cC5aD71E91Df',
+            functions:[
+              {
+                label:'Migrate',
+                name:'migrateFromToIdle'
+              },
+            ]
+          }
         },
         protocols:[
           {
