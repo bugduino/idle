@@ -159,6 +159,17 @@ const globalConfigs = {
         },
         startTimestamp:'2020-02-04'
       },
+      USDT:{
+        color:{
+          hex:'#22a079',
+          rgb:[34, 160, 121],
+          hsl:['161', '65%', '38%']
+        },
+        chart:{
+          labelTextColorModifiers:['darker', 2]
+        },
+        startTimestamp:'2020-02-04'
+      },
       SAI:{
         color:{
           hex:'#F7B24A',
@@ -507,7 +518,7 @@ const globalConfigs = {
         subcaption:`~ 1.5% fee ~\nGBP ONLY`,
         supportedMethods:['bank'],
         supportedCountries:['GBR','IND','EUR'],
-        supportedTokens:['ETH','DAI','USDC'],
+        supportedTokens:['ETH','DAI','USDC','USDT'],
         remoteResources:{'https://global.transak.com/v1/widget.js':{}},
         env:'prod',
         badge:{
@@ -533,14 +544,14 @@ const globalConfigs = {
                   text:'INSTANT',
                   bgColor:'#0069ee'
                 };
-                info.subcaption = `~ 1.0% fee ~\nGBP ONLY`;
+                info.subcaption = `~ 0.5% fee ~\nGBP ONLY`;
               break;
               case 'IND':
                 info.badge = {
                   text:'INSTANT',
                   bgColor:'#0069ee'
                 };
-                info.subcaption = `~ 1.0% fee ~\nINR ONLY`;
+                info.subcaption = `~ 0.25% fee ~\nINR ONLY`;
               break;
               case 'EUR':
                 info.badge = {
@@ -548,7 +559,7 @@ const globalConfigs = {
                   color:'#f7cb05 ',
                   bgColor:'#10288a'
                 };
-                info.subcaption = `~ 1.0% fee ~\nEUR ONLY`;
+                info.subcaption = `~ 0.5% fee ~\nEUR ONLY`;
               break;
               default:
               break;
@@ -660,7 +671,7 @@ const globalConfigs = {
         subcaption: '~ 4.5% fee ~',
         supportedMethods:['card','bank'],
         supportedCountries:['GBR','EUR','AUS','BRA','CHN','MEX','CAN','HKG','RUS','ZAF','KOR'],
-        supportedTokens:['USDC','DAI','ETH'],
+        supportedTokens:['USDC','DAI','ETH','USDT'],
         env:'prod',
         envParams:{
           test:{

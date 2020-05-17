@@ -1,7 +1,7 @@
 import cDAI from '../abis/compound/cDAI';
 import ERC20 from '../abis/tokens/DAI.js';
 import CHAI from '../abis/chai/CHAI.json';
-import iDAI from '../abis/fulcrum/iToken.json';
+import iToken from '../abis/fulcrum/iToken.json';
 import aToken from '../abis/aave/AToken.json';
 import yToken from '../abis/dydx/yToken.json';
 import idleDAIv1 from '../contracts/IdleDAI.json';
@@ -86,7 +86,7 @@ const availableTokens = {
           {
             name:'fulcrum',
             enabled:true,
-            abi:iDAI,
+            abi:iToken,
             address:'0x6c1e2b0f67e00c06c8e2be7dc681ab785163ff4d',
             token:'iDAI',
             decimals:18,
@@ -140,7 +140,7 @@ const availableTokens = {
           {
             name:'fulcrum',
             enabled:true,
-            abi:iDAI,
+            abi:iToken,
             address:'0xA1e58F3B1927743393b25f261471E1f2D3D9f0F6',
             token:'iUSDC',
             decimals:18,
@@ -196,7 +196,7 @@ const availableTokens = {
           {
             name:'fulcrum',
             enabled:true,
-            abi:iDAI,
+            abi:iToken,
             address:'0xA1e58F3B1927743393b25f261471E1f2D3D9f0F6',
             token:'iUSDC',
             decimals:18,
@@ -238,60 +238,9 @@ const availableTokens = {
         },
         idle:{
           abi:IdleTokenV3,
-          token:'idleDAIRisk',
-          address:'0x627ca78b2b693364223fb2c24c19cee03a45da60'
-          // address:'0x10eC0D497824e342bCB0EDcE00959142aAa766dD'
+          token:'idleDAISafe',
+          address:'0x1846bdfDB6A0f5c473dEc610144513bd071999fB'
         },
-        migration:{
-          enabled:false,
-          oldContract:{
-            abi:IdleTokenV2,
-            token:'idleDAI',
-            name:'oldContract',
-            address:'0x10eC0D497824e342bCB0EDcE00959142aAa766dD',
-          },
-          migrationContract:{
-            abi:IdleConverter,
-            token:'idleDAI',
-            name:'migrateIdleDAI',
-            address:'0x54e7E67A3E152A1d6a10fc50b6B3cC5aD71E91Df',
-            functions:[
-              {
-                label:'Migrate',
-                name:'migrateFromToIdle'
-              },
-            ]
-          }
-        },
-        /*
-        migration:{
-          enabled:true,
-          oldContract:{
-            abi:idleDAIv1.abi,
-            token:'idleSAI',
-            name:'oldContract',
-            address:'0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9',
-          },
-          migrationContract:{
-            abi:IdleMcdBridgeV1,
-            token:'idleSAI',
-            name:'migrationContract',
-            address:'0x7aB2a7ed1a0C58DEa84DE880b4F1710229137211',
-            functions:[
-              {
-                name:'bridgeIdleV1ToIdleV2',
-                label:'MIGRATE TO idleSAI v2',
-                params:['0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9','0xC79764398a159Ea8E61AF98d7dA6f2C8CaE4c3A9']
-              },
-              {
-                name:'bridgeIdleV1ToIdleV2',
-                label:'MIGRATE TO idleDAI v2',
-                params:['0xAcf651Aad1CBB0fd2c7973E2510d6F63b7e440c9','0x10eC0D497824e342bCB0EDcE00959142aAa766dD']
-              },
-            ]
-          }
-        },
-        */
         protocols:[
           {
             name:'compound',
@@ -310,7 +259,7 @@ const availableTokens = {
           {
             name:'fulcrum',
             enabled:false,
-            abi:iDAI,
+            abi:iToken,
             address:'0x493c57c4763932315a328269e1adad09653b9081',
             token:'iDAI',
             decimals:18,
@@ -331,10 +280,20 @@ const availableTokens = {
             functions:{
 
             }
+          },
+          {
+            name:'dydx',
+            enabled:true,
+            abi:yToken,
+            address:'0xF424B10e1e9691ae5FB530FE4c3e6b9971013D49',
+            token:'yxDAI',
+            decimals:18,
+            functions:{
+
+            }
           }
         ]
       },
-      /*
       USDC:{
         decimals:6,
         enabled:true,
@@ -357,8 +316,8 @@ const availableTokens = {
         },
         idle:{
           abi:IdleTokenV2,
-          token:'idleUSDCRisk',
-          address:'0xeB66ACc3d011056B00ea521F8203580C2E5d3991'
+          token:'idleUSDCSafe',
+          address:'0xcDdB1Bceb7a1979C6caa0229820707429dd3Ec6C'
         },
         protocols:[
           {
@@ -378,7 +337,7 @@ const availableTokens = {
           {
             name:'fulcrum',
             enabled:false,
-            abi:iDAI,
+            abi:iToken,
             address:'0xf013406a0b1d544238083df0b93ad0d2cbe0f65f',
             token:'iUSDC',
             decimals:18,
@@ -399,10 +358,20 @@ const availableTokens = {
             functions:{
               
             }
+          },
+          {
+            name:'dydx',
+            enabled:true,
+            abi:yToken,
+            address:'0x0d81b042bb9939b4d32cdf7861774c442a2685ce',
+            token:'yxUSDC',
+            decimals:18,
+            functions:{
+
+            }
           }
         ]
       }
-      */
     },
     best:{
       DAI:{
@@ -472,7 +441,7 @@ const availableTokens = {
           {
             name:'fulcrum',
             enabled:false,
-            abi:iDAI,
+            abi:iToken,
             address:'0x493c57c4763932315a328269e1adad09653b9081',
             token:'iDAI',
             decimals:18,
@@ -544,7 +513,7 @@ const availableTokens = {
         idle:{
           abi:IdleTokenV3,
           token:'idleUSDCYield',
-          address:'0x99233bE51Ac3c0a8611E4bbf8c4Bf8E81A914397'
+          address:'0x12B98C621E8754Ae70d0fDbBC73D6208bC3e3cA6'
         },
         migration:{
           enabled:true,
@@ -585,7 +554,7 @@ const availableTokens = {
           {
             name:'fulcrum',
             enabled:false,
-            abi:iDAI,
+            abi:iToken,
             address:'0xf013406a0b1d544238083df0b93ad0d2cbe0f65f',
             token:'iUSDC',
             decimals:18,
@@ -619,6 +588,65 @@ const availableTokens = {
                 name:'price',
                 params:[]
               }
+            }
+          }
+        ]
+      },
+      USDT:{
+        decimals:6,
+        enabled:true,
+        abi:ERC20.abi,
+        color:'hsl(211, 67%, 47%)',
+        address:'0xdac17f958d2ee523a2206206994597c13d831ec7',
+        wyre:{
+          destCurrency:'USDT'
+        },
+        defiPrime:{
+          token:'usdt'
+        },
+        idle:{
+          abi:IdleTokenV3,
+          token:'idleUSDTYield',
+          address:'0x63D27B3DA94A9E871222CB0A32232674B02D2f2D'
+        },
+        protocols:[
+          {
+            name:'compound',
+            enabled:true,
+            abi:cDAI.abi,
+            address:'0xf650c3d88d12db855b8bf7d11be6c55a4e07dcc9',
+            token:'cUSDT',
+            decimals:16,
+            functions:{
+              exchangeRate:{
+                name:'exchangeRateStored',
+                params:[]
+              }
+            },
+          },
+          {
+            name:'fulcrum',
+            enabled:false,
+            abi:iToken,
+            address:'0x8326645f3aa6de6420102fdb7da9e3a91855045b',
+            token:'iUSDT',
+            decimals:18,
+            functions:{
+              exchangeRate:{
+                name:'tokenPrice',
+                params:[]
+              }
+            },
+          },
+          {
+            name:'aave',
+            enabled:true,
+            abi:aToken,
+            address:'0x71fc860F7D3A592A4a98740e39dB31d25db65ae8',
+            token:'aUSDT',
+            decimals:18,
+            functions:{
+              
             }
           }
         ]

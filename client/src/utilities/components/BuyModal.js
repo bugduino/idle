@@ -446,7 +446,7 @@ class BuyModal extends React.Component {
                 !this.props.showInline &&
                   <Image height={2} mb={2} src={`images/tokens/${this.state.selectedToken}.svg`} />
               }
-              <Text textAlign={'center'} fontWeight={2} fontSize={[2,3]} my={0}>
+              <Text textAlign={'center'} fontWeight={2} fontSize={[2, this.props.showInline ? 2 : 3]} my={0}>
                 How do you prefer do buy {this.state.selectedToken}?
               </Text>
             </Flex>
@@ -503,17 +503,25 @@ class BuyModal extends React.Component {
                 </Text>
               </Box>
             ) : (
-            <Box>
+            <Flex
+              width={1}
+              alignItems={'center'}
+              flexDirection={'column'}
+              justifyContent={'flex-start'}
+            >
               {
                 !this.state.selectedProvider &&
-                <Box mb={3}>
+                <Box
+                  mb={3}
+                  width={ (this.props.showInline && !this.props.isMobile) ? 0.72 : 1 }
+                >
                   {
                     !this.props.showInline &&
                       <Flex flexDirection={'column'} justifyContent={'center'} alignItems={'center'}>
                         <Image height={2} mb={2} src={`images/tokens/${this.state.selectedToken}.svg`} />
                       </Flex>
                   }
-                  <Text textAlign={'center'} fontWeight={3} fontSize={2} mb={2}>
+                  <Text textAlign={'center'} fontWeight={ this.props.showInline ? 2 : 3 } fontSize={2} mb={2}>
                     Select your country:
                   </Text>
                   <Select
@@ -577,7 +585,7 @@ class BuyModal extends React.Component {
                   )
                 }
               </Flex>
-            </Box>
+            </Flex>
           )
       }
       </Box>
