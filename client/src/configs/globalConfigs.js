@@ -2,7 +2,7 @@ import { Web3Versions } from '@terminal-packages/sdk';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import { RampInstantSDK } from '@ramp-network/ramp-instant-sdk';
 import IdleRebalancerV3 from '../contracts/IdleRebalancerV3.json';
-import RiskAdjustedStrategy from '../RiskAdjustedStrategy/RiskAdjustedStrategy';
+import StrategyPage from '../StrategyPage/StrategyPage';
 
 const env = process.env;
 
@@ -103,7 +103,7 @@ const globalConfigs = {
       color:'#2196F3',
       iconName:'Security',
       title:'Risk-adjusted',
-      component: RiskAdjustedStrategy,
+      component: StrategyPage,
       icon:'images/strategies/risk-on.svg',
       iconInactive:'images/strategies/risk-off.svg',
       desc:'Minimize your risk exposure across DeFi protocols',
@@ -113,7 +113,7 @@ const globalConfigs = {
       color:'#f32121',
       title:'Best-yield',
       iconName:'Whatshot',
-      component: RiskAdjustedStrategy,
+      component: StrategyPage,
       icon:'images/strategies/best-on.svg',
       iconInactive:'images/strategies/best-off.svg',
       desc:'Maximize your returns across DeFi protocols',

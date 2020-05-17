@@ -53,14 +53,8 @@ class DashboardHeader extends Component {
     return await this.props.context.setConnector(connectorName);
   }
 
-  async logout(){
-    // Logout
-    if (this.props.account){
-      await this.setConnector('Infura');
-    // Exit dashboard
-    } else {
-      this.props.goToSection('/',false);
-    }
+  async exit(){
+    this.props.goToSection('/',false);
   }
 
   render() {
@@ -87,7 +81,7 @@ class DashboardHeader extends Component {
             <Link
               pr={2}
               display={'flex'}
-              onClick={ (e) => { this.logout() } }
+              onClick={ (e) => { this.exit() } }
               style={{alignItems:'center',justifyContent:'space-between'}}
             >
               <Icon
@@ -101,7 +95,7 @@ class DashboardHeader extends Component {
                 fontWeight={3}
                 color={'copyColor'}
               >
-                {this.props.account ? 'Logout' : 'Exit'}
+                Exit
               </Text>
             </Link>
           }

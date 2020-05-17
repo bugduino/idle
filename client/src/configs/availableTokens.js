@@ -241,6 +241,27 @@ const availableTokens = {
           token:'idleDAISafe',
           address:'0x1846bdfDB6A0f5c473dEc610144513bd071999fB'
         },
+        migration:{
+          enabled:true,
+          oldContract:{
+            abi:IdleTokenV2,
+            token:'idleDAI',
+            name:'oldContract',
+            address:'0x10eC0D497824e342bCB0EDcE00959142aAa766dD',
+          },
+          migrationContract:{
+            abi:IdleConverter,
+            token:'idleDAI',
+            name:'migrateIdleDAI',
+            address:'0x776245a376Dd5A043e625ed75AF5Cc678b3A6841',
+            functions:[
+              {
+                label:'Migrate',
+                name:'migrateFromToIdle'
+              },
+            ]
+          }
+        },
         protocols:[
           {
             name:'compound',
@@ -319,6 +340,27 @@ const availableTokens = {
           token:'idleUSDCSafe',
           address:'0xcDdB1Bceb7a1979C6caa0229820707429dd3Ec6C'
         },
+        migration:{
+          enabled:true,
+          oldContract:{
+            abi:IdleTokenV2,
+            token:'idleUSDC',
+            name:'oldContract',
+            address:'0xeB66ACc3d011056B00ea521F8203580C2E5d3991',
+          },
+          migrationContract:{
+            abi:IdleConverter,
+            token:'idleUSDC',
+            name:'migrateIdleUSDC',
+            address:'0x776245a376Dd5A043e625ed75AF5Cc678b3A6841',
+            functions:[
+              {
+                label:'Migrate',
+                name:'migrateFromToIdle'
+              },
+            ]
+          }
+        },
         protocols:[
           {
             name:'compound',
@@ -371,6 +413,65 @@ const availableTokens = {
             }
           }
         ]
+      },
+      USDT:{
+        decimals:6,
+        enabled:true,
+        abi:ERC20.abi,
+        color:'hsl(211, 67%, 47%)',
+        address:'0xdac17f958d2ee523a2206206994597c13d831ec7',
+        wyre:{
+          destCurrency:'USDT'
+        },
+        defiPrime:{
+          token:'usdt'
+        },
+        idle:{
+          abi:IdleTokenV3,
+          token:'idleUSDTYield',
+          address:'0x42740698959761baf1b06baa51efbd88cb1d862b'
+        },
+        protocols:[
+          {
+            name:'compound',
+            enabled:true,
+            abi:cDAI.abi,
+            address:'0xf650c3d88d12db855b8bf7d11be6c55a4e07dcc9',
+            token:'cUSDT',
+            decimals:16,
+            functions:{
+              exchangeRate:{
+                name:'exchangeRateStored',
+                params:[]
+              }
+            },
+          },
+          {
+            name:'fulcrum',
+            enabled:false,
+            abi:iToken,
+            address:'0x8326645f3aa6de6420102fdb7da9e3a91855045b',
+            token:'iUSDT',
+            decimals:18,
+            functions:{
+              exchangeRate:{
+                name:'tokenPrice',
+                params:[]
+              }
+            },
+          },
+          {
+            name:'aave',
+            enabled:true,
+            abi:aToken,
+            address:'0x71fc860F7D3A592A4a98740e39dB31d25db65ae8',
+            token:'aUSDT',
+            decimals:18,
+            functions:{
+              
+            }
+          }
+        ]
       }
     },
     best:{
@@ -414,7 +515,7 @@ const availableTokens = {
             abi:IdleConverter,
             token:'idleDAI',
             name:'migrateIdleDAI',
-            address:'0x54e7E67A3E152A1d6a10fc50b6B3cC5aD71E91Df',
+            address:'0x776245a376Dd5A043e625ed75AF5Cc678b3A6841',
             functions:[
               {
                 label:'Migrate',
@@ -527,7 +628,7 @@ const availableTokens = {
             abi:IdleConverter,
             token:'idleUSDC',
             name:'migrateIdleUSDC',
-            address:'0x54e7E67A3E152A1d6a10fc50b6B3cC5aD71E91Df',
+            address:'0x776245a376Dd5A043e625ed75AF5Cc678b3A6841',
             functions:[
               {
                 label:'Migrate',

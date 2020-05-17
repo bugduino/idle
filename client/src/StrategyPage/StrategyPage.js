@@ -13,7 +13,7 @@ import EarningsEstimation from '../EarningsEstimation/EarningsEstimation';
 
 // const env = process.env;
 
-class RiskAdjustedStrategy extends Component {
+class StrategyPage extends Component {
 
   state = {
     tokensToMigrate:[],
@@ -626,4 +626,4 @@ class RiskAdjustedStrategy extends Component {
   }
 }
 
-export default RiskAdjustedStrategy;
+export default StrategyPage;

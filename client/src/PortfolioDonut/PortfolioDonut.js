@@ -86,11 +86,13 @@ class PortfolioDonut extends Component {
       const tokenBalance = portfolio[token];
       if (tokenBalance.gt(0)){
         const tokenPercentage = tokenBalance.div(totalFunds).times(100);
+        let tokenColorHsl = this.functionsUtil.getGlobalConfig(['stats','tokens',token.toUpperCase(),'color','hsl']);
+        tokenColorHsl = tokenColorHsl ? tokenColorHsl.join(',') : '0,0%,0%';
         chartData.push({
           id:token,
           label:token.substr(0,1).toUpperCase()+token.substr(1),
           value:Math.round(tokenPercentage),
-          color:'hsl('+globalConfigs.stats.tokens[token.toUpperCase()].color.hsl.join(',')+')'
+          color:'hsl('+tokenColorHsl+')'
         });
       }
     });
