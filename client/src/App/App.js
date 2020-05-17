@@ -174,10 +174,15 @@ class App extends Component {
     if (localStorage){
       localStorage.removeItem('context');
 
+      // Clear all localStorage data except walletProvider and connectorName if version has changed
       const version = localStorage.getItem('version');
       if (version !== globalConfigs.version){
-        localStorage.removeItem('transactions');
-        localStorage.removeItem('cachedRequests');
+        for (let i=0;i<localStorage.length;i++){
+          const storedKey = localStorage.key(i);
+          if (!['walletProvider','connectorName'].includes(storedKey)){
+            localStorage.removeItem(storedKey);
+          }
+        }
         localStorage.setItem('version',globalConfigs.version);
       }
     }

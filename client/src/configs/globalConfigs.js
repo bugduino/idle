@@ -8,7 +8,7 @@ const env = process.env;
 
 const globalConfigs = {
   appName: 'Idle',
-  version: 'v2.2',
+  version: 'v2.3',
   baseURL: 'https://idle.finance',
   baseToken: 'ETH',
   countries:{
@@ -264,7 +264,7 @@ const globalConfigs = {
         enabled:false,
         supportedNetworks:[1,42],
         params:{
-          apiKey: '3fSPg48Sk.4e482757-47f7-4091-9ee5-7d9ac61366b8'
+          apiKey: env.REACT_APP_BICONOMY_KEY
         }
       },
       terminal:{
