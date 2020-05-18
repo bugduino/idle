@@ -59,7 +59,7 @@ class FundsOverview extends Component {
           >
             <Flex
               mb={[2,0]}
-              width={[1,0.25]}
+              width={[1,0.2]}
               alignItems={'center'}
               flexDirection={'column'}
               justifyContent={'flex-start'}
@@ -69,7 +69,7 @@ class FundsOverview extends Component {
                 fontSize={[3,4]}
                 component={Heading.h3}
               >
-                Deposited Funds
+                Deposited
               </Title>
               <AssetField
                 {...this.props}
@@ -87,7 +87,7 @@ class FundsOverview extends Component {
             </Flex>
             <Flex
               mb={[2,0]}
-              width={[1,0.25]}
+              width={[1,0.2]}
               alignItems={'center'}
               flexDirection={'column'}
               justifyContent={'flex-start'}
@@ -97,7 +97,7 @@ class FundsOverview extends Component {
                 fontSize={[3,4]}
                 component={Heading.h3}
               >
-                Redeemable Funds
+                Redeemable
               </Title>
               <AssetField
                 {...this.props}
@@ -129,7 +129,7 @@ class FundsOverview extends Component {
             </Flex>
             <Flex
               mb={[2,0]}
-              width={[1,0.25]}
+              width={[1,0.2]}
               alignItems={'center'}
               flexDirection={'column'}
               justifyContent={'flex-start'}
@@ -139,7 +139,7 @@ class FundsOverview extends Component {
                 fontSize={[3,4]}
                 component={Heading.h3}
               >
-                Total Earned
+                Earnings
               </Title>
               <AssetField
                 {...this.props}
@@ -159,7 +159,7 @@ class FundsOverview extends Component {
             </Flex>
             <Flex
               mb={[2,0]}
-              width={[1,0.25]}
+              width={[1,0.2]}
               alignItems={'center'}
               flexDirection={'column'}
               justifyContent={'flex-start'}
@@ -178,6 +178,34 @@ class FundsOverview extends Component {
                   name:'apy',
                   props:{
                     decimals:2,
+                    fontWeight:300,
+                    fontSize:['1.8em','2.3em'],
+                    color:theme.colors.counter
+                  }
+                }}
+              />
+            </Flex>
+            <Flex
+              mb={[2,0]}
+              width={[1,0.2]}
+              alignItems={'center'}
+              flexDirection={'column'}
+              justifyContent={'flex-start'}
+            >
+              <Title
+                mb={2}
+                fontSize={[3,4]}
+                component={Heading.h3}
+              >
+                Risk Score
+              </Title>
+              <AssetField
+                {...this.props}
+                token={this.props.selectedToken}
+                fieldInfo={{
+                  name:'score',
+                  props:{
+                    decimals:1,
                     fontWeight:300,
                     fontSize:['1.8em','2.3em'],
                     color:theme.colors.counter

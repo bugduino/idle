@@ -98,16 +98,6 @@ const globalConfigs = {
     baseRoute:'/dashboard',
   },
   strategies:{
-    risk:{
-      token:'DAI',
-      color:'#2196F3',
-      iconName:'Security',
-      title:'Risk-adjusted',
-      component: StrategyPage,
-      icon:'images/strategies/risk-on.svg',
-      iconInactive:'images/strategies/risk-off.svg',
-      desc:'Minimize your risk exposure across DeFi protocols',
-    },
     best:{
       token:'DAI',
       color:'#f32121',
@@ -117,6 +107,20 @@ const globalConfigs = {
       icon:'images/strategies/best-on.svg',
       iconInactive:'images/strategies/best-off.svg',
       desc:'Maximize your returns across DeFi protocols',
+      descLong:'The Yield-Optimizer allocation strategy allows to maximize the interest rate returns by detecting the interest rate changes on different lending protocols. Idle’s monitoring system automatically triggers a rebalance if it spots a better-performing allocation: this includes taking account of the total liquidity within the pool, incorporating underlying protocol rate functions and levels of supply and demand. As a user, you will end up with an higher return without constantly checking rates and burning gas on every transfer. Unlock your funds from a single protocol performance with this strategy.',
+      descShort:'The Yield-Optimizer allocation strategy allows to maximize the interest rate returns by detecting the interest rate changes on different lending protocols.'
+    },
+    risk:{
+      token:'USDC',
+      color:'#2196F3',
+      iconName:'Security',
+      title:'Risk-adjusted',
+      component: StrategyPage,
+      icon:'images/strategies/risk-on.svg',
+      iconInactive:'images/strategies/risk-off.svg',
+      desc:'Minimize your risk exposure across DeFi protocols',
+      descLong:'The Risk-Adjusted allocation strategy provides a way to earn the best rate at the lowest risk-level. The risk-management algorithm takes account of the total assets within a pool, incorporates underlying protocol rate functions and levels of supply and demand, skimming protocols with a bad score/rate mix, and finally determining an allocation that achieves the highest risk-return score possible after the rebalance happens.',
+      descShort:'The Risk-Adjusted allocation strategy provides a way to earn the best rate at the lowest risk-level.'
     }
   },
   stats:{
@@ -184,30 +188,36 @@ const globalConfigs = {
     },
     protocols:{
       compound:{
+        label:'Compound',
         color:{
           rgb:[0, 209, 146],
           hsl:['162', '100%', '41%']
         }
       },
       fulcrum:{
+        label:'Fulcrum',
         color:{
           rgb:[2, 138, 192],
           hsl:['197', '98%', '38%']
         }
       },
       dsr:{
+        label:'DSR',
+        icon:'CHAI.png',
         color:{
           rgb:[222, 52, 67],
           hsl:['355', '72%', '54%']
         }
       },
       dydx:{
+        label:'DyDx',
         color:{
           rgb:[28, 29, 34],
           hsl:['230', '10%', '12%']
         }
       },
       aave:{
+        label:'Aave',
         color:{
           rgb:[181, 79, 157],
           hsl:['314', '41%', '51%']
@@ -218,6 +228,7 @@ const globalConfigs = {
         }
       },
       idle:{
+        label:'Idle',
         color:{
           rgb:[0, 55, 255],
           hsl:['227', '100%', '50%']

@@ -176,8 +176,27 @@ class AssetField extends Component {
           }
           output = earnings;
         break;
+        case 'score':
+          const startTimestamp = parseInt(new Date().getTime()/1000)-60*60;
+          let tokenData = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,startTimestamp);
+
+          if (tokenData){
+            const isRisk = this.props.selectedStrategy === 'risk';
+            tokenData = tokenData.filter( d => ( d.isRisk === isRisk ) ).pop();
+
+            if (tokenData && tokenData.idleScore){
+              if (setState && !this.componentUnmounted){
+                this.setState({
+                  score:tokenData.idleScore
+                })
+              }
+              output = tokenData.idleScore;
+            }
+          }
+        break;
         case 'pool':
           const tokenAllocation = await this.functionsUtil.getTokenAllocation(this.props.tokenConfig);
+
           if (tokenAllocation && tokenAllocation.totalAllocation){
             if (setState && !this.componentUnmounted){
               this.setState({
@@ -549,6 +568,11 @@ class AssetField extends Component {
       case 'pool':
         output = this.state.poolSize ? (
           <SmartNumber {...fieldProps} decimals={decimals} minPrecision={minPrecision} number={this.state.poolSize} />
+        ) : loader
+      break;
+      case 'score':
+        output = this.state.score ? (
+          <SmartNumber {...fieldProps} decimals={1} number={this.state.score} />
         ) : loader
       break;
       case 'earningsPerc':

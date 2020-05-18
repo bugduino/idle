@@ -37,7 +37,7 @@ class StrategyBox extends Component {
         cardProps={{
           pt:[3,4],
           mb:[3,0],
-          mx:[0,'0.5em'],
+          mx:[0,'1em'],
           alignItems:'center',
           flexDirection:'column',
           justifyContent:'flex-start'
@@ -46,24 +46,33 @@ class StrategyBox extends Component {
         <Flex
           justifyContent={'center'}
         >
-          <Image src={strategyInfo.icon} height={['2.2em','2.5em']} />
+          <Image
+            src={strategyInfo.icon}
+            height={['2.2em','3.2em']}
+          />
         </Flex>
         <Flex
           my={2}
           alignItems={'center'}
           justifyContent={'center'}
         >
-          <Title fontSize={[4,'1.7em']}>{strategyInfo.title}</Title>
+          <Title
+            fontWeight={5}
+            fontSize={[4,'1.7em']}
+          >
+            {strategyInfo.title}
+          </Title>
         </Flex>
         <Flex
-          my={2}
+          mt={2}
+          mb={[2,3]}
           minHeight={'50px'}
           alignItems={'flex-start'}
           justifyContent={'center'}
         >
           <Text
             px={[3,4]}
-            fontWeight={2}
+            fontWeight={500}
             textAlign={'center'}
           >
             {strategyInfo.desc}
@@ -89,9 +98,10 @@ class StrategyBox extends Component {
               name:'apy',
               props:{
                 px:2,
-                fontSize:3,
-                fontWeight:3,
-                textAlign:'left'
+                fontSize:[3,4],
+                fontWeight:4,
+                textAlign:'left',
+                color:'copyColor'
               }
             }}
             {...this.props}

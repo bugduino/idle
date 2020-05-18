@@ -345,7 +345,7 @@ class RimbleTransaction extends React.Component {
       web3 = new Web3(biconomy);
 
       biconomy.onEvent(biconomy.READY, () => {
-        console.log('Biconomy is ready');
+        // console.log('Biconomy is ready');
         const newState = {
           biconomy
         };
@@ -356,7 +356,7 @@ class RimbleTransaction extends React.Component {
 
       }).onEvent(biconomy.ERROR, (error, message) => {
         // Handle error while initializing mexa
-        console.log('Biconomy error',error,message);
+        // console.log('Biconomy error',error,message);
       });
     } else {
       if (web3 !== this.state.web3){
@@ -1209,6 +1209,8 @@ class RimbleTransaction extends React.Component {
         variant: "failure",
         icon: 'Block'
       });
+
+      console.error('Tx Error',error);
 
       const isDeniedTx = error && error.message ? error.message.includes('User denied transaction signature') : false;
 

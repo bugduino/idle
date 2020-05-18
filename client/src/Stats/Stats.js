@@ -16,6 +16,7 @@ import FunctionsUtil from '../utilities/FunctionsUtil';
 // import TokenSelector from '../TokenSelector/TokenSelector';
 import DashboardCard from '../DashboardCard/DashboardCard';
 import AssetSelector from '../AssetSelector/AssetSelector';
+import GenericSelector from '../GenericSelector/GenericSelector';
 import RoundIconButton from '../RoundIconButton/RoundIconButton';
 import VariationNumber from '../VariationNumber/VariationNumber';
 import AllocationChart from '../AllocationChart/AllocationChart';
@@ -35,6 +36,7 @@ class Stats extends Component {
     buttonGroups:[],
     apiResults:null,
     carouselIndex:0,
+    idleVersion:'v3',
     minStartTime:null,
     endTimestamp:null,
     showAdvanced:true,
@@ -47,6 +49,17 @@ class Stats extends Component {
     apiResults_unfiltered:null,
     dateRangeModalOpened:false
   };
+
+  versionsRangeDates = {
+    v2:{
+      startTimestamp:null,
+      endTimestamp:1589752999
+    },
+    v3:{
+      startTimestamp:1589753498,
+      endTimestamp:null
+    }
+  }
 
   quickSelections = {
     day:'Last day',
@@ -71,7 +84,7 @@ class Stats extends Component {
       return false;
     }
 
-    const newState = Object.assign({},this.state);
+    const newState = {};
     const { match: { params } } = this.props;
 
     const currentNetworkAvailableTokens = Object.keys(this.props.availableTokens);
@@ -84,15 +97,42 @@ class Stats extends Component {
 
     newState.tokenConfig = this.props.availableTokens[newState.selectedToken];
     newState.minStartTime = moment(globalConfigs.stats.tokens[this.props.selectedToken].startTimestamp,'YYYY-MM-DD');
+    newState.maxEndDate = moment();
+
     newState.endTimestampObj = moment(moment().format('YYYY-MM-DD 23:59'),'YYYY-MM-DD HH:mm');
+
+    if (this.state.idleVersion && this.versionsRangeDates[this.state.idleVersion].endTimestamp){
+      const newEndTimestampObj = moment(moment(this.versionsRangeDates[this.state.idleVersion].endTimestamp*1000).format('YYYY-MM-DD HH:mm'),'YYYY-MM-DD HH:mm');
+      if (newState.endTimestampObj.isAfter(newEndTimestampObj)){
+        newState.endTimestampObj = newEndTimestampObj;
+        newState.endTimestamp = parseInt(newState.endTimestampObj._d.getTime()/1000);
+      }
+
+      if (!newState.maxEndDate || newState.maxEndDate.isAfter(newEndTimestampObj)){
+        newState.maxEndDate = newEndTimestampObj;
+      }
+    }
+
     newState.endTimestamp = parseInt(newState.endTimestampObj._d.getTime()/1000);
 
     // Set start date
     newState.startTimestampObj = newState.endTimestampObj.clone().subtract(2,'week');
     newState.startTimestamp = parseInt(newState.startTimestampObj._d.getTime()/1000);
 
+    if (this.state.idleVersion && this.versionsRangeDates[this.state.idleVersion].startTimestamp){
+      const newStartTimestampObj = moment(moment(this.versionsRangeDates[this.state.idleVersion].startTimestamp*1000).format('YYYY-MM-DD HH:mm'),'YYYY-MM-DD HH:mm');
+      if (newState.startTimestampObj.isBefore(newStartTimestampObj)){
+        newState.startTimestampObj = newStartTimestampObj;
+        newState.startTimestamp = parseInt(newState.startTimestampObj._d.getTime()/1000);
+      }
+
+      if (newState.minStartTime.isBefore(newStartTimestampObj)){
+        newState.minStartTime = newStartTimestampObj;
+      }
+    }
+
     newState.minDate = newState.minStartTime._d;
-    newState.maxDate = moment()._d;
+    newState.maxDate = newState.maxEndDate._d;
 
     if (newState !== this.state){
       await this.setState(newState);
@@ -186,20 +226,21 @@ class Stats extends Component {
 
   async componentDidUpdate(prevProps,prevState) {
     const contractsInitialized = prevProps.contractsInitialized !== this.props.contractsInitialized;
+    const strategyChanged = prevProps.selectedStrategy !== this.props.selectedStrategy;
     const tokenChanged = prevProps.selectedToken !== this.props.selectedToken || JSON.stringify(prevProps.tokenConfig) !== JSON.stringify(this.props.tokenConfig);
     const dateChanged = prevState.startTimestamp !== this.state.startTimestamp || prevState.endTimestamp !== this.state.endTimestamp;
+    const versionChanged = prevState.idleVersion !== this.state.idleVersion;
     const mobileChanged = prevProps.isMobile !== this.props.isMobile;
 
     if (mobileChanged){
       this.loadCarousel();
     }
 
-    if (contractsInitialized || tokenChanged){
+    if (contractsInitialized || tokenChanged || strategyChanged || versionChanged){
+      // console.log('componentDidUpdate',this.props.selectedStrategy,this.props.selectedToken);
       await this.componentDidMount();
-    } else {
-      if (dateChanged){
-        this.loadApiData();
-      }
+    } else if (dateChanged){
+      this.loadApiData();
     }
   }
 
@@ -209,14 +250,33 @@ class Stats extends Component {
     });
   }
 
+  setIdleVersion = idleVersion => {
+    this.setState({
+      idleVersion
+    });
+  }
+
   loadApiData = async () => {
 
     if (!this.props.selectedToken || !this.props.tokenConfig){
       return false;
     }
 
-    const apiResults_unfiltered = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address);
+    const startTimestamp = this.state.minDate ? parseInt(this.state.minDate.getTime()/1000) : null;
+    const endTimestamp = this.state.maxDate ? parseInt(this.state.maxDate.getTime()/1000) : null;
+
+
+    let apiResults_unfiltered = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,startTimestamp,endTimestamp,true);
+
+    // Filter for isRisk
+    if (this.state.idleVersion === 'v3'){
+      const isRisk = this.props.selectedStrategy === 'risk';
+      apiResults_unfiltered = apiResults_unfiltered.filter( d => ( d.isRisk === isRisk ) );
+    }
+
     const apiResults = this.filterTokenData(apiResults_unfiltered);
+
+    // console.log('loadApiData',startTimestamp,endTimestamp,apiResults_unfiltered,apiResults);
 
     if (!apiResults || !apiResults_unfiltered || !apiResults.length || !apiResults_unfiltered.length){
       return false;
@@ -487,23 +547,43 @@ class Stats extends Component {
             flexDirection={['column','row']}
           >
             <Flex
-              width={[1,0.6]}
+              width={[1,0.4]}
             >
               <Breadcrumb
                 text={'ASSETS OVERVIEW'}
                 isMobile={this.props.isMobile}
-                path={[this.functionsUtil.getGlobalConfig(['strategies',this.props.selectedStrategy,'title']),this.props.selectedToken]}
+                path={[this.functionsUtil.getGlobalConfig(['strategies',this.props.selectedStrategy,'title'])]}
                 handleClick={ e => this.props.goToSection('stats') }
               />
             </Flex>
             <Flex
               mt={[3,0]}
-              width={[1,0.4]}
+              width={[1,0.6]}
               flexDirection={['column','row']}
               justifyContent={['center','space-between']}
             >
               <Flex
-                width={[1,0.48]}
+                width={[1,0.26]}
+                flexDirection={'column'}
+              >
+                <GenericSelector
+                  innerProps={{
+                    p:1,
+                    height:['100%','46px'],
+                  }}
+                  name={'idle-version'}
+                  defaultValue={
+                    {value:'v3',label:'Idle V3'}
+                  }
+                  options={[
+                    {value:'v2',label:'Idle V2'},
+                    {value:'v3',label:'Idle V3'}
+                  ]}
+                  onChange={ v => this.setIdleVersion(v) }
+                />
+              </Flex>
+              <Flex
+                width={[1,0.3]}
                 flexDirection={'column'}
               >
                 <AssetSelector
@@ -515,7 +595,7 @@ class Stats extends Component {
               </Flex>
               <Flex
                 mt={[2,0]}
-                width={[1,0.48]}
+                width={[1,0.39]}
                 flexDirection={'column'}
               >
                 <DashboardCard

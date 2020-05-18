@@ -72,7 +72,7 @@ class DashboardMenu extends Component {
                 flexDirection={'row'}
                 alignItems={'center'}
                 backgroundColor={ menuLink.selected ? '#f3f6ff' : 'transparent' }
-                boxShadow={menuLink.selected ? '0px 0px 4px 2px rgba(0,54,255,0.3)' : null}
+                boxShadow={menuLink.selected ? '0px 0px 0px 1px rgba(0,54,255,0.3)' : null}
               >
                 <Flex
                   alignItems={'center'}

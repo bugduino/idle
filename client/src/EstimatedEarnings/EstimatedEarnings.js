@@ -14,7 +14,7 @@ class EstimatedEarnings extends Component {
     tokenApy:null,
     chartData:null,
     chartProps:null,
-    inputValue:100,
+    inputValue:1000,
     maxInputValue:999999999999999
   };
 

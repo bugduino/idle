@@ -233,7 +233,7 @@ class Migrate extends Component {
           const eventData = {
             eventCategory: 'Migrate',
             eventAction: migrationMethod,
-            eventLabel: tx.status,
+            eventLabel: tx ? tx.status : null,
             eventValue: parseInt(oldContractBalanceFormatted)
           };
 
@@ -248,7 +248,7 @@ class Migrate extends Component {
             this.functionsUtil.sendGoogleAnalyticsEvent(eventData);
           }
 
-          if (tx.status === 'success'){
+          if (tx && tx.status === 'success'){
             // Toast message
             window.toastProvider.addMessage(`Migration completed`, {
               secondaryMessage: `Your funds has been migrated`,
@@ -317,11 +317,28 @@ class Migrate extends Component {
         migrationParams.push(_clientProtocolAmounts);
         */
 
+        // Check if Biconomy is enabled
+        if (this.props.biconomy){
 
-        console.log(migrationContractInfo.name, migrationMethod, migrationParams);
+          // const txParams = {
+          //   gasLimit: this.props.web3.utils.toHex(10000000),
+          //   to: migrationContractInfo.address,
+          //   value: "",
+          //   data: migrationContract.methods[migrationMethod](...migrationParams).encodeABI() //contract.methods.addRating(1, 5).encodeABI()
+          // };
+
+          const functionSignature = migrationContract.methods[migrationMethod](...migrationParams).encodeABI();
+          // console.log('Migration params',migrationContractInfo.name, migrationMethod, migrationParams, functionSignature);
+
+          this.functionsUtil.sendBiconomyTx(migrationContractInfo.name, migrationContractInfo.address, functionSignature, callbackMigrate, callbackReceiptMigrate);
+          // this.functionsUtil.sendBiconomyTx(txParams,callbackReceiptMigrate,callbackErrorMigrate);
+        } else {
+          // Send migration tx
+          this.functionsUtil.contractMethodSendWrapper(migrationContractInfo.name, migrationMethod, migrationParams, callbackMigrate, callbackReceiptMigrate);
+        }
 
         // Send migration tx
-        this.functionsUtil.contractMethodSendWrapper(migrationContractInfo.name, migrationMethod, migrationParams, callbackMigrate, callbackReceiptMigrate);
+        // this.functionsUtil.contractMethodSendWrapper(migrationContractInfo.name, migrationMethod, migrationParams, callbackMigrate, callbackReceiptMigrate, 10000000);
 
         this.setState((prevState) => ({
           processing: {

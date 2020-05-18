@@ -132,7 +132,7 @@ class AllocationChart extends Component {
       return {
         id:protocolAddr,
         value:protocolAllocationPercParsed,
-        label:this.functionsUtil.capitalize(protocolName),
+        label: globalConfigs.stats.protocols[protocolName].label ? globalConfigs.stats.protocols[protocolName].label : this.functionsUtil.capitalize(protocolName),
         color:'hsl('+globalConfigs.stats.protocols[protocolName].color.hsl.join(',')+')'
       };
     });
@@ -149,6 +149,7 @@ class AllocationChart extends Component {
   render() {
     
     const selectedSlice = this.state.selectedSlice !== null && this.state.protocolsAllocations[this.state.selectedSlice.id] ? this.state.protocolsAllocations[this.state.selectedSlice.id] : false;
+    const protocolIcon = this.state.selectedSlice !== null ? (globalConfigs.stats.protocols[this.state.selectedSlice.label.toLowerCase()] && globalConfigs.stats.protocols[this.state.selectedSlice.label.toLowerCase()].icon ? globalConfigs.stats.protocols[this.state.selectedSlice.label.toLowerCase()].icon : `${this.state.selectedSlice.label.toLowerCase()}.svg`) : null;
 
     return (
       <Flex
@@ -181,7 +182,7 @@ class AllocationChart extends Component {
                       mb={1}
                       width={['1.8em','2em']}
                       height={['1.8em','2em']}
-                      src={`/images/protocols/${this.state.selectedSlice.label.toLowerCase()}.svg`}
+                      src={`/images/protocols/${protocolIcon}`}
                     />
                     <SmartNumber
                       fontSize={[3,4]}

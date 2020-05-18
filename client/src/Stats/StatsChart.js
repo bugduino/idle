@@ -497,7 +497,12 @@ class StatsChart extends Component {
               const protocolPaused = this.functionsUtil.BNify(protocolAllocation.rate).eq(0);
               if (!protocolPaused){
                 const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
-                const y = parseInt(this.functionsUtil.fixTokenDecimals(protocolAllocation.allocation,this.props.tokenConfig.decimals));
+                let y = parseFloat(this.functionsUtil.fixTokenDecimals(protocolAllocation.allocation,this.props.tokenConfig.decimals));
+                if (y<1){
+                  y = y.toFixed(4);
+                } else {
+                  y = parseInt(y);
+                }
 
                 maxChartValue = Math.max(maxChartValue,y);
 
@@ -718,10 +723,16 @@ class StatsChart extends Component {
             const protocolPaused = this.functionsUtil.BNify(protocolData.rate).eq(0);
             const protocolName = this.functionsUtil.capitalize(this.props.tokenConfig.protocols.filter((p) => { return p.address.toLowerCase() === protocolData.protocolAddr.toLowerCase() })[0].name);
             if (!protocolPaused){
-              const allocation = parseInt(this.functionsUtil.fixTokenDecimals(protocolData.allocation,this.props.tokenConfig.decimals));
+              let allocation = parseFloat(this.functionsUtil.fixTokenDecimals(protocolData.allocation,this.props.tokenConfig.decimals));
+              if (allocation<1){
+                allocation = allocation.toFixed(4);
+              } else {
+                allocation = parseInt(allocation);
+              }
               keys[protocolName] = 1;
               row[protocolName] = allocation;
               row[`${protocolName}Color`] = 'hsl('+globalConfigs.stats.protocols[protocolName.toLowerCase()].color.hsl.join(',')+')';
+              // console.log(protocolName,this.functionsUtil.BNify(protocolData.allocation).toString(),this.props.tokenConfig.decimals,allocation);
               maxChartValue = Math.max(maxChartValue,allocation);
             } else {
               row[protocolName] = 0;
@@ -1229,6 +1240,7 @@ class StatsChart extends Component {
                   apy = earning.times(365).div(days).toFixed(2);
                 }
 
+                y = Math.max(0,y);
                 maxChartValue = Math.max(maxChartValue,y);
 
                 rowData = {

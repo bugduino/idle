@@ -6,7 +6,7 @@ export default {
   breakpoints: ['52em', '64em'],
   // breakpoints: ['40em', '52em', '64em', '80em'],
   fontSizes: [12, 14, 16, 18, 21, 32, 38, 48, 54, 64, 72, 84],
-  fontWeights: [0, 300, 400, 600, 700],
+  fontWeights: [0, 300, 400, 600, 700, 800],
   letterSpacings: [0, 1, 2, 4, 8],
   lineHeights: {
     solid: 1,

@@ -223,10 +223,11 @@ class StrategyPage extends Component {
                       fontSize={[1,2]}
                       textAlign={'center'}
                     >
-                      The Yield-Optimizer allocation strategy allows to maximize the interest rate returns by detecting the interest rate changes on different lending protocols.
                       {
-                        !this.props.isMobile && 
-                          'Idle’s monitoring system automatically triggers a rebalance if it spots a better-performing allocation: this includes taking account of the total liquidity within the pool, incorporating underlying protocol rate functions and levels of supply and demand. As a user, you will end up with an higher return without constantly checking rates and burning gas on every transfer. Unlock your funds from a single protocol performance with this strategy.'
+                        this.props.isMobile ?
+                          this.functionsUtil.getGlobalConfig(['strategies',this.props.selectedStrategy,'descShort'])
+                        :
+                          this.functionsUtil.getGlobalConfig(['strategies',this.props.selectedStrategy,'descLong'])
                       }
                     </Text>
                   </Flex>

@@ -252,7 +252,7 @@ const availableTokens = {
           migrationContract:{
             abi:IdleConverter,
             token:'idleDAI',
-            name:'migrateIdleDAI',
+            name:'IdleConverter',
             address:'0x776245a376Dd5A043e625ed75AF5Cc678b3A6841',
             functions:[
               {
@@ -297,6 +297,17 @@ const availableTokens = {
             abi:aToken,
             address:'0xfC1E690f61EFd961294b3e1Ce3313fBD8aa4f85d',
             token:'aDAI',
+            decimals:18,
+            functions:{
+
+            }
+          },
+          {
+            name:'dsr',
+            enabled:true,
+            abi:CHAI,
+            address:'0x06AF07097C9Eeb7fD685c692751D5C66dB49c215',
+            token:'CHAI',
             decimals:18,
             functions:{
 
@@ -351,7 +362,7 @@ const availableTokens = {
           migrationContract:{
             abi:IdleConverter,
             token:'idleUSDC',
-            name:'migrateIdleUSDC',
+            name:'IdleConverter',
             address:'0x776245a376Dd5A043e625ed75AF5Cc678b3A6841',
             functions:[
               {
@@ -396,7 +407,7 @@ const availableTokens = {
             abi:aToken,
             address:'0x9bA00D6856a4eDF4665BcA2C2309936572473B7E',
             token:'aUSDC',
-            decimals:6,
+            decimals:18,
             functions:{
               
             }
@@ -409,7 +420,10 @@ const availableTokens = {
             token:'yxUSDC',
             decimals:18,
             functions:{
-
+              exchangeRate:{
+                name:'price',
+                params:[]
+              }
             }
           }
         ]
@@ -514,7 +528,7 @@ const availableTokens = {
           migrationContract:{
             abi:IdleConverter,
             token:'idleDAI',
-            name:'migrateIdleDAI',
+            name:'IdleConverter',
             address:'0x776245a376Dd5A043e625ed75AF5Cc678b3A6841',
             functions:[
               {
@@ -627,7 +641,7 @@ const availableTokens = {
           migrationContract:{
             abi:IdleConverter,
             token:'idleUSDC',
-            name:'migrateIdleUSDC',
+            name:'IdleConverter',
             address:'0x776245a376Dd5A043e625ed75AF5Cc678b3A6841',
             functions:[
               {

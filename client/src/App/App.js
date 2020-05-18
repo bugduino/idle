@@ -130,8 +130,8 @@ class App extends Component {
 
       // Load token
       const selectedToken = this.state.selectedToken;
-      if (selectedToken && this.state.availableTokens[selectedToken]){
-        newState.tokenConfig = this.state.availableTokens[selectedToken];
+      if (selectedToken && newState.availableTokens[selectedToken]){
+        newState.tokenConfig = newState.availableTokens[selectedToken];
       }
     }
 
@@ -139,31 +139,41 @@ class App extends Component {
   }
 
   async setStrategy(selectedStrategy){
+
+    const callback = () => {
+      this.loadAvailableTokens();
+    }
+
     if (selectedStrategy && selectedStrategy !== this.state.selectedStrategy && Object.keys(this.state.availableStrategies).includes(selectedStrategy.toLowerCase())){
       selectedStrategy = selectedStrategy.toLowerCase();
       await this.setState({
         selectedStrategy
-      });
+      },callback);
     } else if (!selectedStrategy) {
       await this.setState({
         selectedStrategy
-      });
+      },callback);
     }
   }
 
   async setToken(selectedToken){
+
+    const callback = () => {
+      this.loadAvailableTokens();
+    }
+
     if (selectedToken && selectedToken !== this.state.selectedToken && Object.keys(this.state.availableTokens).includes(selectedToken.toUpperCase())){
       selectedToken = selectedToken.toUpperCase();
       const newState = {
         selectedToken
       };
       newState.tokenConfig = this.state.availableTokens[selectedToken];
-      await this.setState(newState);
+      await this.setState(newState,callback);
     } else if(!selectedToken) {
       await this.setState({
         selectedToken,
         tokenConfig:null
-      });
+      },callback);
     }
   }
 
@@ -347,6 +357,7 @@ class App extends Component {
                         account,
                         initWeb3,
                         simpleID,
+                        biconomy,
                         contracts,
                         transaction,
                         initAccount,
@@ -378,7 +389,8 @@ class App extends Component {
                           <Switch>
                             <Route
                               path="/stats/:customToken?"
-                              render={(props) => <Stats {...props}
+                              render={(props) => <Stats
+                                                    {...props}
                                                     web3={web3}
                                                     initWeb3={initWeb3}
                                                     isMobile={isMobile}
@@ -388,6 +400,7 @@ class App extends Component {
                                                     selectedToken={this.state.selectedToken}
                                                     contractsInitialized={contractsInitialized}
                                                     availableTokens={this.state.availableTokens}
+                                                    selectedStrategy={this.state.selectedStrategy}
                                                   />}
                             >
                             </Route>
@@ -401,6 +414,7 @@ class App extends Component {
                                                     context={context}
                                                     account={account}
                                                     initWeb3={initWeb3}
+                                                    biconomy={biconomy}
                                                     isMobile={isMobile}
                                                     contracts={contracts}
                                                     initAccount={initAccount}

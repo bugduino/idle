@@ -43,7 +43,8 @@ class FunctionsUtil {
       "ether"
     );
   }
-  BNify = s => new BigNumber(String(s))
+  BNify_obj = s => new BigNumber(s)
+  BNify = s => new BigNumber( typeof s === 'object' ? s : String(s) )
   customLog = (...props) => { if (globalConfigs.logs.messagesEnabled) console.log(moment().format('HH:mm:ss'),...props); }
   customLogError = (...props) => { if (globalConfigs.logs.errorsEnabled) console.error(moment().format('HH:mm:ss'),...props); }
   getContractByName = (contractName) => {
@@ -1072,7 +1073,7 @@ class FunctionsUtil {
     }
   }
 
-  getTokenApiData = async (address,startTimestamp=null,endTimestamp=null) => {
+  getTokenApiData = async (address,startTimestamp=null,endTimestamp=null,forceStartTimestamp=false) => {
     if (globalConfigs.network.requiredNetwork!==1 || !globalConfigs.stats.enabled){
       return [];
     }
@@ -1083,8 +1084,12 @@ class FunctionsUtil {
     if (startTimestamp || endTimestamp){
       const params = [];
       if (startTimestamp && parseInt(startTimestamp)){
-        const start = startTimestamp-(60*60*24*2); // Minus 1 day for Volume graph
-        params.push(`start=${start}`);
+        if (forceStartTimestamp){
+          params.push(`start=${startTimestamp}`);
+        } else {
+          const start = startTimestamp-(60*60*24*2); // Minus 1 day for Volume graph
+          params.push(`start=${start}`);
+        }
       }
       if (endTimestamp && parseInt(endTimestamp)){
         params.push(`end=${endTimestamp}`);
@@ -1330,6 +1335,142 @@ class FunctionsUtil {
       oldContractBalanceFormatted,
     };
   }
+
+  executeMetaTransaction = async (contract, userAddress, signedParameters, callback, callback_receipt) => {
+    try {
+
+      const gasLimit = await contract.methods
+        .executeMetaTransaction(userAddress, ...signedParameters)
+        .estimateGas({ from: userAddress });
+
+      const gasPrice = await this.props.web3.eth.getGasPrice();
+
+      const tx = contract.methods
+        .executeMetaTransaction(userAddress, ...signedParameters)
+        .send({
+          from: userAddress,
+          gasPrice:gasPrice,
+          gasLimit:gasLimit
+        });
+
+      tx.on("transactionHash", function(hash) {
+        console.log(`Transaction sent by relayer with hash ${hash}`);
+        callback_receipt()
+      }).once("confirmation", function(confirmationNumber, receipt) {
+        console.log("Transaction confirmed on chain",receipt);
+        callback_receipt(receipt);
+      });
+    } catch (error) {
+      console.log(error);
+      callback(null,error);
+    }
+  }
+
+  sendBiconomyTx = async (contractName,contractAddress,functionSignature,callback,callback_receipt) => {
+
+    const getSignatureParameters_v4 = signature => {
+      if (!this.props.web3.utils.isHexStrict(signature)) {
+        throw new Error(
+          'Given value "'.concat(signature, '" is not a valid hex string.')
+        );
+      }
+      var r = signature.slice(0, 66);
+      var s = "0x".concat(signature.slice(66, 130));
+      var v = "0x".concat(signature.slice(130, 132));
+      v = this.props.web3.utils.hexToNumber(v);
+      if (![27, 28].includes(v)) v += 27;
+      return {
+        r: r,
+        s: s,
+        v: v
+      };
+    };
+
+    /*
+    const getSignatureParameters_v3 = result => {
+      if (!this.props.web3.utils.isHexStrict(result)) {
+        throw new Error(
+          'Given value "'.concat(result, '" is not a valid hex string.')
+        );
+      }
+      const signature = result.substring(2);
+      const r = "0x" + signature.substring(0, 64);
+      const s = "0x" + signature.substring(64, 128);
+      const v = parseInt(signature.substring(128, 130), 16);
+
+      return {
+        r: r,
+        s: s,
+        v: v
+      };
+    };
+    */
+
+    const EIP712Domain = [
+      { name: "name", type: "string" },
+      { name: "version", type: "string" },
+      { name: "chainId", type: "uint256" },
+      { name: "verifyingContract", type: "address" }
+    ];
+
+    const MetaTransaction = [
+      { name: "nonce", type: "uint256" },
+      { name: "from", type: "address" },
+      { name: "functionSignature", type: "bytes" }
+    ];
+
+    const chainId = await this.props.web3.eth.getChainId();
+
+    const domainData = {
+      chainId,
+      version: '1',
+      name: contractName,
+      verifyingContract: contractAddress
+    };
+
+    let userAddress = this.props.account;
+    let nonce = await this.props.web3.eth.getTransactionCount(userAddress);
+    let message = {};
+    message.nonce = parseInt(nonce);
+    message.from = userAddress;
+    message.functionSignature = functionSignature;
+
+    const dataToSign = JSON.stringify({
+      types: {
+        EIP712Domain,
+        MetaTransaction
+      },
+      domain: domainData,
+      primaryType: "MetaTransaction",
+      message
+    });
+
+    this.props.web3.currentProvider.send(
+      {
+        jsonrpc: "2.0",
+        id: 999999999999,
+        from: userAddress,
+        method: "eth_signTypedData_v4",
+        params: [userAddress, dataToSign]
+      },
+      (error, response) => {
+        console.info(`User signature is ${response.result}, error: ${response.error}`);
+        if (error || (response && response.error)) {
+          console.error("Could not get user signature");
+          return callback(null,error);
+        } else if (response && response.result) {
+          const signedParameters = getSignatureParameters_v4(response.result);
+          const { r, s, v } = signedParameters;
+          console.log('signedParameters',signedParameters);
+            
+          this.contractMethodSendWrapper(contractName, 'executeMetaTransaction', [userAddress, functionSignature, r, s, v], null, callback, callback_receipt);
+          // const contract = this.getContractByName(contractName);
+          // this.executeMetaTransaction(contract, userAddress, [functionSignature, r, s, v], callback, callback_receipt);
+        }
+      }
+    );
+  }
+
   checkTokenApproved = async (token,contractAddr,walletAddr) => {
     const value = this.props.web3.utils.toWei('0','ether');
     const allowance = await this.getAllowance(token,contractAddr,walletAddr);

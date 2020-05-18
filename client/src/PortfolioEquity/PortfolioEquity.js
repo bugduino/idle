@@ -150,6 +150,10 @@ class PortfolioEquity extends Component {
     const tokensData = {};
     await this.functionsUtil.asyncForEach(Object.keys(tokensBalance),async (token) => {
       tokensData[token] = await this.functionsUtil.getTokenApiData(this.props.availableTokens[token].address,firstTxTimestamp,currTimestamp);
+
+      // Filter by isRisk flag
+      const isRisk = this.props.selectedStrategy === 'risk';
+      tokensData[token] = tokensData[token].filter( d => ( d.isRisk === isRisk ) );
     });
 
     const idleTokenBalance = {};
