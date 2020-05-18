@@ -78,6 +78,7 @@ class FundsOverview extends Component {
                   name:'amountLent',
                   props:{
                     decimals:6,
+                    maxPrecision:8,
                     fontWeight:300,
                     fontSize:['1.8em','2.3em'],
                     color:theme.colors.counter

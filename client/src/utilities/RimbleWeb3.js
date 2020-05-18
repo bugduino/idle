@@ -307,6 +307,9 @@ class RimbleTransaction extends React.Component {
     }
 
     const web3Callback = async () => {
+
+      // window.web3Injected = this.state.web3;
+
       // After setting the web3 provider, check network
       await this.checkNetwork();
       if (this.state.network.isCorrectNetwork){
@@ -331,11 +334,11 @@ class RimbleTransaction extends React.Component {
       }
     }
 
-    if (web3 !== this.state.web3){
-      this.setState({ web3 }, web3Callback);
-    } else if (context.account){
-      web3Callback();
-    }
+    // if (web3 !== this.state.web3){
+    //   this.setState({ web3 }, web3Callback);
+    // } else if (context.account){
+    //   web3Callback();
+    // }
 
     const biconomyInfo = globalConfigs.network.providers.biconomy;
     if (biconomyInfo && biconomyInfo.enabled && biconomyInfo.supportedNetworks.includes(globalConfigs.network.requiredNetwork) ){
@@ -345,7 +348,6 @@ class RimbleTransaction extends React.Component {
       web3 = new Web3(biconomy);
 
       biconomy.onEvent(biconomy.READY, () => {
-        // console.log('Biconomy is ready');
         const newState = {
           web3,
           biconomy
@@ -1251,6 +1253,8 @@ class RimbleTransaction extends React.Component {
     transaction.lastUpdated = Date.now();
     transactions[`tx${updatedTransaction.created}`] = transaction;
     this.setState({ transactions });
+
+    // console.log('updateTransaction',transactions);
 
     // Save transactions in localStorage only if pending or succeeded
     if (['pending','success','confirmed'].includes(transaction.status)){

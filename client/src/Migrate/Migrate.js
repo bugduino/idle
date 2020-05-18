@@ -238,11 +238,17 @@ class Migrate extends Component {
             eventValue: parseInt(oldContractBalanceFormatted)
           };
 
-          let txDenied = false;
+          if (!error && tx && tx.status === 'error'){
+            error = {
+              message:'Unknown error'
+            };
+          }
 
           if (error){
             eventData.eventLabel = this.functionsUtil.getTransactionError(error);
           }
+
+          // console.log('callbackMigrate',tx,error,eventData);
 
           // Send Google Analytics event
           if (error || eventData.status !== 'error'){
@@ -259,7 +265,7 @@ class Migrate extends Component {
               variant: "success",
             });
 
-          } else if (!txDenied){ // Show migration error toast only for real error
+          } else { // Show migration error toast only for real error
             window.toastProvider.addMessage(`Migration error`, {
               secondaryMessage: `The migration has failed, try again...`,
               colorTheme: 'light',
@@ -297,9 +303,9 @@ class Migrate extends Component {
 
         // Call migration contract function to migrate funds
         const oldContractBalanceFormatted = this.state.oldContractBalanceFormatted;
-        // const oldContractBalance = this.state.oldContractBalance;
-        // const toMigrate = this.functionsUtil.BNify(oldContractBalance).toString();
-        const toMigrate =  this.functionsUtil.normalizeTokenAmount('1',this.state.oldContractTokenDecimals).toString(); // TEST AMOUNT
+        const oldContractBalance = this.state.oldContractBalance;
+        const toMigrate = this.functionsUtil.BNify(oldContractBalance).toString();
+        // const toMigrate =  this.functionsUtil.normalizeTokenAmount('1',this.state.oldContractTokenDecimals).toString(); // TEST AMOUNT
 
         const migrationParams = [toMigrate,this.props.tokenConfig.migration.oldContract.address,this.props.tokenConfig.idle.address,this.props.tokenConfig.address];
 
@@ -318,22 +324,12 @@ class Migrate extends Component {
         migrationParams.push(_clientProtocolAmounts);
         */
 
-        console.log('Migration params',migrationContractInfo.name, migrationMethod, migrationParams);
+        // console.log('Migration params',migrationContractInfo.name, migrationMethod, migrationParams);
 
         // Check if Biconomy is enabled
         if (this.props.biconomy){
-
-          // const txParams = {
-          //   gasLimit: this.props.web3.utils.toHex(10000000),
-          //   to: migrationContractInfo.address,
-          //   value: "",
-          //   data: migrationContract.methods[migrationMethod](...migrationParams).encodeABI() //contract.methods.addRating(1, 5).encodeABI()
-          // };
-
           const functionSignature = migrationContract.methods[migrationMethod](...migrationParams).encodeABI();
-
           this.functionsUtil.sendBiconomyTx(migrationContractInfo.name, migrationContractInfo.address, functionSignature, callbackMigrate, callbackReceiptMigrate);
-          // this.functionsUtil.sendBiconomyTx(txParams,callbackReceiptMigrate,callbackErrorMigrate);
         } else {
           // Send migration tx
           this.functionsUtil.contractMethodSendWrapper(migrationContractInfo.name, migrationMethod, migrationParams, callbackMigrate, callbackReceiptMigrate);

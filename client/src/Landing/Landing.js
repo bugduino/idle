@@ -948,6 +948,90 @@ class Landing extends Component {
         */
         }
 
+        {
+        /*
+        <Box id="partners"
+          p={[3,0]}
+        >
+          <Box
+            mb={[3,5]}
+            mx={'auto'}
+            maxWidth={['50em','60em']}
+          >
+            <Flex
+              alignItems={'center'}
+              flexDirection={'column'}
+              justifyContent={'center'}
+            >
+              <Heading.h4
+                fontWeight={5}
+                fontSize={[5,6]}
+                color={'dark-gray'}
+                textAlign={'center'}
+                lineHeight={'initial'}
+              >
+                Partners
+              </Heading.h4>
+              <Flex
+                style={{
+                  flexWrap:'wrap'
+                }}
+                alignItems={'center'}
+                justifyContent={'space-between'}
+              >
+                <Link
+                  style={{
+                    flex:'0 25%'
+                  }}
+                  pr={[0,3]}
+                  target={"_blank"}
+                  textAlign={['center','left']}
+                  href={"https://www.ethereum.org/"}
+                  rel={"nofollow noopener noreferrer"}
+                >
+                  <Image src="images/ethereum.png" width={[1/2,'auto']} height={['auto','30px']} maxWidth={'initial'} mr={['auto',3]} ml={['auto',0]} my={[3,0]} />
+                </Link>
+                <Link
+                  style={{
+                    flex:'0 25%'
+                  }}
+                  pr={[0,3]}
+                  target={"_blank"}
+                  textAlign={['center','left']}
+                  rel={"nofollow noopener noreferrer"}
+                  href={"https://app.compound.finance"}
+                >
+                  <Image src="images/compound-light.png" width={[1/2,'auto']} height={['auto','30px']} maxWidth={'initial'} mr={['auto',3]} ml={['auto',0]} my={[3,0]} />
+                </Link>
+                <Link
+                  style={{
+                    flex:'0 25%'
+                  }}
+                  target={"_blank"}
+                  textAlign={['center','left']}
+                  href={"https://fulcrum.trade"}
+                  rel={"nofollow noopener noreferrer"}
+                >
+                  <Image src="images/fulcrum.png" width={[1/2,'auto']} height={['auto','30px']} maxWidth={'initial'} mr={['auto',3]} ml={['auto',0]} my={[3,0]} />
+                </Link>
+                <Link
+                  style={{
+                    flex:'0 25%'
+                  }}
+                  target={"_blank"}
+                  href={"https://aave.com"}
+                  textAlign={['center','left']}
+                  rel={"nofollow noopener noreferrer"}
+                >
+                  <Image src="images/aave.png" width={[1/2,'auto']} height={['auto','30px']} maxWidth={'initial'} mr={['auto',3]} ml={['auto',0]} my={[3,0]} />
+                </Link>
+              </Flex>
+            </Flex>
+          </Box>
+        </Box>
+        */
+        }
+
         <Box id="faq" pt={[4,6]} pb={[4,6]}>
           <Box maxWidth={['50em','60em']} mx={'auto'} px={[3,5]}>
             <Faq selectedToken={this.props.selectedToken} tokenConfig={this.props.tokenConfig} />

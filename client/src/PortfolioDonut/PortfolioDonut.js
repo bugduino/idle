@@ -223,7 +223,7 @@ class PortfolioDonut extends Component {
                       }}
                     />
                     <SmartNumber
-                      decimals={3}
+                      decimals={2}
                       fontSize={[3,4]}
                       maxPrecision={5}
                       fontWeight={[3,4]}
@@ -246,7 +246,7 @@ class PortfolioDonut extends Component {
                         fontSize:4,
                         fontWeight:3
                       }}
-                      decimals={3}
+                      decimals={2}
                       fontSize={[3,4]}
                       maxPrecision={5}
                       fontWeight={[3,4]}

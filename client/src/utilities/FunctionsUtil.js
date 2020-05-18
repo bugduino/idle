@@ -159,6 +159,10 @@ class FunctionsUtil {
 
       if (filteredTxs && filteredTxs.length){
 
+        // if (this.props.token === 'USDC'){
+        //   debugger;
+        // }
+
         filteredTxs.forEach((tx,index) => {
 
           // Skip transactions with no hash or pending
@@ -257,7 +261,7 @@ class FunctionsUtil {
     return amountLents;
   }
   getEtherscanTxs = async (account=false,firstBlockNumber=0,endBlockNumber='latest',enabledTokens=[],count=0) => {
-    account = account ? account : this.props.account;
+    account = account ? account.toLowerCase() : this.props.account.toLowerCase();
 
     if (!account || !enabledTokens || !enabledTokens.length){
       return [];
@@ -289,7 +293,9 @@ class FunctionsUtil {
 
       // Check if the latest blockNumber is actually the latest one
       if (etherscanBaseTxs && etherscanBaseTxs.data.result && Object.values(etherscanBaseTxs.data.result).length){
-        const lastCachedBlockNumber = parseInt(Object.values(etherscanBaseTxs.data.result).pop().blockNumber)+1;
+
+        const lastCachedTx = Object.values(etherscanBaseTxs.data.result).pop();
+        const lastCachedBlockNumber = lastCachedTx && lastCachedTx.blockNumber ? parseInt(lastCachedTx.blockNumber)+1 : firstBlockNumber;
 
         const etherscanEndpointLastBlock = `${etherscanApiUrl}?strategy=${selectedStrategy}&apikey=${env.REACT_APP_ETHERSCAN_KEY}&module=account&action=tokentx&address=${account}&startblock=${lastCachedBlockNumber}&endblock=${endBlockNumber}&sort=asc`;
         let latestTxs = await this.makeRequest(etherscanEndpointLastBlock);
@@ -318,6 +324,8 @@ class FunctionsUtil {
             }
           }
         }
+      } else {
+        etherscanBaseTxs = null;
       }
 
       let txs = etherscanBaseTxs;
@@ -346,9 +354,19 @@ class FunctionsUtil {
 
       // Store filtered txs
       if (etherscanTxs && Object.keys(etherscanTxs).length){
+
+        const etherscanTxsToStore = {};
+
+        Object.keys(etherscanTxs).forEach(txHash => {
+          const txInfo = etherscanTxs[txHash];
+          if (txInfo.blockNumber){
+            etherscanTxsToStore[txHash] = txInfo;
+          }
+        });
+
         const cachedRequestData = {
           data:{
-            result:etherscanTxs
+            result:etherscanTxsToStore
           }
         };
 
@@ -357,9 +375,9 @@ class FunctionsUtil {
     }
 
     etherscanTxs = Object.values(etherscanTxs).filter(tx => {
-      if (!tx.token){
-        debugger;
-      }
+      // if (!tx.token){
+      //   debugger;
+      // }
       return enabledTokens.includes(tx.token.toUpperCase());
     });
 
@@ -679,6 +697,7 @@ class FunctionsUtil {
           mintIdleToken:'Deposit',
           redeemIdleToken:'Redeem',
           // bridgeIdleV1ToIdleV2:'Migrated',
+          executeMetaTransaction:'Migrated',
           migrateFromToIdle:'Migrated'
         };
         const pendingStatus = ['pending','started'];
@@ -788,6 +807,43 @@ class FunctionsUtil {
               realTx.value = redeemedValueFixed;
               realTx.tokenAmount = redeemedValueFixed;
             }
+          break;
+          case 'executeMetaTransaction':
+            let executeMetaTransactionReceipt = tx.txReceipt ? tx.txReceipt : null;
+
+            if (!executeMetaTransactionReceipt){
+              executeMetaTransactionReceipt = await (new Promise( async (resolve, reject) => {
+                this.props.web3.eth.getTransactionReceipt(tx.transactionHash,(err,tx)=>{
+                  if (err){
+                    reject(err);
+                  }
+                  resolve(tx);
+                });
+              }));
+            }
+
+            if (!executeMetaTransactionReceipt){
+              return false;
+            }
+
+            // Save txReceipt into the tx
+            if (!tx.txReceipt){
+              tx.txReceipt = executeMetaTransactionReceipt;
+              if (isStoredTx){
+                storedTxs[this.props.account][tokenKey][txKey] = tx;
+              }
+            }
+
+            const oldContractAddr1 = tokenConfig.migration.oldContract.address.replace('x','').toLowerCase();
+            const executeMetaTransactionInternalTransfers = executeMetaTransactionReceipt.logs.filter((tx) => { return tx.address.toLowerCase()===tokenConfig.address.toLowerCase() && tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${oldContractAddr1}`; });
+
+            if (!executeMetaTransactionInternalTransfers.length){
+              return false;
+            }
+
+            const metaTxValue = parseInt(executeMetaTransactionInternalTransfers.data,16);
+            const metaTxValueFixed = this.fixTokenDecimals(metaTxValue,tokenConfig.decimals);
+            realTx.value = metaTxValueFixed.toString();
           break;
           case 'migrateFromToIdle':
             if (!tokenConfig.migration || !tokenConfig.migration.oldContract){
@@ -1433,7 +1489,7 @@ class FunctionsUtil {
       message
     });
 
-    console.log('dataToSign',dataToSign);
+    // console.log('dataToSign',dataToSign);
 
     this.props.web3.currentProvider.send(
       {
@@ -1444,18 +1500,16 @@ class FunctionsUtil {
         params: [userAddress, dataToSign]
       },
       (error, response) => {
-        console.info(`User signature is ${response.result}, error: ${response.error}`);
+        // console.info(`User signature is ${response.result}, error: ${response.error}`);
         if (error || (response && response.error)) {
-          console.error("Could not get user signature");
+          // console.error("Could not get user signature");
           return callback(null,error);
         } else if (response && response.result) {
           const signedParameters = getSignatureParameters_v4(response.result);
           const { r, s, v } = signedParameters;
-          console.log('signedParameters',signedParameters);
+          // console.log('signedParameters',signedParameters);
             
           this.contractMethodSendWrapper(contractName, 'executeMetaTransaction', [userAddress, functionSignature, r, s, v], callback, callback_receipt);
-          // const contract = this.getContractByName(contractName);
-          // this.executeMetaTransaction(contract, userAddress, [functionSignature, r, s, v], callback, callback_receipt);
         }
       }
     );
