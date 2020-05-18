@@ -1,11 +1,11 @@
 import React from "react";
 import {
-  Heading,
-  Text,
+  // Heading,
+  // Text,
   Modal,
   Box,
   Flex,
-  Image,
+  // Image,
   EthAddress
 } from "rimble-ui";
 import ButtonLoader from '../../ButtonLoader/ButtonLoader.js';
@@ -90,6 +90,7 @@ class AccountModal extends React.Component {
 
   render(){
     if (this.props.account){
+      /*
       const renderBalances = this.state.balances.map( (balance,i) => {
         return (
           <Flex
@@ -123,6 +124,7 @@ class AccountModal extends React.Component {
           </Flex>
         );
       });
+      */
 
       return (
         <Modal isOpen={this.props.isOpen}>

@@ -555,7 +555,7 @@ class FunctionsUtil {
           const storedTx = storedTxs[this.props.account][tokenKey][txKey] ? storedTxs[this.props.account][tokenKey][txKey] : tx;
 
           let tokenPrice = null;
-          if (storedTx.tokenPrice){
+          if (storedTx.tokenPrice && !this.BNify(storedTx.tokenPrice).isNaN()){
             tokenPrice = this.BNify(storedTx.tokenPrice);
           } else {
             tokenPrice = await this.getIdleTokenPrice(tokenConfig,tx.blockNumber);
@@ -678,7 +678,8 @@ class FunctionsUtil {
         const allowedMethods = {
           mintIdleToken:'Deposit',
           redeemIdleToken:'Redeem',
-          bridgeIdleV1ToIdleV2:'Migrated'
+          // bridgeIdleV1ToIdleV2:'Migrated',
+          migrateFromToIdle:'Migrated'
         };
         const pendingStatus = ['pending','started'];
 
@@ -788,7 +789,7 @@ class FunctionsUtil {
               realTx.tokenAmount = redeemedValueFixed;
             }
           break;
-          case 'bridgeIdleV1ToIdleV2':
+          case 'migrateFromToIdle':
             if (!tokenConfig.migration || !tokenConfig.migration.oldContract){
               return false;
             }

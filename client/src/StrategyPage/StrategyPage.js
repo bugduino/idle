@@ -136,6 +136,7 @@ class StrategyPage extends Component {
                       mb={[3,0]}
                       width={[1,0.38]}
                       flexDirection={'column'}
+                      maxWidth={['auto','35em']}
                       id={"portfolio-composition"}
                     >
                       <DashboardCard
@@ -152,7 +153,12 @@ class StrategyPage extends Component {
                         />
                       </DashboardCard>
                     </Flex>
-                    <Flex id="portfolio-performance" width={[1,0.60]} flexDirection={'column'}>
+                    <Flex
+                      width={[1,0.60]}
+                      flexDirection={'column'}
+                      maxWidth={['auto','55em']}
+                      id={"portfolio-performance"}
+                    >
                       <DashboardCard>
                         <Flex
                           pt={[3,4]}

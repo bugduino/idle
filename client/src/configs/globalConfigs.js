@@ -291,7 +291,9 @@ const globalConfigs = {
         enabled:true,
         supportedNetworks:[1,42],
         params:{
-          apiKey: env.REACT_APP_BICONOMY_KEY
+          debug: false,
+          apiKey: env.REACT_APP_BICONOMY_KEY,
+          dappId: env.REACT_APP_BICONOMY_APPID
         }
       },
       terminal:{

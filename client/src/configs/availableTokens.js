@@ -4,10 +4,10 @@ import CHAI from '../abis/chai/CHAI.json';
 import iToken from '../abis/fulcrum/iToken.json';
 import aToken from '../abis/aave/AToken.json';
 import yToken from '../abis/dydx/yToken.json';
-import idleDAIv1 from '../contracts/IdleDAI.json';
+// import idleDAIv1 from '../contracts/IdleDAI.json';
 import IdleTokenV2 from '../contracts/IdleTokenV2.json';
 import IdleTokenV3 from '../contracts/IdleTokenV3.json';
-import IdleMcdBridgeV1 from '../contracts/IdleMcdBridgeV1.json';
+// import IdleMcdBridgeV1 from '../contracts/IdleMcdBridgeV1.json';
 import IdleConverter from '../contracts/IdleConverter.json';
 
 const availableTokens = {

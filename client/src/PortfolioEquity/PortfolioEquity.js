@@ -166,14 +166,6 @@ class PortfolioEquity extends Component {
 
       const foundBalances = {};
 
-      // const tokensData = {};
-      // if (prevTimestamp){
-      //   await this.functionsUtil.asyncForEach(Object.keys(tokensBalance),async (token) => {
-      //     const tokenConfig = this.props.availableTokens[token];
-      //     tokensData[token] = await this.functionsUtil.getTokenApiData(tokenConfig.address,prevTimestamp,timeStamp);
-      //   });
-      // }
-
       // eslint-disable-next-line
       await this.functionsUtil.asyncForEach(Object.keys(tokensBalance),async (token) => {
 
@@ -216,13 +208,8 @@ class PortfolioEquity extends Component {
         } else {
           // const startDate = prevTimestamp ? this.functionsUtil.strToMoment(prevTimestamp*1000).format('DD/MM/YYYY HH:mm') : null;
           // const endDate = this.functionsUtil.strToMoment(timeStamp*1000).format('DD/MM/YYYY HH:mm');
-          // console.log(startDate,endDate,this.functionsUtil.strToMoment(filteredBalances[0].timeStamp*1000).format('DD/MM/YYYY HH:mm'),filteredBalances[0].action+',tokens:'+parseFloat(filteredBalances[0].tokens).toFixed(5)+',Old balance:'+parseFloat(filteredBalances[0].balance).toFixed(5)+',tokenPrice:'+parseFloat(filteredBalances[0].tokenPrice).toFixed(5)+',idleTokens:'+parseFloat(filteredBalances[0].idleTokens).toFixed(5));
+          
           filteredBalances.forEach(tx => {
-            
-            // Skip transactions with no hash or pending
-            // if (!tx.hash || (tx.status && tx.status === 'Pending')){
-            //   return false;
-            // }
 
             switch (tx.action){
               case 'Deposit':
@@ -238,10 +225,6 @@ class PortfolioEquity extends Component {
                 }
               break;
             }
-
-            // if (token==='DAI'){
-            // console.log(this.functionsUtil.strToMoment(tx.timeStamp*1000).format('DD/MM/YYYY HH:mm'),token,tx.action,tx.idleTokens.toFixed(5),idleTokenBalance[token].toFixed(5));
-            // }
           });
         }
 
@@ -374,10 +357,9 @@ class PortfolioEquity extends Component {
         },
       },
       margin: this.props.isMobile ? { top: 20, right: 25, bottom: 25, left: 20 } : { top: 30, right: 50, bottom: 45, left: 50 },
-      sliceTooltip:(slideData) => {
-        const { slice: {points} } = slideData;
+      sliceTooltip:(sliceData) => {
+        const { slice: {points} } = sliceData;
         const point = points[0];
-        // const formattedDate = this.functionsUtil.strToMoment(point.data.x).format('DD MMM, YYYY');
         return (
           <DashboardCard
             cardProps={{

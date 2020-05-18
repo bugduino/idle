@@ -132,10 +132,12 @@ class AssetField extends Component {
             this.functionsUtil.getAvgBuyPrice([this.props.token],this.props.account),
             this.loadField('apy')
           ]);
+          
           if (amountLent2 && idleTokenPrice3 && avgBuyPrice2 && avgBuyPrice2[this.props.token] && tokenAPY2){
             const earningsPerc = idleTokenPrice3.div(avgBuyPrice2[this.props.token]).minus(1);
             const earningsStart = amountLent2.gt(0) ? amountLent2.times(earningsPerc) : 0;
             const earningsEnd = amountLent2.gt(0) ? amountLent2.times(tokenAPY2.div(100)) : 0;
+
 
             if (setState && !this.componentUnmounted){
               this.setState({
@@ -156,10 +158,6 @@ class AssetField extends Component {
           ]);
           if (idleTokenBalance2 && idleTokenPrice){
             const redeemableBalance = this.functionsUtil.fixTokenDecimals(idleTokenBalance2.times(idleTokenPrice),this.props.tokenConfig.decimals);
-
-            // if (this.props.token === 'USDC'){
-            //   debugger;
-            // }
 
             if (setState && !this.componentUnmounted){
               this.setState({

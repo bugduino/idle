@@ -347,11 +347,12 @@ class RimbleTransaction extends React.Component {
       biconomy.onEvent(biconomy.READY, () => {
         // console.log('Biconomy is ready');
         const newState = {
+          web3,
           biconomy
         };
-        if (web3 !== this.state.web3){
-          newState.web3 = web3;
-        }
+        // if (web3 !== this.state.web3){
+        //   newState.web3 = web3;
+        // }
         this.setState(newState, web3Callback);
 
       }).onEvent(biconomy.ERROR, (error, message) => {

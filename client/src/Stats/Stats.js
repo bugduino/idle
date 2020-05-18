@@ -778,40 +778,52 @@ class Stats extends Component {
               flexDirection={['column','row']}
               justifyContent={'space-between'}
             >
-            <Flex
-              pt={2}
-              width={[1,1/3]}
-              id={'allocation-chart'}
-              flexDirection={'column'}
-              alignItems={'flex-start'}
-              justifyContent={'flex-start'}
-            >
-              <AllocationChart
-                height={310}
-                {...this.props}
-                parentId={'allocation-chart'}
-              />
-              <Rebalance
-                {...this.props}
-              />
-            </Flex>
-            <Flex id='chart-ALL' width={[1,2/3]} mb={[0,3]}>
-              <Flex alignItems={'flex-start'} justifyContent={'flex-start'} flexDirection={'column'} width={1}>
-                <Heading.h4
-                  mb={2}
-                  ml={3}
-                  mt={[3,4]}
-                  fontWeight={4}
-                  fontSize={[2,3]}
-                  textAlign={'left'}
-                  color={'dark-gray'}
-                  lineHeight={'initial'}
+              {
+                this.state.idleVersion === 'v3' && 
+                <Flex
+                  pt={2}
+                  width={[1,1/3]}
+                  id={'allocation-chart'}
+                  flexDirection={'column'}
+                  alignItems={'flex-start'}
+                  justifyContent={'flex-start'}
                 >
-                  Allocations over time
-                </Heading.h4>
-                <StatsChart contracts={this.props.contracts} apiResults_unfiltered={this.state.apiResults_unfiltered} apiResults={this.state.apiResults} isMobile={this.props.isMobile} chartMode={'ALL'} {...this.state} parentId={'chart-ALL'} height={ 350 } />
+                  <AllocationChart
+                    height={310}
+                    {...this.props}
+                    parentId={'allocation-chart'}
+                  />
+                  <Rebalance
+                    {...this.props}
+                  />
+                </Flex>
+              }
+              <Flex id='chart-ALL' width={[1, this.state.idleVersion === 'v3' ? 2/3 : 1]} mb={[0,3]}>
+                <Flex alignItems={'flex-start'} justifyContent={'flex-start'} flexDirection={'column'} width={1}>
+                  <Heading.h4
+                    mb={2}
+                    ml={3}
+                    mt={[3,4]}
+                    fontWeight={4}
+                    fontSize={[2,3]}
+                    textAlign={'left'}
+                    color={'dark-gray'}
+                    lineHeight={'initial'}
+                  >
+                    Allocations over time
+                  </Heading.h4>
+                  <StatsChart
+                    height={ 350 }
+                    {...this.state}
+                    chartMode={'ALL'}
+                    parentId={'chart-ALL'}
+                    isMobile={this.props.isMobile}
+                    contracts={this.props.contracts}
+                    apiResults={this.state.apiResults}
+                    apiResults_unfiltered={this.state.apiResults_unfiltered}
+                  />
+                </Flex>
               </Flex>
-            </Flex>
             </Flex>
           </DashboardCard>
 
