@@ -479,7 +479,7 @@ class StatsChart extends Component {
             const idlePrice = this.functionsUtil.fixTokenDecimals(d.idlePrice,this.props.tokenConfig.decimals);
             const aum = idleTokens.times(idlePrice);
             const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
-            const y = parseInt(aum.toString());
+            const y = parseFloat(aum.toString());
 
             maxChartValue = Math.max(maxChartValue,y);
 
@@ -498,11 +498,6 @@ class StatsChart extends Component {
               if (!protocolPaused){
                 const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
                 let y = parseFloat(this.functionsUtil.fixTokenDecimals(protocolAllocation.allocation,this.props.tokenConfig.decimals));
-                if (y<1){
-                  y = y.toFixed(4);
-                } else {
-                  y = parseInt(y);
-                }
 
                 maxChartValue = Math.max(maxChartValue,y);
 
@@ -538,7 +533,7 @@ class StatsChart extends Component {
             // precision: 'hour',
           },
           xFormat:'time:%b %d %H:%M',
-          yFormat:value => this.functionsUtil.formatMoney(value,0),
+          yFormat:v => this.functionsUtil.formatMoney(v,v<1 ? 3 :0),
           yScale:{
             type: 'linear',
             stacked: false
@@ -552,7 +547,7 @@ class StatsChart extends Component {
             legendOffset: -70,
             tickValues:gridYValues,
             legendPosition: 'middle',
-            format: v => this.functionsUtil.abbreviateNumber(v,0),
+            format: v => this.functionsUtil.abbreviateNumber(v,v<1 ? 3 :0),
           },
           axisBottom: this.props.isMobile ? null : {
             tickSize: 0,
@@ -724,11 +719,6 @@ class StatsChart extends Component {
             const protocolName = this.functionsUtil.capitalize(this.props.tokenConfig.protocols.filter((p) => { return p.address.toLowerCase() === protocolData.protocolAddr.toLowerCase() })[0].name);
             if (!protocolPaused){
               let allocation = parseFloat(this.functionsUtil.fixTokenDecimals(protocolData.allocation,this.props.tokenConfig.decimals));
-              if (allocation<1){
-                allocation = allocation.toFixed(4);
-              } else {
-                allocation = parseInt(allocation);
-              }
               keys[protocolName] = 1;
               row[protocolName] = allocation;
               row[`${protocolName}Color`] = 'hsl('+globalConfigs.stats.protocols[protocolName.toLowerCase()].color.hsl.join(',')+')';
@@ -767,7 +757,7 @@ class StatsChart extends Component {
           labelTextColor: 'inherit:darker(1.4)',
           colors: ({ id, data }) => data[`${id}Color`],
           axisLeft:{
-            format: v => this.functionsUtil.abbreviateNumber(v,0),
+            format: v => this.functionsUtil.abbreviateNumber(v,v<1 ? 3 :0),
             orient: 'left',
             tickSize: 0,
             tickPadding: 10,

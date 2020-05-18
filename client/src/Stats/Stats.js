@@ -50,17 +50,6 @@ class Stats extends Component {
     dateRangeModalOpened:false
   };
 
-  versionsRangeDates = {
-    v2:{
-      startTimestamp:null,
-      endTimestamp:1589752999
-    },
-    v3:{
-      startTimestamp:1589753498,
-      endTimestamp:null
-    }
-  }
-
   quickSelections = {
     day:'Last day',
     week:'Last week',
@@ -101,8 +90,10 @@ class Stats extends Component {
 
     newState.endTimestampObj = moment(moment().format('YYYY-MM-DD 23:59'),'YYYY-MM-DD HH:mm');
 
-    if (this.state.idleVersion && this.versionsRangeDates[this.state.idleVersion].endTimestamp){
-      const newEndTimestampObj = moment(moment(this.versionsRangeDates[this.state.idleVersion].endTimestamp*1000).format('YYYY-MM-DD HH:mm'),'YYYY-MM-DD HH:mm');
+    const statsVersions = globalConfigs.stats.versions;
+
+    if (this.state.idleVersion && statsVersions[this.state.idleVersion].endTimestamp){
+      const newEndTimestampObj = moment(moment(statsVersions[this.state.idleVersion].endTimestamp*1000).format('YYYY-MM-DD HH:mm'),'YYYY-MM-DD HH:mm');
       if (newState.endTimestampObj.isAfter(newEndTimestampObj)){
         newState.endTimestampObj = newEndTimestampObj;
         newState.endTimestamp = parseInt(newState.endTimestampObj._d.getTime()/1000);
@@ -119,8 +110,8 @@ class Stats extends Component {
     newState.startTimestampObj = newState.endTimestampObj.clone().subtract(2,'week');
     newState.startTimestamp = parseInt(newState.startTimestampObj._d.getTime()/1000);
 
-    if (this.state.idleVersion && this.versionsRangeDates[this.state.idleVersion].startTimestamp){
-      const newStartTimestampObj = moment(moment(this.versionsRangeDates[this.state.idleVersion].startTimestamp*1000).format('YYYY-MM-DD HH:mm'),'YYYY-MM-DD HH:mm');
+    if (this.state.idleVersion && statsVersions[this.state.idleVersion].startTimestamp){
+      const newStartTimestampObj = moment(moment(statsVersions[this.state.idleVersion].startTimestamp*1000).format('YYYY-MM-DD HH:mm'),'YYYY-MM-DD HH:mm');
       if (newState.startTimestampObj.isBefore(newStartTimestampObj)){
         newState.startTimestampObj = newStartTimestampObj;
         newState.startTimestamp = parseInt(newState.startTimestampObj._d.getTime()/1000);
@@ -501,6 +492,18 @@ class Stats extends Component {
         </Box>
       );
     } else {
+
+      const versionsOptions = Object.keys(globalConfigs.stats.versions).filter( version => {
+        const versionInfo = globalConfigs.stats.versions[version];
+        return versionInfo.enabledTokens.includes(this.props.selectedToken) && versionInfo.enabledStrategies.includes(this.props.selectedStrategy);
+      }).map( version => {
+        const versionInfo = globalConfigs.stats.versions[version];
+        return {
+          value:version,
+          label:versionInfo.label
+        }
+      });
+
       return (
         <Flex
           p={0}
@@ -577,10 +580,7 @@ class Stats extends Component {
                   defaultValue={
                     {value:'v3',label:'Idle V3'}
                   }
-                  options={[
-                    {value:'v2',label:'Idle V2'},
-                    {value:'v3',label:'Idle V3'}
-                  ]}
+                  options={versionsOptions}
                   onChange={ v => this.setIdleVersion(v) }
                 />
               </Flex>

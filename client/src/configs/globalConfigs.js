@@ -129,6 +129,22 @@ const globalConfigs = {
       endpoint:'https://api.idle.finance/rates/',
       TTL:3600 // 1 hour
     },
+    versions:{
+      v2:{
+        label:'Idle V2',
+        startTimestamp:null,
+        endTimestamp:1589752999,
+        enabledStrategies:['best'],
+        enabledTokens:['DAI','USDC'],
+      },
+      v3:{
+        label:'Idle V3',
+        endTimestamp:null,
+        startTimestamp:1589753498,
+        enabledStrategies:['best','risk'],
+        enabledTokens:['DAI','USDC','USDT'],
+      }
+    },
     tokens:{
       DAI:{
         color:{
