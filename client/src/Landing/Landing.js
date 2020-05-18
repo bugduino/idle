@@ -644,7 +644,7 @@ class Landing extends Component {
                   {
                     this.props.isMobile && (
                       <Flex justifyContent={'center'}>
-                        <Image src={'images/values/non-custodial.png'} pb={2} width={1/4} />
+                        <Image src={'images/values/non-custodial.svg'} pb={2} width={1/4} />
                       </Flex>
                     )
                   }
@@ -659,7 +659,7 @@ class Landing extends Component {
                   {
                     this.props.isMobile && (
                       <Flex justifyContent={'center'}>
-                        <Image src={'images/values/no-stress.png'} pb={2} width={1/4} />
+                        <Image src={'images/values/no-stress.svg'} pb={2} width={1/4} />
                       </Flex>
                     )
                   }
@@ -674,7 +674,7 @@ class Landing extends Component {
                   {
                     this.props.isMobile && (
                       <Flex justifyContent={'center'}>
-                        <Image src={'images/values/cost-efficent.png'} pb={2} width={1/4} />
+                        <Image src={'images/values/cost-efficent.svg'} pb={2} width={1/4} />
                       </Flex>
                     )
                   }
@@ -692,15 +692,15 @@ class Landing extends Component {
                 <Flex flexDirection={'column'} width={[1,1/2]} justifyContent={'flex-end'} alignItems={'flex-end'}>
                   <Box width={'550px'} position={'relative'} minHeight={'500px'}>
                     <Flex flexDirection={'column'} textAlign={'center'} alignItems={'center'} justifyContent={'center'} className={[styles.carouselItem,this.state.activeCarousel===1?  styles.pos1 : (this.state.activeCarousel===2 ? styles.pos3 : styles.pos2) ]} boxShadow={ this.state.activeCarousel===1 ? 4 : 1} m={[2,3]} onClick={e => this.setActiveCarousel(1)}>
-                      <Image src={'images/values/non-custodial.png'} pb={2} />
+                      <Image src={'images/values/non-custodial.svg'} pb={2} />
                       <Text fontSize={3} fontWeight={3} color={'dark-gray'}>Non Custodial</Text>
                     </Flex>
                     <Flex flexDirection={'column'} textAlign={'center'} alignItems={'center'} justifyContent={'center'} className={[styles.carouselItem,this.state.activeCarousel===2 ? styles.pos1 : (this.state.activeCarousel===1 ? styles.pos2 : styles.pos3)]} boxShadow={ this.state.activeCarousel===2 ? 4 : 1} m={[2,3]} onClick={e => this.setActiveCarousel(2)}>
-                      <Image src={'images/values/no-stress.png'} pb={2} />
+                      <Image src={'images/values/no-stress.svg'} pb={2} />
                       <Text fontSize={3} fontWeight={3} color={'dark-gray'}>No Stress</Text>
                     </Flex>
                     <Flex flexDirection={'column'} textAlign={'center'} alignItems={'center'} justifyContent={'center'} className={[styles.carouselItem,this.state.activeCarousel===3 ? styles.pos1 : (this.state.activeCarousel===2 ? styles.pos2 : styles.pos3)]} boxShadow={ this.state.activeCarousel===3 ? 4 : 1} m={[2,3]} onClick={e => this.setActiveCarousel(3)}>
-                      <Image src={'images/values/cost-efficent.png'} pb={2} />
+                      <Image src={'images/values/cost-efficent.svg'} pb={2} />
                       <Text fontSize={3} fontWeight={3} color={'dark-gray'}>Cost Efficent</Text>
                     </Flex>
                   </Box>
