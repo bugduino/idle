@@ -31,6 +31,7 @@ class StrategyBox extends Component {
     const strategyInfo = this.functionsUtil.getGlobalConfig(['strategies',this.props.strategy]);
     const tokenConfig = this.props.availableStrategies[this.props.strategy][strategyInfo.token];
     const strategyUrl = '/#'+this.functionsUtil.getGlobalConfig(['dashboard','baseRoute'])+'/'+this.props.strategy;
+    const chartColor = strategyInfo.chartColor ? strategyInfo.chartColor : null;
 
     return (
       <DashboardCard
@@ -126,6 +127,7 @@ class StrategyBox extends Component {
               lineWidth:2
             }}
             {...this.props}
+            color={chartColor}
             token={strategyInfo.token}
             tokenConfig={ tokenConfig }
             rowId={`${this.props.strategy}_performance_chart`}

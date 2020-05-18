@@ -116,6 +116,7 @@ const globalConfigs = {
       iconName:'Security',
       title:'Risk-Adjusted',
       component: StrategyPage,
+      chartColor:'hsl(211,67%,47%)',
       icon:'images/strategies/risk-on.svg',
       iconInactive:'images/strategies/risk-off.svg',
       desc:'Optimize your risk exposure across DeFi protocols',

@@ -281,7 +281,7 @@ class AssetField extends Component {
 
           const aprChartData = [{
             id:this.props.token,
-            color: 'hsl('+this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.token,'color','hsl']).join(',')+')',
+            color: this.props.color ? this.props.color : 'hsl('+this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.token,'color','hsl']).join(',')+')',
             data: []
           }];
 
