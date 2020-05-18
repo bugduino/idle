@@ -362,7 +362,7 @@ class Landing extends Component {
                 lineHeight={'initial'}
                 fontSize={[2,'1.25em']}
               >
-                Earn the yield you deserve without worry about finding the best option,<br />either if you want to optimize returns or mimize risks.
+                Earn the yield you deserve without worry about finding the best option,<br />either if you want to optimize returns or risks.
               </Heading.h2>
             </Flex>
             <Flex

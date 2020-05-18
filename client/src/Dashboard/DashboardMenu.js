@@ -1,12 +1,16 @@
+import theme from '../theme';
 import React, { Component } from 'react';
 import styles from './Dashboard.module.scss';
 // import MenuAccount from '../MenuAccount/MenuAccount';
 import { Link as RouterLink } from "react-router-dom";
 import FunctionsUtil from '../utilities/FunctionsUtil';
+import BuyModal from '../utilities/components/BuyModal';
 import { Flex, Box, Icon, Text, Image } from 'rimble-ui';
 
 class DashboardMenu extends Component {
-  state = {};
+  state = {
+    buyModalOpened:false
+  };
 
   // Utils
   functionsUtil = null;
@@ -17,6 +21,12 @@ class DashboardMenu extends Component {
     } else {
       this.functionsUtil = new FunctionsUtil(this.props);
     }
+  }
+
+  setBuyModalOpened(buyModalOpened){
+    this.setState({
+      buyModalOpened
+    });
   }
 
   async componentWillMount(){
@@ -147,6 +157,57 @@ class DashboardMenu extends Component {
           </Box>
         ))
         }
+        {
+        !this.props.isMobile  &&
+          <Box
+            width={'auto'}
+            borderTop={`1px solid ${theme.colors.divider}`}
+          >
+            <Flex
+              p={[2,3]}
+              style={{
+                cursor:'pointer'
+              }}
+              borderRadius={[0,2]}
+              flexDirection={'row'}
+              alignItems={'center'}
+              onClick={ e => this.setBuyModalOpened(true) }
+            >
+              <Flex
+                width={1}
+                alignItems={'center'}
+                flexDirection={['column','row']}
+                justifyContent={['center','flex-start']}
+              >
+                <Icon
+                  mr={[0,3]}
+                  ml={[0,2]}
+                  mb={[1,0]}
+                  size={'1.6em'}
+                  align={'center'}
+                  color={'copyColor'}
+                  name={'AddCircleOutline'}
+                />
+                <Text
+                  fontWeight={3}
+                  fontSize={[0,2]}
+                  color={'copyColor'}
+                  textAlign={'center'}
+                  style={{
+                    whiteSpace:'nowrap'
+                  }}
+                >
+                  Add Funds
+                </Text>
+              </Flex>
+            </Flex>
+          </Box>
+        }
+        <BuyModal
+          {...this.props}
+          isOpen={this.state.buyModalOpened}
+          closeModal={ e => this.setBuyModalOpened(false) }
+        />
       </Flex>
     )
   }

@@ -1,10 +1,13 @@
-import { Flex } from "rimble-ui";
+import theme from '../theme';
 import Title from '../Title/Title';
 import React, { Component } from 'react';
+import { Flex, Icon, Text } from "rimble-ui";
 import Breadcrumb from '../Breadcrumb/Breadcrumb';
 import FunctionsUtil from '../utilities/FunctionsUtil';
+import BuyModal from '../utilities/components/BuyModal';
 import FundsOverview from '../FundsOverview/FundsOverview';
 import DepositRedeem from '../DepositRedeem/DepositRedeem';
+import DashboardCard from '../DashboardCard/DashboardCard';
 import TransactionsList from '../TransactionsList/TransactionsList';
 import EstimatedEarnings from '../EstimatedEarnings/EstimatedEarnings';
 
@@ -14,6 +17,7 @@ class AssetPage extends Component {
     tokenBalance:{},
     tokenApproved:{},
     idleTokenBalance:{},
+    buyModalOpened:false,
     componentMounted:false
   };
 
@@ -26,6 +30,12 @@ class AssetPage extends Component {
     } else {
       this.functionsUtil = new FunctionsUtil(this.props);
     }
+  }
+
+  setBuyModalOpened(buyModalOpened){
+    this.setState({
+      buyModalOpened
+    });
   }
 
   async loadTokensBalance(){
@@ -82,13 +92,62 @@ class AssetPage extends Component {
           width={1}
           mb={[3,4]}
           justifyContent={'flex-start'}
+          flexDirection={['column','row']}
         >
-          <Breadcrumb
-            isMobile={this.props.isMobile}
-            path={[this.props.selectedToken]}
-            handleClick={ e => this.props.goToSection(this.props.selectedStrategy) }
-            text={this.functionsUtil.getGlobalConfig(['strategies',this.props.selectedStrategy,'title'])}
-          />
+          <Flex
+            width={[1,0.5]}
+          >
+            <Breadcrumb
+              isMobile={this.props.isMobile}
+              path={[this.props.selectedToken]}
+              handleClick={ e => this.props.goToSection(this.props.selectedStrategy) }
+              text={this.functionsUtil.getGlobalConfig(['strategies',this.props.selectedStrategy,'title'])}
+            />
+          </Flex>
+          <Flex
+            mt={[3,0]}
+            width={[1,0.5]}
+            justifyContent={'flex-end'}
+          >
+            <DashboardCard
+              cardProps={{
+                py:1,
+                px:['12px',3],
+                width:['100%','auto'],
+              }}
+              isInteractive={true}
+              handleClick={ e => this.setBuyModalOpened(true) }
+            >
+              <Flex
+                my={1}
+                alignItems={'center'}
+                flexDirection={'row'}
+                justifyContent={'center'}
+              >
+                <Flex
+                  mr={2}
+                  p={'4px'}
+                  borderRadius={'50%'}
+                  alignItems={'center'}
+                  justifyContent={'center'}
+                  backgroundColor={ theme.colors.transactions.actionBg.redeem }
+                >
+                  <Icon
+                    name={'Add'}
+                    align={'center'}
+                    color={'redeem'}
+                    size={ this.props.isMobile ? '1.3em' : '1.6em' }
+                  />
+                </Flex>
+                <Text
+                  fontSize={[2,3]}
+                  fontWeight={3}
+                >
+                  Add Funds
+                </Text>
+              </Flex>
+            </DashboardCard>
+          </Flex>
         </Flex>
         <Title
           mb={[3,4]}
@@ -241,6 +300,12 @@ class AssetPage extends Component {
             />
           </Flex>
         }
+        <BuyModal
+          {...this.props}
+          isOpen={this.state.buyModalOpened}
+          buyToken={this.props.selectedToken}
+          closeModal={ e => this.setBuyModalOpened(false) }
+        />
       </Flex>
     );
   }
