@@ -53,6 +53,11 @@ class AssetField extends Component {
   }
 
   async loadField(fieldName=null){
+    // Exit if component unmounted
+    if (this.componentUnmounted){
+      return false;
+    }
+
     const setState = fieldName === null;
     const fieldInfo = this.props.fieldInfo;
     if (!fieldName){

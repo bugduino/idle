@@ -49,19 +49,19 @@ class Footer extends Component {
             </Heading.h3>
             <Flex flexDirection={'row'} justifyContent={['space-evenly','flex-start']}>
               <Link href="https://twitter.com/idlefinance" target="_blank" rel="nofollow noopener noreferrer">
-                <Image src="images/twitter-logo.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} className={styles.socialIcon} />
+                <Image src="images/social/twitter.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} boxShadow={1} borderRadius={'7px'} />
               </Link>
               <Link href="https://t.me/idlefinance" target="_blank" rel="nofollow noopener noreferrer">
-                <Image src="images/telegram-logo.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} className={styles.socialIcon} />
+                <Image src="images/social/telegram.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} boxShadow={1} borderRadius={'7px'} />
               </Link>
               <Link href="https://discord.gg/mpySAJp" target="_blank" rel="nofollow noopener noreferrer">
-                <Image src="images/discord-logo.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} className={styles.socialIcon} />
+                <Image src="images/social/discord.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} boxShadow={1} borderRadius={'7px'} />
               </Link>
               <Link href="https://medium.com/@idlefinance" target="_blank" rel="nofollow noopener noreferrer">
-                <Image src="images/medium-logo.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} className={styles.socialIcon} />
+                <Image src="images/social/medium.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} boxShadow={1} borderRadius={'7px'} />
               </Link>
               <Link href="https://github.com/bugduino/idle-contracts" target="_blank" rel="nofollow noopener noreferrer">
-                <Image src="images/github-logo.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} className={styles.socialIcon} />
+                <Image src="images/social/github.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} boxShadow={1} borderRadius={'7px'} />
               </Link>
               {
               /*

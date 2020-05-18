@@ -344,14 +344,29 @@ class Landing extends Component {
         <Box className={[styles.headerContainer]} px={[3,5]} pt={['2.5em', '3em']}>
           <Box position={'relative'} zIndex={10}>
             <Flex flexDirection={'column'} alignItems={'center'} maxWidth={["50em", "70em"]} mx={'auto'} pb={3} textAlign={'center'} pt={['8vh', '8vh']}>
-              <Heading.h1 fontFamily={'sansSerif'} lineHeight={'1.1em'} mb={'0.2em'} fontSize={['1.6em','3.5rem']} textAlign={'center'} color={'white'}>
-                Always the best yield, with no effort
+              <Heading.h1
+                mb={'0.2em'}
+                fontWeight={5}
+                color={'white'}
+                textAlign={'center'}
+                lineHeight={'initial'}
+                fontFamily={'sansSerif'}
+                fontSize={['1.6em','3rem']}
+              >
+                The best place for your money
               </Heading.h1>
-              <Heading.h2 fontWeight={'400'} lineHeight={['1.4em', '2em']} fontSize={[2,3]} textAlign={'center'} color={'white'}>
-                Maximize your lending returns by investing in a single token
+              <Heading.h2
+                color={'white'}
+                fontWeight={500}
+                textAlign={'center'}
+                lineHeight={'initial'}
+                fontSize={[2,'1.25em']}
+              >
+                Earn the yield you deserve without worry about finding the best option,<br />either if you want to optimize returns or mimize risks.
               </Heading.h2>
             </Flex>
             <Flex
+              mt={[2,4]}
               mx={'auto'}
               textAlign={'center'}
               maxWidth={["50em", "50em"]}
@@ -389,19 +404,16 @@ class Landing extends Component {
               </Flex>
               */
             }
-            <Flex flexDirection={'column'} py={[3,4]} mb={[3,5]} alignItems={'center'}>
+            <Flex flexDirection={'column'} py={[3,3]} mb={[3,5]} alignItems={'center'}>
               <Link onClick={(e) => {this.scrollTo(document.getElementById('how-it-works').offsetTop,300)}} textAlign={'center'} color={'dark-gray'} hoverColor={'dark-gray'} fontSize={2} fontWeight={3}>
                 <Flex flexDirection={'column'} py={[2,1]} alignItems={'center'}>
                   <Box>
-                    How it works
-                  </Box>
-                  <Box>
                     <Icon
-                      className={styles.bounceArrow}
+                      size={"2.5em"}
                       align={'center'}
-                      name={'KeyboardArrowDown'}
                       color={'dark-gray'}
-                      size={"2em"}
+                      name={'KeyboardArrowDown'}
+                      className={styles.bounceArrow}
                     />
                   </Box>
                 </Flex>
@@ -412,6 +424,19 @@ class Landing extends Component {
 
         <Box id='how-it-works' p={[3,0]}>
           <Flex flexDirection={['column','column']} alignItems={'center'} justifyContent={'center'}>
+            <Box
+              mb={[3,5]}
+            >
+              <Heading.h4
+                fontWeight={5}
+                fontSize={[4,6]}
+                color={'dark-gray'}
+                textAlign={'center'}
+                lineHeight={'initial'}
+              >
+                How it works
+              </Heading.h4>
+            </Box>
             <Flex alignItems={'center'} flexDirection={'column'} width={1} maxWidth={['24em','90em']}>
               <Flex flexDirection={['column','row']} height={['auto','275px']}>
                 <Flex width={[1,1/2]} justifyContent={['center','flex-end']} alignItems={['center','start']}>
@@ -419,24 +444,23 @@ class Landing extends Component {
                     {
                       !this.props.isMobile && (
                         <Flex width={1/4} p={[2,2]} alignItems={'center'} justifyContent={'center'}>
-                          <Image width={1} src={'images/lend.png'} />
+                          <Image width={1} src={'images/how-it-works/choose-strategy.svg'} />
                         </Flex>
                       )
                     }
                     <Box width={[1,3/4]} pl={[0,2]}>
                       <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
-                        Lend Your Idle Assets
+                        Choose your strategy
                       </Heading.h3>
                       {
                         this.props.isMobile && (
                           <Flex width={1} p={[2,2]} alignItems={'center'} justifyContent={'center'}>
-                            <Image width={1/5} src={'images/lend.png'} />
+                            <Image width={1/5} src={'images/how-it-works/choose-strategy.svg'} />
                           </Flex>
                         )
                       }
                       <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5}>
-                        Connect your wallet and choose the amount that you want to lend.
-                        You will get Idle tokens back which will track the best rate on the market.
+                        Build your portfolio with different allocation strategies that aim to maximize your returns and keeping you in your risk comfort zone
                       </Heading.h4>
                     </Box>
                   </Flex>
@@ -468,23 +492,23 @@ class Landing extends Component {
                   <Flex flexDirection={['column','row']} position={'relative'} className={['bulletCard',styles.bulletCard,this.state.activeBullet>=2 ? styles.bulletCardActive :null]} width={[1,5/7]} p={[3,4]}>
                     <Box width={[1,3/4]} pl={[0,2]}>
                       <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
-                        Earn Interest Instantly
+                        Deposit your stablecoin
                       </Heading.h3>
                       {
                         this.props.isMobile && (
                           <Flex width={1} p={[2,2]} alignItems={'center'} justifyContent={'center'}>
-                            <Image width={1/5} src={'images/earn-interests.png'} />
+                            <Image width={1/5} src={'images/how-it-works/deposit-stablecoins.svg'} />
                           </Flex>
                         )
                       }
                       <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5}>
-                        Your funds will get automatically allocated into multiple protocols to always give you the best available returns. You will immediately start earning compounded interest.
+                        Just deposit and relax. Your funds will be automatically allocated among DeFi protocols and you will immediately start earning interest.
                       </Heading.h4>
                     </Box>
                     {
                       !this.props.isMobile && (
                         <Flex width={1/4} p={[2,2]} alignItems={'center'} justifyContent={'center'}>
-                          <Image width={1} src={'images/earn-interests.png'} />
+                          <Image width={1} src={'images/how-it-works/deposit-stablecoins.svg'} />
                         </Flex>
                       )
                     }
@@ -510,7 +534,7 @@ class Landing extends Component {
                     {
                       !this.props.isMobile && (
                         <Flex width={1/4} p={[2,2]} alignItems={'center'} justifyContent={'center'}>
-                          <Image width={1} src={'images/decentralized-rebalance.png'} />
+                          <Image width={1} src={'images/how-it-works/rebalance.svg'} />
                         </Flex>
                       )
                     }
@@ -521,12 +545,12 @@ class Landing extends Component {
                       {
                         this.props.isMobile && (
                           <Flex width={1} p={[2,2]} alignItems={'center'} justifyContent={'center'}>
-                            <Image width={1/5} src={'images/decentralized-rebalance.png'} />
+                            <Image width={1/5} src={'images/how-it-works/rebalance.svg'} />
                           </Flex>
                         )
                       }
                       <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5}>
-                        Interest rates are constantly monitored to spot the best allocation. Also, thanks to its user-based architecture, the smart contracts do not rely on any specific pair of human hands.
+                        Idle automatically keeps the appropriate allocation mix, depending on the strategy. Idle consistently checks for better opportunities.
                       </Heading.h4>
                     </Box>
                   </Flex>
@@ -549,23 +573,23 @@ class Landing extends Component {
                   <Flex flexDirection={['column','row']} position={'relative'} className={['bulletCard',styles.bulletCard,this.state.activeBullet>=4 ? styles.bulletCardActive :null]} width={[1,5/7]} p={[3,4]}>
                     <Box width={[1,3/4]} pl={[0,2]}>
                       <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
-                        Redeem At Any Time
+                        Easy insights and redeem
                       </Heading.h3>
                       {
                         this.props.isMobile && (
                           <Flex width={1} p={2} alignItems={'center'} justifyContent={'center'}>
-                            <Image width={1/5} src={'images/redeem.png'} />
+                            <Image width={1/5} src={'images/how-it-works/insights-redeem.svg'} />
                           </Flex>
                         )
                       }
                       <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5}>
-                        Whenever you like, you can withdraw back your funds + earned interest. You can even redeem a fraction of your funds when you reach a desired amount of interest earned.
+                        Monitor your funds’ performance and rebalance events, see your estimated earnings and easlily redeem back your funds + interest.
                       </Heading.h4>
                     </Box>
                     {
                       !this.props.isMobile && (
                         <Flex width={1/4} p={2} alignItems={'center'} justifyContent={'center'}>
-                          <Image width={1} src={'images/redeem.png'} />
+                          <Image width={1} src={'images/how-it-works/insights-redeem.svg'} />
                         </Flex>
                       )
                     }
@@ -601,13 +625,18 @@ class Landing extends Component {
           <Flex width={1} flexDirection={['column','row']} maxWidth={['35em','70em']}>
             <Flex width={[1,1/2]} justifyContent={'center'} flexDirection={'column'}>
               <Box>
-                <Heading.h4 color={'dark-gray'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]} textAlign={['center','left']}>
-                  What makes us unique?
+                <Heading.h4
+                  fontWeight={5}
+                  fontSize={[4,6]}
+                  color={'dark-gray'}
+                  textAlign={['center','left']}
+                >
+                  We believe money
                 </Heading.h4>
               </Box>
               <Box>
-                <Heading.h4 color={'blue'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]} textAlign={['center','left']}>
-                  Our brand values
+                <Heading.h4 color={'blue'} fontWeight={5} lineHeight={'initial'} fontSize={[4,6]} textAlign={['center','left']}>
+                  should never sit still
                 </Heading.h4>
               </Box>
               <Box position={'relative'}>
@@ -615,7 +644,7 @@ class Landing extends Component {
                   {
                     this.props.isMobile && (
                       <Flex justifyContent={'center'}>
-                        <Image src={'images/smart-contract.png'} pb={2} width={1/4} />
+                        <Image src={'images/values/non-custodial.png'} pb={2} width={1/4} />
                       </Flex>
                     )
                   }
@@ -623,14 +652,14 @@ class Landing extends Component {
                     100% non-custodial, and secured by audit.
                   </Heading.h3>
                   <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5} color={'dark-gray'}>
-                    Idle smart contract passed a security audit control. You can read the full report <Link key={1} fontSize={2} hoverColor={'blue'} href={'https://certificate.quantstamp.com/full/idle-finance'} target={'_blank'} rel="nofollow noopener noreferrer">here</Link>. We will never be able to touch your money while inside the smart contract. You are always in control of your money.
+                    Audited by Quantstamp and reviewed ConsenSys Diligence, our set of smart contracts allows our users to remain in control of their funds all the time.
                   </Heading.h4>
                 </Box>
                 <Box className={[styles.carouselDesc,this.state.activeCarousel===2 || this.props.isMobile ? styles.selected : '']} py={[3,0]} my={[3,0]}>
                   {
                     this.props.isMobile && (
                       <Flex justifyContent={'center'}>
-                        <Image src={'images/no-hidden-feeds.png'} pb={2} width={1/4} />
+                        <Image src={'images/values/no-stress.png'} pb={2} width={1/4} />
                       </Flex>
                     )
                   }
@@ -638,14 +667,14 @@ class Landing extends Component {
                     Just relax and watch your interest grows up
                   </Heading.h3>
                   <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5} color={'dark-gray'}>
-                    Don't lose your mind following interest rates on different lending protocols, let Idle do the dirty work and save your time.
+                    Don't lose your mind checking all the rates on different DeFi protocols, let Idle do the dirty work and save your time.
                   </Heading.h4>
                 </Box>
                 <Box className={[styles.carouselDesc,this.state.activeCarousel===3 || this.props.isMobile ? styles.selected : '']} py={[3,0]} my={[3,0]}>
                   {
                     this.props.isMobile && (
                       <Flex justifyContent={'center'}>
-                        <Image src={'images/decentralized.png'} pb={2} width={1/4} />
+                        <Image src={'images/values/cost-efficent.png'} pb={2} width={1/4} />
                       </Flex>
                     )
                   }
@@ -653,7 +682,7 @@ class Landing extends Component {
                     Save money while optimizing your interest rate returns
                   </Heading.h3>
                   <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5} color={'dark-gray'}>
-                    Our "one-for-all" rebalance mechanism allows you to save money in terms of transaction fees, giving you the best available interest rate in the market.
+                    Save money without burning gas on every transfer, optimize your rates and automatically get your money on the best possible allocation.
                   </Heading.h4>
                 </Box>
               </Box>
@@ -663,15 +692,15 @@ class Landing extends Component {
                 <Flex flexDirection={'column'} width={[1,1/2]} justifyContent={'flex-end'} alignItems={'flex-end'}>
                   <Box width={'550px'} position={'relative'} minHeight={'500px'}>
                     <Flex flexDirection={'column'} textAlign={'center'} alignItems={'center'} justifyContent={'center'} className={[styles.carouselItem,this.state.activeCarousel===1?  styles.pos1 : (this.state.activeCarousel===2 ? styles.pos3 : styles.pos2) ]} boxShadow={ this.state.activeCarousel===1 ? 4 : 1} m={[2,3]} onClick={e => this.setActiveCarousel(1)}>
-                      <Image src={'images/smart-contract.png'} pb={2} />
+                      <Image src={'images/values/non-custodial.png'} pb={2} />
                       <Text fontSize={3} fontWeight={3} color={'dark-gray'}>Non Custodial</Text>
                     </Flex>
                     <Flex flexDirection={'column'} textAlign={'center'} alignItems={'center'} justifyContent={'center'} className={[styles.carouselItem,this.state.activeCarousel===2 ? styles.pos1 : (this.state.activeCarousel===1 ? styles.pos2 : styles.pos3)]} boxShadow={ this.state.activeCarousel===2 ? 4 : 1} m={[2,3]} onClick={e => this.setActiveCarousel(2)}>
-                      <Image src={'images/no-hidden-feeds.png'} pb={2} />
+                      <Image src={'images/values/no-stress.png'} pb={2} />
                       <Text fontSize={3} fontWeight={3} color={'dark-gray'}>No Stress</Text>
                     </Flex>
                     <Flex flexDirection={'column'} textAlign={'center'} alignItems={'center'} justifyContent={'center'} className={[styles.carouselItem,this.state.activeCarousel===3 ? styles.pos1 : (this.state.activeCarousel===2 ? styles.pos2 : styles.pos3)]} boxShadow={ this.state.activeCarousel===3 ? 4 : 1} m={[2,3]} onClick={e => this.setActiveCarousel(3)}>
-                      <Image src={'images/decentralized.png'} pb={2} />
+                      <Image src={'images/values/cost-efficent.png'} pb={2} />
                       <Text fontSize={3} fontWeight={3} color={'dark-gray'}>Cost Efficent</Text>
                     </Flex>
                   </Box>
