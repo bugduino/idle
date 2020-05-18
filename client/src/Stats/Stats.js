@@ -283,12 +283,12 @@ class Stats extends Component {
     }
 
     const firstResult = apiResults[0];
-    const lastResult = apiResults.pop();
+    const lastResult = Object.values(apiResults).pop();
 
     window.moment = moment;
 
     let days = (lastResult.timestamp-firstResult.timestamp)/86400;
-    days = Math.max(days,1);
+    // days = Math.max(days,1);
 
     const idleTokens = this.functionsUtil.fixTokenDecimals(lastResult.idleSupply,18);
     const firstIdlePrice = this.functionsUtil.fixTokenDecimals(firstResult.idlePrice,this.props.tokenConfig.decimals);
@@ -296,6 +296,8 @@ class Stats extends Component {
     const aum = this.functionsUtil.formatMoney(parseFloat(idleTokens.times(lastIdlePrice)));
     const earning = lastIdlePrice.div(firstIdlePrice).minus(1).times(100);
     const apr = earning.times(365).div(days).toFixed(2);
+
+    // debugger;
 
     // console.log(moment(firstResult.timestamp*1000).format('YYYY-MM-DD HH:mm'),moment(lastResult.timestamp*1000).format('YYYY-MM-DD HH:mm'));
 
@@ -583,6 +585,7 @@ class Stats extends Component {
                 />
               </Flex>
               <Flex
+                mt={[3,0]}
                 width={[1,0.3]}
                 flexDirection={'column'}
               >
@@ -594,7 +597,7 @@ class Stats extends Component {
                 />
               </Flex>
               <Flex
-                mt={[2,0]}
+                mt={[3,0]}
                 width={[1,0.39]}
                 flexDirection={'column'}
               >
