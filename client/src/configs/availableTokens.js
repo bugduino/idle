@@ -12,6 +12,7 @@ import IdleConverter from '../contracts/IdleConverter.json';
 
 const availableTokens = {
   42:{ // Kovan
+    /*
     risk:{
       DAI:{
         decimals:18,
@@ -53,7 +54,7 @@ const availableTokens = {
             token:'idleSAI',
             name:'migrationContract',
             address:'0xE293a3576f22A6BAF841Ed6bb80953F445e1b22a',
-            oldAddresses:['0x556659f45381dEE8BA429C295363E39645abE834'/*,'0xabeCf002a48969C2be92150ae27B1F75cBf6EA6e'*/],
+            oldAddresses:['0x556659f45381dEE8BA429C295363E39645abE834'],
             functions:[
               {
                 name:'bridgeIdleV1ToIdleV2',
@@ -210,6 +211,7 @@ const availableTokens = {
         ]
       }
     }
+    */
   },
   1:{ // Mainnet
     risk:{
@@ -253,7 +255,7 @@ const availableTokens = {
             abi:IdleConverter,
             token:'idleDAI',
             name:'IdleConverter',
-            address:'0x776245a376Dd5A043e625ed75AF5Cc678b3A6841',
+            address:'0x60753b3a588ff8fe8204595dc295a132c1bb50ae',
             functions:[
               {
                 label:'Migrate',
@@ -366,7 +368,7 @@ const availableTokens = {
             abi:IdleConverter,
             token:'idleUSDC',
             name:'IdleConverter',
-            address:'0x776245a376Dd5A043e625ed75AF5Cc678b3A6841',
+            address:'0x60753b3a588ff8fe8204595dc295a132c1bb50ae',
             functions:[
               {
                 label:'Migrate',
@@ -445,7 +447,7 @@ const availableTokens = {
         },
         idle:{
           abi:IdleTokenV3,
-          token:'idleUSDTYield',
+          token:'idleUSDTSafe',
           address:'0x42740698959761baf1b06baa51efbd88cb1d862b'
         },
         protocols:[
@@ -532,7 +534,7 @@ const availableTokens = {
             abi:IdleConverter,
             token:'idleDAI',
             name:'IdleConverter',
-            address:'0x776245a376Dd5A043e625ed75AF5Cc678b3A6841',
+            address:'0x60753b3a588ff8fe8204595dc295a132c1bb50ae',
             functions:[
               {
                 label:'Migrate',
@@ -645,7 +647,7 @@ const availableTokens = {
             abi:IdleConverter,
             token:'idleUSDC',
             name:'IdleConverter',
-            address:'0x776245a376Dd5A043e625ed75AF5Cc678b3A6841',
+            address:'0x60753b3a588ff8fe8204595dc295a132c1bb50ae',
             functions:[
               {
                 label:'Migrate',

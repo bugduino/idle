@@ -1337,9 +1337,11 @@ class FunctionsUtil {
   executeMetaTransaction = async (contract, userAddress, signedParameters, callback, callback_receipt) => {
     try {
 
-      const gasLimit = await contract.methods
-        .executeMetaTransaction(userAddress, ...signedParameters)
-        .estimateGas({ from: userAddress });
+      // const gasLimit = await contract.methods
+      //   .executeMetaTransaction(userAddress, ...signedParameters)
+      //   .estimateGas({ from: userAddress });
+
+      // console.log(gasLimit);
 
       const gasPrice = await this.props.web3.eth.getGasPrice();
 
@@ -1347,8 +1349,8 @@ class FunctionsUtil {
         .executeMetaTransaction(userAddress, ...signedParameters)
         .send({
           from: userAddress,
-          gasPrice:gasPrice,
-          gasLimit:gasLimit
+          gasPrice
+          // gasLimit
         });
 
       tx.on("transactionHash", function(hash) {
@@ -1430,7 +1432,7 @@ class FunctionsUtil {
       message
     });
 
-    console.log('message',message);
+    console.log('dataToSign',dataToSign);
 
     this.props.web3.currentProvider.send(
       {
@@ -1450,9 +1452,9 @@ class FunctionsUtil {
           const { r, s, v } = signedParameters;
           console.log('signedParameters',signedParameters);
             
-          // this.contractMethodSendWrapper(contractName, 'executeMetaTransaction', [userAddress, functionSignature, r, s, v], null, callback, callback_receipt);
-          const contract = this.getContractByName(contractName);
-          this.executeMetaTransaction(contract, userAddress, [functionSignature, r, s, v], callback, callback_receipt);
+          this.contractMethodSendWrapper(contractName, 'executeMetaTransaction', [userAddress, functionSignature, r, s, v], callback, callback_receipt);
+          // const contract = this.getContractByName(contractName);
+          // this.executeMetaTransaction(contract, userAddress, [functionSignature, r, s, v], callback, callback_receipt);
         }
       }
     );

@@ -111,7 +111,7 @@ const globalConfigs = {
       descShort:'The Yield-Optimizer allocation strategy allows to maximize the interest rate returns by detecting the interest rate changes on different lending protocols.'
     },
     risk:{
-      token:'USDC',
+      token:'DAI',
       color:'#2196F3',
       iconName:'Security',
       title:'Risk-adjusted',

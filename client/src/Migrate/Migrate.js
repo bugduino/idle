@@ -318,7 +318,7 @@ class Migrate extends Component {
         migrationParams.push(_clientProtocolAmounts);
         */
 
-        // console.log('Migration params',migrationContractInfo.name, migrationMethod, migrationParams);
+        console.log('Migration params',migrationContractInfo.name, migrationMethod, migrationParams);
 
         // Check if Biconomy is enabled
         if (this.props.biconomy){
