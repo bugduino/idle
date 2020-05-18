@@ -558,8 +558,7 @@ class FunctionsUtil {
           if (storedTx.tokenPrice){
             tokenPrice = this.BNify(storedTx.tokenPrice);
           } else {
-            tokenPrice = await this.genericContractCall(tokenConfig.idle.token, 'tokenPrice',[],{}, tx.blockNumber);
-            tokenPrice = this.fixTokenDecimals(tokenPrice,tokenConfig.decimals);
+            tokenPrice = await this.getIdleTokenPrice(tokenConfig,tx.blockNumber);
             storedTx.tokenPrice = tokenPrice;
             // console.log(tx.blockNumber,tokenPrice,tokenPrice.toString());
           }
@@ -737,8 +736,7 @@ class FunctionsUtil {
           return false;
         }
 
-        let tokenPrice = await this.genericContractCall(tokenConfig.idle.token,'tokenPrice',[],{}, tx.blockNumber);
-        tokenPrice = this.fixTokenDecimals(tokenPrice,18);
+        let tokenPrice = await this.getIdleTokenPrice(tokenConfig,tx.blockNumber,18);
 
         realTx.status = 'Completed';
         realTx.action = allowedMethods[tx.method];
@@ -1515,9 +1513,14 @@ class FunctionsUtil {
       }
     });
   }
-  getIdleTokenPrice = async (tokenConfig,blockNumber='latest') => {
-    const tokenPrice = await this.genericContractCall(tokenConfig.idle.token,'tokenPrice',[],{},blockNumber);
-    return this.fixTokenDecimals(tokenPrice,tokenConfig.decimals);
+  getIdleTokenPrice = async (tokenConfig,blockNumber='latest',decimals=false) => {
+    let tokenPrice = await this.genericContractCall(tokenConfig.idle.token,'tokenPrice',[],{},blockNumber);
+    decimals = decimals ? decimals : tokenConfig.decimals;
+    tokenPrice = this.fixTokenDecimals(tokenPrice,decimals);
+    if (tokenPrice.lt(1)){
+      tokenPrice = this.BNify(1);
+    }
+    return tokenPrice;
   }
   getTokenBalance = async (contractName,address) => {
     let tokenBalanceOrig = await this.getContractBalance(contractName,address);

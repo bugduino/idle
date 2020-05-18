@@ -321,7 +321,10 @@ const availableTokens = {
             token:'yxDAI',
             decimals:18,
             functions:{
-
+              exchangeRate:{
+                name:'price',
+                params:[]
+              }
             }
           }
         ]

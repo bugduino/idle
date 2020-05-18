@@ -112,6 +112,7 @@ class AssetField extends Component {
           if (redeemableBalanceStart && tokenAPY1){
             const earningPerYear = this.functionsUtil.BNify(redeemableBalanceStart).times(this.functionsUtil.BNify(tokenAPY1).div(100));
             const redeemableBalanceEnd = this.functionsUtil.BNify(redeemableBalanceStart).plus(this.functionsUtil.BNify(earningPerYear));
+
             if (setState && !this.componentUnmounted){
               this.setState({
                 redeemableBalanceEnd,
@@ -135,6 +136,7 @@ class AssetField extends Component {
             const earningsPerc = idleTokenPrice3.div(avgBuyPrice2[this.props.token]).minus(1);
             const earningsStart = amountLent2.gt(0) ? amountLent2.times(earningsPerc) : 0;
             const earningsEnd = amountLent2.gt(0) ? amountLent2.times(tokenAPY2.div(100)) : 0;
+
             if (setState && !this.componentUnmounted){
               this.setState({
                 earningsEnd,
@@ -154,6 +156,11 @@ class AssetField extends Component {
           ]);
           if (idleTokenBalance2 && idleTokenPrice){
             const redeemableBalance = this.functionsUtil.fixTokenDecimals(idleTokenBalance2.times(idleTokenPrice),this.props.tokenConfig.decimals);
+
+            // if (this.props.token === 'USDC'){
+            //   debugger;
+            // }
+
             if (setState && !this.componentUnmounted){
               this.setState({
                 redeemableBalance:redeemableBalance.toString()
@@ -174,6 +181,7 @@ class AssetField extends Component {
             redeemableBalance1 = this.functionsUtil.BNify(0);
           }
           const earnings = redeemableBalance1.minus(amountLent1);
+
           if (setState && !this.componentUnmounted){
             this.setState({
               earnings:earnings.toString()

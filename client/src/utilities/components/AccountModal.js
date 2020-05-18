@@ -143,10 +143,15 @@ class AccountModal extends React.Component {
                     <EthAddress address={this.props.account} />
                   </Box>
                 </Flex>
+                {
+                /*
+                }
                 <Flex alignItems={'center'} flexDirection={'column'} width={'100%'}>
                   <Heading.h4 textAlign={'center'}>Balance</Heading.h4>
                   {renderBalances}
                 </Flex>
+                */
+                }
               </Flex>
             </ModalCard.Body>
 
