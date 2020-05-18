@@ -431,7 +431,7 @@ class BuyModal extends React.Component {
             </Text>
             <Flex mb={4} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
             {
-              [globalConfigs.baseToken,this.props.selectedToken].map((token,i) => {
+              [globalConfigs.baseToken,...Object.keys(this.props.availableTokens)].map((token,i) => {
                 return (
                   <ImageButton key={`token_${token}`} isMobile={this.props.isMobile} imageSrc={`images/tokens/${token}.svg`} imageProps={ this.props.isMobile ? {height:'42px'} : {p:[2,3],height:'80px'}} caption={token} handleClick={ e => { this.selectToken(e,token); } } />
                 );
