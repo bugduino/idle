@@ -126,8 +126,8 @@ const globalConfigs = {
   stats:{
     enabled:true, // Enable endpoint
     rates:{
-      endpoint:'https://api.idle.finance/rates/',
-      TTL:3600 // 1 hour
+      TTL:3600, // 1 hour
+      endpoint:'https://api.idle.finance/rates/'
     },
     versions:{
       v2:{
@@ -140,7 +140,7 @@ const globalConfigs = {
       v3:{
         label:'Idle V3',
         endTimestamp:null,
-        startTimestamp:1589753498,
+        startTimestamp:1589801874,
         enabledStrategies:['best','risk'],
         enabledTokens:['DAI','USDC','USDT'],
       }
@@ -288,7 +288,7 @@ const globalConfigs = {
         }
       },
       biconomy:{
-        enabled:false,
+        enabled:true,
         supportedNetworks:[1,42],
         params:{
           apiKey: env.REACT_APP_BICONOMY_KEY

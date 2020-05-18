@@ -60,6 +60,7 @@ class Migrate extends Component {
       const migrationContractName = migrationContractInfo.name;
       const migrationContract = this.functionsUtil.getContractByName(migrationContractName);
       if (migrationContract){
+        // console.log('checkMigrationContractApproved',this.props.tokenConfig.migration.oldContract.name,migrationContractInfo.address,this.props.account);
         return await this.functionsUtil.checkTokenApproved(this.props.tokenConfig.migration.oldContract.name,migrationContractInfo.address,this.props.account);
       }
     }
@@ -317,6 +318,8 @@ class Migrate extends Component {
         migrationParams.push(_clientProtocolAmounts);
         */
 
+        // console.log('Migration params',migrationContractInfo.name, migrationMethod, migrationParams);
+
         // Check if Biconomy is enabled
         if (this.props.biconomy){
 
@@ -328,7 +331,6 @@ class Migrate extends Component {
           // };
 
           const functionSignature = migrationContract.methods[migrationMethod](...migrationParams).encodeABI();
-          // console.log('Migration params',migrationContractInfo.name, migrationMethod, migrationParams, functionSignature);
 
           this.functionsUtil.sendBiconomyTx(migrationContractInfo.name, migrationContractInfo.address, functionSignature, callbackMigrate, callbackReceiptMigrate);
           // this.functionsUtil.sendBiconomyTx(txParams,callbackReceiptMigrate,callbackErrorMigrate);

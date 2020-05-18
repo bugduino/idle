@@ -246,7 +246,7 @@ const availableTokens = {
           oldContract:{
             abi:IdleTokenV2,
             token:'idleDAI',
-            name:'oldContract',
+            name:'idleDAIOld',
             address:'0x10eC0D497824e342bCB0EDcE00959142aAa766dD',
           },
           migrationContract:{
@@ -359,7 +359,7 @@ const availableTokens = {
           oldContract:{
             abi:IdleTokenV2,
             token:'idleUSDC',
-            name:'oldContract',
+            name:'idleUSDCOld',
             address:'0xeB66ACc3d011056B00ea521F8203580C2E5d3991',
           },
           migrationContract:{
@@ -525,7 +525,7 @@ const availableTokens = {
           oldContract:{
             abi:IdleTokenV2,
             token:'idleDAI',
-            name:'oldContract',
+            name:'idleDAIOld',
             address:'0x10eC0D497824e342bCB0EDcE00959142aAa766dD',
           },
           migrationContract:{
@@ -638,7 +638,7 @@ const availableTokens = {
           oldContract:{
             abi:IdleTokenV2,
             token:'idleUSDC',
-            name:'oldContract',
+            name:'idleUSDCOld',
             address:'0xeB66ACc3d011056B00ea521F8203580C2E5d3991',
           },
           migrationContract:{

@@ -1384,26 +1384,6 @@ class FunctionsUtil {
       };
     };
 
-    /*
-    const getSignatureParameters_v3 = result => {
-      if (!this.props.web3.utils.isHexStrict(result)) {
-        throw new Error(
-          'Given value "'.concat(result, '" is not a valid hex string.')
-        );
-      }
-      const signature = result.substring(2);
-      const r = "0x" + signature.substring(0, 64);
-      const s = "0x" + signature.substring(64, 128);
-      const v = parseInt(signature.substring(128, 130), 16);
-
-      return {
-        r: r,
-        s: s,
-        v: v
-      };
-    };
-    */
-
     const EIP712Domain = [
       { name: "name", type: "string" },
       { name: "version", type: "string" },
@@ -1426,10 +1406,17 @@ class FunctionsUtil {
       verifyingContract: contractAddress
     };
 
+    const contract = this.getContractByName(contractName);
+
+    if (!contract){
+      callback(null,'Contract not found');
+      return false
+    }
+
     let userAddress = this.props.account;
-    let nonce = await this.props.web3.eth.getTransactionCount(userAddress);
+    let nonce = await contract.methods.getNonce(userAddress).call();
     let message = {};
-    message.nonce = parseInt(nonce);
+    message.nonce = nonce;
     message.from = userAddress;
     message.functionSignature = functionSignature;
 
@@ -1442,6 +1429,8 @@ class FunctionsUtil {
       primaryType: "MetaTransaction",
       message
     });
+
+    console.log('message',message);
 
     this.props.web3.currentProvider.send(
       {
@@ -1461,9 +1450,9 @@ class FunctionsUtil {
           const { r, s, v } = signedParameters;
           console.log('signedParameters',signedParameters);
             
-          this.contractMethodSendWrapper(contractName, 'executeMetaTransaction', [userAddress, functionSignature, r, s, v], null, callback, callback_receipt);
-          // const contract = this.getContractByName(contractName);
-          // this.executeMetaTransaction(contract, userAddress, [functionSignature, r, s, v], callback, callback_receipt);
+          // this.contractMethodSendWrapper(contractName, 'executeMetaTransaction', [userAddress, functionSignature, r, s, v], null, callback, callback_receipt);
+          const contract = this.getContractByName(contractName);
+          this.executeMetaTransaction(contract, userAddress, [functionSignature, r, s, v], callback, callback_receipt);
         }
       }
     );

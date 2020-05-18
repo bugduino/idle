@@ -555,10 +555,11 @@ class Stats extends Component {
               width={[1,0.4]}
             >
               <Breadcrumb
+                showPathMobile={true}
                 text={'ASSETS OVERVIEW'}
                 isMobile={this.props.isMobile}
-                path={[this.functionsUtil.getGlobalConfig(['strategies',this.props.selectedStrategy,'title'])]}
                 handleClick={ e => this.props.goToSection('stats') }
+                path={[this.functionsUtil.getGlobalConfig(['strategies',this.props.selectedStrategy,'title'])]}
               />
             </Flex>
             <Flex

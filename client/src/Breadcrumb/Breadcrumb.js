@@ -5,6 +5,9 @@ import RoundIconButton from '../RoundIconButton/RoundIconButton';
 
 class Breadcrumb extends Component {
   render() {
+
+    const showPathMobile = !!this.props.showPathMobile;
+
     return (
       <Flex
         width={1}
@@ -21,7 +24,7 @@ class Breadcrumb extends Component {
          handleClick={this.props.handleClick}
        />
        <Link
-         ml={3}
+         ml={[2,3]}
          fontSize={2}
          fontWeight={3}
          color={'cellText'}
@@ -31,7 +34,7 @@ class Breadcrumb extends Component {
         {this.props.text}
        </Link>
        {
-        !this.props.isMobile && this.props.path && this.props.path.length>0 &&
+        (!this.props.isMobile || showPathMobile) && this.props.path && this.props.path.length>0 &&
           this.props.path.map((path,index) => (
            <Text
              pl={[1,3]}
