@@ -351,7 +351,7 @@ class Landing extends Component {
                 textAlign={'center'}
                 lineHeight={'initial'}
                 fontFamily={'sansSerif'}
-                fontSize={['1.6em','3rem']}
+                fontSize={['2em','3rem']}
               >
                 The best place for your money
               </Heading.h1>
@@ -429,7 +429,7 @@ class Landing extends Component {
             >
               <Heading.h4
                 fontWeight={5}
-                fontSize={[4,6]}
+                fontSize={[5,6]}
                 color={'dark-gray'}
                 textAlign={'center'}
                 lineHeight={'initial'}
@@ -664,7 +664,7 @@ class Landing extends Component {
                     )
                   }
                   <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} my={[3,4]} color={'dark-gray'}>
-                    Just relax and watch your interest grows up
+                    Just relax and watch your interest grow
                   </Heading.h3>
                   <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5} color={'dark-gray'}>
                     Don't lose your mind checking all the rates on different DeFi protocols, let Idle do the dirty work and save your time.
