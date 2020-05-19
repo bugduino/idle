@@ -254,8 +254,8 @@ const availableTokens = {
           migrationContract:{
             abi:IdleConverter,
             token:'idleDAI',
-            name:'IdleConverter',
-            address:'0x60753b3a588ff8fe8204595dc295a132c1bb50ae',
+            name:'IdleConverterV2',
+            address:'0x4ea4e749cb81854606d1912d1c4bde1e9005ab76',
             functions:[
               {
                 label:'Migrate',
@@ -367,8 +367,8 @@ const availableTokens = {
           migrationContract:{
             abi:IdleConverter,
             token:'idleUSDC',
-            name:'IdleConverter',
-            address:'0x60753b3a588ff8fe8204595dc295a132c1bb50ae',
+            name:'IdleConverterV2',
+            address:'0x4ea4e749cb81854606d1912d1c4bde1e9005ab76',
             functions:[
               {
                 label:'Migrate',
@@ -533,8 +533,8 @@ const availableTokens = {
           migrationContract:{
             abi:IdleConverter,
             token:'idleDAI',
-            name:'IdleConverter',
-            address:'0x60753b3a588ff8fe8204595dc295a132c1bb50ae',
+            name:'IdleConverterV2',
+            address:'0x4ea4e749cb81854606d1912d1c4bde1e9005ab76',
             functions:[
               {
                 label:'Migrate',
@@ -646,8 +646,8 @@ const availableTokens = {
           migrationContract:{
             abi:IdleConverter,
             token:'idleUSDC',
-            name:'IdleConverter',
-            address:'0x60753b3a588ff8fe8204595dc295a132c1bb50ae',
+            name:'IdleConverterV2',
+            address:'0x4ea4e749cb81854606d1912d1c4bde1e9005ab76',
             functions:[
               {
                 label:'Migrate',
