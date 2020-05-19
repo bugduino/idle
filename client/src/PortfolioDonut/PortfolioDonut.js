@@ -1,7 +1,7 @@
 import theme from '../theme';
 import { Pie } from '@nivo/pie';
-import { Flex, Text } from "rimble-ui";
 import React, { Component } from 'react';
+import { Flex, Text, Image } from "rimble-ui";
 import AssetField from '../AssetField/AssetField';
 import SmartNumber from '../SmartNumber/SmartNumber';
 import FunctionsUtil from '../utilities/FunctionsUtil';
@@ -27,13 +27,14 @@ class PortfolioDonut extends Component {
   }
 
   componentWillMount() {
+    this.loadUtils();
   }
 
   componentWillUnmount() {
+    
   }
 
   async componentDidMount(){
-    this.loadUtils();
     this.loadPortfolio();
   }
 
@@ -190,6 +191,7 @@ class PortfolioDonut extends Component {
     };
 
     const selectedToken = this.state.selectedToken !== null && this.state.portfolio[this.state.selectedToken] ? this.state.portfolio[this.state.selectedToken] : false;
+    const strategyIcon = this.functionsUtil.getGlobalConfig(['strategies',this.props.selectedStrategy,'icon']);
 
     return (
       <Flex
@@ -239,6 +241,11 @@ class PortfolioDonut extends Component {
                   </>
                 ) : (
                   <>
+                    <Image
+                      mb={1}
+                      height={'2.2em'}
+                      src={strategyIcon}
+                    />
                     <SmartNumber
                       unit={'$'}
                       unitProps={{

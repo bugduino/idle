@@ -20,6 +20,7 @@ class Migrate extends Component {
         loading:false
       }
     },
+    oldTokenName:null,
     migrationEnabled:null,
     oldContractBalance:null,
     metaTransactionsEnabled:true,
@@ -39,26 +40,27 @@ class Migrate extends Component {
     }
   }
 
-  async componentWillMount(){
+  componentWillMount(){
     this.loadUtils();
     this.checkMigration();
   }
 
-  async componentDidUpdate(prevProps,prevState){
+  componentDidUpdate(prevProps,prevState){
     this.loadUtils();
 
     const accountChanged = prevProps.account !== this.props.account;
+    const biconomyChanged = prevProps.biconomy !== this.props.biconomy;
     const tokenChanged = prevProps.selectedToken !== this.props.selectedToken;
-    if (tokenChanged || accountChanged){
+
+    if (tokenChanged || accountChanged || biconomyChanged){
       this.checkMigration();
     }
   }
 
-  toggleMetaTransactionsEnabled = () => {
-      this.setState((prevState) => ({
-        metaTransactionsEnabled:!prevState.metaTransactionsEnabled
-      })
-    );
+  toggleMetaTransactionsEnabled = (metaTransactionsEnabled) => {
+    this.setState({
+      metaTransactionsEnabled
+    });
   }
 
   checkMigrationContractApproved = async () => {
@@ -88,6 +90,7 @@ class Migrate extends Component {
 
     let migrationEnabled = false;
     let oldContractBalance = null;
+    let oldTokenName = 'idleTokens';
     let oldContractTokenDecimals = null;
     let migrationContractApproved = false;
     let oldContractBalanceFormatted = null;
@@ -99,6 +102,9 @@ class Migrate extends Component {
       const migrationContract = this.functionsUtil.getContractByName(this.props.tokenConfig.migration.migrationContract.name);
 
       if (oldContract && migrationContract){
+
+        oldTokenName = this.props.tokenConfig.migration.oldContract.token;
+
         // Get old contract token decimals
         oldContractTokenDecimals = await this.functionsUtil.getTokenDecimals(oldContractName);
 
@@ -127,6 +133,7 @@ class Migrate extends Component {
     // Set migration contract balance
     return this.setState({
       loading,
+      oldTokenName,
       migrationEnabled,
       oldContractBalance,
       oldContractTokenDecimals,
@@ -135,7 +142,7 @@ class Migrate extends Component {
     });
   }
 
-  async disapproveMigration(e) {
+  disapproveMigration = async (e) => {
     if (e){
       e.preventDefault();
     }
@@ -146,7 +153,7 @@ class Migrate extends Component {
     }
   }
 
-  async approveMigration(e) {
+  approveMigration = async (e) => {
     if (e){
       e.preventDefault();
     }
@@ -222,7 +229,7 @@ class Migrate extends Component {
     }
   }
 
-  async migrate(e,migrationMethod,params,useMetaTx=true) {
+  migrate = async (e,migrationMethod,params,useMetaTx=true) => {
     e.preventDefault();
 
     const migrationContractInfo = this.props.tokenConfig.migration.migrationContract;
@@ -362,6 +369,7 @@ class Migrate extends Component {
   }
 
   render() {
+
     return (
       this.state.loading && this.props.account ? (
         <DashboardCard
@@ -403,7 +411,13 @@ class Migrate extends Component {
                   <Flex
                     flexDirection={'column'}
                   >
-                    <TxProgressBar web3={this.props.web3} waitText={`Migration estimated in`} endMessage={`Finalizing migration request...`} hash={this.state.processing.migrate.txHash} />
+                    <TxProgressBar
+                      web3={this.props.web3}
+                      waitText={`Migration estimated in`}
+                      hash={this.state.processing.migrate.txHash}
+                      endMessage={`Finalizing migration request...`}
+                      sendingMessage={ this.props.biconomy && this.state.metaTransactionsEnabled ? 'Sending meta-transaction...' : 'Sending transaction...' }
+                    />
                   </Flex>
                 ) : (
                   <Flex
@@ -421,7 +435,7 @@ class Migrate extends Component {
                       color={'cellText'}
                       textAlign={'center'}
                     >
-                      You are one step from the migration of your old idleTokens! Please press the button below to continue.
+                      You are one step from the migration of your old {this.state.oldTokenName}!
                     </Text>
                     <Flex
                       alignItems={'center'}
@@ -429,14 +443,47 @@ class Migrate extends Component {
                       justifyContent={'space-between'}
                     >
                     {
-                      this.props.biconomy && 
-                        <Checkbox
-                          mt={2}
-                          required={false}
-                          label={"Migrate with Meta-Transaction"}
-                          checked={this.state.metaTransactionsEnabled}
-                          onClick={ e => this.toggleMetaTransactionsEnabled() }
+                      <Flex
+                        py={3}
+                        px={2}
+                        mt={2}
+                        width={1}
+                        borderRadius={2}
+                        alignItems={'center'}
+                        flexDirection={'column'}
+                        justifyContent={'center'}
+                        backgroundColor={'dashboardBg'}
+                        border={`1px solid ${this.props.theme.colors.boxBorder}`}
+                      >
+                        <Icon
+                          size={'2em'}
+                          name={ this.props.biconomy ? 'MoneyOff' : 'Warning'}
+                          color={'cellText'}
                         />
+                        <Text
+                          mt={1}
+                          fontSize={1}
+                          color={'cellText'}
+                          textAlign={'center'}
+                        >
+                          {
+                            this.props.biconomy ?
+                              `Meta-Transactions allow you to migrate without spending a dime! But, if you are stuck, please disable it and try again.`
+                            :
+                              'Your wallet does not support Meta-transactions, you are still able to migrate with a normal transaction.'
+                          }
+                        </Text>
+                        {
+                        this.props.biconomy &&
+                          <Checkbox
+                            mt={2}
+                            required={false}
+                            label={"Migrate with Meta-Transaction"}
+                            checked={this.state.metaTransactionsEnabled}
+                            onChange={ e => this.toggleMetaTransactionsEnabled(e.target.checked) }
+                          />
+                        }
+                      </Flex>
                     }
                     {
                       this.props.tokenConfig.migration.migrationContract.functions.map((functionInfo,i) => {
@@ -445,7 +492,7 @@ class Migrate extends Component {
                           <RoundButton
                             buttonProps={{
                               mt:3,
-                              width:[1,1/2]
+                              width:[1,0.7]
                             }}
                             key={`migrate_${i}`}
                             handleClick={ e => this.migrate(e,functionName) }

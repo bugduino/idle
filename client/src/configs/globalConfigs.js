@@ -893,6 +893,11 @@ const globalConfigs = {
         remoteResources:{'https://instant.0x.org/v3/instant.js':{}},
         getInitParams: (props,globalConfigs,buyParams,onSuccess,onClose) => {
           const connectorName = window.RimbleWeb3_context ? window.RimbleWeb3_context.connectorName : null;
+
+          if (!props.tokenConfig.zeroExInstant){
+            return null;
+          }
+
           return {
             networkId: globalConfigs.network.requiredNetwork,
             chainId: globalConfigs.network.requiredNetwork,
@@ -907,7 +912,7 @@ const globalConfigs = {
           };
         },
         render: (initParams,amount) => {
-          if (window.zeroExInstant){
+          if (window.zeroExInstant && initParams){
             if (amount){
               initParams.defaultAssetBuyAmount = parseFloat(amount);
             }

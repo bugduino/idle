@@ -58,6 +58,8 @@ class AssetField extends Component {
       return false;
     }
 
+    const isRisk = this.props.selectedStrategy === 'risk';
+
     const setState = fieldName === null;
     const fieldInfo = this.props.fieldInfo;
     if (!fieldName){
@@ -125,6 +127,26 @@ class AssetField extends Component {
             };
           }
         break;
+        case 'earnings':
+          let [amountLent1,redeemableBalance1] = await Promise.all([
+            this.loadField('amountLent'),
+            this.loadField('redeemableBalance')
+          ]);
+          if (!amountLent1){
+            amountLent1 = this.functionsUtil.BNify(0);
+          }
+          if (!redeemableBalance1){
+            redeemableBalance1 = this.functionsUtil.BNify(0);
+          }
+          const earnings = redeemableBalance1.minus(amountLent1);
+
+          if (setState && !this.componentUnmounted){
+            this.setState({
+              earnings:earnings.toString()
+            });
+          }
+          output = earnings;
+        break;
         case 'earningsCounter':
           const [amountLent2,idleTokenPrice3,avgBuyPrice2,tokenAPY2] = await Promise.all([
             this.loadField('amountLent'),
@@ -137,10 +159,6 @@ class AssetField extends Component {
             const earningsPerc = idleTokenPrice3.div(avgBuyPrice2[this.props.token]).minus(1);
             const earningsStart = amountLent2.gt(0) ? amountLent2.times(earningsPerc) : 0;
             const earningsEnd = amountLent2.gt(0) ? amountLent2.times(tokenAPY2.div(100)) : 0;
-
-            // if (this.props.token === 'USDT'){
-            //   debugger;
-            // }
 
             if (setState && !this.componentUnmounted){
               this.setState({
@@ -170,32 +188,11 @@ class AssetField extends Component {
             output = redeemableBalance;
           }
         break;
-        case 'earnings':
-          let [amountLent1,redeemableBalance1] = await Promise.all([
-            this.loadField('amountLent'),
-            this.loadField('redeemableBalance')
-          ]);
-          if (!amountLent1){
-            amountLent1 = this.functionsUtil.BNify(0);
-          }
-          if (!redeemableBalance1){
-            redeemableBalance1 = this.functionsUtil.BNify(0);
-          }
-          const earnings = redeemableBalance1.minus(amountLent1);
-
-          if (setState && !this.componentUnmounted){
-            this.setState({
-              earnings:earnings.toString()
-            });
-          }
-          output = earnings;
-        break;
         case 'score':
           const startTimestamp = parseInt(new Date().getTime()/1000)-60*60;
           let tokenData = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,startTimestamp);
 
           if (tokenData){
-            const isRisk = this.props.selectedStrategy === 'risk';
             tokenData = tokenData.filter( d => ( d.isRisk === isRisk ) ).pop();
 
             if (tokenData && tokenData.idleScore){
@@ -277,7 +274,12 @@ class AssetField extends Component {
         break;
         case 'aprChart':
 
-          const apiResultsAprChart = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,parseInt(new Date().getTime()/1000)-(60*60*24*7));
+          // Set start timestamp for v3 tokens
+          const aprChartStartTimestamp = Math.max(this.functionsUtil.getGlobalConfig(['stats','versions','v3','startTimestamp']),parseInt(new Date().getTime()/1000)-(60*60*24*7));
+
+          let apiResultsAprChart = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,aprChartStartTimestamp);
+
+          apiResultsAprChart = apiResultsAprChart.filter( d => ( d.isRisk === isRisk ) );
 
           const aprChartData = [{
             id:this.props.token,
@@ -412,10 +414,12 @@ class AssetField extends Component {
           const apr_end_date = this.functionsUtil.strToMoment(this.functionsUtil.strToMoment(new Date()).subtract(1,'day').format('YYYY-MM-DD 23:59'),'YYYY-MM-DD HH:mm');
           const apr_start_date = apr_end_date.clone().subtract(1,'week');
 
-          const apr_start_timestamp = parseInt(apr_start_date._d.getTime()/1000);
+          // Set start timestamp for v3 tokens
+          const apr_start_timestamp =  Math.max(this.functionsUtil.getGlobalConfig(['stats','versions','v3','startTimestamp']),parseInt(apr_start_date._d.getTime()/1000));
           const apr_end_timestamp = parseInt(apr_end_date._d.getTime()/1000);
 
-          const apiResultsPerformanceChart = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,apr_start_timestamp,apr_end_timestamp);
+          let apiResultsPerformanceChart = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,apr_start_timestamp,apr_end_timestamp);
+          apiResultsPerformanceChart = apiResultsPerformanceChart.filter( d => ( d.isRisk === isRisk ) );
 
           const idleTokenPerformance = apiResultsPerformanceChart.map((d,i) => {
             let y = 0;
@@ -508,7 +512,7 @@ class AssetField extends Component {
         fieldProps[p] = fieldInfo.props[p];
       });
     }
-
+    
     const minPrecision = fieldProps && fieldProps.minPrecision ? fieldProps.minPrecision : ( this.props.isMobile ? 3 : 4 );
     const decimals = fieldProps && fieldProps.decimals ? fieldProps.decimals : ( this.props.isMobile ? 2 : 3 );
 
@@ -596,6 +600,21 @@ class AssetField extends Component {
             direction={this.state.earningsPercDirection}
           >
             <Text {...fieldProps}>{this.state.earningsPerc}%</Text>
+          </VariationNumber>
+        ) : loader
+      break;
+      case 'earnings':
+        output = this.state.earnings ? (
+          <VariationNumber
+            direction={'up'}
+            isMobile={this.props.isMobile}
+          >
+            <SmartNumber
+              {...fieldProps}
+              decimals={decimals}
+              minPrecision={minPrecision}
+              number={this.state.earnings}
+            />
           </VariationNumber>
         ) : loader
       break;

@@ -409,6 +409,7 @@ class App extends Component {
                               render={(props) => <Dashboard
                                                     {...props}
                                                     web3={web3}
+                                                    theme={theme}
                                                     modals={modals}
                                                     network={network}
                                                     context={context}

@@ -756,8 +756,8 @@ class DepositRedeem extends Component {
                               height={'3.4em'}
                               borderRadius={2}
                               fontWeight={500}
-                              onChange={this.changeInputValue.bind(this)}
                               boxShadow={'none !important'}
+                              onChange={this.changeInputValue.bind(this)}
                               border={`1px solid ${theme.colors.divider}`}
                               placeholder={`Insert ${this.props.selectedToken.toUpperCase()} amount`}
                               value={this.state.inputValue[this.state.action] !== null ? this.functionsUtil.BNify(this.state.inputValue[this.state.action]).toString() : ''}

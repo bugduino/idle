@@ -38,8 +38,8 @@ class MenuAccount extends Component {
 
   render() {
     const walletProvider = this.functionsUtil.getStoredItem('walletProvider',false,null);
-    const connectorInfo = this.functionsUtil.getGlobalConfig(['connectors',walletProvider.toLowerCase()]);
-    const walletIcon = connectorInfo && connectorInfo.icon ? connectorInfo.icon : `${walletProvider.toLowerCase()}.svg`;
+    const connectorInfo = walletProvider ? this.functionsUtil.getGlobalConfig(['connectors',walletProvider.toLowerCase()]) : null;
+    const walletIcon = connectorInfo && connectorInfo.icon ? connectorInfo.icon : walletProvider ? `${walletProvider.toLowerCase()}.svg` : null;
     return (
       this.props.account ? (
         <Box width={1}>

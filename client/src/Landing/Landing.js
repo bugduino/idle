@@ -321,6 +321,7 @@ class Landing extends Component {
 
     return (
       <Box
+        height={'100vh'}
         style={{
           paddingBottom: !network.isCorrectNetwork ? "8em" : "0"
         }}

@@ -67,6 +67,7 @@ export default {
     lineChartStroke:'#dbdbdb',
     dashboardBg: '#f9fafd',
     statValue: '#959595',
+    boxBorder: '#eeeeee',
     cellTitle: '#a3a4a5',
     cellText: '#a6a6a6',
     divider: '#d8d8d8',

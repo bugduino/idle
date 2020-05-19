@@ -1499,14 +1499,11 @@ class FunctionsUtil {
         params: [userAddress, dataToSign]
       },
       (error, response) => {
-        // console.info(`User signature is ${response.result}, error: ${response.error}`);
         if (error || (response && response.error)) {
-          // console.error("Could not get user signature");
           return callback(null,error);
         } else if (response && response.result) {
           const signedParameters = getSignatureParameters_v4(response.result);
           const { r, s, v } = signedParameters;
-          // console.log('signedParameters',signedParameters);
             
           this.contractMethodSendWrapper(contractName, 'executeMetaTransaction', [userAddress, functionSignature, r, s, v], callback, callback_receipt);
         }

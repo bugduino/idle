@@ -290,18 +290,6 @@ class StrategyPage extends Component {
                             ]
                           },
                           {
-                            title:'BALANCE',
-                            mobile:false,
-                            props:{
-                              width:0.15,
-                            },
-                            fields:[
-                              {
-                                name:'tokenBalance'
-                              }
-                            ]
-                          },
-                          {
                             title:'POOL',
                             mobile:false,
                             props:{
@@ -332,6 +320,21 @@ class StrategyPage extends Component {
                             fields:[
                               {
                                 name:'amountLent'
+                              }
+                            ]
+                          },
+                          {
+                            title:'EARNINGS',
+                            mobile:false,
+                            props:{
+                              width:0.15,
+                            },
+                            fields:[
+                              {
+                                name:'earnings',
+                                props:{
+                                  decimals:3
+                                }
                               }
                             ]
                           },

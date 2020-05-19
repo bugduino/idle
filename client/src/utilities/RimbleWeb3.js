@@ -93,6 +93,8 @@ let setConnectorName = null;
 class RimbleTransaction extends React.Component {
   static Consumer = RimbleTransactionContext.Consumer;
 
+  componentUnmounted = false;
+
   // Utils
   functionsUtil = null;
 
@@ -106,6 +108,10 @@ class RimbleTransaction extends React.Component {
       props.account = this.state.account;
       this.functionsUtil = new FunctionsUtil(props);
     }
+  }
+
+  componentWillUnmount(){
+    this.componentUnmounted = true;
   }
 
   componentDidMount = async () => {
@@ -334,33 +340,38 @@ class RimbleTransaction extends React.Component {
       }
     }
 
-    // if (web3 !== this.state.web3){
-    //   this.setState({ web3 }, web3Callback);
-    // } else if (context.account){
-    //   web3Callback();
-    // }
+    // Save original web3 connector in case Mexa initialization fails
+    const originalWeb3 = web3;
 
     const biconomyInfo = globalConfigs.network.providers.biconomy;
-    if (biconomyInfo && biconomyInfo.enabled && biconomyInfo.supportedNetworks.includes(globalConfigs.network.requiredNetwork) ){
+    if (biconomyInfo && biconomyInfo.enabled && biconomyInfo.supportedNetworks.includes(globalConfigs.network.requiredNetwork)){
 
-      const biconomyWeb3Provider = web3Provider ? web3Provider : web3Host;
-      const biconomy = new Biconomy(biconomyWeb3Provider,biconomyInfo.params);
-      web3 = new Web3(biconomy);
+      if (this.state.biconomy === null){
+        const biconomyWeb3Provider = web3Provider ? web3Provider : web3Host;
+        const biconomy = new Biconomy(biconomyWeb3Provider,biconomyInfo.params);
+        web3 = new Web3(biconomy);
 
-      biconomy.onEvent(biconomy.READY, () => {
-        const newState = {
-          web3,
-          biconomy
-        };
-        // if (web3 !== this.state.web3){
-        //   newState.web3 = web3;
-        // }
-        this.setState(newState, web3Callback);
-
-      }).onEvent(biconomy.ERROR, (error, message) => {
-        // Handle error while initializing mexa
-        // console.log('Biconomy error',error,message);
-      });
+        biconomy.onEvent(biconomy.READY, () => {
+          if (this.componentUnmounted || this.state.biconomy === false || this.state.biconomy === biconomy){
+            return false;
+          }
+          const newState = {
+            web3,
+            biconomy
+          };
+          this.setState(newState, web3Callback);
+        }).onEvent(biconomy.ERROR, (error, message) => {
+          // console.log('Biconomy error',error,message,this.state.biconomy);
+          web3 = originalWeb3;
+          // Handle error while initializing mexa
+          if (this.state.biconomy !== false){
+            this.setState({
+              web3,
+              biconomy:false
+            }, web3Callback);
+          }
+        });
+      }
     } else {
       if (web3 !== this.state.web3){
         this.setState({ web3 }, web3Callback);
@@ -368,11 +379,6 @@ class RimbleTransaction extends React.Component {
         web3Callback();
       }
     }
-
-    // window.web3Injected = web3;
-    // console.log('web3Provider',web3Provider,web3);
-
-    // alert(web3.version);
 
     return web3;
   }
@@ -1054,6 +1060,8 @@ class RimbleTransaction extends React.Component {
 
       const confirmationCallback = (confirmationNumber, receipt) => {
 
+        // console.log('confirmationCallback', confirmationNumber, receipt);
+
         if (manualConfirmationTimeoutId){
           window.clearTimeout(manualConfirmationTimeoutId);
         }
@@ -1095,8 +1103,9 @@ class RimbleTransaction extends React.Component {
           // Update transaction with receipt details
           transaction.recentEvent = "confirmation";
           this.updateTransaction(transaction);
-
+          
           callback(transaction);
+
           this.functionsUtil.customLog('Confirmed', confirmationNumber, receipt, transaction);
         }
       };
@@ -1117,7 +1126,7 @@ class RimbleTransaction extends React.Component {
 
       const receiptCallback = receipt => {
 
-        this.functionsUtil.customLog('txOnReceipt', receipt);
+        // console.log('txOnReceipt', receipt);
 
         if (manualConfirmationTimeoutId){
           window.clearTimeout(manualConfirmationTimeoutId);
@@ -1129,7 +1138,9 @@ class RimbleTransaction extends React.Component {
         // If the network is forked use the receipt for confirmation
         if (globalConfigs.network.isForked){
           transaction.status = "success";
-          callback(transaction);
+          if (typeof callback === 'function') {
+            callback(transaction);
+          }
         } else {
           this.updateTransaction(transaction);
 
@@ -1171,6 +1182,8 @@ class RimbleTransaction extends React.Component {
         .on("confirmation", confirmationCallback)
         .on("error", error => {
 
+          // console.log(error);
+
           const isDeniedTx = error && error.message ? error.message.includes('User denied transaction signature') : false;
           
           // Set error on transaction
@@ -1195,11 +1208,14 @@ class RimbleTransaction extends React.Component {
             }
           }
 
-          if (callback) {
+          if (typeof callback === 'function') {
             callback(transaction,error);
           }
         });
     } catch (error) {
+
+      // console.log(error);
+
       transaction.status = "error";
       this.updateTransaction(transaction);
       // TODO: should this be a custom error? What is the error here?
@@ -1213,8 +1229,6 @@ class RimbleTransaction extends React.Component {
         icon: 'Block'
       });
 
-      console.error('Tx Error',error);
-
       const isDeniedTx = error && error.message ? error.message.includes('User denied transaction signature') : false;
 
       const isError = error instanceof Error;
@@ -1222,7 +1236,7 @@ class RimbleTransaction extends React.Component {
         Sentry.captureException(error);
       }
 
-      if (callback) {
+      if (typeof callback === 'function') {
         callback(transaction,error);
       }
     }
