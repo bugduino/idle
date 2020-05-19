@@ -892,9 +892,10 @@ const globalConfigs = {
         supportedTokens:['USDC','DAI'],
         remoteResources:{'https://instant.0x.org/v3/instant.js':{}},
         getInitParams: (props,globalConfigs,buyParams,onSuccess,onClose) => {
+          const tokenConfig = props.availableTokens[buyParams.selectedToken];
           const connectorName = window.RimbleWeb3_context ? window.RimbleWeb3_context.connectorName : null;
 
-          if (!props.tokenConfig.zeroExInstant){
+          if (!tokenConfig.zeroExInstant){
             return null;
           }
 
@@ -902,10 +903,10 @@ const globalConfigs = {
             networkId: globalConfigs.network.requiredNetwork,
             chainId: globalConfigs.network.requiredNetwork,
             provider: connectorName && connectorName!=='Injected' && window.RimbleWeb3_context.connector[connectorName.toLowerCase()] ? window.RimbleWeb3_context.connector[window.RimbleWeb3_context.connectorName.toLowerCase()].provider : window.ethereum,
-            orderSource: props.tokenConfig.zeroExInstant.orderSource,
-            affiliateInfo: props.tokenConfig.zeroExInstant.affiliateInfo,
-            defaultSelectedAssetData: props.tokenConfig.zeroExInstant.assetData,
-            availableAssetDatas: [props.tokenConfig.zeroExInstant.assetData],
+            orderSource: tokenConfig.zeroExInstant.orderSource,
+            affiliateInfo: tokenConfig.zeroExInstant.affiliateInfo,
+            defaultSelectedAssetData: tokenConfig.zeroExInstant.assetData,
+            availableAssetDatas: [tokenConfig.zeroExInstant.assetData],
             shouldDisableAnalyticsTracking: true,
             onSuccess: onSuccess ? onSuccess : () => {},
             onClose: onClose ? onClose : () => {}
@@ -932,7 +933,7 @@ const globalConfigs = {
         captionPos: 'top',
         subcaption: '~ 0.25% fee ~',
         supportedMethods:['wallet'],
-        supportedTokens:['USDC','DAI','SAI'],
+        supportedTokens:['USDC','DAI','USDT'],
         web3Subscription:{ // Data for web3 subscription
           enabled: true,
           contractAddress: '0x818e6fecd516ecc3849daf6845e3ec868087b755',
@@ -1057,7 +1058,7 @@ const globalConfigs = {
         captionPos: 'top',
         subcaption: '~ 0% fee ~',
         supportedMethods:['wallet'],
-        supportedTokens:['USDC','DAI','SAI'],
+        supportedTokens:['USDC','DAI'],
         env:'production',
         remoteResources:{'https://cdn.airswap.io/airswap-instant-widget.js':{}},
         getInitParams: (props,globalConfigs,buyParams,onComplete,onClose) => {
@@ -1091,7 +1092,7 @@ const globalConfigs = {
         captionPos: 'top',
         subcaption: '~ 0% fee ~',
         supportedMethods:['wallet'],
-        supportedTokens:['USDC','DAI','SAI'],
+        supportedTokens:['USDC','DAI'],
         env:'production',
         remoteResources:{'https://widget.totle.com/latest/dist.js':{}},
         getInitParams: (props,globalConfigs,buyParams,onComplete,onClose) => {

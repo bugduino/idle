@@ -17,20 +17,25 @@ import FunctionsUtil from '../../utilities/FunctionsUtil';
 class BuyModal extends React.Component {
 
   state = {
-    availableMethods:[],
-    availableProviders:null,
     selectedMethod:null,
+    availableMethods:[],
+    selectedCountry:null,
     selectedProvider:null,
-    selectedToken:null,
-    selectedCountry:null
+    availableProviders:null,
+    selectedToken:this.props.buyToken,
   }
 
   async loadRemoteResources() {
+
+    if (!this.state.selectedToken){
+      return false;
+    }
+
     // Load payments providers external remote resources
     Object.keys(globalConfigs.payments.providers).forEach((provider,i) => {
 
       const providerInfo = globalConfigs.payments.providers[provider];
-      if (providerInfo.enabled && providerInfo.remoteResources && (providerInfo.supportedTokens.indexOf(this.props.selectedToken) !== -1 || providerInfo.supportedTokens.indexOf(globalConfigs.baseToken) !== -1) ){
+      if (providerInfo.enabled && providerInfo.remoteResources && (providerInfo.supportedTokens.indexOf(this.state.selectedToken) !== -1 || providerInfo.supportedTokens.indexOf(globalConfigs.baseToken) !== -1)){
         
         const remoteResources = providerInfo.remoteResources;
 
@@ -40,7 +45,7 @@ class BuyModal extends React.Component {
 
           switch (resourceType){
             case 'js':
-              const scriptID = `script_${provider}_${j}_${this.props.selectedToken}`;
+              const scriptID = `script_${provider}_${j}_${this.state.selectedToken}`;
 
               if (!document.getElementById(scriptID)){
                 const script = document.createElement("script");
@@ -49,7 +54,7 @@ class BuyModal extends React.Component {
                 const precall = remoteResourceParams && remoteResourceParams.precall ? remoteResourceParams.precall : null;
 
                 if (precall && typeof precall === 'function'){
-                  precall(this.props,globalConfigs,providerInfo);
+                  precall(this.state,globalConfigs,providerInfo);
                 }
 
                 if (callback && typeof callback === 'function'){
@@ -123,9 +128,6 @@ class BuyModal extends React.Component {
 
   componentWillMount() {
     this.loadUtils();
-    this.setState({
-      selectedToken:this.props.buyToken
-    });
 
     this.loadAvailableMethods();
     this.loadRemoteResources();
@@ -142,8 +144,6 @@ class BuyModal extends React.Component {
     if ( this.props.buyToken && prevProps.buyToken !== this.props.buyToken){
       this.selectToken(null,this.props.buyToken);
     }
-
-    this.loadRemoteResources();
   }
 
   renderPaymentMethod = async (e,provider,buyParams) => {
@@ -151,7 +151,7 @@ class BuyModal extends React.Component {
     const onSuccess = async (tx) => {
       // Toast message
       window.toastProvider.addMessage(`Deposit completed`, {
-        secondaryMessage: `Your ${this.props.selectedToken} have been deposited`,
+        secondaryMessage: `Your ${this.state.selectedToken} have been deposited`,
         colorTheme: 'light',
         actionHref: "",
         actionText: "",
@@ -201,16 +201,16 @@ class BuyModal extends React.Component {
       });
     } else if (this.state.selectedMethod){
       this.setState({
-        selectedProvider:null,
+        selectedMethod:null,
         selectedCountry:null,
-        selectedMethod:null
+        selectedProvider:null,
       });
     } else if (this.state.selectedToken){
       this.setState({
-        selectedProvider:null,
-        selectedCountry:null,
+        selectedToken:null,
         selectedMethod:null,
-        selectedToken:null
+        selectedCountry:null,
+        selectedProvider:null,
       });
     } else {
       this.resetModal();
@@ -219,11 +219,11 @@ class BuyModal extends React.Component {
 
   resetModal = () => {
     this.setState({
-      availableProviders:null,
-      selectedMethod:null,
-      selectedProvider:null,
       selectedToken:null,
-      selectedCountry:null
+      selectedMethod:null,
+      selectedCountry:null,
+      selectedProvider:null,
+      availableProviders:null,
     });
 
     this.componentWillMount();
@@ -290,7 +290,6 @@ class BuyModal extends React.Component {
         selectedProvider:null
       });
     }
-
 
     const providerInfo = globalConfigs.payments.providers[selectedProvider];
     if (providerInfo){
@@ -361,6 +360,8 @@ class BuyModal extends React.Component {
     this.setState({ selectedToken }, async () => {
       if (this.state.selectedProvider){
         return this.renderPaymentMethod(e,this.state.selectedProvider,this.state);
+      } else {
+        this.loadRemoteResources();
       }
     });
   }
