@@ -359,7 +359,9 @@ class RimbleTransaction extends React.Component {
             web3,
             biconomy
           };
-          this.setState(newState, web3Callback);
+          if (web3 !== this.state.web3){
+            this.setState(newState, web3Callback);
+          }
         }).onEvent(biconomy.ERROR, (error, message) => {
           // console.log('Biconomy error',error,message,this.state.biconomy);
           web3 = originalWeb3;
