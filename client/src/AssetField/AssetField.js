@@ -138,7 +138,7 @@ class AssetField extends Component {
             const earningsStart = amountLent2.gt(0) ? amountLent2.times(earningsPerc) : 0;
             const earningsEnd = amountLent2.gt(0) ? amountLent2.times(tokenAPY2.div(100)) : 0;
 
-            // if (this.props.token === 'USDC'){
+            // if (this.props.token === 'USDT'){
             //   debugger;
             // }
 

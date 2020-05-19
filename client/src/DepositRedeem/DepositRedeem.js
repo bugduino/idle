@@ -808,7 +808,7 @@ class DepositRedeem extends Component {
                             mt={4}
                             flexDirection={'column'}
                           >
-                            <TxProgressBar web3={this.props.web3} waitText={`${this.state.action} estimated in`} endMessage={`Finalizing ${this.state.action} request...`} hash={this.state.processing[this.state.action].txHash} />
+                            <TxProgressBar web3={this.props.web3} waitText={`${this.functionsUtil.capitalize(this.state.action)} estimated in`} endMessage={`Finalizing ${this.state.action} request...`} hash={this.state.processing[this.state.action].txHash} />
                           </Flex>
                         )
                       )

@@ -159,10 +159,6 @@ class FunctionsUtil {
 
       if (filteredTxs && filteredTxs.length){
 
-        // if (this.props.token === 'USDC'){
-        //   debugger;
-        // }
-
         filteredTxs.forEach((tx,index) => {
 
           // Skip transactions with no hash or pending
@@ -513,7 +509,7 @@ class FunctionsUtil {
   /*
   Merge storedTxs with this.props.transactions
   */
-  getStoredTransactions = (account=null,token=null) => {
+  getStoredTransactions = (account=null,tokenKey=null,selectedToken=null) => {
     const storedTxs = this.getStoredItem('transactions',true,{});
     const transactions = this.props.transactions ? { ...this.props.transactions } : {};
     let output = storedTxs;
@@ -521,16 +517,17 @@ class FunctionsUtil {
     if (account){
       if (storedTxs[account]){
         output = storedTxs[account];
-        if (token){
-          token = token.toUpperCase();
-          output = storedTxs[token] ? storedTxs[token] : {};
+        if (tokenKey){
+          output = output[tokenKey] ? output[tokenKey] : {};
 
-          Object.keys(transactions).forEach(txKey => {
-            const tx = transactions[txKey];
-            if (!output[txKey] && tx.token.toUpperCase() === token.toUpperCase()){
-              output[txKey] = transactions[txKey];
-            }
-          });
+          if (selectedToken){
+            Object.keys(transactions).forEach(txKey => {
+              const tx = transactions[txKey];
+              if (!output[txKey] && tx.token.toUpperCase() === selectedToken.toUpperCase()){
+                output[txKey] = transactions[txKey];
+              }
+            });
+          }
         }
       } else {
         output = {};
@@ -673,7 +670,7 @@ class FunctionsUtil {
         storedTxs[this.props.account][tokenKey] = {};
       }
 
-      txsToProcess = txsToProcess && Object.values(txsToProcess).length ? txsToProcess : this.getStoredTransactions(this.props.account,tokenKey);
+      txsToProcess = txsToProcess && Object.values(txsToProcess).length ? txsToProcess : this.getStoredTransactions(this.props.account,tokenKey,selectedToken);
       
       // console.log('txsToProcess',selectedToken,txsToProcess);
 
@@ -708,7 +705,7 @@ class FunctionsUtil {
         const methodIsAllowed = Object.keys(allowedMethods).indexOf(tx.method)!==-1;
 
         // Skip transaction if already present in etherscanTxs with same status
-        if (txHash && etherscanTxs[txHash]){
+        if (txHash && etherscanTxs[txHash] && etherscanTxs[txHash].tokenPrice){
           return false;
         }
         // const txFound = etherscanTxs.find(etherscanTx => (etherscanTx.hash === tx.transactionHash && etherscanTx.status === tx.status) );
@@ -756,7 +753,7 @@ class FunctionsUtil {
           return false;
         }
 
-        let tokenPrice = await this.getIdleTokenPrice(tokenConfig,tx.blockNumber,18);
+        let tokenPrice = await this.getIdleTokenPrice(tokenConfig,realTx.blockNumber);
 
         realTx.status = 'Completed';
         realTx.action = allowedMethods[tx.method];
@@ -843,7 +840,8 @@ class FunctionsUtil {
 
             const metaTxValue = parseInt(executeMetaTransactionInternalTransfers.data,16);
             const metaTxValueFixed = this.fixTokenDecimals(metaTxValue,tokenConfig.decimals);
-            realTx.value = metaTxValueFixed.toString();
+            realTx.value = metaTxValueFixed;
+            realTx.tokenAmount = metaTxValueFixed;
           break;
           case 'migrateFromToIdle':
             if (!tokenConfig.migration || !tokenConfig.migration.oldContract){
@@ -925,6 +923,7 @@ class FunctionsUtil {
           break;
         }
 
+        realTx.tokenPrice = tokenPrice;
         realTx.token = selectedToken;
         realTx.tokenSymbol = selectedToken;
         realTx.idleTokens = tokenPrice.times(this.BNify(realTx.value));
