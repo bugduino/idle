@@ -179,6 +179,12 @@ class App extends Component {
 
   async componentWillMount() {
 
+    // Suppress warnings and errors in production
+    const isProduction = window.location.origin.toLowerCase().includes(globalConfigs.baseURL.toLowerCase());
+    if (isProduction){
+      window.console.error = () => {};
+      window.console.warn = () => {};
+    }
     window.jQuery = jQuery;
 
     if (localStorage){
@@ -309,6 +315,7 @@ class App extends Component {
       localStorage.setItem('connectorName', connectorName);
       localStorage.setItem('walletProvider', walletProvider);
     }
+
     return this.setState({
       connectorName,
       walletProvider
