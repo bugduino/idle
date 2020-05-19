@@ -1092,6 +1092,9 @@ class FunctionsUtil {
     }
     return null;
   }
+  getWalletProvider = () => {
+    return this.getStoredItem('walletProvider',false)
+  }
   simpleIDPassUserInfo = (userInfo,simpleID) => {
     if (!userInfo.address && this.props.account){
       userInfo.address = this.props.account;

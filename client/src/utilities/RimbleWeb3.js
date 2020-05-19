@@ -342,9 +342,10 @@ class RimbleTransaction extends React.Component {
 
     // Save original web3 connector in case Mexa initialization fails
     const originalWeb3 = web3;
-
     const biconomyInfo = globalConfigs.network.providers.biconomy;
-    if (biconomyInfo && biconomyInfo.enabled && biconomyInfo.supportedNetworks.includes(globalConfigs.network.requiredNetwork)){
+    const walletProvider = this.functionsUtil.getWalletProvider();
+
+    if (biconomyInfo && biconomyInfo.enabled && biconomyInfo.supportedNetworks.includes(globalConfigs.network.requiredNetwork) && !biconomyInfo.disabledWallets.includes(walletProvider.toLowerCase())){
 
       if (this.state.biconomy === null){
         const biconomyWeb3Provider = web3Provider ? web3Provider : web3Host;
