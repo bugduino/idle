@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import FlexLoader from '../FlexLoader/FlexLoader';
-import { Flex, Text, Icon } from "rimble-ui";
 import RoundButton from '../RoundButton/RoundButton';
 import FunctionsUtil from '../utilities/FunctionsUtil';
+import { Flex, Text, Icon, Checkbox } from "rimble-ui";
 import DashboardCard from '../DashboardCard/DashboardCard';
 import TxProgressBar from '../TxProgressBar/TxProgressBar';
 
@@ -22,6 +22,7 @@ class Migrate extends Component {
     },
     migrationEnabled:null,
     oldContractBalance:null,
+    metaTransactionsEnabled:true,
     oldContractTokenDecimals:null,
     migrationContractApproved:null,
     oldContractBalanceFormatted:null
@@ -53,6 +54,13 @@ class Migrate extends Component {
     }
   }
 
+  toggleMetaTransactionsEnabled = () => {
+      this.setState((prevState) => ({
+        metaTransactionsEnabled:!prevState.metaTransactionsEnabled
+      })
+    );
+  }
+
   checkMigrationContractApproved = async () => {
 
     if (this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract){
@@ -73,7 +81,7 @@ class Migrate extends Component {
       return false;
     }
 
-    let loading = false;
+    let loading = true;
     this.setState({
       loading
     });
@@ -214,7 +222,7 @@ class Migrate extends Component {
     }
   }
 
-  async migrate(e,migrationMethod,params) {
+  async migrate(e,migrationMethod,params,useMetaTx=true) {
     e.preventDefault();
 
     const migrationContractInfo = this.props.tokenConfig.migration.migrationContract;
@@ -304,7 +312,7 @@ class Migrate extends Component {
         // Call migration contract function to migrate funds
         const oldContractBalanceFormatted = this.state.oldContractBalanceFormatted;
         const oldContractBalance = this.state.oldContractBalance;
-        const toMigrate = this.functionsUtil.BNify(oldContractBalance).toString();
+        const toMigrate = this.functionsUtil.BNify(oldContractBalance).toFixed();
         // const toMigrate =  this.functionsUtil.normalizeTokenAmount('1',this.state.oldContractTokenDecimals).toString(); // TEST AMOUNT
 
         const migrationParams = [toMigrate,this.props.tokenConfig.migration.oldContract.address,this.props.tokenConfig.idle.address,this.props.tokenConfig.address];
@@ -327,7 +335,7 @@ class Migrate extends Component {
         // console.log('Migration params',migrationContractInfo.name, migrationMethod, migrationParams);
 
         // Check if Biconomy is enabled
-        if (this.props.biconomy){
+        if (this.props.biconomy && this.state.metaTransactionsEnabled){
           const functionSignature = migrationContract.methods[migrationMethod](...migrationParams).encodeABI();
           this.functionsUtil.sendBiconomyTx(migrationContractInfo.name, migrationContractInfo.address, functionSignature, callbackMigrate, callbackReceiptMigrate);
         } else {
@@ -415,6 +423,21 @@ class Migrate extends Component {
                     >
                       You are one step from the migration of your old idleTokens! Please press the button below to continue.
                     </Text>
+                    <Flex
+                      alignItems={'center'}
+                      flexDirection={'column'}
+                      justifyContent={'space-between'}
+                    >
+                    {
+                      this.props.biconomy && 
+                        <Checkbox
+                          mt={2}
+                          required={false}
+                          label={"Migrate with Meta-Transaction"}
+                          checked={this.state.metaTransactionsEnabled}
+                          onClick={ e => this.toggleMetaTransactionsEnabled() }
+                        />
+                    }
                     {
                       this.props.tokenConfig.migration.migrationContract.functions.map((functionInfo,i) => {
                         const functionName = functionInfo.name;
@@ -432,6 +455,7 @@ class Migrate extends Component {
                         )
                       })
                     }
+                    </Flex>
                   </Flex>
                 )
               ) : (
