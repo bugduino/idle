@@ -725,8 +725,6 @@ class RimbleTransaction extends React.Component {
         accountInizialized: true
       });
 
-      // console.error(error);
-
       // User denied account access...
       this.functionsUtil.customLog("User cancelled connect request. Error:", error);
 
@@ -1216,7 +1214,6 @@ class RimbleTransaction extends React.Component {
           }
         });
     } catch (error) {
-
       // console.log(error);
 
       transaction.status = "error";

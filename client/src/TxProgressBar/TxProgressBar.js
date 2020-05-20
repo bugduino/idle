@@ -2,14 +2,14 @@ import axios from 'axios';
 import React, { Component } from 'react';
 import FlexLoader from '../FlexLoader/FlexLoader';
 import FunctionsUtil from '../utilities/FunctionsUtil';
-import { Flex, Text, Progress } from 'rimble-ui'
+import { Flex, Text, Progress, Icon, Link } from 'rimble-ui'
 
 class TxProgressBar extends Component {
   state = {
-    web3:null,
     error:null,
     ended:false,
     percentage:0,
+    processing:true,
     txTimestamp:null,
     initialized:false,
     estimatedTime:null,
@@ -40,60 +40,40 @@ class TxProgressBar extends Component {
     }
   }
 
-  async componentDidUpdate(prevProps){
+  componentWillMount(){
+    this.loadUtils();
+  }
 
+  async componentDidUpdate(prevProps){
     this.loadUtils();
 
     if (!this.state.initialized && this.props.web3){
-      await this.initProgressBar();
+      this.initProgressBar();
     }
   }
 
   componentDidMount = async () => {
-
-    this.loadUtils();
-
-    if (this.props.web3){
-      await this.initProgressBar();
-    } else {
-      this.functionsUtil.customLogError('txProgressBar - Web3 object not loaded');
-    }
-  }
-
-  getTransactionReceipt = async () => {
-    return new Promise( async (resolve, reject) => {
-      this.functionsUtil.customLog('getTransactionReceipt',this.props.hash);
-      this.props.web3.eth.getTransactionReceipt(this.props.hash,(err,transactionReceipt) => {
-        if (transactionReceipt){
-          this.functionsUtil.customLog('getTransactionReceipt resolved',transactionReceipt);
-          this.setState({
-            transactionReceipt
-          });
-          return resolve(transactionReceipt);
-        }
-        this.functionsUtil.customLog('getTransactionReceipt rejected',err);
-        return reject(false);
-      });
-    });
+    this.initProgressBar();
   }
 
   getTransaction = async () => {
     const transaction = await (new Promise( async (resolve, reject) => {
       this.functionsUtil.customLog('getTransaction',this.props.hash);
       this.props.web3.eth.getTransaction(this.props.hash,(err,transaction) => {
-        if (transaction){
-          this.functionsUtil.customLog('getTransaction resolved',transaction);
-          return resolve(transaction);
-        }
-
-        this.functionsUtil.customLog('getTransaction rejected',err);
-        return reject(false);
+        resolve(transaction);
       });
     }));
 
-    return this.setState({
-      transaction
-    });
+    const newState = {};
+    if (transaction){
+      newState.transaction = transaction;
+    } else {
+      newState.processing = false;
+      newState.error = 'Unable to find the transaction';
+    }
+
+    this.setState(newState);
+    return transaction;
   }
 
   /*
@@ -165,23 +145,6 @@ class TxProgressBar extends Component {
       return predictTable;
     }
     return null;
-  }
-
-  getTransactionTimestamp = async () => {
-    if (!this.state.transaction.blockNumber){
-      return null;
-    }
-    return new Promise( async (resolve, reject) => {
-      this.functionsUtil.customLog('getTransactionTimestamp',this.state.transaction.blockNumber);
-      this.props.web3.eth.getBlock(this.state.transaction.blockNumber,(err,block) => {
-        if (block){
-          this.functionsUtil.customLog('getTransactionTimestamp resolved',block);
-          return resolve(block.timestamp);
-        }
-        this.functionsUtil.customLog('getTransactionTimestamp rejected',err);
-        return reject(false);
-      });
-    });
   }
 
   getTxEstimatedTime = (gasPrice) => {
@@ -324,7 +287,7 @@ class TxProgressBar extends Component {
 
   initProgressBar = async () => {
 
-    if (!this.props.hash){
+    if (!this.props.hash || !this.props.web3){
       return false;
     }
 
@@ -333,24 +296,20 @@ class TxProgressBar extends Component {
     };
     this.setState(newState);
 
-    try{
-      await Promise.all([
-        this.getTransaction(),
-        this.getTxInfo()
-      ]);
-    } catch (err) {
-      // const errStringified = JSON.stringify(err);
+    const transaction = await this.getTransaction();
+
+    if (transaction){
+      await this.getTxInfo();
+      try{
+        this.calculateRemainingTime();
+      } catch (err) {
+        newState.error = 'Processing transaction';
+
+        // const errStringified = JSON.stringify(err);
+      }
+
+      this.setState(newState);
     }
-
-    try{
-      this.calculateRemainingTime();
-    } catch (err) {
-      newState.error = 'Processing transaction';
-
-      // const errStringified = JSON.stringify(err);
-    }
-
-    this.setState(newState);
   }
 
   renderRemainingTime(){
@@ -369,49 +328,102 @@ class TxProgressBar extends Component {
       <Flex flexDirection={'column'} alignItems={'center'}>
         {
           this.state.remainingTime !== null ? (
-            <>
-              {
-                this.state.ended ? (
-                  <FlexLoader
-                    textProps={{
-                      ml:2,
-                      color:this.props.textColor ? this.props.textColor : 'copyColor'
-                    }}
-                    loaderProps={{
-                      size:'30px'
-                    }}
-                    flexProps={{
-                      textAlign:'center',
-                      alignItems:'center',
-                      justifyContent:'center',
-                    }}
-                    text={this.props.endMessage ? this.props.endMessage : 'Finalizing transaction...'}
-                  />
-                ): (
-                  <>
-                    <Text mb={2} color={ this.props.textColor ? this.props.textColor : 'copyColor'}>{ this.props.waitText ? this.props.waitText : 'Remaining time:' } <Text.span color={ this.props.textColor ? this.props.textColor : 'copyColor'} fontWeight={3}>{ this.renderRemainingTime() }</Text.span></Text>
-                    <Progress value={ this.state.percentage } />
-                  </>
-                )
-              }
-            </>
+            this.state.ended ? (
+              <FlexLoader
+                textProps={{
+                  ml:2,
+                  color:this.props.textColor ? this.props.textColor : 'copyColor'
+                }}
+                loaderProps={{
+                  size:'20px'
+                }}
+                flexProps={{
+                  textAlign:'center',
+                  alignItems:'center',
+                  justifyContent:'center',
+                }}
+                text={this.props.endMessage ? this.props.endMessage : 'Finalizing transaction...'}
+              />
+            ) : (
+              <Flex
+                mb={2}
+                alignItems={'center'}
+                flexDirection={'column'}
+                justifyContent={'center'}
+              >
+                <Text mb={2} color={ this.props.textColor ? this.props.textColor : 'copyColor'}>{ this.props.waitText ? this.props.waitText : 'Remaining time:' } <Text.span color={ this.props.textColor ? this.props.textColor : 'copyColor'} fontWeight={3}>{ this.renderRemainingTime() }</Text.span></Text>
+                <Progress value={ this.state.percentage } />
+              </Flex>
+            )
           ) : (
-            <FlexLoader
-              textProps={{
-                ml:2,
-                color:this.props.textColor ? this.props.textColor : 'copyColor'
-              }}
-              loaderProps={{
-                size:'30px'
-              }}
-              flexProps={{
-                textAlign:'center',
-                alignItems:'center',
-                justifyContent:'center',
-              }}
-              text={ this.state.error ? this.state.error : (this.props.hash ? (this.props.loadingMessage ? this.props.loadingMessage : 'Calculating estimated time...') : (this.props.sendingMessage ? this.props.sendingMessage : 'Sending transaction...') ) }
-            />
+            this.state.error !== null && !this.state.processing ? (
+              <Flex
+                alignItems={'center'}
+                flexDirection={'column'}
+              >
+                <Icon
+                  size={'2em'}
+                  name={'Warning'}
+                  color={'cellText'}
+                />
+                <Text
+                  mt={0}
+                  fontSize={2}
+                  textAlign={'center'}
+                  color={this.props.textColor ? this.props.textColor : 'cellText'}
+                >
+                  {this.state.error}
+                </Text>
+              </Flex>
+            ) : (
+              <FlexLoader
+                textProps={{
+                  ml:2,
+                  color:this.props.textColor ? this.props.textColor : 'copyColor'
+                }}
+                loaderProps={{
+                  size:'20px'
+                }}
+                flexProps={{
+                  textAlign:'center',
+                  alignItems:'center',
+                  justifyContent:'center',
+                }}
+                text={ this.state.error ? this.state.error : (this.props.hash ? (this.props.loadingMessage ? this.props.loadingMessage : 'Calculating estimated time...') : (this.props.sendingMessage ? this.props.sendingMessage : 'Sending transaction...') ) }
+              />
+            )
           )
+        }
+        {
+          this.props.hash &&
+            <Link
+              mt={0}
+              target={'_blank'}
+              hoverColor={'dark-gray'}
+              rel={"nofollow noopener noreferrer"}
+              href={`https://etherscan.io/tx/${this.props.hash}`}
+              color={this.props.textColor ? this.props.textColor : 'cellText'}
+            >
+              <Flex
+                alignItems={'center'}
+                flexDirection={'row'}
+                justifyContent={'center'}
+              >
+                <Text
+                  fontSize={0}
+                  textAlign={'center'}
+                  color={this.props.textColor ? this.props.textColor : 'cellText'}
+                >
+                  View in Etherscan
+                </Text>
+                <Icon
+                  ml={1}
+                  size={'0.75em'}
+                  name={'OpenInNew'}
+                  color={this.props.textColor ? this.props.textColor : 'cellText'}
+                />
+              </Flex>
+            </Link>
         }
       </Flex>
     );

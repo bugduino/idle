@@ -1,11 +1,10 @@
-import theme from '../theme';
 import React, { Component } from 'react';
-// import RoundButton from '../RoundButton/RoundButton';
+import { Flex, Icon, Image, Box } from "rimble-ui";
 import FunctionsUtil from '../utilities/FunctionsUtil';
+// import RoundButton from '../RoundButton/RoundButton';
 import ShortHash from "../utilities/components/ShortHash";
-import DashboardCard from '../DashboardCard/DashboardCard';
+import CardIconButton from '../CardIconButton/CardIconButton';
 import AccountModal from "../utilities/components/AccountModal";
-import { Flex, Icon, Image, Text, Box } from "rimble-ui";
 
 class MenuAccount extends Component {
 
@@ -88,44 +87,12 @@ class MenuAccount extends Component {
           width={1}
           justifyContent={'flex-start'}
         >
-          <DashboardCard
-            cardProps={{
-              py:1,
-              width:'auto',
-              px:['12px',3],
-            }}
-            isInteractive={true}
+          <CardIconButton
+            icon={'Power'}
+            {...this.props}
+            text={'Connect'}
             handleClick={this.props.connectAndValidateAccount}
-          >
-            <Flex
-              my={1}
-              alignItems={'center'}
-              flexDirection={'row'}
-              justifyContent={'center'}
-            >
-              <Flex
-                mr={2}
-                p={['4px','7px']}
-                borderRadius={'50%'}
-                alignItems={'center'}
-                justifyContent={'center'}
-                backgroundColor={ theme.colors.transactions.actionBg.redeem }
-              >
-                <Icon
-                  name={'Power'}
-                  align={'center'}
-                  color={'redeem'}
-                  size={ this.props.isMobile ? '1.2em' : '1.4em' }
-                />
-              </Flex>
-              <Text
-                fontSize={[2,3]}
-                fontWeight={3}
-              >
-                Connect
-              </Text>
-            </Flex>
-          </DashboardCard>
+          />
         </Flex>
       )
     );

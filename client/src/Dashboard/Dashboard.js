@@ -244,6 +244,7 @@ class Dashboard extends Component {
             overflowY:'scroll',
             overflowX:'hidden'
           }}
+          flexDirection={'columns'}
           backgroundColor={'dashboardBg'}
         >
           {

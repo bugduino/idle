@@ -1093,7 +1093,7 @@ class FunctionsUtil {
     return null;
   }
   getWalletProvider = () => {
-    return this.getStoredItem('walletProvider',false)
+    return this.getStoredItem('walletProvider',false,null);
   }
   simpleIDPassUserInfo = (userInfo,simpleID) => {
     if (!userInfo.address && this.props.account){
@@ -1425,25 +1425,52 @@ class FunctionsUtil {
     }
   }
 
-  sendBiconomyTx = async (contractName,contractAddress,functionSignature,callback,callback_receipt) => {
-
-    const getSignatureParameters_v4 = signature => {
-      if (!this.props.web3.utils.isHexStrict(signature)) {
-        throw new Error(
-          'Given value "'.concat(signature, '" is not a valid hex string.')
-        );
-      }
-      var r = signature.slice(0, 66);
-      var s = "0x".concat(signature.slice(66, 130));
-      var v = "0x".concat(signature.slice(130, 132));
-      v = this.props.web3.utils.hexToNumber(v);
-      if (![27, 28].includes(v)) v += 27;
-      return {
-        r: r,
-        s: s,
-        v: v
-      };
+  getSignatureParameters_v4 = signature => {
+    if (!this.props.web3.utils.isHexStrict(signature)) {
+      throw new Error(
+        'Given value "'.concat(signature, '" is not a valid hex string.')
+      );
+    }
+    var r = signature.slice(0, 66);
+    var s = "0x".concat(signature.slice(66, 130));
+    var v = "0x".concat(signature.slice(130, 132));
+    v = this.props.web3.utils.hexToNumber(v);
+    if (![27, 28].includes(v)) v += 27;
+    return {
+      r: r,
+      s: s,
+      v: v
     };
+  };
+
+  sendBiconomyTxWithPersonalSign = async (contractName,functionSignature,callback,callback_receipt) => {
+    const contract = this.getContractByName(contractName);
+
+    if (!contract){
+      callback(null,'Contract not found');
+      return false
+    }
+
+    let userAddress = this.props.account;
+    let nonce = await contract.methods.getNonce(userAddress).call();
+    let message = "Please provide your signature to migrate without paying gas. Tracking Id: ";
+    let messageToSign = `${message}${nonce}`;
+    const signature = await this.props.web3.eth.personal.sign(
+      messageToSign,
+      userAddress
+    );
+    console.info(`User signature is ${signature}`);
+    const { r, s, v } = this.getSignatureParameters_v4(signature);
+
+    console.log(userAddress);
+    console.log(JSON.stringify(message));
+    console.log(message);
+    // console.log(getSignatureParameters(signature));
+
+    this.contractMethodSendWrapper(contractName, 'executeMetaTransaction', [userAddress, functionSignature, message, `${messageToSign.length}`, r, s, v], callback, callback_receipt);
+  }
+
+  sendBiconomyTx = async (contractName,contractAddress,functionSignature,callback,callback_receipt) => {
 
     const EIP712Domain = [
       { name: "name", type: "string" },
@@ -1505,7 +1532,7 @@ class FunctionsUtil {
         if (error || (response && response.error)) {
           return callback(null,error);
         } else if (response && response.result) {
-          const signedParameters = getSignatureParameters_v4(response.result);
+          const signedParameters = this.getSignatureParameters_v4(response.result);
           const { r, s, v } = signedParameters;
             
           this.contractMethodSendWrapper(contractName, 'executeMetaTransaction', [userAddress, functionSignature, r, s, v], callback, callback_receipt);
@@ -1514,21 +1541,21 @@ class FunctionsUtil {
     );
   }
 
-  checkTokenApproved = async (token,contractAddr,walletAddr) => {
+  checkTokenApproved = async (contractName,contractAddr,walletAddr) => {
     const value = this.props.web3.utils.toWei('0','ether');
-    const allowance = await this.getAllowance(token,contractAddr,walletAddr);
+    const allowance = await this.getAllowance(contractName,contractAddr,walletAddr);
     // if (allowance){
     //   console.log('checkTokenApproved',token,contractAddr,walletAddr,allowance);
     // }
     return allowance && this.BNify(allowance).gt(this.BNify(value.toString()));
   }
-  getAllowance = async (token,contractAddr,walletAddr) => {
-    if (!token || !contractAddr || !walletAddr){
+  getAllowance = async (contractName,contractAddr,walletAddr) => {
+    if (!contractName || !contractAddr || !walletAddr){
       return false;
     }
-    this.customLog('getAllowance',token,contractAddr,walletAddr);
+    this.customLog('getAllowance',contractName,contractAddr,walletAddr);
     return await this.genericContractCall(
-      token, 'allowance', [walletAddr, contractAddr]
+      contractName, 'allowance', [walletAddr, contractAddr]
     );
   }
   contractMethodSendWrapper = (contractName,methodName,params,callback,callback_receipt) => {

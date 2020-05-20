@@ -74,6 +74,7 @@ export default {
     counter: '#5d5d5d',
     redeem: '#00a9fe',
     deposit: '#0239ff',
+    migrate: '#00a9fe',
     legend: '#c9c9c9',
     cardBg:'#fff',
     transactions:{
@@ -82,7 +83,7 @@ export default {
         redeem:'#10a0dd',
         send:'#4f4f4f',
         receive:'#4f4f4f',
-        migrate:'#4f4f4f',
+        migrate:'#00a9fe',
         swap:'#4f4f4f',
         withdraw:'#4f4f4f',
         default:'#4f4f4f'
@@ -92,7 +93,7 @@ export default {
         redeem:'#ceeff6',
         send:'#dadada',
         receive:'#dadada',
-        migrate:'#dadada',
+        migrate:'#ceeff6',
         swap:'#dadada',
         withdraw:'#dadada',
         default:'#dadada'

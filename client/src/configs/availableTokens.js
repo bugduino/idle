@@ -8,7 +8,7 @@ import yToken from '../abis/dydx/yToken.json';
 import IdleTokenV2 from '../contracts/IdleTokenV2.json';
 import IdleTokenV3 from '../contracts/IdleTokenV3.json';
 // import IdleMcdBridgeV1 from '../contracts/IdleMcdBridgeV1.json';
-import IdleConverter from '../contracts/IdleConverter.json';
+import IdleConverterV2 from '../contracts/IdleConverterV2.json';
 
 const availableTokens = {
   42:{ // Kovan
@@ -252,7 +252,7 @@ const availableTokens = {
             address:'0x10eC0D497824e342bCB0EDcE00959142aAa766dD',
           },
           migrationContract:{
-            abi:IdleConverter,
+            abi:IdleConverterV2,
             token:'idleDAI',
             name:'IdleConverterV2',
             address:'0x4ea4e749cb81854606d1912d1c4bde1e9005ab76',
@@ -365,7 +365,7 @@ const availableTokens = {
             address:'0xeB66ACc3d011056B00ea521F8203580C2E5d3991',
           },
           migrationContract:{
-            abi:IdleConverter,
+            abi:IdleConverterV2,
             token:'idleUSDC',
             name:'IdleConverterV2',
             address:'0x4ea4e749cb81854606d1912d1c4bde1e9005ab76',
@@ -531,7 +531,7 @@ const availableTokens = {
             address:'0x10eC0D497824e342bCB0EDcE00959142aAa766dD',
           },
           migrationContract:{
-            abi:IdleConverter,
+            abi:IdleConverterV2,
             token:'idleDAI',
             name:'IdleConverterV2',
             address:'0x4ea4e749cb81854606d1912d1c4bde1e9005ab76',
@@ -644,7 +644,7 @@ const availableTokens = {
             address:'0xeB66ACc3d011056B00ea521F8203580C2E5d3991',
           },
           migrationContract:{
-            abi:IdleConverter,
+            abi:IdleConverterV2,
             token:'idleUSDC',
             name:'IdleConverterV2',
             address:'0x4ea4e749cb81854606d1912d1c4bde1e9005ab76',

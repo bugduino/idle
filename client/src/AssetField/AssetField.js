@@ -512,6 +512,15 @@ class AssetField extends Component {
         fieldProps[p] = fieldInfo.props[p];
       });
     }
+
+    // Merge with funcProps
+    if (fieldInfo.funcProps && Object.keys(fieldInfo.funcProps).length){
+      Object.keys(fieldInfo.funcProps).forEach(p => {
+        if (typeof fieldInfo.funcProps[p]==='function'){
+          fieldProps[p] = fieldInfo.funcProps[p](this.props);
+        }
+      });
+    }
     
     const minPrecision = fieldProps && fieldProps.minPrecision ? fieldProps.minPrecision : ( this.props.isMobile ? 3 : 4 );
     const decimals = fieldProps && fieldProps.decimals ? fieldProps.decimals : ( this.props.isMobile ? 2 : 3 );

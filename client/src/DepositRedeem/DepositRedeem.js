@@ -10,6 +10,7 @@ import DashboardCard from '../DashboardCard/DashboardCard';
 import AssetSelector from '../AssetSelector/AssetSelector';
 import TxProgressBar from '../TxProgressBar/TxProgressBar';
 import TransactionField from '../TransactionField/TransactionField';
+import FastBalanceSelector from '../FastBalanceSelector/FastBalanceSelector';
 
 class DepositRedeem extends Component {
 
@@ -195,7 +196,7 @@ class DepositRedeem extends Component {
 
     switch (this.state.action){
       case 'deposit':
-        const tokensToDeposit = this.functionsUtil.normalizeTokenAmount(inputValue,this.props.tokenConfig.decimals).toString();
+        const tokensToDeposit = this.functionsUtil.normalizeTokenAmount(inputValue,this.props.tokenConfig.decimals).toFixed();
 
         // console.log(inputValue.toString(),tokensToDeposit.toString());
 
@@ -278,7 +279,7 @@ class DepositRedeem extends Component {
         ], null, callbackDeposit, callbackReceiptDeposit, gasLimitDeposit);
       break;
       case 'redeem':
-        const idleTokenToRedeem = this.functionsUtil.normalizeTokenAmount(inputValue,18).toString();
+        const idleTokenToRedeem = this.functionsUtil.normalizeTokenAmount(inputValue,18).toFixed();
 
         // Get amounts for best allocations
         const _skipRebalance = this.functionsUtil.getGlobalConfig(['contract','methods','redeem','skipRebalance']);
@@ -516,30 +517,6 @@ class DepositRedeem extends Component {
       return null;
     }
 
-    const FastBalanceSelectorComponent = props => {
-      const isActive = this.state.fastBalanceSelector[this.state.action] === parseInt(props.percentage);
-      return (
-        <DashboardCard
-          cardProps={{
-            p:2,
-            width:0.23,
-            onMouseDown:props.onMouseDown
-          }}
-          isActive={isActive}
-          isInteractive={true}
-        >
-          <Text 
-            fontSize={2}
-            fontWeight={3}
-            textAlign={'center'}
-            color={isActive ? 'copyColor' : 'legend'}
-          >
-            {props.percentage}%
-          </Text>
-        </DashboardCard>
-      );
-    }
-
     const tokenApproved = this.state.tokenApproved;
     const showBuyFlow = tokenApproved && this.state.action === 'deposit' && this.state.componentMounted && !this.state.canDeposit;
 
@@ -768,21 +745,25 @@ class DepositRedeem extends Component {
                               flexDirection={'row'}
                               justifyContent={'space-between'}
                             >
-                              <FastBalanceSelectorComponent
+                              <FastBalanceSelector
                                 percentage={25}
                                 onMouseDown={()=>this.setFastBalanceSelector(25)}
+                                isActive={this.state.fastBalanceSelector[this.state.action] === parseInt(25)}
                               />
-                              <FastBalanceSelectorComponent
+                              <FastBalanceSelector
                                 percentage={50}
                                 onMouseDown={()=>this.setFastBalanceSelector(50)}
+                                isActive={this.state.fastBalanceSelector[this.state.action] === parseInt(50)}
                               />
-                              <FastBalanceSelectorComponent
+                              <FastBalanceSelector
                                 percentage={75}
                                 onMouseDown={()=>this.setFastBalanceSelector(75)}
+                                isActive={this.state.fastBalanceSelector[this.state.action] === parseInt(75)}
                               />
-                              <FastBalanceSelectorComponent
+                              <FastBalanceSelector
                                 percentage={100}
                                 onMouseDown={()=>this.setFastBalanceSelector(100)}
+                                isActive={this.state.fastBalanceSelector[this.state.action] === parseInt(100)}
                               />
                             </Flex>
                             <Flex

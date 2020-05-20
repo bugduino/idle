@@ -492,9 +492,13 @@ class StrategyPage extends Component {
                                   height:'45px',
                                   borderRadius:4,
                                   boxShadow:null,
-                                  mainColor: 'deposit',
                                   size: this.props.isMobile ? 'small' : 'medium',
                                   handleClick:(props) => this.props.changeToken(props.token)
+                                },
+                                funcProps:{
+                                  mainColor: (props) => {
+                                    return this.state.tokensToMigrate.includes(props.token) ? 'migrate' : 'deposit'
+                                  }
                                 }
                               }
                             ]
