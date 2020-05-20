@@ -151,7 +151,7 @@ class Migrate extends Component {
       case 'redeem':
         const oldContractName = this.props.tokenConfig.migration.oldContract.name;
 
-        const idleTokenToRedeem = this.functionsUtil.normalizeTokenAmount(inputValue,18).toFixed();
+        const idleTokenToRedeem = this.functionsUtil.normalizeTokenAmount(inputValue,18);
 
         // Get amounts for best allocations
         const _skipRebalance = true;

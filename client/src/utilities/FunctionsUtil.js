@@ -1191,8 +1191,7 @@ class FunctionsUtil {
     return this.props.tokenConfig.protocols.find(c => c.address.toLowerCase() === addr.toLowerCase());
   }
   normalizeTokenAmount = (tokenBalance,tokenDecimals) => {
-    let amount = this.BNify(tokenBalance).times(this.BNify(Math.pow(10,parseInt(tokenDecimals)).toString()));
-    return amount.toFixed(0);
+    return this.BNify(tokenBalance).times(this.BNify(Math.pow(10,parseInt(tokenDecimals)).toString())).toFixed();
   }
   fixTokenDecimals = (tokenBalance,tokenDecimals,exchangeRate) => {
     let balance = this.BNify(tokenBalance).div(this.BNify(Math.pow(10,parseInt(tokenDecimals)).toString()));

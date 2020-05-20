@@ -196,7 +196,7 @@ class DepositRedeem extends Component {
 
     switch (this.state.action){
       case 'deposit':
-        const tokensToDeposit = this.functionsUtil.normalizeTokenAmount(inputValue,this.props.tokenConfig.decimals).toFixed();
+        const tokensToDeposit = this.functionsUtil.normalizeTokenAmount(inputValue,this.props.tokenConfig.decimals);
 
         // console.log(inputValue.toString(),tokensToDeposit.toString());
 
@@ -279,7 +279,7 @@ class DepositRedeem extends Component {
         ], null, callbackDeposit, callbackReceiptDeposit, gasLimitDeposit);
       break;
       case 'redeem':
-        const idleTokenToRedeem = this.functionsUtil.normalizeTokenAmount(inputValue,18).toFixed();
+        const idleTokenToRedeem = this.functionsUtil.normalizeTokenAmount(inputValue,18);
 
         // Get amounts for best allocations
         const _skipRebalance = this.functionsUtil.getGlobalConfig(['contract','methods','redeem','skipRebalance']);
