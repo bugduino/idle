@@ -267,7 +267,7 @@ class Migrate extends Component {
   }
 
   checkMigrationContractApproved = async () => {
-    
+
     if (this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract){
       const migrationContractInfo = this.props.tokenConfig.migration.migrationContract;
       const migrationContractName = migrationContractInfo.name;
@@ -292,14 +292,14 @@ class Migrate extends Component {
       loading
     });
 
-    let oldTokenPrice = null;
-    let oldIdleTokens = null;
     let migrationEnabled = false;
-    let oldContractBalance = null;
     let oldTokenName = 'idleTokens';
-    let oldIdleTokensConverted = null;
     let oldContractTokenDecimals = null;
     let migrationContractApproved = false;
+    let oldTokenPrice = this.functionsUtil.BNify(0);
+    let oldIdleTokens = this.functionsUtil.BNify(0);
+    let oldContractBalance = this.functionsUtil.BNify(0);
+    let oldIdleTokensConverted = this.functionsUtil.BNify(0);
 
     // Check migration contract enabled and balance
     if (this.props.tokenConfig.migration && this.props.tokenConfig.migration.enabled){
@@ -631,7 +631,7 @@ class Migrate extends Component {
               </DashboardCard>
             </Flex>
             <Flex
-              mt={3}
+              mt={2}
               flexDirection={'column'}
             >
               <Text mb={2}>
@@ -752,7 +752,7 @@ class Migrate extends Component {
                               color={'cellText'}
                             />
                             <Text
-                              mt={3}
+                              mt={1}
                               fontSize={2}
                               color={'cellText'}
                               textAlign={'center'}
@@ -777,15 +777,6 @@ class Migrate extends Component {
                                 backgroundColor={'dashboardBg'}
                                 border={`1px solid ${this.props.theme.colors.boxBorder}`}
                               >
-                                {
-                                /*
-                                <Icon
-                                  size={'2em'}
-                                  name={ this.props.biconomy ? 'MoneyOff' : 'Warning'}
-                                  color={'cellText'}
-                                />
-                                */
-                                }
                                 <Text
                                   mt={1}
                                   fontSize={1}
@@ -850,7 +841,7 @@ class Migrate extends Component {
                               color={'cellText'}
                             />
                             <Text
-                              mt={3}
+                              mt={1}
                               fontSize={2}
                               color={'cellText'}
                               textAlign={'center'}

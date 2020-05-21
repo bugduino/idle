@@ -533,8 +533,8 @@ class DepositRedeem extends Component {
           flexDirection={'column'}
           justifyContent={'center'}
         >
-          <Flex
-            flexDirection={'column'}
+          <Box
+            width={1}
           >
             <Text mb={1}>
               Select your asset:
@@ -542,7 +542,7 @@ class DepositRedeem extends Component {
             <AssetSelector
               {...this.props}
             />
-          </Flex>
+          </Box>
           <Migrate
             {...this.props}
           >
@@ -633,7 +633,7 @@ class DepositRedeem extends Component {
                 this.state.action ? (
                   <Box width={1}>
                     <Flex
-                      mt={3}
+                      mt={2}
                       flexDirection={'column'}
                     >
                       <Text mb={2}>

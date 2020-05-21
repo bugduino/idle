@@ -1,9 +1,9 @@
 import theme from '../theme';
 import React, { Component } from 'react';
 // import styles from './DashboardHeader.module.scss';
-import { Flex, Text, Icon, Link } from "rimble-ui";
 import MenuAccount from '../MenuAccount/MenuAccount';
 import FunctionsUtil from '../utilities/FunctionsUtil';
+import { Box, Flex, Text, Icon, Link } from "rimble-ui";
 // import ButtonLoader from '../ButtonLoader/ButtonLoader';
 // import DashboardCard from '../DashboardCard/DashboardCard';
 import AccountModal from "../utilities/components/AccountModal";
@@ -60,11 +60,9 @@ class DashboardHeader extends Component {
   render() {
     // const buttonSize = this.props.isMobile ? 'small' : 'medium';
     return (
-      <Flex
+      <Box
         pb={2}
         mb={3}
-        alignItems={'center'}
-        justifyContent={'space-between'}
         borderBottom={`1px solid ${theme.colors.divider}`}
       >
         <Flex
@@ -113,7 +111,7 @@ class DashboardHeader extends Component {
           idleTokenBalance={this.state.idleTokenBalance}
           accountBalanceToken={this.props.accountBalanceToken}
         />
-      </Flex>
+      </Box>
     );
   }
 }

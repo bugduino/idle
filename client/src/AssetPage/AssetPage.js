@@ -1,13 +1,12 @@
-import theme from '../theme';
 import Title from '../Title/Title';
+import { Box, Flex } from "rimble-ui";
 import React, { Component } from 'react';
-import { Flex, Icon, Text } from "rimble-ui";
 import Breadcrumb from '../Breadcrumb/Breadcrumb';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import BuyModal from '../utilities/components/BuyModal';
 import FundsOverview from '../FundsOverview/FundsOverview';
 import DepositRedeem from '../DepositRedeem/DepositRedeem';
-import DashboardCard from '../DashboardCard/DashboardCard';
+import CardIconButton from '../CardIconButton/CardIconButton';
 import TransactionsList from '../TransactionsList/TransactionsList';
 import EstimatedEarnings from '../EstimatedEarnings/EstimatedEarnings';
 
@@ -82,11 +81,8 @@ class AssetPage extends Component {
     const userHasFunds = this.props.account && this.state.idleTokenBalance[this.props.selectedToken] && this.functionsUtil.BNify(this.state.idleTokenBalance[this.props.selectedToken]).gt(0);
 
     return (
-      <Flex
+      <Box
         width={1}
-        alignItems={'center'}
-        flexDirection={'column'}
-        justifyContent={'center'}
       >
         <Flex
           width={1}
@@ -109,44 +105,12 @@ class AssetPage extends Component {
             width={[1,0.5]}
             justifyContent={'flex-end'}
           >
-            <DashboardCard
-              cardProps={{
-                py:1,
-                px:['12px',3],
-                width:['100%','auto'],
-              }}
-              isInteractive={true}
+            <CardIconButton
+              icon={'Add'}
+              {...this.props}
+              text={'Add funds'}
               handleClick={ e => this.setBuyModalOpened(true) }
-            >
-              <Flex
-                my={1}
-                alignItems={'center'}
-                flexDirection={'row'}
-                justifyContent={'center'}
-              >
-                <Flex
-                  mr={2}
-                  p={'4px'}
-                  borderRadius={'50%'}
-                  alignItems={'center'}
-                  justifyContent={'center'}
-                  backgroundColor={ theme.colors.transactions.actionBg.redeem }
-                >
-                  <Icon
-                    name={'Add'}
-                    align={'center'}
-                    color={'redeem'}
-                    size={ this.props.isMobile ? '1.3em' : '1.6em' }
-                  />
-                </Flex>
-                <Text
-                  fontSize={[2,3]}
-                  fontWeight={3}
-                >
-                  Add Funds
-                </Text>
-              </Flex>
-            </DashboardCard>
+            />
           </Flex>
         </Flex>
         <Title
@@ -306,7 +270,7 @@ class AssetPage extends Component {
           buyToken={this.props.selectedToken}
           closeModal={ e => this.setBuyModalOpened(false) }
         />
-      </Flex>
+      </Box>
     );
   }
 }
