@@ -198,7 +198,7 @@ class DepositRedeem extends Component {
       case 'deposit':
         const tokensToDeposit = this.functionsUtil.normalizeTokenAmount(inputValue,this.props.tokenConfig.decimals);
 
-        // console.log(inputValue.toString(),tokensToDeposit.toString());
+        console.log(inputValue.toString(),tokensToDeposit);
 
         if (localStorage){
           this.functionsUtil.setLocalStorage('redirectToFundsAfterLogged',0);

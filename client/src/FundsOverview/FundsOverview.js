@@ -77,10 +77,10 @@ class FundsOverview extends Component {
                 fieldInfo={{
                   name:'amountLent',
                   props:{
-                    decimals:6,
+                    decimals:4,
                     maxPrecision:8,
                     fontWeight:300,
-                    fontSize:['1.8em','2.3em'],
+                    fontSize:['1.8em','2.2em'],
                     color:theme.colors.counter
                   }
                 }}
@@ -105,11 +105,12 @@ class FundsOverview extends Component {
                 token={this.props.selectedToken}
                 fieldInfo={{
                   name:'redeemableBalanceCounter',
-                  decimals:6,
                   props:{
+                    decimals:7,
+                    maxPrecision:8,
                     style:{
                       fontWeight:300,
-                      fontSize: this.props.isMobile ? '1.8em' : '2.3em',
+                      fontSize: this.props.isMobile ? '1.8em' : '2.2em',
                       color:theme.colors.counter
                     }
                   }
@@ -147,11 +148,12 @@ class FundsOverview extends Component {
                 token={this.props.selectedToken}
                 fieldInfo={{
                   name:'earningsCounter',
-                  decimals:6,
                   props:{
+                    decimals:7,
+                    maxPrecision:7,
                     style:{
                       fontWeight:300,
-                      fontSize:this.props.isMobile ? '1.8em' : '2.3em',
+                      fontSize:this.props.isMobile ? '1.8em' : '2.2em',
                       color:theme.colors.counter
                     }
                   }
@@ -180,7 +182,7 @@ class FundsOverview extends Component {
                   props:{
                     decimals:2,
                     fontWeight:300,
-                    fontSize:['1.8em','2.3em'],
+                    fontSize:['1.8em','2.2em'],
                     color:theme.colors.counter
                   }
                 }}
@@ -208,7 +210,7 @@ class FundsOverview extends Component {
                   props:{
                     decimals:1,
                     fontWeight:300,
-                    fontSize:['1.8em','2.3em'],
+                    fontSize:['1.8em','2.2em'],
                     color:theme.colors.counter
                   }
                 }}

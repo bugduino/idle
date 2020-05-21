@@ -12,7 +12,7 @@ class PortfolioEquity extends Component {
     chartData:null,
     chartProps:null,
     chartwidth:null,
-    chartHeight:null,
+    chartHeight:null
   };
 
   // Utils
@@ -280,7 +280,7 @@ class PortfolioEquity extends Component {
     // Add 5% to the max grid value
     // maxChartValue += maxChartValue*0.1;
     const maxGridLines = 5;
-    const gridYStep = parseInt(maxChartValue/maxGridLines);
+    const gridYStep = parseFloat(maxChartValue/maxGridLines);
     const gridYValues = [];
     for (let i=1;i<=5;i++){
       gridYValues.push(i*gridYStep);

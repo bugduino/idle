@@ -521,7 +521,8 @@ class AssetField extends Component {
         }
       });
     }
-    
+      
+    const maxPrecision = fieldProps && fieldProps.maxPrecision ? fieldProps.maxPrecision : 5;
     const minPrecision = fieldProps && fieldProps.minPrecision ? fieldProps.minPrecision : ( this.props.isMobile ? 3 : 4 );
     const decimals = fieldProps && fieldProps.decimals ? fieldProps.decimals : ( this.props.isMobile ? 2 : 3 );
 
@@ -554,12 +555,13 @@ class AssetField extends Component {
             separator={''}
             useEasing={false}
             duration={31536000}
-            decimals={fieldInfo.decimals}
+            decimals={decimals}
             end={parseFloat(this.state.redeemableBalanceEnd)}
             start={parseFloat(this.state.redeemableBalanceStart)}
+            formattingFn={ n => this.functionsUtil.abbreviateNumber(n,decimals,maxPrecision,minPrecision) }
           >
             {({ countUpRef, start }) => (
-              <span {...fieldProps} ref={countUpRef} />
+              <span style={fieldProps.style} ref={countUpRef} />
             )}
           </CountUp>
         ) : loader
@@ -572,29 +574,30 @@ class AssetField extends Component {
             separator={''}
             useEasing={false}
             duration={31536000}
-            decimals={fieldInfo.decimals}
+            decimals={decimals}
             end={parseFloat(this.state.earningsEnd)}
             start={parseFloat(this.state.earningsStart)}
+            formattingFn={ n => this.functionsUtil.abbreviateNumber(n,decimals,maxPrecision,minPrecision) }
           >
             {({ countUpRef, start }) => (
-              <span {...fieldProps} ref={countUpRef} />
+              <span style={fieldProps.style} ref={countUpRef} />
             )}
           </CountUp>
         ) : loader
       break;
       case 'redeemableBalance':
         output = this.state.redeemableBalance ? (
-          <SmartNumber {...fieldProps} decimals={decimals} minPrecision={minPrecision} number={this.state.redeemableBalance} />
+          <SmartNumber {...fieldProps} decimals={decimals} minPrecision={minPrecision} maxPrecision={maxPrecision} number={this.state.redeemableBalance} />
         ) : loader
       break;
       case 'amountLent':
         output = this.state.amountLent ? (
-          <SmartNumber {...fieldProps} decimals={decimals} minPrecision={minPrecision} number={this.state.amountLent} />
+          <SmartNumber {...fieldProps} decimals={decimals} minPrecision={minPrecision} maxPrecision={maxPrecision} number={this.state.amountLent} />
         ) : loader
       break;
       case 'pool':
         output = this.state.poolSize ? (
-          <SmartNumber {...fieldProps} decimals={decimals} minPrecision={minPrecision} number={this.state.poolSize} />
+          <SmartNumber {...fieldProps} decimals={decimals} minPrecision={minPrecision} maxPrecision={maxPrecision} number={this.state.poolSize} />
         ) : loader
       break;
       case 'score':
