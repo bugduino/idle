@@ -193,7 +193,7 @@ class EarningsEstimation extends Component {
                         Object.keys(estimationSteps).map((label,estimateIndex) => {
                           const estimationStep = estimationSteps[label];
                           const estimationStepEarnings = tokenEarnings.earningsYear.times(this.functionsUtil.BNify(estimationStep.perc));
-                          const estimationStepEarningsFormatted = this.functionsUtil.formatMoney(estimationStepEarnings,this.props.isMobile ? 2 : 3);
+                          const estimationStepEarningsFormatted = this.functionsUtil.formatMoney(estimationStepEarnings,this.props.isMobile ? 2 : estimationStepEarnings.lt(1) ? 3 : 2);
                           return (
                             <Flex
                               pr={2}

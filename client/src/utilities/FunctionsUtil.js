@@ -1861,14 +1861,12 @@ class FunctionsUtil {
     maxPrecision = Math.max(1,maxPrecision);
 
     // Prevent decimals on integer number
-    // if (newValue%parseInt(newValue)!==0){
     if (value>=1000){
-      const decimalPart = decimals ? parseInt(newValue%1*Math.pow(10,decimals)) : null;
+      const decimalPart = decimals ? (newValue%1).toString().substr(2,decimals) : null;
       newValue = parseFloat(parseInt(newValue)+( decimalPart ? '.'+decimalPart : '' ) );
     } else {
       newValue = newValue.toFixed(decimals);
     }
-    // }
 
     if (newValue>=1 && (newValue.length-1)>maxPrecision){
       newValue = parseFloat(newValue).toPrecision(maxPrecision);
@@ -1882,6 +1880,7 @@ class FunctionsUtil {
     }
 
     newValue += suffixes[suffixNum];
+
     return newValue;
   }
   getFormattedBalance(balance,label,decimals,maxLen,highlightedDecimals){

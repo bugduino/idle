@@ -297,7 +297,10 @@ class StrategyPage extends Component {
                             },
                             fields:[
                               {
-                                name:'pool'
+                                name:'pool',
+                                props:{
+                                  decimals:2
+                                }
                               }
                             ]
                           },
@@ -405,7 +408,7 @@ class StrategyPage extends Component {
                           {
                             title:'CURRENCY',
                             props:{
-                              width:[0.28, this.props.account === null ? 0.23 : 0.15]
+                              width:[0.28,0.15]
                             },
                             fields:[
                               {
@@ -435,22 +438,38 @@ class StrategyPage extends Component {
                           {
                             title:'POOL',
                             props:{
-                              width:[this.props.account === null ? 0.25 : 0.27, this.props.account === null ? 0.18 : 0.15],
+                              width:[this.props.account === null ? 0.25 : 0.27, 0.15],
                             },
                             fields:[
                               {
-                                name:'pool'
+                                name:'pool',
+                                props:{
+                                  decimals:2
+                                }
                               }
                             ]
                           },
                           {
                             title:'APY',
                             props:{
-                              width:[0.18,this.state.depositedTokens.length>0 ? 0.11 : this.props.account === null ? 0.17 : 0.14],
+                              width:[0.18,this.state.depositedTokens.length>0 ? 0.11 : 0.14],
                             },
                             fields:[
                               {
                                 name:'apy'
+                              }
+                            ]
+                          },
+                          {
+                            title:'RISK SCORE',
+                            mobile:false,
+                            visible:this.props.account === null,
+                            props:{
+                              width:[0.27,0.14],
+                            },
+                            fields:[
+                              {
+                                name:'score'
                               }
                             ]
                           },
