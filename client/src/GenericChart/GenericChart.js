@@ -10,11 +10,14 @@ class GenericChart extends Component {
     height:null
   };
 
+  componentUnmounted = false;
+
   componentWillMount() {
     window.addEventListener('resize', this.handleWindowSizeChange.bind(this));
   }
 
   componentWillUnmount() {
+    this.componentUnmounted = true;
     window.removeEventListener('resize', this.handleWindowSizeChange);
   }
 
@@ -29,6 +32,10 @@ class GenericChart extends Component {
   }
 
   handleWindowSizeChange(){
+    if (this.componentUnmounted){
+      return false;
+    }
+
     const newState = {...this.state};
 
     if (this.props.parentId){

@@ -267,6 +267,7 @@ class Migrate extends Component {
   }
 
   checkMigrationContractApproved = async () => {
+    
     if (this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract){
       const migrationContractInfo = this.props.tokenConfig.migration.migrationContract;
       const migrationContractName = migrationContractInfo.name;
@@ -329,7 +330,7 @@ class Migrate extends Component {
         // console.log('Migration - oldContractBalance',oldContractBalance ? oldContractBalance.toString() : null);
         if (oldContractBalance){
           // Convert old idleTokens
-          oldTokenPrice = this.functionsUtil.fixTokenDecimals(oldTokenPrice,oldContractTokenDecimals);
+          oldTokenPrice = this.functionsUtil.fixTokenDecimals(oldTokenPrice,this.props.tokenConfig.decimals);
           oldIdleTokens = this.functionsUtil.fixTokenDecimals(oldContractBalance,oldContractTokenDecimals);
           oldIdleTokensConverted = this.functionsUtil.BNify(oldIdleTokens).times(this.functionsUtil.BNify(oldTokenPrice));
           // Enable migration if old contract balance if greater than 0
@@ -535,24 +536,11 @@ class Migrate extends Component {
         const oldIdleTokens = this.state.oldIdleTokens;
         const oldContractBalance = this.state.oldContractBalance;
         const toMigrate = this.functionsUtil.BNify(oldContractBalance).toFixed();
+
+        debugger;
         // const toMigrate =  this.functionsUtil.normalizeTokenAmount('1',this.state.oldContractTokenDecimals).toString(); // TEST AMOUNT
 
         const migrationParams = [toMigrate,this.props.tokenConfig.migration.oldContract.address,this.props.tokenConfig.idle.address,this.props.tokenConfig.address];
-
-        /*
-        let _clientProtocolAmounts = [];
-        const value = this.functionsUtil.normalizeTokenAmount(this.state.oldIdleTokens,this.state.oldContractTokenDecimals).toString();
-        if (this.props.account){
-          // Get amounts for best allocations
-          const callParams = { from: this.props.account, gas: this.props.web3.utils.toBN(5000000) };
-          const paramsForMint = await this.functionsUtil.genericIdleCall('getParamsForMintIdleToken',[value],callParams);
-          if (paramsForMint){
-            _clientProtocolAmounts = paramsForMint[1];
-          }
-          this.functionsUtil.customLog('getParamsForMintIdleToken',value,paramsForMint);
-        }
-        migrationParams.push(_clientProtocolAmounts);
-        */
 
         // console.log('Migration params',migrationContractInfo.name, migrationMethod, migrationParams);
 
@@ -565,9 +553,6 @@ class Migrate extends Component {
           // Send migration tx
           this.functionsUtil.contractMethodSendWrapper(migrationContractInfo.name, migrationMethod, migrationParams, callbackMigrate, callbackReceiptMigrate);
         }
-
-        // Send migration tx
-        // this.functionsUtil.contractMethodSendWrapper(migrationContractInfo.name, migrationMethod, migrationParams, callbackMigrate, callbackReceiptMigrate, 10000000);
 
         this.setState((prevState) => ({
           processing: {
@@ -635,12 +620,12 @@ class Migrate extends Component {
                     color={'cellText'}
                   />
                   <Text
-                    mt={3}
+                    mt={1}
                     fontSize={2}
                     color={'cellText'}
                     textAlign={'center'}
                   >
-                    You still have <strong>{this.state.oldIdleTokens.toFixed(4)} {this.state.oldTokenName}</strong> worth <strong>{this.state.oldIdleTokensConverted.toFixed(4)} {this.props.selectedToken}</strong>.<br />Please use the section below to migrate or redeem your old tokens.
+                    You still have <strong>{this.state.oldIdleTokens.toFixed(4)} {this.state.oldTokenName} ({this.state.oldIdleTokensConverted.toFixed(4)} {this.props.selectedToken})</strong>.<br />Please use the section below to migrate or redeem your old tokens.
                   </Text>
                 </Flex>
               </DashboardCard>

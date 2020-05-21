@@ -132,6 +132,10 @@ class Dashboard extends Component {
       }
     });
 
+    // Exit if no strategy and token selected
+    if (!selectedStrategy && !selectedToken){
+      return this.goToSection('/',false);
+    }
     // console.log('currentSection',currentSection,'selectedStrategy',selectedStrategy,'selectedToken',selectedToken,'currentRoute',currentRoute);
 
     await this.props.setStrategy(selectedStrategy);

@@ -36,6 +36,13 @@ class AssetField extends Component {
     this.loadField();
   }
 
+  async setStateSafe(newState,callback=null) {
+    if (!this.componentUnmounted){
+      return this.setState(newState,callback);
+    }
+    return null;
+  }
+
   async componentDidUpdate(prevProps, prevState) {
     this.loadUtils();
 
@@ -46,7 +53,7 @@ class AssetField extends Component {
     const transactionsChanged = prevProps.transactions && this.props.transactions && Object.values(prevProps.transactions).filter(tx => (tx.status==='success')).length !== Object.values(this.props.transactions).filter(tx => (tx.status==='success')).length;
 
     if (fieldChanged || tokenChanged || accountChanged || transactionsChanged || (contractInitialized && !this.state.ready)){
-      this.setState({},() => {
+      this.setStateSafe({},() => {
         this.loadField();
       });
     }
@@ -74,8 +81,8 @@ class AssetField extends Component {
           if (!tokenBalance){
             tokenBalance = '-';
           }
-          if (setState && !this.componentUnmounted){
-            this.setState({
+          if (setState){
+            this.setStateSafe({
               tokenBalance:tokenBalance.toString()
             });
           }
@@ -87,8 +94,8 @@ class AssetField extends Component {
           if (amountLents && amountLents[this.props.token]){
             amountLent = amountLents[this.props.token];
           }
-          if (setState && !this.componentUnmounted){
-            this.setState({
+          if (setState){
+            this.setStateSafe({
               amountLent:amountLent.toString()
             });
           }
@@ -99,8 +106,8 @@ class AssetField extends Component {
           if (!idleTokenBalance1){
             idleTokenBalance1 = '-';
           }
-          if (setState && !this.componentUnmounted){
-            this.setState({
+          if (setState){
+            this.setStateSafe({
               idleTokenBalance:idleTokenBalance1.toString()
             });
           }
@@ -115,8 +122,8 @@ class AssetField extends Component {
             const earningPerYear = this.functionsUtil.BNify(redeemableBalanceStart).times(this.functionsUtil.BNify(tokenAPY1).div(100));
             const redeemableBalanceEnd = this.functionsUtil.BNify(redeemableBalanceStart).plus(this.functionsUtil.BNify(earningPerYear));
 
-            if (setState && !this.componentUnmounted){
-              this.setState({
+            if (setState){
+              this.setStateSafe({
                 redeemableBalanceEnd,
                 redeemableBalanceStart
               });
@@ -140,8 +147,8 @@ class AssetField extends Component {
           }
           const earnings = redeemableBalance1.minus(amountLent1);
 
-          if (setState && !this.componentUnmounted){
-            this.setState({
+          if (setState){
+            this.setStateSafe({
               earnings:earnings.toString()
             });
           }
@@ -160,8 +167,8 @@ class AssetField extends Component {
             const earningsStart = amountLent2.gt(0) ? amountLent2.times(earningsPerc) : 0;
             const earningsEnd = amountLent2.gt(0) ? amountLent2.times(tokenAPY2.div(100)) : 0;
 
-            if (setState && !this.componentUnmounted){
-              this.setState({
+            if (setState){
+              this.setStateSafe({
                 earningsEnd,
                 earningsStart
               });
@@ -180,8 +187,8 @@ class AssetField extends Component {
           if (idleTokenBalance2 && idleTokenPrice){
             const redeemableBalance = this.functionsUtil.fixTokenDecimals(idleTokenBalance2.times(idleTokenPrice),this.props.tokenConfig.decimals);
 
-            if (setState && !this.componentUnmounted){
-              this.setState({
+            if (setState){
+              this.setStateSafe({
                 redeemableBalance:redeemableBalance.toString()
               });
             }
@@ -196,8 +203,8 @@ class AssetField extends Component {
             tokenData = tokenData.filter( d => ( d.isRisk === isRisk ) ).pop();
 
             if (tokenData && tokenData.idleScore){
-              if (setState && !this.componentUnmounted){
-                this.setState({
+              if (setState){
+                this.setStateSafe({
                   score:tokenData.idleScore
                 })
               }
@@ -209,8 +216,8 @@ class AssetField extends Component {
           const tokenAllocation = await this.functionsUtil.getTokenAllocation(this.props.tokenConfig);
 
           if (tokenAllocation && tokenAllocation.totalAllocation){
-            if (setState && !this.componentUnmounted){
-              this.setState({
+            if (setState){
+              this.setStateSafe({
                 poolSize:tokenAllocation.totalAllocation.toString()
               })
             }
@@ -229,8 +236,8 @@ class AssetField extends Component {
             // console.log(this.props.token,avgBuyPrice[this.props.token].toFixed(5),idleTokenPrice2.toFixed(5),parseFloat(earningsPerc).toFixed(3));
           }
 
-          if (setState && !this.componentUnmounted){
-            this.setState({
+          if (setState){
+            this.setStateSafe({
               earningsPercDirection:parseFloat(earningsPerc)>0 ? 'up' : 'down',
               earningsPerc:parseFloat(earningsPerc).toFixed(this.props.isMobile ? 2 : 3)
             });
@@ -241,8 +248,8 @@ class AssetField extends Component {
           tokenAprs = await this.functionsUtil.getTokenAprs(this.props.tokenConfig);
           if (tokenAprs && tokenAprs.avgApr !== null){
             const tokenAPR = tokenAprs.avgApr;
-            if (setState && !this.componentUnmounted){
-              this.setState({
+            if (setState){
+              this.setStateSafe({
                 tokenAPR:parseFloat(tokenAPR).toFixed(this.props.isMobile ? 2 : 3)
               });
             }
@@ -254,16 +261,16 @@ class AssetField extends Component {
           if (tokenAPR !== null){
             if (!tokenAPR.isNaN()){
               const tokenAPY = this.functionsUtil.apr2apy(tokenAPR.div(100)).times(100);
-              if (setState && !this.componentUnmounted){
-                this.setState({
+              if (setState){
+                this.setStateSafe({
                   tokenAPR:parseFloat(tokenAPR).toFixed(this.props.isMobile ? 2 : 3),
                   tokenAPY:parseFloat(tokenAPY).toFixed(this.props.isMobile ? 2 : 3)
                 });
               }
               return tokenAPY;
             } else {
-              if (setState && !this.componentUnmounted){
-                this.setState({
+              if (setState){
+                this.setStateSafe({
                   tokenAPR:false,
                   tokenAPY:false
                 });
@@ -309,7 +316,7 @@ class AssetField extends Component {
               aprChartWidth = $aprChartRowElement.innerWidth()-parseFloat($aprChartRowElement.css('padding-right'))-parseFloat($aprChartRowElement.css('padding-left'));
               aprChartHeight = $aprChartRowElement.innerHeight();
               if (aprChartWidth !== this.state.aprChartWidth || !this.state.aprChartHeight){
-                this.setState({
+                this.setStateSafe({
                   aprChartWidth,
                   aprChartHeight: this.state.aprChartHeight ? this.state.aprChartHeight : aprChartHeight
                 });
@@ -362,8 +369,8 @@ class AssetField extends Component {
             }
           }
 
-          if (setState && !this.componentUnmounted){
-            this.setState({
+          if (setState){
+            this.setStateSafe({
               ready:true,
               aprChartType,
               aprChartData,
@@ -398,7 +405,7 @@ class AssetField extends Component {
               performanceChartWidth = $PerformanceChartRowElement.innerWidth()-parseFloat($PerformanceChartRowElement.css('padding-right'))-parseFloat($PerformanceChartRowElement.css('padding-left'));
               performanceChartHeight = $PerformanceChartRowElement.innerHeight();
               if (performanceChartWidth !== this.state.performanceChartWidth || !this.state.performanceChartHeight){
-                this.setState({
+                this.setStateSafe({
                   performanceChartWidth,
                   performanceChartHeight: this.state.performanceChartHeight ? this.state.performanceChartHeight : performanceChartHeight
                 });
@@ -475,8 +482,8 @@ class AssetField extends Component {
             }
           }
 
-          if (setState && !this.componentUnmounted){
-            this.setState({
+          if (setState){
+            this.setStateSafe({
               ready:true,
               performanceChartType,
               performanceChartData,

@@ -217,6 +217,7 @@ class EarningsEstimation extends Component {
                   </Flex>
                   <Flex
                     width={1}
+                    zIndex={1}
                     pt={'2.2em'}
                     alignItems={'center'}
                     flexDirection={'row'}
