@@ -290,8 +290,8 @@ const globalConfigs = {
       },
       biconomy:{
         enabled:true,
+        disabledWallets:[],
         supportedNetworks:[1,42],
-        disabledWallets:['fortmatic'],
         params:{
           debug: false,
           apiKey: env.REACT_APP_BICONOMY_KEY,

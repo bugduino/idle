@@ -338,8 +338,7 @@ class Migrate extends Component {
         }
       }
     }
-
-    // console.log('oldIdleTokens',(oldContractBalance ? oldIdleTokens.toString() : null),'migrationEnabled', migrationEnabled);
+    
     loading = false;
 
     // Set migration contract balance
@@ -458,7 +457,7 @@ class Migrate extends Component {
 
         const callbackMigrate = (tx,error) => {
 
-          console.log('callbackMigrate1',tx,error);
+          // console.log('callbackMigrate1',tx,error);
 
           // Send Google Analytics event
           const eventData = {
@@ -478,7 +477,7 @@ class Migrate extends Component {
             eventData.eventLabel = this.functionsUtil.getTransactionError(error);
           }
 
-          console.log('callbackMigrate2',eventData);
+          // console.log('callbackMigrate2',eventData);
 
           // Send Google Analytics event
           if (error || eventData.status !== 'error'){
@@ -537,7 +536,6 @@ class Migrate extends Component {
         const oldContractBalance = this.state.oldContractBalance;
         const toMigrate = this.functionsUtil.BNify(oldContractBalance).toFixed();
 
-        debugger;
         // const toMigrate =  this.functionsUtil.normalizeTokenAmount('1',this.state.oldContractTokenDecimals).toString(); // TEST AMOUNT
 
         const migrationParams = [toMigrate,this.props.tokenConfig.migration.oldContract.address,this.props.tokenConfig.idle.address,this.props.tokenConfig.address];

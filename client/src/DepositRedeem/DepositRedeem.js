@@ -564,7 +564,7 @@ class DepositRedeem extends Component {
                       color={'cellText'}
                     />
                     <Text
-                      mt={3}
+                      mt={2}
                       fontSize={2}
                       color={'cellText'}
                       textAlign={'center'}
@@ -573,7 +573,7 @@ class DepositRedeem extends Component {
                     </Text>
                     <RoundButton
                       buttonProps={{
-                        mt:3,
+                        mt:2,
                         width:[1,1/2]
                       }}
                       handleClick={this.props.connectAndValidateAccount}

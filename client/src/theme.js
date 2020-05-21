@@ -79,24 +79,24 @@ export default {
     cardBg:'#fff',
     transactions:{
       action:{
-        deposit:'#3d53c0',
-        redeem:'#10a0dd',
         send:'#4f4f4f',
-        receive:'#4f4f4f',
-        migrate:'#00a9fe',
         swap:'#4f4f4f',
+        redeem:'#10a0dd',
+        deposit:'#3d53c0',
+        receive:'#4f4f4f',
+        migrate:'#3d53c0',
+        default:'#4f4f4f',
         withdraw:'#4f4f4f',
-        default:'#4f4f4f'
       },
       actionBg:{
-        deposit:'#ced6ff',
-        redeem:'#ceeff6',
         send:'#dadada',
-        receive:'#dadada',
-        migrate:'#ceeff6',
         swap:'#dadada',
+        redeem:'#ceeff6',
+        deposit:'#ced6ff',
+        default:'#dadada',
+        receive:'#dadada',
+        migrate:'#ced6ff',
         withdraw:'#dadada',
-        default:'#dadada'
       },
       status:{
         completed:'#00b84a',
