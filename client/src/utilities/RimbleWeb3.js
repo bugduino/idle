@@ -350,30 +350,37 @@ class RimbleTransaction extends React.Component {
       if (this.state.biconomy === null){
         const biconomyWeb3Provider = web3Provider ? web3Provider : web3Host;
         const biconomy = new Biconomy(biconomyWeb3Provider,biconomyInfo.params);
-        web3 = new Web3(biconomy);
 
-        biconomy.onEvent(biconomy.READY, () => {
-          if (this.componentUnmounted || this.state.biconomy === false || this.state.biconomy === biconomy){
-            return false;
-          }
-          const newState = {
-            web3,
-            biconomy
-          };
-          if (web3 !== this.state.web3){
-            this.setState(newState, web3Callback);
-          }
-        }).onEvent(biconomy.ERROR, (error, message) => {
-          // console.log('Biconomy error',error,message,this.state.biconomy);
-          web3 = originalWeb3;
-          // Handle error while initializing mexa
-          if (this.state.biconomy !== false){
-            this.setState({
+        if (biconomy){
+          web3 = new Web3(biconomy);
+          biconomy.onEvent(biconomy.READY, () => {
+            if (this.componentUnmounted || this.state.biconomy === false || this.state.biconomy === biconomy){
+              return false;
+            }
+            const newState = {
               web3,
-              biconomy:false
-            }, web3Callback);
-          }
-        });
+              biconomy
+            };
+            if (web3 !== this.state.web3){
+              this.setState(newState, web3Callback);
+            }
+          }).onEvent(biconomy.ERROR, (error, message) => {
+            // console.log('Biconomy error',error,message,this.state.biconomy);
+            web3 = originalWeb3;
+            // Handle error while initializing mexa
+            if (this.state.biconomy !== false){
+              this.setState({
+                web3,
+                biconomy:false
+              }, web3Callback);
+            }
+          });
+        } else {
+          this.setState({
+            web3,
+            biconomy:false
+          }, web3Callback);
+        }
       }
     } else {
       if (web3 !== this.state.web3){
