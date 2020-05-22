@@ -15,11 +15,12 @@ import FastBalanceSelector from '../FastBalanceSelector/FastBalanceSelector';
 class DepositRedeem extends Component {
 
   state = {
-    canRedeem:false,
-    canDeposit:false,
     inputValue:{},
     processing:{},
+    canRedeem:false,
+    canDeposit:false,
     action:'deposit',
+    tokenApproved:false,
     buttonDisabled:false,
     fastBalanceSelector:{},
     componentMounted:false
@@ -196,9 +197,12 @@ class DepositRedeem extends Component {
 
     switch (this.state.action){
       case 'deposit':
-        const tokensToDeposit = this.functionsUtil.normalizeTokenAmount(inputValue,this.props.tokenConfig.decimals);
 
-        console.log(inputValue.toString(),tokensToDeposit);
+        if (!this.state.tokenApproved){
+          return this.approveToken();
+        }
+
+        const tokensToDeposit = this.functionsUtil.normalizeTokenAmount(inputValue,this.props.tokenConfig.decimals);
 
         if (localStorage){
           this.functionsUtil.setLocalStorage('redirectToFundsAfterLogged',0);
@@ -369,15 +373,13 @@ class DepositRedeem extends Component {
     let action = this.state.action;
 
     switch(action){
-      case 'deposit':
-        if (!this.state.canDeposit){
-          if (this.state.canRedeem){
-            action = 'redeem';
-          } else {
-            // action = null;
-          }
-        }
-      break;
+      // case 'deposit':
+      //   if (!this.state.canDeposit){
+      //     if (this.state.canRedeem){
+      //       action = 'redeem';
+      //     }
+      //   }
+      // break;
       case 'redeem':
         if (!this.state.canRedeem){
           // if (this.state.canDeposit){
@@ -584,52 +586,6 @@ class DepositRedeem extends Component {
                 </DashboardCard>
               ) :
               this.state.componentMounted ? (
-                !tokenApproved ? (
-                  <DashboardCard
-                    cardProps={{
-                      p:3,
-                      mt:3
-                    }}
-                  >
-                    {
-                      this.state.processing['approve'] && this.state.processing['approve'].loading ? (
-                        <Flex
-                          flexDirection={'column'}
-                        >
-                          <TxProgressBar web3={this.props.web3} waitText={`Approve estimated in`} endMessage={`Finalizing approve request...`} hash={this.state.processing['approve'].txHash} />
-                        </Flex>
-                      ) : (
-                        <Flex
-                          alignItems={'center'}
-                          flexDirection={'column'}
-                        >
-                          <Icon
-                            size={'2.3em'}
-                            name={'LockOpen'}
-                            color={'cellText'}
-                          />
-                          <Text
-                            mt={3}
-                            fontSize={2}
-                            color={'cellText'}
-                            textAlign={'center'}
-                          >
-                            To Deposit/Redeem your {this.props.selectedToken} into Idle you need to enable our Smart-Contract first.
-                          </Text>
-                          <RoundButton
-                            buttonProps={{
-                              mt:3,
-                              width:[1,1/2]
-                            }}
-                            handleClick={this.approveToken.bind(this)}
-                          >
-                            Enable
-                          </RoundButton>
-                        </Flex>
-                      )
-                    }
-                  </DashboardCard>
-                ) :
                 this.state.action ? (
                   <Box width={1}>
                     <Flex
@@ -720,6 +676,52 @@ class DepositRedeem extends Component {
                       </Flex>
                     </Flex>
                     {
+                      !tokenApproved && this.state.action === 'deposit' ? (
+                        <DashboardCard
+                          cardProps={{
+                            p:3,
+                            mt:3
+                          }}
+                        >
+                          {
+                            this.state.processing['approve'] && this.state.processing['approve'].loading ? (
+                              <Flex
+                                flexDirection={'column'}
+                              >
+                                <TxProgressBar web3={this.props.web3} waitText={`Approve estimated in`} endMessage={`Finalizing approve request...`} hash={this.state.processing['approve'].txHash} />
+                              </Flex>
+                            ) : (
+                              <Flex
+                                alignItems={'center'}
+                                flexDirection={'column'}
+                              >
+                                <Icon
+                                  size={'2.3em'}
+                                  name={'LockOpen'}
+                                  color={'cellText'}
+                                />
+                                <Text
+                                  mt={3}
+                                  fontSize={2}
+                                  color={'cellText'}
+                                  textAlign={'center'}
+                                >
+                                  To Deposit/Redeem your {this.props.selectedToken} into Idle you need to enable our Smart-Contract first.
+                                </Text>
+                                <RoundButton
+                                  buttonProps={{
+                                    mt:3,
+                                    width:[1,1/2]
+                                  }}
+                                  handleClick={this.approveToken.bind(this)}
+                                >
+                                  Enable
+                                </RoundButton>
+                              </Flex>
+                            )
+                          }
+                        </DashboardCard>
+                      ) :
                       !showBuyFlow && (
                         !this.state.processing[this.state.action].loading ? (
                           <Flex

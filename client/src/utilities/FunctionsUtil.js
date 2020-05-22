@@ -382,7 +382,7 @@ class FunctionsUtil {
     return etherscanTxs;
   }
   filterEtherscanTxs = async (results,enabledTokens=[],processTxs=true) => {
-    if (!results || !results.length){
+    if (!results || !results.length || typeof results.forEach !== 'function'){
       return [];
     }
 
@@ -897,19 +897,19 @@ class FunctionsUtil {
 
             const decodedLogs = this.props.web3.eth.abi.decodeLog([
               {
-                "internalType": "uint256",
-                "name": "_idleToken",
-                "type": "uint256"
+                internalType: "uint256",
+                name: "_idleToken",
+                type: "uint256"
               },
               {
-                "internalType": "uint256",
-                "name": "_token",
-                "type": "uint256"
+                internalType: "uint256",
+                name: "_token",
+                type: "uint256"
               },
               {
-                "internalType": "uint256",
-                "name": "_price",
-                "type": "uint256"
+                internalType: "uint256",
+                name: "_price",
+                type: "uint256"
               },
             ],migrationInternalTransfer.data,migrationInternalTransfer.topics);
 

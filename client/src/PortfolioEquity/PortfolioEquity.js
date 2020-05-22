@@ -285,10 +285,10 @@ class PortfolioEquity extends Component {
     for (let i=1;i<=5;i++){
       gridYValues.push(i*gridYStep);
     }
-
-    let insertedDays = [];
-    const daysCount = Object.values(days).length;
+    
     const axisBottomMaxValues = 10;
+    const daysCount = Object.values(days).length;    
+    const daysFrequency = Math.max(1,Math.floor(daysCount/axisBottomMaxValues));
 
     const chartProps = {
       xScale:{
@@ -306,24 +306,12 @@ class PortfolioEquity extends Component {
       axisBottom: this.props.isMobile ? null : {
         legend: '',
         tickSize:0,
+        format: '%b %d',
         tickPadding: 15,
         orient: 'bottom',
         legendOffset: 36,
         legendPosition: 'middle',
-        format: date => {
-          let formattedDate = null;
-          const lastMomentDate = Object.values(insertedDays).pop();
-          const frequency = Math.ceil(daysCount/axisBottomMaxValues);
-          const momentDate = this.functionsUtil.strToMoment(date,'YYYY/MM/DD HH:mm');
-          const lastMomentDateDiff = lastMomentDate ? (momentDate.diff(lastMomentDate,'days')) : 0;
-
-          if (!lastMomentDate || lastMomentDateDiff>=frequency){
-            formattedDate = momentDate.format('MMM DD');
-            insertedDays.push(momentDate);
-          }
-
-          return formattedDate;
-        }
+        tickValues:'every '+daysFrequency+' days'
       },
       gridYValues,
       enableArea:true,

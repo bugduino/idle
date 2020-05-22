@@ -335,7 +335,7 @@ class TxProgressBar extends Component {
                   color:this.props.textColor ? this.props.textColor : 'copyColor'
                 }}
                 loaderProps={{
-                  size:'20px'
+                  size:'25px'
                 }}
                 flexProps={{
                   textAlign:'center',
@@ -382,7 +382,7 @@ class TxProgressBar extends Component {
                   color:this.props.textColor ? this.props.textColor : 'copyColor'
                 }}
                 loaderProps={{
-                  size:'20px'
+                  size:'25px'
                 }}
                 flexProps={{
                   textAlign:'center',

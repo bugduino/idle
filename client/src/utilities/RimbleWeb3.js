@@ -314,7 +314,7 @@ class RimbleTransaction extends React.Component {
 
     const web3Callback = async () => {
 
-      // window.web3Injected = this.state.web3;
+      window.web3Injected = this.state.web3;
 
       // After setting the web3 provider, check network
       await this.checkNetwork();
@@ -345,7 +345,7 @@ class RimbleTransaction extends React.Component {
     const biconomyInfo = globalConfigs.network.providers.biconomy;
     const walletProvider = this.functionsUtil.getWalletProvider();
 
-    if (biconomyInfo && biconomyInfo.enabled && biconomyInfo.supportedNetworks.includes(globalConfigs.network.requiredNetwork) && !biconomyInfo.disabledWallets.includes(walletProvider.toLowerCase())){
+    if (biconomyInfo && biconomyInfo.enabled && biconomyInfo.supportedNetworks.includes(globalConfigs.network.requiredNetwork) && (!walletProvider || !biconomyInfo.disabledWallets.includes(walletProvider.toLowerCase()))){
 
       if (this.state.biconomy === null){
         const biconomyWeb3Provider = web3Provider ? web3Provider : web3Host;
