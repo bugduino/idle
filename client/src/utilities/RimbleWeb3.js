@@ -210,8 +210,7 @@ class RimbleTransaction extends React.Component {
     const connectorName = this.props.connectorName;
     const last_context = localStorage ? JSON.parse(localStorage.getItem('context')) : null;
 
-    this.functionsUtil.customLog('initWeb3 context',connectorName,setConnectorName);
-
+    // this.functionsUtil.customLog('initWeb3',connectorName,setConnectorName);
     // console.log(context.active,context.connectorName,connectorName,setConnectorName);
 
     if (!context.active || (connectorName !== 'Infura' && connectorName !== setConnectorName)) {
@@ -263,6 +262,9 @@ class RimbleTransaction extends React.Component {
       }
     // Reset web3 if Infura
     } else if (context.active && (connectorName === 'Infura' || context.connectorName === "Infura")){
+      if (typeof web3.currentProvider.disable === 'function'){
+        await web3.currentProvider.disable();
+      }
       setConnectorName = null;
       web3 = null;
     }
