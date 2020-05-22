@@ -613,14 +613,18 @@ class AssetField extends Component {
         ) : loader
       break;
       case 'earningsPerc':
-        output = this.state.earningsPerc ? (
-          <VariationNumber
-            isMobile={this.props.isMobile}
-            direction={this.state.earningsPercDirection}
-          >
+        output = this.state.earningsPerc ?
+          (typeof fieldInfo.showDirection === 'undefined' || fieldInfo.showDirection) ? (
+            <VariationNumber
+              isMobile={this.props.isMobile}
+              direction={this.state.earningsPercDirection}
+            >
+              <Text {...fieldProps}>{this.state.earningsPerc}%</Text>
+            </VariationNumber>
+          ) : (
             <Text {...fieldProps}>{this.state.earningsPerc}%</Text>
-          </VariationNumber>
-        ) : loader
+          )
+        : loader
       break;
       case 'earnings':
         output = this.state.earnings ? (

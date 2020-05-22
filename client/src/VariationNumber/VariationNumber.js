@@ -9,7 +9,7 @@ class VariationNumber extends Component {
       <Icon
         color={ this.props.direction === 'up' ?  '#6dd400' : '#f7b500' }
         name={ this.props.direction === 'up' ?  'ArrowDropUp' : 'ArrowDropDown' }
-        size={ this.props.iconSize ? this.props.iconSize : ( this.props.isMobile ? '1.4em' : '2.2em') }
+        size={ this.props.iconSize ? this.props.iconSize : ( this.props.isMobile ? '1.4em' : '2em') }
       />
     );
 

@@ -274,7 +274,7 @@ class StrategyPage extends Component {
                           {
                             title:'CURRENCY',
                             props:{
-                              width:[0.28,0.15]
+                              width:[0.3,0.15]
                             },
                             fields:[
                               {
@@ -316,9 +316,22 @@ class StrategyPage extends Component {
                             ]
                           },
                           {
-                            title:'DEPOSITED',
+                            title:'RISK SCORE',
                             props:{
                               width:[0.27,0.14],
+                              justifyContent:['center','flex-start']
+                            },
+                            fields:[
+                              {
+                                name:'score'
+                              }
+                            ]
+                          },
+                          {
+                            title:'DEPOSITED',
+                            props:{
+                              width:[0.25,0.14],
+                              justifyContent:['center','flex-start']
                             },
                             fields:[
                               {
@@ -332,15 +345,27 @@ class StrategyPage extends Component {
                             props:{
                               width:0.15,
                             },
+                            parentProps:{
+                              flexDirection:'column'
+                            },
                             fields:[
                               {
                                 name:'earnings',
                                 props:{
                                   decimals:3
                                 }
+                              },
+                              {
+                                name:'earningsPerc',
+                                showDirection:false,
+                                props:{
+                                  fontSize:0,
+                                  decimals:3
+                                }
                               }
                             ]
                           },
+                          /*
                           {
                             title:'EARNINGS %',
                             props:{
@@ -352,6 +377,7 @@ class StrategyPage extends Component {
                               }
                             ]
                           },
+                          */
                           {
                             title:'',
                             mobile:false,
@@ -408,7 +434,7 @@ class StrategyPage extends Component {
                           {
                             title:'CURRENCY',
                             props:{
-                              width:[0.28,0.15]
+                              width:[0.3,0.15]
                             },
                             fields:[
                               {
@@ -424,21 +450,10 @@ class StrategyPage extends Component {
                             ]
                           },
                           {
-                            title:'BALANCE',
-                            visible:this.props.account !== null,
-                            props:{
-                              width:[0.27,0.15],
-                            },
-                            fields:[
-                              {
-                                name:'tokenBalance'
-                              }
-                            ]
-                          },
-                          {
                             title:'POOL',
+                            mobile:this.props.account !== null,
                             props:{
-                              width:[this.props.account === null ? 0.25 : 0.27, 0.15],
+                              width:[0.21, 0.14],
                             },
                             fields:[
                               {
@@ -452,7 +467,7 @@ class StrategyPage extends Component {
                           {
                             title:'APY',
                             props:{
-                              width:[0.18,this.state.depositedTokens.length>0 ? 0.11 : 0.14],
+                              width:[0.2,this.state.depositedTokens.length>0 ? 0.11 : 0.14],
                             },
                             fields:[
                               {
@@ -462,10 +477,9 @@ class StrategyPage extends Component {
                           },
                           {
                             title:'RISK SCORE',
-                            mobile:false,
-                            visible:this.props.account === null,
                             props:{
                               width:[0.27,0.14],
+                              justifyContent:['center','flex-start']
                             },
                             fields:[
                               {
