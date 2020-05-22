@@ -6,14 +6,11 @@ import React, { Component } from 'react';
 import Rebalance from '../Rebalance/Rebalance';
 import StatsCard from '../StatsCard/StatsCard';
 import AssetsList from '../AssetsList/AssetsList';
+import FlexLoader from '../FlexLoader/FlexLoader';
 import Breadcrumb from '../Breadcrumb/Breadcrumb';
-// import ButtonGroup from '../ButtonGroup/ButtonGroup';
 import globalConfigs from '../configs/globalConfigs';
 import { Box, Flex, Text, Heading } from 'rimble-ui';
-// import { Link as RouterLink } from "react-router-dom";
 import FunctionsUtil from '../utilities/FunctionsUtil';
-// import availableTokens from '../configs/availableTokens';
-// import TokenSelector from '../TokenSelector/TokenSelector';
 import DashboardCard from '../DashboardCard/DashboardCard';
 import AssetSelector from '../AssetSelector/AssetSelector';
 import GenericSelector from '../GenericSelector/GenericSelector';
@@ -370,6 +367,26 @@ class Stats extends Component {
 
   render() {
 
+    if (!this.props.availableStrategies){
+      return (
+        <FlexLoader
+          textProps={{
+            textSize:4,
+            fontWeight:2
+          }}
+          loaderProps={{
+            mb:3,
+            size:'40px'
+          }}
+          flexProps={{
+            minHeight:'50vh',
+            flexDirection:'column'
+          }}
+          text={'Loading assets...'}
+        />
+      );
+    }
+
     if (!this.props.selectedToken){
       const strategies = this.functionsUtil.getGlobalConfig(['strategies']);
       return (
@@ -402,7 +419,7 @@ class Stats extends Component {
                       {
                         title:'CURRENCY',
                         props:{
-                          width:[0.3,0.25]
+                          width:[0.3,0.17]
                         },
                         fields:[
                           {
@@ -420,7 +437,7 @@ class Stats extends Component {
                       {
                         title:'POOL',
                         props:{
-                          width:[0.21,0.16],
+                          width:[0.21,0.15],
                         },
                         fields:[
                           {
@@ -431,11 +448,23 @@ class Stats extends Component {
                       {
                         title:'APY',
                         props:{
-                          width: [0.19,0.14],
+                          width: [0.19,0.12],
                         },
                         fields:[
                           {
                             name:'apy'
+                          }
+                        ]
+                      },
+                      {
+                        title:'RISK SCORE',
+                        mobile:false,
+                        props:{
+                          width:[0.27,0.14],
+                        },
+                        fields:[
+                          {
+                            name:'score'
                           }
                         ]
                       },
@@ -458,7 +487,7 @@ class Stats extends Component {
                       {
                         title:'',
                         props:{
-                          width:[0.3,0.20],
+                          width:[0.3,0.17],
                         },
                         parentProps:{
                           width:1
