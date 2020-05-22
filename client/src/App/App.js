@@ -529,7 +529,7 @@ class App extends Component {
 
                               {this.state.route === "default" ? (
                                 <Switch>
-                                  <Route path="/:customParam?"
+                                  <Route exact path="/"
                                     render={ (props) =>
                                       <>
                                         <Landing
@@ -582,7 +582,7 @@ class App extends Component {
                                       </>
                                     }
                                   ></Route>
-                                  <Route path="/terms-of-service">
+                                  <Route exact path="/terms-of-service">
                                     <Tos />
                                   </Route>
                                   <Route>
