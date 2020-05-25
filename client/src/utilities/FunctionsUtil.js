@@ -1108,7 +1108,7 @@ class FunctionsUtil {
     if (!userInfo.address){
       return false;
     }
-    simpleID = simpleID ? simpleID : (this.props.simpleID ? this.props.simpleID : this.props.initSimpleID());
+    simpleID = simpleID ? simpleID : (this.props.simpleID ? this.props.simpleID : (typeof this.props.initSimpleID === 'function' ? this.props.initSimpleID() : null));
     if (simpleID){
       return simpleID.passUserInfo(userInfo);
     }

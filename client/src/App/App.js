@@ -424,8 +424,10 @@ class App extends Component {
                                                     initWeb3={initWeb3}
                                                     biconomy={biconomy}
                                                     isMobile={isMobile}
+                                                    simpleID={simpleID}
                                                     contracts={contracts}
                                                     initAccount={initAccount}
+                                                    initSimpleID={initSimpleID}
                                                     initContract={initContract}
                                                     transactions={transactions}
                                                     buyToken={this.state.buyToken}

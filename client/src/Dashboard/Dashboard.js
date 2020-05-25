@@ -7,13 +7,14 @@ import FunctionsUtil from '../utilities/FunctionsUtil';
 // Import page components
 import Stats from '../Stats/Stats';
 import AssetPage from '../AssetPage/AssetPage';
+import WelcomeModal from "../utilities/components/WelcomeModal";
 import DashboardHeader from '../DashboardHeader/DashboardHeader';
-// import BestYieldStrategy from {};
 
 class Dashboard extends Component {
   state = {
     menu:[],
     baseRoute:null,
+    activeModal:null,
     currentRoute:null,
     pageComponent:null,
     currentSection:null,
@@ -60,6 +61,18 @@ class Dashboard extends Component {
 
     await this.setState({
       menu
+    });
+  }
+
+  resetModal = () => {
+    this.setState({
+      activeModal: null
+    });
+  }
+
+  setActiveModal = (activeModal) => {
+    this.setState({
+      activeModal
     });
   }
 
@@ -183,6 +196,43 @@ class Dashboard extends Component {
         this.loadParams();
       });
     }
+
+    // Show welcome modal
+    const accountChanged = prevProps.account !== this.props.account;
+    if (this.props.account && accountChanged){
+      let welcomeIsOpen = false;
+
+      const welcomeModalProps = this.functionsUtil.getGlobalConfig(['modals','welcome']);
+
+      if (welcomeModalProps.enabled && localStorage && accountChanged){
+
+        // Check the last login of the wallet
+        const currTime = new Date().getTime();
+        const walletAddress = this.props.account.toLowerCase();
+        let lastLogin = localStorage.getItem('lastLogin') ? JSON.parse(localStorage.getItem('lastLogin')) : {};
+
+        if (!lastLogin[walletAddress]){
+          lastLogin[walletAddress] = {
+            'signedUp':false,
+            'lastTime':currTime
+          };
+          welcomeIsOpen = true;
+        } else if (!lastLogin[walletAddress].signedUp) {
+          const lastTime = parseInt(lastLogin[walletAddress].lastTime);
+          const timeFromLastLogin = (currTime-lastTime)/1000;
+          welcomeIsOpen = timeFromLastLogin>=welcomeModalProps.frequency; // 1 day since last login
+        }
+
+        if (welcomeIsOpen){
+          lastLogin[walletAddress].lastTime = currTime;
+          this.functionsUtil.setLocalStorage('lastLogin',JSON.stringify(lastLogin));
+        }
+      }
+
+      this.setState({
+        activeModal: welcomeIsOpen ? 'welcome' : this.state.activeModal
+      });
+    }
   }
 
   goToSection(section,isDashboard=true){
@@ -290,6 +340,17 @@ class Dashboard extends Component {
             )
           }
         </Flex>
+
+        <WelcomeModal
+          closeModal={this.resetModal}
+          account={this.props.account}
+          simpleID={this.props.simpleID}
+          network={this.props.network.current}
+          tokenName={this.props.selectedToken}
+          initSimpleID={this.props.initSimpleID}
+          baseTokenName={this.props.selectedToken}
+          isOpen={this.state.activeModal === 'welcome'}
+        />
       </Flex>
     );
   }
