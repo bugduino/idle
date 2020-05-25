@@ -7,7 +7,6 @@ import {
 import jQuery from 'jquery';
 import theme from "../theme";
 import Tos from "../Tos/Tos";
-import Stats from '../Stats/Stats';
 import connectors from './connectors';
 import Web3Provider from 'web3-react';
 import React, { Component } from "react";
@@ -394,23 +393,6 @@ class App extends Component {
                         return (
                         <Box>
                           <Switch>
-                            <Route
-                              path="/stats/:customToken?"
-                              render={(props) => <Stats
-                                                    {...props}
-                                                    web3={web3}
-                                                    initWeb3={initWeb3}
-                                                    isMobile={isMobile}
-                                                    contracts={contracts}
-                                                    tokenConfig={this.state.tokenConfig}
-                                                    setToken={ e => { this.setToken(e) } }
-                                                    selectedToken={this.state.selectedToken}
-                                                    contractsInitialized={contractsInitialized}
-                                                    availableTokens={this.state.availableTokens}
-                                                    selectedStrategy={this.state.selectedStrategy}
-                                                  />}
-                            >
-                            </Route>
                             <Route
                               path="/dashboard/:section?/:param1?/:param2?"
                               render={(props) => <Dashboard
