@@ -512,6 +512,7 @@ class Stats extends Component {
                       }
                     ]}
                     {...this.props}
+                    selectedStrategy={strategy}
                     availableTokens={availableTokens}
                   />
                 </Flex>
