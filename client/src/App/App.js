@@ -445,6 +445,7 @@ class App extends Component {
                                                     availableStrategies={this.state.availableStrategies}
                                                     connectAndValidateAccount={connectAndValidateAccount}
                                                     contractMethodSendWrapper={contractMethodSendWrapper}
+                                                    setCallbackAfterLogin={this.setCallbackAfterLogin.bind(this)}
                                                 />
                                               }
                             >

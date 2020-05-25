@@ -6,7 +6,6 @@ import {
   Button
 } from "rimble-ui";
 import ModalCard from './ModalCard';
-import globalConfigs from '../../configs/globalConfigs';
 import FunctionsUtil from '../FunctionsUtil';
 
 class ConnectionErrorModal extends React.Component {
@@ -41,18 +40,16 @@ class ConnectionErrorModal extends React.Component {
   }
 
   render() {
-    const walletProvider = localStorage && localStorage.getItem('walletProvider') ? localStorage.getItem('walletProvider') : null;
-    const connectorInfo = walletProvider ? globalConfigs.connectors[walletProvider.toLowerCase()] : null;
-    const walletIcon = connectorInfo ? (connectorInfo.icon ? connectorInfo.icon : `${walletProvider.toLowerCase()}.svg`) : null;
     return (
       <Modal isOpen={this.props.isOpen}>
         <ModalCard closeFunc={ e => this.closeModal(e) }>
-          <ModalCard.Header title={`${walletProvider} connection error`} icon={`images/${walletIcon}`}></ModalCard.Header>
+          <ModalCard.Header title={`Connection Error`} icon={'images/connection-error.svg'}></ModalCard.Header>
           <ModalCard.Body>
             <Flex my={1} width={1} flexDirection={'column'} mx={'auto'}>
               <Text.p color={'dark-gray'} textAlign={'center'}>
-                The following error occured while trying to connect with your {walletProvider} account:<br />
-                <Text.span color={'red'} fontWeight={3}>"{this.props.modals.data.connectionError}"</Text.span>
+                The following error occured while trying to connect with your account:<br />
+                <Text.span color={'red'} fontWeight={3}>"{this.props.modals.data.connectionError}"</Text.span><br />
+                Make sure that your wallet is unlocked!
               </Text.p>
             </Flex>
             <Flex mb={3} flexDirection={'column'} alignItems={'center'} justifyContent={'center'}>

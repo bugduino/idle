@@ -7,6 +7,7 @@ import FunctionsUtil from '../utilities/FunctionsUtil';
 // Import page components
 import Stats from '../Stats/Stats';
 import AssetPage from '../AssetPage/AssetPage';
+import RoundButton from '../RoundButton/RoundButton';
 import WelcomeModal from "../utilities/components/WelcomeModal";
 import DashboardHeader from '../DashboardHeader/DashboardHeader';
 
@@ -241,6 +242,11 @@ class Dashboard extends Component {
     window.scrollTo(0, 0);
   }
 
+  logout = async () => {
+    this.props.setConnector('Infura','Infura');
+    await this.props.initWeb3('Infura');
+  }
+
   changeToken(selectedToken){
     selectedToken = selectedToken.toUpperCase();
     if (Object.keys(this.props.availableTokens).includes(selectedToken)){
@@ -262,6 +268,7 @@ class Dashboard extends Component {
   }
 
   render() {
+    const walletProvider = this.functionsUtil.getWalletProvider();
     const PageComponent = this.state.pageComponent ? this.state.pageComponent : null;
     return (
       <Flex
@@ -303,21 +310,40 @@ class Dashboard extends Component {
         >
           {
             !this.props.accountInizialized || !this.props.contractsInitialized || !PageComponent ? (
-              <FlexLoader
-                textProps={{
-                  textSize:4,
-                  fontWeight:2
-                }}
-                loaderProps={{
-                  mb:3,
-                  size:'40px'
-                }}
-                flexProps={{
-                  minHeight:'50vh',
-                  flexDirection:'column'
-                }}
-                text={ !this.props.accountInizialized ? 'Loading account...' : ( !this.props.contractsInitialized ? 'Loading contracts...' : 'Loading assets...' )}
-              />
+              <Flex
+                width={1}
+                minHeight={'50vg'}
+                alignItems={'center'}
+                flexDirection={'column'}
+                justifyContent={'center'}
+              >
+                <FlexLoader
+                  textProps={{
+                    textSize:4,
+                    fontWeight:2
+                  }}
+                  loaderProps={{
+                    mb:3,
+                    size:'40px'
+                  }}
+                  flexProps={{
+                    my:3,
+                    flexDirection:'column'
+                  }}
+                  text={ !this.props.accountInizialized ? 'Loading account...' : ( !this.props.contractsInitialized ? 'Loading contracts...' : 'Loading assets...' )}
+                />
+                {
+                  walletProvider !== 'Infura' &&
+                    <RoundButton
+                      buttonProps={{
+                        width:'auto'
+                      }}
+                      handleClick={this.logout.bind(this)}
+                    >
+                      Reset
+                    </RoundButton>
+                }
+              </Flex>
             ) : (
               <Flex
                 width={1}

@@ -189,7 +189,7 @@ class RimbleTransaction extends React.Component {
   }
 
   // Initialize a web3 provider
-  initWeb3 = async () => {
+  initWeb3 = async (connectorName=null) => {
 
     this.loadUtils();
 
@@ -207,11 +207,17 @@ class RimbleTransaction extends React.Component {
       window.RimbleWeb3_context = context;
     }
 
-    const connectorName = this.props.connectorName;
+    // Reset setConnectorName if force connectorName
+    if (connectorName){
+      setConnectorName = null;
+    } else {
+      connectorName = this.props.connectorName;
+    }
+
     const last_context = localStorage ? JSON.parse(localStorage.getItem('context')) : null;
 
     // this.functionsUtil.customLog('initWeb3',connectorName,setConnectorName);
-    // console.log(context.active,context.connectorName,connectorName,setConnectorName);
+    // console.log('initWeb3',context.active,context.connectorName,connectorName,setConnectorName);
 
     if (!context.active || (connectorName !== 'Infura' && connectorName !== setConnectorName)) {
       // Select preferred web3 provider
@@ -287,6 +293,18 @@ class RimbleTransaction extends React.Component {
       web3Provider = web3.currentProvider;
     }
 
+    let forceCallback = false;
+
+    if (connectorName === 'Infura' && web3Provider && typeof web3Provider.enable === 'function'){
+      try {
+        await web3Provider.enable();
+      } catch (connectionError){
+        web3Provider = null;
+        web3Host = globalConfigs.network.providers.infura[globalConfigs.network.requiredNetwork]+INFURA_KEY;
+        forceCallback = true;
+      }
+    }
+
     const terminalInfo = globalConfigs.network.providers.terminal;
 
     if (terminalInfo && terminalInfo.enabled && terminalInfo.supportedNetworks.indexOf(globalConfigs.network.requiredNetwork) !== -1 ){
@@ -305,12 +323,13 @@ class RimbleTransaction extends React.Component {
     } else {
       // Injected web3 provider
       if (web3Provider){
-        // console.log(web3Provider);
         web3 = new Web3(web3Provider);
       // Infura
       } else if (web3Host) {
         web3 = new Web3(new Web3.providers.HttpProvider(web3Host));
-        this.props.setConnector('Infura',null);
+        if (connectorName !== 'Infura'){
+          this.props.setConnector('Infura',null);
+        }
       }
     }
 
@@ -318,27 +337,32 @@ class RimbleTransaction extends React.Component {
 
       window.web3Injected = this.state.web3;
 
+      if (typeof this.props.callbackAfterLogin === 'function'){
+        this.props.callbackAfterLogin();
+        this.props.setCallbackAfterLogin(null);
+      }
+
       // After setting the web3 provider, check network
-      await this.checkNetwork();
-      if (this.state.network.isCorrectNetwork){
+      try {
+        await this.checkNetwork();
+        if (this.state.network.isCorrectNetwork){
 
-        if (!this.state.contractsInitialized){
-          await this.initializeContracts();
-        }
+          if (!this.state.contractsInitialized){
+            await this.initializeContracts();
+          }
 
-        if (context.account) {
-          await this.initAccount(context.account);
-        } else {
-          this.setState({
-            account: null,
-            accountInizialized: true
-          });
+          if (context.account) {
+            await this.initAccount(context.account);
+          } else {
+            await this.setState({
+              account: null,
+              accountInizialized: true
+            });
+          }
         }
-        
-        if (typeof this.props.callbackAfterLogin === 'function'){
-          this.props.callbackAfterLogin();
-          this.props.setCallbackAfterLogin(null);
-        }
+      // Initialize Infura Web3 and display error
+      } catch (error) {
+        this.openConnectionErrorModal(null,error.message);
       }
     }
 
@@ -347,7 +371,7 @@ class RimbleTransaction extends React.Component {
     const biconomyInfo = globalConfigs.network.providers.biconomy;
     const walletProvider = this.functionsUtil.getWalletProvider();
 
-    if (biconomyInfo && biconomyInfo.enabled && biconomyInfo.supportedNetworks.includes(globalConfigs.network.requiredNetwork) && (!walletProvider || !biconomyInfo.disabledWallets.includes(walletProvider.toLowerCase()))){
+    if (connectorName !== 'Infura' && biconomyInfo && biconomyInfo.enabled && biconomyInfo.supportedNetworks.includes(globalConfigs.network.requiredNetwork) && (!walletProvider || !biconomyInfo.disabledWallets.includes(walletProvider.toLowerCase()))){
 
       if (this.state.biconomy === null){
         const biconomyWeb3Provider = web3Provider ? web3Provider : web3Host;
@@ -387,7 +411,7 @@ class RimbleTransaction extends React.Component {
     } else {
       if (web3 !== this.state.web3){
         this.setState({ web3 }, web3Callback);
-      } else if (context.account){
+      } else if (context.account || forceCallback){
         web3Callback();
       }
     }
@@ -456,7 +480,6 @@ class RimbleTransaction extends React.Component {
     }
 
     try {
-
       if (!account){
         const wallets = await this.state.web3.eth.getAccounts();
         if (wallets && wallets.length){
