@@ -353,7 +353,7 @@ class RimbleTransaction extends React.Component {
         const biconomyWeb3Provider = web3Provider ? web3Provider : web3Host;
         const biconomy = new Biconomy(biconomyWeb3Provider,biconomyInfo.params);
 
-        if (biconomy){
+        if (biconomy && typeof biconomy.onEvent === 'function'){
           web3 = new Web3(biconomy);
           biconomy.onEvent(biconomy.READY, () => {
             if (this.componentUnmounted || this.state.biconomy === false || this.state.biconomy === biconomy){
