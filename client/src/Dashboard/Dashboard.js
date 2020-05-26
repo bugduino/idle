@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
 import DashboardMenu from './DashboardMenu';
-import { Flex, Card } from 'rimble-ui';
 import FlexLoader from '../FlexLoader/FlexLoader';
+import { Flex, Card, Icon, Text } from 'rimble-ui';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 
 // Import page components
 import Stats from '../Stats/Stats';
 import AssetPage from '../AssetPage/AssetPage';
 import RoundButton from '../RoundButton/RoundButton';
+import DashboardCard from '../DashboardCard/DashboardCard';
 import WelcomeModal from "../utilities/components/WelcomeModal";
 import DashboardHeader from '../DashboardHeader/DashboardHeader';
 
@@ -19,7 +20,10 @@ class Dashboard extends Component {
     currentRoute:null,
     pageComponent:null,
     currentSection:null,
+    showResetButton:false
   };
+
+  timeoutId = null;
 
   // Utils
   functionsUtil = null;
@@ -165,13 +169,28 @@ class Dashboard extends Component {
     });
   }
 
+  componentWillUnmount(){
+    if (this.timeoutId){
+      window.clearTimeout(this.timeoutId);
+    }
+  }
+
   async componentWillMount() {
+
     this.loadUtils();
     await this.loadMenu();
     this.loadParams();
   }
 
   async componentDidMount() {
+
+    this.timeoutId = window.setTimeout(() => {
+      if (!this.props.accountInizialized || !this.props.contractsInitialized){
+        this.setState({
+          showResetButton:true
+        });
+      }
+    },15000);
 
     if (!this.props.web3){
       this.props.initWeb3();
@@ -268,7 +287,6 @@ class Dashboard extends Component {
   }
 
   render() {
-    const walletProvider = this.functionsUtil.getWalletProvider();
     const PageComponent = this.state.pageComponent ? this.state.pageComponent : null;
     return (
       <Flex
@@ -317,31 +335,60 @@ class Dashboard extends Component {
                 flexDirection={'column'}
                 justifyContent={'center'}
               >
-                <FlexLoader
-                  textProps={{
-                    textSize:4,
-                    fontWeight:2
-                  }}
-                  loaderProps={{
-                    mb:3,
-                    size:'40px'
-                  }}
-                  flexProps={{
-                    my:3,
-                    flexDirection:'column'
-                  }}
-                  text={ !this.props.accountInizialized ? 'Loading account...' : ( !this.props.contractsInitialized ? 'Loading contracts...' : 'Loading assets...' )}
-                />
                 {
-                  walletProvider !== 'Infura' &&
-                    <RoundButton
-                      buttonProps={{
-                        width:'auto'
+                  !this.state.showResetButton ? (
+                    <FlexLoader
+                      textProps={{
+                        textSize:4,
+                        fontWeight:2
                       }}
-                      handleClick={this.logout.bind(this)}
+                      loaderProps={{
+                        mb:3,
+                        size:'40px'
+                      }}
+                      flexProps={{
+                        my:3,
+                        flexDirection:'column'
+                      }}
+                      text={ !this.props.accountInizialized ? 'Loading account...' : ( !this.props.contractsInitialized ? 'Loading contracts...' : 'Loading assets...' )}
+                    />
+                  ) : (
+                    <DashboardCard
+                      cardProps={{
+                        p:3,
+                        mt:3,
+                        width:[1,0.35]
+                      }}
                     >
-                      Reset
-                    </RoundButton>
+                      <Flex
+                        alignItems={'center'}
+                        flexDirection={'column'}
+                      >
+                        <Icon
+                          size={'2.3em'}
+                          name={'Warning'}
+                          color={'cellText'}
+                        />
+                        <Text
+                          mt={2}
+                          fontSize={2}
+                          color={'cellText'}
+                          textAlign={'center'}
+                        >
+                          Idle can't connect to your wallet!<br />Make sure that your wallet is unlocked and try again.
+                        </Text>
+                        <RoundButton
+                          buttonProps={{
+                            mt:3,
+                            width:[1,1/2]
+                          }}
+                          handleClick={this.logout.bind(this)}
+                        >
+                          Logout
+                        </RoundButton>
+                      </Flex>
+                    </DashboardCard>
+                  )
                 }
               </Flex>
             ) : (
