@@ -285,8 +285,6 @@ class Stats extends Component {
     const earning = lastIdlePrice.div(firstIdlePrice).minus(1).times(100);
     const apr = earning.times(365).div(days).toFixed(2);
 
-    // debugger;
-
     // console.log(moment(firstResult.timestamp*1000).format('YYYY-MM-DD HH:mm'),moment(lastResult.timestamp*1000).format('YYYY-MM-DD HH:mm'));
 
     const compoundInfo = this.props.tokenConfig.protocols.filter((p) => { return p.name === 'compound' })[0];
@@ -301,7 +299,7 @@ class Stats extends Component {
       delta = earning.minus(compoundApr).times(365).div(days).toFixed(2);
     }
 
-    // Take rebalances
+    // Count rebalances
     let rebalances = 0;
     apiResults.forEach((row,index) => {
       if (index){
@@ -317,17 +315,21 @@ class Stats extends Component {
           return this.functionsUtil.BNify(accumulator).plus(allocation);
         },0);
 
-        const firstProtocol = row.protocolsData[0];
-        const allocation = this.functionsUtil.fixTokenDecimals(firstProtocol.allocation,this.props.tokenConfig.decimals);
-        const allocationPerc = parseInt(allocation.div(totalAllocation).times(10000).toFixed(0));
-
-        const prevFirstProtocol = prevRow.protocolsData.find(prevProtocol => { return prevProtocol.protocolAddr === firstProtocol.protocolAddr });
-        const prevAllocation = this.functionsUtil.fixTokenDecimals(prevFirstProtocol.allocation,this.props.tokenConfig.decimals);
-        const prevAllocationPerc = parseInt(prevAllocation.div(prevTotalAllocation).times(10000).toFixed(0));
-
-        if (allocationPerc !== prevAllocationPerc){
-          rebalances++;
-        }
+        let hasRebalanced = false;
+        row.protocolsData.forEach( p => {
+          if (hasRebalanced){
+            return;
+          }
+          const prevP = prevRow.protocolsData.find( prevP => (prevP.protocolAddr.toLowerCase() === p.protocolAddr.toLowerCase()) );
+          const allocation = this.functionsUtil.fixTokenDecimals(p.allocation,this.props.tokenConfig.decimals);
+          const prevAllocation = this.functionsUtil.fixTokenDecimals(prevP.allocation,this.props.tokenConfig.decimals);
+          const allocationPerc = parseInt(parseFloat(allocation.div(totalAllocation).times(100)));
+          const prevAllocationPerc = parseInt(parseFloat(prevAllocation.div(prevTotalAllocation).times(100)));
+          if (allocationPerc!==prevAllocationPerc){
+            rebalances++;
+            hasRebalanced = true;
+          }
+        });
       }
     });
 
@@ -828,7 +830,7 @@ class Stats extends Component {
                   />
                 </Flex>
               }
-              <Flex id='chart-ALL' width={[1, this.state.idleVersion === 'v3' ? 2/3 : 1]} mb={[0,3]}>
+              <Flex id={'chart-ALL'} width={[1, this.state.idleVersion === 'v3' ? 2/3 : 1]} mb={[0,3]}>
                 <Flex alignItems={'flex-start'} justifyContent={'flex-start'} flexDirection={'column'} width={1}>
                   <Heading.h4
                     mb={2}
