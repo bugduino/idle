@@ -15,8 +15,8 @@ class AssetPage extends Component {
   state = {
     tokenBalance:{},
     tokenApproved:{},
+    activeModal:null,
     idleTokenBalance:{},
-    buyModalOpened:false,
     componentMounted:false
   };
 
@@ -31,9 +31,15 @@ class AssetPage extends Component {
     }
   }
 
-  setBuyModalOpened(buyModalOpened){
+  resetModal = () => {
     this.setState({
-      buyModalOpened
+      activeModal: null
+    });
+  }
+
+  setActiveModal = activeModal => {
+    this.setState({
+      activeModal
     });
   }
 
@@ -53,8 +59,6 @@ class AssetPage extends Component {
         newState.idleTokenBalance[token] = idleTokenBalance;
       });
 
-      // console.log(newState);
-
       newState.componentMounted = true;
       this.setState(newState);
     }
@@ -67,8 +71,6 @@ class AssetPage extends Component {
 
   async componentDidUpdate(prevProps, prevState) {
     this.loadUtils();
-
-    // console.log('selectedToken',this.props.selectedToken);
     const transactionsChanged = prevProps.transactions && this.props.transactions && Object.values(prevProps.transactions).filter(tx => (tx.status==='success')).length !== Object.values(this.props.transactions).filter(tx => (tx.status==='success')).length;
     const accountChanged = prevProps.account !== this.props.account;
     if (accountChanged || transactionsChanged){
@@ -109,7 +111,7 @@ class AssetPage extends Component {
               icon={'Add'}
               {...this.props}
               text={'Add funds'}
-              handleClick={ e => this.setBuyModalOpened(true) }
+              handleClick={ e => this.setActiveModal('buy') }
             />
           </Flex>
         </Flex>
@@ -264,11 +266,12 @@ class AssetPage extends Component {
             />
           </Flex>
         }
+
         <BuyModal
           {...this.props}
-          isOpen={this.state.buyModalOpened}
+          closeModal={this.resetModal}
           buyToken={this.props.selectedToken}
-          closeModal={ e => this.setBuyModalOpened(false) }
+          isOpen={this.state.activeModal === 'buy'}
         />
       </Box>
     );

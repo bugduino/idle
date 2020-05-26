@@ -9,17 +9,20 @@ import { Flex, Text, Input, Box, Icon } from "rimble-ui";
 import DashboardCard from '../DashboardCard/DashboardCard';
 import AssetSelector from '../AssetSelector/AssetSelector';
 import TxProgressBar from '../TxProgressBar/TxProgressBar';
+import ShareModal from '../utilities/components/ShareModal';
 import TransactionField from '../TransactionField/TransactionField';
 import FastBalanceSelector from '../FastBalanceSelector/FastBalanceSelector';
 
 class DepositRedeem extends Component {
 
   state = {
+    tokenAPY:'-',
     inputValue:{},
     processing:{},
     canRedeem:false,
     canDeposit:false,
     action:'deposit',
+    activeModal:null,
     tokenApproved:false,
     buttonDisabled:false,
     fastBalanceSelector:{},
@@ -45,6 +48,29 @@ class DepositRedeem extends Component {
 
   }
 
+  resetModal = () => {
+    this.setState({
+      activeModal: null
+    });
+  }
+
+  setActiveModal = activeModal => {
+    this.setState({
+      activeModal
+    });
+  }
+
+  async loadAPY(){
+    const tokenAprs = await this.functionsUtil.getTokenAprs(this.props.tokenConfig);
+    if (tokenAprs && tokenAprs.avgApr !== null){
+      const tokenAPR = tokenAprs.avgApr;
+      const tokenAPY = this.functionsUtil.apr2apy(tokenAPR.div(100)).times(100).toFixed(2);
+      this.setState({
+        tokenAPY
+      });
+    }
+  }
+
   async componentDidUpdate(prevProps,prevState){
     this.loadUtils();
 
@@ -52,9 +78,8 @@ class DepositRedeem extends Component {
       return false;
     }
 
-    const tokenBalanceChanged = prevProps.tokenBalance !== this.props.tokenBalance && this.props.tokenBalance !== null;
-
     const tokenChanged = prevProps.selectedToken !== this.props.selectedToken;
+    const tokenBalanceChanged = prevProps.tokenBalance !== this.props.tokenBalance && this.props.tokenBalance !== null;
 
     if (tokenChanged || tokenBalanceChanged){
       this.loadTokenInfo();
@@ -154,7 +179,6 @@ class DepositRedeem extends Component {
     newState.canDeposit = this.props.tokenBalance && this.functionsUtil.BNify(this.props.tokenBalance).gt(0);
     newState.canRedeem = this.props.idleTokenBalance && this.functionsUtil.BNify(this.props.idleTokenBalance).gt(0);
     newState.tokenApproved = await this.functionsUtil.checkTokenApproved(this.props.selectedToken,this.props.tokenConfig.idle.address,this.props.account);
-    // console.log('loadTokenInfo',this.props.selectedToken,this.props.tokenConfig.idle,newState.tokenApproved);
     newState.processing = {
       redeem:{
         txHash:null,
@@ -182,6 +206,7 @@ class DepositRedeem extends Component {
 
     this.setState(newState,() => {
       this.checkAction();
+      this.loadAPY();
     });
   }
 
@@ -256,6 +281,7 @@ class DepositRedeem extends Component {
 
           if (txSucceeded){
             this.setState((prevState) => ({
+              activeModal:'share',
               inputValue:{
                 ...prevState.inputValue,
                 [this.state.action]: this.functionsUtil.BNify(0)
@@ -373,20 +399,9 @@ class DepositRedeem extends Component {
     let action = this.state.action;
 
     switch(action){
-      // case 'deposit':
-      //   if (!this.state.canDeposit){
-      //     if (this.state.canRedeem){
-      //       action = 'redeem';
-      //     }
-      //   }
-      // break;
       case 'redeem':
         if (!this.state.canRedeem){
-          // if (this.state.canDeposit){
-            action = 'deposit';
-          // } else {
-          //   action = null;
-          // }
+          action = 'deposit';
         }
       break;
       default:
@@ -837,6 +852,19 @@ class DepositRedeem extends Component {
               />
             </Flex>
         }
+
+        <ShareModal
+          confettiEnabled={true}
+          icon={`images/medal.svg`}
+          title={`Congratulations!`}
+          account={this.props.account}
+          closeModal={this.resetModal}
+          tokenName={this.props.selectedToken}
+          isOpen={this.state.activeModal === 'share'}
+          text={`You have successfully deposited in Idle!<br />Enjoy <strong>${this.state.tokenAPY}% APY</strong> on your <strong>${this.props.selectedToken}</strong>!`}
+          tweet={`I'm earning ${this.state.tokenAPY}% APY on my ${this.props.selectedToken} with @idlefinance! Go to ${this.functionsUtil.getGlobalConfig(['baseURL'])} and start earning now from your idle tokens!`}
+        />
+
       </Flex>
     );
   }
