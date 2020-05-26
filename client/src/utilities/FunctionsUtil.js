@@ -865,17 +865,6 @@ class FunctionsUtil {
               return false;
             }
 
-            const contractAddress = tokenConfig.idle.address.toLowerCase().replace('x','');
-            const isMigrationRightContract = migrationTxReceipt.logs.filter((tx) => { return tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${contractAddress}`; });
-
-            if (!isMigrationRightContract.length){
-              // Remove wrong contract tx
-              if (isStoredTx){
-                delete storedTxs[this.props.account][tokenKey][txKey];
-              }
-              return false;
-            }
-
             // Save txReceipt into the tx
             if (!tx.txReceipt){
               tx.txReceipt = migrationTxReceipt;
@@ -884,39 +873,30 @@ class FunctionsUtil {
               }
             }
 
-            const oldContractName = tokenConfig.migration.oldContract.name;
-            const oldContractAddr = tokenConfig.migration.oldContract.address.replace('x','').toLowerCase();
-            const migrationTxInternalTransfers = migrationTxReceipt.logs.filter((tx) => { return tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${oldContractAddr}`; });
+            const migrationContractAddr = tokenConfig.migration.migrationContract.address.toLowerCase().replace('x','');
+            const contractAddress = tokenConfig.idle.address.toLowerCase().replace('x','');
+            const migrationTxInternalTransfers = migrationTxReceipt.logs.filter((tx) => { return tx.topics.length>=3 && tx.topics[tx.topics.length-2].toLowerCase() === `0x00000000000000000000000${migrationContractAddr}` && tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${contractAddress}`; });
 
             if (!migrationTxInternalTransfers.length){
               return false;
             }
 
-            const oldContractTokenDecimals = await this.getTokenDecimals(oldContractName);
             const migrationInternalTransfer = migrationTxInternalTransfers.pop();
 
             const decodedLogs = this.props.web3.eth.abi.decodeLog([
               {
                 internalType: "uint256",
-                name: "_idleToken",
-                type: "uint256"
-              },
-              {
-                internalType: "uint256",
                 name: "_token",
-                type: "uint256"
-              },
-              {
-                internalType: "uint256",
-                name: "_price",
                 type: "uint256"
               },
             ],migrationInternalTransfer.data,migrationInternalTransfer.topics);
 
-            const migrationValue = decodedLogs._token;
-            const migrationTokenDecimals = oldContractTokenDecimals ? oldContractTokenDecimals : await this.getTokenDecimals(tokenConfig.migration.oldContract.name);
-            const migrationValueFixed = this.fixTokenDecimals(migrationValue,migrationTokenDecimals);
+            if (!decodedLogs || !decodedLogs._token){
+              return false;
+            }
 
+            const migrationValue = decodedLogs._token;
+            const migrationValueFixed = this.fixTokenDecimals(migrationValue,tokenConfig.decimals);
             realTx.value = migrationValueFixed.toString();
           break;
           default:
