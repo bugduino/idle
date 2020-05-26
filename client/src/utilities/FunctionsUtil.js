@@ -72,6 +72,31 @@ class FunctionsUtil {
      tmp.innerHTML = html;
      return tmp.textContent || tmp.innerText || "";
   }
+  // VanillaJS function for smooth scroll
+  scrollTo = (to, duration) => {
+    const start = window.scrollY;
+    const change = to - start;
+    const increment = 20;
+    let currentTime = 0;
+
+    Math.easeInOutQuad = function (t, b, c, d) {
+      t /= d/2;
+      if (t < 1) return c/2*t*t + b;
+      t--;
+      return -c/2 * (t*(t-2) - 1) + b;
+    };
+
+    const animateScroll = () => {
+        currentTime += increment;
+        var val = Math.easeInOutQuad(currentTime, start, change, duration);
+        window.scrollTo(0,val);
+        if(currentTime < duration) {
+          window.setTimeout(animateScroll, increment);
+        }
+    };
+
+    animateScroll();
+  }
   getTxAction = (tx,tokenConfig) => {
 
     const migrationContractAddr = tokenConfig.migration && tokenConfig.migration.migrationContract ? tokenConfig.migration.migrationContract.address : null;

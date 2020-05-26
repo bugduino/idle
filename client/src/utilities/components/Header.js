@@ -97,19 +97,19 @@ class Header extends React.Component {
                 <Link
                   fontSize={3}
                   color={'white'}
-                  href={'/#contacts'}
                   hoverColor={'white'}
                   fontFamily={'sansSerif'}
                   textAlign={['center','left']}
+                  onClick={(e) => {this.functionsUtil.scrollTo(document.getElementById('contacts').offsetTop,300)}}
                 >Contact Us</Link>
                 <Link
                   ml={4}
                   fontSize={3}
-                  href={'/#faq'}
                   color={'white'}
                   hoverColor={'white'}
                   fontFamily={'sansSerif'}
                   textAlign={['center','left']}
+                  onClick={(e) => {this.functionsUtil.scrollTo(document.getElementById('faq').offsetTop,300)}}
                 >FAQs</Link>
               </Flex>
           }

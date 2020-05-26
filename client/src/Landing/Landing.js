@@ -52,6 +52,10 @@ class Landing extends Component {
     }
   }
 
+  componentWillMount(){
+    this.loadUtils();
+  }
+
   startCarousel = async () => {
     /*
     if (!this.props.isMobile){
@@ -79,8 +83,6 @@ class Landing extends Component {
   }
 
   async componentDidMount(){
-
-    this.loadUtils();
     this.props.processCustomParam(this.props);
 
     componentUnmounted = false;
@@ -266,32 +268,6 @@ class Landing extends Component {
     window.location.href = '#invest';
   }
 
-  // VanillaJS function for smooth scroll
-  scrollTo = (to, duration) => {
-      const start = window.scrollY;
-      const change = to - start;
-      const increment = 20;
-      let currentTime = 0;
-
-      Math.easeInOutQuad = function (t, b, c, d) {
-        t /= d/2;
-        if (t < 1) return c/2*t*t + b;
-        t--;
-        return -c/2 * (t*(t-2) - 1) + b;
-      };
-
-      const animateScroll = () => {
-          currentTime += increment;
-          var val = Math.easeInOutQuad(currentTime, start, change, duration);
-          window.scrollTo(0,val);
-          if(currentTime < duration) {
-            window.setTimeout(animateScroll, increment);
-          }
-      };
-
-      animateScroll();
-  }
-
   setConfetti = (runConfetti) => {
     this.setState({
       runConfetti
@@ -406,7 +382,7 @@ class Landing extends Component {
               */
             }
             <Flex flexDirection={'column'} py={[3,3]} mb={[3,5]} alignItems={'center'}>
-              <Link onClick={(e) => {this.scrollTo(document.getElementById('how-it-works').offsetTop,300)}} textAlign={'center'} color={'dark-gray'} hoverColor={'dark-gray'} fontSize={2} fontWeight={3}>
+              <Link onClick={(e) => {this.functionsUtil.scrollTo(document.getElementById('how-it-works').offsetTop,300)}} textAlign={'center'} color={'dark-gray'} hoverColor={'dark-gray'} fontSize={2} fontWeight={3}>
                 <Flex flexDirection={'column'} py={[2,1]} alignItems={'center'}>
                   <Box>
                     <Icon
