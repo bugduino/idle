@@ -10,53 +10,44 @@ class Faq extends Component {
     selectedSection: 'general',
     generalQuestions: [
       {
-        q: 'How does Idle work under the hood?',
-        a: `Idle gathers data from different Ethereum lending protocols, calculating the best possibile allocation to have the highest available interest rate. Your funds are put into asset pools (managed by the underlying lending protocols), from there borrowers can use the funds in pools to take out a loan. Those borrowers pay interest into the fund, increasing the size of the fund. When you withdraw your funds, you are entitled to a proportional amount of the interest accrued.`
+        q: 'What is Idle?',
+        a: `Idle is a decentralized rebalancing protocol that allows users to automatically and algorithmically manage their digital asset allocation among different third-party DeFi protocols. You can choose to maximize your interest rate returns through our MaxYield strategy or minimize your risk exposure through our RiskAdjusted allocation strategy.`
       },
       {
-        q: 'How long do I have to use Idle to earn interest?',
-        a: `You can use Idle for as short as one block; there are no requirements on how long an asset must be loaned. Because interest accrues every block, you’re free to redeem your funds at any time.`
+        q: 'What third-party protocols and assets does Idle support?',
+        a: `Idle connects with Compound, Aave, dYdX, Fulcrum, and DSR, and supports DAI, USDC and USDT.  Security is fundamental at Idle, meaning that our products will only connect to protocols that are audited by a top security firm and battle-tested in terms of time in market and digital assets locked. To add more security, we passed through multiple audit reviews and we use <a href="https://defiscore.io/" target="_blank" rel="nofollow noopener noreferrer">DeFiScore</a> risk assessment to evaluate the risk across DeFi protocols.`
       },
       {
         q: 'Can you walk me through an example?',
-        a: `When you use Idle, it automatically shows you the current best APR. If you decide to loan 10 DAI at that APR, simply enter that amount and click on 'Lend'. Idle will forward the funds to the protocol offering the aggregated best rate and give you tokens representing your position.`
+        a: `When utilizing the Idle protocol, a user supplies capital for lending as a part of Idle’s non-custodial smart contract pools; the protocol will automatically rebalance the pool’s current allocation to achieve optimized interest rates, based on the strategy.`
       }
     ],
     guidelinesQuestions: [
       {
-        q: 'How do I get my assets back?',
-        a: `You can back your assets back from Idle at any time by connecting your wallet and choosing "redeem assets". Idle will return the tokens loaned and interest earned directly to your wallet. In rare situations, your assets may not be immediately available because all the capital supplied by lenders has been borrowed. When this happens, borrowers are incentivized to repay the loan because of increasing interest rates. Furthermore, lending additional tokens can be more attractive because you will receive a higher APR for lending additional assets. You can loan more or choose to wait until the liquidity is available. Another option is to redeem the tokens of the underlying lending protocols (e.g. cToken or iToken) to reacquire your assets through their platforms.`
+        q: 'How do I manage my assets?',
+        a: `You can access Idle’s user dashboard where you can deposit funds, monitor performances and see insights, rebalance funds, convert from FIAT to crypto, and redeem back your assets.`
       },
       {
-        q: 'How could you provide such APR?',
-        a: `APR or annual percentage rate is the return users would get if they lend their funds for a year based off the current utilization ratio of the token debt reserve of the underlying protocols.
-          In Idle, APR is the best annual percentage rate available between various lending providers. Because APR is variable, it changes for every block in the Ethereum blockchain and is influenced by money market fluctuations, it’s worth to highlight that future returns may not reflect the current expected returns.`
+        q: 'How does the rebalancing process work?',
+        a: `A rebalance calculation involves assessing the total assets within a pool, incorporating underlying protocol rate functions and levels of supply and demand, and finally determining an allocation that achieves the optimal interest rate possible after the rebalance takes place, based on the strategy.`
       },
       {
-        q: 'What lending providers are integrated?',
-        a: `We are currently integrated with Compound and Fulcrum. More lending protocols will be added in the future`
-      },
-      {
-        q: 'What assets can I lend?',
-        a: `We currently support SAI, DAI and USDC. We plan to integrate other assets as well.`
+        q: 'What are IdleTokens?',
+        a: `IdleTokens represent your balance in the protocol, and accrue interest over time. As a specific Idle’s pool earns interest, its idleToken becomes convertible into an increasing quantity of the underlying asset. IdleTokens conform to the ERC-20 standard.`
       }
     ],
     ratesQuestions: [
       {
-        q: 'Is Idle a non-custodial platform?',
-        a: `Yes, only our smart contract can move pooled funds, we cannot directly move funds on your behalf.
-          When you lend assets in Idle, our smart contract forwards them to different lending protocols and returns Idle tokens representing your position in such protocols, all in the same transaction.`
+        q: 'Has Idle had a security audit?',
+        a: `Idle completed multiple and incremental security audits with Quantstamp in December 2019 and April/May 2020. Any issues affecting the performance of the protocol or security of funds have been resolved. Users should review our Terms of Service before using the protocol.`
       },
       {
-        q: 'Is Idle safe to use?',
-        a: `Our contract has been audited by Quantstamp, you can read the audit report <a href='https://certificate.quantstamp.com/full/idle-finance' target="_blank" rel="nofollow noopener noreferrer" style="color:${colors.blue}">here</a>.
-          Idle is built upon trustworthy platforms that all employ secured, audited smart contracts.
-          Our contract code is public and has been extensively tested, but the possibility of a bug always exists.
-          Use at your own risk.`
+        q: 'How are digital assets custodied?',
+        a: `Idle does not custody digital assets. When you interact with the Idle protocol, your digital assets will be sent to a smart contract that Idle does not control. The smart contract has the concept of “accounts,” to which only you have access. These accounts have balances for each asset, which then are lent out to underlying protocols. When you want to withdraw, the smart contract interacts with the underlying platforms to withdraw digital assets and route them to your wallet.`
       },
       {
-        q: 'How does the decentralized rebalancing process work?',
-        a: `After every loan or redemption, the smart contract checks to see if the pool needs to be rebalanced. If rebalancing is required, the entire pool position is liquidated and reallocated into the protocols yielding the highest interest rate. When the interest rates offered by the protocols change but there have not been any loans or redemptions made, then any user can choose to rebalance the pool on their own. This has the effect of rebalancing the entire pool and the position of all Idle customers so that everyone has the highest interest rate. Idle also constantly monitors the lending market to trigger rebalancing id needed.`
+        q: 'Who is the administrator of the Idle smart contract?',
+        a: `We have few administrative privileges (eg pause deposits in case of emergency), but we cannot, in any case, withdraw or move user funds directly. You can read more about here <a href="https://developers.idle.finance/advanced/admin-powers" target="_blank" rel="nofollow noopener noreferrer">https://developers.idle.finance/advanced/admin-powers</a>`
       }
     ]
   };
@@ -117,7 +108,7 @@ class Faq extends Component {
                 color={isGuidelinesSelected ? 'blue' : 'copyColor'}
                 onClick={() => this.setSection('guidelines')}
                 className={['pointer', isGuidelinesSelected ? 'selected' : '']}>
-                Lenders
+                Liquidity Providers
               </Text>
             </Flex>
             <Flex width={1/3} textAlign={'center'} justifyContent={'center'} borderBottom={ isRatesSelected ? '3px solid #0036ff' : 'none'}>
