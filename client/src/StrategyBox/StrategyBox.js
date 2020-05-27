@@ -7,6 +7,10 @@ import DashboardCard from '../DashboardCard/DashboardCard';
 
 class StrategyBox extends Component {
 
+  state = {
+    highestToken:null
+  };
+
   // Utils
   functionsUtil = null;
 
@@ -22,17 +26,51 @@ class StrategyBox extends Component {
     this.loadUtils();
   }
 
+  componentDidMount(){
+    this.getHighestAprToken();
+  }
+
   async componentDidUpdate(prevProps,prevState){
     this.loadUtils();
+
+    const contractsInitialized = prevProps.contractsInitialized !== this.props.contractsInitialized && this.props.contractsInitialized;
+    if (contractsInitialized){
+      this.getHighestAprToken();
+    }
+  }
+
+  getHighestAprToken = async () => {
+
+    if (!this.props.contractsInitialized){
+      return false;
+    }
+
+    let highestToken = null;
+    let highestApr = null;
+    const tokensAprs = {};
+    const availableTokens = this.props.availableStrategies[this.props.strategy];
+    await this.functionsUtil.asyncForEach(Object.keys(availableTokens),async (token) => {
+      const tokenConfig = availableTokens[token];
+      const tokenAPR = await this.functionsUtil.getTokenAprs(tokenConfig);
+      if (tokenAPR && tokenAPR.avgApr !== null){
+        tokensAprs[token] = tokenAPR.avgApr;
+        if (!highestApr || highestApr.lt(tokenAPR.avgApr)){
+          highestApr = tokenAPR.avgApr;
+          highestToken = token;
+        }
+      }
+    });
+
+    this.setState({
+      highestToken
+    });
   }
 
   render() {
-
     const strategyInfo = this.functionsUtil.getGlobalConfig(['strategies',this.props.strategy]);
-    const tokenConfig = this.props.availableStrategies[this.props.strategy][strategyInfo.token];
     const strategyUrl = '/#'+this.functionsUtil.getGlobalConfig(['dashboard','baseRoute'])+'/'+this.props.strategy;
     const chartColor = strategyInfo.chartColor ? strategyInfo.chartColor : null;
-
+    const tokenConfig = this.state.highestToken ? this.props.availableStrategies[this.props.strategy][this.state.highestToken] : null;
     return (
       <DashboardCard
         cardProps={{
@@ -106,7 +144,7 @@ class StrategyBox extends Component {
               }
             }}
             {...this.props}
-            token={strategyInfo.token}
+            token={this.state.highestToken}
             tokenConfig={ tokenConfig }
           />
         </Flex>
@@ -128,7 +166,7 @@ class StrategyBox extends Component {
             }}
             {...this.props}
             color={chartColor}
-            token={strategyInfo.token}
+            token={this.state.highestToken}
             tokenConfig={ tokenConfig }
             rowId={`${this.props.strategy}_performance_chart`}
           />

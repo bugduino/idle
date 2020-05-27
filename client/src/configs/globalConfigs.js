@@ -104,6 +104,7 @@ const globalConfigs = {
       title:'Best-Yield',
       iconName:'Whatshot',
       component: StrategyPage,
+      chartColor:'hsl(40,95%,59%)',
       icon:'images/strategies/best-on.svg',
       iconInactive:'images/strategies/best-off.svg',
       desc:'Maximize your returns across DeFi protocols',

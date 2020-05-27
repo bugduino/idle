@@ -61,7 +61,7 @@ class AssetField extends Component {
 
   async loadField(fieldName=null){
     // Exit if component unmounted
-    if (this.componentUnmounted){
+    if (this.componentUnmounted || !this.props.token || !this.props.tokenConfig){
       return false;
     }
 
