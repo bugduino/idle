@@ -84,7 +84,7 @@ const Torus = new TorusConnector({
   api: TorusApi,
   initParams:{
     buildEnv: "production", // default: production
-    enableLogging: true, // default: false
+    enableLogging: false, // default: false
     network: {
       host: globalConfigs.network.availableNetworks[defaultNetwork].toLowerCase(), // default: mainnet
       chainId: defaultNetwork, // default: 1

@@ -39,7 +39,7 @@ class Faq extends Component {
     ratesQuestions: [
       {
         q: 'Has Idle had a security audit?',
-        a: `Idle completed multiple and incremental security audits with Quantstamp in December 2019 and April/May 2020. Any issues affecting the performance of the protocol or security of funds have been resolved. Users should review our Terms of Service before using the protocol.`
+        a: `Idle completed multiple and incremental security audits with Quantstamp in December 2019 and April/May 2020 (<a href="https://certificate.quantstamp.com/full/idle-finance" target="_blank" rel="nofollow noopener noreferrer">view the report</a>). Any issues affecting the performance of the protocol or security of funds have been resolved. Users should review our Terms of Service before using the protocol.`
       },
       {
         q: 'How are digital assets custodied?',

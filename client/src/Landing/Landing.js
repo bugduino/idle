@@ -629,7 +629,7 @@ class Landing extends Component {
                     100% non-custodial, and secured by audit.
                   </Heading.h3>
                   <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5} color={'dark-gray'}>
-                    Audited by Quantstamp and reviewed ConsenSys Diligence, our set of smart contracts allows our users to remain in control of their funds all the time.
+                    Audited by Quantstamp (<Link href="https://certificate.quantstamp.com/full/idle-finance" hoverColor={'blue'} target="_blank" rel="nofollow noopener noreferrer">view the report</Link>) and reviewed ConsenSys Diligence, our set of smart contracts allows our users to remain in control of their funds all the time.
                   </Heading.h4>
                 </Box>
                 <Box className={[styles.carouselDesc,this.state.activeCarousel===2 || this.props.isMobile ? styles.selected : '']} py={[3,0]} my={[3,0]}>
