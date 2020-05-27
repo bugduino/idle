@@ -291,9 +291,9 @@ class Dashboard extends Component {
     return (
       <Flex
         width={'100%'}
-        height={'100vh'}
         position={'fixed'}
         flexDirection={'row'}
+        height={[(window.innerHeight-61)+'px','100vh']}
         backgroundColor={['dashboardBg','white']}
       >
         <Flex
@@ -317,7 +317,7 @@ class Dashboard extends Component {
         <Flex
           py={3}
           px={[3,5]}
-          mb={['74px',0]}
+          mb={0}
           width={[1,5/6]}
           style={{
             overflowY:'scroll',
