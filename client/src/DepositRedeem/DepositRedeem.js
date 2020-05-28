@@ -239,17 +239,6 @@ class DepositRedeem extends Component {
           genericError: '',
         });
 
-        let paramsForMint = null;
-
-        // Get amounts for best allocations
-        if (this.props.account){
-          const callParams = { from: this.props.account, gas: this.props.web3.utils.toBN(5000000) };
-          paramsForMint = await this.functionsUtil.genericIdleCall('getParamsForMintIdleToken',[tokensToDeposit],callParams);
-        }
-
-        const _clientProtocolAmountsDeposit = paramsForMint ? paramsForMint[1] : [];
-        const gasLimitDeposit = _clientProtocolAmountsDeposit.length && _clientProtocolAmountsDeposit.indexOf('0') === -1 ? this.functionsUtil.BNify(1500000) : this.functionsUtil.BNify(1000000);
-
         const callbackDeposit = (tx,error) => {
           const txSucceeded = tx.status === 'success';
 
@@ -303,9 +292,12 @@ class DepositRedeem extends Component {
           }));
         };
 
+        const gasLimitDeposit = this.functionsUtil.BNify(1000000);
+        const _skipWholeRebalance = this.functionsUtil.getGlobalConfig(['contract','methods','deposit','skipRebalance']);
+
         // No need for callback atm
         this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'mintIdleToken', [
-          tokensToDeposit, _clientProtocolAmountsDeposit
+          tokensToDeposit, _skipWholeRebalance
         ], null, callbackDeposit, callbackReceiptDeposit, gasLimitDeposit);
       break;
       case 'redeem':

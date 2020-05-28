@@ -56,6 +56,7 @@ class StrategyBox extends Component {
         tokensAprs[token] = tokenAPR.avgApr;
         switch (this.props.strategy){
           case 'best':
+          default:
             if (!highestApr || highestApr.lt(tokenAPR.avgApr)){
               highestApr = tokenAPR.avgApr;
               selectedToken = token;
@@ -206,6 +207,14 @@ class StrategyBox extends Component {
           justifyContent={'center'}
           id={`${this.props.strategy}_performance_chart`}
         >
+          {
+            /*
+            <Image
+              width={1}
+              height={'60px'}
+              src={`/images/strategies/${this.props.strategy}-chart.png`} />
+            */
+          }
           <AssetField
             fieldInfo={{
               name:'aprChart'
@@ -215,8 +224,8 @@ class StrategyBox extends Component {
             }}
             {...this.props}
             color={chartColor}
+            tokenConfig={tokenConfig}
             token={this.state.selectedToken}
-            tokenConfig={ tokenConfig }
             rowId={`${this.props.strategy}_performance_chart`}
           />
         </Flex>

@@ -553,7 +553,7 @@ class App extends Component {
                                           location="bottom"
                                           buttonText="Ok"
                                           cookieName="cookieAccepted"
-                                          style={{background: "rgba(255,255,255,0.95)",zIndex:'9999999', marginBottom: isMobile ? "0px" : "15px"}}
+                                          style={{background: "rgba(255,255,255,0.95)",zIndex:'9999999'}}
                                           buttonStyle={{display: isMobile ? "block" : "none", backgroundColor:'#0036ff', color: 'white', marginTop: isMobile ? "0px" : "15px"}}
                                           expires={365}
                                         >

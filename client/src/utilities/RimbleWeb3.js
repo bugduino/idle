@@ -1246,7 +1246,6 @@ class RimbleTransaction extends React.Component {
           }
         });
     } catch (error) {
-      // console.log(error);
 
       transaction.status = "error";
       this.updateTransaction(transaction);

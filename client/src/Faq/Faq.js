@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
-import { Box, Flex, Text, Heading } from 'rimble-ui'
 // import styles from './Faq.module.scss';
 import Faquestion from '../Faquestion/Faquestion';
-import colors from '../colors';
+import { Box, Flex, Text, Heading } from 'rimble-ui'
 
 class Faq extends Component {
   state = {

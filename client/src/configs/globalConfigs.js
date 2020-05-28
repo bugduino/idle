@@ -259,6 +259,9 @@ const globalConfigs = {
       redeem:{
         skipRebalance:true
       },
+      deposit:{
+        skipRebalance:true
+      },
       rebalance:{
         enabled:true,
         abi:IdleRebalancerV3

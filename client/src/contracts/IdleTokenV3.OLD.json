@@ -1055,6 +1055,32 @@
         "type": "uint256"
       },
       {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "mintIdleToken",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "mintedTokens",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      },
+      {
         "internalType": "bool",
         "name": "_skipRebalance",
         "type": "bool"

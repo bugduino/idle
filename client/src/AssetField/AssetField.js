@@ -300,6 +300,15 @@ loadField = async(fieldName=null) => {
 
           const frequencySeconds = this.functionsUtil.getFrequencySeconds('hour',12);
 
+          /*
+          let y = 0;
+          const currTime = Math.floor(new Date().getTime()/1000);
+          for (let i=currTime;i<=currTime+(86400*10);i+=86400){
+            const x = this.functionsUtil.strToMoment(i*1000).format("YYYY/MM/DD HH:mm");
+            y += (y ? y*0.3 : 0.5);
+            aprChartData[0].data.push({ x, y });
+          }
+          */
           let prevTimestamp = null;
           apiResultsAprChart.forEach((d,i) => {
             if (prevTimestamp === null || d.timestamp-prevTimestamp>=frequencySeconds){
