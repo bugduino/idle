@@ -8,7 +8,7 @@ import DashboardCard from '../DashboardCard/DashboardCard';
 class StrategyBox extends Component {
 
   state = {
-    highestToken:null
+    selectedToken:null
   };
 
   // Utils
@@ -45,7 +45,7 @@ class StrategyBox extends Component {
       return false;
     }
 
-    let highestToken = null;
+    let selectedToken = null;
     let highestApr = null;
     const tokensAprs = {};
     const availableTokens = this.props.availableStrategies[this.props.strategy];
@@ -54,15 +54,25 @@ class StrategyBox extends Component {
       const tokenAPR = await this.functionsUtil.getTokenAprs(tokenConfig);
       if (tokenAPR && tokenAPR.avgApr !== null){
         tokensAprs[token] = tokenAPR.avgApr;
-        if (!highestApr || highestApr.lt(tokenAPR.avgApr)){
-          highestApr = tokenAPR.avgApr;
-          highestToken = token;
+        switch (this.props.strategy){
+          case 'best':
+            if (!highestApr || highestApr.lt(tokenAPR.avgApr)){
+              highestApr = tokenAPR.avgApr;
+              selectedToken = token;
+            }
+          break;
+          case 'risk':
+            if (!highestApr || highestApr.gt(tokenAPR.avgApr)){
+              highestApr = tokenAPR.avgApr;
+              selectedToken = token;
+            }
+          break;
         }
       }
     });
 
     this.setState({
-      highestToken
+      selectedToken
     });
   }
 
@@ -70,7 +80,8 @@ class StrategyBox extends Component {
     const strategyInfo = this.functionsUtil.getGlobalConfig(['strategies',this.props.strategy]);
     const strategyUrl = '/#'+this.functionsUtil.getGlobalConfig(['dashboard','baseRoute'])+'/'+this.props.strategy;
     const chartColor = strategyInfo.chartColor ? strategyInfo.chartColor : null;
-    const tokenConfig = this.state.highestToken ? this.props.availableStrategies[this.props.strategy][this.state.highestToken] : null;
+    const tokenConfig = this.state.selectedToken ? this.props.availableStrategies[this.props.strategy][this.state.selectedToken] : null;
+    // console.log(this.props.strategy,this.state.selectedToken,tokenConfig);
     return (
       <DashboardCard
         cardProps={{
@@ -123,30 +134,68 @@ class StrategyBox extends Component {
           alignItems={'center'}
           justifyContent={'center'}
         >
-          <Text
-            px={2}
-            fontSize={3}
-            fontWeight={4}
-            color={'cellText'}
-            textAlign={'right'}
+          <Flex
+            width={0.5}
+            alignItems={'center'}
+            flexDirection={'column'}
+            justifyContent={'center'}
+            borderRight={`1px solid ${this.props.theme.colors.divider}`}
           >
-            Current APY
-          </Text>
-          <AssetField
-            fieldInfo={{
-              name:'apy',
-              props:{
-                px:2,
-                fontSize:[3,4],
-                fontWeight:4,
-                textAlign:'left',
-                color:'copyColor'
-              }
-            }}
-            {...this.props}
-            token={this.state.highestToken}
-            tokenConfig={ tokenConfig }
-          />
+            <AssetField
+              fieldInfo={{
+                name:'apy',
+                props:{
+                  decimals:2,
+                  fontWeight:4,
+                  color:'copyColor',
+                  textAlign:'center',
+                  fontSize:[3,'1.8em'],
+                }
+              }}
+              {...this.props}
+              tokenConfig={ tokenConfig }
+              token={this.state.selectedToken}
+              selectedStrategy={this.props.strategy}
+            />
+            <Text
+              fontSize={2}
+              fontWeight={4}
+              color={'cellText'}
+              textAlign={'center'}
+            >
+              APY
+            </Text>
+          </Flex>
+          <Flex
+            width={0.5}
+            alignItems={'center'}
+            flexDirection={'column'}
+            justifyContent={'center'}
+          >
+            <AssetField
+              fieldInfo={{
+                name:'score',
+                props:{
+                  fontWeight:4,
+                  color:'copyColor',
+                  textAlign:'center',
+                  fontSize:[3,'1.8em'],
+                }
+              }}
+              {...this.props}
+              tokenConfig={ tokenConfig }
+              token={this.state.selectedToken}
+              selectedStrategy={this.props.strategy}
+            />
+            <Text
+              fontSize={2}
+              fontWeight={4}
+              color={'cellText'}
+              textAlign={'center'}
+            >
+              SCORE
+            </Text>
+          </Flex>
         </Flex>
         <Flex
           mt={2}
@@ -166,7 +215,7 @@ class StrategyBox extends Component {
             }}
             {...this.props}
             color={chartColor}
-            token={this.state.highestToken}
+            token={this.state.selectedToken}
             tokenConfig={ tokenConfig }
             rowId={`${this.props.strategy}_performance_chart`}
           />

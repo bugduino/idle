@@ -59,7 +59,7 @@ class AssetField extends Component {
     }
   }
 
-  async loadField(fieldName=null){
+loadField = async(fieldName=null) => {
     // Exit if component unmounted
     if (this.componentUnmounted || !this.props.token || !this.props.tokenConfig){
       return false;
@@ -72,6 +72,10 @@ class AssetField extends Component {
     if (!fieldName){
       fieldName = fieldInfo.name;
     }
+
+    const fieldProps = fieldInfo.props;
+    const decimals = fieldProps && fieldProps.decimals ? fieldProps.decimals : ( this.props.isMobile ? 2 : 3 );
+
     let output = null;
     if (this.props.token){
       let tokenAprs = null;
@@ -239,7 +243,7 @@ class AssetField extends Component {
           if (setState){
             this.setStateSafe({
               earningsPercDirection:parseFloat(earningsPerc)>0 ? 'up' : 'down',
-              earningsPerc:parseFloat(earningsPerc).toFixed(this.props.isMobile ? 2 : 3)
+              earningsPerc:parseFloat(earningsPerc).toFixed(decimals)
             });
           }
           output = earningsPerc;
@@ -250,7 +254,7 @@ class AssetField extends Component {
             const tokenAPR = tokenAprs.avgApr;
             if (setState){
               this.setStateSafe({
-                tokenAPR:parseFloat(tokenAPR).toFixed(this.props.isMobile ? 2 : 3)
+                tokenAPR:parseFloat(tokenAPR).toFixed(decimals)
               });
             }
             output = tokenAPR;
@@ -263,8 +267,8 @@ class AssetField extends Component {
               const tokenAPY = this.functionsUtil.apr2apy(tokenAPR.div(100)).times(100);
               if (setState){
                 this.setStateSafe({
-                  tokenAPR:parseFloat(tokenAPR).toFixed(this.props.isMobile ? 2 : 3),
-                  tokenAPY:parseFloat(tokenAPY).toFixed(this.props.isMobile ? 2 : 3)
+                  tokenAPR:parseFloat(tokenAPR).toFixed(decimals),
+                  tokenAPY:parseFloat(tokenAPY).toFixed(decimals)
                 });
               }
               return tokenAPY;
@@ -648,7 +652,7 @@ class AssetField extends Component {
       break;
       case 'apy':
         output = this.state.tokenAPY !== undefined ? (
-          <Text {...fieldProps}>{this.state.tokenAPY !== false ? this.state.tokenAPY : '-' }%</Text>
+          <Text {...fieldProps}>{this.state.tokenAPY !== false ? this.state.tokenAPY : '-' }<small>%</small></Text>
         ) : loader
       break;
       case 'button':

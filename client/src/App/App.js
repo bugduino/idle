@@ -520,6 +520,8 @@ class App extends Component {
                                         <Landing
                                           {...props}
                                           web3={web3}
+                                          theme={theme}
+                                          network={network}
                                           account={account}
                                           isMobile={isMobile}
                                           simpleID={simpleID}
@@ -544,8 +546,7 @@ class App extends Component {
                                           availableStrategies={this.state.availableStrategies}
                                           connectAndValidateAccount={connectAndValidateAccount}
                                           setToken={ e => { this.setToken(e) } }
-                                          network={network} />
-
+                                        />
                                         <CookieConsent
                                           acceptOnScroll={true}
                                           acceptOnScrollPercentage={5}
