@@ -1808,6 +1808,23 @@ class FunctionsUtil {
     return null;
   }
   /*
+  Get idleToken score
+  */
+  getTokenScore = async (tokenConfig,isRisk) => {
+    const startTimestamp = parseInt(new Date().getTime()/1000)-60*60;
+    let tokenData = await this.getTokenApiData(tokenConfig.address,startTimestamp);
+
+    if (tokenData){
+      tokenData = tokenData.filter( d => ( d.isRisk === isRisk ) ).pop();
+
+      if (tokenData && tokenData.idleScore){
+        return this.BNify(tokenData.idleScore);
+      }
+    }
+
+    return null;
+  }
+  /*
   Get idleTokens aggregated APR
   */
   getTokenAprs = async (tokenConfig,tokenAllocation=false) => {

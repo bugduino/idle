@@ -200,21 +200,13 @@ loadField = async(fieldName=null) => {
           }
         break;
         case 'score':
-          const startTimestamp = parseInt(new Date().getTime()/1000)-60*60;
-          let tokenData = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,startTimestamp);
-
-          if (tokenData){
-            tokenData = tokenData.filter( d => ( d.isRisk === isRisk ) ).pop();
-
-            if (tokenData && tokenData.idleScore){
-              if (setState){
-                this.setStateSafe({
-                  score:tokenData.idleScore
-                })
-              }
-              output = tokenData.idleScore;
-            }
+          const tokenScore = await this.functionsUtil.getTokenScore(this.props.tokenConfig,isRisk);
+          if (setState){
+            this.setStateSafe({
+              score:tokenScore
+            })
           }
+          output = tokenScore;
         break;
         case 'pool':
           const tokenAllocation = await this.functionsUtil.getTokenAllocation(this.props.tokenConfig);

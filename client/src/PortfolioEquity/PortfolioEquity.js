@@ -288,14 +288,14 @@ class PortfolioEquity extends Component {
     
     const axisBottomMaxValues = 10;
     const daysCount = Object.values(days).length;    
-    const daysFrequency = Math.max(1,Math.floor(daysCount/axisBottomMaxValues));
+    const daysFrequency = Math.max(1,Math.ceil(daysCount/axisBottomMaxValues));
 
     const chartProps = {
       xScale:{
         type: 'time',
         format: '%Y/%m/%d %H:%M',
       },
-      xFormat:'time:%b %d %H:%M',
+      xFormat:'time:%b %d %Y',
       yFormat:value => this.functionsUtil.formatMoney(value,2),
       yScale:{
         type: 'linear',

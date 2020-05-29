@@ -150,7 +150,7 @@ class FundsOverview extends Component {
                   name:'earningsCounter',
                   props:{
                     decimals:7,
-                    maxPrecision:7,
+                    maxPrecision:8,
                     style:{
                       fontWeight:300,
                       fontSize:this.props.isMobile ? '1.8em' : '2.2em',

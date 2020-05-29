@@ -1,7 +1,9 @@
 import Title from '../Title/Title';
+import CountUp from 'react-countup';
 import React, { Component } from 'react';
-import AssetsList from '../AssetsList/AssetsList';
+import StatsCard from '../StatsCard/StatsCard';
 import FlexLoader from '../FlexLoader/FlexLoader';
+import AssetsList from '../AssetsList/AssetsList';
 import { Flex, Box, Heading, Text } from "rimble-ui";
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import DashboardCard from '../DashboardCard/DashboardCard';
@@ -17,6 +19,7 @@ class StrategyPage extends Component {
 
   state = {
     tokensToMigrate:[],
+    aggregatedValues:[],
     depositedTokens:null,
     remainingTokens:null,
     portfolioLoaded:false,
@@ -59,8 +62,8 @@ class StrategyPage extends Component {
 
       const newState = {};
 
+      // Get deposited tokens
       const portfolio = await this.functionsUtil.getAccountPortfolio(this.props.availableTokens,this.props.account);
-
       if (portfolio){
         const depositedTokens = Object.keys(portfolio.tokensBalance).filter(token => {
           return this.functionsUtil.BNify(portfolio.tokensBalance[token].idleTokenBalance).gt(0);
@@ -69,8 +72,103 @@ class StrategyPage extends Component {
 
         newState.depositedTokens = depositedTokens;
         newState.remainingTokens = remainingTokens;
+
+        const isRisk = this.props.selectedStrategy === 'risk';
+
+        let avgAPY = this.functionsUtil.BNify(0);
+        let avgScore = this.functionsUtil.BNify(0);
+        let totalEarnings = this.functionsUtil.BNify(0);
+        let totalAmountLent = this.functionsUtil.BNify(0);
+
+        await this.functionsUtil.asyncForEach(depositedTokens,async (token) => {
+          const tokenConfig = this.props.availableTokens[token];
+          const [tokenAprs,tokenScore,idleTokenPrice,avgBuyPrice,amountLent] = await Promise.all([
+            this.functionsUtil.getTokenAprs(tokenConfig),
+            this.functionsUtil.getTokenScore(tokenConfig,isRisk),
+            this.functionsUtil.getIdleTokenPrice(tokenConfig),
+            this.functionsUtil.getAvgBuyPrice([token],this.props.account),
+            this.functionsUtil.getAmountLent([token],this.props.account)
+          ]);
+
+          const tokenAPR = this.functionsUtil.BNify(tokenAprs.avgApr).div(100);
+          const tokenAPY = this.functionsUtil.apr2apy(tokenAPR).times(100);
+          const tokenWeight = portfolio.tokensBalance[token].tokenBalance.div(portfolio.totalBalance);
+          const tokenEarningsPerc = idleTokenPrice.div(avgBuyPrice[token]).minus(1);
+          const tokenEarnings = amountLent[token].times(tokenEarningsPerc);
+
+          totalEarnings = totalEarnings.plus(tokenEarnings);
+          avgAPY = avgAPY.plus(tokenAPY.times(tokenWeight));
+          avgScore = avgScore.plus(tokenScore.times(tokenWeight));
+          totalAmountLent = totalAmountLent.plus(amountLent[token]);
+        });
+
+        const earningsStart = totalEarnings;
+        const earningsEnd = totalAmountLent.times(avgAPY.div(100));
+
+        // console.log(avgAPY.toString(),earningsStart.toString(),earningsEnd.toString());
+
+        newState.aggregatedValues = [
+          {
+            flexProps:{
+              pr:[0,2],
+              width:1/4,
+            },
+            props:{
+              title:'Portfolio APY',
+              value:avgAPY.toFixed(2)+'%',
+              label:''
+            }
+          },
+          {
+            flexProps:{
+              px:[0,2],
+              width:1/2,
+            },
+            props:{
+              title:'Portfolio earnings',
+              children:(
+                <CountUp
+                  delay={0}
+                  decimals={10}
+                  decimal={'.'}
+                  separator={''}
+                  useEasing={false}
+                  duration={31536000}
+                  end={parseFloat(earningsEnd)}
+                  start={parseFloat(earningsStart)}
+                  formattingFn={ n => this.functionsUtil.abbreviateNumber(n,9,15,10) }
+                >
+                  {({ countUpRef, start }) => (
+                    <span
+                      ref={countUpRef}
+                      style={{
+                        lineHeight:1,
+                        fontSize:this.props.isMobile ? '21px' : '32px',
+                        fontWeight: this.props.isMobile ? 600 : 700,
+                        color:this.props.theme.colors.statValue,
+                      }}
+                    />
+                  )}
+                </CountUp>
+              ),
+              label:'',
+            }
+          },
+          {
+            flexProps:{
+              pl:[0,2],
+              width:1/4,
+            },
+            props:{
+              title:'Portfolio Risk Score',
+              value:avgScore.toFixed(2),
+              label:''
+            }
+          },
+        ];
       }
 
+      // Get tokens to migrate
       const tokensToMigrate = [];
       await this.functionsUtil.asyncForEach(Object.keys(this.props.availableTokens),async (token) => {
         const tokenConfig = this.props.availableTokens[token];
@@ -128,92 +226,121 @@ class StrategyPage extends Component {
                 this.state.depositedTokens.length>0 ? (
                   <Flex
                     width={1}
-                    id={"portfolio-charts"}
-                    justifyContent={'space-between'}
-                    flexDirection={['column','row']}
+                    flexDirection={'column'}
                   >
                     <Flex
-                      mb={[3,0]}
-                      width={[1,0.38]}
-                      flexDirection={'column'}
-                      maxWidth={['auto','35em']}
-                      id={"portfolio-composition"}
+                      width={1}
+                      mt={[3,0]}
+                      mb={[3,4]}
+                      alignItems={'center'}
+                      justifyContent={'center'}
+                      flexDirection={['column','row']}
                     >
-                      <DashboardCard
-                        title={'Composition'}
-                        titleProps={ !this.props.isMobile ? {
-                          style:{
-                            minHeight:'39px'
-                          }
-                        } : null}
-                      >
-                        <PortfolioDonut
-                          {...this.props}
-                          parentId={'portfolio-composition'}
-                        />
-                      </DashboardCard>
+                      {
+                        this.state.aggregatedValues.map((v,i) => (
+                          <Flex
+                            {...v.flexProps}
+                            flexDirection={'column'}
+                            key={`aggregatedValue_${i}`}
+                          >
+                            <StatsCard
+                              {...v.props}
+                            >
+                              { v.props.children ? v.props.children : null }
+                            </StatsCard>
+                          </Flex>
+                        ))
+                      }
                     </Flex>
                     <Flex
-                      width={[1,0.60]}
-                      flexDirection={'column'}
-                      maxWidth={['auto','55em']}
-                      id={"portfolio-performance"}
+                      width={1}
+                      id={"portfolio-charts"}
+                      justifyContent={'space-between'}
+                      flexDirection={['column','row']}
                     >
-                      <DashboardCard>
-                        <Flex
-                          pt={[3,4]}
-                          px={[3,4]}
-                          aligItems={'center'}
-                          flexDirection={['column','row']}
+                      <Flex
+                        mb={[3,0]}
+                        width={[1,0.38]}
+                        flexDirection={'column'}
+                        maxWidth={['auto','35em']}
+                        id={"portfolio-composition"}
+                      >
+                        <DashboardCard
+                          title={'Composition'}
+                          titleProps={ !this.props.isMobile ? {
+                            style:{
+                              minHeight:'39px'
+                            }
+                          } : null}
                         >
+                          <PortfolioDonut
+                            {...this.props}
+                            parentId={'portfolio-composition'}
+                          />
+                        </DashboardCard>
+                      </Flex>
+                      <Flex
+                        width={[1,0.60]}
+                        flexDirection={'column'}
+                        maxWidth={['auto','55em']}
+                        id={"portfolio-performance"}
+                      >
+                        <DashboardCard>
                           <Flex
-                            width={[1,0.7]}
-                            flexDirection={'column'}
-                            justifyContent={'flex-start'}
+                            pt={[3,4]}
+                            px={[3,4]}
+                            aligItems={'center'}
+                            flexDirection={['column','row']}
                           >
-                            <Title
-                              fontWeight={4}
-                              fontSize={[2,3]}
-                              textAlign={'left'}
+                            <Flex
+                              width={[1,0.7]}
+                              flexDirection={'column'}
+                              justifyContent={'flex-start'}
                             >
-                              Performance
-                            </Title>
+                              <Title
+                                fontWeight={4}
+                                fontSize={[2,3]}
+                                textAlign={'left'}
+                              >
+                                Performance
+                              </Title>
+                            </Flex>
+                            <Flex
+                              mt={[2,0]}
+                              width={[1,0.3]}
+                              flexDirection={'column'}
+                              justifyContent={'flex-end'}
+                            >
+                              <GenericSelector
+                                innerProps={{
+                                  p:0,
+                                  px:1
+                                }}
+                                defaultValue={
+                                  {value:'month3',label:'3 Months'}
+                                }
+                                name={'performance-time'}
+                                options={[
+                                  {value:'week',label:'Week'},
+                                  {value:'month',label:'Month'},
+                                  {value:'month3',label:'3 Months'},
+                                  {value:'month6',label:'6 Months'},
+                                  {value:'all',label:'All'},
+                                ]}
+                                onChange={ v => this.setPortfolioEquityQuickSelection(v) }
+                              />
+                            </Flex>
                           </Flex>
-                          <Flex
-                            mt={[2,0]}
-                            width={[1,0.3]}
-                            flexDirection={'column'}
-                            justifyContent={'flex-end'}
-                          >
-                            <GenericSelector
-                              innerProps={{
-                                p:0,
-                                px:1
-                              }}
-                              defaultValue={
-                                {value:'month3',label:'3 Months'}
-                              }
-                              name={'performance-time'}
-                              options={[
-                                {value:'week',label:'Week'},
-                                {value:'month',label:'Month'},
-                                {value:'month3',label:'3 Months'},
-                                {value:'month6',label:'6 Months'},
-                                {value:'all',label:'All'},
-                              ]}
-                              onChange={ v => this.setPortfolioEquityQuickSelection(v) }
-                            />
-                          </Flex>
-                        </Flex>
-                        <PortfolioEquity
-                          {...this.props}
-                          enabledTokens={[]}
-                          parentId={'portfolio-performance'}
-                          parentIdHeight={'portfolio-composition'}
-                          quickDateSelection={this.state.portfolioEquityQuickSelection}
-                          frequencySeconds={this.functionsUtil.getFrequencySeconds('day',1)}
-                        />
-                      </DashboardCard>
+                          <PortfolioEquity
+                            {...this.props}
+                            enabledTokens={[]}
+                            parentId={'portfolio-performance'}
+                            parentIdHeight={'portfolio-composition'}
+                            quickDateSelection={this.state.portfolioEquityQuickSelection}
+                            frequencySeconds={this.functionsUtil.getFrequencySeconds('day',1)}
+                          />
+                        </DashboardCard>
+                      </Flex>
                     </Flex>
                   </Flex>
                 ) : (
