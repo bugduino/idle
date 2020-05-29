@@ -129,14 +129,14 @@ class StrategyPage extends Component {
               children:(
                 <CountUp
                   delay={0}
-                  decimals={10}
+                  decimals={8}
                   decimal={'.'}
                   separator={''}
                   useEasing={false}
                   duration={31536000}
                   end={parseFloat(earningsEnd)}
                   start={parseFloat(earningsStart)}
-                  formattingFn={ n => '$ '+this.functionsUtil.abbreviateNumber(n,9,15,10) }
+                  formattingFn={ n => '$ '+this.functionsUtil.abbreviateNumber(n,8,12,8) }
                 >
                   {({ countUpRef, start }) => (
                     <span
@@ -144,6 +144,7 @@ class StrategyPage extends Component {
                       style={{
                         lineHeight:1,
                         color:this.props.theme.colors.copyColor,
+                        fontFamily:this.props.theme.fonts.counter,
                         fontWeight: this.props.isMobile ? 600 : 700,
                         fontSize:this.props.isMobile ? '21px' : '1.7em',
                       }}
