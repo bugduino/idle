@@ -111,10 +111,10 @@ class StrategyPage extends Component {
           {
             flexProps:{
               pr:[0,2],
-              width:1/4,
+              width:[1,1/3],
             },
             props:{
-              title:'Portfolio APY',
+              title:'Avg APY',
               value:avgAPY.toFixed(2)+'%',
               label:''
             }
@@ -122,10 +122,10 @@ class StrategyPage extends Component {
           {
             flexProps:{
               px:[0,2],
-              width:1/2,
+              width:[1,1/3],
             },
             props:{
-              title:'Portfolio earnings',
+              title:'Total Earnings',
               children:(
                 <CountUp
                   delay={0}
@@ -136,16 +136,16 @@ class StrategyPage extends Component {
                   duration={31536000}
                   end={parseFloat(earningsEnd)}
                   start={parseFloat(earningsStart)}
-                  formattingFn={ n => this.functionsUtil.abbreviateNumber(n,9,15,10) }
+                  formattingFn={ n => '$ '+this.functionsUtil.abbreviateNumber(n,9,15,10) }
                 >
                   {({ countUpRef, start }) => (
                     <span
                       ref={countUpRef}
                       style={{
                         lineHeight:1,
-                        fontSize:this.props.isMobile ? '21px' : '32px',
+                        color:this.props.theme.colors.copyColor,
                         fontWeight: this.props.isMobile ? 600 : 700,
-                        color:this.props.theme.colors.statValue,
+                        fontSize:this.props.isMobile ? '21px' : '1.7em',
                       }}
                     />
                   )}
@@ -157,10 +157,10 @@ class StrategyPage extends Component {
           {
             flexProps:{
               pl:[0,2],
-              width:1/4,
+              width:[1,1/3],
             },
             props:{
-              title:'Portfolio Risk Score',
+              title:'Avg Risk Score',
               value:avgScore.toFixed(2),
               label:''
             }
@@ -243,11 +243,39 @@ class StrategyPage extends Component {
                             flexDirection={'column'}
                             key={`aggregatedValue_${i}`}
                           >
-                            <StatsCard
-                              {...v.props}
+                            <DashboardCard
+                              cardProps={{
+                                py:[3,4],
+                              }}
                             >
-                              { v.props.children ? v.props.children : null }
-                            </StatsCard>
+                              <Flex
+                                width={1}
+                                alignItems={'center'}
+                                flexDirection={'column'}
+                                justifyContent={'center'}
+                              >
+                                {
+                                  v.props.children ? v.props.children : (
+                                    <Text
+                                      lineHeight={1}
+                                      fontWeight={[3,4]}
+                                      color={'copyColor'}
+                                      fontSize={[4,'1.7em']}
+                                    >
+                                      {v.props.value}
+                                    </Text>
+                                  )
+                                }
+                                <Text
+                                  mt={2}
+                                  fontWeight={2}
+                                  fontSize={[1,2]}
+                                  color={'cellText'}
+                                >
+                                  {v.props.title}
+                                </Text>
+                              </Flex>
+                            </DashboardCard>
                           </Flex>
                         ))
                       }
