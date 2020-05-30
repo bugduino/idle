@@ -487,7 +487,7 @@ const globalConfigs = {
         },
         caption: 'Buy with',
         captionPos: 'top',
-        subcaption:`~ 0% fee ~`,
+        subcaption:`~ 0% fee ~\nEUR / GBP`,
         supportedMethods:['bank'],
         badge: {
           text:'NO ID REQUIRED',

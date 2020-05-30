@@ -114,7 +114,7 @@ class StrategyPage extends Component {
             },
             props:{
               title:'Avg APY',
-              value:avgAPY.toFixed(2)+'%',
+              value:avgAPY.toFixed(2)+' %',
               label:''
             }
           },
@@ -246,6 +246,7 @@ class StrategyPage extends Component {
                             <DashboardCard
                               cardProps={{
                                 py:[3,4],
+                                mb:[2,0]
                               }}
                             >
                               <Flex
