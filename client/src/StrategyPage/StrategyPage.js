@@ -1,7 +1,6 @@
 import Title from '../Title/Title';
 import CountUp from 'react-countup';
 import React, { Component } from 'react';
-import StatsCard from '../StatsCard/StatsCard';
 import FlexLoader from '../FlexLoader/FlexLoader';
 import AssetsList from '../AssetsList/AssetsList';
 import { Flex, Box, Heading, Text } from "rimble-ui";
@@ -261,6 +260,7 @@ class StrategyPage extends Component {
                                       lineHeight={1}
                                       fontWeight={[3,4]}
                                       color={'copyColor'}
+                                      fontFamily={'counter'}
                                       fontSize={[4,'1.7em']}
                                     >
                                       {v.props.value}
