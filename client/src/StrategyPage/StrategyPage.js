@@ -114,7 +114,7 @@ class StrategyPage extends Component {
             },
             props:{
               title:'Avg APY',
-              value:avgAPY.toFixed(2)+' %',
+              value:avgAPY.toFixed(2)+'<small>%</small>',
               label:''
             }
           },
@@ -161,7 +161,7 @@ class StrategyPage extends Component {
             },
             props:{
               title:'Avg Risk Score',
-              value:avgScore.toFixed(2),
+              value:avgScore.toFixed(1),
               label:''
             }
           },
@@ -229,9 +229,9 @@ class StrategyPage extends Component {
                     flexDirection={'column'}
                   >
                     <Flex
+                      mb={3}
                       width={1}
-                      mt={[3,0]}
-                      mb={[3,4]}
+                      mt={[2,0]}
                       alignItems={'center'}
                       justifyContent={'center'}
                       flexDirection={['column','row']}
@@ -263,8 +263,8 @@ class StrategyPage extends Component {
                                       color={'copyColor'}
                                       fontFamily={'counter'}
                                       fontSize={[4,'1.7em']}
+                                      dangerouslySetInnerHTML={{ __html: v.props.value }}
                                     >
-                                      {v.props.value}
                                     </Text>
                                   )
                                 }
