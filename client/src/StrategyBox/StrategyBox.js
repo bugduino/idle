@@ -46,29 +46,30 @@ class StrategyBox extends Component {
     }
 
     let selectedToken = null;
-    let highestApr = null;
+    let highestValue = null;
     const tokensAprs = {};
     const availableTokens = this.props.availableStrategies[this.props.strategy];
     await this.functionsUtil.asyncForEach(Object.keys(availableTokens),async (token) => {
       const tokenConfig = availableTokens[token];
-      const tokenAPR = await this.functionsUtil.getTokenAprs(tokenConfig);
-      if (tokenAPR && tokenAPR.avgApr !== null){
-        tokensAprs[token] = tokenAPR.avgApr;
-        switch (this.props.strategy){
-          case 'best':
-          default:
-            if (!highestApr || highestApr.lt(tokenAPR.avgApr)){
-              highestApr = tokenAPR.avgApr;
+      switch (this.props.strategy){
+        case 'best':
+        default:
+          const tokenAPR = await this.functionsUtil.getTokenAprs(tokenConfig);
+          if (tokenAPR && tokenAPR.avgApr !== null){
+            tokensAprs[token] = tokenAPR.avgApr;
+            if (!highestValue || highestValue.lt(tokenAPR.avgApr)){
+              highestValue = tokenAPR.avgApr;
               selectedToken = token;
             }
-          break;
-          case 'risk':
-            if (!highestApr || highestApr.gt(tokenAPR.avgApr)){
-              highestApr = tokenAPR.avgApr;
-              selectedToken = token;
-            }
-          break;
-        }
+          }
+        break;
+        case 'risk':
+        const tokenScore = await this.functionsUtil.getTokenScore(tokenConfig,true);
+          if (!highestValue || highestValue.lt(tokenScore)){
+            highestValue = tokenScore;
+            selectedToken = token;
+          }
+        break;
       }
     });
 
