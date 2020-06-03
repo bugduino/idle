@@ -495,7 +495,7 @@ const globalConfigs = {
           bgColor:'#0cade4'
         },
         supportedCountries:['GBR','EUR'],
-        supportedTokens:['ETH','DAI'],
+        supportedTokens:['ETH','DAI','USDC'],
         getInitParams: (props,globalConfigs,buyParams) => {
         	return {
 	          hostAppName: 'Idle',
