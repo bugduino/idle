@@ -60,7 +60,7 @@ class AssetPage extends Component {
         newState.tokenBalance[token] = tokenBalance;
         newState.tokenApproved[token] = tokenApproved;
         newState.idleTokenBalance[token] = idleTokenBalance;
-        newState.redeemableBalance[token] = this.functionsUtil.fixTokenDecimals(idleTokenBalance.times(idleTokenPrice),tokenConfig.decimals);
+        newState.redeemableBalance[token] = idleTokenBalance ? this.functionsUtil.fixTokenDecimals(idleTokenBalance.times(idleTokenPrice),tokenConfig.decimals) : this.functionsUtil.BNify(0);
       });
 
       newState.componentMounted = true;

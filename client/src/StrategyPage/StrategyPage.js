@@ -23,7 +23,7 @@ class StrategyPage extends Component {
     remainingTokens:null,
     portfolioLoaded:false,
     portfolioEquityStartDate:null,
-    portfolioEquityQuickSelection:'month3'
+    portfolioEquityQuickSelection:'week'
   };
 
   // Utils
@@ -347,7 +347,7 @@ class StrategyPage extends Component {
                                   px:1
                                 }}
                                 defaultValue={
-                                  {value:'month3',label:'3 Months'}
+                                  {value:'week',label:'Week'}
                                 }
                                 name={'performance-time'}
                                 options={[

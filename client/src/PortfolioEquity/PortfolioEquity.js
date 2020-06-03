@@ -2,6 +2,7 @@ import theme from '../theme';
 import { Line } from '@nivo/line';
 import { Flex, Text } from "rimble-ui";
 import React, { Component } from 'react';
+import { Defs, linearGradientDef } from '@nivo/core'
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import GenericChart from '../GenericChart/GenericChart';
 import DashboardCard from '../DashboardCard/DashboardCard';
@@ -140,7 +141,8 @@ class PortfolioEquity extends Component {
     }
 
     const days = {};
-    let maxChartValue = 0;
+    let minChartValue = null;
+    let maxChartValue = null;
     const aggregatedBalances = [];
     let prevTimestamp = null;
     let prevBalances = {};
@@ -242,12 +244,16 @@ class PortfolioEquity extends Component {
       if (startDate === null || momentDate.isSameOrAfter(startDate)){
         // Save days for axisBottom format
         days[momentDate.format('YYYY/MM/DD')] = 1;
+
+        aggregatedBalance = parseFloat(parseFloat(aggregatedBalance.toFixed(2)));
+
         aggregatedBalances.push({
           x:momentDate.format('YYYY/MM/DD HH:mm'),
-          y:parseFloat(aggregatedBalance)
+          y:aggregatedBalance
         });
 
-        maxChartValue = Math.max(maxChartValue,aggregatedBalance);
+        minChartValue = minChartValue === null ? aggregatedBalance : Math.min(minChartValue,aggregatedBalance);
+        maxChartValue = maxChartValue === null ? aggregatedBalance : Math.max(maxChartValue,aggregatedBalance);
       }
 
       // console.log(this.functionsUtil.strToMoment(timeStamp*1000).format('DD/MM/YYYY HH:mm'),aggregatedBalance.toFixed(5),this.functionsUtil.formatMoney(aggregatedBalance));
@@ -257,6 +263,7 @@ class PortfolioEquity extends Component {
     }
 
     // Add day before to start with zero balance
+    /*
     const firstTxMomentDate = this.functionsUtil.strToMoment(firstTxTimestamp*1000);
     if ((startDate === null || startDate.isSameOrBefore(firstTxMomentDate)) && aggregatedBalances.length){
       const firstItem = aggregatedBalances[0];
@@ -267,6 +274,7 @@ class PortfolioEquity extends Component {
         y:0
       });
     }
+    */
 
     const chartToken = this.props.chartToken ? this.props.chartToken.toUpperCase() : 'USD';
 
@@ -280,27 +288,33 @@ class PortfolioEquity extends Component {
     // Add 5% to the max grid value
     // maxChartValue += maxChartValue*0.1;
     const maxGridLines = 5;
-    const gridYStep = parseFloat(maxChartValue/maxGridLines);
+    const gridYStep = (maxChartValue-minChartValue)/maxGridLines;
     const gridYValues = [];
-    for (let i=1;i<=5;i++){
-      gridYValues.push(i*gridYStep);
+    for (let i=0;i<=maxGridLines;i++){
+      const gridYValue = parseFloat(parseFloat(minChartValue+(i*gridYStep)).toFixed(2));
+      gridYValues.push(gridYValue);
     }
+
     
     const axisBottomMaxValues = 10;
     const daysCount = Object.values(days).length;    
     const daysFrequency = Math.max(1,Math.ceil(daysCount/axisBottomMaxValues));
+
+    // console.log(minChartValue,maxChartValue,gridYStep,gridYValues);
 
     const chartProps = {
       xScale:{
         type: 'time',
         format: '%Y/%m/%d %H:%M',
       },
-      xFormat:'time:%b %d %Y',
-      yFormat:value => this.functionsUtil.formatMoney(value,2),
       yScale:{
         type: 'linear',
-        stacked: false
+        stacked: false,
+        min: minChartValue,
+        max: maxChartValue
       },
+      xFormat:'time:%b %d %Y',
+      yFormat:value => this.functionsUtil.formatMoney(value,2),
       axisLeft:null,
       areaOpacity:0.1,
       axisBottom: this.props.isMobile ? null : {
@@ -344,6 +358,13 @@ class PortfolioEquity extends Component {
           }
         },
       },
+      defs:[
+        linearGradientDef('gradientA', [
+          { offset: 0, color: 'inherit' },
+          { offset: 100, color: 'inherit', opacity: 0 },
+        ]),
+      ],
+      fill:[{ match: '*', id: 'gradientA' }],
       margin: this.props.isMobile ? { top: 20, right: 25, bottom: 25, left: 20 } : { top: 30, right: 50, bottom: 45, left: 50 },
       sliceTooltip:(sliceData) => {
         const { slice: {points} } = sliceData;
