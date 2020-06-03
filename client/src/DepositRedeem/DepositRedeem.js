@@ -323,8 +323,10 @@ class DepositRedeem extends Component {
           paramsForRedeem = await this.functionsUtil.genericIdleCall('getParamsForRedeemIdleToken',[idleTokenToRedeem, _skipRebalance],callParams);
         }
 
-        const _clientProtocolAmountsRedeem = paramsForRedeem ? paramsForRedeem[1] : [];
+        const _clientProtocolAmountsRedeem = paramsForRedeem && paramsForRedeem.length ? paramsForRedeem[1] : [];
         const gasLimitRedeem = _clientProtocolAmountsRedeem.length && _clientProtocolAmountsRedeem.indexOf('0') === -1 ? this.functionsUtil.BNify(1500000) : this.functionsUtil.BNify(1000000);
+
+        console.log('_clientProtocolAmountsRedeem',_clientProtocolAmountsRedeem);
 
         const callbackRedeem = (tx,error) => {
           const txSucceeded = tx.status === 'success';
