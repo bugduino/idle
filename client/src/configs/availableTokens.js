@@ -352,7 +352,7 @@ const availableTokens = {
           token:'usdc'
         },
         idle:{
-          abi:IdleTokenV2,
+          abi:IdleTokenV3,
           token:'idleUSDCSafe',
           address:'0xcDdB1Bceb7a1979C6caa0229820707429dd3Ec6C'
         },
