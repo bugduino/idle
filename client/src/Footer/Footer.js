@@ -23,7 +23,7 @@ class Footer extends Component {
               Resources
             </Heading.h3>
             <Flex width={1} flexDirection={'column'}>
-              <Link pb={[3,2]} href={'http://developers.idle.finance'} target={'_blank'} rel="nofollow noopener noreferrer" textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} color={'blue'} hoverColor={'blue'}>Developers</Link>
+              <Link pb={[3,2]} href={'https://developers.idle.finance'} target={'_blank'} rel="nofollow noopener noreferrer" textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} color={'blue'} hoverColor={'blue'}>Developers</Link>
               {
               /*
               <Flex pb={[3,2]} width={1} justifyContent={['center','flex-start']}>
