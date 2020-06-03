@@ -213,6 +213,7 @@ class DepositRedeem extends Component {
   executeAction = async () => {
 
     const inputValue = this.state.inputValue[this.state.action];
+    const selectedPercentage = this.getFastBalanceSelector();
 
     if (this.state.buttonDisabled || !inputValue || this.functionsUtil.BNify(inputValue).lte(0)){
       return false;
@@ -301,7 +302,17 @@ class DepositRedeem extends Component {
         ], null, callbackDeposit, callbackReceiptDeposit, gasLimitDeposit);
       break;
       case 'redeem':
-        const idleTokenToRedeem = this.functionsUtil.normalizeTokenAmount(inputValue,18);
+        let idleTokenToRedeem = null;
+        if (selectedPercentage){
+          idleTokenToRedeem = this.functionsUtil.normalizeTokenAmount(this.functionsUtil.BNify(this.props.idleTokenBalance).times(selectedPercentage),18);
+        } else {
+          const idleTokenPrice = await this.functionsUtil.genericContractCall(this.props.tokenConfig.idle.token, 'tokenPrice');
+          idleTokenToRedeem = this.functionsUtil.BNify(this.functionsUtil.normalizeTokenAmount(inputValue,18)).div(idleTokenPrice);
+        }
+
+        if (!idleTokenToRedeem){
+          return false;
+        }
 
         // Get amounts for best allocations
         const _skipRebalance = this.functionsUtil.getGlobalConfig(['contract','methods','redeem','skipRebalance']);
@@ -426,7 +437,7 @@ class DepositRedeem extends Component {
           buttonDisabled = buttonDisabled || amount.gt(this.props.tokenBalance);
         break;
         case 'redeem':
-          buttonDisabled = buttonDisabled || amount.gt(this.props.idleTokenBalance);
+          buttonDisabled = buttonDisabled || amount.gt(this.props.redeemableBalance);
         break;
         default:
         break;
@@ -450,7 +461,7 @@ class DepositRedeem extends Component {
         amount = this.props.tokenBalance ? this.functionsUtil.BNify(this.props.tokenBalance).times(selectedPercentage) : null;
       break;
       case 'redeem':
-        amount = this.props.idleTokenBalance ? this.functionsUtil.BNify(this.props.idleTokenBalance).times(selectedPercentage) : null;
+        amount = this.props.redeemableBalance ? this.functionsUtil.BNify(this.props.redeemableBalance).times(selectedPercentage) : null;
       break;
       default:
       break;
@@ -464,6 +475,14 @@ class DepositRedeem extends Component {
         [this.state.action]: amount
       }
     }));
+  }
+
+  getFastBalanceSelector = () => {
+    if (this.state.fastBalanceSelector[this.state.action] === null){
+      return false;
+    }
+
+    return this.functionsUtil.BNify(this.state.fastBalanceSelector[this.state.action]).div(100);
   }
 
   setFastBalanceSelector = (percentage) => {

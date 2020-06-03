@@ -17,6 +17,7 @@ class AssetPage extends Component {
     tokenApproved:{},
     activeModal:null,
     idleTokenBalance:{},
+    redeemableBalance:{},
     componentMounted:false
   };
 
@@ -49,14 +50,17 @@ class AssetPage extends Component {
       await this.functionsUtil.asyncForEach(Object.keys(this.props.availableTokens),async (token) => {
         const tokenConfig = this.props.availableTokens[token];
 
-        const [tokenBalance,idleTokenBalance,tokenApproved] = await Promise.all([
+        const [tokenBalance,idleTokenPrice,idleTokenBalance,tokenApproved] = await Promise.all([
           this.functionsUtil.getTokenBalance(token,this.props.account),
-          this.functionsUtil.getTokenBalance(tokenConfig.idle.token,this.props.account)
+          this.functionsUtil.genericContractCall(tokenConfig.idle.token, 'tokenPrice'),
+          this.functionsUtil.getTokenBalance(tokenConfig.idle.token,this.props.account),
+          this.functionsUtil.checkTokenApproved(token,tokenConfig.idle.address,this.props.account),
         ]);
 
         newState.tokenBalance[token] = tokenBalance;
         newState.tokenApproved[token] = tokenApproved;
         newState.idleTokenBalance[token] = idleTokenBalance;
+        newState.redeemableBalance[token] = this.functionsUtil.fixTokenDecimals(idleTokenBalance.times(idleTokenPrice),tokenConfig.decimals);
       });
 
       newState.componentMounted = true;
@@ -128,6 +132,7 @@ class AssetPage extends Component {
             tokenBalance={this.state.tokenBalance[this.props.selectedToken]}
             tokenApproved={this.state.tokenApproved[this.props.selectedToken]}
             idleTokenBalance={this.state.idleTokenBalance[this.props.selectedToken]}
+            redeemableBalance={this.state.redeemableBalance[this.props.selectedToken]}
           />
         </Flex>
         {
