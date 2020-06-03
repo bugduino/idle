@@ -294,6 +294,7 @@ const globalConfigs = {
       },
       biconomy:{
         enabled:true,
+        enableLogin:false,
         supportedNetworks:[1,42],
         disabledWallets:['authereum'],
         params:{

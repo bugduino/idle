@@ -89,6 +89,7 @@ const RimbleTransactionContext = React.createContext({
 });
 
 let setConnectorName = null;
+let biconomyLoginProcessing = false;
 
 class RimbleTransaction extends React.Component {
   static Consumer = RimbleTransactionContext.Consumer;
@@ -352,6 +353,36 @@ class RimbleTransaction extends React.Component {
           }
 
           if (context.account) {
+
+            // Login with biconomy
+            if (this.state.biconomy){
+              const biconomy = this.state.biconomy;
+              const biconomyInfo = globalConfigs.network.providers.biconomy;
+              if (biconomyInfo.enableLogin && !biconomy.isLogin && !biconomyLoginProcessing){
+                biconomyLoginProcessing = true;
+                biconomy.login(context.account, (error, response) => {
+                  console.log('biconomy login',error,response);
+                  // Failed to login with Biconomy
+                  if (error) {
+                    return this.setState({
+                      biconomy:false,
+                    },() => {
+                      this.initAccount(context.account);
+                    });
+                  }
+
+                  biconomyLoginProcessing = false;
+
+                  if (response.transactionHash) {
+                    this.initAccount(context.account);
+                  } else if(response.userContract) {
+                    this.initAccount(context.account);
+                  }
+                });
+                return false;
+              }
+            }
+
             await this.initAccount(context.account);
           } else {
             await this.setState({
@@ -383,6 +414,7 @@ class RimbleTransaction extends React.Component {
             if (this.componentUnmounted || this.state.biconomy === false || this.state.biconomy === biconomy){
               return false;
             }
+
             const newState = {
               web3,
               biconomy
@@ -463,7 +495,7 @@ class RimbleTransaction extends React.Component {
     return simpleID;
   }
 
-  initAccount = async (account = false) => {
+  initAccount = async (account=false) => {
 
     if (this.props.customAddress){
 
