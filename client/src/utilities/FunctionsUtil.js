@@ -1104,8 +1104,8 @@ class FunctionsUtil {
     if (!userInfo.address && this.props.account){
       userInfo.address = this.props.account;
     }
-    if (!userInfo.walletProvider){
-      userInfo.walletProvider = localStorage && localStorage.getItem('walletProvider') ? localStorage.getItem('walletProvider') : 'Infura'
+    if (!userInfo.provider){
+      userInfo.provider = this.getWalletProvider();
     }
     if (typeof userInfo.email !== 'undefined' && !userInfo.email){
       delete userInfo.email;

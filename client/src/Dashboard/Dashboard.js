@@ -218,13 +218,12 @@ class Dashboard extends Component {
     }
 
     // Show welcome modal
-    const accountChanged = prevProps.account !== this.props.account;
-    if (this.props.account && accountChanged){
+    if (this.props.account && this.state.activeModal !== 'welcome'){
       let welcomeIsOpen = false;
 
       const welcomeModalProps = this.functionsUtil.getGlobalConfig(['modals','welcome']);
 
-      if (welcomeModalProps.enabled && localStorage && accountChanged){
+      if (welcomeModalProps.enabled && localStorage){
 
         // Check the last login of the wallet
         const currTime = new Date().getTime();
@@ -249,9 +248,12 @@ class Dashboard extends Component {
         }
       }
 
-      this.setState({
-        activeModal: welcomeIsOpen ? 'welcome' : this.state.activeModal
-      });
+      const activeModal = welcomeIsOpen ? 'welcome' : this.state.activeModal;
+      if (this.state.activeModal !== activeModal){
+        await this.setState({
+          activeModal
+        });
+      }
     }
   }
 

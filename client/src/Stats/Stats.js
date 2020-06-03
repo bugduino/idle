@@ -206,7 +206,7 @@ class Stats extends Component {
   }
 
   loadCarousel(){
-    const carouselMax = this.props.isMobile ? 2 :1;
+    const carouselMax = this.props.isMobile ? 3 : 2;
     this.setState({
       carouselMax
     });
@@ -886,7 +886,7 @@ class Stats extends Component {
               height={'400px'}
               position={'absolute'}
               id={'carousel-cursor'}
-              width={['333%','150%']}
+              width={['444%','200%']}
               justifyContent={'flex-start'}
               left={this.state.carouselOffsetLeft}
               style={{
@@ -1008,6 +1008,46 @@ class Stats extends Component {
                       {...this.state}
                       chartMode={'VOL'}
                       parentId={'chart-VOL'}
+                      isMobile={this.props.isMobile}
+                      contracts={this.props.contracts}
+                      apiResults={this.state.apiResults}
+                      apiResults_unfiltered={this.state.apiResults_unfiltered}
+                    />
+                  </Flex>
+                </Flex>
+              </DashboardCard>
+              <DashboardCard
+                cardProps={{
+                  mr:4,
+                  height:'fit-content',
+                  style:this.props.isMobile ? {width:'100%'} : {width:'32vw'}
+                }}
+              >
+                <Flex id='chart-SCORE' width={1}>
+                  <Flex
+                    mb={3}
+                    width={1}
+                    flexDirection={'column'}
+                    alignItems={'flex-start'}
+                    justifyContent={'center'}
+                  >
+                    <Heading.h4
+                      mb={2}
+                      ml={3}
+                      mt={3}
+                      fontWeight={4}
+                      fontSize={[2,3]}
+                      textAlign={'left'}
+                      color={'dark-gray'}
+                      lineHeight={'initial'}
+                    >
+                      Risk Score
+                    </Heading.h4>
+                    <StatsChart
+                      height={300}
+                      {...this.state}
+                      chartMode={'SCORE'}
+                      parentId={'chart-SCORE'}
                       isMobile={this.props.isMobile}
                       contracts={this.props.contracts}
                       apiResults={this.state.apiResults}

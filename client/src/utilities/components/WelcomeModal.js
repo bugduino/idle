@@ -38,6 +38,17 @@ class WelcomeModal extends React.Component {
     this.functionsUtil.setProps(this.props);
   }
 
+  sendUserInfo = () => {
+    const walletProvider = this.functionsUtil.getWalletProvider();
+    const userInfo = {
+      address: this.props.account,
+      provider: walletProvider,
+      email:this.state.email
+    };
+    console.log('sendUserInfo',userInfo);
+    this.functionsUtil.simpleIDPassUserInfo(userInfo);
+  }
+
   handleSubmit(e) {
     e.preventDefault();
 
@@ -53,7 +64,7 @@ class WelcomeModal extends React.Component {
       window.setTimeout(this.props.closeModal,2500);
     };
 
-    this.functionsUtil.simpleIDPassUserInfo({email:this.state.email});
+    this.sendUserInfo();
 
     // Send Google Analytics event
     this.functionsUtil.sendGoogleAnalyticsEvent({
@@ -87,7 +98,7 @@ class WelcomeModal extends React.Component {
   };
 
   closeModal = async () => {
-    this.functionsUtil.simpleIDPassUserInfo({email:this.state.email});
+    this.sendUserInfo();
 
     // Send Google Analytics event
     if (globalConfigs.analytics.google.events.enabled){
@@ -114,7 +125,7 @@ class WelcomeModal extends React.Component {
       <Modal isOpen={this.props.isOpen}>
         {
           this.state.subscribed ? (
-            <ModalCard closeFunc={this.props.closeModal}>
+            <ModalCard closeFunc={this.closeModal}>
               <ModalCard.Header title={'All done'} icon={`images/done.svg`}></ModalCard.Header>
               <ModalCard.Body>
                 <Flex width={1} flexDirection={'column'} mb={3}>
@@ -125,7 +136,7 @@ class WelcomeModal extends React.Component {
                     my={3}
                     width={'100%'}
                     borderRadius={4}
-                    onClick={this.props.closeModal}
+                    onClick={this.closeModal}
                   >
                     CLOSE
                   </Button>
@@ -133,7 +144,7 @@ class WelcomeModal extends React.Component {
               </ModalCard.Body>
             </ModalCard>
           ) : (
-            <ModalCard closeFunc={this.props.closeModal}>
+            <ModalCard closeFunc={this.closeModal}>
               <ModalCard.Header title={'Stay up-to-date!'} icon={`images/notification.svg`}>
               </ModalCard.Header>
               <ModalCard.Body>

@@ -192,15 +192,24 @@ class App extends Component {
       // Clear all localStorage data except walletProvider and connectorName if version has changed
       const version = localStorage.getItem('version');
       if (version !== globalConfigs.version){
+
+        const storedKeysToRemove = [];
+
         for (let i=0;i<localStorage.length;i++){
           const storedKey = localStorage.key(i);
           if (!['walletProvider','connectorName'].includes(storedKey)){
-            localStorage.removeItem(storedKey);
+            storedKeysToRemove.push(storedKey);
           }
         }
+
+        storedKeysToRemove.forEach((storedKey) => {
+          localStorage.removeItem(storedKey);
+        });
+
         localStorage.setItem('version',globalConfigs.version);
       }
     }
+
 
     window.closeIframe = (w) => {
       const iFrames = document.getElementsByTagName('iframe');

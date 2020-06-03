@@ -2,7 +2,7 @@ import theme from '../theme';
 import { Line } from '@nivo/line';
 import { Flex, Text } from "rimble-ui";
 import React, { Component } from 'react';
-import { Defs, linearGradientDef } from '@nivo/core'
+import { linearGradientDef } from '@nivo/core'
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import GenericChart from '../GenericChart/GenericChart';
 import DashboardCard from '../DashboardCard/DashboardCard';
@@ -358,6 +358,7 @@ class PortfolioEquity extends Component {
           }
         },
       },
+      /*
       defs:[
         linearGradientDef('gradientA', [
           { offset: 0, color: 'inherit' },
@@ -365,6 +366,7 @@ class PortfolioEquity extends Component {
         ]),
       ],
       fill:[{ match: '*', id: 'gradientA' }],
+      */
       margin: this.props.isMobile ? { top: 20, right: 25, bottom: 25, left: 20 } : { top: 30, right: 50, bottom: 45, left: 50 },
       sliceTooltip:(sliceData) => {
         const { slice: {points} } = sliceData;

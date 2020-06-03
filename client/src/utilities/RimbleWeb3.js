@@ -537,10 +537,6 @@ class RimbleTransaction extends React.Component {
         const simpleID = this.initSimpleID();
 
         if (simpleID){
-          await this.functionsUtil.simpleIDPassUserInfo({
-            address: account,
-            walletProvider
-          },simpleID);
 
           const notifications = await simpleID.notifications();
 

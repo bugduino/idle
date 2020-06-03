@@ -1112,6 +1112,183 @@ class StatsChart extends Component {
           }
         };
       break;
+      case 'SCORE':
+
+        let prevValue = 0;
+        maxChartValue = 0;
+
+        this.props.tokenConfig.protocols.forEach((p,j) => {
+          if (chartData.filter(d => { return d.name === p.name; }).length){
+            return;
+          }
+
+          chartData.push({
+            id:p.name,
+            color:'hsl('+globalConfigs.stats.protocols[p.name].color.hsl.join(',')+')',
+            data:apiResults.map((d,i) => {
+              return d.protocolsData.filter((protocolAllocation,x) => {
+                  return protocolAllocation.protocolAddr.toLowerCase() === p.address.toLowerCase()
+              })
+              .map((protocolAllocation,z) => {
+                const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
+                let y = parseFloat(protocolAllocation.defiScore);
+
+                y = isNaN(y) || !y ? prevValue : y;
+                prevValue = y;
+                maxChartValue = Math.max(maxChartValue,y);
+
+                return { x, y };
+              })[0]
+            }).filter((v) => { return v !== undefined; } )
+          })
+        });
+
+        chartData.push({
+          id:'Idle',
+          color: 'hsl('+globalConfigs.stats.protocols.idle.color.hsl.join(',')+')',
+          data: apiResults.map((d,i) => {
+            const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
+            let y = parseFloat(d.idleScore);
+            y = isNaN(y) || !y ? prevValue : y;
+            prevValue = y;
+            maxChartValue = Math.max(maxChartValue,y);
+
+            return { x, y };
+          })
+        });
+
+        // debugger;
+
+        // Set chart type
+        chartType = Line;
+
+        gridYStep = parseFloat(maxChartValue/maxGridLines);
+        gridYValues = [0];
+        for (let i=1;i<=5;i++){
+          gridYValues.push(i*gridYStep);
+        }
+
+        chartProps = {
+          xScale:{
+            type: 'time',
+            format: '%Y/%m/%d %H:%M',
+            // precision: 'hour',
+          },
+          xFormat:'time:%b %d %H:%M',
+          yFormat:value => parseFloat(value).toFixed(1),
+          yScale:{
+            type: 'linear',
+            stacked: false
+          },
+          axisLeft:{
+            legend: '',
+            tickSize: 0,
+            orient: 'left',
+            tickPadding: 10,
+            tickRotation: 0,
+            legendOffset: -70,
+            tickValues:gridYValues,
+            legendPosition: 'middle',
+            format:value => parseFloat(value).toFixed(1),
+          },
+          axisBottom: this.props.isMobile ? null : {
+            tickSize: 0,
+            format: '%b %d',
+            tickPadding: 15,
+            tickValues: this.props.isMobile ? 'every 4 days' : ( this.props.showAdvanced ? 'every 3 days' : 'every 2 days'),
+            orient: 'bottom',
+            legend: '',
+            legendOffset: 0,
+            legendPosition: 'middle'
+          },
+          gridYValues,
+          pointSize:0,
+          useMesh:true,
+          animate:false,
+          pointLabel:"y",
+          curve:'linear',
+          enableArea:false,
+          enableSlices:'x',
+          enableGridX:false,
+          enableGridY:true,
+          pointBorderWidth:1,
+          colors:d => d.color,
+          pointLabelYOffset:-12,
+          legends:[
+            {
+              itemWidth: this.props.isMobile ? 70 : 80,
+              itemHeight: 18,
+              translateX: this.props.isMobile ? -35 : 0,
+              translateY: this.props.isMobile ? 40 : 65,
+              symbolSize: 10,
+              itemsSpacing: 0,
+              direction: 'row',
+              anchor: 'bottom-left',
+              symbolShape: 'circle',
+              itemTextColor: theme.colors.legend,
+              effects: [
+                {
+                  on: 'hover',
+                  style: {
+                    itemTextColor: '#000'
+                  }
+                }
+              ]
+            }
+          ],
+          theme:{
+            axis: {
+              ticks: {
+                text: {
+                  fontSize: this.props.isMobile ? 12: 14,
+                  fontWeight:600,
+                  fill:theme.colors.legend,
+                  fontFamily: theme.fonts.sansSerif
+                }
+              }
+            },
+            grid: {
+              line: {
+                stroke: theme.colors.lineChartStroke, strokeDasharray: '10 6'
+              }
+            },
+            legends:{
+              text:{
+                fontSize: this.props.isMobile ? 12: 14,
+                fontWeight:500,
+                fontFamily: theme.fonts.sansSerif
+              }
+            }
+          },
+          pointColor:{ from: 'color', modifiers: []},
+          margin: this.props.isMobile ? { top: 20, right: 20, bottom: 40, left: 65 } : { top: 20, right: 40, bottom: 70, left: 70 },
+          sliceTooltip:(slideData) => {
+            const { slice } = slideData;
+            const point = slice.points[0];
+            return (
+              <CustomTooltip
+                point={point}
+              >
+                {
+                typeof slice.points === 'object' && slice.points.length &&
+                  slice.points.map(point => {
+                    const protocolName = point.serieId;
+                    const protocolEarning = point.data.yFormatted;
+                    return (
+                      <CustomTooltipRow
+                        key={point.id}
+                        color={point.color}
+                        label={protocolName}
+                        value={protocolEarning}
+                      />
+                    );
+                  })
+                }
+              </CustomTooltip>
+            );
+          }
+        };
+      break;
       case 'PRICE':
 
         let firstTokenPrice = null;
