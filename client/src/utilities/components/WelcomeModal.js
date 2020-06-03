@@ -45,7 +45,6 @@ class WelcomeModal extends React.Component {
       provider: walletProvider,
       email:this.state.email
     };
-    console.log('sendUserInfo',userInfo);
     this.functionsUtil.simpleIDPassUserInfo(userInfo);
   }
 

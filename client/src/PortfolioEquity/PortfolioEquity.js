@@ -2,7 +2,7 @@ import theme from '../theme';
 import { Line } from '@nivo/line';
 import { Flex, Text } from "rimble-ui";
 import React, { Component } from 'react';
-import { linearGradientDef } from '@nivo/core'
+// import { linearGradientDef } from '@nivo/core'
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import GenericChart from '../GenericChart/GenericChart';
 import DashboardCard from '../DashboardCard/DashboardCard';
