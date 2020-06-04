@@ -81,10 +81,10 @@ class StrategyPage extends Component {
 
         await this.functionsUtil.asyncForEach(depositedTokens,async (token) => {
           const tokenConfig = this.props.availableTokens[token];
-          const [tokenAprs,tokenScore,idleTokenPrice,avgBuyPrice,amountLent] = await Promise.all([
+          const [tokenAprs,idleTokenPrice,tokenScore,avgBuyPrice,amountLent] = await Promise.all([
             this.functionsUtil.getTokenAprs(tokenConfig),
-            this.functionsUtil.getTokenScore(tokenConfig,isRisk),
             this.functionsUtil.getIdleTokenPrice(tokenConfig),
+            this.functionsUtil.getTokenScore(tokenConfig,isRisk),
             this.functionsUtil.getAvgBuyPrice([token],this.props.account),
             this.functionsUtil.getAmountLent([token],this.props.account)
           ]);
@@ -93,12 +93,20 @@ class StrategyPage extends Component {
           const tokenAPY = this.functionsUtil.apr2apy(tokenAPR).times(100);
           const tokenWeight = portfolio.tokensBalance[token].tokenBalance.div(portfolio.totalBalance);
           const tokenEarningsPerc = idleTokenPrice.div(avgBuyPrice[token]).minus(1);
-          const tokenEarnings = amountLent[token].times(tokenEarningsPerc);
+          const tokenEarnings = amountLent[token] ? amountLent[token].times(tokenEarningsPerc) : 0;
 
-          totalEarnings = totalEarnings.plus(tokenEarnings);
-          avgAPY = avgAPY.plus(tokenAPY.times(tokenWeight));
-          avgScore = avgScore.plus(tokenScore.times(tokenWeight));
-          totalAmountLent = totalAmountLent.plus(amountLent[token]);
+          if (tokenEarnings){
+            totalEarnings = totalEarnings.plus(tokenEarnings);
+          }
+          if (tokenAPY){
+            avgAPY = avgAPY.plus(tokenAPY.times(tokenWeight));
+          }
+          if (tokenScore){
+            avgScore = avgScore.plus(tokenScore.times(tokenWeight));
+          }
+          if (amountLent[token]){
+            totalAmountLent = totalAmountLent.plus(amountLent[token]);
+          }
         });
 
         const earningsStart = totalEarnings;
