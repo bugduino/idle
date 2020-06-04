@@ -5,11 +5,11 @@ import FlexLoader from '../FlexLoader/FlexLoader';
 import RoundButton from '../RoundButton/RoundButton';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import BuyModal from '../utilities/components/BuyModal';
-import { Flex, Text, Input, Box, Icon } from "rimble-ui";
 import DashboardCard from '../DashboardCard/DashboardCard';
 import AssetSelector from '../AssetSelector/AssetSelector';
 import TxProgressBar from '../TxProgressBar/TxProgressBar';
 import ShareModal from '../utilities/components/ShareModal';
+import { Flex, Text, Input, Box, Icon, Link } from "rimble-ui";
 import TransactionField from '../TransactionField/TransactionField';
 import FastBalanceSelector from '../FastBalanceSelector/FastBalanceSelector';
 
@@ -546,6 +546,7 @@ class DepositRedeem extends Component {
     }
 
     const tokenApproved = this.state.tokenApproved;
+    const totalBalance = this.state.action === 'deposit' ? this.props.tokenBalance : this.props.redeemableBalance;
     const showBuyFlow = tokenApproved && this.state.action === 'deposit' && this.state.componentMounted && !this.state.canDeposit;
 
     return (
@@ -754,6 +755,20 @@ class DepositRedeem extends Component {
                             mt={3}
                             flexDirection={'column'}
                           >
+                            {
+                              totalBalance && 
+                                <Link
+                                  mb={1}
+                                  fontSize={1}
+                                  fontWeight={3}
+                                  color={'dark-gray'}
+                                  textAlign={'right'}
+                                  hoverColor={'copyColor'}
+                                  onClick={ (e) => this.setFastBalanceSelector(100) }
+                                >
+                                  {totalBalance.toFixed(6)} {this.props.selectedToken}
+                                </Link>
+                            }
                             <Input
                               min={0}
                               type={"number"}
@@ -768,31 +783,21 @@ class DepositRedeem extends Component {
                               value={this.state.inputValue[this.state.action] !== null ? this.functionsUtil.BNify(this.state.inputValue[this.state.action]).toString() : ''}
                             />
                             <Flex
-                              mt={3}
+                              mt={2}
                               alignItems={'center'}
                               flexDirection={'row'}
                               justifyContent={'space-between'}
                             >
-                              <FastBalanceSelector
-                                percentage={25}
-                                onMouseDown={()=>this.setFastBalanceSelector(25)}
-                                isActive={this.state.fastBalanceSelector[this.state.action] === parseInt(25)}
-                              />
-                              <FastBalanceSelector
-                                percentage={50}
-                                onMouseDown={()=>this.setFastBalanceSelector(50)}
-                                isActive={this.state.fastBalanceSelector[this.state.action] === parseInt(50)}
-                              />
-                              <FastBalanceSelector
-                                percentage={75}
-                                onMouseDown={()=>this.setFastBalanceSelector(75)}
-                                isActive={this.state.fastBalanceSelector[this.state.action] === parseInt(75)}
-                              />
-                              <FastBalanceSelector
-                                percentage={100}
-                                onMouseDown={()=>this.setFastBalanceSelector(100)}
-                                isActive={this.state.fastBalanceSelector[this.state.action] === parseInt(100)}
-                              />
+                              {
+                                [25,50,75,100].map( percentage => (
+                                  <FastBalanceSelector
+                                    percentage={percentage}
+                                    key={`selector_${percentage}`}
+                                    onMouseDown={()=>this.setFastBalanceSelector(percentage)}
+                                    isActive={this.state.fastBalanceSelector[this.state.action] === parseInt(percentage)}
+                                  />
+                                ))
+                              }
                             </Flex>
                             <Flex
                               mt={3}
