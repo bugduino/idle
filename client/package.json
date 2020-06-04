@@ -7,7 +7,7 @@
     "@babel/core": "^7.4.5",
     "@biconomy/mexa": "^1.5.11",
     "@nivo/bar": "^0.59.2",
-    "@nivo/line": "^0.61.1",
+    "@nivo/line": "^0.59.2",
     "@nivo/pie": "^0.61.1",
     "@nivo/stream": "^0.61.1",
     "@portis/web3": "^2.0.0-beta.34",

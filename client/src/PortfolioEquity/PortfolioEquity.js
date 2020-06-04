@@ -294,13 +294,10 @@ class PortfolioEquity extends Component {
       const gridYValue = parseFloat(parseFloat(minChartValue+(i*gridYStep)).toFixed(2));
       gridYValues.push(gridYValue);
     }
-
     
     const axisBottomMaxValues = 10;
     const daysCount = Object.values(days).length;    
     const daysFrequency = Math.max(1,Math.ceil(daysCount/axisBottomMaxValues));
-
-    // console.log(minChartValue,maxChartValue,gridYStep,gridYValues);
 
     const chartProps = {
       xScale:{
@@ -315,8 +312,6 @@ class PortfolioEquity extends Component {
       },
       xFormat:'time:%b %d %Y',
       yFormat:value => this.functionsUtil.formatMoney(value,2),
-      axisLeft:null,
-      areaOpacity:0.1,
       axisBottom: this.props.isMobile ? null : {
         legend: '',
         tickSize:0,
@@ -328,19 +323,22 @@ class PortfolioEquity extends Component {
         tickValues:'every '+daysFrequency+' days'
       },
       gridYValues,
-      enableArea:true,
-      curve:'monotoneX',
-      enableSlices:'x',
-      enableGridX:false,
-      enableGridY:true,
-      colors:d => d.color,
       pointSize:0,
-      pointColor:{ from: 'color', modifiers: []},
-      pointBorderWidth:1,
-      pointLabel:"y",
-      pointLabelYOffset:-12,
       useMesh:true,
+      axisLeft:null,
       animate:false,
+      pointLabel:'y',
+      areaOpacity:0.1,
+      enableArea:true,
+      enableSlices:'x',
+      enableGridY:true,
+      curve:'monotoneX',
+      enableGridX:false,
+      pointBorderWidth:1,
+      colors:d => d.color,
+      pointLabelYOffset:-12,
+      areaBaselineValue:minChartValue,
+      pointColor:{ from: 'color', modifiers: []},
       theme:{
         axis: {
           ticks: {
