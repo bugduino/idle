@@ -1797,6 +1797,20 @@ class FunctionsUtil {
 
     return tokenAllocation;
   }
+  getTotalAUM = async () => {
+    let totalAUM = this.BNify(0);
+    await this.asyncForEach(Object.keys(this.props.availableStrategies),async (strategy) => {
+      const availableTokens = this.props.availableStrategies[strategy];
+      await this.asyncForEach(Object.keys(availableTokens),async (token) => {
+        const tokenConfig = availableTokens[token];
+        const tokenAllocation = await this.getTokenAllocation(tokenConfig);
+        if (tokenAllocation && tokenAllocation.totalAllocation){
+          totalAUM = totalAUM.plus(tokenAllocation.totalAllocation);
+        }
+      });
+    });
+    return totalAUM;
+  }
   getTokenApy = async (tokenConfig) => {
     const tokenAprs = await this.getTokenAprs(tokenConfig);
     if (tokenAprs && tokenAprs.avgApr !== null){

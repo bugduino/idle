@@ -8,6 +8,7 @@ import StatsCard from '../StatsCard/StatsCard';
 import AssetsList from '../AssetsList/AssetsList';
 import FlexLoader from '../FlexLoader/FlexLoader';
 import Breadcrumb from '../Breadcrumb/Breadcrumb';
+import SmartNumber from '../SmartNumber/SmartNumber';
 import globalConfigs from '../configs/globalConfigs';
 import { Box, Flex, Text, Heading } from 'rimble-ui';
 import FunctionsUtil from '../utilities/FunctionsUtil';
@@ -29,6 +30,7 @@ class Stats extends Component {
     minDate:null,
     maxDate:null,
     carouselMax:1,
+    totalAUM:null,
     rebalances:'-',
     buttonGroups:[],
     apiResults:null,
@@ -203,6 +205,17 @@ class Stats extends Component {
     await this.loadParams();
     this.loadApiData();
     this.loadCarousel();
+
+    if (!this.props.selectedToken){
+      this.loadTotalAUM();
+    }
+  }
+
+  loadTotalAUM = async () => {
+    const totalAUM = await this.functionsUtil.getTotalAUM();
+    this.setState({
+      totalAUM
+    });
   }
 
   loadCarousel(){
@@ -392,7 +405,41 @@ class Stats extends Component {
     if (!this.props.selectedToken){
       const strategies = this.functionsUtil.getGlobalConfig(['strategies']);
       return (
-        <Box width={1}>
+        <Flex
+          width={1}
+          flexDirection={'column'}
+        >
+          <Flex
+            width={1}
+            flexDirection={'column'}
+            alignItems={['center','flex-end']}
+          >
+            <SmartNumber
+              unit={'$'}
+              type={'money'}
+              fontWeight={5}
+              flexProps={{
+                width:'auto'
+              }}
+              unitProps={{
+                mr:2,
+                fontWeight:3,
+                fontSize:[5,7],
+                color:'dark-gray'
+              }}
+              unitPos={'left'}
+              fontSize={[5,7]}
+              color={'dark-gray'}
+              number={this.state.totalAUM}
+            />
+            <Title
+              fontWeight={3}
+              fontSize={3}
+              color={'cellTitle'}
+            >
+              Assets Under Management
+            </Title>
+          </Flex>
           {
             Object.keys(strategies).map(strategy => {
               const strategyInfo = strategies[strategy];
@@ -402,7 +449,7 @@ class Stats extends Component {
               }
               return (
                 <Flex
-                  mb={3}
+                  mb={2}
                   width={1}
                   flexDirection={'column'}
                   justifyContent={'center'}
@@ -521,7 +568,7 @@ class Stats extends Component {
               );
             })
           }
-        </Box>
+        </Flex>
       );
     } else {
 

@@ -31,16 +31,34 @@ class SmartNumber extends Component {
         break;
       }
     }
+
+    const flexProps = {
+      width:1,
+      alignItems:'center',
+      flexDirection:'row',
+      justifyContent:'center'
+    };
+
+    // Replace props
+    if (this.props.flexProps && Object.keys(this.props.flexProps).length){
+      Object.keys(this.props.flexProps).forEach(p => {
+        flexProps[p] = this.props.flexProps[p];
+      });
+    }
+
+    const unitPos = this.props.unitPos ? this.props.unitPos : 'right';
+
     return (
       <Flex
-        width={1}
-        alignItems={'center'}
-        flexDirection={'row'}
-        justifyContent={'center'}
+        {...flexProps}
       >
+        {
+          this.props.unit && unitPos === 'left' &&
+            <Text {...this.props.unitProps}>{this.props.unit}</Text>
+        }
         <Text {...this.props}>{formattedNumber}</Text>
         {
-          this.props.unit &&
+          this.props.unit && unitPos === 'right' &&
             <Text {...this.props.unitProps}>{this.props.unit}</Text>
         }
       </Flex>
