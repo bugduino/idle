@@ -1797,19 +1797,35 @@ class FunctionsUtil {
 
     return tokenAllocation;
   }
-  getTotalAUM = async () => {
+  getAggregatedStats = async () => {
+    let avgAPR = this.BNify(0);
     let totalAUM = this.BNify(0);
     await this.asyncForEach(Object.keys(this.props.availableStrategies),async (strategy) => {
       const availableTokens = this.props.availableStrategies[strategy];
       await this.asyncForEach(Object.keys(availableTokens),async (token) => {
         const tokenConfig = availableTokens[token];
         const tokenAllocation = await this.getTokenAllocation(tokenConfig);
-        if (tokenAllocation && tokenAllocation.totalAllocation){
-          totalAUM = totalAUM.plus(tokenAllocation.totalAllocation);
+        const tokenAprs = await this.getTokenAprs(tokenConfig,tokenAllocation);
+        if (tokenAllocation){
+          if (tokenAllocation.totalAllocation){
+            totalAUM = totalAUM.plus(tokenAllocation.totalAllocation);
+
+            if (tokenAprs.avgApr){
+              avgAPR = avgAPR.plus(tokenAllocation.totalAllocation.times(tokenAprs.avgApr))
+            }
+          }
         }
       });
     });
-    return totalAUM;
+
+    avgAPR = avgAPR.div(totalAUM);
+    const avgAPY = this.apr2apy(avgAPR.div(100)).times(100);
+
+    return {
+      avgAPR,
+      avgAPY,
+      totalAUM
+    };
   }
   getTokenApy = async (tokenConfig) => {
     const tokenAprs = await this.getTokenAprs(tokenConfig);
@@ -1874,9 +1890,6 @@ class FunctionsUtil {
 
     if (tokenAllocation){
       tokenAprs.avgApr = this.getAvgApr(protocolsAprs,tokenAllocation.protocolsAllocations,tokenAllocation.totalAllocation);
-      // if (!tokenAprs.avgApr || tokenAprs.avgApr.isNaN()){
-      //   debugger;
-      // }
     }
 
     return tokenAprs;

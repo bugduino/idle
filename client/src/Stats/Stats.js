@@ -1,5 +1,6 @@
 import moment from 'moment';
 import Title from '../Title/Title';
+import CountUp from 'react-countup';
 import StatsChart from './StatsChart';
 import React, { Component } from 'react';
 // import Toggler from '../Toggler/Toggler';
@@ -212,9 +213,16 @@ class Stats extends Component {
   }
 
   loadTotalAUM = async () => {
-    const totalAUM = await this.functionsUtil.getTotalAUM();
-    this.setState({
+    const {
+      avgAPY,
       totalAUM
+    } = await this.functionsUtil.getAggregatedStats();
+
+    const totalAUMEndOfYear = totalAUM.plus(totalAUM.times(avgAPY.div(100)));
+
+    this.setState({
+      totalAUM,
+      totalAUMEndOfYear
     });
   }
 
@@ -409,37 +417,45 @@ class Stats extends Component {
           width={1}
           flexDirection={'column'}
         >
-          <Flex
-            width={1}
-            flexDirection={'column'}
-            alignItems={['center','flex-end']}
-          >
-            <SmartNumber
-              unit={'$'}
-              type={'money'}
-              fontWeight={5}
-              flexProps={{
-                width:'auto'
-              }}
-              unitProps={{
-                mr:2,
-                fontWeight:3,
-                fontSize:[5,7],
-                color:'dark-gray'
-              }}
-              unitPos={'left'}
-              fontSize={[5,7]}
-              color={'dark-gray'}
-              number={this.state.totalAUM}
-            />
-            <Title
-              fontWeight={3}
-              fontSize={3}
-              color={'cellTitle'}
-            >
-              Assets Under Management
-            </Title>
-          </Flex>
+          {
+            this.state.totalAUM && this.state.totalAUMEndOfYear && 
+              <Flex
+                width={1}
+                flexDirection={'column'}
+                alignItems={['center','flex-end']}
+              >
+                <CountUp
+                  delay={0}
+                  decimals={5}
+                  decimal={'.'}
+                  separator={''}
+                  useEasing={false}
+                  duration={31536000}
+                  start={parseFloat(this.state.totalAUM)}
+                  end={parseFloat(this.state.totalAUMEndOfYear)}
+                  formattingFn={ n => '$ '+this.functionsUtil.formatMoney(n,5) }
+                >
+                  {({ countUpRef, start }) => (
+                    <span
+                      style={{
+                        color:'dark-gray',
+                        fontFamily:this.props.theme.fonts.counter,
+                        fontWeight:this.props.theme.fontWeights[5],
+                        fontSize: this.props.isMobile ? '1.6em' : this.props.theme.fontSizes[6]
+                      }}
+                      ref={countUpRef}
+                    />
+                  )}
+                </CountUp>
+                <Title
+                  fontWeight={3}
+                  fontSize={[2,3]}
+                  color={'cellTitle'}
+                >
+                  Assets Under Management
+                </Title>
+              </Flex>
+          }
           {
             Object.keys(strategies).map(strategy => {
               const strategyInfo = strategies[strategy];
