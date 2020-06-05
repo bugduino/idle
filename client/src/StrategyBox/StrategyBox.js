@@ -152,7 +152,10 @@ class StrategyBox extends Component {
                   color:'copyColor',
                   textAlign:'center',
                   fontSize:[3,'1.8em'],
-                }
+                  flexProps:{
+                    justifyContent:'center'
+                  }
+                },
               }}
               {...this.props}
               tokenConfig={ tokenConfig }
@@ -182,7 +185,10 @@ class StrategyBox extends Component {
                   color:'copyColor',
                   textAlign:'center',
                   fontSize:[3,'1.8em'],
-                }
+                  flexProps:{
+                    justifyContent:'center'
+                  }
+                },
               }}
               {...this.props}
               tokenConfig={ tokenConfig }

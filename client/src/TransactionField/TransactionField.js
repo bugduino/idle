@@ -73,7 +73,10 @@ class TransactionField extends Component {
     const fieldProps = {
       fontWeight:3,
       fontSize:[0,2],
-      color:'cellText'
+      color:'cellText',
+      flexProps:{
+        justifyContent:'flex-start'
+      }
     };
 
     // Replace props

@@ -81,7 +81,10 @@ class FundsOverview extends Component {
                     maxPrecision:8,
                     fontWeight:300,
                     fontSize:['1.8em','2.2em'],
-                    color:theme.colors.counter
+                    color:theme.colors.counter,
+                    flexProps:{
+                      justifyContent:'center'
+                    }
                   }
                 }}
               />
@@ -112,6 +115,9 @@ class FundsOverview extends Component {
                       fontWeight:300,
                       fontSize: this.props.isMobile ? '1.8em' : '2.2em',
                       color:theme.colors.counter
+                    },
+                    flexProps:{
+                      justifyContent:'center'
                     }
                   }
                 }}
@@ -124,7 +130,10 @@ class FundsOverview extends Component {
                   props:{
                     fontSize:1,
                     fontWeight:2,
-                    color:'cellText'
+                    color:'cellText',
+                    flexProps:{
+                      justifyContent:'center'
+                    }
                   }
                 }}
               />
@@ -155,6 +164,9 @@ class FundsOverview extends Component {
                       fontWeight:300,
                       fontSize:this.props.isMobile ? '1.8em' : '2.2em',
                       color:theme.colors.counter
+                    },
+                    flexProps:{
+                      justifyContent:'center'
                     }
                   }
                 }}
@@ -183,7 +195,10 @@ class FundsOverview extends Component {
                     decimals:2,
                     fontWeight:300,
                     fontSize:['1.8em','2.2em'],
-                    color:theme.colors.counter
+                    color:theme.colors.counter,
+                    flexProps:{
+                      justifyContent:'center'
+                    }
                   }
                 }}
               />
@@ -211,7 +226,10 @@ class FundsOverview extends Component {
                     decimals:1,
                     fontWeight:300,
                     fontSize:['1.8em','2.2em'],
-                    color:theme.colors.counter
+                    color:theme.colors.counter,
+                    flexProps:{
+                      justifyContent:'center'
+                    }
                   }
                 }}
               />
