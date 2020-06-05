@@ -123,7 +123,9 @@ class AllocationChart extends Component {
       margin: this.props.inline ? {top:10,right:1,bottom:3,left:1} : (this.props.isMobile ? { top: 10, right: 15, bottom: 0, left: 15 } : { top: 10, right: 35, bottom: 0, left: 35 }),
     };
 
-    const chartData = this.props.tokenConfig.protocols.map((protocolInfo,i)=>{
+    const chartData = [];
+
+    this.props.tokenConfig.protocols.forEach((protocolInfo,i)=>{
       const protocolName = protocolInfo.name;
       const protocolAddr = protocolInfo.address.toLowerCase();
       const protocolLoaded = totalAllocation && protocolsAllocations && protocolsAllocations[protocolAddr];
@@ -131,12 +133,14 @@ class AllocationChart extends Component {
       const protocolAllocationPerc = protocolAllocation !== null ? parseFloat(protocolAllocation)/parseFloat(totalAllocation.toString()) : null;
       const protocolAllocationPercParsed = protocolAllocationPerc === null ? 0 : parseFloat((protocolAllocationPerc*100).toFixed(1));
 
-      return {
-        id:protocolAddr,
-        value:protocolAllocationPercParsed,
-        label: globalConfigs.stats.protocols[protocolName].label ? globalConfigs.stats.protocols[protocolName].label : this.functionsUtil.capitalize(protocolName),
-        color:'hsl('+globalConfigs.stats.protocols[protocolName].color.hsl.join(',')+')'
-      };
+      if (protocolAllocationPercParsed){
+        chartData.push({
+          id:protocolAddr,
+          value:protocolAllocationPercParsed,
+          color:'hsl('+globalConfigs.stats.protocols[protocolName].color.hsl.join(',')+')',
+          label: globalConfigs.stats.protocols[protocolName].label ? globalConfigs.stats.protocols[protocolName].label : this.functionsUtil.capitalize(protocolName)
+        });
+      }
     });
 
     this.setState({
