@@ -66,10 +66,9 @@ class AllocationChart extends Component {
     const chartProps = {
       padAngle:0,
       animate:true,
-      borderWidth:0,
       cornerRadius:0,
-      innerRadius:0.65,
       motionDamping:15,
+      innerRadius: 0.65,
       motionStiffness:90,
       colors:d => d.color,
       onMouseEnter:(data, e) => {
@@ -89,7 +88,7 @@ class AllocationChart extends Component {
       },
       theme:{
         tooltip: {
-          container: {
+          container: this.props.inline ? {} : {
             display: 'none'
           }
         },
@@ -110,15 +109,18 @@ class AllocationChart extends Component {
       },
       slicesLabelsSkipAngle:5,
       radialLabelsSkipAngle:10,
+      enableRadialLabels:false,
       radialLabelsTextXOffset:0,
       slicesLabelsTextColor:'#fff',
       radialLabelsTextColor:'#333',
       radialLabelsLinkStrokeWidth:0,
       radialLabelsLinkDiagonalLength:0,
       radialLabelsLinkHorizontalLength:0,
+      enableSlicesLabels: !this.props.inline,
+      borderWidth: this.props.inline ? 1 : 0,
       radialLabelsLinkColor:{ from: 'color' },
-      margin: this.props.isMobile ? { top: 10, right: 15, bottom: 0, left: 15 } : { top: 10, right: 35, bottom: 0, left: 35 },
       borderColor:{ from: 'color', modifiers: [ [ 'darker', 0.2 ] ] },
+      margin: this.props.inline ? {top:10,right:1,bottom:3,left:1} : (this.props.isMobile ? { top: 10, right: 15, bottom: 0, left: 15 } : { top: 10, right: 35, bottom: 0, left: 35 }),
     };
 
     const chartData = this.props.tokenConfig.protocols.map((protocolInfo,i)=>{
@@ -157,7 +159,7 @@ class AllocationChart extends Component {
         position={'relative'}
       >
         {
-          this.state.totalAllocation &&
+          this.state.totalAllocation && !this.props.inline &&
             <Flex
               zIndex={0}
               top={['23%','25%']}
@@ -238,8 +240,8 @@ class AllocationChart extends Component {
         }
         <GenericChart
           type={Pie}
-          {...this.props}
           showLoader={true}
+          {...this.props}
           {...this.state.chartProps}
           data={this.state.chartData}
         />

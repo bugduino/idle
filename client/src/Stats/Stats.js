@@ -483,7 +483,7 @@ class Stats extends Component {
                       {
                         title:'CURRENCY',
                         props:{
-                          width:[0.3,0.17]
+                          width:[0.3,0.15]
                         },
                         fields:[
                           {
@@ -501,11 +501,24 @@ class Stats extends Component {
                       {
                         title:'POOL',
                         props:{
-                          width:[0.21,0.15],
+                          width:[0.21,0.17],
                         },
                         fields:[
                           {
-                            name:'pool'
+                            mobile:false,
+                            name:'allocationChart',
+                            parentProps:{
+                              width:0.3
+                            }
+                          },
+                          {
+                            name:'pool',
+                            props:{
+                              ml:1
+                            },
+                            parentProps:{
+                              width:[1,0.7]
+                            }
                           }
                         ]
                       },

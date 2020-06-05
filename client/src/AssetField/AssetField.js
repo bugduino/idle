@@ -7,6 +7,7 @@ import FunctionsUtil from '../utilities/FunctionsUtil';
 import { Image, Text, Loader, Button } from "rimble-ui";
 import GenericChart from '../GenericChart/GenericChart';
 import VariationNumber from '../VariationNumber/VariationNumber';
+import AllocationChart from '../AllocationChart/AllocationChart';
 
 class AssetField extends Component {
 
@@ -275,6 +276,44 @@ loadField = async(fieldName=null) => {
             }
           }
         break;
+        case 'allocationChart':
+          let allocationChartWidth = 0;
+          let allocationChartHeight = 0;
+
+          const resizeAllocationChart = () => {
+            const allocationChartRowElement = document.getElementById(this.props.parentId) ? document.getElementById(this.props.parentId) : document.getElementById(this.props.rowId);
+            if (allocationChartRowElement){
+              const $allocationChartRowElement = window.jQuery(allocationChartRowElement);
+              allocationChartWidth = $allocationChartRowElement.innerWidth()-parseFloat($allocationChartRowElement.css('padding-right'))-parseFloat($allocationChartRowElement.css('padding-left'));
+              allocationChartHeight = $allocationChartRowElement.innerHeight();
+
+              // Make it a square
+              allocationChartWidth = Math.min(allocationChartWidth,allocationChartHeight);
+              allocationChartHeight = allocationChartWidth;
+
+              if (allocationChartWidth !== this.state.allocationChartWidth){
+                if (setState){
+                  this.setStateSafe({
+                    allocationChartWidth,
+                    allocationChartHeight
+                  });
+                }
+              }
+            }
+          }
+
+          // Set chart width and Height and set listener
+          resizeAllocationChart();
+          window.removeEventListener('resize', resizeAllocationChart.bind(this));
+          window.addEventListener('resize', resizeAllocationChart.bind(this));
+
+          if (setState){
+            this.setStateSafe({
+              allocationChartWidth,
+              allocationChartHeight
+            });
+          }
+        break;
         case 'aprChart':
 
           // Set start timestamp for v3 tokens
@@ -513,9 +552,12 @@ loadField = async(fieldName=null) => {
     const loader = (<Loader size="20px" />);
 
     const fieldProps = {
-      fontSize:[0,2],
       fontWeight:3,
-      color:'cellText'
+      fontSize:[0,2],
+      color:'cellText',
+      flexProps:{
+        justifyContent:'flex-start'
+      }
     };
 
     // Replace props
@@ -535,8 +577,8 @@ loadField = async(fieldName=null) => {
     }
       
     const maxPrecision = fieldProps && fieldProps.maxPrecision ? fieldProps.maxPrecision : 5;
-    const minPrecision = fieldProps && fieldProps.minPrecision ? fieldProps.minPrecision : ( this.props.isMobile ? 3 : 4 );
     const decimals = fieldProps && fieldProps.decimals ? fieldProps.decimals : ( this.props.isMobile ? 2 : 3 );
+    const minPrecision = fieldProps && fieldProps.minPrecision ? fieldProps.minPrecision : ( this.props.isMobile ? 3 : 4 );
 
     switch (fieldInfo.name){
       case 'icon':
@@ -670,6 +712,21 @@ loadField = async(fieldName=null) => {
             data={this.state.performanceChartData}
             width={this.state.performanceChartWidth}
             height={this.state.performanceChartHeight}
+          />
+        ) : loader
+      break;
+      case 'allocationChart':
+        output = this.state.allocationChartWidth && this.state.allocationChartHeight ? (
+          <AllocationChart
+            inline={true}
+            {...this.props}
+            loaderProps={{
+              size:'20px'
+            }}
+            loaderText={''}
+            selectedToken={this.props.token}
+            width={this.state.allocationChartWidth}
+            height={this.state.allocationChartHeight}
           />
         ) : loader
       break;

@@ -285,8 +285,10 @@ class PortfolioEquity extends Component {
       data:aggregatedBalances
     });
 
-    // Add 5% to the max grid value
-    // maxChartValue += maxChartValue*0.1;
+    if (maxChartValue-minChartValue<1){
+      minChartValue = Math.max(0,maxChartValue-1);
+    }
+
     const maxGridLines = 5;
     const gridYStep = (maxChartValue-minChartValue)/maxGridLines;
     const gridYValues = [];

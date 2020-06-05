@@ -91,13 +91,13 @@ class GenericChart extends Component {
           flexDirection:'row',
           minHeight:height
         }}
-        loaderProps={{
+        loaderProps={ this.props.loaderProps ? this.props.loaderProps : {
           size:'30px'
         }}
         textProps={{
           ml:2
         }}
-        text={'Loading graph data...'}
+        text={ this.props.loaderText !== undefined ? this.props.loaderText : 'Loading graph data...'}
       />
     ) : this.props.data && (
       <ChartType

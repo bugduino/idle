@@ -33,10 +33,10 @@ class TableRow extends Component {
                   {...colInfo.props}
                 >
                   <Flex
+                    width={1}
                     alignItems={'center'}
                     flexDirection={'row'}
                     {...colInfo.parentProps}
-                    id={`${this.props.rowId}-${colIndex}`}
                   >
                     {
                       colInfo.fields.map((fieldInfo,fieldIndex) => {
@@ -44,13 +44,23 @@ class TableRow extends Component {
                           return null;
                         }
                         return (
-                          <FieldComponent
-                            {...this.props}
-                            fieldInfo={fieldInfo}
-                            colProps={colInfo.props}
-                            parentId={`${this.props.rowId}-${colIndex}`}
+                          <Flex
+                            height={'100%'}
+                            flexDirection={'column'}
+                            alignItems={'flex-start'}
+                            justifyContent={'center'}
+                            width={colInfo.fields.length>1 ? 'auto' : 1}
+                            {...fieldInfo.parentProps}
+                            id={`field-${colIndex}-${fieldIndex}-${fieldInfo.name}`}
                             key={`field-${colIndex}-${fieldIndex}-${fieldInfo.name}`}
-                          />
+                          >
+                            <FieldComponent
+                              {...this.props}
+                              fieldInfo={fieldInfo}
+                              colProps={colInfo.props}
+                              parentId={`field-${colIndex}-${fieldIndex}-${fieldInfo.name}`}
+                            />
+                          </Flex>
                         );
                       })
                     }
