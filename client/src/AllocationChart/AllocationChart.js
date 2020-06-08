@@ -120,7 +120,7 @@ class AllocationChart extends Component {
       borderWidth: this.props.inline ? 1 : 0,
       radialLabelsLinkColor:{ from: 'color' },
       borderColor:{ from: 'color', modifiers: [ [ 'darker', 0.2 ] ] },
-      margin: this.props.inline ? {top:10,right:1,bottom:3,left:1} : (this.props.isMobile ? { top: 10, right: 15, bottom: 0, left: 15 } : { top: 10, right: 35, bottom: 0, left: 35 }),
+      margin: this.props.inline ? {top:0,right:15,bottom:0,left:1} : (this.props.isMobile ? { top: 10, right: 15, bottom: 0, left: 15 } : { top: 10, right: 35, bottom: 0, left: 35 }),
     };
 
     const chartData = [];

@@ -549,7 +549,8 @@ loadField = async(fieldName=null) => {
     const fieldInfo = this.props.fieldInfo;
     let output = null;
 
-    const loader = (<Loader size="20px" />);
+    const showLoader = fieldInfo.showLoader === undefined || fieldInfo.showLoader;
+    const loader = showLoader ? (<Loader size="20px" />) : null;
 
     const fieldProps = {
       fontWeight:3,
@@ -724,6 +725,7 @@ loadField = async(fieldName=null) => {
               size:'20px'
             }}
             loaderText={''}
+            showLoader={false}
             selectedToken={this.props.token}
             width={this.state.allocationChartWidth}
             height={this.state.allocationChartHeight}

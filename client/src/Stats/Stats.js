@@ -505,11 +505,12 @@ class Stats extends Component {
                         },
                         fields:[
                           {
-                            mobile:false,
                             name:'allocationChart',
+                            mobile:false,
                             parentProps:{
                               width:0.3
-                            }
+                            },
+                            showLoader:false,
                           },
                           {
                             name:'pool',
