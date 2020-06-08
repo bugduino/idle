@@ -245,7 +245,7 @@ class PortfolioEquity extends Component {
         // Save days for axisBottom format
         days[momentDate.format('YYYY/MM/DD')] = 1;
 
-        aggregatedBalance = parseFloat(parseFloat(aggregatedBalance.toFixed(2)));
+        aggregatedBalance = parseFloat(parseFloat(aggregatedBalance.toFixed(6)));
 
         aggregatedBalances.push({
           x:momentDate.format('YYYY/MM/DD HH:mm'),
@@ -285,15 +285,17 @@ class PortfolioEquity extends Component {
       data:aggregatedBalances
     });
 
+    let yFormatDecimals = 2;
     if (maxChartValue-minChartValue<1){
-      minChartValue = Math.max(0,maxChartValue-1);
+      yFormatDecimals = 4;
+      // minChartValue = Math.max(0,maxChartValue-1);
     }
 
     const maxGridLines = 5;
     const gridYStep = (maxChartValue-minChartValue)/maxGridLines;
     const gridYValues = [];
     for (let i=0;i<=maxGridLines;i++){
-      const gridYValue = parseFloat(parseFloat(minChartValue+(i*gridYStep)).toFixed(2));
+      const gridYValue = parseFloat(parseFloat(minChartValue+(i*gridYStep)).toFixed(6));
       gridYValues.push(gridYValue);
     }
     
@@ -313,7 +315,7 @@ class PortfolioEquity extends Component {
         max: maxChartValue
       },
       xFormat:'time:%b %d %Y',
-      yFormat:value => this.functionsUtil.formatMoney(value,2),
+      yFormat:value => this.functionsUtil.formatMoney(value,yFormatDecimals),
       axisBottom: this.props.isMobile ? null : {
         legend: '',
         tickSize:0,
