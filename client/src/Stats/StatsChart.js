@@ -120,35 +120,38 @@ class StatsChart extends Component {
       </Flex>
     );
 
-    const CustomTooltip = props => (
-      <DashboardCard
-        key={props.point.id}
-        cardProps={{
-          py:2,
-          px:3,
-          width:1
-        }}
-      >
-        <Flex
-          width={1}
-          flexDirection={'column'}
+    const CustomTooltip = props => {
+      return (
+        <DashboardCard
+          key={props.point.id}
+          cardProps={{
+            py:2,
+            px:3,
+            width:1,
+            left: props.point.data.itemPos>50 ? '-110%' : '0'
+          }}
         >
-          {
-            props.point.data.xFormatted && 
-              <Text
-                mb={2}
-                fontSize={1}
-                fontWeight={3}
-                color={'cellText'}
-                textAlign={'left'}
-              >
-                {props.point.data.xFormatted}
-              </Text>
-          }
-          {props.children}
-        </Flex>
-      </DashboardCard>
-    );
+          <Flex
+            width={1}
+            flexDirection={'column'}
+          >
+            {
+              props.point.data.xFormatted && 
+                <Text
+                  mb={2}
+                  fontSize={1}
+                  fontWeight={3}
+                  color={'cellText'}
+                  textAlign={'left'}
+                >
+                  {props.point.data.xFormatted}
+                </Text>
+            }
+            {props.children}
+          </Flex>
+        </DashboardCard>
+      );
+    };
 
     const maxGridLines = 4;
     const apiResults = this.props.apiResults;
@@ -1291,8 +1294,10 @@ class StatsChart extends Component {
       break;
       case 'PRICE':
 
-        let firstTokenPrice = null;
+        let itemIndex = 0;
         let firstIdleBlock = null;
+        let firstTokenPrice = null;
+        const totalItems = apiResults.length;
 
         const idleChartData = apiResults.map((d,i) => {
           const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
@@ -1317,7 +1322,12 @@ class StatsChart extends Component {
 
           maxChartValue = Math.max(maxChartValue,y);
 
-          return { x, y, apy, blocknumber: d.blocknumber };
+          const itemPos = Math.floor(itemIndex/totalItems*100);
+          const blocknumber = d.blocknumber;
+
+          itemIndex++;
+
+          return { x, y, apy, blocknumber, itemPos };
         });
 
         await this.functionsUtil.asyncForEach(this.props.tokenConfig.protocols,async (p) => {
@@ -1328,11 +1338,12 @@ class StatsChart extends Component {
             data: []
           };
 
+          itemIndex = 0;
+          let baseProfit = 0;
           firstTokenPrice = null;
-          let firstProtocolData = null;
           let lastRowData = null;
           let lastTokenPrice = null;
-          let baseProfit = 0;
+          let firstProtocolData = null;
           let firstProtocolBlock = null;
 
           await this.functionsUtil.asyncForEach(apiResults,async (d) => {
@@ -1411,15 +1422,19 @@ class StatsChart extends Component {
                 y = Math.max(0,y);
                 maxChartValue = Math.max(maxChartValue,y);
 
+                const itemPos = Math.floor(itemIndex/totalItems*100);
+
                 rowData = {
                   x,
                   y,
-                  apy
+                  apy,
+                  itemPos
                 };
 
-                lastTokenPrice = tokenPriceFixed;
+                itemIndex++;
                 lastRowData = rowData;
                 chartRow.data.push(rowData);
+                lastTokenPrice = tokenPriceFixed;
               }
             }
           });

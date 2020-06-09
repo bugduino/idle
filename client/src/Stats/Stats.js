@@ -1059,46 +1059,6 @@ class Stats extends Component {
                   style:this.props.isMobile ? {width:'100%'} : {width:'32vw'}
                 }}
               >
-                <Flex id='chart-VOL' width={1}>
-                  <Flex
-                    mb={3}
-                    width={1}
-                    flexDirection={'column'}
-                    alignItems={'flex-start'}
-                    justifyContent={'center'}
-                  >
-                    <Heading.h4
-                      mb={2}
-                      ml={3}
-                      mt={3}
-                      fontWeight={4}
-                      fontSize={[2,3]}
-                      textAlign={'left'}
-                      color={'dark-gray'}
-                      lineHeight={'initial'}
-                    >
-                      Volume
-                    </Heading.h4>
-                    <StatsChart
-                      height={300}
-                      {...this.state}
-                      chartMode={'VOL'}
-                      parentId={'chart-VOL'}
-                      isMobile={this.props.isMobile}
-                      contracts={this.props.contracts}
-                      apiResults={this.state.apiResults}
-                      apiResults_unfiltered={this.state.apiResults_unfiltered}
-                    />
-                  </Flex>
-                </Flex>
-              </DashboardCard>
-              <DashboardCard
-                cardProps={{
-                  mr:4,
-                  height:'fit-content',
-                  style:this.props.isMobile ? {width:'100%'} : {width:'32vw'}
-                }}
-              >
                 <Flex id='chart-SCORE' width={1}>
                   <Flex
                     mb={3}
@@ -1124,6 +1084,46 @@ class Stats extends Component {
                       {...this.state}
                       chartMode={'SCORE'}
                       parentId={'chart-SCORE'}
+                      isMobile={this.props.isMobile}
+                      contracts={this.props.contracts}
+                      apiResults={this.state.apiResults}
+                      apiResults_unfiltered={this.state.apiResults_unfiltered}
+                    />
+                  </Flex>
+                </Flex>
+              </DashboardCard>
+              <DashboardCard
+                cardProps={{
+                  mr:4,
+                  height:'fit-content',
+                  style:this.props.isMobile ? {width:'100%'} : {width:'32vw'}
+                }}
+              >
+                <Flex id='chart-VOL' width={1}>
+                  <Flex
+                    mb={3}
+                    width={1}
+                    flexDirection={'column'}
+                    alignItems={'flex-start'}
+                    justifyContent={'center'}
+                  >
+                    <Heading.h4
+                      mb={2}
+                      ml={3}
+                      mt={3}
+                      fontWeight={4}
+                      fontSize={[2,3]}
+                      textAlign={'left'}
+                      color={'dark-gray'}
+                      lineHeight={'initial'}
+                    >
+                      Volume
+                    </Heading.h4>
+                    <StatsChart
+                      height={300}
+                      {...this.state}
+                      chartMode={'VOL'}
+                      parentId={'chart-VOL'}
                       isMobile={this.props.isMobile}
                       contracts={this.props.contracts}
                       apiResults={this.state.apiResults}

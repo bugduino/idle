@@ -330,7 +330,7 @@ class PortfolioEquity extends Component {
       pointSize:0,
       useMesh:true,
       axisLeft:null,
-      animate:false,
+      animate:true,
       pointLabel:'y',
       areaOpacity:0.1,
       enableArea:true,
@@ -377,7 +377,8 @@ class PortfolioEquity extends Component {
           <DashboardCard
             cardProps={{
               py:2,
-              px:3
+              px:3,
+              left:'-110%'
             }}
           >
             <Flex

@@ -66,6 +66,7 @@ class AllocationChart extends Component {
     const chartProps = {
       padAngle:0,
       animate:true,
+      borderWidth: 0,
       cornerRadius:0,
       motionDamping:15,
       innerRadius: 0.65,
@@ -117,7 +118,6 @@ class AllocationChart extends Component {
       radialLabelsLinkDiagonalLength:0,
       radialLabelsLinkHorizontalLength:0,
       enableSlicesLabels: !this.props.inline,
-      borderWidth: this.props.inline ? 1 : 0,
       radialLabelsLinkColor:{ from: 'color' },
       borderColor:{ from: 'color', modifiers: [ [ 'darker', 0.2 ] ] },
       margin: this.props.inline ? {top:0,right:15,bottom:0,left:1} : (this.props.isMobile ? { top: 10, right: 15, bottom: 0, left: 15 } : { top: 10, right: 35, bottom: 0, left: 35 }),
