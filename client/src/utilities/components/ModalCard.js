@@ -10,15 +10,15 @@ import {
 
 const ModalCard = ({children, closeFunc, ...props}) => (
   <Card
+    p={0}
     border={0}
     mx={'auto'}
     my={'auto'}
-    p={0}
-    height={['100vh', 'auto']}
-    width={['auto']}
-    maxWidth={'960px'}
-    overflow={'auto'}
     borderRadius={2}
+    width={['auto']}
+    overflow={'auto'}
+    maxWidth={'960px'}
+    height={['100vh', 'auto']}
   >
     <Box
       position={"absolute"}

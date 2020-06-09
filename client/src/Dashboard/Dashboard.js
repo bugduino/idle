@@ -230,12 +230,14 @@ class Dashboard extends Component {
         const walletAddress = this.props.account.toLowerCase();
         let lastLogin = localStorage.getItem('lastLogin') ? JSON.parse(localStorage.getItem('lastLogin')) : {};
 
+        // First login
         if (!lastLogin[walletAddress]){
           lastLogin[walletAddress] = {
             'signedUp':false,
             'lastTime':currTime
           };
           welcomeIsOpen = true;
+        // User didn't sign up
         } else if (!lastLogin[walletAddress].signedUp) {
           const lastTime = parseInt(lastLogin[walletAddress].lastTime);
           const timeFromLastLogin = (currTime-lastTime)/1000;

@@ -38,13 +38,17 @@ class WelcomeModal extends React.Component {
     this.functionsUtil.setProps(this.props);
   }
 
-  sendUserInfo = () => {
+  sendUserInfo = (sendEmail=true) => {
     const walletProvider = this.functionsUtil.getWalletProvider();
     const userInfo = {
       address: this.props.account,
-      provider: walletProvider,
-      email:this.state.email
+      provider: walletProvider
     };
+
+    if (sendEmail && this.state.email !== null){
+      userInfo.email = this.state.email;
+    }
+
     this.functionsUtil.simpleIDPassUserInfo(userInfo);
   }
 
@@ -97,17 +101,23 @@ class WelcomeModal extends React.Component {
   };
 
   closeModal = async () => {
-    this.sendUserInfo();
 
-    // Send Google Analytics event
-    if (globalConfigs.analytics.google.events.enabled){
-      await this.functionsUtil.sendGoogleAnalyticsEvent({
-        eventCategory: 'UI',
-        eventAction: 'continue_without_email',
-        eventLabel: 'WelcomeModal'
-      });
-      this.props.closeModal();
-    } else {
+    try{
+      // Prevent sending email
+      this.sendUserInfo(false);
+
+      // Send Google Analytics event
+      if (globalConfigs.analytics.google.events.enabled){
+        await this.functionsUtil.sendGoogleAnalyticsEvent({
+          eventCategory: 'UI',
+          eventAction: 'continue_without_email',
+          eventLabel: 'WelcomeModal'
+        });
+        this.props.closeModal();
+      } else {
+        this.props.closeModal();
+      }
+    } catch (err) {
       this.props.closeModal();
     }
   }
@@ -124,7 +134,9 @@ class WelcomeModal extends React.Component {
       <Modal isOpen={this.props.isOpen}>
         {
           this.state.subscribed ? (
-            <ModalCard closeFunc={this.closeModal}>
+            <ModalCard
+              closeFunc={this.closeModal}
+            >
               <ModalCard.Header title={'All done'} icon={`images/done.svg`}></ModalCard.Header>
               <ModalCard.Body>
                 <Flex width={1} flexDirection={'column'} mb={3}>
@@ -202,9 +214,9 @@ class WelcomeModal extends React.Component {
                     </Form.Field>
                     <Flex mb={3} flexDirection={'column'} alignItems={'center'} justifyContent={'center'}>
                       <ButtonLoader
-                        buttonProps={{className:header_styles.gradientButton,width:'100%',type:'submit'}}
                         buttonText={'SUBMIT'}
                         isLoading={this.state.sendingForm}
+                        buttonProps={{className:header_styles.gradientButton,width:'100%',type:'submit'}}
                       >
                       </ButtonLoader>
                       <Link mt={2} onClick={this.closeModal} hoverColor={'blue'}>continue without e-mail</Link>
