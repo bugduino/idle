@@ -5,8 +5,8 @@ import styles from './Landing.module.scss';
 import globalConfigs from '../configs/globalConfigs';
 import StrategyBox from '../StrategyBox/StrategyBox';
 import FunctionsUtil from '../utilities/FunctionsUtil';
+import DashboardCard from '../DashboardCard/DashboardCard';
 import NewsletterForm from '../NewsletterForm/NewsletterForm';
-// import AllocationChart from '../AllocationChart/AllocationChart';
 import { Image, Flex, Box, Heading, Link, Text, Icon } from 'rimble-ui'
 import FloatingToastMessage from '../FloatingToastMessage/FloatingToastMessage';
 
@@ -925,15 +925,14 @@ class Landing extends Component {
         */
         }
 
-        {
-        /*
-        <Box id="partners"
-          p={[3,0]}
+        <Box
+          pt={[4,5]}
+          pb={[4,5]}
+          id={'partners'}
         >
           <Box
-            mb={[3,5]}
             mx={'auto'}
-            maxWidth={['50em','60em']}
+            maxWidth={['50em','70em']}
           >
             <Flex
               alignItems={'center'}
@@ -950,64 +949,190 @@ class Landing extends Component {
                 Partners
               </Heading.h4>
               <Flex
+                width={1}
+                mt={[3,4]}
+                px={[3,0]}
                 style={{
                   flexWrap:'wrap'
                 }}
                 alignItems={'center'}
+                flexDirection={['column','row']}
                 justifyContent={'space-between'}
               >
-                <Link
-                  style={{
-                    flex:'0 25%'
+                <DashboardCard
+                  isInteractive={true}
+                  cardProps={{
+                    mt:[3,0],
+                    px:[5,4],
+                    height:'80px',
+                    display:'flex',
+                    alignItems:'center',
+                    justifyContent:'center',
+                    style:{
+                      flex:this.props.isMobile ? null : '0 19%',
+                      textAlign:'center',
+                    }
                   }}
-                  pr={[0,3]}
-                  target={"_blank"}
-                  textAlign={['center','left']}
-                  href={"https://www.ethereum.org/"}
-                  rel={"nofollow noopener noreferrer"}
                 >
-                  <Image src="images/ethereum.png" width={[1/2,'auto']} height={['auto','30px']} maxWidth={'initial'} mr={['auto',3]} ml={['auto',0]} my={[3,0]} />
-                </Link>
-                <Link
-                  style={{
-                    flex:'0 25%'
+                  <Link
+                    style={{
+                      width:'100%',
+                      display:'flex',
+                      justifyContent:'center'
+                    }}
+                    target={"_blank"}
+                    textAlign={'center'}
+                    rel={"nofollow noopener noreferrer"}
+                    href={"https://app.compound.finance"}
+                  >
+                    <Image
+                      width={'auto'}
+                      height={'auto'}
+                      maxHeight={'50px'}
+                      src={"images/partners/compound.svg"}
+                    />
+                  </Link>
+                </DashboardCard>
+                <DashboardCard
+                  isInteractive={true}
+                  cardProps={{
+                    mt:[3,0],
+                    px:[5,4],
+                    height:'80px',
+                    display:'flex',
+                    alignItems:'center',
+                    justifyContent:'center',
+                    style:{
+                      flex:this.props.isMobile ? null : '0 19%',
+                      textAlign:'center',
+                    }
                   }}
-                  pr={[0,3]}
-                  target={"_blank"}
-                  textAlign={['center','left']}
-                  rel={"nofollow noopener noreferrer"}
-                  href={"https://app.compound.finance"}
                 >
-                  <Image src="images/compound-light.png" width={[1/2,'auto']} height={['auto','30px']} maxWidth={'initial'} mr={['auto',3]} ml={['auto',0]} my={[3,0]} />
-                </Link>
-                <Link
-                  style={{
-                    flex:'0 25%'
+                  <Link
+                    style={{
+                      width:'100%',
+                      display:'flex',
+                      justifyContent:'center'
+                    }}
+                    target={"_blank"}
+                    textAlign={'center'}
+                    href={"https://fulcrum.trade"}
+                    rel={"nofollow noopener noreferrer"}
+                  >
+                    <Image
+                      width={'auto'}
+                      height={'auto'}
+                      maxHeight={'50px'}
+                      src={"images/partners/fulcrum.svg"}
+                    />
+                  </Link>
+                </DashboardCard>
+                <DashboardCard
+                  isInteractive={true}
+                  cardProps={{
+                    mt:[3,0],
+                    px:[5,4],
+                    height:'80px',
+                    display:'flex',
+                    alignItems:'center',
+                    justifyContent:'center',
+                    style:{
+                      flex:this.props.isMobile ? null : '0 19%',
+                      textAlign:'center',
+                    }
                   }}
-                  target={"_blank"}
-                  textAlign={['center','left']}
-                  href={"https://fulcrum.trade"}
-                  rel={"nofollow noopener noreferrer"}
                 >
-                  <Image src="images/fulcrum.png" width={[1/2,'auto']} height={['auto','30px']} maxWidth={'initial'} mr={['auto',3]} ml={['auto',0]} my={[3,0]} />
-                </Link>
-                <Link
-                  style={{
-                    flex:'0 25%'
+                  <Link
+                    style={{
+                      width:'100%',
+                      display:'flex',
+                      justifyContent:'center'
+                    }}
+                    target={"_blank"}
+                    textAlign={'center'}
+                    href={"https://aave.com"}
+                    rel={"nofollow noopener noreferrer"}
+                  >
+                    <Image
+                      width={'auto'}
+                      height={'auto'}
+                      maxHeight={'50px'}
+                      src={"images/partners/aave.svg"}
+                    />
+                  </Link>
+                </DashboardCard>
+                <DashboardCard
+                  isInteractive={true}
+                  cardProps={{
+                    mt:[3,0],
+                    px:[5,4],
+                    height:'80px',
+                    display:'flex',
+                    alignItems:'center',
+                    justifyContent:'center',
+                    style:{
+                      flex:this.props.isMobile ? null : '0 19%',
+                      textAlign:'center',
+                    }
                   }}
-                  target={"_blank"}
-                  href={"https://aave.com"}
-                  textAlign={['center','left']}
-                  rel={"nofollow noopener noreferrer"}
                 >
-                  <Image src="images/aave.png" width={[1/2,'auto']} height={['auto','30px']} maxWidth={'initial'} mr={['auto',3]} ml={['auto',0]} my={[3,0]} />
-                </Link>
+                  <Link
+                    style={{
+                      width:'100%',
+                      display:'flex',
+                      justifyContent:'center'
+                    }}
+                    target={'_blank'}
+                    textAlign={'center'}
+                    href={'https://dydx.exchange'}
+                    rel={'nofollow noopener noreferrer'}
+                  >
+                    <Image
+                      width={'auto'}
+                      height={'auto'}
+                      maxHeight={'50px'}
+                      src={"images/partners/dydx.svg"}
+                    />
+                  </Link>
+                </DashboardCard>
+                <DashboardCard
+                  isInteractive={true}
+                  cardProps={{
+                    mt:[3,0],
+                    px:[5,4],
+                    height:'80px',
+                    display:'flex',
+                    alignItems:'center',
+                    justifyContent:'center',
+                    style:{
+                      flex:this.props.isMobile ? null : '0 19%',
+                      textAlign:'center',
+                    }
+                  }}
+                >
+                  <Link
+                    style={{
+                      width:'100%',
+                      display:'flex',
+                      justifyContent:'center'
+                    }}
+                    target={'_blank'}
+                    textAlign={'center'}
+                    href={'https://chai.money'}
+                    rel={'nofollow noopener noreferrer'}
+                  >
+                    <Image
+                      width={'auto'}
+                      height={'auto'}
+                      maxHeight={'50px'}
+                      src={"images/partners/chai.png"}
+                    />
+                  </Link>
+                </DashboardCard>
               </Flex>
             </Flex>
           </Box>
         </Box>
-        */
-        }
 
         <Box id="faq" pt={[4,6]} pb={[4,6]}>
           <Box maxWidth={['50em','60em']} mx={'auto'} px={[3,5]}>
