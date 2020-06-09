@@ -963,7 +963,6 @@ class Landing extends Component {
                   isInteractive={true}
                   cardProps={{
                     mt:[3,0],
-                    px:[5,4],
                     height:'80px',
                     display:'flex',
                     alignItems:'center',
@@ -975,10 +974,13 @@ class Landing extends Component {
                   }}
                 >
                   <Link
+                    px={[5,4]}
                     style={{
                       width:'100%',
+                      height:'100%',
                       display:'flex',
-                      justifyContent:'center'
+                      alignItems:'center',
+                      justifyContent:'center',
                     }}
                     target={"_blank"}
                     textAlign={'center'}
@@ -997,7 +999,6 @@ class Landing extends Component {
                   isInteractive={true}
                   cardProps={{
                     mt:[3,0],
-                    px:[5,4],
                     height:'80px',
                     display:'flex',
                     alignItems:'center',
@@ -1009,10 +1010,13 @@ class Landing extends Component {
                   }}
                 >
                   <Link
+                    px={[5,4]}
                     style={{
                       width:'100%',
+                      height:'100%',
                       display:'flex',
-                      justifyContent:'center'
+                      alignItems:'center',
+                      justifyContent:'center',
                     }}
                     target={"_blank"}
                     textAlign={'center'}
@@ -1031,7 +1035,6 @@ class Landing extends Component {
                   isInteractive={true}
                   cardProps={{
                     mt:[3,0],
-                    px:[5,4],
                     height:'80px',
                     display:'flex',
                     alignItems:'center',
@@ -1043,10 +1046,13 @@ class Landing extends Component {
                   }}
                 >
                   <Link
+                    px={[5,4]}
                     style={{
                       width:'100%',
+                      height:'100%',
                       display:'flex',
-                      justifyContent:'center'
+                      alignItems:'center',
+                      justifyContent:'center',
                     }}
                     target={"_blank"}
                     textAlign={'center'}
@@ -1065,7 +1071,6 @@ class Landing extends Component {
                   isInteractive={true}
                   cardProps={{
                     mt:[3,0],
-                    px:[5,4],
                     height:'80px',
                     display:'flex',
                     alignItems:'center',
@@ -1077,10 +1082,13 @@ class Landing extends Component {
                   }}
                 >
                   <Link
+                    px={[5,4]}
                     style={{
                       width:'100%',
+                      height:'100%',
                       display:'flex',
-                      justifyContent:'center'
+                      alignItems:'center',
+                      justifyContent:'center',
                     }}
                     target={'_blank'}
                     textAlign={'center'}
@@ -1099,7 +1107,6 @@ class Landing extends Component {
                   isInteractive={true}
                   cardProps={{
                     mt:[3,0],
-                    px:[5,4],
                     height:'80px',
                     display:'flex',
                     alignItems:'center',
@@ -1111,10 +1118,13 @@ class Landing extends Component {
                   }}
                 >
                   <Link
+                    px={[5,4]}
                     style={{
                       width:'100%',
+                      height:'100%',
                       display:'flex',
-                      justifyContent:'center'
+                      alignItems:'center',
+                      justifyContent:'center',
                     }}
                     target={'_blank'}
                     textAlign={'center'}
