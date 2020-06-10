@@ -2,6 +2,7 @@ import Faq from '../Faq/Faq';
 import Footer from '../Footer/Footer';
 import React, { Component } from 'react';
 import styles from './Landing.module.scss';
+import Partners from '../Partners/Partners';
 import globalConfigs from '../configs/globalConfigs';
 import StrategyBox from '../StrategyBox/StrategyBox';
 import FunctionsUtil from '../utilities/FunctionsUtil';
@@ -927,224 +928,20 @@ class Landing extends Component {
 
         <Box
           pt={[4,5]}
-          pb={[4,5]}
+          pb={[4,4]}
           id={'partners'}
         >
           <Box
             mx={'auto'}
             maxWidth={['50em','70em']}
           >
-            <Flex
-              alignItems={'center'}
-              flexDirection={'column'}
-              justifyContent={'center'}
-            >
-              <Heading.h4
-                fontWeight={5}
-                fontSize={[5,6]}
-                color={'dark-gray'}
-                textAlign={'center'}
-                lineHeight={'initial'}
-              >
-                Partners
-              </Heading.h4>
-              <Flex
-                width={1}
-                mt={[3,4]}
-                px={[3,0]}
-                style={{
-                  flexWrap:'wrap'
-                }}
-                alignItems={'center'}
-                flexDirection={['column','row']}
-                justifyContent={'space-between'}
-              >
-                <DashboardCard
-                  isInteractive={true}
-                  cardProps={{
-                    mt:[3,0],
-                    height:'80px',
-                    display:'flex',
-                    alignItems:'center',
-                    justifyContent:'center',
-                    style:{
-                      flex:this.props.isMobile ? null : '0 19%',
-                      textAlign:'center',
-                    }
-                  }}
-                >
-                  <Link
-                    px={[5,4]}
-                    style={{
-                      width:'100%',
-                      height:'100%',
-                      display:'flex',
-                      alignItems:'center',
-                      justifyContent:'center',
-                    }}
-                    target={"_blank"}
-                    textAlign={'center'}
-                    rel={"nofollow noopener noreferrer"}
-                    href={"https://app.compound.finance"}
-                  >
-                    <Image
-                      width={'auto'}
-                      height={'auto'}
-                      maxHeight={'50px'}
-                      src={"images/partners/compound.svg"}
-                    />
-                  </Link>
-                </DashboardCard>
-                <DashboardCard
-                  isInteractive={true}
-                  cardProps={{
-                    mt:[3,0],
-                    height:'80px',
-                    display:'flex',
-                    alignItems:'center',
-                    justifyContent:'center',
-                    style:{
-                      flex:this.props.isMobile ? null : '0 19%',
-                      textAlign:'center',
-                    }
-                  }}
-                >
-                  <Link
-                    px={[5,4]}
-                    style={{
-                      width:'100%',
-                      height:'100%',
-                      display:'flex',
-                      alignItems:'center',
-                      justifyContent:'center',
-                    }}
-                    target={"_blank"}
-                    textAlign={'center'}
-                    href={"https://fulcrum.trade"}
-                    rel={"nofollow noopener noreferrer"}
-                  >
-                    <Image
-                      width={'auto'}
-                      height={'auto'}
-                      maxHeight={'50px'}
-                      src={"images/partners/fulcrum.svg"}
-                    />
-                  </Link>
-                </DashboardCard>
-                <DashboardCard
-                  isInteractive={true}
-                  cardProps={{
-                    mt:[3,0],
-                    height:'80px',
-                    display:'flex',
-                    alignItems:'center',
-                    justifyContent:'center',
-                    style:{
-                      flex:this.props.isMobile ? null : '0 19%',
-                      textAlign:'center',
-                    }
-                  }}
-                >
-                  <Link
-                    px={[5,4]}
-                    style={{
-                      width:'100%',
-                      height:'100%',
-                      display:'flex',
-                      alignItems:'center',
-                      justifyContent:'center',
-                    }}
-                    target={"_blank"}
-                    textAlign={'center'}
-                    href={"https://aave.com"}
-                    rel={"nofollow noopener noreferrer"}
-                  >
-                    <Image
-                      width={'auto'}
-                      height={'auto'}
-                      maxHeight={'50px'}
-                      src={"images/partners/aave.svg"}
-                    />
-                  </Link>
-                </DashboardCard>
-                <DashboardCard
-                  isInteractive={true}
-                  cardProps={{
-                    mt:[3,0],
-                    height:'80px',
-                    display:'flex',
-                    alignItems:'center',
-                    justifyContent:'center',
-                    style:{
-                      flex:this.props.isMobile ? null : '0 19%',
-                      textAlign:'center',
-                    }
-                  }}
-                >
-                  <Link
-                    px={[5,4]}
-                    style={{
-                      width:'100%',
-                      height:'100%',
-                      display:'flex',
-                      alignItems:'center',
-                      justifyContent:'center',
-                    }}
-                    target={'_blank'}
-                    textAlign={'center'}
-                    href={'https://dydx.exchange'}
-                    rel={'nofollow noopener noreferrer'}
-                  >
-                    <Image
-                      width={'auto'}
-                      height={'auto'}
-                      maxHeight={'50px'}
-                      src={"images/partners/dydx.svg"}
-                    />
-                  </Link>
-                </DashboardCard>
-                <DashboardCard
-                  isInteractive={true}
-                  cardProps={{
-                    mt:[3,0],
-                    height:'80px',
-                    display:'flex',
-                    alignItems:'center',
-                    justifyContent:'center',
-                    style:{
-                      flex:this.props.isMobile ? null : '0 19%',
-                      textAlign:'center',
-                    }
-                  }}
-                >
-                  <Link
-                    px={[5,4]}
-                    style={{
-                      width:'100%',
-                      height:'100%',
-                      display:'flex',
-                      alignItems:'center',
-                      justifyContent:'center',
-                    }}
-                    target={'_blank'}
-                    textAlign={'center'}
-                    href={'https://chai.money'}
-                    rel={'nofollow noopener noreferrer'}
-                  >
-                    <Image
-                      width={'auto'}
-                      height={'auto'}
-                      maxHeight={'50px'}
-                      src={"images/partners/chai.png"}
-                    />
-                  </Link>
-                </DashboardCard>
-              </Flex>
-            </Flex>
+            <Partners
+              {...this.props}
+            />
           </Box>
         </Box>
 
-        <Box id="faq" pt={[4,6]} pb={[4,6]}>
+        <Box id="faq" pt={[4,5]} pb={[4,6]}>
           <Box maxWidth={['50em','60em']} mx={'auto'} px={[3,5]}>
             <Faq selectedToken={this.props.selectedToken} tokenConfig={this.props.tokenConfig} />
           </Box>
