@@ -509,9 +509,11 @@ class StrategyPage extends Component {
                             mobile:false,
                             props:{
                               width:0.15,
+                              textAlign:'center'
                             },
                             parentProps:{
-                              flexDirection:'column'
+                              alignItems:'center',
+                              flexDirection:'column',
                             },
                             fields:[
                               {
