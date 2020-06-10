@@ -62,7 +62,7 @@ class Partners extends Component {
           textAlign={'center'}
           lineHeight={'initial'}
         >
-          Partners
+          Built with the best
         </Heading.h4>
         <Flex
           width={1}
