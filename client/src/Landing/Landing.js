@@ -6,7 +6,6 @@ import Partners from '../Partners/Partners';
 import globalConfigs from '../configs/globalConfigs';
 import StrategyBox from '../StrategyBox/StrategyBox';
 import FunctionsUtil from '../utilities/FunctionsUtil';
-import DashboardCard from '../DashboardCard/DashboardCard';
 import NewsletterForm from '../NewsletterForm/NewsletterForm';
 import { Image, Flex, Box, Heading, Link, Text, Icon } from 'rimble-ui'
 import FloatingToastMessage from '../FloatingToastMessage/FloatingToastMessage';
