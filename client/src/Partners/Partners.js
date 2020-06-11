@@ -76,9 +76,10 @@ class Partners extends Component {
           justifyContent={'space-between'}
         >
           {
-            partners.map( p => (
+            partners.map( (p,index) => (
               <DashboardCard
                 isInteractive={true}
+                key={`partner_${index}`}
                 cardProps={{
                   mt:[3,0],
                   height:'80px',
