@@ -307,7 +307,7 @@ class DepositRedeem extends Component {
           idleTokenToRedeem = this.functionsUtil.BNify(this.props.idleTokenBalance).times(selectedPercentage);
         } else {
           const idleTokenPrice = await this.functionsUtil.genericContractCall(this.props.tokenConfig.idle.token, 'tokenPrice');
-          idleTokenToRedeem = this.functionsUtil.BNify(this.functionsUtil.normalizeTokenAmount(inputValue,18)).div(idleTokenPrice);
+          idleTokenToRedeem = this.functionsUtil.BNify(this.functionsUtil.normalizeTokenAmount(inputValue,this.props.tokenConfig.decimals)).div(idleTokenPrice);
         }
 
         // Normalize number
