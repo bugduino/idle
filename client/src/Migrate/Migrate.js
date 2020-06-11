@@ -247,7 +247,7 @@ class Migrate extends Component {
 
     const accountChanged = prevProps.account !== this.props.account;
     const biconomyChanged = prevProps.biconomy !== this.props.biconomy;
-    const tokenChanged = prevProps.selectedToken !== this.props.selectedToken;
+    const tokenChanged = prevProps.selectedToken !== this.props.selectedToken || (!prevProps.tokenConfig && this.props.tokenConfig);
 
     if (tokenChanged || accountChanged || biconomyChanged){
       this.checkMigration();
@@ -310,6 +310,8 @@ class Migrate extends Component {
       if (oldContract && migrationContract){
 
         oldTokenName = this.props.tokenConfig.migration.oldContract.token;
+
+        // console.log('oldContractName',oldContractName,oldContract);
 
         [
           oldContractTokenDecimals,

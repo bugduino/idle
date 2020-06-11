@@ -1,6 +1,6 @@
 import theme from '../theme';
 import React, { Component } from 'react';
-import styles from './Dashboard.module.scss';
+// import styles from './Dashboard.module.scss';
 // import MenuAccount from '../MenuAccount/MenuAccount';
 import { Link as RouterLink } from "react-router-dom";
 import FunctionsUtil from '../utilities/FunctionsUtil';
@@ -124,6 +124,7 @@ class DashboardMenu extends Component {
                   </Text>
                 </Flex>
                 {
+                  /*
                   menuLink.submenu.length>0 &&
                     <Flex width={1/4} justifyContent={'flex-end'}>
                       <Icon
@@ -134,10 +135,12 @@ class DashboardMenu extends Component {
                         color={'copyColor'}
                       />
                     </Flex>
+                  */
                 }
               </Flex>
             </RouterLink>
             {
+              /*
               menuLink.submenu.length>0 && (
                 <Flex className={[styles.submenu]} style={{maxHeight:menuLink.selected ? menuLink.submenu.length*36+'px' : '0' }} flexDirection={'column'} borderLeft={ menuLink.selected ? '2px solid rgba(0,0,0,0.3)' : null }>
                   {
@@ -153,6 +156,7 @@ class DashboardMenu extends Component {
                   }
                 </Flex>
               )
+              */
             }
           </Box>
         ))

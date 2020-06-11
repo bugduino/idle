@@ -6,6 +6,7 @@ import FunctionsUtil from '../utilities/FunctionsUtil';
 
 // Import page components
 import Stats from '../Stats/Stats';
+// import Utils from '../Utils/Utils';
 import AssetPage from '../AssetPage/AssetPage';
 import RoundButton from '../RoundButton/RoundButton';
 import DashboardCard from '../DashboardCard/DashboardCard';
@@ -20,7 +21,9 @@ class Dashboard extends Component {
     currentRoute:null,
     pageComponent:null,
     currentSection:null,
-    showResetButton:false
+    selectedSection:null,
+    showResetButton:false,
+    selectedSubsection:null
   };
 
   timeoutId = null;
@@ -51,6 +54,7 @@ class Dashboard extends Component {
       })
     );
 
+    // Add Stats
     menu.push(
       {
         icon:'Equalizer',
@@ -63,6 +67,22 @@ class Dashboard extends Component {
         submenu:[]
       }
     );
+
+    // Add tools
+    /*
+    menu.push(
+      {
+        icon:'Settings',
+        label:'Utilities',
+        bgColor:'#f32121',
+        color:'dark-gray',
+        component:Utils,
+        route:'/dashboard/utilities',
+        selected:false,
+        submenu:this.functionsUtil.getGlobalConfig(['tools'])
+      }
+    );
+    */
 
     await this.setState({
       menu
@@ -94,7 +114,6 @@ class Dashboard extends Component {
 
     // Set strategy
     if (params.section){
-
       currentSection = params.section;
       const param1 = params.param1;
       const param2 = params.param2;
@@ -117,15 +136,26 @@ class Dashboard extends Component {
             pageComponent = AssetPage;
           }
         }
+      } else {
+        currentRoute += '/'+params.section;
+        if (params.param1 && params.param1.length){
+          currentRoute += '/'+params.param1;
+        }
+        if (params.param2 && params.param2.length){
+          currentRoute += '/'+params.param2;
+        }
       }
     }
 
     const menu = this.state.menu;
 
+    let selectedSection = null;
+    let selectedSubsection = null;
+
     menu.forEach(m => {
       m.selected = false;
       const sectionRoute = baseRoute+'/'+params.section;
-      if (currentRoute.toLowerCase() === m.route.toLowerCase() || m.route.toLowerCase() === sectionRoute.toLowerCase()){
+      if (currentRoute.toLowerCase() === m.route.toLowerCase() || ( !m.submenu.length && m.route.toLowerCase() === sectionRoute.toLowerCase() )){
         m.selected = true;
         if (pageComponent === null){
           pageComponent = m.component;
@@ -137,6 +167,7 @@ class Dashboard extends Component {
           if (submRoute.toLowerCase() === currentRoute.toLowerCase()){
             m.selected = true;
             subm.selected = true;
+
             // Set component, if null use parent
             if (pageComponent === null){
               if (subm.component){
@@ -146,7 +177,18 @@ class Dashboard extends Component {
               }
             }
           }
-        })
+
+          // Set selected subsection
+          if (subm.selected){
+            selectedSubsection = subm;
+          }
+
+        });
+      }
+
+      // Set selected section
+      if (m.selected){
+        selectedSection = m;
       }
     });
 
@@ -165,7 +207,9 @@ class Dashboard extends Component {
       baseRoute,
       currentRoute,
       pageComponent,
-      currentSection
+      currentSection,
+      selectedSection,
+      selectedSubsection
     });
   }
 
@@ -260,7 +304,7 @@ class Dashboard extends Component {
   }
 
   goToSection(section,isDashboard=true){
-    const newRoute = isDashboard ? this.state.baseRoute+'/'+section : section;
+    const newRoute = isDashboard ? this.state.baseRoute +'/' + section : section;
     window.location.hash=newRoute;
     window.scrollTo(0, 0);
   }
@@ -411,6 +455,8 @@ class Dashboard extends Component {
                       match={{ params:{} }}
                       changeToken={this.changeToken.bind(this)}
                       goToSection={this.goToSection.bind(this)}
+                      selectedSection={this.state.selectedSection}
+                      selectedSubsection={this.state.selectedSubsection}
                       />
                 }
               </Flex>

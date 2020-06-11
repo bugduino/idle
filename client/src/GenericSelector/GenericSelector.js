@@ -110,7 +110,7 @@ class GenericSelector extends Component {
     const CustomOption = (props) => {
 
       // Don't show selected value
-      if (props.selectProps.value.value === props.value){
+      if (props.selectProps && props.selectProps.value && props.selectProps.value.value === props.value){
         return null;
       }
 

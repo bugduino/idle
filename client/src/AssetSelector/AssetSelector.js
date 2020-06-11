@@ -28,7 +28,7 @@ class AssetSelector extends Component {
   render() {
 
     const options = Object.keys(this.props.availableTokens).map(token => ({value:token,label:token}));
-    const defaultValue = options.find(v => (v.value === this.props.selectedToken.toUpperCase()));
+    const defaultValue = options.find(v => (v.value.toUpperCase() === this.props.selectedToken.toUpperCase()));
 
     const CustomOptionValue = props => {
       return (
@@ -37,7 +37,9 @@ class AssetSelector extends Component {
           alignItems={'center'}
           flexDirection={'row'}
         >
-          <AssetField token={props.value} fieldInfo={{
+          <AssetField
+            token={props.value}
+            fieldInfo={{
               name:'icon',
               props:{
                 mr:2,
@@ -74,7 +76,9 @@ class AssetSelector extends Component {
             style={{cursor:'pointer'}}
             justifyContent={'flex-start'}
           >
-            <AssetField token={props.selectProps.value.value} fieldInfo={{
+            <AssetField
+              token={props.selectProps.value.value}
+              fieldInfo={{
                 name:'icon',
                 props:{
                   mr:2,
@@ -103,10 +107,10 @@ class AssetSelector extends Component {
         name={"assets"}
         options={options}
         defaultValue={defaultValue}
-        onChange={this.props.changeToken}
         innerProps={this.props.innerProps}
         CustomOptionValue={CustomOptionValue}
         CustomValueContainer={CustomValueContainer}
+        onChange={ this.props.onChange ? this.props.onChange : this.props.changeToken}
       />
     );
   }

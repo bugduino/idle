@@ -1,8 +1,9 @@
 import { Web3Versions } from '@terminal-packages/sdk';
 import FunctionsUtil from '../utilities/FunctionsUtil';
+import StrategyPage from '../StrategyPage/StrategyPage';
+import TokenMigration from '../TokenMigration/TokenMigration';
 import { RampInstantSDK } from '@ramp-network/ramp-instant-sdk';
 import IdleRebalancerV3 from '../contracts/IdleRebalancerV3.json';
-import StrategyPage from '../StrategyPage/StrategyPage';
 
 const env = process.env;
 
@@ -192,17 +193,39 @@ const globalConfigs = {
         },
         startTimestamp:'2020-02-04'
       },
-      SAI:{
+      TUSD:{
         color:{
-          hex:'#F7B24A',
-          rgb:[247,178,74],
-          hsl:['36', '92%', '63%']
+          hex:'#002868',
+          rgb:[0, 40, 104],
+          hsl:['217', '100%', '20%']
         },
         chart:{
-          labelTextColorModifiers:['darker', 2]
+          labelTextColorModifiers:['brighter', 2]
         },
-        startTimestamp:'2020-02-04'
-      }
+        startTimestamp:'2020-06-11'
+      },
+      SUSD:{
+        color:{
+          hex:'#1e1a31',
+          rgb:[30, 26, 49],
+          hsl:['250', '31%', '15%']
+        },
+        chart:{
+          labelTextColorModifiers:['brighter', 2]
+        },
+        startTimestamp:'2020-06-11'
+      },
+      WBTC:{
+        color:{
+          hex:'#eb9444',
+          rgb:[235, 148, 68],
+          hsl:['29', '81%', '59%']
+        },
+        chart:{
+          labelTextColorModifiers:['brighter', 2]
+        },
+        startTimestamp:'2020-06-11'
+      },
     },
     protocols:{
       compound:{
@@ -338,6 +361,15 @@ const globalConfigs = {
       }
     }
   },
+  tools:[
+    {
+      icon:'SwapHoriz',
+      route:'convert',
+      label:'Token Migration',
+      desc:'Easily convert your Compound, Fulcrum and Aave tokens into Idle',
+      subComponent:TokenMigration
+    }
+  ],
   payments: { // Payment methods & providers
     methods:{
       bank:{

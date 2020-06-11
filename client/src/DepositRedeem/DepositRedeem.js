@@ -304,11 +304,14 @@ class DepositRedeem extends Component {
       case 'redeem':
         let idleTokenToRedeem = null;
         if (selectedPercentage){
-          idleTokenToRedeem = this.functionsUtil.normalizeTokenAmount(this.functionsUtil.BNify(this.props.idleTokenBalance).times(selectedPercentage),18);
+          idleTokenToRedeem = this.functionsUtil.BNify(this.props.idleTokenBalance).times(selectedPercentage);
         } else {
           const idleTokenPrice = await this.functionsUtil.genericContractCall(this.props.tokenConfig.idle.token, 'tokenPrice');
           idleTokenToRedeem = this.functionsUtil.BNify(this.functionsUtil.normalizeTokenAmount(inputValue,18)).div(idleTokenPrice);
         }
+
+        // Normalize number
+        idleTokenToRedeem = this.functionsUtil.normalizeTokenAmount(idleTokenToRedeem,18);
 
         if (!idleTokenToRedeem){
           return false;
