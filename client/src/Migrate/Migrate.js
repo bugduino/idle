@@ -242,6 +242,10 @@ class Migrate extends Component {
     this.checkMigration();
   }
 
+  componentDidMount(){
+    
+  }
+
   componentDidUpdate(prevProps,prevState){
     this.loadUtils();
 
@@ -283,28 +287,53 @@ class Migrate extends Component {
 
   checkMigration = async () => {
 
+    // console.log('checkMigration',this.props.tokenConfig,this.props.account);
+
     if (!this.props.tokenConfig || !this.props.account){
       return false;
     }
 
     let loading = true;
     this.setState({
-      loading
+      loading,
+      processing:{
+        approve:{
+          txHash:null,
+          loading:false
+        },
+        migrate:{
+          txHash:null,
+          loading:false
+        },
+        redeem:{
+          txHash:null,
+          loading:false
+        }
+      },
     });
 
     let migrationEnabled = false;
     let oldTokenName = 'idleTokens';
+    let oldIdleTokensConverted = null;
     let oldContractTokenDecimals = null;
     let migrationContractApproved = false;
     let oldTokenPrice = this.functionsUtil.BNify(0);
     let oldIdleTokens = this.functionsUtil.BNify(0);
     let oldContractBalance = this.functionsUtil.BNify(0);
-    let oldIdleTokensConverted = this.functionsUtil.BNify(0);
+    const getTokenPrice = this.props.getTokenPrice !== undefined ? this.props.getTokenPrice : true;
 
     // Check migration contract enabled and balance
     if (this.props.tokenConfig.migration && this.props.tokenConfig.migration.enabled){
-      const oldContractName = this.props.tokenConfig.migration.oldContract.name;
-      const oldContract = this.functionsUtil.getContractByName(oldContractName);
+      const oldContractInfo = this.props.tokenConfig.migration.oldContract;
+      const oldContractABI = oldContractInfo.abi;
+      const oldContractName = oldContractInfo.name;
+      let oldContract = this.functionsUtil.getContractByName(oldContractName);
+
+      // Initialize contract
+      if (!oldContract && oldContractABI){
+        oldContract = await this.props.initContract(oldContractName,oldContractInfo.address,oldContractABI);
+      }
+
       const migrationContract = this.functionsUtil.getContractByName(this.props.tokenConfig.migration.migrationContract.name);
 
       if (oldContract && migrationContract){
@@ -326,15 +355,18 @@ class Migrate extends Component {
           // Check old contractBalance
           this.functionsUtil.getContractBalance(oldContractName,this.props.account),
           // Get token price
-          this.functionsUtil.genericContractCall(oldContractName,'tokenPrice')
+          (getTokenPrice ? this.functionsUtil.genericContractCall(oldContractName,'tokenPrice') : null)
         ]);
 
-        // console.log('Migration - oldContractBalance',oldContractBalance ? oldContractBalance.toString() : null);
+        // console.log('Migration',oldContractName,migrationContractApproved,this.props.selectedToken,oldContractBalance ? oldContractBalance.toString() : null,oldTokenPrice ? oldTokenPrice.toString() : null);
+
         if (oldContractBalance){
           // Convert old idleTokens
-          oldTokenPrice = this.functionsUtil.fixTokenDecimals(oldTokenPrice,this.props.tokenConfig.decimals);
           oldIdleTokens = this.functionsUtil.fixTokenDecimals(oldContractBalance,oldContractTokenDecimals);
-          oldIdleTokensConverted = this.functionsUtil.BNify(oldIdleTokens).times(this.functionsUtil.BNify(oldTokenPrice));
+          if (oldTokenPrice){
+            oldTokenPrice = this.functionsUtil.fixTokenDecimals(oldTokenPrice,this.props.tokenConfig.decimals);
+            oldIdleTokensConverted = this.functionsUtil.BNify(oldIdleTokens).times(this.functionsUtil.BNify(oldTokenPrice));
+          }
           // Enable migration if old contract balance if greater than 0
           migrationEnabled = this.functionsUtil.BNify(oldContractBalance).gt(0);
         }
@@ -352,7 +384,7 @@ class Migrate extends Component {
       oldContractBalance,
       oldIdleTokensConverted,
       oldContractTokenDecimals,
-      migrationContractApproved,
+      migrationContractApproved
     });
   }
 
@@ -379,6 +411,7 @@ class Migrate extends Component {
       const migrationContractApproved = await this.checkMigrationContractApproved();
 
       if (!migrationContractApproved){
+
         const callbackApprove = (tx,error) => {
           // Send Google Analytics event
           const eventData = {
@@ -386,6 +419,8 @@ class Migrate extends Component {
             eventAction: 'approve',
             eventLabel: tx.status
           };
+
+          // console.log('callbackApprove',tx,error);
 
           if (error){
             eventData.eventLabel = this.functionsUtil.getTransactionError(error);
@@ -443,7 +478,7 @@ class Migrate extends Component {
     }
   }
 
-  migrate = async (e,migrationMethod,params,useMetaTx=true) => {
+  migrate = async (e,migrationMethod,params) => {
     e.preventDefault();
 
     const migrationContractInfo = this.props.tokenConfig.migration.migrationContract;
@@ -456,10 +491,19 @@ class Migrate extends Component {
       if (!migrationContractApproved){
         return this.approveMigration();
       } else {
-
         const callbackMigrate = (tx,error) => {
 
-          // console.log('callbackMigrate1',tx,error);
+          if (!error && tx && tx.status === 'error'){
+            error = {
+              message:'Unknown error'
+            };
+          } else if (!tx && error){
+            tx = {
+              status:'error'
+            };
+          }
+
+          const txSucceeded = tx && tx.status === 'success';
 
           // Send Google Analytics event
           const eventData = {
@@ -469,24 +513,18 @@ class Migrate extends Component {
             eventValue: parseInt(oldIdleTokens)
           };
 
-          if (!error && tx && tx.status === 'error'){
-            error = {
-              message:'Unknown error'
-            };
-          }
-
           if (error){
             eventData.eventLabel = this.functionsUtil.getTransactionError(error);
           }
-
-          // console.log('callbackMigrate2',eventData);
 
           // Send Google Analytics event
           if (error || eventData.status !== 'error'){
             this.functionsUtil.sendGoogleAnalyticsEvent(eventData);
           }
 
-          if (tx && tx.status === 'success'){
+          // console.log('callbackMigrate',tx,tx.status,txSucceeded,error,this.props.migrationCallback);
+
+          if (txSucceeded){
             // Toast message
             window.toastProvider.addMessage(`Migration completed`, {
               secondaryMessage: `Your funds has been migrated`,
@@ -496,6 +534,10 @@ class Migrate extends Component {
               variant: "success",
             });
 
+            if (this.props.migrationCallback && typeof this.props.migrationCallback === 'function'){
+              this.props.migrationCallback();
+            }
+
           } else { // Show migration error toast only for real error
             window.toastProvider.addMessage(`Migration error`, {
               secondaryMessage: `The migration has failed, try again...`,
@@ -504,10 +546,13 @@ class Migrate extends Component {
               actionText: "",
               variant: "failure",
             });
+
+            // Check migration if failed
+            this.checkMigration();
           }
 
           this.setState((prevState) => ({
-            migrationEnabled:tx.status === 'success' ? false : true,
+            migrationEnabled:txSucceeded ? false : true,
             processing: {
               ...prevState.processing,
               migrate:{
@@ -516,8 +561,6 @@ class Migrate extends Component {
               }
             }
           }));
-
-          this.checkMigration();
         }
 
         const callbackReceiptMigrate = (tx) => {
@@ -535,8 +578,7 @@ class Migrate extends Component {
 
         // Call migration contract function to migrate funds
         const oldIdleTokens = this.state.oldIdleTokens;
-        const oldContractBalance = this.state.oldContractBalance;
-        const toMigrate = this.functionsUtil.BNify(oldContractBalance).toFixed();
+        const toMigrate = this.functionsUtil.integerValue(this.state.oldContractBalance);
 
         // const toMigrate =  this.functionsUtil.normalizeTokenAmount('1',this.state.oldContractTokenDecimals).toString(); // TEST AMOUNT
 
@@ -601,121 +643,128 @@ class Migrate extends Component {
       ) : (
         this.state.migrationEnabled ? (
           <Box width={1}>
-            <Flex
-              mt={3}
-              flexDirection={'column'}
-            >
-              <DashboardCard
-                cardProps={{
-                  p:3,
-                }}
-              >
-                <Flex
-                  alignItems={'center'}
-                  flexDirection={'column'}
-                >
-                  <Icon
-                    size={'2.3em'}
-                    name={'Warning'}
-                    color={'cellText'}
-                  />
-                  <Text
-                    mt={1}
-                    fontSize={2}
-                    color={'cellText'}
-                    textAlign={'center'}
-                  >
-                    You still have <strong>{this.state.oldIdleTokens.toFixed(4)} {this.state.oldTokenName} ({this.state.oldIdleTokensConverted.toFixed(4)} {this.props.selectedToken})</strong>.<br />Please use the section below to migrate or redeem your old tokens.
-                  </Text>
-                </Flex>
-              </DashboardCard>
-            </Flex>
-            <Flex
-              mt={2}
-              flexDirection={'column'}
-            >
-              <Text mb={2}>
-                Choose the action:
-              </Text>
+            {
+              !this.props.isMigrationTool &&
               <Flex
-                alignItems={'center'}
-                flexDirection={'row'}
-                justifyContent={'space-between'}
+                mt={3}
+                flexDirection={'column'}
               >
                 <DashboardCard
                   cardProps={{
                     p:3,
-                    width:0.48,
-                    onMouseDown:() => {
-                      this.setAction('migrate');
-                    }
                   }}
-                  isInteractive={true}
-                  isActive={ this.state.action === 'migrate' }
                 >
                   <Flex
-                    my={1}
                     alignItems={'center'}
-                    flexDirection={'row'}
-                    justifyContent={'center'}
+                    flexDirection={'column'}
                   >
-                    <TransactionField
-                      transaction={{
-                        action:'migrate'
-                      }}
-                      fieldInfo={{
-                        name:'icon',
-                        props:{
-                          mr:3
-                        }
-                      }}
+                    <Icon
+                      size={'2.3em'}
+                      color={'cellText'}
+                      name={ this.props.isMigrationTool ? 'SwapHoriz' : 'Warning' }
                     />
                     <Text
-                      fontSize={3}
-                      fontWeight={3}
+                      mt={1}
+                      fontSize={2}
+                      color={'cellText'}
+                      textAlign={'center'}
                     >
-                      Migrate
-                    </Text>
-                  </Flex>
-                </DashboardCard>
-                <DashboardCard
-                  cardProps={{
-                    p:3,
-                    width:0.48,
-                    onMouseDown:() => {
-                      this.setAction('redeem');
-                    }
-                  }}
-                  isInteractive={true}
-                  isActive={ this.state.action === 'redeem' }
-                >
-                  <Flex
-                    my={1}
-                    alignItems={'center'}
-                    flexDirection={'row'}
-                    justifyContent={'center'}
-                  >
-                    <TransactionField
-                      transaction={{
-                        action:'redeem'
-                      }}
-                      fieldInfo={{
-                        name:'icon',
-                        props:{
-                          mr:3
-                        }
-                      }}
-                    />
-                    <Text
-                      fontSize={3}
-                      fontWeight={3}
-                    >
-                      Redeem
+                      You { !this.props.isMigrationTool ? 'still' : '' } have <strong>{this.state.oldIdleTokens.toFixed(4)} {this.state.oldTokenName} {this.state.oldIdleTokensConverted ? `(${this.state.oldIdleTokensConverted.toFixed(4)} ${this.props.selectedToken})` : ''}</strong>.<br />
+                      { this.props.migrateText ? this.props.migrateText : 'Please use the section below to migrate or redeem your old tokens' }.
                     </Text>
                   </Flex>
                 </DashboardCard>
               </Flex>
-            </Flex>
+            }
+            {
+              (this.props.showActions === undefined || this.props.showActions) && 
+                <Flex
+                  mt={2}
+                  flexDirection={'column'}
+                >
+                  <Text mb={2}>
+                    Choose the action:
+                  </Text>
+                  <Flex
+                    alignItems={'center'}
+                    flexDirection={'row'}
+                    justifyContent={'space-between'}
+                  >
+                    <DashboardCard
+                      cardProps={{
+                        p:3,
+                        width:0.48,
+                        onMouseDown:() => {
+                          this.setAction('migrate');
+                        }
+                      }}
+                      isInteractive={true}
+                      isActive={ this.state.action === 'migrate' }
+                    >
+                      <Flex
+                        my={1}
+                        alignItems={'center'}
+                        flexDirection={'row'}
+                        justifyContent={'center'}
+                      >
+                        <TransactionField
+                          transaction={{
+                            action:'migrate'
+                          }}
+                          fieldInfo={{
+                            name:'icon',
+                            props:{
+                              mr:3
+                            }
+                          }}
+                        />
+                        <Text
+                          fontSize={3}
+                          fontWeight={3}
+                        >
+                          Migrate
+                        </Text>
+                      </Flex>
+                    </DashboardCard>
+                    <DashboardCard
+                      cardProps={{
+                        p:3,
+                        width:0.48,
+                        onMouseDown:() => {
+                          this.setAction('redeem');
+                        }
+                      }}
+                      isInteractive={true}
+                      isActive={ this.state.action === 'redeem' }
+                    >
+                      <Flex
+                        my={1}
+                        alignItems={'center'}
+                        flexDirection={'row'}
+                        justifyContent={'center'}
+                      >
+                        <TransactionField
+                          transaction={{
+                            action:'redeem'
+                          }}
+                          fieldInfo={{
+                            name:'icon',
+                            props:{
+                              mr:3
+                            }
+                          }}
+                        />
+                        <Text
+                          fontSize={3}
+                          fontWeight={3}
+                        >
+                          Redeem
+                        </Text>
+                      </Flex>
+                    </DashboardCard>
+                  </Flex>
+                </Flex>
+            }
             {
               this.state.action === 'migrate' ? (
                 <Flex
@@ -748,8 +797,8 @@ class Migrate extends Component {
                           >
                             <Icon
                               size={'2.3em'}
-                              name={'Repeat'}
                               color={'cellText'}
+                              name={ this.props.isMigrationTool ? 'SwapHoriz' : 'Repeat' }
                             />
                             <Text
                               mt={1}
@@ -757,7 +806,7 @@ class Migrate extends Component {
                               color={'cellText'}
                               textAlign={'center'}
                             >
-                              You are one step from the migration of your old {this.state.oldTokenName}!
+                              You are one step away from the migration of your { this.props.isMigrationTool ? this.state.oldIdleTokens.toFixed(4) : 'old' } {this.state.oldTokenName} { this.props.isMigrationTool ? ` into the Idle ${this.props.tokenConfig.token} ${this.props.selectedStrategy} strategy` : '' }!
                             </Text>
                             <Flex
                               alignItems={'center'}
@@ -846,7 +895,7 @@ class Migrate extends Component {
                               color={'cellText'}
                               textAlign={'center'}
                             >
-                              To Migrate your old {this.state.oldTokenName} you need to enable our Smart-Contract first.
+                              To migrate your { !this.props.isMigrationTool ? 'old' : '' } {this.state.oldTokenName} you need to enable our Smart-Contract first.
                             </Text>
                             <RoundButton
                               buttonProps={{
@@ -938,7 +987,7 @@ class Migrate extends Component {
               )
             }
           </Box>
-        ) : this.props.children
+        ) : (this.props.children ? this.props.children : null)
       )
     )
   }

@@ -60,7 +60,7 @@ class AssetField extends Component {
     }
   }
 
-loadField = async(fieldName=null) => {
+  loadField = async(fieldName=null) => {
     // Exit if component unmounted
     if (this.componentUnmounted || !this.props.token || !this.props.tokenConfig){
       return false;
@@ -83,6 +83,7 @@ loadField = async(fieldName=null) => {
       switch (fieldName){
         case 'tokenBalance':
           let tokenBalance = this.props.account ? await this.functionsUtil.getTokenBalance(this.props.token,this.props.account) : false;
+          // console.log('tokenBalance',this.props.account,this.props.token,tokenBalance);
           if (!tokenBalance){
             tokenBalance = '-';
           }
@@ -583,8 +584,9 @@ loadField = async(fieldName=null) => {
 
     switch (fieldInfo.name){
       case 'icon':
+        const icon = this.props.tokenConfig && this.props.tokenConfig.icon ? this.props.tokenConfig.icon : `images/tokens/${this.props.token}.svg`;
         output = (
-          <Image src={`images/tokens/${this.props.token}.svg`} {...fieldProps} />
+          <Image src={icon} {...fieldProps} />
         );
       break;
       case 'tokenName':

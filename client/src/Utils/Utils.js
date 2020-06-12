@@ -1,3 +1,4 @@
+import Title from '../Title/Title';
 import React, { Component } from 'react';
 import Breadcrumb from '../Breadcrumb/Breadcrumb';
 import { Flex, Icon, Text, Box } from "rimble-ui";
@@ -34,7 +35,7 @@ class Utils extends Component {
     return (
       <Flex
         width={1}
-        flexDirection={['column','row']}
+        flexDirection={'column'}
       >
         {
           this.props.selectedSubsection ? (
@@ -45,53 +46,90 @@ class Utils extends Component {
                 width={1}
               >
                 <Breadcrumb
-                  text={'UTILITIES'}
                   showPathMobile={true}
                   isMobile={this.props.isMobile}
                   path={[this.props.selectedSubsection.label]}
-                  handleClick={ e => this.props.goToSection('utilities') }
+                  text={this.props.selectedSection.label.toUpperCase()}
+                  handleClick={ e => this.props.goToSection(this.props.selectedSection.route) }
                 />
+              </Flex>
+              <Flex
+                my={[2,3]}
+                flexDirection={'column'}
+                justifyContent={'center'}
+              >
+                <Title
+                  mb={2}
+                >
+                  {this.props.selectedSubsection.label}
+                </Title>
+                <Text
+                  textAlign={'center'}
+                >
+                  {this.props.selectedSubsection.desc}
+                </Text>
               </Flex>
               <SubComponent
                 {...this.props}
+                toolProps={this.props.selectedSubsection.props}
               />
             </Box>
-          ) : this.props.selectedSection.submenu.map( (tool,toolIndex) => (
-            <DashboardCard
-              isInteractive={true}
-              key={`tool_${toolIndex}`}
-              cardProps={{
-                p:[3,4],
-                width:[1,1/3],
-                alignItems:'center',
-                flexDirection:'column',
-                justifyContent:'center'
-              }}
-              handleClick={ e => this.props.goToSection('utilities/'+tool.route) }
+          ) : (
+            <Flex
+              my={[2,3]}
+              flexDirection={'column'}
+              justifyContent={'center'}
             >
-              <Text
-                fontSize={[3,4]}
-                textAlign={'center'}
+              <Title
+                mb={3}
               >
-                {tool.label}
-              </Text>
+                Tools
+              </Title>
               <Flex
-                justifyContent={'center'}
+                width={1}
+                flexDirection={['column','row']}
               >
-                <Icon
-                  my={3}
-                  size={'3em'}
-                  name={tool.icon}
-                />
+              {
+                this.props.selectedSection.submenu.map( (tool,toolIndex) => (
+                  <DashboardCard
+                    isInteractive={true}
+                    key={`tool_${toolIndex}`}
+                    cardProps={{
+                      p:[3,4],
+                      width:[1,1/3],
+                      alignItems:'center',
+                      flexDirection:'column',
+                      justifyContent:'center'
+                    }}
+                    handleClick={ e => this.props.goToSection(this.props.selectedSection.route+'/'+tool.route) }
+                  >
+                    <Text
+                      fontSize={[3,4]}
+                      textAlign={'center'}
+                    >
+                      {tool.label}
+                    </Text>
+                    <Flex
+                      justifyContent={'center'}
+                    >
+                      <Icon
+                        my={[0,2]}
+                        size={'3em'}
+                        name={tool.icon}
+                      />
+                    </Flex>
+                    <Text
+                      fontSize={[2,2]}
+                      textAlign={'center'}
+                    >
+                      {tool.desc}
+                    </Text>
+                  </DashboardCard>
+                ) )
+              }
               </Flex>
-              <Text
-                fontSize={[2,2]}
-                textAlign={'center'}
-              >
-                {tool.desc}
-              </Text>
-            </DashboardCard>
-          ) )
+            </Flex>
+          )
         }
       </Flex>
     );

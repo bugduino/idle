@@ -6,6 +6,8 @@ import GenericSelector from '../GenericSelector/GenericSelector';
 
 class AssetSelector extends Component {
 
+  state = {};
+
   // Utils
   functionsUtil = null;
 
@@ -19,6 +21,10 @@ class AssetSelector extends Component {
 
   async componentWillMount(){
     this.loadUtils();
+
+    this.setState({
+      props:this.props
+    });
   }
 
   async componentDidUpdate(prevProps,prevState){
@@ -27,44 +33,88 @@ class AssetSelector extends Component {
 
   render() {
 
-    const options = Object.keys(this.props.availableTokens).map(token => ({value:token,label:token}));
-    const defaultValue = options.find(v => (v.value.toUpperCase() === this.props.selectedToken.toUpperCase()));
+    const options = Object.keys(this.props.availableTokens).map(token => {
+      const tokenConfig = this.props.availableTokens[token];
+      return {
+        value:token,
+        label:token,
+        tokenConfig
+      };
+    });
+    const defaultValue = this.props.selectedToken ? options.find(v => (v.value.toUpperCase() === this.props.selectedToken.toUpperCase())) : null;
 
     const CustomOptionValue = props => {
+      const token = props.value;
+      const tokenConfig = props.data.tokenConfig;
       return (
         <Flex
           width={1}
           alignItems={'center'}
           flexDirection={'row'}
+          justifyContent={'space-between'}
         >
-          <AssetField
-            token={props.value}
-            fieldInfo={{
-              name:'icon',
-              props:{
-                mr:2,
-                height:'2em'
-              }
-            }}
-          />
-          <AssetField
-            token={props.value}
-            fieldInfo={{
-              name:'tokenName',
-              props:{
-                fontSize:[1,2],
-                fontWeight:500,
-                color:'copyColor'
-              }
-            }}
-          />
+          <Flex
+            alignItems={'center'}
+          >
+            <AssetField
+              token={token}
+              tokenConfig={tokenConfig}
+              fieldInfo={{
+                name:'icon',
+                props:{
+                  mr:2,
+                  height:'2em'
+                }
+              }}
+            />
+            <AssetField
+              token={token}
+              fieldInfo={{
+                name:'tokenName',
+                props:{
+                  fontSize:[1,2],
+                  fontWeight:500,
+                  color:'copyColor'
+                }
+              }}
+            />
+          </Flex>
+          {
+            this.state.props.showBalance &&
+              <Flex
+                alignItems={'center'}
+                justifyContent={'flex-end'}
+              >
+                <AssetField
+                  token={token}
+                  {...this.state.props}
+                  tokenConfig={tokenConfig}
+                  account={this.state.props.account}
+                  fieldInfo={{
+                    name:'tokenBalance',
+                    props:{
+                      fontSize:[1,2],
+                      fontWeight:500,
+                      color:'cellText'
+                    }
+                  }}
+                />
+              </Flex>
+          }
         </Flex>
       );
     }
 
     const CustomValueContainer = props => {
+      const selectProps = props.selectProps.value;
+      const token = selectProps.value;
+      const tokenConfig = selectProps.tokenConfig;
       return (
         <Flex
+          style={{
+            flex:'1'
+          }}
+          justifyContent={'space-between'}
           {...props.innerProps}
         >
           <Flex
@@ -77,7 +127,8 @@ class AssetSelector extends Component {
             justifyContent={'flex-start'}
           >
             <AssetField
-              token={props.selectProps.value.value}
+              token={token}
+              tokenConfig={tokenConfig}
               fieldInfo={{
                 name:'icon',
                 props:{
@@ -87,7 +138,7 @@ class AssetSelector extends Component {
               }}
             />
             <AssetField
-              token={props.selectProps.value.value}
+              token={token}
               fieldInfo={{
                 name:'tokenName',
                 props:{
@@ -98,6 +149,29 @@ class AssetSelector extends Component {
               }}
             />
           </Flex>
+
+          {
+            this.state.props.showBalance &&
+              <Flex
+                alignItems={'center'}
+                justifyContent={'flex-end'}
+              >
+                <AssetField
+                  token={token}
+                  {...this.state.props}
+                  tokenConfig={tokenConfig}
+                  account={this.state.props.account}
+                  fieldInfo={{
+                    name:'tokenBalance',
+                    props:{
+                      fontSize:[1,2],
+                      fontWeight:500,
+                      color:'cellText'
+                    }
+                  }}
+                />
+              </Flex>
+          }
         </Flex>
       );
     }

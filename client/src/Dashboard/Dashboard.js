@@ -6,7 +6,7 @@ import FunctionsUtil from '../utilities/FunctionsUtil';
 
 // Import page components
 import Stats from '../Stats/Stats';
-// import Utils from '../Utils/Utils';
+import Utils from '../Utils/Utils';
 import AssetPage from '../AssetPage/AssetPage';
 import RoundButton from '../RoundButton/RoundButton';
 import DashboardCard from '../DashboardCard/DashboardCard';
@@ -62,27 +62,25 @@ class Dashboard extends Component {
         bgColor:'#21f36b',
         color:'dark-gray',
         component:Stats,
-        route:'/dashboard/stats',
         selected:false,
+        route:'/dashboard/stats',
         submenu:[]
       }
     );
 
     // Add tools
-    /*
     menu.push(
       {
-        icon:'Settings',
-        label:'Utilities',
+        icon:'Build',
+        label:'Tools',
         bgColor:'#f32121',
         color:'dark-gray',
         component:Utils,
-        route:'/dashboard/utilities',
         selected:false,
+        route:'/dashboard/tools',
         submenu:this.functionsUtil.getGlobalConfig(['tools'])
       }
     );
-    */
 
     await this.setState({
       menu
@@ -304,6 +302,10 @@ class Dashboard extends Component {
   }
 
   goToSection(section,isDashboard=true){
+    // Remove dashboard route
+    if (isDashboard){
+      section = section.replace(this.state.baseRoute +'/','');
+    }
     const newRoute = isDashboard ? this.state.baseRoute +'/' + section : section;
     window.location.hash=newRoute;
     window.scrollTo(0, 0);

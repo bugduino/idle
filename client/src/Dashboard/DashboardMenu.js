@@ -85,10 +85,10 @@ class DashboardMenu extends Component {
                 boxShadow={menuLink.selected ? '0px 0px 0px 1px rgba(0,54,255,0.3)' : null}
               >
                 <Flex
+                  width={1}
                   alignItems={'center'}
                   flexDirection={['column','row']}
                   justifyContent={['center','flex-start']}
-                  width={ menuLink.submenu.length>0 ? 3/4 : 1}
                 >
                   {menuLink.image &&
                     <Image

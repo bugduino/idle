@@ -1,16 +1,17 @@
 import Migrate from '../Migrate/Migrate';
 import React, { Component } from 'react';
-import { Flex, Box, Text } from "rimble-ui";
+import { Flex, Box, Text, Icon } from "rimble-ui";
+import RoundButton from '../RoundButton/RoundButton';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import AssetSelector from '../AssetSelector/AssetSelector';
+import DashboardCard from '../DashboardCard/DashboardCard';
 
 class TokenMigration extends Component {
 
   state = {
     tokenConfig:null,
     selectedToken:null,
-    availableTokens:null,
-    baseTokenConfig:null
+    migrationSucceeded:false
   };
 
   // Utils
@@ -26,31 +27,22 @@ class TokenMigration extends Component {
 
   async componentWillMount(){
     this.loadUtils();
-    this.loadTokens();
+    await this.loadTokens();
   }
 
   async loadTokens(){
-    let selectedToken = null;
-    let baseTokenConfig = null;
-    const availableTokens = {};
-    const strategies = Object.keys(this.props.availableStrategies);
-    const strategyTokens = this.props.availableStrategies[strategies[0]];
+    const selectedToken = Object.keys(this.props.toolProps.availableTokens)[0];
 
-    Object.keys(strategyTokens).forEach( token => {
-      const tokenConfig = strategyTokens[token];
-      tokenConfig.protocols.forEach( protocolToken => {
-        if (!selectedToken){
-          selectedToken = protocolToken.token;
-          baseTokenConfig = tokenConfig;
-        }
-        availableTokens[protocolToken.token] = protocolToken;
-      });
+    await this.functionsUtil.asyncForEach(Object.keys(this.props.toolProps.availableTokens),async (token) => {
+      const tokenConfig = this.props.toolProps.availableTokens[token];
+      const tokenContract = this.functionsUtil.getContractByName(tokenConfig.token);
+      if (!tokenContract && tokenConfig.abi){
+        await this.props.initContract(tokenConfig.token,tokenConfig.address,tokenConfig.abi);
+      }
     });
 
     this.setState({
-      selectedToken,
-      baseTokenConfig,
-      availableTokens
+      selectedToken
     },() => {
       this.selectToken(selectedToken);
     });
@@ -62,19 +54,39 @@ class TokenMigration extends Component {
 
   selectToken = async (selectedToken) => {
 
-    const tokenConfig = this.state.availableTokens[selectedToken];
+    const tokenInfo = this.props.toolProps.availableTokens[selectedToken];
+    const strategyTokens = this.props.availableStrategies[this.props.toolProps.selectedStrategy];
+    const baseTokenConfig = strategyTokens[tokenInfo.baseToken];
 
-    const oldContract = {
-      abi:tokenConfig.abi,
-      token:tokenConfig.token,
-      name:tokenConfig.token,
-      address:tokenConfig.address
+    const tokenConfig = {
+      token:tokenInfo.baseToken,
+      address:baseTokenConfig.address,
+      decimals:baseTokenConfig.decimals
     };
+
+    // Add Idle Token config
+    tokenConfig.idle = baseTokenConfig.idle;
+
+    // Add migration info
+    const oldContract = {
+      abi:tokenInfo.abi,
+      name:tokenInfo.token,
+      token:tokenInfo.token,
+      address:tokenInfo.address
+    };
+    
+    const migrationContract = this.props.toolProps.migrationContract;
+
+    // Add migration function
+    if (tokenInfo.migrateFunction){
+      migrationContract.functions[0].name = tokenInfo.migrateFunction;
+    }
 
     tokenConfig.migration = {
       enabled:true,
       oldContract,
-      migrationContract:this.state.baseTokenConfig.migration.migrationContract
+      migrationContract,
+      migrationSucceeded:false
     };
 
     this.setState({
@@ -83,13 +95,22 @@ class TokenMigration extends Component {
     });
   }
 
+  migrationCallback = () => {
+    this.setState({
+      migrationSucceeded:true
+    });
+  }
+
   render() {
 
-    console.log(this.state.selectedToken,this.state.tokenConfig);
+    if (!this.state.selectedToken){
+      return null;
+    }
 
     return (
       <Flex
         width={1}
+        mt={[2,3]}
         alignItems={'center'}
         flexDirection={'column'}
         justifyContent={'center'}
@@ -108,16 +129,110 @@ class TokenMigration extends Component {
             </Text>
             <AssetSelector
               {...this.props}
+              showBalance={true}
               onChange={this.selectToken}
               selectedToken={this.state.selectedToken}
-              availableTokens={this.state.availableTokens}
+              availableTokens={this.props.toolProps.availableTokens}
             />
           </Box>
           <Migrate
             {...this.props}
+            showActions={false}
+            getTokenPrice={false}
+            isMigrationTool={true}
             tokenConfig={this.state.tokenConfig}
             selectedToken={this.state.selectedToken}
-          />
+            migrationCallback={this.migrationCallback}
+            selectedStrategy={this.props.toolProps.selectedStrategy}
+          >
+            {
+              !this.props.account ? (
+                <DashboardCard
+                  cardProps={{
+                    p:3,
+                    mt:3
+                  }}
+                >
+                  <Flex
+                    alignItems={'center'}
+                    flexDirection={'column'}
+                  >
+                    <Icon
+                      size={'2.3em'}
+                      name={'Input'}
+                      color={'cellText'}
+                    />
+                    <Text
+                      mt={2}
+                      fontSize={2}
+                      color={'cellText'}
+                      textAlign={'center'}
+                    >
+                      Please connect with your wallet interact with Idle.
+                    </Text>
+                    <RoundButton
+                      buttonProps={{
+                        mt:2,
+                        width:[1,1/2]
+                      }}
+                      handleClick={this.props.connectAndValidateAccount}
+                    >
+                      Connect
+                    </RoundButton>
+                  </Flex>
+                </DashboardCard>
+              ) : (
+                <DashboardCard
+                  cardProps={{
+                    p:3,
+                    mt:3
+                  }}
+                >
+                  {
+                    this.state.migrationSucceeded ? (
+                      <Flex
+                        alignItems={'center'}
+                        flexDirection={'column'}
+                      >
+                        <Icon
+                          size={'2.3em'}
+                          name={'DoneAll'}
+                          color={this.props.theme.colors.transactions.status.completed}
+                        />
+                        <Text
+                          mt={2}
+                          fontSize={2}
+                          color={'cellText'}
+                          textAlign={'center'}
+                        >
+                          Your {this.state.selectedToken} have been successfully migrated!
+                        </Text>
+                      </Flex>
+                    ) : (
+                      <Flex
+                        alignItems={'center'}
+                        flexDirection={'column'}
+                      >
+                        <Icon
+                          size={'2.3em'}
+                          name={'MoneyOff'}
+                          color={'cellText'}
+                        />
+                        <Text
+                          mt={2}
+                          fontSize={2}
+                          color={'cellText'}
+                          textAlign={'center'}
+                        >
+                          You don't have any {this.state.selectedToken} in your wallet.
+                        </Text>
+                      </Flex>
+                    )
+                  }
+                </DashboardCard>
+              )
+            }
+          </Migrate>
         </Flex>
       </Flex>
     );

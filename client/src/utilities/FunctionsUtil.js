@@ -99,15 +99,17 @@ class FunctionsUtil {
   }
   getTxAction = (tx,tokenConfig) => {
 
+    const idleTokenAddress = tokenConfig.idle.address;
+    const depositProxyContractInfo = this.getGlobalConfig(['contract','methods','deposit','proxyContract']);
     const migrationContractAddr = tokenConfig.migration && tokenConfig.migration.migrationContract ? tokenConfig.migration.migrationContract.address : null;
     const migrationContractOldAddrs = tokenConfig.migration && tokenConfig.migration.migrationContract && tokenConfig.migration.migrationContract.oldAddresses ? tokenConfig.migration.migrationContract.oldAddresses : [];
 
-    const isMigrationTx = migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).indexOf(tx.from.toLowerCase()) !== -1 ) && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
-    const isSendTransferTx = !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
-    const isReceiveTransferTx = !isMigrationTx && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
-    const isDepositTx = !isMigrationTx && !isSendTransferTx && !isReceiveTransferTx && tx.to.toLowerCase() === tokenConfig.idle.address.toLowerCase();
+    const isMigrationTx = migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).indexOf(tx.from.toLowerCase()) !== -1 ) && tx.contractAddress.toLowerCase() === idleTokenAddress.toLowerCase();
+    const isSendTransferTx = !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === idleTokenAddress.toLowerCase();
+    const isReceiveTransferTx = !isMigrationTx && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === idleTokenAddress.toLowerCase();
+    const isDepositTx = !isMigrationTx && !isSendTransferTx && !isReceiveTransferTx && (tx.to.toLowerCase() === idleTokenAddress.toLowerCase() || (depositProxyContractInfo && tx.to.toLowerCase() === depositProxyContractInfo.address.toLowerCase()));
     const isRedeemTx = !isMigrationTx && !isSendTransferTx && !isReceiveTransferTx && tx.to.toLowerCase() === this.props.account.toLowerCase();
-    const isSwapTx = !isMigrationTx && !isSendTransferTx && !isReceiveTransferTx && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
+    const isSwapTx = !isMigrationTx && !isSendTransferTx && !isReceiveTransferTx && !isDepositTx && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === idleTokenAddress.toLowerCase();
 
     let action = null;
 
@@ -327,11 +329,11 @@ class FunctionsUtil {
 
           if (latestTxs && Object.values(latestTxs).length){
 
-            const lastTx = Object.values(latestTxs).pop();
-            const lastRealBlockNumber = parseInt(lastTx.blockNumber);
+            const latestBlockNumbers = Object.values(latestTxs).map( lastTx => (parseInt(lastTx.blockNumber)) );
+            const lastRealBlockNumber = Math.max(...latestBlockNumbers);
 
             // If real tx blockNumber differs from last blockNumber
-            if (lastRealBlockNumber >= lastCachedBlockNumber){
+            if (lastRealBlockNumber>=lastCachedBlockNumber){
               // Merge latest Txs with etherscanBaseTxs
               Object.values(latestTxs).forEach((tx) => {
                 const txFound = Object.keys(etherscanBaseTxs.data.result).includes(tx.hash.toLowerCase());
@@ -395,14 +397,7 @@ class FunctionsUtil {
       }
     }
 
-    etherscanTxs = Object.values(etherscanTxs).filter(tx => {
-      // if (!tx.token){
-      //   debugger;
-      // }
-      return enabledTokens.includes(tx.token.toUpperCase());
-    });
-
-    // console.log('etherscanTxs',enabledTokens,etherscanTxs);
+    etherscanTxs = Object.values(etherscanTxs).filter(tx => (enabledTokens.includes(tx.token.toUpperCase())) );
 
     return etherscanTxs;
   }
@@ -419,18 +414,20 @@ class FunctionsUtil {
 
     enabledTokens.forEach(token => {
       const tokenConfig = this.props.availableTokens[token];
+      const depositProxyContractInfo = this.getGlobalConfig(['contract','methods','deposit','proxyContract']);
       const migrationContractAddr = tokenConfig.migration && tokenConfig.migration.migrationContract ? tokenConfig.migration.migrationContract.address : null;
       const migrationContractOldAddrs = tokenConfig.migration && tokenConfig.migration.migrationContract && tokenConfig.migration.migrationContract.oldAddresses ? tokenConfig.migration.migrationContract.oldAddresses : [];
 
       results.forEach(
         tx => {
+
           let tokenDecimals = tokenConfig.decimals;
           const internalTxs = results.filter(r => r.hash === tx.hash);
           const isRightToken = internalTxs.length>1 && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === tokenConfig.address.toLowerCase()).length>0;
           const isSendTransferTx = internalTxs.length === 1 && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
           const isReceiveTransferTx = internalTxs.length === 1 && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
           const isMigrationTx = migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).includes(tx.from.toLowerCase()) ) && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
-          const isDepositTx = isRightToken && !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.to.toLowerCase() === tokenConfig.idle.address.toLowerCase();
+          const isDepositTx = isRightToken && !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && (tx.to.toLowerCase() === tokenConfig.idle.address.toLowerCase() || (depositProxyContractInfo && tx.to.toLowerCase() === depositProxyContractInfo.address.toLowerCase()));
           const isRedeemTx = isRightToken && !isMigrationTx && tx.contractAddress.toLowerCase() === tokenConfig.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase()).length && tx.to.toLowerCase() === this.props.account.toLowerCase();
           const isWithdrawTx = internalTxs.length>1 && internalTxs.filter(iTx => tokenConfig.protocols.map(p => p.address.toLowerCase()).includes(iTx.contractAddress.toLowerCase()) ).length>0 && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
           const isSwapTx = !isReceiveTransferTx && !etherscanTxs[tx.hash] && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
@@ -478,6 +475,10 @@ class FunctionsUtil {
               }
             } else {
               etherscanTxs[tx.hash] = ({...tx, token, action, value: this.fixTokenDecimals(tx.value,tokenDecimals)});
+
+              // if (tx.hash.toLowerCase() === '0xeeaaecbdb88021f872306408a55b7590914c132344142843e4b80449cc282e7e'.toLowerCase()){
+              //   debugger;
+              // }
                 
               // Take right tokenSymbol
               switch (action){
@@ -643,7 +644,6 @@ class FunctionsUtil {
             default:
             break;
           }
-
             
           // Save token for future filtering
           storedTx.token = selectedToken;
@@ -709,7 +709,7 @@ class FunctionsUtil {
         const tx = txsToProcess[txKey];
 
         // Skip wrong token
-        if (tx.token.toUpperCase() !== selectedToken.toUpperCase()){
+        if (!tx || !tx.token || tx.token.toUpperCase() !== selectedToken.toUpperCase()){
           return false;
         }
 
@@ -1195,6 +1195,9 @@ class FunctionsUtil {
   getProtocolInfoByAddress = (addr) => {
     return this.props.tokenConfig.protocols.find(c => c.address.toLowerCase() === addr.toLowerCase());
   }
+  integerValue = value => {
+    return this.BNify(value).integerValue(BigNumber.ROUND_FLOOR).toFixed();
+  }
   normalizeTokenDecimals = tokenDecimals => {
     return this.BNify(`1e${tokenDecimals}`);
   }
@@ -1460,23 +1463,26 @@ class FunctionsUtil {
       return false
     }
 
-    let userAddress = this.props.account;
-    let nonce = await contract.methods.getNonce(userAddress).call();
-    let message = "Please provide your signature to migrate without paying gas. Tracking Id: ";
-    let messageToSign = `${message}${nonce}`;
-    const signature = await this.props.web3.eth.personal.sign(
-      messageToSign,
-      userAddress
-    );
-    console.info(`User signature is ${signature}`);
-    const { r, s, v } = this.getSignatureParameters_v4(signature);
+    try{
+      let userAddress = this.props.account;
+      let nonce = await contract.methods.getNonce(userAddress).call();
+      let message = "Please provide your signature to send the transaction without paying gas. Tracking Id: ";
+      let messageToSign = `${message}${nonce}`;
+      const signature = await this.props.web3.eth.personal.sign(
+        messageToSign,
+        userAddress
+      );
+      // console.info(`User signature is ${signature}`);
+      const { r, s, v } = this.getSignatureParameters_v4(signature);
 
-    console.log(userAddress);
-    console.log(JSON.stringify(message));
-    console.log(message);
-    // console.log(getSignatureParameters(signature));
-
-    this.contractMethodSendWrapper(contractName, 'executeMetaTransaction', [userAddress, functionSignature, message, `${messageToSign.length}`, r, s, v], callback, callback_receipt);
+      // console.log(userAddress);
+      // console.log(JSON.stringify(message));
+      // console.log(message);
+      // console.log(getSignatureParameters(signature));
+      this.contractMethodSendWrapper(contractName, 'executeMetaTransaction', [userAddress, functionSignature, message, `${messageToSign.length}`, r, s, v], callback, callback_receipt);
+    } catch (error) {
+      callback(null,error);
+    }
   }
 
   sendBiconomyTx = async (contractName,contractAddress,functionSignature,callback,callback_receipt) => {
@@ -1605,7 +1611,7 @@ class FunctionsUtil {
     if (tokenBalanceOrig){
       const tokenDecimals = await this.getTokenDecimals(contractName);
       const tokenBalance = this.fixTokenDecimals(tokenBalanceOrig,tokenDecimals);
-      this.customLog('getTokenBalance',contractName,tokenBalanceOrig,tokenBalance.toString(),tokenDecimals);
+      // console.log('getTokenBalance',contractName,tokenBalanceOrig,tokenBalance.toString(),tokenDecimals);
       return tokenBalance;
     } else {
       this.customLogError('Error on getting balance for ',contractName);

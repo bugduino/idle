@@ -1,15 +1,20 @@
+import yDAIv3 from '../abis/iearn/yDAIv3.json';
+import yUSDCv3 from '../abis/iearn/yUSDCv3.json';
+import yUSDTv3 from '../abis/iearn/yUSDTv3.json';
 import { Web3Versions } from '@terminal-packages/sdk';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import StrategyPage from '../StrategyPage/StrategyPage';
 import TokenMigration from '../TokenMigration/TokenMigration';
 import { RampInstantSDK } from '@ramp-network/ramp-instant-sdk';
+import IdleConverterV2 from '../contracts/IdleConverterV2.json';
+import IdleProxyMinter from '../contracts/IdleProxyMinter.json';
 import IdleRebalancerV3 from '../contracts/IdleRebalancerV3.json';
 
 const env = process.env;
 
 const globalConfigs = {
   appName: 'Idle',
-  version: 'v2.8',
+  version: 'v3.0',
   baseURL: 'https://idle.finance',
   baseToken: 'ETH',
   countries:{
@@ -283,7 +288,14 @@ const globalConfigs = {
         skipRebalance:true
       },
       deposit:{
-        skipRebalance:true
+        skipRebalance:true,
+        proxyContract:{
+          enabled:true,
+          abi:IdleProxyMinter,
+          name:'IdleProxyMinter',
+          function:'mintIdleTokensProxy',
+          address:'0x7C4414aA6B0c6CB1Bc7e5BFb7433138426AC637a',
+        }
       },
       rebalance:{
         enabled:true,
@@ -366,8 +378,171 @@ const globalConfigs = {
       icon:'SwapHoriz',
       route:'convert',
       label:'Token Migration',
-      desc:'Easily convert your Compound, Fulcrum and Aave tokens into Idle',
-      subComponent:TokenMigration
+      desc:'Easily convert your Compound, Fulcrum, Aave and iEarn tokens into Idle',
+      subComponent:TokenMigration,
+      props:{
+        selectedStrategy:'best',
+        migrationContract:{
+          abi:IdleConverterV2,
+          name:'IdleConverterV2',
+          address:'0x4ea4e749cb81854606d1912d1c4bde1e9005ab76',
+          functions:[
+            {
+              label:'Migrate',
+              name:'migrateFromToIdle'
+            },
+          ]
+        },
+        availableTokens:{
+          cDAI:{
+            decimals:8,
+            enabled:true,
+            token:"cDAI",
+            baseToken:'DAI',
+            name:"compound",
+            migrateFunction:'migrateFromCompoundToIdle',
+            address:"0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643",
+          },
+          iDAI:{
+            decimals:18,
+            name:"fulcrum",
+            enabled:false,
+            token:"iDAI",
+            baseToken:'DAI',
+            migrateFunction:'migrateFromFulcrumToIdle',
+            address:"0x493c57c4763932315a328269e1adad09653b9081",
+          },
+          aDAI:{
+            decimals:18,
+            name:"aave",
+            enabled:true,
+            token:"aDAI",
+            baseToken:'DAI',
+            migrateFunction:'migrateFromAaveToIdle',
+            address:"0xfC1E690f61EFd961294b3e1Ce3313fBD8aa4f85d",
+          },
+          yDAIv3:{
+            decimals:18,
+            name:"iearn",
+            enabled:true,
+            token:"yDAIv3",
+            baseToken:'DAI',
+            abi:yDAIv3.abi,
+            icon:'images/tokens/yDAI.png',
+            migrateFunction:'migrateFromIearnToIdle',
+            address:"0xC2cB1040220768554cf699b0d863A3cd4324ce32",
+          },
+          yDAIv2:{
+            decimals:18,
+            name:"iearn",
+            enabled:true,
+            token:"yDAIv2",
+            baseToken:'DAI',
+            abi:yDAIv3.abi,
+            icon:'images/tokens/yDAI.png',
+            migrateFunction:'migrateFromIearnToIdle',
+            address:"0x16de59092dAE5CcF4A1E6439D611fd0653f0Bd01",
+          },
+          cUSDC:{
+            decimals:8,
+            enabled:true,
+            token:"cUSDC",
+            name:"compound",
+            baseToken:'USDC',
+            migrateFunction:'migrateFromCompoundToIdle',
+            address:"0x39aa39c021dfbae8fac545936693ac917d5e7563",
+          },
+          iUSDC:{
+            decimals:6,
+            enabled:false,
+            token:"iUSDC",
+            name:"fulcrum",
+            baseToken:'USDC',
+            migrateFunction:'migrateFromFulcrumToIdle',
+            address:"0xf013406a0b1d544238083df0b93ad0d2cbe0f65f",
+          },
+          aUSDC:{
+            decimals:6,
+            name:"aave",
+            enabled:true,
+            token:"aUSDC",
+            baseToken:'USDC',
+            migrateFunction:'migrateFromAaveToIdle',
+            address:"0x9bA00D6856a4eDF4665BcA2C2309936572473B7E",
+          },
+          yUSDCv3:{
+            decimals:6,
+            name:"iearn",
+            enabled:true,
+            token:"yUSDCv3",
+            abi:yUSDCv3.abi,
+            baseToken:'USDC',
+            icon:'images/tokens/yUSDC.png',
+            migrateFunction:'migrateFromIearnToIdle',
+            address:"0x26EA744E5B887E5205727f55dFBE8685e3b21951",
+          },
+          yUSDCv2:{
+            decimals:6,
+            name:"iearn",
+            enabled:true,
+            token:"yUSDCv2",
+            abi:yUSDCv3.abi,
+            baseToken:'USDC',
+            icon:'images/tokens/yUSDC.png',
+            migrateFunction:'migrateFromIearnToIdle',
+            address:"0xd6aD7a6750A7593E092a9B218d66C0A814a3436e",
+          },
+          cUSDT:{
+            decimals:8,
+            enabled:true,
+            token:"cUSDT",
+            name:"compound",
+            baseToken:'USDT',
+            migrateFunction:'migrateFromCompoundToIdle',
+            address:"0xf650c3d88d12db855b8bf7d11be6c55a4e07dcc9",
+          },
+          iUSDT:{
+            decimals:6,
+            enabled:false,
+            token:"iUSDT",
+            name:"fulcrum",
+            baseToken:'USDT',
+            migrateFunction:'migrateFromFulcrumToIdle',
+            address:"0x8326645f3aa6de6420102fdb7da9e3a91855045b",
+          },
+          aUSDT:{
+            decimals:6,
+            name:"aave",
+            enabled:true,
+            token:"aUSDT",
+            baseToken:'USDT',
+            migrateFunction:'migrateFromAaveToIdle',
+            address:"0x71fc860F7D3A592A4a98740e39dB31d25db65ae8",
+          },
+          yUSDTv3:{
+            decimals:6,
+            name:"iearn",
+            enabled:true,
+            token:"yUSDTv3",
+            abi:yUSDTv3.abi,
+            baseToken:'USDT',
+            icon:'images/tokens/yUSDT.png',
+            migrateFunction:'migrateFromIearnToIdle',
+            address:"0xE6354ed5bC4b393a5Aad09f21c46E101e692d447",
+          },
+          yUSDTv2:{
+            decimals:6,
+            name:"iearn",
+            enabled:true,
+            token:"yUSDTv2",
+            abi:yUSDTv3.abi,
+            baseToken:'USDT',
+            icon:'images/tokens/yUSDT.png',
+            migrateFunction:'migrateFromIearnToIdle',
+            address:"0x83f798e925BcD4017Eb265844FDDAbb448f1707D",
+          },
+        }
+      }
     }
   ],
   payments: { // Payment methods & providers

@@ -144,6 +144,8 @@ class TransactionToastUtil extends React.Component {
         transactionAction = 'Migration';
         break;
       case 'executeMetaTransaction':
+        transactionAction = 'Meta-Tx';
+      break;
       case 'migrateFromToIdle':
         transactionAction = 'Migration';
         break;

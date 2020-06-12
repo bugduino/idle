@@ -1,4 +1,4 @@
-import cDAI from '../abis/compound/cDAI';
+import cToken from '../abis/compound/cDAI';
 import ERC20 from '../abis/tokens/DAI.js';
 import CHAI from '../abis/chai/CHAI.json';
 import iToken from '../abis/fulcrum/iToken.json';
@@ -73,7 +73,7 @@ const availableTokens = {
           {
             name:'compound',
             enabled:true,
-            abi:cDAI.abi,
+            abi:cToken.abi,
             address:'0xe7bc397dbd069fc7d0109c0636d06888bb50668c',
             token:'cDAI',
             decimals:28,
@@ -127,7 +127,7 @@ const availableTokens = {
           {
             name:'compound',
             enabled:true,
-            abi:cDAI.abi,
+            abi:cToken.abi,
             address:'0x63c344bf8651222346dd870be254d4347c9359f7',
             token:'cUSDC',
             decimals:28,
@@ -183,7 +183,7 @@ const availableTokens = {
           {
             name:'compound',
             enabled:true,
-            abi:cDAI.abi,
+            abi:cToken.abi,
             address:'0x63c344bf8651222346dd870be254d4347c9359f7',
             token:'cUSDC',
             decimals:28,
@@ -268,7 +268,7 @@ const availableTokens = {
           {
             name:'compound',
             enabled:true,
-            abi:cDAI.abi,
+            abi:cToken.abi,
             address:'0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643',
             token:'cDAI',
             decimals:28,
@@ -381,7 +381,7 @@ const availableTokens = {
           {
             name:'compound',
             enabled:true,
-            abi:cDAI.abi,
+            abi:cToken.abi,
             address:'0x39aa39c021dfbae8fac545936693ac917d5e7563',
             token:'cUSDC',
             decimals:16,
@@ -454,7 +454,7 @@ const availableTokens = {
           {
             name:'compound',
             enabled:true,
-            abi:cDAI.abi,
+            abi:cToken.abi,
             address:'0xf650c3d88d12db855b8bf7d11be6c55a4e07dcc9',
             token:'cUSDT',
             decimals:16,
@@ -547,7 +547,7 @@ const availableTokens = {
           {
             name:'compound',
             enabled:true,
-            abi:cDAI.abi,
+            abi:cToken.abi,
             address:'0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643',
             token:'cDAI',
             decimals:28,
@@ -660,7 +660,7 @@ const availableTokens = {
           {
             name:'compound',
             enabled:true,
-            abi:cDAI.abi,
+            abi:cToken.abi,
             address:'0x39aa39c021dfbae8fac545936693ac917d5e7563',
             token:'cUSDC',
             decimals:16,
@@ -733,7 +733,7 @@ const availableTokens = {
           {
             name:'compound',
             enabled:true,
-            abi:cDAI.abi,
+            abi:cToken.abi,
             address:'0xf650c3d88d12db855b8bf7d11be6c55a4e07dcc9',
             token:'cUSDT',
             decimals:16,
