@@ -9,8 +9,8 @@ import DashboardCard from '../DashboardCard/DashboardCard';
 import AssetSelector from '../AssetSelector/AssetSelector';
 import TxProgressBar from '../TxProgressBar/TxProgressBar';
 import ShareModal from '../utilities/components/ShareModal';
-import { Flex, Text, Input, Box, Icon, Link } from "rimble-ui";
 import TransactionField from '../TransactionField/TransactionField';
+import { Flex, Text, Input, Box, Icon, Link, Checkbox } from "rimble-ui";
 import FastBalanceSelector from '../FastBalanceSelector/FastBalanceSelector';
 
 class DepositRedeem extends Component {
@@ -49,6 +49,12 @@ class DepositRedeem extends Component {
 
   async componentDidMount(){
 
+  }
+
+  toggleMetaTransactionsEnabled = (metaTransactionsEnabled) => {
+    this.setState({
+      metaTransactionsEnabled
+    });
   }
 
   async loadProxyContracts(){
@@ -283,6 +289,13 @@ class DepositRedeem extends Component {
         });
 
         const callbackDeposit = (tx,error) => {
+
+          if (!tx && error){
+            tx = {
+              status:'error'
+            };
+          }
+
           const txSucceeded = tx.status === 'success';
 
           const eventData = {
@@ -814,6 +827,36 @@ class DepositRedeem extends Component {
                             mt={3}
                             flexDirection={'column'}
                           >
+                            {
+                              this.props.biconomy && this.state.actionProxyContract[this.state.action] && 
+                              <DashboardCard
+                                cardProps={{
+                                  py:3,
+                                  px:2,
+                                  mb:3,
+                                  display:'flex',
+                                  alignItems:'center',
+                                  flexDirection:'column',
+                                  justifyContent:'center',
+                                }}
+                              >
+                                <Text
+                                  mt={1}
+                                  fontSize={1}
+                                  color={'cellText'}
+                                  textAlign={'center'}
+                                >
+                                  Meta-Transactions are { this.state.metaTransactionsEnabled ? 'enabled' : 'disabled' } for this transaction. { this.state.metaTransactionsEnabled ? `Enjoy gas-less ${this.state.action}!` : '' }
+                                </Text>
+                                <Checkbox
+                                  mt={2}
+                                  required={false}
+                                  checked={this.state.metaTransactionsEnabled}
+                                  onChange={ e => this.toggleMetaTransactionsEnabled(e.target.checked) }
+                                  label={`${this.functionsUtil.capitalize(this.state.action)} with Meta-Transaction`}
+                                />
+                              </DashboardCard>
+                            }
                             {
                               totalBalance && 
                                 <Link

@@ -759,7 +759,7 @@ const globalConfigs = {
         caption: 'Buy with',
         captionPos: 'top',
         subcaption:`~ 1.5% fee ~\nGBP ONLY`,
-        supportedMethods:['bank'],
+        supportedMethods:['bank','card'],
         supportedCountries:['GBR','IND','EUR'],
         supportedTokens:['ETH','DAI','USDC','USDT'],
         remoteResources:{'https://global.transak.com/v1/widget.js':{}},
