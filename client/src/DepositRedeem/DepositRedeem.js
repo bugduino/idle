@@ -70,6 +70,7 @@ class DepositRedeem extends Component {
       if (hasProxyContract){
         const proxyContract = await this.props.initContract(mintProxyContractInfo.name,mintProxyContractInfo.address,mintProxyContractInfo.abi);
         newState.actionProxyContract[action].contract = proxyContract.contract;
+        newState.actionProxyContract[action].approved = await this.functionsUtil.checkTokenApproved(this.props.selectedToken,mintProxyContractInfo.address,this.props.account);
       }
     });
 
@@ -110,6 +111,7 @@ class DepositRedeem extends Component {
     const tokenBalanceChanged = prevProps.tokenBalance !== this.props.tokenBalance && this.props.tokenBalance !== null;
 
     if (tokenChanged || tokenBalanceChanged){
+      this.loadProxyContracts();
       this.loadTokenInfo();
       return false;
     }
@@ -120,11 +122,19 @@ class DepositRedeem extends Component {
     if (actionChanged || fastBalanceSelectorChanged){
       this.setInputValue();
     }
+
+    const metaTransactionsChanged = prevState.metaTransactionsEnabled !== this.state.metaTransactionsEnabled;
+    if (metaTransactionsChanged){
+      const tokenApproved = await this.checkTokenApproved();
+      this.setState({
+        tokenApproved
+      });
+    }
   }
 
   approveContract = async (callbackApprove,callbackReceiptApprove) => {
     const proxyContract = this.state.actionProxyContract[this.state.action];
-    if (proxyContract){
+    if (proxyContract && this.state.metaTransactionsEnabled){
       this.functionsUtil.enableERC20(this.props.selectedToken,proxyContract.address,callbackApprove,callbackReceiptApprove);
     } else {
       this.functionsUtil.enableERC20(this.props.selectedToken,this.props.tokenConfig.idle.address,callbackApprove,callbackReceiptApprove);
@@ -134,7 +144,7 @@ class DepositRedeem extends Component {
   checkTokenApproved = async () => {
     let tokenApproved = false;
     const proxyContract = this.state.actionProxyContract[this.state.action];
-    if (proxyContract){
+    if (proxyContract && this.state.metaTransactionsEnabled){
       tokenApproved = await this.functionsUtil.checkTokenApproved(this.props.selectedToken,proxyContract.address,this.props.account);
     } else {
       tokenApproved = await this.functionsUtil.checkTokenApproved(this.props.selectedToken,this.props.tokenConfig.idle.address,this.props.account);
@@ -618,6 +628,8 @@ class DepositRedeem extends Component {
     }
 
     const tokenApproved = this.state.tokenApproved;
+    const metaTransactionsAvailable = this.props.biconomy && this.state.actionProxyContract[this.state.action];
+    const useMetaTx = metaTransactionsAvailable && this.state.metaTransactionsEnabled;
     const totalBalance = this.state.action === 'deposit' ? this.props.tokenBalance : this.props.redeemableBalance;
     const showBuyFlow = tokenApproved && this.state.action === 'deposit' && this.state.componentMounted && !this.state.canDeposit;
 
@@ -775,6 +787,39 @@ class DepositRedeem extends Component {
                       </Flex>
                     </Flex>
                     {
+                      metaTransactionsAvailable && 
+                      <DashboardCard
+                        cardProps={{
+                          py:3,
+                          px:2,
+                          my:3,
+                          display:'flex',
+                          alignItems:'center',
+                          flexDirection:'column',
+                          justifyContent:'center',
+                        }}
+                      >
+                        <Text
+                          mt={1}
+                          fontSize={1}
+                          color={'cellText'}
+                          textAlign={'center'}
+                        >
+                          Meta-Transactions are {this.state.metaTransactionsEnabled ? 'available' : 'disabled'} for {this.state.action}s!<br />
+                          {
+                            this.state.metaTransactionsEnabled && !this.state.actionProxyContract[this.state.action].approved && `Please either enable the Smart-Contract to enjoy gas-less ${this.state.action} or just disable meta-tx.`
+                          }
+                        </Text>
+                        <Checkbox
+                          mt={2}
+                          required={false}
+                          checked={this.state.metaTransactionsEnabled}
+                          onChange={ e => this.toggleMetaTransactionsEnabled(e.target.checked) }
+                          label={`${this.functionsUtil.capitalize(this.state.action)} with Meta-Transaction`}
+                        />
+                      </DashboardCard>
+                    }
+                    {
                       !tokenApproved && this.state.action === 'deposit' ? (
                         <DashboardCard
                           cardProps={{
@@ -805,7 +850,12 @@ class DepositRedeem extends Component {
                                   color={'cellText'}
                                   textAlign={'center'}
                                 >
-                                  To Deposit/Redeem your {this.props.selectedToken} into Idle you need to enable our Smart-Contract first.
+                                  {
+                                    useMetaTx ?
+                                      `To ${this.functionsUtil.capitalize(this.state.action)} your ${this.props.selectedToken} into Idle using Meta-Transaction you need to enable our Smart-Contract first.`
+                                    :
+                                      `To ${this.functionsUtil.capitalize(this.state.action)} your ${this.props.selectedToken} into Idle you need to enable our Smart-Contract first.`
+                                  }
                                 </Text>
                                 <RoundButton
                                   buttonProps={{
@@ -827,36 +877,6 @@ class DepositRedeem extends Component {
                             mt={3}
                             flexDirection={'column'}
                           >
-                            {
-                              this.props.biconomy && this.state.actionProxyContract[this.state.action] && 
-                              <DashboardCard
-                                cardProps={{
-                                  py:3,
-                                  px:2,
-                                  mb:3,
-                                  display:'flex',
-                                  alignItems:'center',
-                                  flexDirection:'column',
-                                  justifyContent:'center',
-                                }}
-                              >
-                                <Text
-                                  mt={1}
-                                  fontSize={1}
-                                  color={'cellText'}
-                                  textAlign={'center'}
-                                >
-                                  Meta-Transactions are { this.state.metaTransactionsEnabled ? 'enabled' : 'disabled' } for this transaction. { this.state.metaTransactionsEnabled ? `Enjoy gas-less ${this.state.action}!` : '' }
-                                </Text>
-                                <Checkbox
-                                  mt={2}
-                                  required={false}
-                                  checked={this.state.metaTransactionsEnabled}
-                                  onChange={ e => this.toggleMetaTransactionsEnabled(e.target.checked) }
-                                  label={`${this.functionsUtil.capitalize(this.state.action)} with Meta-Transaction`}
-                                />
-                              </DashboardCard>
-                            }
                             {
                               totalBalance && 
                                 <Link
@@ -956,11 +976,11 @@ class DepositRedeem extends Component {
         {
           showBuyFlow &&
             <Flex
-              mt={3}
               width={[1,0.5]}
               alignItems={'stretch'}
               flexDirection={'column'}
               justifyContent={'center'}
+              mt={metaTransactionsAvailable ? 0 : 3}
             >
               <BuyModal
                 {...this.props}

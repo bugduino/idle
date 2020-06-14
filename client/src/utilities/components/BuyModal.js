@@ -207,10 +207,10 @@ class BuyModal extends React.Component {
       });
     } else if (this.state.selectedToken){
       this.setState({
-        selectedToken:null,
         selectedMethod:null,
         selectedCountry:null,
         selectedProvider:null,
+        selectedToken:this.props.buyToken,
       });
     } else {
       this.resetModal();
@@ -219,11 +219,11 @@ class BuyModal extends React.Component {
 
   resetModal = () => {
     this.setState({
-      selectedToken:null,
       selectedMethod:null,
       selectedCountry:null,
       selectedProvider:null,
       availableProviders:null,
+      selectedToken:this.props.buyToken
     });
 
     this.componentWillMount();
@@ -422,6 +422,8 @@ class BuyModal extends React.Component {
       }
     }
 
+    const availableTokens = this.props.availableTokens && Object.keys(this.props.availableTokens).length>0 ? [globalConfigs.baseToken,...Object.keys(this.props.availableTokens)] : [globalConfigs.baseToken];
+
     const InnerComponent = props => (
       <Box minWidth={ this.props.showInline ? 'auto' : ['auto','35em'] }>
       {
@@ -432,7 +434,7 @@ class BuyModal extends React.Component {
             </Text>
             <Flex mb={4} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
             {
-              [globalConfigs.baseToken,...Object.keys(this.props.availableTokens)].map((token,i) => {
+              availableTokens.map((token,i) => {
                 return (
                   <ImageButton key={`token_${token}`} isMobile={this.props.isMobile} imageSrc={`images/tokens/${token}.svg`} imageProps={ this.props.isMobile ? {height:'42px'} : {p:[2,3],height:'80px'}} caption={token} handleClick={ e => { this.selectToken(e,token); } } />
                 );
@@ -477,7 +479,7 @@ class BuyModal extends React.Component {
                   <Box width={'100%'}>
                       <Flex mb={4} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
                       {
-                        this.state.availableProviders.length ?
+                        this.state.availableProviders.length > 0 ?
                           (
                             <Box>
                               <Text textAlign={'center'} fontWeight={2} fontSize={2} mb={[2,3]}>
@@ -545,7 +547,7 @@ class BuyModal extends React.Component {
                         </Text>
                         <Flex mb={4} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
                         {
-                          this.state.selectedCountry.providers.length ?
+                          this.state.selectedCountry.providers.length > 0 ?
                             this.state.selectedCountry.providers.map((provider,i) => {
                               const providerInfo = this.getProviderInfo(provider);
                               return (
@@ -565,7 +567,7 @@ class BuyModal extends React.Component {
                         Select the country to load the payment providers.
                       </Text>
                     )
-                  : false && this.state.availableTokens && this.state.availableTokens.length && (
+                  : false && this.state.availableTokens && this.state.availableTokens.length > 0 && (
                     <Box mb={2}>
                       <Flex justifyContent={'center'} my={2}>
                         <Image src={ globalConfigs.payments.providers[this.state.selectedProvider].imageSrc } height={'35px'} />

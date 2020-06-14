@@ -284,7 +284,7 @@ class FunctionsUtil {
     return amountLents;
   }
   getEtherscanTxs = async (account=false,firstBlockNumber=0,endBlockNumber='latest',enabledTokens=[],count=0) => {
-    account = account ? account.toLowerCase() : this.props.account.toLowerCase();
+    account = account ? account.toLowerCase() : (this.props.account ? this.props.account.toLowerCase() : null);
 
     if (!account || !enabledTokens || !enabledTokens.length){
       return [];
