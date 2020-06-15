@@ -360,20 +360,12 @@ class DepositRedeem extends Component {
 
         const gasLimitDeposit = this.functionsUtil.BNify(1000000);
         const mintProxyContractInfo = this.state.actionProxyContract[this.state.action];
-        if (mintProxyContractInfo){
+        if (mintProxyContractInfo && this.props.biconomy && this.state.metaTransactionsEnabled){
           const depositParams = [tokensToDeposit, this.props.tokenConfig.idle.address];
           const mintProxyContract = this.state.actionProxyContract[this.state.action].contract;
-          // Check if Biconomy is enabled
-          if (this.props.biconomy && this.state.metaTransactionsEnabled){
-
-            console.log('mintProxyContract',mintProxyContractInfo.function,depositParams);
-
-            const functionSignature = mintProxyContract.methods[mintProxyContractInfo.function](...depositParams).encodeABI();
-            this.functionsUtil.sendBiconomyTxWithPersonalSign(mintProxyContractInfo.name, functionSignature, callbackDeposit, callbackReceiptDeposit);
-          } else {
-            // Send deposit tx
-            this.props.contractMethodSendWrapper(mintProxyContractInfo.name, mintProxyContractInfo.function, depositParams, null, callbackDeposit, callbackReceiptDeposit, gasLimitDeposit);
-          }
+          // console.log('mintProxyContract',mintProxyContractInfo.function,depositParams);
+          const functionSignature = mintProxyContract.methods[mintProxyContractInfo.function](...depositParams).encodeABI();
+          this.functionsUtil.sendBiconomyTxWithPersonalSign(mintProxyContractInfo.name, functionSignature, callbackDeposit, callbackReceiptDeposit);
         } else {
           const _skipWholeRebalance = this.functionsUtil.getGlobalConfig(['contract','methods','deposit','skipRebalance']);
 

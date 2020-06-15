@@ -203,26 +203,26 @@ const globalConfigs = {
         startTimestamp:'2020-02-04'
       },
       TUSD:{
-        enabled:false,
+        enabled:true,
         color:{
           hex:'#002868',
           rgb:[0, 40, 104],
           hsl:['217', '100%', '20%']
         },
         chart:{
-          labelTextColorModifiers:['brighter', 2]
+          labelTextColorModifiers:['brighter', 5]
         },
         startTimestamp:'2020-06-11'
       },
       SUSD:{
-        enabled:false,
+        enabled:true,
         color:{
           hex:'#1e1a31',
           rgb:[30, 26, 49],
           hsl:['250', '31%', '15%']
         },
         chart:{
-          labelTextColorModifiers:['brighter', 2]
+          labelTextColorModifiers:['brighter', 5]
         },
         startTimestamp:'2020-06-16'
       },
@@ -234,7 +234,7 @@ const globalConfigs = {
           hsl:['29', '81%', '59%']
         },
         chart:{
-          labelTextColorModifiers:['brighter', 2]
+          labelTextColorModifiers:['darker', 2]
         },
         startTimestamp:'2020-06-16'
       },
@@ -782,10 +782,10 @@ const globalConfigs = {
         },
         caption: 'Buy with',
         captionPos: 'top',
-        subcaption:`~ 1.5% fee ~\nGBP ONLY`,
+        subcaption:`~ 1.5% fee ~\nALL CURRENCIES`,
         supportedMethods:['bank','card'],
-        supportedCountries:['GBR','IND','EUR'],
-        supportedTokens:['ETH','DAI','USDC','USDT'],
+        supportedCountries:['USA','GBR','AUS','BRA','CHN','MEX','EUR','IND'],
+        supportedTokens:['ETH','DAI','USDC','USDT','TUSD','SUSD','WBTC'],
         remoteResources:{'https://global.transak.com/v1/widget.js':{}},
         env:'prod',
         badge:{
@@ -938,7 +938,7 @@ const globalConfigs = {
         subcaption: '~ 4.5% fee ~',
         supportedMethods:['card','bank'],
         supportedCountries:['GBR','EUR','AUS','BRA','CHN','MEX','CAN','HKG','RUS','ZAF','KOR'],
-        supportedTokens:['USDC','DAI','ETH','USDT'],
+        supportedTokens:['USDC','DAI','ETH','USDT','TUSD'],
         env:'prod',
         envParams:{
           test:{
@@ -1170,7 +1170,7 @@ const globalConfigs = {
         captionPos: 'top',
         subcaption: '~ 0.25% fee ~',
         supportedMethods:['wallet'],
-        supportedTokens:['USDC','DAI','USDT'],
+        supportedTokens:['USDC','DAI','USDT','TUSD','SUSD','WBTC'],
         web3Subscription:{ // Data for web3 subscription
           enabled: true,
           contractAddress: '0x818e6fecd516ecc3849daf6845e3ec868087b755',

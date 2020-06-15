@@ -271,15 +271,15 @@ class Migrate extends Component {
   }
 
   checkMigrationContractApproved = async () => {
-
     if (this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract){
       const migrationContractInfo = this.props.tokenConfig.migration.migrationContract;
       const migrationContractName = migrationContractInfo.name;
       const migrationContract = this.functionsUtil.getContractByName(migrationContractName);
       if (migrationContract){
         const oldContractName = this.props.tokenConfig.migration.oldContract.name;
-        // console.log('checkTokenApproved',oldContractName,migrationContractInfo.address,this.props.account);
-        return await this.functionsUtil.checkTokenApproved(oldContractName,migrationContractInfo.address,this.props.account);
+        // console.log(this.props.tokenConfig.migration.oldContract,oldContractName,migrationContractInfo.address,this.props.account)
+        const tokenApproved = await this.functionsUtil.checkTokenApproved(oldContractName,migrationContractInfo.address,this.props.account);
+        return tokenApproved;
       }
     }
     return false;
@@ -584,7 +584,7 @@ class Migrate extends Component {
 
         const migrationParams = [toMigrate,this.props.tokenConfig.migration.oldContract.address,this.props.tokenConfig.idle.address,this.props.tokenConfig.address];
 
-        // console.log('Migration params',migrationContractInfo.name, migrationMethod, migrationParams);
+        console.log('Migration params',migrationContractInfo.name, migrationMethod, migrationParams);
 
         // Check if Biconomy is enabled
         if (this.props.biconomy && this.state.metaTransactionsEnabled){
