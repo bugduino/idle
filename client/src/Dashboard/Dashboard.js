@@ -73,11 +73,11 @@ class Dashboard extends Component {
       {
         icon:'Build',
         label:'Tools',
-        bgColor:'#f32121',
         color:'dark-gray',
         component:Utils,
         selected:false,
         route:'/dashboard/tools',
+        bgColor:this.props.theme.colors.primary,
         submenu:this.functionsUtil.getGlobalConfig(['tools'])
       }
     );

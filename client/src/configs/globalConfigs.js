@@ -218,7 +218,7 @@ const globalConfigs = {
         chart:{
           labelTextColorModifiers:['brighter', 2]
         },
-        startTimestamp:'2020-06-11'
+        startTimestamp:'2020-06-16'
       },
       WBTC:{
         color:{
@@ -229,7 +229,7 @@ const globalConfigs = {
         chart:{
           labelTextColorModifiers:['brighter', 2]
         },
-        startTimestamp:'2020-06-11'
+        startTimestamp:'2020-06-16'
       },
     },
     protocols:{
@@ -539,6 +539,24 @@ const globalConfigs = {
             icon:'images/tokens/yUSDT.png',
             migrateFunction:'migrateFromIearnToIdle',
             address:"0x83f798e925BcD4017Eb265844FDDAbb448f1707D",
+          },
+          aSUSD:{
+            decimals:6,
+            name:"aave",
+            enabled:true,
+            token:"aSUSD",
+            baseToken:'SUSD',
+            migrateFunction:'migrateFromAaveToIdle',
+            address:"0x625aE63000f46200499120B906716420bd059240",
+          },
+          aTUSD:{
+            decimals:6,
+            name:"aave",
+            enabled:true,
+            token:"aTUSD",
+            baseToken:'TUSD',
+            migrateFunction:'migrateFromAaveToIdle',
+            address:"0x4DA9b813057D04BAef4e5800E36083717b4a0341",
           },
         }
       }

@@ -58,6 +58,9 @@ class TokenMigration extends Component {
     Object.keys(this.props.availableStrategies).forEach( strategy => {
       const strategyAvailableTokens =  this.props.availableStrategies[strategy];
       const baseTokenConfig = strategyAvailableTokens[tokenInfo.baseToken];
+      if (!baseTokenConfig){
+        return false;
+      }
       if (!selectedDestToken){
         selectedDestToken = baseTokenConfig.idle.token;
       }

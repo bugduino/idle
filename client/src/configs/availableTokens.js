@@ -770,6 +770,68 @@ const availableTokens = {
             }
           }
         ]
+      },
+      SUSD:{
+        decimals:6,
+        enabled:true,
+        abi:ERC20.abi,
+        color:'hsl(250, 31%, 15%)',
+        address:'0x57ab1e02fee23774580c119740129eac7081e9d3',
+        wyre:{
+          destCurrency:'SUSD'
+        },
+        defiPrime:{
+          token:'susd'
+        },
+        idle:{
+          abi:IdleTokenV3,
+          token:'idleSUSDYield',
+          address:'0xb39ca0261a1b2986a6a9Fe38d344B56374963dE5'
+        },
+        protocols:[
+          {
+            name:'aave',
+            enabled:true,
+            abi:aToken,
+            address:'0x625aE63000f46200499120B906716420bd059240',
+            token:'aSUSD',
+            decimals:18,
+            functions:{
+              
+            }
+          }
+        ]
+      },
+      TUSD:{
+        decimals:6,
+        enabled:true,
+        abi:ERC20.abi,
+        color:'hsl(217, 100%, 20%)',
+        address:'0x57ab1e02fee23774580c119740129eac7081e9d3',
+        wyre:{
+          destCurrency:'TUSD'
+        },
+        defiPrime:{
+          token:'tusd'
+        },
+        idle:{
+          abi:IdleTokenV3,
+          token:'idleTUSDYield',
+          address:'0x7DB7A4a50b26602E56536189Aa94678C80F8E5b6'
+        },
+        protocols:[
+          {
+            name:'aave',
+            enabled:true,
+            abi:aToken,
+            address:'0x4da9b813057d04baef4e5800e36083717b4a0341',
+            token:'aTUSD',
+            decimals:18,
+            functions:{
+              
+            }
+          }
+        ]
       }
     }
   }
