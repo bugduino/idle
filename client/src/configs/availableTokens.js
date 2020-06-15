@@ -493,7 +493,7 @@ const availableTokens = {
         ]
       },
       SUSD:{
-        decimals:6,
+        decimals:18,
         enabled:true,
         abi:ERC20.abi,
         color:'hsl(250, 31%, 15%)',
@@ -524,11 +524,11 @@ const availableTokens = {
         ]
       },
       TUSD:{
-        decimals:6,
+        decimals:18,
         enabled:true,
         abi:ERC20.abi,
         color:'hsl(217, 100%, 20%)',
-        address:'0x57ab1e02fee23774580c119740129eac7081e9d3',
+        address:'0x8dd5fbce2f6a956c3022ba3663759011dd51e73e',
         wyre:{
           destCurrency:'TUSD'
         },

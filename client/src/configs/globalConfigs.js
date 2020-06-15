@@ -719,7 +719,7 @@ const globalConfigs = {
         },
         caption: 'Buy with',
         captionPos: 'top',
-        subcaption:`~ 0% fee ~\nEUR / GBP`,
+        subcaption:`~ 2.5% fee ~\nEUR / GBP`,
         supportedMethods:['bank'],
         badge: {
           text:'NO ID REQUIRED',
