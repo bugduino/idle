@@ -205,7 +205,7 @@ class AssetField extends Component {
           const tokenScore = await this.functionsUtil.getTokenScore(this.props.tokenConfig,isRisk);
           if (setState){
             this.setStateSafe({
-              score:tokenScore
+              score:tokenScore ? tokenScore : false
             })
           }
           output = tokenScore;
@@ -658,7 +658,7 @@ class AssetField extends Component {
         ) : loader
       break;
       case 'score':
-        output = this.state.score ? (
+        output = this.state.score !== null ? (
           <SmartNumber {...fieldProps} decimals={1} number={this.state.score} />
         ) : loader
       break;

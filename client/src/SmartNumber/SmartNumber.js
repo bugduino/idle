@@ -20,8 +20,9 @@ class SmartNumber extends Component {
   }
 
   render() {
-    let formattedNumber = this.props.number;
-    if (!isNaN(this.props.number)){
+    let formattedNumber = '-';
+
+    if (!isNaN(this.props.number) && this.props.number !== false && this.props.number !== null){
       switch (this.props.type){
         case 'money':
           formattedNumber = this.functionsUtil.formatMoney(this.props.number,this.props.precision);
@@ -30,6 +31,8 @@ class SmartNumber extends Component {
           formattedNumber = this.functionsUtil.abbreviateNumber(this.props.number,this.props.decimals,this.props.maxPrecision,this.props.minPrecision);
         break;
       }
+    } else {
+      formattedNumber = '-';
     }
 
     const flexProps = {
