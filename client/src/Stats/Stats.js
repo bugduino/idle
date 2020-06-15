@@ -411,6 +411,14 @@ class Stats extends Component {
 
     if (!this.props.selectedToken){
       const strategies = this.functionsUtil.getGlobalConfig(['strategies']);
+      const enabledTokens = [];
+      const statsTokens = this.functionsUtil.getGlobalConfig(['stats','tokens']);
+      Object.keys(statsTokens).forEach(token => {
+        const tokenInfo = statsTokens[token];
+        if (tokenInfo.enabled){
+          enabledTokens.push(token);
+        }
+      });
       return (
         <Flex
           width={1}
@@ -477,7 +485,7 @@ class Stats extends Component {
                     {strategyInfo.title}
                   </Title>
                   <AssetsList
-                    enabledTokens={[]}
+                    enabledTokens={enabledTokens}
                     handleClick={(props) => this.selectToken(strategy,props.token)}
                     cols={[
                       {

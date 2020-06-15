@@ -1817,13 +1817,10 @@ class FunctionsUtil {
         const tokenConfig = availableTokens[token];
         const tokenAllocation = await this.getTokenAllocation(tokenConfig);
         const tokenAprs = await this.getTokenAprs(tokenConfig,tokenAllocation);
-        if (tokenAllocation){
-          if (tokenAllocation.totalAllocation){
-            totalAUM = totalAUM.plus(tokenAllocation.totalAllocation);
-
-            if (tokenAprs.avgApr){
-              avgAPR = avgAPR.plus(tokenAllocation.totalAllocation.times(tokenAprs.avgApr))
-            }
+        if (tokenAllocation && tokenAllocation.totalAllocation && !tokenAllocation.totalAllocation.isNaN()){
+          totalAUM = totalAUM.plus(tokenAllocation.totalAllocation);
+          if (tokenAprs.avgApr && !tokenAprs.avgApr.isNaN()){
+            avgAPR = avgAPR.plus(tokenAllocation.totalAllocation.times(tokenAprs.avgApr))
           }
         }
       });

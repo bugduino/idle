@@ -155,6 +155,7 @@ const globalConfigs = {
     },
     tokens:{
       DAI:{
+        enabled:true,
         color:{
           rgb:[250,184,51],
           hex:'#F7B24A',
@@ -166,6 +167,7 @@ const globalConfigs = {
         startTimestamp:'2020-02-11'
       },
       USD:{
+        enabled:true,
         color:{
           hex:'#2875C8',
           rgb:[40,117,200],
@@ -177,6 +179,7 @@ const globalConfigs = {
         startTimestamp:'2020-02-04'
       },
       USDC:{
+        enabled:true,
         color:{
           hex:'#2875C8',
           rgb:[40,117,200],
@@ -188,6 +191,7 @@ const globalConfigs = {
         startTimestamp:'2020-02-04'
       },
       USDT:{
+        enabled:true,
         color:{
           hex:'#22a079',
           rgb:[34, 160, 121],
@@ -199,6 +203,7 @@ const globalConfigs = {
         startTimestamp:'2020-02-04'
       },
       TUSD:{
+        enabled:false,
         color:{
           hex:'#002868',
           rgb:[0, 40, 104],
@@ -210,6 +215,7 @@ const globalConfigs = {
         startTimestamp:'2020-06-11'
       },
       SUSD:{
+        enabled:false,
         color:{
           hex:'#1e1a31',
           rgb:[30, 26, 49],
@@ -221,6 +227,7 @@ const globalConfigs = {
         startTimestamp:'2020-06-16'
       },
       WBTC:{
+        enabled:false,
         color:{
           hex:'#eb9444',
           rgb:[235, 148, 68],
