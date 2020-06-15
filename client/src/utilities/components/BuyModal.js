@@ -436,7 +436,7 @@ class BuyModal extends React.Component {
             {
               availableTokens.map((token,i) => {
                 return (
-                  <ImageButton key={`token_${token}`} isMobile={this.props.isMobile} imageSrc={`images/tokens/${token}.svg`} imageProps={ this.props.isMobile ? {height:'42px'} : {p:[2,3],height:'80px'}} caption={token} handleClick={ e => { this.selectToken(e,token); } } />
+                  <ImageButton width={[null,1/availableTokens.length]} key={`token_${token}`} isMobile={this.props.isMobile} imageSrc={`images/tokens/${token}.svg`} imageProps={ this.props.isMobile ? {height:'42px'} : {p:[2,3],height:'80px'}} caption={token} handleClick={ e => { this.selectToken(e,token); } } />
                 );
               })
             }

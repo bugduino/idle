@@ -78,7 +78,7 @@ class Dashboard extends Component {
         selected:false,
         route:'/dashboard/tools',
         bgColor:this.props.theme.colors.primary,
-        submenu:this.functionsUtil.getGlobalConfig(['tools'])
+        submenu:this.functionsUtil.getGlobalConfig(['tools']).filter( u => (u.enabled) )
       }
     );
 

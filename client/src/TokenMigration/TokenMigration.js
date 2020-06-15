@@ -117,8 +117,6 @@ class TokenMigration extends Component {
     await this.props.setStrategy(destTokenConfig.strategy);
     this.props.setToken(tokenInfo.baseToken);
 
-    // console.log(destTokenConfig.strategy,tokenInfo.baseToken,selectedDestToken,tokenConfig);
-
     this.setState({
       tokenConfig,
       selectedDestToken

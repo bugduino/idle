@@ -334,13 +334,15 @@ class Migrate extends Component {
         oldContract = await this.props.initContract(oldContractName,oldContractInfo.address,oldContractABI);
       }
 
-      const migrationContract = this.functionsUtil.getContractByName(this.props.tokenConfig.migration.migrationContract.name);
+      let migrationContract = this.functionsUtil.getContractByName(this.props.tokenConfig.migration.migrationContract.name);
+
+      if (!migrationContract && this.props.tokenConfig.migration.migrationContract.abi){
+        migrationContract = await this.props.initContract(this.props.tokenConfig.migration.migrationContract.name,this.props.tokenConfig.migration.migrationContract.address,this.props.tokenConfig.migration.migrationContract.abi);
+      }
 
       if (oldContract && migrationContract){
 
         oldTokenName = this.props.tokenConfig.migration.oldContract.token;
-
-        // console.log('oldContractName',oldContractName,oldContract);
 
         [
           oldContractTokenDecimals,
@@ -584,7 +586,7 @@ class Migrate extends Component {
 
         const migrationParams = [toMigrate,this.props.tokenConfig.migration.oldContract.address,this.props.tokenConfig.idle.address,this.props.tokenConfig.address];
 
-        console.log('Migration params',migrationContractInfo.name, migrationMethod, migrationParams);
+        // console.log('Migration params',migrationContractInfo.name, migrationMethod, migrationParams);
 
         // Check if Biconomy is enabled
         if (this.props.biconomy && this.state.metaTransactionsEnabled){

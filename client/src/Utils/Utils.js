@@ -71,6 +71,7 @@ class Utils extends Component {
               </Flex>
               <SubComponent
                 {...this.props}
+                {...this.props.selectedSubsection.directProps}
                 toolProps={this.props.selectedSubsection.props}
               />
             </Box>
@@ -96,7 +97,8 @@ class Utils extends Component {
                     key={`tool_${toolIndex}`}
                     cardProps={{
                       p:[3,4],
-                      width:[1,1/3],
+                      mr:[0,'2%'],
+                      width:[1,0.31],
                       alignItems:'center',
                       flexDirection:'column',
                       justifyContent:'center'

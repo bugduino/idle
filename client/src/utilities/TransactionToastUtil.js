@@ -141,6 +141,11 @@ class TransactionToastUtil extends React.Component {
       case 'mintIdleTokensProxy':
         transactionAction = 'Lending';
         break;
+      case 'migrateFromToIdle':
+      case 'migrateFromCompoundToIdle':
+      case 'migrateFromFulcrumToIdle':
+      case 'migrateFromAaveToIdle':
+      case 'migrateFromIearnToIdle':
       case 'bridgeIdleV1ToIdleV2':
         transactionAction = 'Migration';
         break;

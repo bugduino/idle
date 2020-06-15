@@ -4,6 +4,7 @@ import yUSDTv3 from '../abis/iearn/yUSDTv3.json';
 import { Web3Versions } from '@terminal-packages/sdk';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import StrategyPage from '../StrategyPage/StrategyPage';
+import BuyModal from '../utilities/components/BuyModal';
 import TokenMigration from '../TokenMigration/TokenMigration';
 import { RampInstantSDK } from '@ramp-network/ramp-instant-sdk';
 import IdleConverterV2 from '../contracts/IdleConverterV2.json';
@@ -382,6 +383,7 @@ const globalConfigs = {
   },
   tools:[
     {
+      enabled:true,
       icon:'SwapHoriz',
       route:'convert',
       label:'Token Migration',
@@ -390,8 +392,8 @@ const globalConfigs = {
       props:{
         migrationContract:{
           abi:IdleConverterV2,
-          name:'IdleConverterV2',
-          address:'0x4ea4e749cb81854606d1912d1c4bde1e9005ab76',
+          name:'IdleConverterV3',
+          address:'0xC74d886ebaA5674E21A1CB0Be3997BDDcE6ad525',
           functions:[
             {
               label:'Migrate',
@@ -566,6 +568,18 @@ const globalConfigs = {
             address:"0x4DA9b813057D04BAef4e5800E36083717b4a0341",
           },
         }
+      }
+    },
+    {
+      enabled:false,
+      icon:'AddCircleOutline',
+      route:'add-funds',
+      label:'Add Funds',
+      desc:'Buy tokens with Bank account or Credit card',
+      subComponent:BuyModal,
+      directProps:{
+        enabledTokens:[''],
+        showInline:true
       }
     }
   ],
