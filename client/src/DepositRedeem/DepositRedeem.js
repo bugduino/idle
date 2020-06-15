@@ -366,7 +366,7 @@ class DepositRedeem extends Component {
           // Check if Biconomy is enabled
           if (this.props.biconomy && this.state.metaTransactionsEnabled){
 
-            // console.log('mintProxyContract',mintProxyContractInfo.function,depositParams);
+            console.log('mintProxyContract',mintProxyContractInfo.function,depositParams);
 
             const functionSignature = mintProxyContract.methods[mintProxyContractInfo.function](...depositParams).encodeABI();
             this.functionsUtil.sendBiconomyTxWithPersonalSign(mintProxyContractInfo.name, functionSignature, callbackDeposit, callbackReceiptDeposit);
