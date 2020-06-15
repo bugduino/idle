@@ -41,6 +41,7 @@ class AssetSelector extends Component {
         tokenConfig
       };
     });
+
     const defaultValue = this.props.selectedToken ? options.find(v => (v.value.toUpperCase() === this.props.selectedToken.toUpperCase())) : null;
 
     const CustomOptionValue = props => {
@@ -106,7 +107,13 @@ class AssetSelector extends Component {
     }
 
     const CustomValueContainer = props => {
-      const selectProps = props.selectProps.value;
+      const options = props.selectProps.options;
+      const selectProps = options.indexOf(props.selectProps.value) !== -1 ? props.selectProps.value : defaultValue;
+
+      if (!selectProps){
+        return null;
+      }
+
       const token = selectProps.value;
       const tokenConfig = selectProps.tokenConfig;
       return (
@@ -178,7 +185,7 @@ class AssetSelector extends Component {
 
     return (
       <GenericSelector
-        name={"assets"}
+        name={'assets'}
         options={options}
         defaultValue={defaultValue}
         innerProps={this.props.innerProps}

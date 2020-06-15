@@ -381,7 +381,6 @@ const globalConfigs = {
       desc:'Easily convert your Compound, Fulcrum, Aave and iEarn tokens into Idle',
       subComponent:TokenMigration,
       props:{
-        selectedStrategy:'best',
         migrationContract:{
           abi:IdleConverterV2,
           name:'IdleConverterV2',

@@ -287,11 +287,11 @@ class Migrate extends Component {
 
   checkMigration = async () => {
 
-    // console.log('checkMigration',this.props.tokenConfig,this.props.account);
-
     if (!this.props.tokenConfig || !this.props.account){
       return false;
     }
+
+    // console.log('checkMigration',this.props.selectedToken,this.props.tokenConfig,this.props.account);
 
     let loading = true;
     this.setState({
@@ -612,6 +612,10 @@ class Migrate extends Component {
   }
 
   render() {
+
+    if (!this.props.tokenConfig || !this.props.selectedToken){
+      return null;
+    }
 
     return (
       this.state.loading && this.props.account ? (

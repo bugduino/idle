@@ -109,8 +109,16 @@ class GenericSelector extends Component {
 
     const CustomOption = (props) => {
 
+      const options = props.selectProps.options;
+      let selectedValue = props.selectProps && props.selectProps.value && props.selectProps.value.value;
+
+      // Check if the selectedValue is included in options
+      if (selectedValue && options.map( o => o.value ).indexOf(selectedValue) === -1 && this.props.defaultValue){
+        selectedValue = this.props.defaultValue.value;
+      }
+
       // Don't show selected value
-      if (props.selectProps && props.selectProps.value && props.selectProps.value.value === props.value){
+      if (selectedValue && selectedValue === props.value){
         return null;
       }
 

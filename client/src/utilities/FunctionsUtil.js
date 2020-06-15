@@ -714,9 +714,13 @@ class FunctionsUtil {
         const allowedMethods = {
           mintIdleToken:'Deposit',
           redeemIdleToken:'Redeem',
-          // bridgeIdleV1ToIdleV2:'Migrated',
+          migrateFromToIdle:'Migrated',
+          mintIdleTokensProxy:'Deposit',
+          migrateFromAaveToIdle:'Migrated',
+          migrateFromIearnToIdle:'Migrated',
           executeMetaTransaction:'Migrated',
-          migrateFromToIdle:'Migrated'
+          migrateFromFulcrumToIdle:'Migrated',
+          migrateFromCompoundToIdle:'Migrated',
         };
         const pendingStatus = ['pending','started'];
 
@@ -784,6 +788,7 @@ class FunctionsUtil {
         let txValue = null;
         switch (tx.method){
           case 'mintIdleToken':
+          case 'mintIdleTokensProxy':
             if (!tx.params){
               if (isStoredTx){
                 storedTxs[this.props.account][tokenKey][txKey] = tx;
@@ -864,6 +869,10 @@ class FunctionsUtil {
             realTx.value = metaTxValueFixed;
             realTx.tokenAmount = metaTxValueFixed;
           break;
+          case 'migrateFromCompoundToIdle':
+          case 'migrateFromFulcrumToIdle':
+          case 'migrateFromAaveToIdle':
+          case 'migrateFromIearnToIdle':
           case 'migrateFromToIdle':
             if (!tokenConfig.migration || !tokenConfig.migration.oldContract){
               return false;
