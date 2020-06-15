@@ -288,7 +288,10 @@ class PortfolioEquity extends Component {
     let yFormatDecimals = 2;
     if (maxChartValue-minChartValue<1){
       yFormatDecimals = 4;
-      // minChartValue = Math.max(0,maxChartValue-1);
+    }
+    
+    if (maxChartValue === minChartValue){
+      minChartValue = Math.max(0,maxChartValue-1);
     }
 
     const maxGridLines = 5;
