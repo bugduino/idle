@@ -332,15 +332,6 @@ class AssetField extends Component {
 
           const frequencySeconds = this.functionsUtil.getFrequencySeconds('hour',12);
 
-          /*
-          let y = 0;
-          const currTime = Math.floor(new Date().getTime()/1000);
-          for (let i=currTime;i<=currTime+(86400*10);i+=86400){
-            const x = this.functionsUtil.strToMoment(i*1000).format("YYYY/MM/DD HH:mm");
-            y += (y ? y*0.3 : 0.5);
-            aprChartData[0].data.push({ x, y });
-          }
-          */
           let prevTimestamp = null;
           apiResultsAprChart.forEach((d,i) => {
             if (prevTimestamp === null || d.timestamp-prevTimestamp>=frequencySeconds){
@@ -350,6 +341,13 @@ class AssetField extends Component {
               prevTimestamp = d.timestamp;
             }
           });
+
+          // Add same value
+          if (aprChartData[0].data.length === 1){
+            const newPoint = Object.assign({},aprChartData[0].data[0]);
+            newPoint.x = this.functionsUtil.strToMoment(newPoint,"YYYY/MM/DD HH:mm").add(1,'hours').format("YYYY/MM/DD HH:mm")
+            aprChartData[0].data.push(newPoint);
+          }
 
           let aprChartWidth = 0;
           let aprChartHeight = 0;
@@ -584,7 +582,7 @@ class AssetField extends Component {
 
     switch (fieldInfo.name){
       case 'icon':
-        const icon = this.props.tokenConfig && this.props.tokenConfig.icon ? this.props.tokenConfig.icon : `images/tokens/${this.props.token}.svg`;
+        const icon = this.props.tokenConfig && this.props.tokenConfig.icon ? this.props.tokenConfig.icon : `images/tokens/${this.props.token.toUpperCase()}.svg`;
         output = (
           <Image src={icon} {...fieldProps} />
         );

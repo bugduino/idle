@@ -419,6 +419,7 @@ class Stats extends Component {
       });
       return (
         <Flex
+          mb={3}
           width={1}
           flexDirection={'column'}
         >

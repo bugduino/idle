@@ -200,6 +200,7 @@ class PortfolioDonut extends Component {
 
     const selectedToken = this.state.selectedToken !== null && this.state.portfolio[this.state.selectedToken] ? this.state.portfolio[this.state.selectedToken] : false;
     const strategyIcon = this.functionsUtil.getGlobalConfig(['strategies',this.props.selectedStrategy,'icon']);
+    const convertToken = this.state.selectedToken ? this.functionsUtil.getGlobalConfig(['stats','tokens',this.state.selectedToken,'conversionRateField']) : false;
 
     return (
       <Flex
@@ -233,10 +234,16 @@ class PortfolioDonut extends Component {
                       }}
                     />
                     <SmartNumber
+                      unitProps={{
+                        ml:2,
+                        fontSize:4,
+                        fontWeight:3
+                      }}
                       decimals={2}
                       fontSize={[3,4]}
                       maxPrecision={5}
                       fontWeight={[3,4]}
+                      unit={ convertToken ? '$' : null}
                       number={this.state.portfolio[this.state.selectedToken]}
                     />
                     <Text
