@@ -555,7 +555,7 @@ const availableTokens = {
         ]
       },
       WBTC:{
-        decimals:6,
+        decimals:8,
         enabled:true,
         abi:ERC20.abi,
         color:'hsl(29, 81%, 59%)',
@@ -578,7 +578,7 @@ const availableTokens = {
             abi:cToken.abi,
             address:'0xc11b1268c1a384e55c48c2391d8d480264a3a7f4',
             token:'cWBTC',
-            decimals:16,
+            decimals:8,
             functions:{
               exchangeRate:{
                 name:'exchangeRateStored',
@@ -592,7 +592,7 @@ const availableTokens = {
             abi:iToken,
             address:'0xba9262578efef8b3aff7f60cd629d6cc8859c8b5',
             token:'iWBTC',
-            decimals:18,
+            decimals:8,
             functions:{
               exchangeRate:{
                 name:'tokenPrice',
@@ -606,7 +606,7 @@ const availableTokens = {
             abi:aToken,
             address:'0xfc4b8ed459e00e5400be803a9bb3954234fd50e3',
             token:'aWBTC',
-            decimals:18,
+            decimals:8,
             functions:{
               
             }

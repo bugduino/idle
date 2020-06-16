@@ -567,6 +567,33 @@ const globalConfigs = {
             migrateFunction:'migrateFromAaveToIdle',
             address:"0x4DA9b813057D04BAef4e5800E36083717b4a0341",
           },
+          cWBTC:{
+            decimals:8,
+            enabled:true,
+            token:"cWBTC",
+            name:"compound",
+            baseToken:'WBTC',
+            migrateFunction:'migrateFromCompoundToIdle',
+            address:"0xc11b1268c1a384e55c48c2391d8d480264a3a7f4",
+          },
+          iWBTC:{
+            decimals:8,
+            enabled:false,
+            token:"iWBTC",
+            name:"fulcrum",
+            baseToken:'WBTC',
+            migrateFunction:'migrateFromFulcrumToIdle',
+            address:"0xba9262578efef8b3aff7f60cd629d6cc8859c8b5",
+          },
+          aWBTC:{
+            decimals:8,
+            name:"aave",
+            enabled:true,
+            token:"aWBTC",
+            baseToken:'WBTC',
+            migrateFunction:'migrateFromAaveToIdle',
+            address:"0xfc4b8ed459e00e5400be803a9bb3954234fd50e3",
+          },
         }
       }
     },
