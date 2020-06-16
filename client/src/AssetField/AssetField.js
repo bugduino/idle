@@ -582,7 +582,7 @@ class AssetField extends Component {
 
     switch (fieldInfo.name){
       case 'icon':
-        const icon = this.props.tokenConfig && this.props.tokenConfig.icon ? this.props.tokenConfig.icon : `images/tokens/${this.props.token.toUpperCase()}.svg`;
+        const icon = this.props.tokenConfig && this.props.tokenConfig.icon ? this.props.tokenConfig.icon : `images/tokens/${this.props.token}.svg`;
         output = (
           <Image src={icon} {...fieldProps} />
         );

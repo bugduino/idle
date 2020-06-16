@@ -1900,14 +1900,23 @@ class FunctionsUtil {
   Get idleToken score
   */
   getTokenScore = async (tokenConfig,isRisk) => {
-    const startTimestamp = parseInt(new Date().getTime()/1000)-60*60;
+    const startTimestamp = parseInt(new Date().getTime()/1000)-60*60*2;
     let tokenData = await this.getTokenApiData(tokenConfig.address,startTimestamp);
 
     if (tokenData){
-      tokenData = tokenData.filter( d => ( d.isRisk === isRisk ) ).pop();
+      tokenData = tokenData.filter( d => ( d.isRisk === isRisk ) );
 
-      if (tokenData && tokenData.idleScore){
-        return this.BNify(tokenData.idleScore);
+      let index = tokenData.length-1;
+      let tokenScore = this.BNify(0);
+      do{
+        const apiData = tokenData[index];
+        if (apiData && apiData.idleScore){
+          tokenScore = this.BNify(apiData.idleScore);
+        }
+      } while (tokenScore.lte(0) && (index--)>=0);
+
+      if (tokenScore && tokenScore.gt(0)){
+        return tokenScore;
       }
     }
 
