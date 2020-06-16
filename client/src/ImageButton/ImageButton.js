@@ -11,7 +11,21 @@ class ImageButton extends Component {
     const caption = (<Text textAlign={ isMobile ? 'left' : 'center'} fontSize={2} fontWeight={3} color={'dark-gray'}>{this.props.caption}</Text>);
 
     return (
-        <Button {...this.props.buttonProps} px={ isMobile ? [3,4] : 4 } py={ isMobile ? 0 : [3,4] } my={ isMobile ? 2 : [2,0] } mx={ isMobile ? 0 : [0,2] } width={ this.props.width ? this.props.width : (isMobile ? '100%' : ['150px','170px']) } height={ isMobile ? '58px' : ['150px','170px']} mainColor={'white'} contrastColor={'white'} color={'white'} borderRadius={3} onClick={ this.props.handleClick } style={ this.props.buttonStyle ? this.props.buttonStyle : (isMobile ? {justifyContent:'flex-start'} : null) }>
+        <Button
+          color={'white'}
+          borderRadius={3}
+          mainColor={'white'}
+          contrastColor={'white'}
+          px={ isMobile ? [3,4] : 4 }
+          py={ isMobile ? 0 : [3,4] }
+          my={ isMobile ? 2 : [2,2] }
+          mx={ isMobile ? 0 : [0,2] }
+          onClick={ this.props.handleClick }
+          height={ isMobile ? '58px' : ['150px','170px']}
+          width={ this.props.width ? this.props.width : (isMobile ? '100%' : ['150px','170px']) }
+          style={ this.props.buttonStyle ? this.props.buttonStyle : (isMobile ? {justifyContent:'flex-start'} : null) }
+          {...this.props.buttonProps}
+        >
           <>
             {
               this.props.badge && (

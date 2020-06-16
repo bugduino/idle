@@ -422,18 +422,41 @@ class BuyModal extends React.Component {
       }
     }
 
-    const availableTokens = this.props.availableTokens && Object.keys(this.props.availableTokens).length>0 ? [globalConfigs.baseToken,...Object.keys(this.props.availableTokens)] : [globalConfigs.baseToken];
+    let availableTokens = this.props.availableTokens && Object.keys(this.props.availableTokens).length>0 ? [globalConfigs.baseToken,...Object.keys(this.props.availableTokens)] : [globalConfigs.baseToken];
+
+    // Show all tokens
+    if (this.props.showAllTokens){
+      availableTokens = [];
+      Object.keys(globalConfigs.payments.providers).map( provider => {
+        const providerInfo = globalConfigs.payments.providers[provider];
+        if (providerInfo.supportedTokens){
+          providerInfo.supportedTokens.forEach(token => {
+            if (!availableTokens.includes(token)){
+              availableTokens.push(token);
+            }
+          })
+        }
+      });
+    }
 
     const InnerComponent = props => (
       <Box minWidth={ this.props.showInline ? 'auto' : ['auto','35em'] }>
       {
         this.state.selectedToken === null ? (
           <Box mb={2}>
-            <Text textAlign={'center'} fontWeight={2} fontSize={[2,3]} mb={[2,3]}>
+            <Text
+              mb={[2,3]}
+              fontWeight={2}
+              textAlign={'center'}
+              fontSize={[2, this.props.showInline ? 2 : 3]}
+            >
               Which token do you want to buy?
             </Text>
             <Flex
               mb={4}
+              style={{
+                flexWrap:'wrap'
+              }}
               alignItems={'center'}
               justifyContent={'center'}
               flexDirection={['column','row']}
@@ -441,7 +464,19 @@ class BuyModal extends React.Component {
             {
               availableTokens.map((token,i) => {
                 return (
-                  <ImageButton key={`token_${token}`} isMobile={this.props.isMobile} imageSrc={`images/tokens/${token}.svg`} imageProps={ this.props.isMobile ? {height:'42px'} : {p:[2,3],height:'80px'}} caption={token} handleClick={ e => { this.selectToken(e,token); } } />
+                  <ImageButton
+                    caption={token}
+                    key={`token_${token}`}
+                    isMobile={this.props.isMobile}
+                    imageSrc={`images/tokens/${token}.svg`}
+                    handleClick={ e => { this.selectToken(e,token); } }
+                    imageProps={ this.props.isMobile ? {height:'42px'} : {p:[2,3],height:'80px'}}
+                    buttonProps={ !this.props.isMobile ? {
+                      style:{
+                        'flex':'0 0 170px'
+                      }
+                    } : null}
+                  />
                 );
               })
             }
@@ -458,7 +493,7 @@ class BuyModal extends React.Component {
                 How do you prefer do buy {this.state.selectedToken}?
               </Text>
             </Flex>
-            <Flex mb={4} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
+            <Flex mb={this.props.showInline ? 2 : 4} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
               {
                 Object.keys(this.state.availableMethods).map((method,i) => {
                   const methodInfo = this.state.availableMethods[method];
@@ -482,7 +517,7 @@ class BuyModal extends React.Component {
               <Box mt={2} mb={3}>
                 <Text textAlign={'center'} fontWeight={3} fontSize={2} my={0}>
                   <Box width={'100%'}>
-                      <Flex mb={4} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
+                      <Flex mb={this.props.showInline ? 2 : 4} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
                       {
                         this.state.availableProviders.length > 0 ?
                           (
@@ -521,6 +556,7 @@ class BuyModal extends React.Component {
                 !this.state.selectedProvider &&
                 <Box
                   mb={3}
+                  maxWidth={ this.props.showInline ? '35em' : 'initial' }
                   width={ (this.props.showInline && !this.props.isMobile) ? 0.72 : 1 }
                 >
                   {
@@ -550,7 +586,7 @@ class BuyModal extends React.Component {
                         <Text textAlign={'center'} fontWeight={2} fontSize={2} mb={[2,3]}>
                           Choose your preferred payment provider:
                         </Text>
-                        <Flex mb={4} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
+                        <Flex mb={this.props.showInline ? 2 : 4} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
                         {
                           this.state.selectedCountry.providers.length > 0 ?
                             this.state.selectedCountry.providers.map((provider,i) => {
@@ -580,7 +616,7 @@ class BuyModal extends React.Component {
                       <Text textAlign={'center'} fontWeight={2} fontSize={2} mb={[2,3]}>
                         Choose which token do you want to buy:
                       </Text>
-                      <Flex mb={4} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
+                      <Flex mb={this.props.showInline ? 2 : 4} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
                       {
                         this.state.availableTokens.map((token,i) => {
                           return (
@@ -596,6 +632,25 @@ class BuyModal extends React.Component {
             </Flex>
           )
       }
+        {
+          this.props.showInline && this.state.selectedToken !== null  && (this.props.buyToken === null || this.state.selectedMethod !== null) && (
+            <Flex
+              alignItems={'center'}
+              justifyContent={'center'}
+            >
+              <Button
+                my={2}
+                mx={[0, 2]}
+                size={'medium'}
+                borderRadius={4}
+                mainColor={'blue'}
+                onClick={ e => this.goBack(e) }
+              >
+                GO BACK
+              </Button>
+            </Flex>
+          )
+        }
       </Box>
     );
 
@@ -627,7 +682,7 @@ class BuyModal extends React.Component {
               CLOSE
               </Button>
               {
-                this.state.selectedToken !== null && (
+                this.state.selectedToken !== null && (this.props.buyToken === null || this.state.selectedMethod !== null) && (
                   <Button
                     className={styles.gradientButton}
                     borderRadius={4}

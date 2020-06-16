@@ -599,15 +599,15 @@ const globalConfigs = {
       }
     },
     {
-      enabled:false,
+      enabled:true,
       icon:'AddCircleOutline',
       route:'add-funds',
       label:'Add Funds',
       desc:'Buy tokens with Bank account or Credit card',
       subComponent:BuyModal,
       directProps:{
-        enabledTokens:[''],
-        showInline:true
+        showInline:true,
+        showAllTokens:true
       }
     }
   ],

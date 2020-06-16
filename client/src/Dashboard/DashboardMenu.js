@@ -162,6 +162,7 @@ class DashboardMenu extends Component {
         ))
         }
         {
+        /*
         !this.props.isMobile  &&
           <Box
             width={'auto'}
@@ -206,12 +207,13 @@ class DashboardMenu extends Component {
               </Flex>
             </Flex>
           </Box>
-        }
         <BuyModal
           {...this.props}
           isOpen={this.state.buyModalOpened}
           closeModal={ e => this.setBuyModalOpened(false) }
         />
+        */
+        }
       </Flex>
     )
   }
