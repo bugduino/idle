@@ -305,13 +305,11 @@ class Stats extends Component {
     const earning = lastIdlePrice.div(firstIdlePrice).minus(1).times(100);
     const apr = earning.times(365).div(days).toFixed(2);
 
-    // console.log(moment(firstResult.timestamp*1000).format('YYYY-MM-DD HH:mm'),moment(lastResult.timestamp*1000).format('YYYY-MM-DD HH:mm'));
-
     const compoundInfo = this.props.tokenConfig.protocols.filter((p) => { return p.name === 'compound' })[0];
-    const firstCompoundData = firstResult.protocolsData.filter((p) => { return p.protocolAddr.toLowerCase() === compoundInfo.address.toLowerCase() })[0];
-    const lastCompoundData = lastResult.protocolsData.filter((p) => { return p.protocolAddr.toLowerCase() === compoundInfo.address.toLowerCase() })[0];
+    const firstCompoundData = compoundInfo ? firstResult.protocolsData.filter((p) => { return p.protocolAddr.toLowerCase() === compoundInfo.address.toLowerCase() })[0] : null;
+    const lastCompoundData = compoundInfo ? lastResult.protocolsData.filter((p) => { return p.protocolAddr.toLowerCase() === compoundInfo.address.toLowerCase() })[0] : null;
 
-    let delta = null;
+    let delta = 'N/A';
     if (firstCompoundData && lastCompoundData){
       const firstCompoundPrice = this.functionsUtil.fixTokenDecimals(firstCompoundData.price,this.props.tokenConfig.decimals);
       const lastCompoundPrice = this.functionsUtil.fixTokenDecimals(lastCompoundData.price,this.props.tokenConfig.decimals);
@@ -803,22 +801,34 @@ class Stats extends Component {
                 title={'Overperformance on Compound'}
                 label={'Annualized'}
               >
-                <VariationNumber
-                  direction={'up'}
-                  iconPos={'right'}
-                  iconSize={'1.8em'}
-                  justifyContent={'flex-start'}
-                  >
-                  <Text
-                    lineHeight={1}
-                    fontWeight={[3,4]}
-                    color={'statValue'}
-                    fontSize={[4,5]}
-                  >
-                    {this.state.delta}
-                    <Text.span color={'statValue'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
-                  </Text>
-                </VariationNumber>
+                {
+                  this.state.delta && !isNaN(this.state.delta) ? (
+                    <VariationNumber
+                      direction={'up'}
+                      iconPos={'right'}
+                      iconSize={'1.8em'}
+                      justifyContent={'flex-start'}
+                      >
+                      <Text
+                        lineHeight={1}
+                        fontSize={[4,5]}
+                        fontWeight={[3,4]}
+                        color={'statValue'}
+                      >
+                        <Text.span color={'statValue'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
+                      </Text>
+                    </VariationNumber>
+                  ) : (
+                    <Text
+                      lineHeight={1}
+                      fontSize={[4,5]}
+                      fontWeight={[3,4]}
+                      color={'statValue'}
+                    >
+                      {this.state.delta}
+                    </Text>
+                  )
+                }
               </StatsCard>
             </Flex>
             <Flex

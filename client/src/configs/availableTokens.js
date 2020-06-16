@@ -497,7 +497,7 @@ const availableTokens = {
         enabled:true,
         abi:ERC20.abi,
         color:'hsl(250, 31%, 15%)',
-        address:'0x57ab1e02fee23774580c119740129eac7081e9d3',
+        address:'0x57ab1ec28d129707052df4df418d58a2d46d5f51',
         wyre:{
           destCurrency:'SUSD'
         },
