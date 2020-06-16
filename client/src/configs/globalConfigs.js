@@ -15,7 +15,7 @@ const env = process.env;
 
 const globalConfigs = {
   appName: 'Idle',
-  version: 'v3.0',
+  version: 'v3.1',
   baseURL: 'https://idle.finance',
   baseToken: 'ETH',
   countries:{
