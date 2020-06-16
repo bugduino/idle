@@ -92,7 +92,7 @@
     "start": "node --max-old-space-size=8192 scripts/start.js",
     "build": "node --max-old-space-size=8192 scripts/build.js",
     "test": "node scripts/test.js",
-    "deploy": "gh-pages -b gh-pages -d build",
+    "deploy": "echo 'idle.finance\nwww.idle.finance' > build/CNAME;gh-pages -b gh-pages -d build",
     "deploy-beta": "echo 'beta.idle.finance\nwww.beta.idle.finance' > build/CNAME;gh-pages -b gh-pages -d build --remote labs"
   },
   "eslintConfig": {
