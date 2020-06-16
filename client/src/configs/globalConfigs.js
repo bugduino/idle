@@ -228,14 +228,14 @@ const globalConfigs = {
         startTimestamp:'2020-06-15'
       },
       WBTC:{
-        enabled:false,
+        enabled:true,
         color:{
           hex:'#eb9444',
           rgb:[235, 148, 68],
           hsl:['29', '81%', '59%']
         },
         chart:{
-          labelTextColorModifiers:['darker', 2]
+          labelTextColorModifiers:['darker', 4]
         },
         startTimestamp:'2020-06-15'
       },
@@ -867,11 +867,18 @@ const globalConfigs = {
                 info.subcaption = `~ ${fee} fee ~\nINR ONLY`;
               break;
               case 'EUR':
-                info.badge = {
-                  text:'SEPA',
-                  color:'#f7cb05 ',
-                  bgColor:'#10288a'
-                };
+                if (selectedMethod === 'bank'){
+                  info.badge = {
+                    text:'SEPA',
+                    color:'#f7cb05 ',
+                    bgColor:'#10288a'
+                  };
+                } else {
+                  info.badge = {
+                    text:'INSTANT',
+                    bgColor:'#0069ee'
+                  };
+                }
                 info.subcaption = `~ ${fee} fee ~\nEUR ONLY`;
               break;
               default:
