@@ -1843,6 +1843,23 @@ class FunctionsUtil {
     return null;
   }
   /*
+  Get idleToken conversion rate
+  */
+  getTokenConversionRate = async (tokenConfig,isRisk,conversionRateField) => {
+    const startTimestamp = parseInt(new Date().getTime()/1000)-60*60;
+    let tokenData = await this.getTokenApiData(tokenConfig.address,startTimestamp);
+
+    if (tokenData){
+      tokenData = tokenData.filter( d => ( d.isRisk === isRisk ) ).pop();
+
+      if (tokenData && tokenData[conversionRateField]){
+        return this.fixTokenDecimals(tokenData[conversionRateField],18);
+      }
+    }
+
+    return null;
+  }
+  /*
   Get idleToken score
   */
   getTokenScore = async (tokenConfig,isRisk) => {

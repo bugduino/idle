@@ -61,22 +61,30 @@ class PortfolioDonut extends Component {
 
     const portfolio = {};
     let totalFunds = this.functionsUtil.BNify(0);
+    const isRisk = this.props.selectedStrategy === 'risk';
 
     await this.functionsUtil.asyncForEach(Object.keys(this.props.availableTokens),async (token) => {
       const tokenConfig = this.props.availableTokens[token];
       const idleTokenBalance = await this.functionsUtil.getTokenBalance(tokenConfig.idle.token,this.props.account);
       if (idleTokenBalance){
         const tokenPrice = await this.functionsUtil.getIdleTokenPrice(tokenConfig);
-        const tokenBalance = idleTokenBalance.times(tokenPrice);
+        let tokenBalance = idleTokenBalance.times(tokenPrice);
 
         if (tokenBalance.gt(0)){
+          // Check for USD conversion rate
+          const conversionRateField = this.functionsUtil.getGlobalConfig(['stats','tokens',token,'conversionRateField']);
+          if (conversionRateField){
+            const tokenUsdConversionRate = await this.functionsUtil.getTokenConversionRate(tokenConfig,isRisk,conversionRateField);
+            if (tokenUsdConversionRate){
+              tokenBalance = tokenBalance.times(tokenUsdConversionRate);
+            }
+          }
+
           portfolio[token] = tokenBalance;
 
           // Increment total balance
           totalFunds = totalFunds.plus(tokenBalance);
         }
-
-        // console.log(token,tokenPrice.toFixed(5),idleTokenBalance.toFixed(5),tokenBalance.toFixed(5),totalFunds.toFixed(5));
       }
     });
 

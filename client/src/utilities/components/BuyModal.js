@@ -432,11 +432,16 @@ class BuyModal extends React.Component {
             <Text textAlign={'center'} fontWeight={2} fontSize={[2,3]} mb={[2,3]}>
               Which token do you want to buy?
             </Text>
-            <Flex mb={4} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>
+            <Flex
+              mb={4}
+              alignItems={'center'}
+              justifyContent={'center'}
+              flexDirection={['column','row']}
+            >
             {
               availableTokens.map((token,i) => {
                 return (
-                  <ImageButton width={[null,1/availableTokens.length]} key={`token_${token}`} isMobile={this.props.isMobile} imageSrc={`images/tokens/${token}.svg`} imageProps={ this.props.isMobile ? {height:'42px'} : {p:[2,3],height:'80px'}} caption={token} handleClick={ e => { this.selectToken(e,token); } } />
+                  <ImageButton key={`token_${token}`} isMobile={this.props.isMobile} imageSrc={`images/tokens/${token}.svg`} imageProps={ this.props.isMobile ? {height:'42px'} : {p:[2,3],height:'80px'}} caption={token} handleClick={ e => { this.selectToken(e,token); } } />
                 );
               })
             }

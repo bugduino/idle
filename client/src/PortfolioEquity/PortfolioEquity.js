@@ -150,6 +150,7 @@ class PortfolioEquity extends Component {
     const currTimestamp = parseInt(new Date().getTime()/1000)+86400;
 
     const tokensData = {};
+
     await this.functionsUtil.asyncForEach(Object.keys(tokensBalance),async (token) => {
       tokensData[token] = await this.functionsUtil.getTokenApiData(this.props.availableTokens[token].address,firstTxTimestamp,currTimestamp);
 
@@ -192,7 +193,16 @@ class PortfolioEquity extends Component {
                 const lastTokenData = filteredTokenData.pop();
                 const idleTokens = idleTokenBalance[token];
                 const idlePrice = this.functionsUtil.fixTokenDecimals(lastTokenData.idlePrice,tokenDecimals);
-                const newBalance = idleTokens.times(idlePrice);
+                let newBalance = idleTokens.times(idlePrice);
+
+                // Convert token to USD
+                const conversionRateField = this.functionsUtil.getGlobalConfig(['stats','tokens',token,'conversionRateField']);
+                if (!this.props.chartToken && conversionRateField){
+                  const tokenUsdConversionRate = this.functionsUtil.fixTokenDecimals(lastTokenData[conversionRateField],18);
+                  if (tokenUsdConversionRate){
+                    newBalance = newBalance.times(tokenUsdConversionRate);
+                  }
+                }
                 
                 // console.log(this.functionsUtil.strToMoment(timeStamp*1000).format('DD/MM/YYYY HH:mm'),token,'idleTokens:'+idleTokens.toFixed(5)+', Old balance:'+parseFloat(lastFilteredTx.balance).toFixed(5)+',New balance:'+parseFloat(newBalance).toFixed(5)+',oldTokenPrice:'+parseFloat(lastFilteredTx.tokenPrice).toFixed(5)+',tokenPrice:'+parseFloat(idlePrice).toFixed(5));
 
@@ -231,8 +241,22 @@ class PortfolioEquity extends Component {
         }
 
         const lastTx = Object.assign([],filteredBalances).pop();
+        let lastTxBalance = this.functionsUtil.BNify(lastTx.balance);
 
-        aggregatedBalance = aggregatedBalance.plus(lastTx.balance);
+        // Convert token balance to USD
+        const conversionRateField = this.functionsUtil.getGlobalConfig(['stats','tokens',token,'conversionRateField']);
+        if (!this.props.chartToken && conversionRateField){
+          const filteredTokenData = tokensData[token].filter(tx => (tx.timestamp>=prevTimestamp && tx.timestamp<=timeStamp));
+          if (filteredTokenData && filteredTokenData.length){
+            const lastTokenData = filteredTokenData.pop();
+            const tokenUsdConversionRate = this.functionsUtil.fixTokenDecimals(lastTokenData[conversionRateField],18);
+            if (tokenUsdConversionRate){
+              lastTxBalance = lastTxBalance.times(tokenUsdConversionRate);
+            }
+          }
+        }
+
+        aggregatedBalance = aggregatedBalance.plus(lastTxBalance);
         // console.log(aggregatedBalance.toFixed(5));
         // console.log(this.functionsUtil.strToMoment(timeStamp*1000).format('DD/MM/YYYY HH:mm'),token,lastTx.balance.toFixed(5),aggregatedBalance.toFixed(5));
 
@@ -289,7 +313,7 @@ class PortfolioEquity extends Component {
     if (maxChartValue-minChartValue<1){
       yFormatDecimals = 4;
     }
-    
+
     if (maxChartValue === minChartValue){
       minChartValue = Math.max(0,maxChartValue-1);
     }
