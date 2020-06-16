@@ -816,6 +816,7 @@ class Stats extends Component {
                         fontWeight={[3,4]}
                         color={'statValue'}
                       >
+                        {this.state.delta}
                         <Text.span color={'statValue'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
                       </Text>
                     </VariationNumber>
