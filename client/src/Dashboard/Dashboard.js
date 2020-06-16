@@ -11,6 +11,7 @@ import AssetPage from '../AssetPage/AssetPage';
 import RoundButton from '../RoundButton/RoundButton';
 import DashboardCard from '../DashboardCard/DashboardCard';
 import WelcomeModal from "../utilities/components/WelcomeModal";
+import MigrateModal from "../utilities/components/MigrateModal";
 import DashboardHeader from '../DashboardHeader/DashboardHeader';
 
 class Dashboard extends Component {
@@ -23,7 +24,8 @@ class Dashboard extends Component {
     currentSection:null,
     selectedSection:null,
     showResetButton:false,
-    selectedSubsection:null
+    selectedSubsection:null,
+    protocolsTokensBalances:null,
   };
 
   timeoutId = null;
@@ -78,7 +80,7 @@ class Dashboard extends Component {
         selected:false,
         route:'/dashboard/tools',
         bgColor:this.props.theme.colors.primary,
-        submenu:this.functionsUtil.getGlobalConfig(['tools']).filter( u => (u.enabled) )
+        submenu:Object.values(this.functionsUtil.getGlobalConfig(['tools'])).filter( u => (u.enabled) )
       }
     );
 
@@ -249,8 +251,12 @@ class Dashboard extends Component {
   }
 
   async componentDidUpdate(prevProps,prevState) {
+
+    this.loadUtils();
+
     const prevParams = prevProps.match.params;
     const params = this.props.match.params;
+
     if (JSON.stringify(prevParams) !== JSON.stringify(params)){
       await this.setState({
         pageComponent:null
@@ -298,6 +304,18 @@ class Dashboard extends Component {
           activeModal
         });
       }
+    }
+
+    // Show migration modal if no other modals are opened
+    const migrateModalEnabled = this.functionsUtil.getGlobalConfig(['modals','migrate','enabled']);
+    const showMigrateModal = this.functionsUtil.getStoredItem('dontShowMigrateModal',false,null) !== null ? false : true;
+    if (!this.state.activeModal && migrateModalEnabled && showMigrateModal && this.props.accountInizialized && this.props.contractsInitialized && this.props.account && !this.state.protocolsTokensBalances){
+      const protocolsTokensBalances = await this.functionsUtil.getProtocolsTokensBalances();
+      const newState = {
+        protocolsTokensBalances,
+        activeModal:protocolsTokensBalances && Object.keys(protocolsTokensBalances).length>0 ? 'migrate' : null,
+      };
+      await this.setState(newState);
     }
   }
 
@@ -465,6 +483,14 @@ class Dashboard extends Component {
             )
           }
         </Flex>
+
+        <MigrateModal
+          {...this.props}
+          closeModal={this.resetModal}
+          goToSection={this.goToSection.bind(this)}
+          isOpen={this.state.activeModal === 'migrate'}
+          protocolsTokensBalances={this.state.protocolsTokensBalances}
+        />
 
         <WelcomeModal
           closeModal={this.resetModal}

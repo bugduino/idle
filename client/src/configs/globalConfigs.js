@@ -96,6 +96,9 @@ const globalConfigs = {
   modals:{ // Enable modals
     first_deposit_referral:false, // Referral share modal
     first_deposit_share:true, // First deposit share modal
+    migrate:{
+      enabled:true
+    },
     welcome:{ // Welcome modal
       enabled:true,
       frequency:604800 // One week
@@ -271,6 +274,9 @@ const globalConfigs = {
           hsl:['240', '2%', '35%']
         }
       },
+      iearn:{
+        label:'iEarn'
+      },
       aave:{
         label:'Aave',
         color:{
@@ -382,8 +388,8 @@ const globalConfigs = {
       }
     }
   },
-  tools:[
-    {
+  tools:{
+    tokenMigration:{
       enabled:true,
       icon:'SwapHoriz',
       route:'convert',
@@ -408,46 +414,46 @@ const globalConfigs = {
             enabled:true,
             token:"cDAI",
             baseToken:'DAI',
-            name:"compound",
+            protocol:"compound",
             migrateFunction:'migrateFromCompoundToIdle',
             address:"0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643",
           },
           iDAI:{
             decimals:18,
-            name:"fulcrum",
             enabled:false,
             token:"iDAI",
             baseToken:'DAI',
+            protocol:"fulcrum",
             migrateFunction:'migrateFromFulcrumToIdle',
             address:"0x493c57c4763932315a328269e1adad09653b9081",
           },
           aDAI:{
             decimals:18,
-            name:"aave",
             enabled:true,
             token:"aDAI",
+            protocol:"aave",
             baseToken:'DAI',
             migrateFunction:'migrateFromAaveToIdle',
             address:"0xfC1E690f61EFd961294b3e1Ce3313fBD8aa4f85d",
           },
           yDAIv3:{
             decimals:18,
-            name:"iearn",
             enabled:true,
             token:"yDAIv3",
-            baseToken:'DAI',
             abi:yDAIv3.abi,
+            baseToken:'DAI',
+            protocol:"iearn",
             icon:'images/tokens/yDAI.png',
             migrateFunction:'migrateFromIearnToIdle',
             address:"0xC2cB1040220768554cf699b0d863A3cd4324ce32",
           },
           yDAIv2:{
             decimals:18,
-            name:"iearn",
             enabled:true,
             token:"yDAIv2",
             baseToken:'DAI',
             abi:yDAIv3.abi,
+            protocol:"iearn",
             icon:'images/tokens/yDAI.png',
             migrateFunction:'migrateFromIearnToIdle',
             address:"0x16de59092dAE5CcF4A1E6439D611fd0653f0Bd01",
@@ -456,8 +462,8 @@ const globalConfigs = {
             decimals:8,
             enabled:true,
             token:"cUSDC",
-            name:"compound",
             baseToken:'USDC',
+            protocol:"compound",
             migrateFunction:'migrateFromCompoundToIdle',
             address:"0x39aa39c021dfbae8fac545936693ac917d5e7563",
           },
@@ -465,25 +471,25 @@ const globalConfigs = {
             decimals:6,
             enabled:false,
             token:"iUSDC",
-            name:"fulcrum",
             baseToken:'USDC',
+            protocol:"fulcrum",
             migrateFunction:'migrateFromFulcrumToIdle',
             address:"0xf013406a0b1d544238083df0b93ad0d2cbe0f65f",
           },
           aUSDC:{
             decimals:6,
-            name:"aave",
             enabled:true,
             token:"aUSDC",
+            protocol:"aave",
             baseToken:'USDC',
             migrateFunction:'migrateFromAaveToIdle',
             address:"0x9bA00D6856a4eDF4665BcA2C2309936572473B7E",
           },
           yUSDCv3:{
             decimals:6,
-            name:"iearn",
             enabled:true,
             token:"yUSDCv3",
+            protocol:"iearn",
             abi:yUSDCv3.abi,
             baseToken:'USDC',
             icon:'images/tokens/yUSDC.png',
@@ -492,9 +498,9 @@ const globalConfigs = {
           },
           yUSDCv2:{
             decimals:6,
-            name:"iearn",
             enabled:true,
             token:"yUSDCv2",
+            protocol:"iearn",
             abi:yUSDCv3.abi,
             baseToken:'USDC',
             icon:'images/tokens/yUSDC.png',
@@ -505,8 +511,8 @@ const globalConfigs = {
             decimals:8,
             enabled:true,
             token:"cUSDT",
-            name:"compound",
             baseToken:'USDT',
+            protocol:"compound",
             migrateFunction:'migrateFromCompoundToIdle',
             address:"0xf650c3d88d12db855b8bf7d11be6c55a4e07dcc9",
           },
@@ -514,26 +520,26 @@ const globalConfigs = {
             decimals:6,
             enabled:false,
             token:"iUSDT",
-            name:"fulcrum",
             baseToken:'USDT',
+            protocol:"fulcrum",
             migrateFunction:'migrateFromFulcrumToIdle',
             address:"0x8326645f3aa6de6420102fdb7da9e3a91855045b",
           },
           aUSDT:{
             decimals:6,
-            name:"aave",
             enabled:true,
             token:"aUSDT",
+            protocol:"aave",
             baseToken:'USDT',
             migrateFunction:'migrateFromAaveToIdle',
             address:"0x71fc860F7D3A592A4a98740e39dB31d25db65ae8",
           },
           yUSDTv3:{
             decimals:6,
-            name:"iearn",
             enabled:true,
             token:"yUSDTv3",
             abi:yUSDTv3.abi,
+            protocol:"iearn",
             baseToken:'USDT',
             icon:'images/tokens/yUSDT.png',
             migrateFunction:'migrateFromIearnToIdle',
@@ -541,10 +547,10 @@ const globalConfigs = {
           },
           yUSDTv2:{
             decimals:6,
-            name:"iearn",
             enabled:true,
             token:"yUSDTv2",
             abi:yUSDTv3.abi,
+            protocol:"iearn",
             baseToken:'USDT',
             icon:'images/tokens/yUSDT.png',
             migrateFunction:'migrateFromIearnToIdle',
@@ -552,18 +558,18 @@ const globalConfigs = {
           },
           aSUSD:{
             decimals:6,
-            name:"aave",
             enabled:true,
             token:"aSUSD",
+            protocol:"aave",
             baseToken:'SUSD',
             migrateFunction:'migrateFromAaveToIdle',
             address:"0x625aE63000f46200499120B906716420bd059240",
           },
           aTUSD:{
             decimals:6,
-            name:"aave",
             enabled:true,
             token:"aTUSD",
+            protocol:"aave",
             baseToken:'TUSD',
             migrateFunction:'migrateFromAaveToIdle',
             address:"0x4DA9b813057D04BAef4e5800E36083717b4a0341",
@@ -572,8 +578,8 @@ const globalConfigs = {
             decimals:8,
             enabled:true,
             token:"cWBTC",
-            name:"compound",
             baseToken:'WBTC',
+            protocol:"compound",
             migrateFunction:'migrateFromCompoundToIdle',
             address:"0xc11b1268c1a384e55c48c2391d8d480264a3a7f4",
           },
@@ -581,16 +587,16 @@ const globalConfigs = {
             decimals:8,
             enabled:false,
             token:"iWBTC",
-            name:"fulcrum",
             baseToken:'WBTC',
+            protocol:"fulcrum",
             migrateFunction:'migrateFromFulcrumToIdle',
             address:"0xba9262578efef8b3aff7f60cd629d6cc8859c8b5",
           },
           aWBTC:{
             decimals:8,
-            name:"aave",
             enabled:true,
             token:"aWBTC",
+            protocol:"aave",
             baseToken:'WBTC',
             migrateFunction:'migrateFromAaveToIdle',
             address:"0xfc4b8ed459e00e5400be803a9bb3954234fd50e3",
@@ -598,7 +604,7 @@ const globalConfigs = {
         }
       }
     },
-    {
+    addFunds:{
       enabled:true,
       icon:'AddCircleOutline',
       route:'add-funds',
@@ -610,7 +616,7 @@ const globalConfigs = {
         showAllTokens:true
       }
     }
-  ],
+  },
   payments: { // Payment methods & providers
     methods:{
       bank:{

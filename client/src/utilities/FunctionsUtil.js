@@ -1234,6 +1234,13 @@ class FunctionsUtil {
     }
     return output;
   }
+  removeStoredItem = (key) => {
+    if (window.localStorage){
+      window.localStorage.removeItem(key);
+      return true;
+    }
+    return false;
+  }
   setLocalStorage = (key,value,stringify=false) => {
     if (window.localStorage){
       try {
@@ -1841,6 +1848,36 @@ class FunctionsUtil {
       return this.apr2apy(tokenAprs.avgApr.div(100));
     }
     return null;
+  }
+  /*
+  Get protocols tokens balances
+  */
+  getProtocolsTokensBalances = async () => {
+    if (!this.props.account){
+      return false;
+    }
+    const tokenBalances = {};
+    const protocolsTokens = this.getGlobalConfig(['tools','tokenMigration','props','availableTokens']);
+    if (protocolsTokens){
+      await this.asyncForEach(Object.keys(protocolsTokens),async (token) => {
+        const tokenConfig = protocolsTokens[token];
+        let tokenContract = this.getContractByName(token);
+        if (!tokenContract && tokenConfig.abi){
+          tokenContract = await this.props.initContract(token,tokenConfig.address,tokenConfig.abi);
+        }
+        if (tokenContract){
+          const tokenBalance = await this.getTokenBalance(token,this.props.account);
+          if (tokenBalance && tokenBalance.gt(0)){
+            tokenBalances[token] = {
+              tokenConfig,
+              balance:tokenBalance,
+            };
+          }
+        }
+      })
+    }
+
+    return tokenBalances;
   }
   /*
   Get idleToken conversion rate

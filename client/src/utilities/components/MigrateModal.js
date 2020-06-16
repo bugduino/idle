@@ -1,0 +1,194 @@
+import React from "react";
+import ModalCard from './ModalCard';
+import header_styles from './Header.module.scss';
+import AssetField from '../../AssetField/AssetField';
+import SmartNumber from '../../SmartNumber/SmartNumber';
+import FunctionsUtil from '../../utilities/FunctionsUtil';
+import ButtonLoader from '../../ButtonLoader/ButtonLoader.js';
+import { Text, Modal, Flex, Link, Checkbox } from "rimble-ui";
+
+class MigrateModal extends React.Component {
+
+  state = {
+    dontShowAgain:false
+  };
+
+  // Utils
+  functionsUtil = null;
+  loadUtils(){
+    if (this.functionsUtil){
+      this.functionsUtil.setProps(this.props);
+    } else {
+      this.functionsUtil = new FunctionsUtil(this.props);
+    }
+  }
+
+  constructor(props) {
+    super(props);
+    this.loadUtils();
+  }
+
+  componentDidUpdate = async () => {
+    this.loadUtils();
+  }
+
+  closeModal = async () => {
+    const gaEventsEnabled = this.functionsUtil.getGlobalConfig(['globalConfigs','analytics','google','events','enabled']);
+    // Send Google Analytics event
+    if (gaEventsEnabled){
+      await this.functionsUtil.sendGoogleAnalyticsEvent({
+        eventCategory: 'UI',
+        eventAction: 'continue_without_migrate',
+        eventLabel: 'MigrateModal'
+      });
+      this.props.closeModal();
+    } else {
+      this.props.closeModal();
+    }
+  }
+
+  toggleDontShowAgain = (dontShowAgain) => {
+
+    if (dontShowAgain){
+      this.functionsUtil.setLocalStorage('dontShowMigrateModal','true');
+    } else {
+      this.functionsUtil.removeStoredItem('dontShowMigrateModal');
+    }
+
+    this.setState({
+      dontShowAgain
+    });
+  }
+
+  migrate = () => {
+    const tokenMigrationRoute = this.functionsUtil.getGlobalConfig(['tools','tokenMigration','route']);
+    this.props.goToSection('tools/'+tokenMigrationRoute);
+    this.props.closeModal();
+  }
+
+  render() {
+
+    const fieldProps = {
+      fontWeight:3,
+      fontSize:[2,3],
+      color:'cellText',
+      flexProps:{
+        justifyContent:'flex-start'
+      }
+    };
+
+    return (
+      <Modal
+        isOpen={this.props.isOpen}
+      >
+        <ModalCard
+          maxWidth={['960px','750px']}
+          closeFunc={this.props.closeModal}
+        >
+          <ModalCard.Header
+            iconHeight={'40px'}
+            title={'Migrate to Idle'}
+            icon={`images/migrate.svg`}
+          >
+          </ModalCard.Header>
+          <ModalCard.Body>
+            <Flex
+              mb={0}
+              width={1}
+              flexDirection={'column'}
+            >
+              <Text
+                my={0}
+                fontSize={3}
+                color={'mid-gray'}
+                textAlign={'center'}
+              >
+                You can migrate you funds from Compound, Aave Fulcrum and iEarn with just one transaction and with no cost.
+              </Text>
+            </Flex>
+            <Flex
+              width={1}
+              flexDirection={'column'}
+            >
+              <Flex
+                my={3}
+                alignItems={'center'}
+                flexDirection={'column'}
+              >
+                {
+                  this.props.protocolsTokensBalances && Object.keys(this.props.protocolsTokensBalances).map( token => (
+                    <Flex
+                      mb={2}
+                      alignItems={'center'}
+                      flexDirection={'row'}
+                      key={`token_${token}`}
+                      justifyContent={'space-between'}
+                    >
+                      <AssetField
+                        token={token}
+                        fieldInfo={{
+                          name:'icon',
+                          props:{
+                            mr:2,
+                            height:'2.5em'
+                          }
+                        }}
+                        tokenConfig={this.props.protocolsTokensBalances.tokenConfig}
+                      />
+                      <SmartNumber
+                        mr={2}
+                        {...fieldProps}
+                        minPrecision={5}
+                        number={this.props.protocolsTokensBalances[token].balance} 
+                      />
+                      <AssetField
+                        token={token}
+                        fieldInfo={{
+                          name:'tokenName',
+                          props:fieldProps
+                        }}
+                        tokenConfig={this.props.protocolsTokensBalances.tokenConfig}
+                      />
+                    </Flex>
+                  ) )
+                }
+              </Flex>
+              <Flex
+                mb={3}
+                alignItems={'center'}
+                flexDirection={'column'}
+                justifyContent={'center'}
+              >
+                <ButtonLoader
+                  buttonText={'MIGRATE'}
+                  handleClick={this.migrate}
+                  isLoading={this.state.sendingForm}
+                  buttonProps={{
+                    width:['100%','50%'],
+                    className:header_styles.gradientButton
+                  }}
+                >
+                </ButtonLoader>
+                {
+                /*
+                <Link mt={2} onClick={this.closeModal} hoverColor={'blue'}>continue without migrate</Link>
+                */
+                }
+                <Checkbox
+                  mt={2}
+                  required={false}
+                  color={'mid-gray'}
+                  checked={this.state.dontShowAgain}
+                  label={`Don't show this popup again`}
+                  onChange={ e => this.toggleDontShowAgain(e.target.checked) }
+                />
+              </Flex>
+            </Flex>
+          </ModalCard.Body>
+        </ModalCard>
+      </Modal>
+    );
+  }
+}
+
+export default MigrateModal;

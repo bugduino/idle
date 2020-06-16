@@ -17,8 +17,8 @@ const ModalCard = ({children, closeFunc, ...props}) => (
     borderRadius={2}
     width={['auto']}
     overflow={'auto'}
-    maxWidth={'960px'}
     height={['100vh', 'auto']}
+    maxWidth={ props.maxWidth ? props.maxWidth : '960px'}
   >
     <Box
       position={"absolute"}
@@ -45,7 +45,7 @@ const ModalCard = ({children, closeFunc, ...props}) => (
 ModalCard.Header = (props) => (
   <Box width={1} borderBottom={'1px solid #eee'} pt={props.icon ? 3 : [5,3]} mb={[2,3]} pb={[2,2]}>
     <Flex flexDirection={'column'} alignItems={'center'} px={[1,2]}>
-      { props.icon && <Image width={'50px'} src={props.icon} /> }
+      { props.icon && <Image width={ props.iconHeight ? props.iconHeight : '50px' } src={props.icon} /> }
       <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mt={props.icon ? 2 : 0} mb={0} color={'copyColor'}>
         {props.title}
       </Heading.h3>
