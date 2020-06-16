@@ -401,6 +401,7 @@ const globalConfigs = {
           abi:IdleConverterV2,
           name:'IdleConverterV3',
           address:'0xC74d886ebaA5674E21A1CB0Be3997BDDcE6ad525',
+          oldAddresses:['0x4ea4e749cb81854606d1912d1c4bde1e9005ab76'],
           functions:[
             {
               label:'Migrate',
