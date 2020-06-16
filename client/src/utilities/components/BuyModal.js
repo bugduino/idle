@@ -427,7 +427,7 @@ class BuyModal extends React.Component {
     // Show all tokens
     if (this.props.showAllTokens){
       availableTokens = [];
-      Object.keys(globalConfigs.payments.providers).map( provider => {
+      Object.keys(globalConfigs.payments.providers).forEach( provider => {
         const providerInfo = globalConfigs.payments.providers[provider];
         if (providerInfo.supportedTokens){
           providerInfo.supportedTokens.forEach(token => {

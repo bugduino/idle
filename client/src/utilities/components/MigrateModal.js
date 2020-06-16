@@ -2,10 +2,10 @@ import React from "react";
 import ModalCard from './ModalCard';
 import header_styles from './Header.module.scss';
 import AssetField from '../../AssetField/AssetField';
+import { Text, Modal, Flex, Checkbox } from "rimble-ui";
 import SmartNumber from '../../SmartNumber/SmartNumber';
 import FunctionsUtil from '../../utilities/FunctionsUtil';
 import ButtonLoader from '../../ButtonLoader/ButtonLoader.js';
-import { Text, Modal, Flex, Link, Checkbox } from "rimble-ui";
 
 class MigrateModal extends React.Component {
 
