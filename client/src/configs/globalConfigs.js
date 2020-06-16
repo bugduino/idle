@@ -225,7 +225,7 @@ const globalConfigs = {
         chart:{
           labelTextColorModifiers:['brighter', 5]
         },
-        startTimestamp:'2020-06-16'
+        startTimestamp:'2020-06-15'
       },
       WBTC:{
         enabled:false,
@@ -237,7 +237,7 @@ const globalConfigs = {
         chart:{
           labelTextColorModifiers:['darker', 2]
         },
-        startTimestamp:'2020-06-16'
+        startTimestamp:'2020-06-15'
       },
     },
     protocols:{
@@ -818,6 +818,10 @@ const globalConfigs = {
         },
         getInfo: (props) => {
           const info = {};
+
+          const selectedMethod = props.selectedMethod && props.selectedMethod;
+          let fee = selectedMethod === 'bank' ? '1.5%' : '4.5%';
+
           if (props.selectedCountry && props.selectedCountry.value){
             switch (props.selectedCountry.value.toUpperCase()){
               case 'GBR':
@@ -825,14 +829,15 @@ const globalConfigs = {
                   text:'INSTANT',
                   bgColor:'#0069ee'
                 };
-                info.subcaption = `~ 0.5% fee ~\nGBP ONLY`;
+                info.subcaption = `~ ${fee} fee ~\nGBP ONLY`;
               break;
               case 'IND':
+                fee = '1.0%';
                 info.badge = {
                   text:'INSTANT',
                   bgColor:'#0069ee'
                 };
-                info.subcaption = `~ 0.25% fee ~\nINR ONLY`;
+                info.subcaption = `~ ${fee} fee ~\nINR ONLY`;
               break;
               case 'EUR':
                 info.badge = {
@@ -840,7 +845,7 @@ const globalConfigs = {
                   color:'#f7cb05 ',
                   bgColor:'#10288a'
                 };
-                info.subcaption = `~ 0.5% fee ~\nEUR ONLY`;
+                info.subcaption = `~ ${fee} fee ~\nEUR ONLY`;
               break;
               default:
               break;
