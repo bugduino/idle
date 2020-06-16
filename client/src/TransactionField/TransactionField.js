@@ -227,7 +227,7 @@ class TransactionField extends Component {
       break;
       case 'tokenIcon':
         output = (
-          <Image src={`images/tokens/${transaction.tokenSymbol}.svg`} {...fieldProps} />
+          <Image src={`images/tokens/${transaction.tokenSymbol.toUpperCase()}.svg`} {...fieldProps} />
         );
       break;
       case 'tokenName':
