@@ -980,7 +980,7 @@ class DepositRedeem extends Component {
               <BuyModal
                 {...this.props}
                 showInline={true}
-                availableMethods={['bank','card']}
+                availableMethods={[]}
                 buyToken={this.props.selectedToken}
               />
             </Flex>
