@@ -1821,6 +1821,7 @@ class FunctionsUtil {
     let avgAPR = this.BNify(0);
     let totalAUM = this.BNify(0);
     await this.asyncForEach(Object.keys(this.props.availableStrategies),async (strategy) => {
+      const isRisk = strategy === 'risk';
       const availableTokens = this.props.availableStrategies[strategy];
       await this.asyncForEach(Object.keys(availableTokens),async (token) => {
         const tokenConfig = availableTokens[token];
@@ -1829,7 +1830,8 @@ class FunctionsUtil {
         if (tokenAllocation && tokenAllocation.totalAllocation && !tokenAllocation.totalAllocation.isNaN()){
           totalAUM = totalAUM.plus(tokenAllocation.totalAllocation);
           if (tokenAprs.avgApr && !tokenAprs.avgApr.isNaN()){
-            avgAPR = avgAPR.plus(tokenAllocation.totalAllocation.times(tokenAprs.avgApr))
+            const totalAllocation = await this.convertTokenBalance(tokenAllocation.totalAllocation,token,tokenConfig,isRisk);
+            avgAPR = avgAPR.plus(totalAllocation.times(tokenAprs.avgApr))
           }
         }
       });
@@ -1880,6 +1882,21 @@ class FunctionsUtil {
     }
 
     return tokenBalances;
+  }
+  /*
+  Convert token Balance
+  */
+  convertTokenBalance = async (tokenBalance,token,tokenConfig,isRisk) => {
+    // Check for USD conversion rate
+    tokenBalance = this.BNify(tokenBalance);
+    const conversionRateField = this.getGlobalConfig(['stats','tokens',token,'conversionRateField']);
+    if (conversionRateField){
+      const tokenUsdConversionRate = await this.getTokenConversionRate(tokenConfig,isRisk,conversionRateField);
+      if (tokenUsdConversionRate){
+        tokenBalance = tokenBalance.times(tokenUsdConversionRate);
+      }
+    }
+    return tokenBalance;
   }
   /*
   Get idleToken conversion rate
