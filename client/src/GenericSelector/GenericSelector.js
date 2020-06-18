@@ -19,13 +19,15 @@ class GenericSelector extends Component {
 
   async componentWillMount(){
     this.loadUtils();
+    await this.loadComponents();
   }
 
   async componentDidUpdate(prevProps,prevState){
     this.loadUtils();
   }
 
-  render() {
+  async loadComponents(){
+    
     const ControlComponent = props => {
       const cardProps = Object.assign(
         props.innerProps,
@@ -141,6 +143,16 @@ class GenericSelector extends Component {
       );
     }
 
+    await this.setState({
+      CustomMenu,
+      CustomOption,
+      ControlComponent,
+      CustomValueContainer,
+      CustomIndicatorSeparator
+    });
+  }
+
+  render() {
     return (
       <Select
         isSearchable={false}
@@ -149,11 +161,11 @@ class GenericSelector extends Component {
         defaultValue={this.props.defaultValue}
         onChange={ v => this.props.onChange(v.value) }
         components={{
-            Menu: CustomMenu,
-            Option: CustomOption,
-            Control: ControlComponent,
-            SingleValue: CustomValueContainer,
-            IndicatorSeparator: CustomIndicatorSeparator
+            Menu: this.state.CustomMenu,
+            Option: this.state.CustomOption,
+            Control: this.state.ControlComponent,
+            SingleValue: this.state.CustomValueContainer,
+            IndicatorSeparator: this.state.CustomIndicatorSeparator
         }}
       />
     );

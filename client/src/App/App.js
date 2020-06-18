@@ -31,10 +31,11 @@ class App extends Component {
     selectedTab: '1',
     connecting:false,
     route: "default", // or 'onboarding'
-    connectorName:null,
+    cachedData:{},
     tokenConfig: null,
     genericError: null,
     customAddress:null,
+    connectorName:null,
     walletProvider:null,
     selectedToken: null,
     availableTokens:null,
@@ -45,7 +46,7 @@ class App extends Component {
     availableStrategies:null,
     width: window.innerWidth,
     unsubscribeFromHistory:null,
-    enableUnderlyingWithdraw:false
+    enableUnderlyingWithdraw:false,
   };
 
   closeToastMessage = (e) => {
@@ -84,6 +85,30 @@ class App extends Component {
         });
       }
     }
+  }
+
+  clearCachedData = () => {
+    this.setState({
+      cachedData:{}
+    });
+    return true;
+  }
+
+  setCachedData = (key,data,TTL=null) => {
+    if (!this.state.cachedData[key.toLowerCase()] || JSON.stringify(this.state.cachedData[key.toLowerCase()]) !== JSON.stringify(data)){
+      const expirationDate = TTL ? parseInt(new Date().getTime()/1000)+(TTL*60) : null;
+      this.setState((prevState) => ({
+        cachedData: {
+          ...prevState.cachedData,
+          [key.toLowerCase()]:{
+            data,
+            expirationDate
+          }
+        }
+      }));
+      return true;
+    }
+    return false;
   }
 
   setCallbackAfterLogin = (callbackAfterLogin) => {
@@ -352,6 +377,7 @@ class App extends Component {
                     isMobile={isMobile}
                     config={this.config}
                     connectors={connectors}
+                    cachedData={this.state.cachedData}
                     tokenConfig={this.state.tokenConfig}
                     customAddress={this.state.customAddress}
                     selectedToken={this.state.selectedToken}
@@ -359,6 +385,8 @@ class App extends Component {
                     walletProvider={this.state.walletProvider}
                     setConnector={this.setConnector.bind(this)}
                     availableTokens={this.state.availableTokens}
+                    setCachedData={this.setCachedData.bind(this)}
+                    clearCachedData={this.clearCachedData.bind(this)}
                     callbackAfterLogin={this.state.callbackAfterLogin}
                     availableStrategies={this.state.availableStrategies}
                     setCallbackAfterLogin={this.setCallbackAfterLogin.bind(this)}
@@ -425,13 +453,14 @@ class App extends Component {
                                                     accountBalance={accountBalance}
                                                     validateAccount={validateAccount}
                                                     connecting={this.state.connecting}
+                                                    cachedData={this.state.cachedData}
+                                                    setToken={this.setToken.bind(this)}
                                                     accountValidated={accountValidated}
                                                     getTokenDecimals={getTokenDecimals}
                                                     rejectValidation={rejectValidation}
                                                     tokenConfig={this.state.tokenConfig}
                                                     getAccountBalance={getAccountBalance}
                                                     accountBalanceLow={accountBalanceLow}
-                                                    setToken={this.setToken.bind(this)}
                                                     accountInizialized={accountInizialized}
                                                     selectedToken={this.state.selectedToken}
                                                     connectorName={this.state.connectorName}
@@ -448,6 +477,7 @@ class App extends Component {
                                                     setConnector={this.setConnector.bind(this)}
                                                     availableTokens={this.state.availableTokens}
                                                     closeBuyModal={this.closeBuyModal.bind(this)}
+                                                    setCachedData={this.setCachedData.bind(this)}
                                                     selectedStrategy={this.state.selectedStrategy}
                                                     userRejectedValidation={userRejectedValidation}
                                                     accountValidationPending={accountValidationPending}

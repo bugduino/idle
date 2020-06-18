@@ -202,7 +202,7 @@ const globalConfigs = {
           hsl:['161', '65%', '38%']
         },
         chart:{
-          labelTextColorModifiers:['darker', 2]
+          labelTextColorModifiers:['darker', 4]
         },
         startTimestamp:'2020-02-04'
       },

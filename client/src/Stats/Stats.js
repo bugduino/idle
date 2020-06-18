@@ -270,17 +270,12 @@ class Stats extends Component {
       return false;
     }
 
-    const startTimestamp = this.state.minDate ? parseInt(this.state.minDate.getTime()/1000) : null;
-    const endTimestamp = this.state.maxDate ? parseInt(this.state.maxDate.getTime()/1000) : null;
+    const startTimestamp = this.state.minDate ? parseInt(this.functionsUtil.strToMoment(this.functionsUtil.strToMoment(this.state.maxDate).format('DD/MM/YYYY 00:00:00'),'DD/MM/YYYY HH:mm:ss')._d.getTime()/1000) : null;
+    const endTimestamp = this.state.maxDate ? parseInt(this.functionsUtil.strToMoment(this.functionsUtil.strToMoment(this.state.maxDate).format('DD/MM/YYYY 23:59:59'),'DD/MM/YYYY HH:mm:ss')._d.getTime()/1000) : null;
 
 
-    let apiResults_unfiltered = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,startTimestamp,endTimestamp,true);
-
-    // Filter for isRisk
-    if (this.state.idleVersion === 'v3'){
-      const isRisk = this.props.selectedStrategy === 'risk';
-      apiResults_unfiltered = apiResults_unfiltered.filter( d => ( d.isRisk === isRisk ) );
-    }
+    const isRisk = this.state.idleVersion === 'v3' && this.props.selectedStrategy === 'risk';
+    let apiResults_unfiltered = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,isRisk,startTimestamp,endTimestamp,true);
 
     const apiResults = this.filterTokenData(apiResults_unfiltered);
 

@@ -321,7 +321,7 @@ class FunctionsUtil {
         const lastCachedBlockNumber = lastCachedTx && lastCachedTx.blockNumber ? parseInt(lastCachedTx.blockNumber)+1 : firstBlockNumber;
 
         const etherscanEndpointLastBlock = `${etherscanApiUrl}?strategy=${selectedStrategy}&apikey=${env.REACT_APP_ETHERSCAN_KEY}&module=account&action=tokentx&address=${account}&startblock=${lastCachedBlockNumber}&endblock=${endBlockNumber}&sort=asc`;
-        let latestTxs = await this.makeRequest(etherscanEndpointLastBlock);
+        let latestTxs = await this.makeCachedRequest(etherscanEndpointLastBlock,15);
 
         if (latestTxs && latestTxs.data.result && latestTxs.data.result.length){
           
@@ -435,7 +435,7 @@ class FunctionsUtil {
           const isSwapTx = !isReceiveTransferTx && !isConversionTx && !etherscanTxs[tx.hash] && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
           const isSwapOutTx = !isSendTransferTx && !isWithdrawTx && !etherscanTxs[tx.hash] && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
 
-          if (isSendTransferTx || isReceiveTransferTx || isMigrationTx || isDepositTx || isRedeemTx || isSwapTx || isSwapOutTx || isWithdrawTx){
+          if (isSendTransferTx || isReceiveTransferTx || isMigrationTx || isDepositTx || isRedeemTx || isSwapTx || isSwapOutTx || isWithdrawTx || isConversionTx){
             
             let action = null;
 
@@ -1142,9 +1142,25 @@ class FunctionsUtil {
     }
   }
 
-  getTokenApiData = async (address,startTimestamp=null,endTimestamp=null,forceStartTimestamp=false) => {
+  getTokenApiData = async (address,isRisk=null,startTimestamp=null,endTimestamp=null,forceStartTimestamp=false) => {
     if (globalConfigs.network.requiredNetwork!==1 || !globalConfigs.stats.enabled){
       return [];
+    }
+
+    // Check for cached data
+    const cachedDataKey = `tokenApiData_${address}_${isRisk}`;
+    let cachedData = this.getCachedData(cachedDataKey);
+
+    if (cachedData !== null){
+      // Check for fittable start and end time
+      const filteredCachedData = cachedData.filter( c => ( (c.startTimestamp===null || (startTimestamp && c.startTimestamp<=startTimestamp)) && (c.endTimestamp===null || (endTimestamp && c.endTimestamp>=endTimestamp)) ) )
+
+      if (filteredCachedData && filteredCachedData.length>0){
+        return filteredCachedData.pop().data;
+      }
+    // Initialize cachedData
+    } else {
+      cachedData = [];
     }
 
     const apiInfo = globalConfigs.stats.rates;
@@ -1167,11 +1183,27 @@ class FunctionsUtil {
         endpoint += '?'+params.join('&');
       }
     }
+
     let output = await this.makeRequest(endpoint);
     if (!output){
       return [];
     }
-    return output.data;
+
+    let data = output.data;
+    if (isRisk !== null){
+      data = data.filter( d => ( d.isRisk === isRisk ) );
+    }
+
+    cachedData.push({
+      data,
+      isRisk,
+      endTimestamp,
+      startTimestamp,
+    });
+
+    this.setCachedData(cachedDataKey,cachedData);
+
+    return data;
   }
   getTokenDecimals = async (contractName) => {
     contractName = contractName ? contractName : this.props.selectedToken;
@@ -1620,13 +1652,49 @@ class FunctionsUtil {
     }
     return tokenPrice;
   }
-  getTokenBalance = async (contractName,address) => {
-    let tokenBalanceOrig = await this.getContractBalance(contractName,address);
+  clearCachedData = () => {
+    if (this.props.clearCachedData && typeof this.props.clearCachedData === 'function'){
+      this.props.clearCachedData();
+    }
+    return false;
+  }
+  /*
+  Cache data locally for 5 minutes
+  */
+  setCachedData = (key,data,TTL=300) => {
+    if (this.props.setCachedData && typeof this.props.setCachedData === 'function'){
+      this.props.setCachedData(key,data,TTL);
+    }
+    return data;
+  }
+  getCachedData = (key,defaultValue=null) => {
+    if (this.props.cachedData && this.props.cachedData[key.toLowerCase()]){
+      const cachedData = this.props.cachedData[key.toLowerCase()];
+      if (!cachedData.expirationDate || cachedData.expirationDate>=parseInt(new Date().getTime()/1000)){
+        return cachedData.data;
+      }
+    }
+    return defaultValue;
+  }
+  getTokenBalance = async (contractName,walletAddr) => {
+    if (!walletAddr){
+      return false;
+    }
+
+    // Check for cached data
+    const cachedDataKey = `tokenBalance_${contractName}_${walletAddr}`;
+    const cachedData = this.getCachedData(cachedDataKey);
+    if (cachedData !== null){
+      return cachedData;
+    }
+
+    let tokenBalanceOrig = await this.getContractBalance(contractName,walletAddr);
     if (tokenBalanceOrig){
       const tokenDecimals = await this.getTokenDecimals(contractName);
       const tokenBalance = this.fixTokenDecimals(tokenBalanceOrig,tokenDecimals);
-      // console.log('getTokenBalance',contractName,tokenBalanceOrig,tokenBalance.toString(),tokenDecimals);
-      return tokenBalance;
+
+      // Set cached data
+      return this.setCachedData(cachedDataKey,tokenBalance);
     } else {
       this.customLogError('Error on getting balance for ',contractName);
     }
@@ -1758,6 +1826,13 @@ class FunctionsUtil {
   */
   getTokenAllocation = async (tokenConfig,protocolsAprs=false) => {
 
+    // Check for cached data
+    const cachedDataKey = `tokenAllocation_${tokenConfig.idle.address}`;
+    const cachedData = this.getCachedData(cachedDataKey);
+    if (cachedData !== null){
+      return cachedData;
+    }
+
     let totalAllocation = this.BNify(0);
 
     const tokenAllocation = {
@@ -1815,7 +1890,7 @@ class FunctionsUtil {
       tokenAllocation.avgApr = this.getAvgApr(protocolsAprs,protocolsAllocations,totalAllocation);
     }
 
-    return tokenAllocation;
+    return this.setCachedData(cachedDataKey,tokenAllocation);
   }
   getAggregatedStats = async () => {
     let avgAPR = this.BNify(0);
@@ -1902,14 +1977,23 @@ class FunctionsUtil {
   Get idleToken conversion rate
   */
   getTokenConversionRate = async (tokenConfig,isRisk,conversionRateField) => {
+
+    // Check for cached data
+    const cachedDataKey = `tokenConversionRate_${tokenConfig.idle.address}_${isRisk}_${conversionRateField}`;
+    const cachedData = this.getCachedData(cachedDataKey);
+    if (cachedData !== null){
+      return cachedData;
+    }
+
     const startTimestamp = parseInt(new Date().getTime()/1000)-60*60;
-    let tokenData = await this.getTokenApiData(tokenConfig.address,startTimestamp);
+    let tokenData = await this.getTokenApiData(tokenConfig.address,isRisk,startTimestamp);
 
     if (tokenData){
-      tokenData = tokenData.filter( d => ( d.isRisk === isRisk ) ).pop();
+      // tokenData = tokenData.filter( d => ( d.isRisk === isRisk ) ).pop();
 
       if (tokenData && tokenData[conversionRateField]){
-        return this.fixTokenDecimals(tokenData[conversionRateField],18);
+        const conversionRate = this.fixTokenDecimals(tokenData[conversionRateField],18);
+        return this.setCachedData(cachedDataKey,conversionRate);
       }
     }
 
@@ -1919,8 +2003,15 @@ class FunctionsUtil {
   Get idleToken score
   */
   getTokenScore = async (tokenConfig,isRisk) => {
+    // Check for cached data
+    const cachedDataKey = `tokenScore_${tokenConfig.idle.address}_${isRisk}`;
+    const cachedData = this.getCachedData(cachedDataKey);
+    if (cachedData !== null){
+      return cachedData;
+    }
+
     const startTimestamp = parseInt(new Date().getTime()/1000)-60*60*2;
-    let tokenData = await this.getTokenApiData(tokenConfig.address,startTimestamp);
+    let tokenData = await this.getTokenApiData(tokenConfig.address,isRisk,startTimestamp);
 
     if (tokenData){
       tokenData = tokenData.filter( d => ( d.isRisk === isRisk ) );
@@ -1935,7 +2026,8 @@ class FunctionsUtil {
       } while (tokenScore.lte(0) && (index--)>=0);
 
       if (tokenScore && tokenScore.gt(0)){
-        return tokenScore;
+        // Set cached data
+        return this.setCachedData(cachedDataKey,tokenScore);
       }
     }
 
@@ -1945,6 +2037,14 @@ class FunctionsUtil {
   Get idleTokens aggregated APR
   */
   getTokenAprs = async (tokenConfig,tokenAllocation=false) => {
+
+    // Check for cached data
+    const cachedDataKey = `tokenAprs_${tokenConfig.idle.address}`;
+    const cachedData = this.getCachedData(cachedDataKey);
+    if (cachedData !== null){
+      return cachedData;
+    }
+
     const Aprs = await this.getAprs(tokenConfig.idle.token);
 
     if (!Aprs){
@@ -1982,7 +2082,7 @@ class FunctionsUtil {
       tokenAprs.avgApr = this.getAvgApr(protocolsAprs,tokenAllocation.protocolsAllocations,tokenAllocation.totalAllocation);
     }
 
-    return tokenAprs;
+    return this.setCachedData(cachedDataKey,tokenAprs);
   }
   abbreviateNumber(value,decimals=3,maxPrecision=5,minPrecision=0){
     const isNegative = parseFloat(value)<0;

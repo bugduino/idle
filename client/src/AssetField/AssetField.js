@@ -11,7 +11,9 @@ import AllocationChart from '../AllocationChart/AllocationChart';
 
 class AssetField extends Component {
 
-  state = {};
+  state = {
+    ready:false
+  };
 
   // Utils
   functionsUtil = null;
@@ -316,31 +318,38 @@ class AssetField extends Component {
           }
         break;
         case 'aprChart':
-
           // Set start timestamp for v3 tokens
-          const aprChartStartTimestamp = Math.max(this.functionsUtil.getGlobalConfig(['stats','versions','v3','startTimestamp']),parseInt(new Date().getTime()/1000)-(60*60*24*7));
+          const aprChartStartTimestamp = Math.max(this.functionsUtil.getGlobalConfig(['stats','versions','v3','startTimestamp']),parseInt(this.functionsUtil.strToMoment(this.functionsUtil.strToMoment(new Date()).format('DD/MM/YYYY 00:00:00'),'DD/MM/YYYY HH:mm:ss').subtract(7,'days')._d.getTime()/1000));
 
-          let apiResultsAprChart = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,aprChartStartTimestamp);
+          // Check for cached data
+          let aprChartData = null;
+          const cachedDataKey = `aprChart_${this.props.tokenConfig.address}_${isRisk}`;
+          const cachedData = this.functionsUtil.getCachedData(cachedDataKey);
+          if (cachedData !== null){
+            aprChartData = cachedData;
+          } else {
+            let apiResultsAprChart = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,isRisk,aprChartStartTimestamp);
+            aprChartData = [{
+              id:this.props.token,
+              color: this.props.color ? this.props.color : 'hsl('+this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.token,'color','hsl']).join(',')+')',
+              data: []
+            }];
 
-          apiResultsAprChart = apiResultsAprChart.filter( d => ( d.isRisk === isRisk ) );
+            const frequencySeconds = this.functionsUtil.getFrequencySeconds('hour',12);
 
-          const aprChartData = [{
-            id:this.props.token,
-            color: this.props.color ? this.props.color : 'hsl('+this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.token,'color','hsl']).join(',')+')',
-            data: []
-          }];
+            let prevTimestamp = null;
+            apiResultsAprChart.forEach((d,i) => {
+              if (prevTimestamp === null || d.timestamp-prevTimestamp>=frequencySeconds){
+                const x = this.functionsUtil.strToMoment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
+                const y = parseFloat(this.functionsUtil.fixTokenDecimals(d.idleRate,18));
+                aprChartData[0].data.push({ x, y });
+                prevTimestamp = d.timestamp;
+              }
+            });
 
-          const frequencySeconds = this.functionsUtil.getFrequencySeconds('hour',12);
+            this.functionsUtil.setCachedData(cachedDataKey,aprChartData);
+          }
 
-          let prevTimestamp = null;
-          apiResultsAprChart.forEach((d,i) => {
-            if (prevTimestamp === null || d.timestamp-prevTimestamp>=frequencySeconds){
-              const x = this.functionsUtil.strToMoment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
-              const y = parseFloat(this.functionsUtil.fixTokenDecimals(d.idleRate,18));
-              aprChartData[0].data.push({ x, y });
-              prevTimestamp = d.timestamp;
-            }
-          });
 
           // Add same value
           if (aprChartData[0].data.length === 1){
@@ -466,10 +475,9 @@ class AssetField extends Component {
 
           // Set start timestamp for v3 tokens
           const apr_start_timestamp =  Math.max(this.functionsUtil.getGlobalConfig(['stats','versions','v3','startTimestamp']),parseInt(apr_start_date._d.getTime()/1000));
-          const apr_end_timestamp = parseInt(apr_end_date._d.getTime()/1000);
+          // const apr_end_timestamp = parseInt(apr_end_date._d.getTime()/1000);
 
-          let apiResultsPerformanceChart = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,apr_start_timestamp,apr_end_timestamp);
-          apiResultsPerformanceChart = apiResultsPerformanceChart.filter( d => ( d.isRisk === isRisk ) );
+          let apiResultsPerformanceChart = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,isRisk,apr_start_timestamp);
 
           const idleTokenPerformance = apiResultsPerformanceChart.map((d,i) => {
             let y = 0;

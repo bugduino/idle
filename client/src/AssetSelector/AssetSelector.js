@@ -6,7 +6,12 @@ import GenericSelector from '../GenericSelector/GenericSelector';
 
 class AssetSelector extends Component {
 
-  state = {};
+  state = {
+    options:null,
+    defaultValue:null,
+    CustomOptionValue:null,
+    CustomValueContainer:null
+  };
 
   // Utils
   functionsUtil = null;
@@ -19,19 +24,7 @@ class AssetSelector extends Component {
     }
   }
 
-  async componentWillMount(){
-    this.loadUtils();
-
-    this.setState({
-      props:this.props
-    });
-  }
-
-  async componentDidUpdate(prevProps,prevState){
-    this.loadUtils();
-  }
-
-  render() {
+  loadComponents(){
 
     const options = Object.keys(this.props.availableTokens).map(token => {
       const tokenConfig = this.props.availableTokens[token];
@@ -47,6 +40,7 @@ class AssetSelector extends Component {
     const CustomOptionValue = props => {
       const token = props.value;
       const tokenConfig = props.data.tokenConfig;
+
       return (
         <Flex
           width={1}
@@ -89,8 +83,6 @@ class AssetSelector extends Component {
                 <AssetField
                   token={token}
                   {...this.state.props}
-                  tokenConfig={tokenConfig}
-                  account={this.state.props.account}
                   fieldInfo={{
                     name:'tokenBalance',
                     props:{
@@ -99,6 +91,10 @@ class AssetSelector extends Component {
                       color:'cellText'
                     }
                   }}
+                  tokenConfig={tokenConfig}
+                  account={this.state.props.account}
+                  cachedData={this.props.cachedData}
+                  setCachedData={this.props.setCachedData}
                 />
               </Flex>
           }
@@ -166,8 +162,6 @@ class AssetSelector extends Component {
                 <AssetField
                   token={token}
                   {...this.state.props}
-                  tokenConfig={tokenConfig}
-                  account={this.state.props.account}
                   fieldInfo={{
                     name:'tokenBalance',
                     props:{
@@ -176,6 +170,10 @@ class AssetSelector extends Component {
                       color:'cellText'
                     }
                   }}
+                  tokenConfig={tokenConfig}
+                  account={this.state.props.account}
+                  cachedData={this.props.cachedData}
+                  setCachedData={this.props.setCachedData}
                 />
               </Flex>
           }
@@ -183,14 +181,40 @@ class AssetSelector extends Component {
       );
     }
 
+    this.setState({
+      options,
+      defaultValue,
+      CustomOptionValue,
+      CustomValueContainer
+    });
+  }
+
+  async componentWillMount(){
+    this.loadUtils();
+    this.loadComponents();
+
+    this.setState({
+      props:this.props
+    });
+  }
+
+  async componentDidUpdate(prevProps,prevState){
+    this.loadUtils();
+  }
+
+  render() {
+    if (!this.state.options || !this.state.CustomOptionValue || !this.state.CustomValueContainer){
+      return null;
+    }
+
     return (
       <GenericSelector
         name={'assets'}
-        options={options}
-        defaultValue={defaultValue}
+        options={this.state.options}
         innerProps={this.props.innerProps}
-        CustomOptionValue={CustomOptionValue}
-        CustomValueContainer={CustomValueContainer}
+        defaultValue={this.state.defaultValue}
+        CustomOptionValue={this.state.CustomOptionValue}
+        CustomValueContainer={this.state.CustomValueContainer}
         onChange={ this.props.onChange ? this.props.onChange : this.props.changeToken}
       />
     );

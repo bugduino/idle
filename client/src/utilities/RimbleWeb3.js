@@ -788,6 +788,8 @@ class RimbleTransaction extends React.Component {
       // User denied account access...
       this.functionsUtil.customLog("User cancelled connect request. Error:", error);
 
+      console.log(error);
+
       // Catch ledger error
       if (error && error.message && error.message.includes('MULTIPLE_OPEN_CONNECTIONS_DISALLOWED')) {
         return;
@@ -1329,6 +1331,10 @@ class RimbleTransaction extends React.Component {
 
     // Save transactions in localStorage only if pending or succeeded
     if (['pending','success','confirmed'].includes(transaction.status)){
+      // Clear cached data
+      this.functionsUtil.clearCachedData();
+
+      // Store transaction
       this.functionsUtil.addStoredTransaction(`tx${transaction.created}`,transaction);
     }
 
