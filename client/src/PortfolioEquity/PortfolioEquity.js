@@ -150,13 +150,10 @@ class PortfolioEquity extends Component {
     const currTimestamp = parseInt(new Date().getTime()/1000)+86400;
 
     const tokensData = {};
+    const isRisk = this.props.selectedStrategy === 'risk';
 
     await this.functionsUtil.asyncForEach(Object.keys(tokensBalance),async (token) => {
-      const isRisk = this.props.selectedStrategy === 'risk';
       tokensData[token] = await this.functionsUtil.getTokenApiData(this.props.availableTokens[token].address,isRisk,firstTxTimestamp);
-
-      // Filter by isRisk flag
-      // tokensData[token] = tokensData[token].filter( d => ( d.isRisk === isRisk ) );
     });
 
     const idleTokenBalance = {};
@@ -193,18 +190,7 @@ class PortfolioEquity extends Component {
                 const lastTokenData = filteredTokenData.pop();
                 const idleTokens = idleTokenBalance[token];
                 const idlePrice = this.functionsUtil.fixTokenDecimals(lastTokenData.idlePrice,tokenDecimals);
-                let newBalance = idleTokens.times(idlePrice);
-
-                // Convert token to USD
-                const conversionRateField = this.functionsUtil.getGlobalConfig(['stats','tokens',token,'conversionRateField']);
-                if (!this.props.chartToken && conversionRateField){
-                  const tokenUsdConversionRate = this.functionsUtil.fixTokenDecimals(lastTokenData[conversionRateField],18);
-                  if (tokenUsdConversionRate){
-                    newBalance = newBalance.times(tokenUsdConversionRate);
-                  }
-                }
-                
-                // console.log(this.functionsUtil.strToMoment(timeStamp*1000).format('DD/MM/YYYY HH:mm'),token,'idleTokens:'+idleTokens.toFixed(5)+', Old balance:'+parseFloat(lastFilteredTx.balance).toFixed(5)+',New balance:'+parseFloat(newBalance).toFixed(5)+',oldTokenPrice:'+parseFloat(lastFilteredTx.tokenPrice).toFixed(5)+',tokenPrice:'+parseFloat(idlePrice).toFixed(5));
+                let newBalance = idleTokens.times(idlePrice)
 
                 // Set new balance and tokenPrice
                 lastFilteredTx.balance = newBalance;
@@ -218,8 +204,6 @@ class PortfolioEquity extends Component {
             }];
           }
         } else {
-          // const startDate = prevTimestamp ? this.functionsUtil.strToMoment(prevTimestamp*1000).format('DD/MM/YYYY HH:mm') : null;
-          // const endDate = this.functionsUtil.strToMoment(timeStamp*1000).format('DD/MM/YYYY HH:mm');
           
           filteredBalances.forEach(tx => {
 
@@ -244,24 +228,14 @@ class PortfolioEquity extends Component {
         let lastTxBalance = this.functionsUtil.BNify(lastTx.balance);
 
         // Convert token balance to USD
-        const conversionRateField = this.functionsUtil.getGlobalConfig(['stats','tokens',token,'conversionRateField']);
-        if (!this.props.chartToken && conversionRateField){
-          const filteredTokenData = tokensData[token].filter(tx => (tx.timestamp>=prevTimestamp && tx.timestamp<=timeStamp));
-          if (filteredTokenData && filteredTokenData.length){
-            const lastTokenData = filteredTokenData.pop();
-            const tokenUsdConversionRate = this.functionsUtil.fixTokenDecimals(lastTokenData[conversionRateField],18);
-            if (tokenUsdConversionRate){
-              lastTxBalance = lastTxBalance.times(tokenUsdConversionRate);
-            }
-          }
+        if (!this.props.chartToken){
+          lastTxBalance = await this.functionsUtil.convertTokenBalance(lastTxBalance,token,tokenConfig,isRisk);
         }
 
         aggregatedBalance = aggregatedBalance.plus(lastTxBalance);
-        // console.log(aggregatedBalance.toFixed(5));
-        // console.log(this.functionsUtil.strToMoment(timeStamp*1000).format('DD/MM/YYYY HH:mm'),token,lastTx.balance.toFixed(5),aggregatedBalance.toFixed(5));
 
         foundBalances[token] = filteredBalances;
-      });
+      },false);
   
   
       const momentDate = this.functionsUtil.strToMoment(timeStamp*1000);

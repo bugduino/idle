@@ -68,18 +68,9 @@ class PortfolioDonut extends Component {
       const idleTokenBalance = await this.functionsUtil.getTokenBalance(tokenConfig.idle.token,this.props.account);
       if (idleTokenBalance){
         const tokenPrice = await this.functionsUtil.getIdleTokenPrice(tokenConfig);
-        let tokenBalance = idleTokenBalance.times(tokenPrice);
+        const tokenBalance = await this.functionsUtil.convertTokenBalance(idleTokenBalance.times(tokenPrice),token,tokenConfig,isRisk);
 
         if (tokenBalance.gt(0)){
-          // Check for USD conversion rate
-          const conversionRateField = this.functionsUtil.getGlobalConfig(['stats','tokens',token,'conversionRateField']);
-          if (conversionRateField){
-            const tokenUsdConversionRate = await this.functionsUtil.getTokenConversionRate(tokenConfig,isRisk,conversionRateField);
-            if (tokenUsdConversionRate){
-              tokenBalance = tokenBalance.times(tokenUsdConversionRate);
-            }
-          }
-
           portfolio[token] = tokenBalance;
 
           // Increment total balance

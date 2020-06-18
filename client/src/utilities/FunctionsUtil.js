@@ -1820,10 +1820,16 @@ class FunctionsUtil {
 
     return value;
   }
-  asyncForEach = async (array, callback) => {
-    await Promise.all(array.map( (c,index) => {
-      return callback(c, index, array);
-    }));
+  asyncForEach = async (array, callback, async=true) => {
+    if (async){
+      await Promise.all(array.map( (c,index) => {
+        return callback(c, index, array);
+      }));
+    } else {
+      for (let index = 0; index < array.length; index++) {
+        await callback(array[index], index, array);
+      }
+    }
   }
   apr2apy = (apr) => {
     return (this.BNify(1).plus(this.BNify(apr).div(12))).pow(12).minus(1);
@@ -1972,7 +1978,7 @@ class FunctionsUtil {
     // Check for USD conversion rate
     tokenBalance = this.BNify(tokenBalance);
     const conversionRateField = this.getGlobalConfig(['stats','tokens',token,'conversionRateField']);
-    if (conversionRateField){
+    if (conversionRateField && tokenBalance.gt(0)){
       const tokenUsdConversionRate = await this.getTokenConversionRate(tokenConfig,isRisk,conversionRateField);
       if (tokenUsdConversionRate){
         tokenBalance = tokenBalance.times(tokenUsdConversionRate);
@@ -1995,9 +2001,8 @@ class FunctionsUtil {
     const startTimestamp = parseInt(new Date().getTime()/1000)-60*60;
     let tokenData = await this.getTokenApiData(tokenConfig.address,isRisk,startTimestamp);
 
-    if (tokenData){
-      // tokenData = tokenData.filter( d => ( d.isRisk === isRisk ) ).pop();
-
+    if (tokenData && tokenData.length){
+      tokenData = tokenData.pop();
       if (tokenData && tokenData[conversionRateField]){
         const conversionRate = this.fixTokenDecimals(tokenData[conversionRateField],18);
         return this.setCachedData(cachedDataKey,conversionRate);
