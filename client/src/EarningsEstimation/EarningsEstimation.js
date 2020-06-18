@@ -75,10 +75,11 @@ class EarningsEstimation extends Component {
   }
 
   async loadEarnings(){
-    const tokensEarnings = {};
+    let tokensEarnings = {};
     let estimationStepsPerc = 0;
 
     const amountLents = await this.functionsUtil.getAmountLent(this.props.enabledTokens,this.props.account);
+
     await this.functionsUtil.asyncForEach(Object.keys(amountLents),async (token) => {
       const amountLent = amountLents[token];
       const tokenConfig = this.props.availableTokens[token];
@@ -114,6 +115,13 @@ class EarningsEstimation extends Component {
         };
       }
     });
+
+    const orderedTokensEarnings = {};
+    Object.keys(amountLents).forEach( token => {
+      orderedTokensEarnings[token] = tokensEarnings[token];
+    });
+
+    tokensEarnings = orderedTokensEarnings;
 
     // console.log(tokensEarnings);
 

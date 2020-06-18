@@ -237,17 +237,20 @@ class Dashboard extends Component {
     },15000);
 
     if (!this.props.web3){
-      this.props.initWeb3();
-      return false;
+      return this.props.initWeb3();
     } else if (!this.props.accountInizialized){
-      this.props.initAccount();
+      return this.props.initAccount();
     } else if (!this.props.contractsInitialized){
-      this.props.initializeContracts();
+      return this.props.initializeContracts();
     }
 
     this.loadUtils();
     await this.loadMenu();
     this.loadParams();
+
+    this.checkWelcomeModal().then(() => {
+      this.checkProtocolsTokensBalances();
+    });
   }
 
   async componentDidUpdate(prevProps,prevState) {
@@ -263,6 +266,22 @@ class Dashboard extends Component {
       }, () => {
         this.loadParams();
       });
+    }
+
+    const accountChanged = prevProps.account !== this.props.account;
+    const accountInizialized = this.props.accountInizialized && prevProps.accountInizialized !== this.props.accountInizialized;
+    const contractsInitialized = this.props.contractsInitialized && prevProps.contractsInitialized !== this.props.contractsInitialized;
+
+    if (accountChanged || accountInizialized || contractsInitialized){
+      this.checkWelcomeModal().then(() => {
+        this.checkProtocolsTokensBalances();
+      });
+    }
+  }
+
+  async checkWelcomeModal(){
+    if (!this.props.account || !this.props.accountInizialized || !this.props.contractsInitialized){
+      return false;
     }
 
     // Show welcome modal
@@ -305,17 +324,25 @@ class Dashboard extends Component {
         });
       }
     }
+  }
+
+  async checkProtocolsTokensBalances() {
+
+    if (!this.props.account || !this.props.accountInizialized || !this.props.contractsInitialized){
+      return false;
+    }
 
     // Show migration modal if no other modals are opened
     const migrateModalEnabled = this.functionsUtil.getGlobalConfig(['modals','migrate','enabled']);
     const showMigrateModal = this.functionsUtil.getStoredItem('dontShowMigrateModal',false,null) !== null ? false : true;
-    if (!this.state.activeModal && migrateModalEnabled && showMigrateModal && this.props.accountInizialized && this.props.contractsInitialized && this.props.account && !this.state.protocolsTokensBalances){
+    if (!this.state.activeModal && migrateModalEnabled && showMigrateModal && !this.state.protocolsTokensBalances){
       const protocolsTokensBalances = await this.functionsUtil.getProtocolsTokensBalances();
+      const activeModal = protocolsTokensBalances && Object.keys(protocolsTokensBalances).length>0 ? 'migrate' : null;
       const newState = {
-        protocolsTokensBalances,
-        activeModal:protocolsTokensBalances && Object.keys(protocolsTokensBalances).length>0 ? 'migrate' : null,
+        activeModal,
+        protocolsTokensBalances
       };
-      await this.setState(newState);
+      this.setState(newState);
     }
   }
 

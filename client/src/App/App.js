@@ -97,6 +97,7 @@ class App extends Component {
   setCachedData = (key,data,TTL=null) => {
     if (!this.state.cachedData[key.toLowerCase()] || JSON.stringify(this.state.cachedData[key.toLowerCase()]) !== JSON.stringify(data)){
       const expirationDate = TTL ? parseInt(new Date().getTime()/1000)+(TTL*60) : null;
+      // console.log('setCachedData',key);
       this.setState((prevState) => ({
         cachedData: {
           ...prevState.cachedData,

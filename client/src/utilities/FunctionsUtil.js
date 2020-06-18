@@ -165,6 +165,13 @@ class FunctionsUtil {
       }
     });
 
+    const orderedTokensBalance = {};
+    Object.keys(availableTokens).forEach( token => {
+      orderedTokensBalance[token] = portfolio.tokensBalance[token];
+    });
+
+    portfolio.tokensBalance = orderedTokensBalance;
+
     return portfolio;
   }
   getAvgBuyPrice = async (enabledTokens=[],account) => {
@@ -1814,9 +1821,9 @@ class FunctionsUtil {
     return value;
   }
   asyncForEach = async (array, callback) => {
-    for (let index = 0; index < array.length; index++) {
-      await callback(array[index], index, array);
-    }
+    await Promise.all(array.map( (c,index) => {
+      return callback(c, index, array);
+    }));
   }
   apr2apy = (apr) => {
     return (this.BNify(1).plus(this.BNify(apr).div(12))).pow(12).minus(1);
