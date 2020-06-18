@@ -118,12 +118,12 @@ class EarningsEstimation extends Component {
 
     const orderedTokensEarnings = {};
     Object.keys(amountLents).forEach( token => {
-      orderedTokensEarnings[token] = tokensEarnings[token];
+      if (tokensEarnings[token]){
+        orderedTokensEarnings[token] = tokensEarnings[token];
+      }
     });
 
     tokensEarnings = orderedTokensEarnings;
-
-    // console.log(tokensEarnings);
 
     this.setState({
       estimationStepsPerc,
@@ -165,11 +165,14 @@ class EarningsEstimation extends Component {
       >
         {
           Object.keys(this.state.tokensEarnings).map((token,tokenIndex) => {
-            const tokenRGBColor = this.functionsUtil.getGlobalConfig(['stats','tokens',token,'color','rgb']).join(',');
             const tokenEarnings = this.state.tokensEarnings[token];
+            if (!tokenEarnings){
+              return null;
+            }
             const estimationStepPerc = this.functionsUtil.BNify(Object.values(estimationSteps).pop().perc);
             const finalEarnings = tokenEarnings.earningsYear.times(estimationStepPerc);
             const cursorPerc = Math.min(1,parseFloat(tokenEarnings.earnings.div(finalEarnings)));
+            const tokenRGBColor = this.functionsUtil.getGlobalConfig(['stats','tokens',token,'color','rgb']).join(',');
             // console.log(tokenEarnings.earnings.toFixed(10),tokenEarnings.earningsYear.toFixed(10),finalEarnings.toFixed(10),cursorPerc.toFixed(10),estimationStepPerc.toFixed(10));
             return (
               <Flex
