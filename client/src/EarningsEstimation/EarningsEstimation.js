@@ -166,9 +166,6 @@ class EarningsEstimation extends Component {
         {
           Object.keys(this.state.tokensEarnings).map((token,tokenIndex) => {
             const tokenEarnings = this.state.tokensEarnings[token];
-            if (!tokenEarnings){
-              return null;
-            }
             const estimationStepPerc = this.functionsUtil.BNify(Object.values(estimationSteps).pop().perc);
             const finalEarnings = tokenEarnings.earningsYear.times(estimationStepPerc);
             const cursorPerc = Math.min(1,parseFloat(tokenEarnings.earnings.div(finalEarnings)));
