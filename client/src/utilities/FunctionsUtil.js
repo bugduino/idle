@@ -1668,7 +1668,7 @@ class FunctionsUtil {
   /*
   Cache data locally for 5 minutes
   */
-  setCachedData = (key,data,TTL=300) => {
+  setCachedData = (key,data,TTL=120) => {
     if (this.props.setCachedData && typeof this.props.setCachedData === 'function'){
       this.props.setCachedData(key,data,TTL);
     }

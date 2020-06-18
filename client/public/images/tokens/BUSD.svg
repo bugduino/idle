@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="28px" height="29px" viewBox="0 0 28 29" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Combined Shape</title>
+    <g id="Wallet" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="All-Tokens" transform="translate(-753.000000, -361.000000)" fill="#FAB800">
+            <path d="M777,380 L777,385 L757,385 L757,380 L777,380 Z M777,373 L777,378 L757,378 L757,373 L777,373 Z M777,366 L777,371 L764,371 L764,366 L777,366 Z M762,366 L762,371 L757,371 L757,366 L762,366 Z" id="Combined-Shape" transform="translate(767.000000, 375.500000) rotate(-45.000000) translate(-767.000000, -375.500000) "></path>
+        </g>
+    </g>
+</svg>

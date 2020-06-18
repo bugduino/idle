@@ -97,6 +97,7 @@ class Utils extends Component {
                     key={`tool_${toolIndex}`}
                     cardProps={{
                       p:[3,4],
+                      mb:[3,0],
                       mr:[0,'2%'],
                       width:[1,0.31],
                       alignItems:'center',

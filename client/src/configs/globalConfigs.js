@@ -1,3 +1,4 @@
+import TokenSwap from '../TokenSwap/TokenSwap';
 import yDAIv3 from '../abis/iearn/yDAIv3.json';
 import yUSDCv3 from '../abis/iearn/yUSDCv3.json';
 import yUSDTv3 from '../abis/iearn/yUSDTv3.json';
@@ -615,6 +616,103 @@ const globalConfigs = {
       directProps:{
         showInline:true,
         showAllTokens:true
+      }
+    },
+    tokenSwap:{
+      enabled:true,
+      icon:'Sync',
+      route:'token-swap',
+      label:'Token Swap',
+      desc:'Easily swap your tokens with Kyber Widget',
+      subComponent:TokenSwap,
+      props:{
+        availableTokens:{
+          "ETH":{"token":"ETH"},
+          "DAI":{"token":"DAI"},
+          "SUSD":{"token":"SUSD"},
+          "TUSD":{"token":"TUSD"},
+          "USDC":{"token":"USDC"},
+          "USDS":{"token":"USDS"},
+          "USDT":{"token":"USDT"},
+          "WBTC":{"token":"WBTC"},
+          "WETH":{"token":"WETH"},
+          "BUSD":{"token":"BUSD"},
+          "EURS":{"token":"EURS"},
+          "2KEY":{"token":"2KEY"},
+          "ABT":{"token":"ABT"},
+          "ABYSS":{"token":"ABYSS"},
+          "AMPL":{"token":"AMPL"},
+          "ANT":{"token":"ANT"},
+          "BAM":{"token":"BAM"},
+          "BAND":{"token":"BAND"},
+          "BAT":{"token":"BAT"},
+          "BLZ":{"token":"BLZ"},
+          "BNT":{"token":"BNT"},
+          "BQX":{"token":"BQX"},
+          "BTU":{"token":"BTU"},
+          "CDT":{"token":"CDT"},
+          "CVC":{"token":"CVC"},
+          "DAT":{"token":"DAT"},
+          "DGX":{"token":"DGX"},
+          "EKG":{"token":"EKG"},
+          "ELF":{"token":"ELF"},
+          "ENJ":{"token":"ENJ"},
+          "EQUAD":{"token":"EQUAD"},
+          "FXC":{"token":"FXC"},
+          "GDC":{"token":"GDC"},
+          "GEN":{"token":"GEN"},
+          "GHT":{"token":"GHT"},
+          "GNO":{"token":"GNO"},
+          "IOST":{"token":"IOST"},
+          "KEY":{"token":"KEY"},
+          "KNC":{"token":"KNC"},
+          "LEND":{"token":"LEND"},
+          "LINK":{"token":"LINK"},
+          "LOOM":{"token":"LOOM"},
+          "LRC":{"token":"LRC"},
+          "MANA":{"token":"MANA"},
+          "MCO":{"token":"MCO"},
+          "MET":{"token":"MET"},
+          "MFG":{"token":"MFG"},
+          "MKR":{"token":"MKR"},
+          "MLN":{"token":"MLN"},
+          "MTL":{"token":"MTL"},
+          "MYB":{"token":"MYB"},
+          "NEXXO":{"token":"NEXXO"},
+          "NPXS":{"token":"NPXS"},
+          "OGN":{"token":"OGN"},
+          "OMG":{"token":"OMG"},
+          "OST":{"token":"OST"},
+          "PAX":{"token":"PAX"},
+          "PBTC":{"token":"PBTC"},
+          "PLR":{"token":"PLR"},
+          "PNK":{"token":"PNK"},
+          "POLY":{"token":"POLY"},
+          "POWR":{"token":"POWR"},
+          "PT":{"token":"PT"},
+          "QKC":{"token":"QKC"},
+          "QNT":{"token":"QNT"},
+          "RAE":{"token":"RAE"},
+          "REN":{"token":"REN"},
+          "REP":{"token":"REP"},
+          "REQ":{"token":"REQ"},
+          "RLC":{"token":"RLC"},
+          "RSR":{"token":"RSR"},
+          "RSV":{"token":"RSV"},
+          "SAN":{"token":"SAN"},
+          "SNT":{"token":"SNT"},
+          "SNX":{"token":"SNX"},
+          "SPIKE":{"token":"SPIKE"},
+          "SPN":{"token":"SPN"},
+          "TKN":{"token":"TKN"},
+          "TKX":{"token":"TKX"},
+          "TRYB":{"token":"TRYB"},
+          "UBT":{"token":"UBT"},
+          "UPP":{"token":"UPP"},
+          "ZRX":{"token":"ZRX"}
+        }
+      },
+      directProps:{
       }
     }
   },
@@ -1259,8 +1357,8 @@ const globalConfigs = {
           ],
         },
         remoteResources:{
-          'https://widget.kyber.network/v0.7.4/widget.css':{},
-          'https://widget.kyber.network/v0.7.4/widget.js':{
+          'https://widget.kyber.network/v0.7.5/widget.css':{},
+          'https://widget.kyber.network/v0.7.5/widget.js':{
             parentElement:document.body,
             precall: (props,globalConfigs,providerInfo) => {
 
@@ -1269,12 +1367,18 @@ const globalConfigs = {
               for (let i=0;i<buttons.length;i++){
                 buttons[i].remove();
               }
+
+              // const kyberWidgetScript = document.getElementById('kyber-widget-script');
+              // if (kyberWidgetScript){
+              //   kyberWidgetScript.remove();
+              // }
+
               const scripts = document.querySelectorAll('.script_kyberSwap');
               for (let i=0;i<scripts.length;i++){
                 scripts[i].remove();
               }
 
-              const buttonId = `kyber-swapper-${props.selectedToken}`;
+              const buttonId = props.buttonId ? props.buttonId : `kyber-swapper-${props.selectedToken}`;
               if (!document.getElementById(buttonId)){
                 const a = document.createElement('a');
                 a.id = buttonId;
@@ -1289,34 +1393,36 @@ const globalConfigs = {
             }
           }
         },
-        getInitParams: (props,globalConfigs,buyParams) => {
+        getInitParams: (props,globalConfigs,buyParams=null) => {
+          const baseToken = props.baseToken ? props.baseToken : 'ETH';
           const params = {
-            type:'swap',
-            mode:'popup',
-            title:`Swap token for ${props.selectedToken}`,
             lang:'en',
-            pinnedTokens:props.selectedToken,
-            defaultPair:`ETH_${props.selectedToken}`,
-            // callback:globalConfigs.baseURL,
+            type:'swap',
+            mode:'iframe',
+            theme:'theme-ocean',
             paramForwarding:true,
-            network: globalConfigs.network.requiredNetwork === 1 ? 'mainnet' : 'test',
+            // callback:globalConfigs.baseURL,
+            pinnedTokens:`${baseToken}_${props.selectedToken}`,
+            title:`Swap ${baseToken} for ${props.selectedToken}`,
+            defaultPair:`${baseToken}_${props.selectedToken}`,
             commissionId:'0x4215606a720477178AdFCd5A59775C63138711e8',
-            theme:'theme-ocean'
+            network: globalConfigs.network.requiredNetwork === 1 ? 'mainnet' : 'test',
           };
 
-          const url  = 'https://widget.kyber.network/v0.7.4/';
+          const url  = 'https://widget.kyber.network/v0.7.5/';
 
           return `${url}?`+Object.keys(params)
               .map(k => encodeURIComponent(k) + '=' + encodeURIComponent(params[k]))
               .join('&');
         },
         render: (initParams,amount,props) => {
-          const buttonId = `kyber-swapper-${props.selectedToken}`;
+          const buttonId = props.buttonId ? props.buttonId :`kyber-swapper-${props.selectedToken}`;
           const a = document.getElementById(buttonId);
           if (a){
             a.click();
 
             // Observe for pending transaction
+            /*
             if (window.MutationObserver){
               setTimeout(() => {
 
@@ -1341,6 +1447,7 @@ const globalConfigs = {
                 observer.observe(target, { childList: true, subtree: true });
               },1000);
             }
+            */
           }
         }
       },

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="28px" height="28px" viewBox="0 0 28 28" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 50.2 (55047) - http://www.bohemiancoding.com/sketch -->
+    <title>knc</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-1">
+            <stop stop-color="#31CB9E" offset="0%"></stop>
+            <stop stop-color="#2FC99E" offset="4%"></stop>
+            <stop stop-color="#18B2A1" offset="63%"></stop>
+            <stop stop-color="#0FAAA2" offset="100%"></stop>
+        </linearGradient>
+        <polygon id="path-2" points="-1.89344186e-06 0.410243292 5.86094459 0.410243292 5.86094459 18.5459 -1.89344186e-06 18.5459"></polygon>
+        <path d="M3.95742049,9.47803893 L5.85185579,0.861228558 C5.92601535,0.523709708 5.53027643,0.2783215 5.24947534,0.487747243 L0.395580551,4.10735074 C0.1463115,4.29323405 -1.61184211e-05,4.58218503 -1.61184211e-05,4.88865382 L-1.61184211e-05,14.0677948 C-1.61184211e-05,14.3743099 0.1463115,14.6633072 0.395627968,14.8491905 L5.24933309,18.4684233 C5.53013418,18.6778027 5.9258731,18.4324145 5.85166613,18.0948956 L3.95742049,9.47803893 Z" id="path-4"></path>
+    </defs>
+    <g id="IOS?-(for-Mike-Le)" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Artboard-2-Copy" transform="translate(-522.000000, -119.000000)">
+            <g id="knc" transform="translate(522.000000, 119.000000)">
+                <circle id="Oval-2" fill="url(#linearGradient-1)" cx="14" cy="14" r="14"></circle>
+                <g id="Group" stroke-width="1" transform="translate(7.000000, 4.666667)">
+                    <g id="Group-2">
+                        <path d="M5.81187412,9.47833089 L13.0542377,13.5395868 C13.3076794,13.681722 13.6236637,13.5028829 13.6236637,13.2172686 L13.6236637,5.73628818 C13.6236637,5.45062757 13.3075846,5.27178846 13.0540955,5.41406264 L5.81187412,9.47833089 Z" id="Fill-1" fill="#FFFFFF"></path>
+                        <path d="M12.638655,3.66782548 L7.82269346,0.0764914379 C7.60106828,-0.088769062 7.27887251,0.0275064832 7.22031301,0.293841899 L5.46248492,8.28955827 L12.5973551,4.28553641 C12.833063,4.15322606 12.8547324,3.82896141 12.638655,3.66782548" id="Fill-4" fill="#FFFFFF"></path>
+                        <path d="M7.82248957,18.8796096 L12.6420547,15.2860511 C12.8581796,15.1249151 12.8364628,14.8005578 12.6006601,14.6682938 L5.4621862,10.6652915 L7.22015653,18.6622591 C7.27871603,18.9285945 7.60086439,19.0448237 7.82248957,18.8796096" id="Fill-6" fill="#FFFFFF"></path>
+                        <mask id="mask-3" fill="white">
+                            <use xlink:href="#path-2"></use>
+                        </mask>
+                        <g id="Clip-9"></g>
+                        <mask id="mask-5" fill="white">
+                            <use xlink:href="#path-4"></use>
+                        </mask>
+                        <use id="Fill-8" fill="#FFFFFF" xlink:href="#path-4"></use>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

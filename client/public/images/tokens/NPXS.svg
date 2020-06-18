@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="28px" height="28px" viewBox="0 0 28 28" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 52.5 (67469) - http://www.bohemiancoding.com/sketch -->
+    <title>NPXS</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Wallet" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Artboard-Copy" transform="translate(-1635.000000, -47.000000)">
+            <g id="NPXS" transform="translate(1635.000000, 47.000000)">
+                <g id="Group-5">
+                    <circle id="Oval" fill="#1E1E1E" fill-rule="nonzero" cx="14" cy="14" r="14"></circle>
+                    <g id="Group-3" transform="translate(7.000000, 6.000000)" fill="#FFDB00" fill-rule="nonzero">
+                        <polygon id="Path" points="0.246149211 1.53033009 1.30680938 0.469669914 6.95127854 6.11413907 5.89061837 7.17479924"></polygon>
+                        <polygon id="Path" points="6.69407242 7.98846726 7.7624318 6.94977679 8.88346354 8.04922044 7.82280337 9.10988061"></polygon>
+                        <polygon id="Path" points="8.62744643 9.9116273 9.6881066 8.85096713 15.2557129 14.4185734 14.1950527 15.4792336"></polygon>
+                        <polygon id="Path" transform="translate(3.598714, 12.126669) rotate(-90.000000) translate(-3.598714, -12.126669) " points="0.246149211 9.83476444 1.30680938 8.77410427 6.95127854 14.4185734 5.89061837 15.4792336"></polygon>
+                        <polygon id="Path" transform="translate(11.941580, 3.783803) rotate(-90.000000) translate(-11.941580, -3.783803) " points="8.62744643 1.53033009 9.6881066 0.469669914 15.2557129 6.0372762 14.1950527 7.09793638"></polygon>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="108px" height="108px" viewBox="0 0 108 108" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 63.1 (92452) - https://sketch.com -->
+    <title>nexxo</title>
+    <desc>Created with Sketch.</desc>
+    <g id="nexxo" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group-2" fill-rule="nonzero">
+            <circle id="Oval" fill="#B9862C" transform="translate(54.000000, 54.000000) rotate(-360.000000) translate(-54.000000, -54.000000) " cx="54" cy="54" r="54"></circle>
+            <circle id="Oval" fill="#E5CF6A" cx="53.9997466" cy="53.9986028" r="51.408"></circle>
+            <circle id="Oval" fill="#BA862C" cx="53.9997466" cy="53.9986028" r="42.9219"></circle>
+            <circle id="Oval" fill="#EDBA22" cx="53.9997466" cy="53.9986028" r="41.3613"></circle>
+            <polygon id="Path" fill="#FFFFFF" points="81.0159466 46.0147028 79.1772466 39.1513028 70.5075466 41.4760028 66.3657466 26.0185028 56.0625466 28.7779028 63.9033466 58.0324028 63.7359466 58.1458028 39.5871466 33.1924028 29.2245466 35.9707028 33.3663466 51.4282028 24.6345466 53.7691028 26.4732466 60.6298028 35.2050466 58.2889028 36.4146466 62.8087028 27.6828466 65.1496028 29.5215466 72.0103028 38.2533466 69.6721028 41.5500466 81.9679028 51.9126466 79.1923028 44.0745466 49.9378028 44.2392466 49.8244028 68.3880466 74.7778028 78.6912466 72.0157028 75.3972466 59.7172028 84.0669466 57.3952028 82.2282466 50.5345028 73.5585466 52.8565028 72.3462466 48.3367028"></polygon>
+        </g>
+    </g>
+</svg>

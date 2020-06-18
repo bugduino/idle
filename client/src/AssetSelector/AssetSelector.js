@@ -25,7 +25,6 @@ class AssetSelector extends Component {
   }
 
   loadComponents(){
-
     const options = Object.keys(this.props.availableTokens).map(token => {
       const tokenConfig = this.props.availableTokens[token];
       return {
@@ -58,6 +57,7 @@ class AssetSelector extends Component {
                 name:'icon',
                 props:{
                   mr:2,
+                  width:'2em',
                   height:'2em'
                 }
               }}
@@ -200,6 +200,11 @@ class AssetSelector extends Component {
 
   async componentDidUpdate(prevProps,prevState){
     this.loadUtils();
+
+    const availableTokensChanged = JSON.stringify(prevProps.availableTokens) !== JSON.stringify(this.props.availableTokens);
+    if (availableTokensChanged){
+      this.loadComponents();
+    }
   }
 
   render() {
