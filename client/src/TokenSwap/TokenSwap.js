@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
-import RoundButton from '../RoundButton/RoundButton';
+import { Flex, Box, Text, Button } from "rimble-ui";
 import FunctionsUtil from '../utilities/FunctionsUtil';
-import { Flex, Box, Text, Icon, Button } from "rimble-ui";
 import AssetSelector from '../AssetSelector/AssetSelector';
-import DashboardCard from '../DashboardCard/DashboardCard';
 
 class TokenSwap extends Component {
 
@@ -140,8 +138,6 @@ class TokenSwap extends Component {
   }
 
   selectFromToken = async (selectedFromToken) => {
-    const tokenInfo = this.props.toolProps.availableTokens[selectedFromToken];
-
     let selectedDestToken = null;
     const availableDestinationTokens = {};
     const supportedTokens = this.functionsUtil.getGlobalConfig(['payments','providers','kyberSwap','supportedTokens']);
