@@ -24,6 +24,7 @@ class DepositRedeem extends Component {
     action:'deposit',
     activeModal:null,
     tokenApproved:false,
+    contractPaused:false,
     buttonDisabled:false,
     fastBalanceSelector:{},
     actionProxyContract:{},
@@ -111,7 +112,7 @@ class DepositRedeem extends Component {
     const tokenBalanceChanged = prevProps.tokenBalance !== this.props.tokenBalance && this.props.tokenBalance !== null;
 
     if (tokenChanged || tokenBalanceChanged){
-      this.loadProxyContracts();
+      await this.loadProxyContracts();
       this.loadTokenInfo();
       return false;
     }
@@ -237,6 +238,7 @@ class DepositRedeem extends Component {
     newState.canDeposit = this.props.tokenBalance && this.functionsUtil.BNify(this.props.tokenBalance).gt(0);
     newState.canRedeem = this.props.idleTokenBalance && this.functionsUtil.BNify(this.props.idleTokenBalance).gt(0);
     newState.tokenApproved = await this.checkTokenApproved();
+    newState.contractPaused = await this.functionsUtil.checkContractPaused();
     newState.processing = {
       redeem:{
         txHash:null,
@@ -622,11 +624,12 @@ class DepositRedeem extends Component {
       return null;
     }
 
+    const contractPaused = this.state.contractPaused;
     const tokenApproved = this.state.tokenApproved;
     const metaTransactionsAvailable = this.props.biconomy && this.state.actionProxyContract[this.state.action];
     const useMetaTx = metaTransactionsAvailable && this.state.metaTransactionsEnabled;
     const totalBalance = this.state.action === 'deposit' ? this.props.tokenBalance : this.props.redeemableBalance;
-    const showBuyFlow = tokenApproved && this.state.action === 'deposit' && this.state.componentMounted && !this.state.canDeposit;
+    const showBuyFlow = tokenApproved && !contractPaused && this.state.action === 'deposit' && this.state.componentMounted && !this.state.canDeposit;
 
     return (
       <Flex
@@ -782,7 +785,7 @@ class DepositRedeem extends Component {
                       </Flex>
                     </Flex>
                     {
-                      metaTransactionsAvailable && 
+                      (metaTransactionsAvailable && !showBuyFlow && tokenApproved && !contractPaused) && 
                       <DashboardCard
                         cardProps={{
                           py:3,
@@ -815,7 +818,33 @@ class DepositRedeem extends Component {
                       </DashboardCard>
                     }
                     {
-                      !tokenApproved && this.state.action === 'deposit' ? (
+                      (contractPaused && this.state.action === 'deposit') ? (
+                        <DashboardCard
+                          cardProps={{
+                            p:3,
+                            mt:3
+                          }}
+                        >
+                          <Flex
+                            alignItems={'center'}
+                            flexDirection={'column'}
+                          >
+                            <Icon
+                              size={'2.3em'}
+                              name={'Warning'}
+                              color={'cellText'}
+                            />
+                            <Text
+                              mt={1}
+                              fontSize={2}
+                              color={'cellText'}
+                              textAlign={'center'}
+                            >
+                              Deposits for {this.props.selectedToken} are temporarily unavailable due to Smart-Contract maintenance. Redeems are always available.
+                            </Text>
+                          </Flex>
+                        </DashboardCard>
+                      ) : (!tokenApproved && this.state.action === 'deposit') ? (
                         <DashboardCard
                           cardProps={{
                             p:3,
@@ -865,8 +894,7 @@ class DepositRedeem extends Component {
                             )
                           }
                         </DashboardCard>
-                      ) :
-                      !showBuyFlow && (
+                      ) : !showBuyFlow && (
                         !this.state.processing[this.state.action].loading ? (
                           <Flex
                             mt={3}
@@ -971,11 +999,11 @@ class DepositRedeem extends Component {
         {
           showBuyFlow &&
             <Flex
+              mt={3}
               width={[1,0.5]}
               alignItems={'stretch'}
               flexDirection={'column'}
               justifyContent={'center'}
-              mt={metaTransactionsAvailable ? 0 : 3}
             >
               <BuyModal
                 {...this.props}

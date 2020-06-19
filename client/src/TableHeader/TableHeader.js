@@ -16,9 +16,11 @@ class TableHeader extends Component {
             if (colInfo.visible === false || (colInfo.mobile === false && this.props.isMobile)){
               return null;
             }
+
             return (colInfo.title && colInfo.title.length) ? (
               <TableCellHeader
                 {...colInfo.props}
+                desc={colInfo.desc}
                 key={`col-header-${colIndex}`}
               >
                 {colInfo.title}

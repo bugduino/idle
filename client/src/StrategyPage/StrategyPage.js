@@ -484,6 +484,7 @@ class StrategyPage extends Component {
                           },
                           {
                             title:'RISK SCORE',
+                            // desc:`It's a single, consistently, comparable value for measuring protocol risk, based on factors including smart contract risk, collateralization and liquidity. The model outputs a 0-10 score, where 0 is the most risky and 10 is the most safe.`,
                             props:{
                               width:[0.27,0.14],
                               justifyContent:['center','flex-start']

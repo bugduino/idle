@@ -408,7 +408,10 @@ class FunctionsUtil {
 
     etherscanTxs = Object.values(etherscanTxs).filter(tx => (enabledTokens.includes(tx.token.toUpperCase())) );
 
-    return etherscanTxs;
+    const orderedTxsTimestamps = etherscanTxs.map( tx => (parseInt(tx.timeStamp)) ).sort();
+    const orderedEtherscanTxs = orderedTxsTimestamps.map( timeStamp => ( etherscanTxs.find( tx => (parseInt(tx.timeStamp) === timeStamp) ) ) );
+
+    return orderedEtherscanTxs;
   }
   filterEtherscanTxs = async (results,enabledTokens=[],processTxs=true) => {
     if (!results || !results.length || typeof results.forEach !== 'function'){
@@ -1261,6 +1264,14 @@ class FunctionsUtil {
     }
     return balance;
   }
+  checkContractPaused = async (contractName=null) => {
+    contractName = contractName ? contractName : this.props.tokenConfig.idle.token;
+    const contractPaused = await this.genericContractCall(contractName, 'paused', [], {}).catch(err => {
+      this.customLogError('Generic Idle call err:', err);
+    });
+    // console.log('checkContractPaused',this.props.tokenConfig.idle.token,contractPaused);
+    return contractPaused;
+  }
   getStoredItem = (key,parse_json=true,return_default=null) => {
     let output = return_default;
     if (window.localStorage){
@@ -1982,7 +1993,7 @@ class FunctionsUtil {
             };
           }
         }
-      })
+      });
     }
 
     return tokenBalances;

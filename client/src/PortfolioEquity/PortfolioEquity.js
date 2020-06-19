@@ -56,7 +56,7 @@ class PortfolioEquity extends Component {
     const etherscanTxs = await this.functionsUtil.getEtherscanTxs(this.props.account,0,'latest',enabledTokens);
 
     const chartData = [];
-    const tokensBalance = {};
+    let tokensBalance = {};
     let firstTxTimestamp = null;
 
     await this.functionsUtil.asyncForEach(enabledTokens,async (selectedToken) => {
@@ -77,18 +77,20 @@ class PortfolioEquity extends Component {
           
           firstTxTimestamp = firstTxTimestamp ? Math.min(firstTxTimestamp,parseInt(tx.timeStamp)) : parseInt(tx.timeStamp);
 
+          const tokenAmount = this.functionsUtil.BNify(tx.tokenAmount);
+
           switch (tx.action){
             case 'Swap':
             case 'Deposit':
             case 'Receive':
             case 'Migrate':
-              amountLent = amountLent.plus(tx.tokenAmount);
+              amountLent = amountLent.plus(tokenAmount);
             break;
             case 'Send':
             case 'Redeem':
             case 'SwapOut':
             case 'Withdraw':
-              amountLent = amountLent.minus(tx.tokenAmount);
+              amountLent = amountLent.minus(tokenAmount);
             break;
             default:
             break;
@@ -99,9 +101,9 @@ class PortfolioEquity extends Component {
             amountLent = this.functionsUtil.BNify(0);
           }
 
-          const timeStamp = parseInt(tx.timeStamp);
           const balance = amountLent;
           const action = tx.action;
+          const timeStamp = parseInt(tx.timeStamp);
           const tokenPrice = this.functionsUtil.BNify(tx.tokenPrice);
           const idleTokens = this.functionsUtil.BNify(tx.idleTokens);
 
@@ -111,7 +113,8 @@ class PortfolioEquity extends Component {
               balance,
               timeStamp,
               tokenPrice,
-              idleTokens
+              idleTokens,
+              tokenAmount
             });
           }
         });
@@ -141,12 +144,12 @@ class PortfolioEquity extends Component {
     }
 
     const days = {};
+    let prevBalances = {};
+    let prevTimestamp = null;
     let minChartValue = null;
     let maxChartValue = null;
-    const aggregatedBalances = [];
-    let prevTimestamp = null;
-    let prevBalances = {};
     let aggregatedBalance = null;
+    const aggregatedBalances = [];
     const currTimestamp = parseInt(new Date().getTime()/1000)+86400;
 
     const tokensData = {};
@@ -166,8 +169,15 @@ class PortfolioEquity extends Component {
 
       const foundBalances = {};
 
+      // await this.functionsUtil.asyncForEach(Object.keys(tokensBalance),async (token) => {
       // eslint-disable-next-line
-      await this.functionsUtil.asyncForEach(Object.keys(tokensBalance),async (token) => {
+      Object.keys(tokensBalance).forEach(token => {
+
+        let lastTokenData = null;
+        const filteredTokenData = tokensData[token].filter(tx => (tx.timestamp>=prevTimestamp && tx.timestamp<=timeStamp));
+        if (filteredTokenData && filteredTokenData.length){
+          lastTokenData = filteredTokenData.pop();
+        }
 
         if (!idleTokenBalance[token]){
           idleTokenBalance[token] = this.functionsUtil.BNify(0);
@@ -182,31 +192,28 @@ class PortfolioEquity extends Component {
             filteredBalances = prevBalances[token];
             const lastFilteredTx = Object.assign([],filteredBalances).pop();
             const currentBalance = parseFloat(lastFilteredTx.balance);
-            // Take idleToken price from API and calculate new balance
-            if (currentBalance>0 && timeStamp>firstTxTimestamp){
-              const filteredTokenData = tokensData[token].filter(tx => (tx.timestamp>=prevTimestamp && tx.timestamp<=timeStamp));
-              // const filteredTokenData = tokensData[token];
-              if (filteredTokenData && filteredTokenData.length){
-                const lastTokenData = filteredTokenData.pop();
-                const idleTokens = idleTokenBalance[token];
-                const idlePrice = this.functionsUtil.fixTokenDecimals(lastTokenData.idlePrice,tokenDecimals);
-                let newBalance = idleTokens.times(idlePrice)
 
-                // Set new balance and tokenPrice
-                lastFilteredTx.balance = newBalance;
-                lastFilteredTx.tokenPrice = idlePrice;
-                filteredBalances = [lastFilteredTx];
-              }
+            // Take idleToken price from API and calculate new balance
+            if (currentBalance>0 && timeStamp>firstTxTimestamp && lastTokenData){
+              const idleTokens = idleTokenBalance[token];
+              const idlePrice = this.functionsUtil.fixTokenDecimals(lastTokenData.idlePrice,tokenDecimals);
+              let newBalance = idleTokens.times(idlePrice);
+
+              // console.log('1-',this.functionsUtil.strToMoment(timeStamp*1000).format('DD/MM/YYYY HH:mm'),token,idleTokens.toString(),newBalance.toString(),idlePrice.toString());
+
+              // Set new balance and tokenPrice
+              lastFilteredTx.balance = newBalance;
+              lastFilteredTx.tokenPrice = idlePrice;
+              filteredBalances = [lastFilteredTx];
             }
           } else {
             filteredBalances = [{
-              balance:this.functionsUtil.BNify(0)
+              balance:this.functionsUtil.BNify(0),
+              tokenPrice:this.functionsUtil.BNify(0)
             }];
           }
         } else {
-          
           filteredBalances.forEach(tx => {
-
             switch (tx.action){
               case 'Deposit':
               case 'Migrate':
@@ -221,21 +228,30 @@ class PortfolioEquity extends Component {
                 }
               break;
             }
+
+            // console.log('2-',this.functionsUtil.strToMoment(tx.timeStamp*1000).format('DD/MM/YYYY HH:mm'),token,idleTokenBalance[token].toString(),tx.balance.toString(),tx.tokenPrice.toString());
           });
         }
 
         const lastTx = Object.assign([],filteredBalances).pop();
-        let lastTxBalance = this.functionsUtil.BNify(lastTx.balance);
+        // let lastTxBalance = this.functionsUtil.BNify(lastTx.balance);
+        let lastTxBalance = idleTokenBalance[token].times(lastTx.tokenPrice);
 
-        // Convert token balance to USD
-        if (!this.props.chartToken){
-          lastTxBalance = await this.functionsUtil.convertTokenBalance(lastTxBalance,token,tokenConfig,isRisk);
+        if (lastTxBalance.gt(0)){
+          // Convert token balance to USD
+          let tokenUsdConversionRate = null;
+          const conversionRateField = this.functionsUtil.getGlobalConfig(['stats','tokens',token,'conversionRateField']);
+          if (!this.props.chartToken && conversionRateField && lastTokenData && lastTokenData[conversionRateField]){
+            tokenUsdConversionRate = this.functionsUtil.fixTokenDecimals(lastTokenData[conversionRateField],18);
+            lastTxBalance = lastTxBalance.times(tokenUsdConversionRate);
+          }
+
+          aggregatedBalance = aggregatedBalance.plus(lastTxBalance);
+          // console.log('3-',this.functionsUtil.strToMoment(timeStamp*1000).format('DD/MM/YYYY HH:mm'),token,lastTx.idleTokens.toString(),lastTx.balance.toString(),(tokenUsdConversionRate ? tokenUsdConversionRate.toString() : null),lastTxBalance.toString(),lastTx.tokenPrice.toString(),aggregatedBalance.toString());
         }
 
-        aggregatedBalance = aggregatedBalance.plus(lastTxBalance);
-
         foundBalances[token] = filteredBalances;
-      },false);
+      });
   
   
       const momentDate = this.functionsUtil.strToMoment(timeStamp*1000);
