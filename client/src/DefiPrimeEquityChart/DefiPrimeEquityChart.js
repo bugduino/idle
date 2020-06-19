@@ -562,7 +562,9 @@ class DefiPrimeEquityChart extends Component {
 
       const idleBlocksOrdered = {};
       Object.keys(idleBlocks).sort().forEach(function(key) {
-        idleBlocksOrdered[key] = idleBlocks[key];
+        if (idleBlocks[key]){
+          idleBlocksOrdered[key] = idleBlocks[key];
+        }
       });
 
       // Get Aprs based by rebalancing 

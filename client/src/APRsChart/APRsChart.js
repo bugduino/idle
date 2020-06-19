@@ -160,7 +160,9 @@ class APRsChart extends Component {
 
     const idleBlocksOrdered = {};
     Object.keys(idleBlocks).sort().forEach(function(key) {
-      idleBlocksOrdered[key] = idleBlocks[key];
+      if (idleBlocks[key]){
+        idleBlocksOrdered[key] = idleBlocks[key];
+      }
     });
 
     // debugger;

@@ -19,6 +19,7 @@ import GeneralUtil from "../utilities/GeneralUtil";
 import Header from "../utilities/components/Header";
 import globalConfigs from '../configs/globalConfigs';
 import ScrollToTop from "../ScrollToTop/ScrollToTop";
+import FunctionsUtil from '../utilities/FunctionsUtil';
 import PageNotFound from "../PageNotFound/PageNotFound";
 import Web3Debugger from "../Web3Debugger/Web3Debugger";
 import availableTokens from '../configs/availableTokens';
@@ -48,6 +49,16 @@ class App extends Component {
     unsubscribeFromHistory:null,
     enableUnderlyingWithdraw:false,
   };
+
+  // Utils
+  functionsUtil = null;
+  loadUtils(){
+    if (this.functionsUtil){
+      this.functionsUtil.setProps(this.props);
+    } else {
+      this.functionsUtil = new FunctionsUtil(this.props);
+    }
+  }
 
   closeToastMessage = (e) => {
     if (e){
@@ -204,6 +215,8 @@ class App extends Component {
 
   async componentWillMount() {
 
+    this.loadUtils();
+
     // Suppress warnings and errors in production
     const isProduction = window.location.origin.toLowerCase().includes(globalConfigs.baseURL.toLowerCase());
     if (isProduction){
@@ -212,30 +225,16 @@ class App extends Component {
     }
     window.jQuery = jQuery;
 
-    if (localStorage){
-      localStorage.removeItem('context');
+    if (window.localStorage){
+      this.functionsUtil.removeStoredItem('context');
 
       // Clear all localStorage data except walletProvider and connectorName if version has changed
-      const version = localStorage.getItem('version');
+      const version = this.functionsUtil.getStoredItem('version',false);
       if (version !== globalConfigs.version){
-
-        const storedKeysToRemove = [];
-
-        for (let i=0;i<localStorage.length;i++){
-          const storedKey = localStorage.key(i);
-          if (!['walletProvider','connectorName'].includes(storedKey)){
-            storedKeysToRemove.push(storedKey);
-          }
-        }
-
-        storedKeysToRemove.forEach((storedKey) => {
-          localStorage.removeItem(storedKey);
-        });
-
-        localStorage.setItem('version',globalConfigs.version);
+        this.functionsUtil.clearStoredData(['walletProvider','connectorName']);
+        this.functionsUtil.setLocalStorage('version',globalConfigs.version);
       }
     }
-
 
     window.closeIframe = (w) => {
       const iFrames = document.getElementsByTagName('iframe');
@@ -257,6 +256,8 @@ class App extends Component {
   }
 
   componentDidUpdate(prevProps,prevState){
+    this.loadUtils();
+
     const tokenChanged = prevState.selectedToken !== this.state.selectedToken;
     const strategyChanged = prevState.selectedStrategy !== this.state.selectedStrategy;
 
@@ -314,6 +315,10 @@ class App extends Component {
     });
   }
 
+  async logout(){
+    this.functionsUtil.clearStoredData(['walletProvider','connectorName']);
+  }
+
   setConnector(connectorName,walletProvider){
 
     let connectorInfo = globalConfigs.connectors[connectorName.toLowerCase()];
@@ -345,10 +350,8 @@ class App extends Component {
       }
     }
 
-    if (localStorage){
-      localStorage.setItem('connectorName', connectorName);
-      localStorage.setItem('walletProvider', walletProvider);
-    }
+    this.functionsUtil.setLocalStorage('connectorName', connectorName);
+    this.functionsUtil.setLocalStorage('walletProvider', walletProvider);
 
     return this.setState({
       connectorName,
@@ -451,6 +454,7 @@ class App extends Component {
                                                     initContract={initContract}
                                                     transactions={transactions}
                                                     buyToken={this.state.buyToken}
+                                                    logout={this.logout.bind(this)}
                                                     accountBalance={accountBalance}
                                                     validateAccount={validateAccount}
                                                     connecting={this.state.connecting}
@@ -503,6 +507,7 @@ class App extends Component {
                                 initContract={initContract}
                                 buyToken={this.state.buyToken}
                                 accountBalance={accountBalance}
+                                logout={this.logout.bind(this)}
                                 validateAccount={validateAccount}
                                 connecting={this.state.connecting}
                                 accountValidated={accountValidated}
@@ -567,6 +572,7 @@ class App extends Component {
                                           simpleID={simpleID}
                                           contracts={contracts}
                                           innerWidth={this.state.width}
+                                          logout={this.logout.bind(this)}
                                           accountBalance={accountBalance}
                                           connecting={this.state.connecting}
                                           selectedTab={this.state.selectedTab}
@@ -588,14 +594,14 @@ class App extends Component {
                                           setToken={ e => { this.setToken(e) } }
                                         />
                                         <CookieConsent
+                                          expires={365}
+                                          buttonText={"Ok"}
+                                          location={"bottom"}
                                           acceptOnScroll={true}
+                                          cookieName={"cookieAccepted"}
                                           acceptOnScrollPercentage={5}
-                                          location="bottom"
-                                          buttonText="Ok"
-                                          cookieName="cookieAccepted"
                                           style={{background: "rgba(255,255,255,0.95)",zIndex:'9999999'}}
                                           buttonStyle={{display: isMobile ? "block" : "none", backgroundColor:'#0036ff', color: 'white', marginTop: isMobile ? "0px" : "15px"}}
-                                          expires={365}
                                         >
                                           <Flex flexDirection={'row'} alignItems={['flex-start','center']} justifyContent={'flex-start'} maxHeight={['150px','initial']} style={ isMobile ? {overflowY:'scroll'} : null }>
                                             <Image display={['none','block']} src={'images/cookie.svg'} width={'42px'} height={'42px'} />

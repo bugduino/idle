@@ -84,6 +84,8 @@ class AccountModal extends React.Component {
     this.setState({
       logout:true
     });
+
+    this.props.logout();
     await this.setConnector('Infura');
     // this.props.closeModal();
   }

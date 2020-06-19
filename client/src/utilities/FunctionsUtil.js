@@ -167,7 +167,9 @@ class FunctionsUtil {
 
     const orderedTokensBalance = {};
     Object.keys(availableTokens).forEach( token => {
-      orderedTokensBalance[token] = portfolio.tokensBalance[token];
+      if (portfolio.tokensBalance[token]){
+        orderedTokensBalance[token] = portfolio.tokensBalance[token];
+      }
     });
 
     portfolio.tokensBalance = orderedTokensBalance;
@@ -1274,6 +1276,20 @@ class FunctionsUtil {
       return return_default;
     }
     return output;
+  }
+  clearStoredData = (excludeKeys=[]) => {
+    if (window.localStorage){
+      const storedKeysToRemove = [];
+      for (let i=0;i<window.localStorage.length;i++){
+        const storedKey = window.localStorage.key(i);
+        if (!excludeKeys.includes(storedKey)){
+          storedKeysToRemove.push(storedKey);
+        }
+      }
+      storedKeysToRemove.forEach((storedKey) => {
+        this.removeStoredItem(storedKey)
+      });
+    }
   }
   removeStoredItem = (key) => {
     if (window.localStorage){
