@@ -78,7 +78,14 @@ class EarningsEstimation extends Component {
     let tokensEarnings = {};
     let estimationStepsPerc = 0;
 
+    const isRisk = this.props.selectedStrategy === 'risk';
     const amountLents = await this.functionsUtil.getAmountLent(this.props.enabledTokens,this.props.account);
+
+    const aggregatedEarnings = {
+      earnings:this.functionsUtil.BNify(0),
+      amountLent:this.functionsUtil.BNify(0),
+      earningsYear:this.functionsUtil.BNify(0),
+    };
 
     await this.functionsUtil.asyncForEach(Object.keys(amountLents),async (token) => {
       const amountLent = amountLents[token];
@@ -113,6 +120,14 @@ class EarningsEstimation extends Component {
           earningsYear,
           idleTokenPrice
         };
+
+        const earningsUSD = await this.functionsUtil.convertTokenBalance(earnings,token,tokenConfig,isRisk);
+        const amountLentUSD = await this.functionsUtil.convertTokenBalance(amountLent,token,tokenConfig,isRisk);
+        const earningsYearUSD = await this.functionsUtil.convertTokenBalance(earningsYear,token,tokenConfig,isRisk);
+
+        aggregatedEarnings.earnings = aggregatedEarnings.earnings.plus(earningsUSD);
+        aggregatedEarnings.amountLent = aggregatedEarnings.amountLent.plus(amountLentUSD);
+        aggregatedEarnings.earningsYear = aggregatedEarnings.earningsYear.plus(earningsYearUSD);
       }
     });
 
@@ -124,6 +139,11 @@ class EarningsEstimation extends Component {
     });
 
     tokensEarnings = orderedTokensEarnings;
+
+    // Add USD aggregated earnings
+    if (Object.keys(tokensEarnings).length>1){
+      tokensEarnings['USD'] = aggregatedEarnings;
+    }
 
     this.setState({
       estimationStepsPerc,

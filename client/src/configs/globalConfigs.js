@@ -174,9 +174,9 @@ const globalConfigs = {
       USD:{
         enabled:true,
         color:{
-          hex:'#2875C8',
-          rgb:[40,117,200],
-          hsl:['211', '67%', '47%']
+          hex:'#85bb65',
+          rgb:[133, 187, 101],
+          hsl:['98', '39%', '56%']
         },
         chart:{
           labelTextColorModifiers:['brighter', 2]
@@ -1097,7 +1097,7 @@ const globalConfigs = {
         subcaption: '~ 4.5% fee ~',
         supportedMethods:['card','bank'],
         supportedCountries:['GBR','EUR','AUS','BRA','CHN','MEX','CAN','HKG','RUS','ZAF','KOR'],
-        supportedTokens:['USDC','DAI','ETH','USDT','TUSD'],
+        supportedTokens:['USDC','DAI','ETH'],
         env:'prod',
         envParams:{
           test:{
