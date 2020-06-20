@@ -878,7 +878,9 @@ class FunctionsUtil {
               return false;
             }
 
-            const metaTxValue = parseInt(executeMetaTransactionInternalTransfers.data,16);
+            const internalTransfer = executeMetaTransactionInternalTransfers.pop();
+
+            const metaTxValue = parseInt(internalTransfer.data,16);
             const metaTxValueFixed = this.fixTokenDecimals(metaTxValue,tokenConfig.decimals);
             realTx.value = metaTxValueFixed;
             realTx.tokenAmount = metaTxValueFixed;
