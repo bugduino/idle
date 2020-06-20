@@ -738,10 +738,11 @@ class FunctionsUtil {
         };
         const pendingStatus = ['pending','started'];
 
-        const txHash = tx.transactionHash ? tx.transactionHash : null;
         const txSucceeded = tx.status === 'success';
-        const txPending = pendingStatus.indexOf(tx.status)!==-1;
-        const methodIsAllowed = Object.keys(allowedMethods).indexOf(tx.method)!==-1;
+        const txPending = pendingStatus.includes(tx.status);
+        const isMetaTx = tx.method === 'executeMetaTransaction';
+        const txHash = tx.transactionHash ? tx.transactionHash : null;
+        const methodIsAllowed = Object.keys(allowedMethods).includes(tx.method);
 
         // Skip transaction if already present in etherscanTxs with same status
         if (txHash && etherscanTxs[txHash] && etherscanTxs[txHash].tokenPrice){
@@ -757,10 +758,10 @@ class FunctionsUtil {
           etherscanTxs[`t${tx.created}`] = {
             status:'Pending',
             token:selectedToken,
-            hash:txHash ? tx.transactionHash : null,
             tokenSymbol:selectedToken,
             action:allowedMethods[tx.method],
             timeStamp:parseInt(tx.created/1000),
+            hash:txHash ? tx.transactionHash : null,
             value: this.fixTokenDecimals(tx.params[0],tokenConfig.decimals).toString()
           };
           return false;
@@ -787,8 +788,8 @@ class FunctionsUtil {
 
         // this.customLog('realTx (localStorage)',realTx);
 
-        // Skip txs from other wallets
-        if (!realTx || realTx.from.toLowerCase() !== this.props.account.toLowerCase()){
+        // Skip txs from other wallets if not meta-txs
+        if (!realTx || (!isMetaTx && realTx.from.toLowerCase() !== this.props.account.toLowerCase())){
           return false;
         }
 
