@@ -157,10 +157,12 @@ class Migrate extends Component {
         const _skipRebalance = true;
         let paramsForRedeem = null;
 
+        /*
         if (this.props.account){
           const callParams = { from: this.props.account, gas: this.props.web3.utils.toBN(5000000) };
           paramsForRedeem = await this.functionsUtil.genericContractCall(oldContractName,'getParamsForRedeemIdleToken',[idleTokenToRedeem, _skipRebalance],callParams);
         }
+        */
 
         const _clientProtocolAmountsRedeem = paramsForRedeem && paramsForRedeem.length ? paramsForRedeem[1] : [];
         const gasLimitRedeem = _clientProtocolAmountsRedeem.length && _clientProtocolAmountsRedeem.indexOf('0') === -1 ? this.functionsUtil.BNify(1500000) : this.functionsUtil.BNify(1000000);
