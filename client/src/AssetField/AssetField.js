@@ -96,6 +96,18 @@ class AssetField extends Component {
           }
           output = tokenBalance;
         break;
+        case 'amountToMigrate':
+          const {
+            oldContractBalanceFormatted
+          } = await this.functionsUtil.checkMigration(this.props.tokenConfig,this.props.account);
+
+          if (setState){
+            this.setStateSafe({
+              amountToMigrate:oldContractBalanceFormatted.toString()
+            });
+          }
+          output = oldContractBalanceFormatted;
+        break;
         case 'amountLent':
           const amountLents = this.props.account ? await this.functionsUtil.getAmountLent([this.props.token],this.props.account) : false;
           let amountLent = '-';
@@ -603,6 +615,11 @@ class AssetField extends Component {
       case 'tokenBalance':
         output = this.state.tokenBalance ? (
           <SmartNumber {...fieldProps} minPrecision={minPrecision} number={this.state.tokenBalance} />
+        ) : loader
+      break;
+      case 'amountToMigrate':
+        output = this.state.amountToMigrate ? (
+          <SmartNumber {...fieldProps} minPrecision={minPrecision} number={this.state.amountToMigrate} />
         ) : loader
       break;
       case 'idleTokenBalance':

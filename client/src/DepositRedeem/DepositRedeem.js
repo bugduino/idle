@@ -28,6 +28,7 @@ class DepositRedeem extends Component {
     buttonDisabled:false,
     fastBalanceSelector:{},
     actionProxyContract:{},
+    migrationEnabled:false,
     componentMounted:false,
     metaTransactionsEnabled:true
   };
@@ -237,8 +238,19 @@ class DepositRedeem extends Component {
     const newState = {...this.state};
     newState.canDeposit = this.props.tokenBalance && this.functionsUtil.BNify(this.props.tokenBalance).gt(0);
     newState.canRedeem = this.props.idleTokenBalance && this.functionsUtil.BNify(this.props.idleTokenBalance).gt(0);
-    newState.tokenApproved = await this.checkTokenApproved();
-    newState.contractPaused = await this.functionsUtil.checkContractPaused();
+    const [
+      tokenApproved,
+      contractPaused,
+      {migrationEnabled}
+    ] = await Promise.all([
+      this.checkTokenApproved(),
+      this.functionsUtil.checkContractPaused(),
+      this.functionsUtil.checkMigration(this.props.tokenConfig,this.props.account)
+    ]);
+
+    newState.tokenApproved = tokenApproved;
+    newState.contractPaused = contractPaused;
+    newState.migrationEnabled = migrationEnabled;
     newState.processing = {
       redeem:{
         txHash:null,
@@ -624,12 +636,11 @@ class DepositRedeem extends Component {
       return null;
     }
 
-    const contractPaused = this.state.contractPaused;
-    const tokenApproved = this.state.tokenApproved;
     const metaTransactionsAvailable = this.props.biconomy && this.state.actionProxyContract[this.state.action];
     const useMetaTx = metaTransactionsAvailable && this.state.metaTransactionsEnabled;
     const totalBalance = this.state.action === 'deposit' ? this.props.tokenBalance : this.props.redeemableBalance;
-    const showBuyFlow = tokenApproved && !contractPaused && this.state.action === 'deposit' && this.state.componentMounted && !this.state.canDeposit;
+    const showBuyFlow = this.state.tokenApproved && !this.state.contractPaused && !this.state.migrationEnabled && this.state.action === 'deposit' && this.state.componentMounted && !this.state.canDeposit;
+    const migrateText = this.state.migrationEnabled ? this.props.tokenConfig.migration.message : null;
 
     return (
       <Flex
@@ -656,6 +667,8 @@ class DepositRedeem extends Component {
           </Box>
           <Migrate
             {...this.props}
+            migrateText={migrateText !== null ? '' : null}
+            migrateTextBefore={migrateText}
           >
             {
               !this.props.account ? (
@@ -785,7 +798,7 @@ class DepositRedeem extends Component {
                       </Flex>
                     </Flex>
                     {
-                      (metaTransactionsAvailable && !showBuyFlow && tokenApproved && !contractPaused) && 
+                      (metaTransactionsAvailable && !showBuyFlow && this.state.tokenApproved && !this.state.contractPaused) && 
                       <DashboardCard
                         cardProps={{
                           py:3,
@@ -818,7 +831,7 @@ class DepositRedeem extends Component {
                       </DashboardCard>
                     }
                     {
-                      (contractPaused && this.state.action === 'deposit') ? (
+                      (this.state.contractPaused && this.state.action === 'deposit') ? (
                         <DashboardCard
                           cardProps={{
                             p:3,
@@ -844,7 +857,7 @@ class DepositRedeem extends Component {
                             </Text>
                           </Flex>
                         </DashboardCard>
-                      ) : (!tokenApproved && this.state.action === 'deposit') ? (
+                      ) : (!this.state.tokenApproved && this.state.action === 'deposit') ? (
                         <DashboardCard
                           cardProps={{
                             p:3,

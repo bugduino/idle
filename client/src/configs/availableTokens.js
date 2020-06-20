@@ -510,7 +510,30 @@ const availableTokens = {
         idle:{
           abi:IdleTokenV3,
           token:'idleSUSDYield',
-          address:'0xb39ca0261a1b2986a6a9Fe38d344B56374963dE5'
+          address:'0xe79e177d2a5c7085027d7c64c8f271c81430fc9b'
+        },
+        migration:{
+          enabled:true,
+          message:'A minor issue has been recently discovered in idleSUSD Smart-contract. Please use the section below to migrate or redeem your position.',
+          oldContract:{
+            abi:IdleTokenV3,
+            token:'idleSUSD',
+            name:'idleSUSDYieldOld',
+            address:'0xb39ca0261a1b2986a6a9Fe38d344B56374963dE5',
+          },
+          migrationContract:{
+            abi:IdleConverterV2,
+            token:'IdleConverterV3',
+            name:'IdleConverterV3',
+            address:'0xC74d886ebaA5674E21A1CB0Be3997BDDcE6ad525',
+            oldAddresses:['0x60753b3a588ff8fe8204595dc295a132c1bb50ae'],
+            functions:[
+              {
+                label:'Migrate',
+                name:'migrateFromToIdle'
+              },
+            ]
+          }
         },
         protocols:[
           {
@@ -541,7 +564,30 @@ const availableTokens = {
         idle:{
           abi:IdleTokenV3,
           token:'idleTUSDYield',
-          address:'0x7DB7A4a50b26602E56536189Aa94678C80F8E5b6'
+          address:'0x51C77689A9c2e8cCBEcD4eC9770a1fA5fA83EeF1'
+        },
+        migration:{
+          enabled:true,
+          message:'A minor issue has been recently discovered in idleTUSD Smart-contract. Please use the section below to migrate or redeem your position.',
+          oldContract:{
+            abi:IdleTokenV3,
+            token:'idleTUSD',
+            name:'idleTUSDYieldOld',
+            address:'0x7DB7A4a50b26602E56536189Aa94678C80F8E5b6',
+          },
+          migrationContract:{
+            abi:IdleConverterV2,
+            token:'IdleConverterV3',
+            name:'IdleConverterV3',
+            address:'0xC74d886ebaA5674E21A1CB0Be3997BDDcE6ad525',
+            oldAddresses:['0x60753b3a588ff8fe8204595dc295a132c1bb50ae'],
+            functions:[
+              {
+                label:'Migrate',
+                name:'migrateFromToIdle'
+              },
+            ]
+          }
         },
         protocols:[
           {

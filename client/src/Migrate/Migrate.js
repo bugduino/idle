@@ -675,8 +675,12 @@ class Migrate extends Component {
                       color={'cellText'}
                       textAlign={'center'}
                     >
-                      You { !this.props.isMigrationTool ? 'still' : '' } have <strong>{this.state.oldIdleTokens.toFixed(4)} {this.state.oldTokenName} {this.state.oldIdleTokensConverted ? `(${this.state.oldIdleTokensConverted.toFixed(4)} ${this.props.selectedToken})` : ''}</strong>.<br />
-                      { this.props.migrateText ? this.props.migrateText : 'Please use the section below to migrate or redeem your old tokens' }.
+                      { this.props.migrateTextBefore !== null ? this.props.migrateTextBefore : null }
+                      { this.props.migrateTextBefore !== null &&
+                        <br />
+                      }
+                      You { !this.props.isMigrationTool ? 'still' : '' } have <strong>{this.state.oldIdleTokens.toFixed(4)} {this.state.oldTokenName} {this.state.oldIdleTokensConverted ? `(${this.state.oldIdleTokensConverted.toFixed(4)} ${this.props.selectedToken})` : ''}</strong> to migrate.<br />
+                      { this.props.migrateText !== null ? this.props.migrateText : 'Please use the section below to migrate or redeem your old tokens.' }
                     </Text>
                   </Flex>
                 </DashboardCard>

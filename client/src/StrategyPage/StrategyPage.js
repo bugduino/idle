@@ -67,10 +67,8 @@ class StrategyPage extends Component {
         const depositedTokens = Object.keys(portfolio.tokensBalance).filter(token => {
           return this.functionsUtil.BNify(portfolio.tokensBalance[token].idleTokenBalance).gt(0);
         });
-        const remainingTokens = Object.keys(this.props.availableTokens).filter(token => !depositedTokens.includes(token) );
 
         newState.depositedTokens = depositedTokens;
-        newState.remainingTokens = remainingTokens;
 
         const isRisk = this.props.selectedStrategy === 'risk';
 
@@ -189,8 +187,12 @@ class StrategyPage extends Component {
         }
       });
 
+
       newState.tokensToMigrate = tokensToMigrate;
       newState.portfolioLoaded = true;
+
+      const remainingTokens = Object.keys(this.props.availableTokens).filter(token => (!newState.depositedTokens.includes(token) && !newState.tokensToMigrate.includes(token)) );
+      newState.remainingTokens = remainingTokens;
 
       // Load and process Etherscan Txs
       const firstBlockNumber = this.functionsUtil.getGlobalConfig(['network','firstBlockNumber']);
@@ -408,10 +410,140 @@ class StrategyPage extends Component {
               }
               <Flex id="available-assets" width={1} flexDirection={'column'}>
                 {
-                  this.state.depositedTokens.length>0 &&
+                  (this.state.depositedTokens.length>0 || this.state.tokensToMigrate.length>0 || this.state.remainingTokens.length>0 ) &&
                     <Title my={[3,4]}>Available assets</Title>
                 }
                 <Flex width={1} flexDirection={'column'}>
+                  {
+                    this.state.tokensToMigrate.length>0 &&
+                    <Flex
+                      mb={ this.state.depositedTokens.length>0 ? [3,4] : 0 }
+                      width={1}
+                      id={"migrate-assets"}
+                      flexDirection={'column'}
+                    >
+                      <Flex
+                        pb={2}
+                        width={1}
+                        mb={[2,3]}
+                        borderColor={'divider'}
+                        borderBottom={'1px solid transparent'}
+                      >
+                        <Heading.h4
+                          fontSize={[2,4]}
+                          fontWeight={[3,4]}
+                        >
+                          Assets to migrate
+                        </Heading.h4>
+                      </Flex>
+                      <AssetsList
+                        enabledTokens={this.state.tokensToMigrate}
+                        handleClick={(props) => this.props.changeToken(props.token)}
+                        cols={[
+                          {
+                            title:'CURRENCY',
+                            props:{
+                              width:[0.3,0.15]
+                            },
+                            fields:[
+                              {
+                                name:'icon',
+                                props:{
+                                  mr:2,
+                                  height:['1.4em','2.3em']
+                                }
+                              },
+                              {
+                                name:'tokenName'
+                              }
+                            ]
+                          },
+                          {
+                            title:'POOL',
+                            mobile:this.props.account !== null,
+                            props:{
+                              width:[0.21, 0.14],
+                            },
+                            fields:[
+                              {
+                                name:'pool',
+                                props:{
+                                  decimals:2
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            title:'APY',
+                            props:{
+                              width:[0.2,this.state.depositedTokens.length>0 ? 0.11 : 0.14],
+                            },
+                            fields:[
+                              {
+                                name:'apy'
+                              }
+                            ]
+                          },
+                          {
+                            title:'RISK SCORE',
+                            props:{
+                              width:[0.27,0.14],
+                              justifyContent:['center','flex-start']
+                            },
+                            fields:[
+                              {
+                                name:'score'
+                              }
+                            ]
+                          },
+                          {
+                            title:'BALANCE TO MIGRATE',
+                            mobile:false,
+                            props:{
+                              width: this.state.depositedTokens.length>0 ? 0.28 : 0.25,
+                            },
+                            parentProps:{
+                              width:1,
+                              pr:[2,4]
+                            },
+                            fields:[
+                              {
+                                name:'amountToMigrate',
+                              }
+                            ]
+                          },
+                          {
+                            title:'',
+                            mobile:this.props.account === null,
+                            props:{
+                              width:[ this.props.account === null ? 0.29 : 0 ,0.17],
+                            },
+                            parentProps:{
+                              width:1
+                            },
+                            fields:[
+                              {
+                                name:'button',
+                                label: 'Migrate',
+                                props:{
+                                  width:1,
+                                  fontSize:3,
+                                  fontWeight:3,
+                                  height:'45px',
+                                  borderRadius:4,
+                                  boxShadow:null,
+                                  mainColor:'migrate',
+                                  size: this.props.isMobile ? 'small' : 'medium',
+                                  handleClick:(props) => this.props.changeToken(props.token)
+                                }
+                              }
+                            ]
+                          }
+                        ]}
+                        {...this.props}
+                      />
+                    </Flex>
+                  }
                   {
                   this.state.depositedTokens.length>0 &&
                     <Flex
