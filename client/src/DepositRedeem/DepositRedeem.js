@@ -798,7 +798,7 @@ class DepositRedeem extends Component {
                       </Flex>
                     </Flex>
                     {
-                      (metaTransactionsAvailable && !showBuyFlow && this.state.tokenApproved && !this.state.contractPaused) && 
+                      (metaTransactionsAvailable && !showBuyFlow && !this.state.contractPaused) && 
                       <DashboardCard
                         cardProps={{
                           py:3,
