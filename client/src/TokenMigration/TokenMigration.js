@@ -61,6 +61,10 @@ class TokenMigration extends Component {
       if (!baseTokenConfig){
         return false;
       }
+
+      // Remove icon
+      delete baseTokenConfig.icon;
+
       if (!selectedDestToken){
         selectedDestToken = baseTokenConfig.idle.token;
       }
@@ -157,6 +161,7 @@ class TokenMigration extends Component {
             </Text>
             <AssetSelector
               {...this.props}
+              id={'token-from'}
               showBalance={true}
               onChange={this.selectFromToken}
               selectedToken={this.state.selectedFromToken}
@@ -174,6 +179,7 @@ class TokenMigration extends Component {
                 </Text>
                 <AssetSelector
                   {...this.props}
+                  id={'token-dest'}
                   showBalance={false}
                   onChange={this.selectDestToken}
                   selectedToken={this.state.selectedDestToken}

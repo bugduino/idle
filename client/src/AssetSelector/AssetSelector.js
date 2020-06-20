@@ -201,8 +201,10 @@ class AssetSelector extends Component {
   async componentDidUpdate(prevProps,prevState){
     this.loadUtils();
 
+    const selectedTokenChanged = prevProps.selectedToken !== this.props.selectedToken;
     const availableTokensChanged = JSON.stringify(prevProps.availableTokens) !== JSON.stringify(this.props.availableTokens);
-    if (availableTokensChanged){
+
+    if (availableTokensChanged || selectedTokenChanged){
       this.loadComponents();
     }
   }
@@ -218,6 +220,7 @@ class AssetSelector extends Component {
         options={this.state.options}
         innerProps={this.props.innerProps}
         defaultValue={this.state.defaultValue}
+        selectedToken={this.props.selectedToken}
         CustomOptionValue={this.state.CustomOptionValue}
         CustomValueContainer={this.state.CustomValueContainer}
         onChange={ this.props.onChange ? this.props.onChange : this.props.changeToken}

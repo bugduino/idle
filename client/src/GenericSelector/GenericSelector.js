@@ -24,6 +24,13 @@ class GenericSelector extends Component {
 
   async componentDidUpdate(prevProps,prevState){
     this.loadUtils();
+
+    const selectedTokenChanged = prevProps.selectedToken !== this.props.selectedToken;
+    const optionsChanged = JSON.stringify(prevProps.options) !== JSON.stringify(this.props.options);
+    const defaultValueChanged = JSON.stringify(prevProps.defaultValue) !== JSON.stringify(this.props.defaultValue);
+    if (optionsChanged || selectedTokenChanged || defaultValueChanged){
+      this.loadComponents();
+    }
   }
 
   async loadComponents(){
