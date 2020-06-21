@@ -316,7 +316,7 @@ class App extends Component {
   }
 
   async logout(){
-    this.functionsUtil.clearStoredData(['walletProvider','connectorName']);
+    this.functionsUtil.clearStoredData();
   }
 
   setConnector(connectorName,walletProvider){

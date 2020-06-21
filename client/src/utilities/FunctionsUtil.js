@@ -1293,6 +1293,11 @@ class FunctionsUtil {
   }
   clearStoredData = (excludeKeys=[]) => {
     if (window.localStorage){
+
+      if (!excludeKeys || !excludeKeys.length){
+        return window.localStorage.clear();
+      }
+
       const storedKeysToRemove = [];
       for (let i=0;i<window.localStorage.length;i++){
         const storedKey = window.localStorage.key(i);
@@ -1946,9 +1951,12 @@ class FunctionsUtil {
         const tokenAllocation = await this.getTokenAllocation(tokenConfig);
         const tokenAprs = await this.getTokenAprs(tokenConfig,tokenAllocation);
         if (tokenAllocation && tokenAllocation.totalAllocation && !tokenAllocation.totalAllocation.isNaN()){
-          totalAUM = totalAUM.plus(tokenAllocation.totalAllocation);
+          const totalAllocation = await this.convertTokenBalance(tokenAllocation.totalAllocation,token,tokenConfig,isRisk);
+          // if (token==='WBTC'){
+          //   debugger;
+          // }
+          totalAUM = totalAUM.plus(totalAllocation);
           if (tokenAprs.avgApr && !tokenAprs.avgApr.isNaN()){
-            const totalAllocation = await this.convertTokenBalance(tokenAllocation.totalAllocation,token,tokenConfig,isRisk);
             avgAPR = avgAPR.plus(totalAllocation.times(tokenAprs.avgApr))
           }
         }
