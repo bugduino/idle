@@ -8,7 +8,6 @@ import * as Sentry from '@sentry/browser';
 import FunctionsUtil from './FunctionsUtil';
 import globalConfigs from '../configs/globalConfigs';
 import ConnectionModalUtil from "./ConnectionModalsUtil";
-import WalletConnectQRCodeModal from "@walletconnect/qrcode-modal";
 import { TerminalHttpProvider, SourceType } from '@terminal-packages/sdk';
 
 require('dotenv').config();
@@ -144,16 +143,32 @@ class RimbleTransaction extends React.Component {
 
   componentDidUpdate = async (prevProps, prevState) => {
 
+    // console.log('componentDidUpdate',prevProps.connectorName,this.props.connectorName,this.props.context.connectorName,this.props.context.active,(this.props.context.error ? this.props.context.error.message : null));
+
     if (prevProps.connectorName !== this.props.connectorName && this.props.connectorName){
       this.initWeb3();
-    } else if (prevProps.context !== this.props.context){
+    } else if ( prevProps.context !== this.props.context ){
       if (this.props.context.error instanceof Error && this.props.context.error.message.length){
-        this.state.modals.methods.openConnectionErrorModal(null,this.props.context.error.message);
+
+        if (setConnectorName === 'WalletConnect' && this.props.context.error.message === 'User closed WalletConnect modal'){
+          this.functionsUtil.customLog('WalletConnect disconnected! Set Infura connector');
+          this.props.setConnector('Infura',null);
+          this.functionsUtil.removeStoredItem('walletProvider');
+          this.functionsUtil.removeStoredItem('connectorName');
+          this.functionsUtil.setLocalStorage('context',JSON.stringify({active:this.props.context.active,connectorName:'Infura'}));
+          setConnectorName = null;
+          await this.props.context.setConnector('Infura');
+          if (this.props.context.connector && typeof this.props.context.connector.disable === 'function'){
+            await this.props.context.connector.disable();
+          }
+        } else {
+          this.openConnectionErrorModal(null,this.props.context.error.message);
+        }
       // WalletConnect double trigger initWeb3
-      } else if (this.props.context.active && this.props.context.connectorName==='WalletConnect' && this.props.connectorName==='WalletConnect') {
+      } else if (this.props.context.active && this.props.context.connectorName!=='WalletConnect' && this.props.connectorName==='WalletConnect') {
         this.initWeb3();
       }
-    } else if ( prevProps.customAddress !== this.props.customAddress){
+    } else if ( (this.props.context.connectorName && this.props.context.connectorName !== this.props.connectorName) || prevProps.customAddress !== this.props.customAddress){
       this.initWeb3();
     }
 
@@ -218,34 +233,42 @@ class RimbleTransaction extends React.Component {
     const last_context = localStorage ? JSON.parse(localStorage.getItem('context')) : null;
 
     // this.functionsUtil.customLog('initWeb3',connectorName,setConnectorName);
-    // console.log('initWeb3',context.active,context.connectorName,connectorName,setConnectorName);
 
-    if (!context.active || (connectorName !== 'Infura' && connectorName !== setConnectorName)) {
+    const connectorNameChanged = (context.connectorName && context.connectorName !== connectorName) || (connectorName !== 'Infura' && connectorName !== setConnectorName);
+
+    // console.log('initWeb3',context.active,connectorNameChanged,context.connectorName,connectorName,setConnectorName);
+
+    if (!context.active || connectorNameChanged) {
       // Select preferred web3 provider
-      if (connectorName && connectorName !== 'Infura' && connectorName !== setConnectorName){
+      if (connectorName && connectorNameChanged){
         // console.log('initWeb3 set connector',connectorName);
         setConnectorName = connectorName;
         await context.setConnector(connectorName);
         // await context.setFirstValidConnector([connectorName, 'Infura']);
         return web3;
-      } else if (setConnectorName){
+      }
+      /*
+      else if (setConnectorName){
         // Catch WalletConnect unexpected disconnect and fallback to Infura
         if (connectorName === 'WalletConnect' && connectorName === setConnectorName && last_context && last_context.active && last_context.connectorName==='WalletConnect' && !context.connectorName){
           this.functionsUtil.customLog('WalletConnect disconnected! Set Infura connector');
           this.props.setConnector('Infura',null);
-          if (localStorage){
-            localStorage.removeItem('walletProvider');
-            localStorage.removeItem('connectorName');
-            this.functionsUtil.setLocalStorage('context',JSON.stringify({active:context.active,connectorName:context.connectorName}));
-          }
+          this.functionsUtil.removeStoredItem('walletProvider');
+          this.functionsUtil.removeStoredItem('connectorName');
+          this.functionsUtil.setLocalStorage('context',JSON.stringify({active:context.active,connectorName:context.connectorName}));
           setConnectorName = null;
           await context.setConnector('Infura');
+          if (context.connector && typeof context.connector.disable === 'function'){
+            await context.connector.disable();
+          }
         }
 
         this.functionsUtil.customLog('initWeb3 skip due to setConnectorName ('+setConnectorName+') already set');
         return web3;
       }
-    } else if (context.connectorName === "WalletConnect") {
+      */
+    }
+    /* else if (context.connectorName === "WalletConnect") {
       if (!context.account) {
 
         // WalletConnect already opened
@@ -255,12 +278,12 @@ class RimbleTransaction extends React.Component {
 
         WalletConnectQRCodeModal.open(
           context.connector.walletConnector.uri,
-          await (async () => {
-                  document.getElementById('walletconnect-wrapper').remove();
-                  this.props.setConnector('Infura',null);
-                  await context.setConnector('Infura');
-                  setConnectorName = null;
-                })
+          async () => {
+            document.getElementById('walletconnect-wrapper').remove();
+            this.props.setConnector('Infura',null);
+            await context.setConnector('Infura');
+            setConnectorName = null;
+          }
         );
       } else {
         try {
@@ -268,12 +291,15 @@ class RimbleTransaction extends React.Component {
         } catch {}
       }
     // Reset web3 if Infura
-    } else if (context.active && (connectorName === 'Infura' || context.connectorName === "Infura")){
+    } */
+    else if (context.active && (connectorName === 'Infura' || context.connectorName === "Infura")){
       if (typeof web3.currentProvider.disable === 'function'){
         await web3.currentProvider.disable();
+      } else if (context.connector && typeof context.connector.disable === 'function'){
+        await context.connector.disable();
       }
-      setConnectorName = null;
       web3 = null;
+      setConnectorName = null;
     }
 
     let web3Host = null;
@@ -361,7 +387,7 @@ class RimbleTransaction extends React.Component {
               if (biconomyInfo.enableLogin && !biconomy.isLogin && !biconomyLoginProcessing){
                 biconomyLoginProcessing = true;
                 biconomy.login(context.account, (error, response) => {
-                  console.log('biconomy login',error,response);
+                  // console.log('biconomy login',error,response);
                   // Failed to login with Biconomy
                   if (error) {
                     return this.setState({
@@ -1309,6 +1335,7 @@ class RimbleTransaction extends React.Component {
     transaction.status = "initialized";
     transaction.confirmationCount = 0;
     transaction.token = this.props.selectedToken;
+    transaction.strategy = this.props.selectedStrategy;
 
     return transaction;
   }

@@ -559,7 +559,7 @@ class FunctionsUtil {
           if (selectedToken){
             Object.keys(transactions).forEach(txKey => {
               const tx = transactions[txKey];
-              if (!output[txKey] && tx.token.toUpperCase() === selectedToken.toUpperCase()){
+              if (!output[txKey] && tx.token && tx.token.toUpperCase() === selectedToken.toUpperCase()){
                 output[txKey] = transactions[txKey];
               }
             });
@@ -872,8 +872,30 @@ class FunctionsUtil {
               }
             }
 
-            const oldContractAddr1 = tokenConfig.migration.oldContract.address.replace('x','').toLowerCase();
-            const executeMetaTransactionInternalTransfers = executeMetaTransactionReceipt.logs.filter((tx) => { return tx.address.toLowerCase()===tokenConfig.address.toLowerCase() && tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${oldContractAddr1}`; });
+            // console.log('executeMetaTransactionReceipt',executeMetaTransactionReceipt,tokenConfig);
+
+            let executeMetaTransactionContractAddr = null;
+            let executeMetaTransactionInternalTransfers = [];
+
+            // Handle migration tx
+            if (tokenConfig.migration && tokenConfig.migration.oldContract){
+              if (executeMetaTransactionReceipt.logs){
+                executeMetaTransactionContractAddr = tokenConfig.migration.oldContract.address.replace('x','').toLowerCase();
+                executeMetaTransactionInternalTransfers = executeMetaTransactionReceipt.logs.filter((tx) => { return tx.address.toLowerCase()===tokenConfig.address.toLowerCase() && tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${executeMetaTransactionContractAddr}`; });
+              } else if (executeMetaTransactionReceipt.events){
+                executeMetaTransactionInternalTransfers = Object.values(executeMetaTransactionReceipt.events).filter((tx) => { return tx.address.toLowerCase()===tokenConfig.address.toLowerCase(); });
+              }
+            }
+
+            // Handle deposit tx
+            if (!executeMetaTransactionInternalTransfers.length){
+              if (executeMetaTransactionReceipt.logs){
+                executeMetaTransactionContractAddr = tokenConfig.idle.address.replace('x','').toLowerCase();
+                executeMetaTransactionInternalTransfers = executeMetaTransactionReceipt.logs.filter((tx) => { return tx.address.toLowerCase()===tokenConfig.address.toLowerCase() && tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${executeMetaTransactionContractAddr}`; });
+              } else if (executeMetaTransactionReceipt.events){
+                executeMetaTransactionInternalTransfers = Object.values(executeMetaTransactionReceipt.events).filter((tx) => { return tx.address.toLowerCase()===tokenConfig.address.toLowerCase(); });
+              }
+            }
 
             if (!executeMetaTransactionInternalTransfers.length){
               return false;
@@ -881,7 +903,11 @@ class FunctionsUtil {
 
             const internalTransfer = executeMetaTransactionInternalTransfers.pop();
 
-            const metaTxValue = parseInt(internalTransfer.data,16);
+            const metaTxValue = internalTransfer.data ? parseInt(internalTransfer.data,16) : (internalTransfer.raw && internalTransfer.raw.data) ? parseInt(internalTransfer.raw.data,16) : null;
+            if (!metaTxValue){
+              return false;
+            }
+
             const metaTxValueFixed = this.fixTokenDecimals(metaTxValue,tokenConfig.decimals);
             realTx.value = metaTxValueFixed;
             realTx.tokenAmount = metaTxValueFixed;
@@ -1560,13 +1586,11 @@ class FunctionsUtil {
         messageToSign,
         userAddress
       );
-      // console.info(`User signature is ${signature}`);
+
       const { r, s, v } = this.getSignatureParameters_v4(signature);
 
-      // console.log(userAddress);
-      // console.log(JSON.stringify(message));
-      // console.log(message);
-      // console.log(getSignatureParameters(signature));
+      // console.log('executeMetaTransaction', [userAddress, functionSignature, messageToSign, `${messageToSign.length}`, r, s, v]);
+
       this.contractMethodSendWrapper(contractName, 'executeMetaTransaction', [userAddress, functionSignature, message, `${messageToSign.length}`, r, s, v], callback, callback_receipt);
     } catch (error) {
       callback(null,error);
@@ -1952,9 +1976,6 @@ class FunctionsUtil {
         const tokenAprs = await this.getTokenAprs(tokenConfig,tokenAllocation);
         if (tokenAllocation && tokenAllocation.totalAllocation && !tokenAllocation.totalAllocation.isNaN()){
           const totalAllocation = await this.convertTokenBalance(tokenAllocation.totalAllocation,token,tokenConfig,isRisk);
-          // if (token==='WBTC'){
-          //   debugger;
-          // }
           totalAUM = totalAUM.plus(totalAllocation);
           if (tokenAprs.avgApr && !tokenAprs.avgApr.isNaN()){
             avgAPR = avgAPR.plus(totalAllocation.times(tokenAprs.avgApr))

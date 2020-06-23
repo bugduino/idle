@@ -395,7 +395,7 @@ class TxProgressBar extends Component {
           )
         }
         {
-          this.props.hash &&
+          this.props.hash ? (
             <Link
               mt={0}
               target={'_blank'}
@@ -424,6 +424,35 @@ class TxProgressBar extends Component {
                 />
               </Flex>
             </Link>
+          ) : typeof this.props.cancelTransaction === 'function' ? (
+              <Link
+                mt={0}
+                color={'cellText'}
+                hoverColor={'dark-gray'}
+                href={`javascript:void(0)`}
+                onClick={ e => this.props.cancelTransaction() }
+              >
+                <Flex
+                  alignItems={'center'}
+                  flexDirection={'row'}
+                  justifyContent={'center'}
+                >
+                  <Text
+                    fontSize={0}
+                    color={'cellText'}
+                    textAlign={'center'}
+                  >
+                    Cancel transaction
+                  </Text>
+                  <Icon
+                    ml={1}
+                    size={'0.85em'}
+                    name={'Cancel'}
+                    color={'cellText'}
+                  />
+                </Flex>
+              </Link>
+          ) : null
         }
       </Flex>
     );

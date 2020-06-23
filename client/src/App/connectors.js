@@ -6,15 +6,16 @@ import { Connectors } from "web3-react";
 import TorusApi from '@toruslabs/torus-embed';
 import globalConfigs from '../configs/globalConfigs';
 import TorusConnector from './connectors/TorusConnector';
-import WalletConnectApi from "@walletconnect/web3-subprovider";
 import AuthereumConnector from './connectors/AuthereumConnector';
+import WalletConnectProvider from "@walletconnect/web3-provider";
+// import WalletConnectProvider from "@walletconnect/web3-subprovider";
+import WalletConnectConnector from './connectors/WalletConnectConnector';
 
 const {
   InjectedConnector,
   NetworkOnlyConnector,
   TrezorConnector,
   LedgerConnector,
-  WalletConnectConnector,
   FortmaticConnector,
   PortisConnector
 } = Connectors;
@@ -57,10 +58,11 @@ const Ledger = new LedgerConnector({
 });
 
 const WalletConnect = new WalletConnectConnector({
-  api: WalletConnectApi,
-  bridge: "https://bridge.walletconnect.org",
+  defaultNetwork,
   supportedNetworkURLs,
-  defaultNetwork
+  api: WalletConnectProvider,
+  infuraId:env.REACT_APP_INFURA_KEY,
+  bridge: "https://bridge.walletconnect.org",
 });
 
 const Fortmatic = new FortmaticConnector({
@@ -83,7 +85,7 @@ const Authereum = new AuthereumConnector({
 const Torus = new TorusConnector({
   api: TorusApi,
   initParams:{
-    buildEnv: "production", // default: production
+    buildEnv: 'production', // default: production
     enableLogging: false, // default: false
     network: {
       host: globalConfigs.network.availableNetworks[defaultNetwork].toLowerCase(), // default: mainnet

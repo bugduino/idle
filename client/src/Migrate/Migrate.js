@@ -149,6 +149,11 @@ class Migrate extends Component {
 
     switch (this.state.action){
       case 'redeem':
+
+        if (!this.props.tokenConfig.migration || !this.props.tokenConfig.migration.oldContract){
+          return false;
+        }
+
         const oldContractName = this.props.tokenConfig.migration.oldContract.name;
 
         const idleTokenToRedeem = this.functionsUtil.normalizeTokenAmount(inputValue,18);

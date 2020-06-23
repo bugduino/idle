@@ -16,6 +16,7 @@ import FastBalanceSelector from '../FastBalanceSelector/FastBalanceSelector';
 class DepositRedeem extends Component {
 
   state = {
+    txError:{},
     tokenAPY:'-',
     inputValue:{},
     processing:{},
@@ -251,6 +252,10 @@ class DepositRedeem extends Component {
     newState.tokenApproved = tokenApproved;
     newState.contractPaused = contractPaused;
     newState.migrationEnabled = migrationEnabled;
+    newState.txError = {
+      redeem:false,
+      deposit:false
+    };
     newState.processing = {
       redeem:{
         txHash:null,
@@ -280,6 +285,22 @@ class DepositRedeem extends Component {
       this.checkAction();
       this.loadAPY();
     });
+  }
+
+  cancelTransaction = async () => {
+    this.setState((prevState) => ({
+      processing: {
+        ...prevState.processing,
+        approve:{
+          txHash:null,
+          loading:false
+        },
+        [this.state.action]:{
+          txHash:null,
+          loading:false
+        }
+      }
+    }));
   }
 
   executeAction = async () => {
@@ -320,6 +341,7 @@ class DepositRedeem extends Component {
             };
           }
 
+          const txError = tx.status === 'error';
           const txSucceeded = tx.status === 'success';
 
           const eventData = {
@@ -356,6 +378,12 @@ class DepositRedeem extends Component {
                 [this.state.action]: this.functionsUtil.BNify(0)
               }
             }));
+          } else if (txError){
+            this.setState({
+              txError:{
+                [this.state.action]: true
+              }
+            });
           }
         };
 
@@ -375,11 +403,15 @@ class DepositRedeem extends Component {
         const gasLimitDeposit = this.functionsUtil.BNify(1000000);
         const mintProxyContractInfo = this.state.actionProxyContract[this.state.action];
         if (mintProxyContractInfo && this.props.biconomy && this.state.metaTransactionsEnabled){
-          const depositParams = [tokensToDeposit, this.props.tokenConfig.idle.address];
           const mintProxyContract = this.state.actionProxyContract[this.state.action].contract;
+          const depositParams = [tokensToDeposit, this.props.tokenConfig.idle.address];
           // console.log('mintProxyContract',mintProxyContractInfo.function,depositParams);
-          const functionSignature = mintProxyContract.methods[mintProxyContractInfo.function](...depositParams).encodeABI();
-          this.functionsUtil.sendBiconomyTxWithPersonalSign(mintProxyContractInfo.name, functionSignature, callbackDeposit, callbackReceiptDeposit);
+          if (this.state.metaTransactionsEnabled){
+            const functionSignature = mintProxyContract.methods[mintProxyContractInfo.function](...depositParams).encodeABI();
+            this.functionsUtil.sendBiconomyTxWithPersonalSign(mintProxyContractInfo.name, functionSignature, callbackDeposit, callbackReceiptDeposit);
+          } else {
+            this.props.contractMethodSendWrapper(mintProxyContractInfo.name, mintProxyContractInfo.function, depositParams, null, callbackDeposit, callbackReceiptDeposit, gasLimitDeposit);
+          }
         } else {
           const _skipWholeRebalance = this.functionsUtil.getGlobalConfig(['contract','methods','deposit','skipRebalance']);
 
@@ -810,17 +842,42 @@ class DepositRedeem extends Component {
                           justifyContent:'center',
                         }}
                       >
-                        <Text
-                          mt={1}
-                          fontSize={1}
-                          color={'cellText'}
-                          textAlign={'center'}
-                        >
-                          Meta-Transactions are {this.state.metaTransactionsEnabled ? 'available' : 'disabled'} for {this.state.action}s!<br />
-                          {
-                            this.state.metaTransactionsEnabled && !this.state.actionProxyContract[this.state.action].approved && `Please either enable the Smart-Contract to enjoy gas-less ${this.state.action} or just disable meta-tx.`
-                          }
-                        </Text>
+                        {
+                          this.state.metaTransactionsEnabled && this.state.txError[this.state.action] && this.state.actionProxyContract[this.state.action].approved ? (
+                            <Flex
+                              width={1}
+                              alignItems={'center'}
+                              flexDirection={'column'}
+                              justifyContent={'center'}
+                            >
+                              <Icon
+                                size={'2.3em'}
+                                name={'Warning'}
+                                color={'cellText'}
+                              />
+                              <Text
+                                mt={1}
+                                fontSize={1}
+                                color={'cellText'}
+                                textAlign={'center'}
+                              >
+                                Seems like you are having some trouble with Meta-Transactions... Disable them by unchecking the box below and try again!
+                              </Text>
+                            </Flex>
+                          ) : (
+                            <Text
+                              mt={1}
+                              fontSize={1}
+                              color={'cellText'}
+                              textAlign={'center'}
+                            >
+                              Meta-Transactions are {this.state.metaTransactionsEnabled ? 'available' : 'disabled'} for {this.state.action}s!<br />
+                              {
+                                this.state.metaTransactionsEnabled && !this.state.actionProxyContract[this.state.action].approved && `Please either enable the Smart-Contract to enjoy gas-less ${this.state.action} or just disable meta-tx.`
+                              }
+                            </Text>
+                          )
+                        }
                         <Checkbox
                           mt={2}
                           required={false}
@@ -869,7 +926,13 @@ class DepositRedeem extends Component {
                               <Flex
                                 flexDirection={'column'}
                               >
-                                <TxProgressBar web3={this.props.web3} waitText={`Approve estimated in`} endMessage={`Finalizing approve request...`} hash={this.state.processing['approve'].txHash} />
+                                <TxProgressBar
+                                  web3={this.props.web3}
+                                  waitText={`Approve estimated in`}
+                                  endMessage={`Finalizing approve request...`}
+                                  hash={this.state.processing['approve'].txHash}
+                                  cancelTransaction={this.cancelTransaction.bind(this)}
+                                />
                               </Flex>
                             ) : (
                               <Flex
@@ -980,7 +1043,13 @@ class DepositRedeem extends Component {
                             mt={4}
                             flexDirection={'column'}
                           >
-                            <TxProgressBar web3={this.props.web3} waitText={`${this.functionsUtil.capitalize(this.state.action)} estimated in`} endMessage={`Finalizing ${this.state.action} request...`} hash={this.state.processing[this.state.action].txHash} />
+                            <TxProgressBar
+                              web3={this.props.web3}
+                              cancelTransaction={this.cancelTransaction.bind(this)}
+                              hash={this.state.processing[this.state.action].txHash}
+                              endMessage={`Finalizing ${this.state.action} request...`}
+                              waitText={`${this.functionsUtil.capitalize(this.state.action)} estimated in`}
+                            />
                           </Flex>
                         )
                       )

@@ -41,6 +41,7 @@ export default function Web3ConnectionButtons(props) {
     // return await context.setConnector(connectorName);
   };
   const unsetConnector = async () => {
+    context.unsetConnector();
     if (props.setConnector && typeof props.setConnector === 'function'){
       props.setConnector('Infura','Infura');
     }

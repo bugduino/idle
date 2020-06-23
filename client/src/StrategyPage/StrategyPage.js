@@ -387,7 +387,7 @@ class StrategyPage extends Component {
                   </Flex>
                 ) : (
                   <Flex
-                    mb={[3,4]}
+                    mb={3}
                     mx={'auto'}
                     width={[1,0.8]}
                     aligItems={'center'}
