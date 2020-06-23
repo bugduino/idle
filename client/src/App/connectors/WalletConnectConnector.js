@@ -60,7 +60,6 @@ export default class WalletConnectConnector extends Connector {
   async disable() {
     if (this.provider){
       await this.provider.close();
-      console.log('Connector closed');
       return this.provider;
     }
   }

@@ -230,7 +230,7 @@ class RimbleTransaction extends React.Component {
       connectorName = this.props.connectorName;
     }
 
-    const last_context = localStorage ? JSON.parse(localStorage.getItem('context')) : null;
+    // const last_context = localStorage ? JSON.parse(localStorage.getItem('context')) : null;
 
     // this.functionsUtil.customLog('initWeb3',connectorName,setConnectorName);
 
