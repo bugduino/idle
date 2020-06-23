@@ -1296,6 +1296,7 @@ class StatsChart extends Component {
 
         let itemIndex = 0;
         let firstIdleBlock = null;
+        // let prevTokenPrice = null;
         let firstTokenPrice = null;
         const totalItems = apiResults.length;
 
@@ -1325,7 +1326,11 @@ class StatsChart extends Component {
           const itemPos = Math.floor(itemIndex/totalItems*100);
           const blocknumber = d.blocknumber;
 
+          // console.log(x,d.timestamp,blocknumber,firstTokenPrice.toString(),tokenPrice.toString(),y);
+
           itemIndex++;
+
+          // prevTokenPrice = tokenPrice;
 
           return { x, y, apy, blocknumber, itemPos };
         });
