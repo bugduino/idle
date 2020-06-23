@@ -114,8 +114,11 @@ class RimbleTransaction extends React.Component {
     this.componentUnmounted = true;
   }
 
-  componentDidMount = async () => {
+  componentWillMount(){
     this.loadUtils();
+  }
+
+  componentDidMount = async () => {
     this.initSimpleID();
 
     // console.log('RimbleWeb3 componentDidMount');
@@ -142,6 +145,8 @@ class RimbleTransaction extends React.Component {
   }
 
   componentDidUpdate = async (prevProps, prevState) => {
+
+    this.loadUtils();
 
     // console.log('componentDidUpdate',prevProps.connectorName,this.props.connectorName,this.props.context.connectorName,this.props.context.active,(this.props.context.error ? this.props.context.error.message : null));
 
@@ -200,14 +205,10 @@ class RimbleTransaction extends React.Component {
     if (tokenChanged/* || availableTokensChanged*/ || availableStrategiesChanged){
       await this.initializeContracts();
     }
-
-    this.loadUtils();
   }
 
   // Initialize a web3 provider
   initWeb3 = async (connectorName=null) => {
-
-    this.loadUtils();
 
     // Suppress console warning
     if (window.ethereum && window.ethereum.autoRefreshOnNetworkChange) {
@@ -1354,10 +1355,8 @@ class RimbleTransaction extends React.Component {
     transactions[`tx${updatedTransaction.created}`] = transaction;
     this.setState({ transactions });
 
-    // console.log('updateTransaction',transactions);
-
     // Save transactions in localStorage only if pending or succeeded
-    if (['pending','success','confirmed'].includes(transaction.status)){
+    if (['pending','success','confirmed'].includes(transaction.status.toLowerCase())){
       // Clear cached data
       this.functionsUtil.clearCachedData();
 

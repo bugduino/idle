@@ -28,11 +28,11 @@ import { ThemeProvider, Box, Text, Link, Image, Flex } from 'rimble-ui';
 
 class App extends Component {
   state = {
+    cachedData:{},
     buyToken: null,
     selectedTab: '1',
     connecting:false,
     route: "default", // or 'onboarding'
-    cachedData:{},
     tokenConfig: null,
     genericError: null,
     customAddress:null,

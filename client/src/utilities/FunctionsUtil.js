@@ -247,6 +247,7 @@ class FunctionsUtil {
     }
 
     const etherscanTxs = await this.getEtherscanTxs(account,0,'latest',enabledTokens);
+
     const amountLents = {};
 
     enabledTokens.forEach((selectedToken) => {
@@ -728,13 +729,13 @@ class FunctionsUtil {
         const allowedMethods = {
           mintIdleToken:'Deposit',
           redeemIdleToken:'Redeem',
-          migrateFromToIdle:'Migrated',
+          migrateFromToIdle:'Migrate',
           mintIdleTokensProxy:'Deposit',
-          migrateFromAaveToIdle:'Migrated',
-          migrateFromIearnToIdle:'Migrated',
-          executeMetaTransaction:'Migrated',
-          migrateFromFulcrumToIdle:'Migrated',
-          migrateFromCompoundToIdle:'Migrated',
+          migrateFromAaveToIdle:'Migrate',
+          migrateFromIearnToIdle:'Migrate',
+          executeMetaTransaction:'Migrate',
+          migrateFromFulcrumToIdle:'Migrate',
+          migrateFromCompoundToIdle:'Migrate',
         };
         const pendingStatus = ['pending','started'];
 
@@ -872,8 +873,7 @@ class FunctionsUtil {
               }
             }
 
-            // console.log('executeMetaTransactionReceipt',executeMetaTransactionReceipt,tokenConfig);
-
+            let action = null;
             let executeMetaTransactionContractAddr = null;
             let executeMetaTransactionInternalTransfers = [];
 
@@ -885,6 +885,10 @@ class FunctionsUtil {
               } else if (executeMetaTransactionReceipt.events){
                 executeMetaTransactionInternalTransfers = Object.values(executeMetaTransactionReceipt.events).filter((tx) => { return tx.address.toLowerCase()===tokenConfig.address.toLowerCase(); });
               }
+
+              if (executeMetaTransactionInternalTransfers.length){
+                action = 'Migrate';
+              }
             }
 
             // Handle deposit tx
@@ -895,6 +899,10 @@ class FunctionsUtil {
               } else if (executeMetaTransactionReceipt.events){
                 executeMetaTransactionInternalTransfers = Object.values(executeMetaTransactionReceipt.events).filter((tx) => { return tx.address.toLowerCase()===tokenConfig.address.toLowerCase(); });
               }
+
+              if (executeMetaTransactionInternalTransfers.length){
+                action = 'Deposit';
+              }
             }
 
             if (!executeMetaTransactionInternalTransfers.length){
@@ -904,11 +912,13 @@ class FunctionsUtil {
             const internalTransfer = executeMetaTransactionInternalTransfers.pop();
 
             const metaTxValue = internalTransfer.data ? parseInt(internalTransfer.data,16) : (internalTransfer.raw && internalTransfer.raw.data) ? parseInt(internalTransfer.raw.data,16) : null;
+
             if (!metaTxValue){
               return false;
             }
 
             const metaTxValueFixed = this.fixTokenDecimals(metaTxValue,tokenConfig.decimals);
+            realTx.action = action;
             realTx.value = metaTxValueFixed;
             realTx.tokenAmount = metaTxValueFixed;
           break;
@@ -1720,7 +1730,10 @@ class FunctionsUtil {
   }
   clearCachedData = () => {
     if (this.props.clearCachedData && typeof this.props.clearCachedData === 'function'){
+      // console.log('clearCachedData',this.props.clearCachedData,typeof this.props.clearCachedData === 'function');
       this.props.clearCachedData();
+    } else {
+      // console.log('clearCachedData - Function not found!');
     }
     return false;
   }
@@ -1729,6 +1742,7 @@ class FunctionsUtil {
   */
   setCachedData = (key,data,TTL=120) => {
     if (this.props.setCachedData && typeof this.props.setCachedData === 'function'){
+      // console.log('setCachedData',key);
       this.props.setCachedData(key,data,TTL);
     }
     return data;
@@ -1737,6 +1751,7 @@ class FunctionsUtil {
     if (this.props.cachedData && this.props.cachedData[key.toLowerCase()]){
       const cachedData = this.props.cachedData[key.toLowerCase()];
       if (!cachedData.expirationDate || cachedData.expirationDate>=parseInt(new Date().getTime()/1000)){
+        // console.log('getCachedData',key);
         return cachedData.data;
       }
     }
