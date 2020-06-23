@@ -217,7 +217,7 @@ const globalConfigs = {
         chart:{
           labelTextColorModifiers:['brighter', 5]
         },
-        startTimestamp:'2020-06-11'
+        startTimestamp:'2020-06-22'
       },
       SUSD:{
         enabled:true,
@@ -238,7 +238,7 @@ const globalConfigs = {
           rgb:[235, 148, 68],
           hsl:['29', '81%', '59%']
         },
-        startTimestamp:'2020-06-22',
+        startTimestamp:'2020-06-15',
         conversionRateField:'wbtcDAIPrice',
         chart:{
           labelTextColorModifiers:['darker', 4]
