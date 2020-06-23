@@ -38,7 +38,7 @@ export default class AuthereumConnector extends Connector {
     return null;
   }
 
-  async onDeactivation() {
+  async disable() {
     const provider = await this.getProvider();
     if (provider){
       await provider.disable();
