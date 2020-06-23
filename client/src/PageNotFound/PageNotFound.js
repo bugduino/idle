@@ -1,8 +1,8 @@
-import React, { Component } from 'react';
-import { Box, Flex, Heading, Button } from 'rimble-ui'
-import styles from './PageNotFound.module.scss';
-import SmartContractControls_styles from '../SmartContractControls/SmartContractControls.module.scss';
 import Footer from '../Footer/Footer';
+import React, { Component } from 'react';
+import styles from './PageNotFound.module.scss';
+import { Box, Flex, Heading, Button } from 'rimble-ui'
+import Header_styles from '../utilities/components/Header.module.scss';
 import {
   Link as RouterLink,
 } from "react-router-dom";
@@ -25,7 +25,7 @@ class PageNotFound extends Component {
               </Heading.h3>
               <RouterLink to="/" style={{textDecoration:'none'}}>
                 <Button
-                  className={SmartContractControls_styles.gradientButton}
+                  className={Header_styles.gradientButton}
                   borderRadius={4}
                   size={this.props.isMobile ? 'medium' : 'medium'}
                   mainColor={'blue'}
