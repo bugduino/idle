@@ -672,7 +672,7 @@ class DepositRedeem extends Component {
     const useMetaTx = metaTransactionsAvailable && this.state.metaTransactionsEnabled;
     const totalBalance = this.state.action === 'deposit' ? this.props.tokenBalance : this.props.redeemableBalance;
     const showBuyFlow = this.state.tokenApproved && !this.state.contractPaused && !this.state.migrationEnabled && this.state.action === 'deposit' && this.state.componentMounted && !this.state.canDeposit;
-    const migrateText = this.state.migrationEnabled ? this.props.tokenConfig.migration.message : null;
+    const migrateText = this.state.migrationEnabled && this.props.tokenConfig.migration.message !== undefined ? this.props.tokenConfig.migration.message : null;
 
     return (
       <Flex

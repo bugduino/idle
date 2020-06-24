@@ -47,6 +47,7 @@ export default function Web3ConnectionButtons(props) {
     }
   };
 
+  // Show provider fields to detect in-app browser
   // alert(JSON.stringify(Object.keys(window.web3.currentProvider)));
     
   const isOpera = GeneralUtil.isOpera();

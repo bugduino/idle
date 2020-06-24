@@ -2065,14 +2065,13 @@ class FunctionsUtil {
     if (protocolsTokens){
       await this.asyncForEach(Object.keys(protocolsTokens),async (token) => {
         const tokenConfig = protocolsTokens[token];
-        let tokenContract = this.getContractByName(token);
+        let tokenContract = this.getContractByName(tokenConfig.token);
         if (!tokenContract && tokenConfig.abi){
-          tokenContract = await this.props.initContract(token,tokenConfig.address,tokenConfig.abi);
+          tokenContract = await this.props.initContract(tokenConfig.token,tokenConfig.address,tokenConfig.abi);
         }
         if (tokenContract){
-          const tokenBalance = await this.getTokenBalance(token,this.props.account);
+          const tokenBalance = await this.getTokenBalance(tokenConfig.token,this.props.account);
           if (tokenBalance && tokenBalance.gte(minTokenBalance)){
-            console.log(token,tokenBalance.toString());
             tokenBalances[token] = {
               tokenConfig,
               balance:tokenBalance,

@@ -419,8 +419,8 @@ class StrategyPage extends Component {
                   {
                     this.state.tokensToMigrate.length>0 &&
                     <Flex
-                      mb={ this.state.depositedTokens.length>0 ? [3,4] : 0 }
                       width={1}
+                      mb={[3,4]}
                       id={"migrate-assets"}
                       flexDirection={'column'}
                     >

@@ -84,8 +84,7 @@ class AssetField extends Component {
       let tokenAprs = null;
       switch (fieldName){
         case 'tokenBalance':
-          let tokenBalance = this.props.account ? await this.functionsUtil.getTokenBalance(this.props.token,this.props.account) : false;
-          // console.log('tokenBalance',this.props.account,this.props.token,tokenBalance);
+          let tokenBalance = this.props.account ? await this.functionsUtil.getTokenBalance(this.props.tokenConfig.token,this.props.account) : false;
           if (!tokenBalance){
             tokenBalance = '-';
           }

@@ -103,7 +103,7 @@ class MigrateModal extends React.Component {
                 color={'mid-gray'}
                 textAlign={'center'}
               >
-                You can migrate you funds from Compound, Aave Fulcrum and iEarn with just one transaction and with no cost.
+                You can migrate you funds from Compound, Aave, Fulcrum, iEarn and Idle V2 with just one transaction and with no cost.
               </Text>
             </Flex>
             <Flex
@@ -130,10 +130,10 @@ class MigrateModal extends React.Component {
                           name:'icon',
                           props:{
                             mr:2,
-                            height:'2.5em'
+                            height:'2.3em'
                           }
                         }}
-                        tokenConfig={this.props.protocolsTokensBalances.tokenConfig}
+                        tokenConfig={this.props.protocolsTokensBalances[token].tokenConfig}
                       />
                       <SmartNumber
                         mr={2}
@@ -147,7 +147,7 @@ class MigrateModal extends React.Component {
                           name:'tokenName',
                           props:fieldProps
                         }}
-                        tokenConfig={this.props.protocolsTokensBalances.tokenConfig}
+                        tokenConfig={this.props.protocolsTokensBalances[token].tokenConfig}
                       />
                     </Flex>
                   ) )

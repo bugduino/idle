@@ -421,6 +421,16 @@ const globalConfigs = {
           ]
         },
         availableTokens:{
+          idleDAIv2:{
+            decimals:18,
+            enabled:true,
+            protocol:'idle',
+            baseToken:'DAI',
+            token:'idleDAIOld',
+            icon:'images/tokens/idleDAI.svg',
+            migrateFunction:'migrateFromToIdle',
+            address:'0x10eC0D497824e342bCB0EDcE00959142aAa766dD',
+          },
           cDAI:{
             decimals:8,
             enabled:true,
@@ -469,6 +479,16 @@ const globalConfigs = {
             icon:'images/tokens/yDAI.png',
             migrateFunction:'migrateFromIearnToIdle',
             address:"0x16de59092dAE5CcF4A1E6439D611fd0653f0Bd01",
+          },
+          idleUSDCv2:{
+            decimals:18,
+            enabled:true,
+            protocol:'idle',
+            baseToken:'USDC',
+            token:'idleUSDCOld',
+            icon:'images/tokens/idleUSDC.svg',
+            migrateFunction:'migrateFromToIdle',
+            address:'0xeB66ACc3d011056B00ea521F8203580C2E5d3991',
           },
           cUSDC:{
             decimals:8,
@@ -568,6 +588,16 @@ const globalConfigs = {
             migrateFunction:'migrateFromIearnToIdle',
             address:"0x83f798e925BcD4017Eb265844FDDAbb448f1707D",
           },
+          idleSUSDv2:{
+            decimals:18,
+            enabled:true,
+            protocol:'idle',
+            baseToken:'SUSD',
+            token:'idleSUSDYieldOld',
+            migrateFunction:'migrateFromToIdle',
+            icon:'images/tokens/idleSUSDYield.svg',
+            address:'0xb39ca0261a1b2986a6a9Fe38d344B56374963dE5',
+          },
           aSUSD:{
             decimals:6,
             enabled:true,
@@ -576,6 +606,16 @@ const globalConfigs = {
             baseToken:'SUSD',
             migrateFunction:'migrateFromAaveToIdle',
             address:"0x625aE63000f46200499120B906716420bd059240",
+          },
+          idleTUSDv2:{
+            decimals:18,
+            enabled:true,
+            protocol:'idle',
+            baseToken:'TUSD',
+            token:'idleTUSDYieldOld',
+            migrateFunction:'migrateFromToIdle',
+            icon:'images/tokens/idleTUSDYield.svg',
+            address:'0x7DB7A4a50b26602E56536189Aa94678C80F8E5b6',
           },
           aTUSD:{
             decimals:6,
