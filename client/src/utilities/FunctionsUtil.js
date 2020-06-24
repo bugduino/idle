@@ -1759,7 +1759,6 @@ class FunctionsUtil {
     }
 
     if (blockNumber !== 'latest'){
-      console.log('tokenPrice',tokenConfig.idle.token,tokenPrice.toString());
       this.setCachedData(cachedDataKey,tokenPrice);
     }
 

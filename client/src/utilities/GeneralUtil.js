@@ -12,10 +12,16 @@ const GeneralUtil = {
     return hasMetaMask;
   },
   isTrustWallet: () => {
-    return typeof window.web3.currentProvider.isTrust !== 'undefined' && window.web3.currentProvider.isTrust;
+    if (typeof window.web3 !== "undefined" && typeof window.web3.currentProvider !== 'undefined'){
+      return typeof window.web3.currentProvider.isTrust !== 'undefined' && window.web3.currentProvider.isTrust;
+    }
+    return false;
   },
   isCoinbaseWallet: () => {
-    return typeof window.web3.currentProvider.isCoinbaseWallet !== 'undefined' && window.web3.currentProvider.isCoinbaseWallet;
+    if (typeof window.web3 !== "undefined" && typeof window.web3.currentProvider !== 'undefined'){
+      return typeof window.web3.currentProvider.isCoinbaseWallet !== 'undefined' && window.web3.currentProvider.isCoinbaseWallet;
+    }
+    return false;
   },
   hasDapper: () => {
     let hasDapper = typeof window.DapperEthereum !== 'undefined';
