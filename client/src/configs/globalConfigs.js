@@ -49,12 +49,13 @@ const globalConfigs = {
     },
     dapper:{
       enabled:true,
+      icon:'dapper.png',
       subcaption:'Browser extension',
-      icon:'dapper.png'
     },
     walletconnect:{
       enabled:true,
-      subcaption:'Connect with Walletconnect'
+      iconModal:'walletconnect.png',
+      subcaption:'Connect with QR code'
     },
     fortmatic:{
       enabled:true,
