@@ -124,6 +124,8 @@ class Stats extends Component {
     newState.minDate = newState.minStartTime._d;
     newState.maxDate = newState.maxEndDate._d;
 
+    // console.log('loadParams',newState);
+
     if (newState !== this.state){
       await this.setState(newState);
     }
@@ -279,11 +281,11 @@ class Stats extends Component {
 
     const apiResults = this.filterTokenData(apiResults_unfiltered);
 
-    // console.log('loadApiData',startTimestamp,endTimestamp,apiResults_unfiltered,apiResults);
-
     if (!apiResults || !apiResults_unfiltered || !apiResults.length || !apiResults_unfiltered.length){
       return false;
     }
+
+    // console.log('loadApiData',startTimestamp,endTimestamp,new Date(startTimestamp*1000),new Date(endTimestamp*1000),apiResults_unfiltered);
 
     const firstResult = apiResults[0];
     const lastResult = Object.values(apiResults).pop();

@@ -1207,7 +1207,11 @@ class FunctionsUtil {
       const filteredCachedData = cachedData.filter( c => ( (c.startTimestamp===null || (startTimestamp && c.startTimestamp<=startTimestamp)) && (c.endTimestamp===null || (endTimestamp && c.endTimestamp>=endTimestamp)) ) )
 
       if (filteredCachedData && filteredCachedData.length>0){
-        return filteredCachedData.pop().data;
+        const filteredData = filteredCachedData.pop().data;
+        if (filteredData){
+          return filteredData.filter( d => ((!startTimestamp || d.timestamp>=startTimestamp) && (!endTimestamp || d.timestamp<=endTimestamp)) );
+        }
+        return null;
       }
     // Initialize cachedData
     } else {
