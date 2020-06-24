@@ -107,6 +107,8 @@ class StrategyPage extends Component {
           if (amountLentToken){
             totalAmountLent = totalAmountLent.plus(amountLentToken);
           }
+
+          // debugger;
         });
 
         const earningsStart = totalEarnings;

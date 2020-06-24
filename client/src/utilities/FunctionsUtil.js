@@ -607,6 +607,7 @@ class FunctionsUtil {
           const storedTx = storedTxs[this.props.account][tokenKey][txKey] ? storedTxs[this.props.account][tokenKey][txKey] : tx;
 
           let tokenPrice = null;
+          
           if (storedTx.tokenPrice && !this.BNify(storedTx.tokenPrice).isNaN()){
             tokenPrice = this.BNify(storedTx.tokenPrice);
           } else {
@@ -614,6 +615,8 @@ class FunctionsUtil {
             storedTx.tokenPrice = tokenPrice;
             // console.log(tx.blockNumber,tokenPrice,tokenPrice.toString());
           }
+
+          // debugger;
 
           const idleTokens = this.BNify(tx.value);
           let tokensTransfered = tokenPrice.times(idleTokens);
@@ -1724,12 +1727,42 @@ class FunctionsUtil {
     });
   }
   getIdleTokenPrice = async (tokenConfig,blockNumber='latest',decimals=false) => {
+
+    const cachedDataKey = `idleTokenPrice_${tokenConfig.idle.address}_${blockNumber}`;
+    if (blockNumber !== 'latest'){
+      const cachedData = this.getCachedData(cachedDataKey);
+      if (cachedData !== null){
+        return cachedData;
+      }
+    }
+
     let tokenPrice = await this.genericContractCall(tokenConfig.idle.token,'tokenPrice',[],{},blockNumber);
-    decimals = decimals ? decimals : tokenConfig.decimals;
-    tokenPrice = this.fixTokenDecimals(tokenPrice,decimals);
-    if (tokenPrice.lt(1)){
+
+    /*
+    // Try to take the price from the old idleToken contract
+    if (!tokenPrice || this.BNify(tokenPrice).isNaN()){
+      if (tokenConfig.migration && tokenConfig.migration.oldContract){
+        tokenPrice = await this.genericContractCall(tokenConfig.migration.oldContract.name,'tokenPrice',[],{},blockNumber);
+      }
+    }
+    */
+
+    // Fix token price decimals
+    if (tokenPrice && !this.BNify(tokenPrice).isNaN()){
+      decimals = decimals ? decimals : tokenConfig.decimals;
+      tokenPrice = this.fixTokenDecimals(tokenPrice,decimals);
+    }
+
+    // If price is NaN then return 1
+    if (!tokenPrice || this.BNify(tokenPrice).isNaN() || this.BNify(tokenPrice).lt(1)){
       tokenPrice = this.BNify(1);
     }
+
+    if (blockNumber !== 'latest'){
+      console.log('tokenPrice',tokenConfig.idle.token,tokenPrice.toString());
+      this.setCachedData(cachedDataKey,tokenPrice);
+    }
+
     return tokenPrice;
   }
   clearCachedData = () => {
@@ -2027,6 +2060,7 @@ class FunctionsUtil {
       return false;
     }
     const tokenBalances = {};
+    const minTokenBalance = this.BNify(1).div(1e4);
     const protocolsTokens = this.getGlobalConfig(['tools','tokenMigration','props','availableTokens']);
     if (protocolsTokens){
       await this.asyncForEach(Object.keys(protocolsTokens),async (token) => {
@@ -2037,7 +2071,8 @@ class FunctionsUtil {
         }
         if (tokenContract){
           const tokenBalance = await this.getTokenBalance(token,this.props.account);
-          if (tokenBalance && tokenBalance.gt(0)){
+          if (tokenBalance && tokenBalance.gte(minTokenBalance)){
+            console.log(token,tokenBalance.toString());
             tokenBalances[token] = {
               tokenConfig,
               balance:tokenBalance,

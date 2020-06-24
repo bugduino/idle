@@ -46,10 +46,15 @@ export default function Web3ConnectionButtons(props) {
       props.setConnector('Infura','Infura');
     }
   };
-  
-  const isMetamask = GeneralUtil.hasMetaMask();
+
+  // alert(JSON.stringify(Object.keys(window.web3.currentProvider)));
+    
   const isOpera = GeneralUtil.isOpera();
   const isDapper = GeneralUtil.hasDapper();
+  const isMetamask = GeneralUtil.hasMetaMask();
+  const isTrustWallet = GeneralUtil.isTrustWallet();
+  const isCoinbaseWallet = GeneralUtil.isCoinbaseWallet();
+  const browserWalletDetected = isMetamask || isOpera || isDapper || isCoinbaseWallet || isTrustWallet;
   
   const allowedConnectors = props.allowedConnectors;
   const registerPage = props.registerPage;
@@ -64,7 +69,6 @@ export default function Web3ConnectionButtons(props) {
     }
   }
 
-
   let basicConnectorsName = Object.keys(connectors).filter(c => c !== 'Infura');
 
   if (allowedConnectors) {
@@ -75,7 +79,7 @@ export default function Web3ConnectionButtons(props) {
 
     switch (connectorName) {
       case 'Injected':
-        if (isMetamask || isOpera || isDapper) {
+        if (browserWalletDetected) {
           let name = null;
           if (isMetamask) {
             name = 'Metamask';
@@ -83,13 +87,26 @@ export default function Web3ConnectionButtons(props) {
             name = 'Opera';
           } else if (isDapper){
             name = 'Dapper';
+          } else if (isCoinbaseWallet){
+            name = 'Coinbase';
+          } else if (isTrustWallet){
+            name = 'TrustWallet';
           }
 
           const connectorInfo = globalConfigs.connectors[name.toLowerCase()];
           if (connectorInfo && connectorInfo.enabled){
             const walletIcon = connectorInfo.icon ? connectorInfo.icon : `${name.toLowerCase()}.svg`;
             return (
-              <ImageButton key={`wallet_${name}`} isMobile={true} buttonStyle={ props.isMobile ? {justifyContent:'flex-start',flex:'0 100%'} : {justifyContent:'flex-start',flex:'0 48%'} } imageSrc={`images/${walletIcon}`} imageProps={{width:'auto',height:'42px'}} caption={name} subcaption={ connectorInfo && connectorInfo.subcaption ? connectorInfo.subcaption : `Connect using ${name}` } handleClick={ async () => await setConnector(connectorName,name)} />
+              <ImageButton
+                caption={name}
+                isMobile={true}
+                key={`wallet_${name}`}
+                imageSrc={`images/${walletIcon}`}
+                imageProps={{width:'auto',height:'42px'}}
+                handleClick={ async () => await setConnector(connectorName,name)}
+                subcaption={ connectorInfo && connectorInfo.subcaption ? connectorInfo.subcaption : `Connect using ${name}` }
+                buttonStyle={ props.isMobile ? {justifyContent:'flex-start',flex:'0 100%'} : {justifyContent:'flex-start',flex:'0 48%'} }
+              />
             )
           }
           return null;

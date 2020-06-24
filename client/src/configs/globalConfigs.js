@@ -52,6 +52,15 @@ const globalConfigs = {
       icon:'dapper.png',
       subcaption:'Browser extension',
     },
+    coinbase:{
+      enabled:true,
+      icon:'coinbase.png',
+      subcaption:'Connect with Coinbase wallet'
+    },
+    trustwallet:{
+      enabled:true,
+      subcaption:'Connect with Trust Wallet'
+    },
     walletconnect:{
       enabled:true,
       iconModal:'walletconnect.png',

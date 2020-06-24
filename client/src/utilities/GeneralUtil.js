@@ -11,6 +11,12 @@ const GeneralUtil = {
 
     return hasMetaMask;
   },
+  isTrustWallet: () => {
+    return typeof window.web3.currentProvider.isTrust !== 'undefined' && window.web3.currentProvider.isTrust;
+  },
+  isCoinbaseWallet: () => {
+    return typeof window.web3.currentProvider.isCoinbaseWallet !== 'undefined' && window.web3.currentProvider.isCoinbaseWallet;
+  },
   hasDapper: () => {
     let hasDapper = typeof window.DapperEthereum !== 'undefined';
 
