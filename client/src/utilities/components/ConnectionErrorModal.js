@@ -34,22 +34,35 @@ class ConnectionErrorModal extends React.Component {
 
   async closeModal(e){
     e.preventDefault();
-    await this.props.context.setFirstValidConnector(['Infura']);
+    // Disconnect to Infura only if the wallet is not logged
+    if (!this.props.account){
+      await this.props.context.setFirstValidConnector(['Infura']);
+      this.props.setConnector('Infura',null);
+    }
     this.props.modals.methods.closeConnectionErrorModal();
-    this.props.setConnector('Infura',null);
   }
 
   render() {
+
+    const isLedgerError = typeof this.props.modals.data.connectionError === 'string' && this.props.modals.data.connectionError.toLowerCase().includes('ledger');
+
     return (
       <Modal isOpen={this.props.isOpen}>
         <ModalCard closeFunc={ e => this.closeModal(e) }>
-          <ModalCard.Header title={`Connection Error`} icon={'images/connection-error.svg'}></ModalCard.Header>
+          <ModalCard.Header title={ isLedgerError ? 'Ledger Error' : `Connection Error` } icon={'images/warning.svg'}></ModalCard.Header>
           <ModalCard.Body>
             <Flex my={1} width={1} flexDirection={'column'} mx={'auto'}>
               <Text.p color={'dark-gray'} textAlign={'center'}>
-                The following error occured while trying to connect with your account:<br />
+                The following error occured while trying to connect with your { isLedgerError ? 'Ledger' : 'account' }:<br />
                 <Text.span color={'red'} fontWeight={3}>"{this.props.modals.data.connectionError}"</Text.span><br />
-                Make sure that your wallet is unlocked!
+                {
+                  isLedgerError ? (
+                    <Text.span>
+                      Make sure that your Ledger is <strong>connected</strong> and <strong>unlocked</strong>. Also check that both <strong>Contract data</strong> and <strong>Browser support</strong> are enabled in the Ledger settings.<br />
+
+                    </Text.span>
+                  ) : 'Make sure that your wallet is unlocked.'
+                }
               </Text.p>
             </Flex>
             <Flex mb={3} flexDirection={'column'} alignItems={'center'} justifyContent={'center'}>

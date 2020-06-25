@@ -1,7 +1,6 @@
 import React from "react";
 import FunctionsUtil from '../FunctionsUtil';
 import { Box, Flex, Image, Link } from "rimble-ui";
-import ConnectionErrorModal from './ConnectionErrorModal';
 
 import {
   Link as RouterLink
@@ -9,9 +8,8 @@ import {
 
 class Header extends React.Component {
   state = {
-    idleTokenBalance: null,
-    isModalOpen: null,
-  }
+
+  };
 
   // Utils
   functionsUtil = null;
@@ -21,18 +19,6 @@ class Header extends React.Component {
     } else {
       this.functionsUtil = new FunctionsUtil(this.props);
     }
-  }
-
-  toggleModal = (modalName) => {
-    this.setState(state => ({...state, isModalOpen: (state.isModalOpen===modalName ? null : modalName) }));
-  }
-
-  closeBuyModal = (e) => {
-    if (e){
-      e.preventDefault();
-    }
-    this.toggleModal('buy');
-    this.props.closeBuyModal(e);
   }
 
   async componentWillMount() {
@@ -47,16 +33,6 @@ class Header extends React.Component {
   async componentDidUpdate(prevProps, prevState) {
 
     this.loadUtils();
-
-    if (typeof this.props.modals.data.connectionError === 'string' && this.props.modals.data.connectionError.length>0){
-      if (this.state.isModalOpen !== 'error'){
-        this.setState({
-          isModalOpen:'error'
-        });
-      }
-    } else if (this.state.isModalOpen === 'error'){
-      this.toggleModal('error');
-    }
 
     if (this.props.network && !this.props.network.isCorrectNetwork){
       return false;
@@ -114,46 +90,6 @@ class Header extends React.Component {
               </Flex>
           }
         </Flex>
-        <ConnectionErrorModal
-          modals={this.props.modals}
-          context={this.props.context}
-          setConnector={this.props.setConnector}
-          isOpen={this.state.isModalOpen==='error'}
-        >
-        </ConnectionErrorModal>
-        {
-          /*
-        }
-        <BuyModal
-          account={this.props.account}
-          tokenConfig={this.props.tokenConfig}
-          walletProvider={this.props.walletProvider}
-          connectorName={this.props.connectorName}
-          getAccountBalance={this.props.getAccountBalance}
-          getTokenDecimals={this.props.getTokenDecimals}
-          selectedToken={this.props.selectedToken}
-          accountBalance={this.props.accountBalance}
-          accountBalanceToken={this.props.accountBalanceToken}
-          buyToken={this.props.buyToken}
-          idleTokenBalance={this.state.idleTokenBalance}
-          isOpen={this.props.buyModalOpened}
-          isMobile={this.props.isMobile}
-          closeModal={ e => this.closeBuyModal(e) }
-          network={this.props.network.current} />
-        <AccountModal
-          context={this.props.context}
-          account={this.props.account}
-          selectedToken={this.props.selectedToken}
-          accountBalance={this.props.accountBalance}
-          accountBalanceToken={this.props.accountBalanceToken}
-          idleTokenBalance={this.state.idleTokenBalance}
-          isOpen={this.state.isModalOpen==='account'}
-          isMobile={this.props.isMobile}
-          setConnector={this.props.setConnector}
-          closeModal={e => this.toggleModal('account') }
-          network={this.props.network.current} />
-        */
-        }
       </Box>
     );
   }

@@ -8,6 +8,7 @@ import * as Sentry from '@sentry/browser';
 import FunctionsUtil from './FunctionsUtil';
 import globalConfigs from '../configs/globalConfigs';
 import ConnectionModalUtil from "./ConnectionModalsUtil";
+import ConnectionErrorModal from './components/ConnectionErrorModal';
 import { TerminalHttpProvider, SourceType } from '@terminal-packages/sdk';
 
 require('dotenv').config();
@@ -1291,8 +1292,16 @@ class RimbleTransaction extends React.Component {
             });
 
             const isError = error instanceof Error;
+
             if (this.functionsUtil.checkUrlOrigin() && isError){
               Sentry.captureException(error);
+            }
+
+            // console.log(isError,error,typeof error.message === 'string',error.message.toLowerCase().includes('ledger'));
+            const isLedgerError = typeof error.message === 'string' && error.message.toLowerCase().includes('ledger');
+
+            if (isLedgerError){
+              this.openConnectionErrorModal(null,error.message);
             }
           }
 
@@ -1314,6 +1323,8 @@ class RimbleTransaction extends React.Component {
         variant: "failure",
         icon: 'Block'
       });
+
+      console.log(error);
 
       const isDeniedTx = error && error.message ? error.message.includes('User denied transaction signature') : false;
 
@@ -1429,6 +1440,7 @@ class RimbleTransaction extends React.Component {
 
     let modals = { ...this.state.modals };
     modals.data.connectionError = error;
+
     this.setState({ modals });
   }
 
@@ -1616,6 +1628,7 @@ class RimbleTransaction extends React.Component {
   }
 
   render() {
+    const connectionErrorModalOpened = typeof this.state.modals.data.connectionError === 'string' && this.state.modals.data.connectionError.length>0;
     return (
       <div>
         <RimbleTransactionContext.Provider value={this.state} {...this.props} />
@@ -1631,6 +1644,14 @@ class RimbleTransaction extends React.Component {
           accountConnectionPending={this.state.accountConnectionPending}
           accountValidationPending={this.state.accountValidationPending}
         />
+        <ConnectionErrorModal
+          modals={this.state.modals}
+          account={this.state.account}
+          context={this.props.context}
+          isOpen={connectionErrorModalOpened}
+          setConnector={this.props.setConnector}
+        >
+        </ConnectionErrorModal>
         <NetworkUtil
           web3={this.state.web3}
           network={this.state.network}
