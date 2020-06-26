@@ -244,7 +244,6 @@ class AssetField extends Component {
           let earningsPerc = 0;
           if (avgBuyPrice && avgBuyPrice[this.props.token] && avgBuyPrice[this.props.token].gt(0) && idleTokenPrice2){
             earningsPerc = idleTokenPrice2.div(avgBuyPrice[this.props.token]).minus(1).times(100);
-            // console.log(this.props.token,avgBuyPrice[this.props.token].toFixed(5),idleTokenPrice2.toFixed(5),parseFloat(earningsPerc).toFixed(3));
           }
 
           if (setState){
@@ -743,16 +742,16 @@ class AssetField extends Component {
       case 'allocationChart':
         output = this.state.allocationChartWidth && this.state.allocationChartHeight ? (
           <AllocationChart
-            inline={true}
             {...this.props}
             loaderProps={{
               size:'20px'
             }}
             loaderText={''}
-            showLoader={false}
             selectedToken={this.props.token}
             width={this.state.allocationChartWidth}
             height={this.state.allocationChartHeight}
+            inline={typeof this.props.inline !== 'undefined' ? this.props.inline : true}
+            showLoader={typeof this.props.showLoader !== 'undefined' ? this.props.showLoader : false}
           />
         ) : loader
       break;
