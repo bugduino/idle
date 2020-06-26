@@ -21,19 +21,16 @@ const ModalCard = ({children, closeFunc, ...props}) => (
     maxWidth={ props.maxWidth ? props.maxWidth : '960px'}
   >
     <Box
-      position={"absolute"}
       top={'0'}
       right={'0'}
-      m={3}
-      borderRadius={'100%'}
-      bg={'white'}
+      position={"absolute"}
     >
       <Button.Text
         icononly
         icon={"Close"}
-        mainColor={"moon-gray"}
-        onClick={closeFunc}
+        mainColor={"copyColor"}
         size={'2.5em'}
+        onClick={closeFunc}
       />
     </Box>
     <Flex flex={'1 1 auto'} style={{ overflow: 'auto',background: 'url(images/bg-bottom-right.png) no-repeat bottom right',backgroundSize:'65%' }} flexDirection={'column'} height={'100%'}>

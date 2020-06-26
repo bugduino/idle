@@ -19,8 +19,10 @@ class TableHeader extends Component {
 
             return (colInfo.title && colInfo.title.length) ? (
               <TableCellHeader
+                {...this.props}
                 {...colInfo.props}
                 desc={colInfo.desc}
+                title={colInfo.title}
                 key={`col-header-${colIndex}`}
               >
                 {colInfo.title}

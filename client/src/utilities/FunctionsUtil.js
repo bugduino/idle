@@ -611,12 +611,9 @@ class FunctionsUtil {
           if (storedTx.tokenPrice && !this.BNify(storedTx.tokenPrice).isNaN()){
             tokenPrice = this.BNify(storedTx.tokenPrice);
           } else {
-            tokenPrice = await this.getIdleTokenPrice(tokenConfig,tx.blockNumber);
+            tokenPrice = await this.getIdleTokenPrice(tokenConfig,tx.blockNumber,tx.timeStamp);
             storedTx.tokenPrice = tokenPrice;
-            // console.log(tx.blockNumber,tokenPrice,tokenPrice.toString());
           }
-
-          // debugger;
 
           const idleTokens = this.BNify(tx.value);
           let tokensTransfered = tokenPrice.times(idleTokens);
@@ -797,7 +794,7 @@ class FunctionsUtil {
           return false;
         }
 
-        let tokenPrice = await this.getIdleTokenPrice(tokenConfig,realTx.blockNumber);
+        let tokenPrice = await this.getIdleTokenPrice(tokenConfig,realTx.blockNumber,realTx.timeStamp);
 
         realTx.status = 'Completed';
         realTx.action = allowedMethods[tx.method];
@@ -1726,9 +1723,9 @@ class FunctionsUtil {
       }
     });
   }
-  getIdleTokenPrice = async (tokenConfig,blockNumber='latest',decimals=false) => {
+  getIdleTokenPrice = async (tokenConfig,blockNumber='latest',timestamp=false) => {
 
-    const cachedDataKey = `idleTokenPrice_${tokenConfig.idle.address}_${blockNumber}`;
+    const cachedDataKey = `idleTokenPrice_${tokenConfig.idle.token}_${blockNumber}`;
     if (blockNumber !== 'latest'){
       const cachedData = this.getCachedData(cachedDataKey);
       if (cachedData !== null){
@@ -1736,30 +1733,65 @@ class FunctionsUtil {
       }
     }
 
+    let decimals = tokenConfig.decimals;
+
     let tokenPrice = await this.genericContractCall(tokenConfig.idle.token,'tokenPrice',[],{},blockNumber);
 
-    /*
-    // Try to take the price from the old idleToken contract
-    if (!tokenPrice || this.BNify(tokenPrice).isNaN()){
-      if (tokenConfig.migration && tokenConfig.migration.oldContract){
-        tokenPrice = await this.genericContractCall(tokenConfig.migration.oldContract.name,'tokenPrice',[],{},blockNumber);
+    // If price is NaN try to take it from APIs
+    if (!tokenPrice && timestamp){
+      const isRisk = this.props.selectedStrategy === 'risk';
+      const startTimestamp = parseInt(timestamp)-(60*60);
+      const endTimestamp = parseInt(timestamp)+(60*60);
+      const tokenData = await this.getTokenApiData(tokenConfig.address,isRisk,startTimestamp,endTimestamp,true);
+
+      let beforePrice = {
+        data:null,
+        timeDiff:null
+      };
+      let afterPrice = {
+        data:null,
+        timeDiff:null
+      };
+
+      tokenData.forEach( d => {
+        const timeDiff = Math.abs(parseInt(d.timestamp)-parseInt(timestamp));
+        if (parseInt(d.timestamp)<parseInt(timestamp) && (!beforePrice.timeDiff || timeDiff<beforePrice.timeDiff)){
+          beforePrice.timeDiff = timeDiff;
+          beforePrice.data = d;
+        }
+
+        if (parseInt(d.timestamp)>parseInt(timestamp) && !afterPrice.timeDiff){
+          afterPrice.timeDiff = timeDiff;
+          afterPrice.data = d;
+        }
+      });
+
+      // Take before and after and calculate correct tokenPrice based from price acceleration
+      if (beforePrice.data && afterPrice.data){
+        const tokenPriceBefore = this.BNify(beforePrice.data.idlePrice);
+        const tokenPriceAfter = this.BNify(afterPrice.data.idlePrice);
+        const timeBefore = this.BNify(beforePrice.data.timestamp);
+        const timeAfter = this.BNify(afterPrice.data.timestamp);
+        const timeDiff = timeAfter.minus(timeBefore);
+        const priceDiff = tokenPriceAfter.minus(tokenPriceBefore);
+        const priceAcceleration = priceDiff.div(timeDiff);
+        const timeDiffFromBeforePrice = this.BNify(timestamp).minus(timeBefore);
+        tokenPrice = tokenPriceBefore.plus(priceAcceleration.times(timeDiffFromBeforePrice));
       }
     }
-    */
 
     // Fix token price decimals
     if (tokenPrice && !this.BNify(tokenPrice).isNaN()){
-      decimals = decimals ? decimals : tokenConfig.decimals;
       tokenPrice = this.fixTokenDecimals(tokenPrice,decimals);
+    }
+
+    if (blockNumber !== 'latest'){
+      this.setCachedData(cachedDataKey,tokenPrice);
     }
 
     // If price is NaN then return 1
     if (!tokenPrice || this.BNify(tokenPrice).isNaN() || this.BNify(tokenPrice).lt(1)){
       tokenPrice = this.BNify(1);
-    }
-
-    if (blockNumber !== 'latest'){
-      this.setCachedData(cachedDataKey,tokenPrice);
     }
 
     return tokenPrice;
@@ -1923,6 +1955,8 @@ class FunctionsUtil {
       this.customLogError('Wrong contract name', contractName);
       return null;
     }
+
+    blockNumber = blockNumber !== 'latest' && blockNumber && !isNaN(blockNumber) ? parseInt(blockNumber) : blockNumber;
 
     const value = await contract.methods[methodName](...params).call(callParams,blockNumber).catch(error => {
       this.customLogError(`${contractName} contract method ${methodName} error: `, error);

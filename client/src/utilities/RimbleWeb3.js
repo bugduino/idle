@@ -22,6 +22,7 @@ const RimbleTransactionContext = React.createContext({
   accountBalanceLow: {},
   tokenConfig: {},
   web3: {},
+  web3Infura: {},
   initWeb3: () => {},
   biconomy: {},
   simpleID: {},
@@ -362,9 +363,12 @@ class RimbleTransaction extends React.Component {
       }
     }
 
+    const web3Infura = new Web3(new Web3.providers.HttpProvider(globalConfigs.network.providers.infura[globalConfigs.network.requiredNetwork]+INFURA_KEY));
+
     const web3Callback = async () => {
 
       window.web3Injected = this.state.web3;
+      // window.web3InfuraInjected = this.state.web3Infura;
 
       if (typeof this.props.callbackAfterLogin === 'function'){
         this.props.callbackAfterLogin();
@@ -445,7 +449,8 @@ class RimbleTransaction extends React.Component {
 
             const newState = {
               web3,
-              biconomy
+              biconomy,
+              web3Infura
             };
             if (web3 !== this.state.web3){
               this.setState(newState, web3Callback);
@@ -457,6 +462,7 @@ class RimbleTransaction extends React.Component {
             if (this.state.biconomy !== false){
               this.setState({
                 web3,
+                web3Infura,
                 biconomy:false
               }, web3Callback);
             }
@@ -464,13 +470,17 @@ class RimbleTransaction extends React.Component {
         } else {
           this.setState({
             web3,
+            web3Infura,
             biconomy:false
           }, web3Callback);
         }
       }
     } else {
       if (web3 !== this.state.web3){
-        this.setState({ web3 }, web3Callback);
+        this.setState({
+          web3,
+          web3Infura,
+        }, web3Callback);
       } else if (context.account || forceCallback){
         web3Callback();
       }
@@ -479,16 +489,19 @@ class RimbleTransaction extends React.Component {
     return web3;
   }
 
-  initContract = async (name, address, abi) => {
+  initContract = async (name, address, abi, useInfuraProvider=false) => {
     this.functionsUtil.customLog(`Init contract: ${name}`);
-    return await this.createContract(name, address, abi);
+    return await this.createContract(name, address, abi, useInfuraProvider);
   }
 
-  createContract = async (name, address, abi) => {
+  createContract = async (name, address, abi, useInfuraProvider=false) => {
     this.functionsUtil.customLog(`creating contract ${name} - addr: ${address}`);
+
+    let web3Provider = useInfuraProvider && this.state.web3Infura ? this.state.web3Infura : this.state.web3;
+
     // Create contract on initialized web3 provider with given abi and address
     try {
-      const contract = new this.state.web3.eth.Contract(abi, address);
+      const contract = new web3Provider.eth.Contract(abi, address);
       this.setState(state => ({
         ...state,
         contracts: [...state.contracts, {name, contract}]
@@ -1551,6 +1564,7 @@ class RimbleTransaction extends React.Component {
     contracts: [],
     biconomy: null,
     simpleID: null,
+    web3Infura:null,
     transactions: {},
     CrispClient: null,
     tokenDecimals:null,

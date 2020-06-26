@@ -11,6 +11,7 @@ import AssetPage from '../AssetPage/AssetPage';
 import RoundButton from '../RoundButton/RoundButton';
 import DashboardCard from '../DashboardCard/DashboardCard';
 import WelcomeModal from "../utilities/components/WelcomeModal";
+import TooltipModal from "../utilities/components/TooltipModal";
 import MigrateModal from "../utilities/components/MigrateModal";
 import DashboardHeader from '../DashboardHeader/DashboardHeader';
 
@@ -93,6 +94,22 @@ class Dashboard extends Component {
     this.setState({
       activeModal: null
     });
+  }
+
+  openTooltipModal = (modalTitle,modalContent) => {
+
+    this.functionsUtil.sendGoogleAnalyticsEvent({
+      eventCategory: 'UI',
+      eventAction: modalTitle,
+      eventLabel: 'TooltipModal'
+    });
+
+    this.setState({
+      modalTitle,
+      modalContent
+    },() => {
+      this.setActiveModal('tooltip');
+    })
   }
 
   setActiveModal = (activeModal) => {
@@ -347,12 +364,22 @@ class Dashboard extends Component {
   }
 
   goToSection(section,isDashboard=true){
+
     // Remove dashboard route
     if (isDashboard){
       section = section.replace(this.state.baseRoute +'/','');
     }
+
     const newRoute = isDashboard ? this.state.baseRoute +'/' + section : section;
     window.location.hash=newRoute;
+
+    // Send GA event
+    this.functionsUtil.sendGoogleAnalyticsEvent({
+      eventCategory: 'UI',
+      eventAction: 'goToSection',
+      eventLabel: newRoute
+    });
+
     window.scrollTo(0, 0);
   }
 
@@ -504,6 +531,7 @@ class Dashboard extends Component {
                       goToSection={this.goToSection.bind(this)}
                       selectedSection={this.state.selectedSection}
                       selectedSubsection={this.state.selectedSubsection}
+                      openTooltipModal={this.openTooltipModal.bind(this)}
                       />
                 }
               </Flex>
@@ -518,7 +546,13 @@ class Dashboard extends Component {
           isOpen={this.state.activeModal === 'migrate'}
           protocolsTokensBalances={this.state.protocolsTokensBalances}
         />
-
+        <TooltipModal
+          closeModal={this.resetModal}
+          title={this.state.modalTitle}
+          content={this.state.modalContent}
+          isOpen={this.state.activeModal === 'tooltip'}
+        >
+        </TooltipModal>
         <WelcomeModal
           closeModal={this.resetModal}
           account={this.props.account}

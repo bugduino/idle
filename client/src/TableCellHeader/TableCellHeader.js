@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Flex, Heading, Tooltip, Icon } from "rimble-ui";
+import { Flex, Heading, Icon, Link } from "rimble-ui";
 
 class TableCellHeader extends Component {
   render() {
@@ -27,24 +27,26 @@ class TableCellHeader extends Component {
       >
         {
           (this.props.desc && this.props.desc.length>1) ? (
-            <Tooltip
-              placement={"top"}
-              message={this.props.desc}
+            <Flex
+              alignItems={'flex-start'}
             >
-              <Flex
-                alignItems={'flex-start'}
+              <ColTitle
+                {...this.props}
+              />
+              <Link
+                style={{
+                  cursor:'pointer'
+                }}
+                onClick={ e => this.props.openTooltipModal(this.props.title,this.props.desc) }
               >
-                <ColTitle
-                  {...this.props}
-                />
                 <Icon
                   ml={1}
                   name={"Info"}
                   size={'1.2em'}
                   color={'cellTitle'}
                 />
-              </Flex>
-            </Tooltip>
+              </Link>
+            </Flex>
           ) : (
             <ColTitle
               {...this.props}
