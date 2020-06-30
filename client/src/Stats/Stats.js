@@ -6,10 +6,10 @@ import React, { Component } from 'react';
 // import Toggler from '../Toggler/Toggler';
 import Rebalance from '../Rebalance/Rebalance';
 import StatsCard from '../StatsCard/StatsCard';
-import { Flex, Text, Heading } from 'rimble-ui';
 import AssetsList from '../AssetsList/AssetsList';
 import FlexLoader from '../FlexLoader/FlexLoader';
 import Breadcrumb from '../Breadcrumb/Breadcrumb';
+import { Flex, Text, Heading, Box } from 'rimble-ui';
 import globalConfigs from '../configs/globalConfigs';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import DashboardCard from '../DashboardCard/DashboardCard';
@@ -422,10 +422,8 @@ class Stats extends Component {
         >
           {
             this.state.totalAUM && this.state.totalAUMEndOfYear && 
-              <Flex
+              <Box
                 width={1}
-                flexDirection={'column'}
-                alignItems={['center','flex-end']}
               >
                 <CountUp
                   delay={0}
@@ -441,9 +439,11 @@ class Stats extends Component {
                   {({ countUpRef, start }) => (
                     <span
                       style={{
+                        display:'block',
                         color:'dark-gray',
                         fontFamily:this.props.theme.fonts.counter,
                         fontWeight:this.props.theme.fontWeights[5],
+                        textAlign: this.props.isMobile ? 'center' : 'right',
                         fontSize: this.props.isMobile ? '1.6em' : this.props.theme.fontSizes[6]
                       }}
                       ref={countUpRef}
@@ -454,10 +454,11 @@ class Stats extends Component {
                   fontWeight={3}
                   fontSize={[2,3]}
                   color={'cellTitle'}
+                  textAlign={['center','right']}
                 >
                   Assets Under Management
                 </Title>
-              </Flex>
+              </Box>
           }
           {
             Object.keys(strategies).map(strategy => {
@@ -467,7 +468,7 @@ class Stats extends Component {
                 return false;
               }
               return (
-                <Flex
+                <Box
                   mb={2}
                   width={1}
                   flexDirection={'column'}
@@ -598,7 +599,7 @@ class Stats extends Component {
                     selectedStrategy={strategy}
                     availableTokens={availableTokens}
                   />
-                </Flex>
+                </Box>
               );
             })
           }

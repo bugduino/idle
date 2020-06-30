@@ -490,7 +490,7 @@ class BuyModal extends React.Component {
                   <Image height={2} mb={2} src={`images/tokens/${this.state.selectedToken}.svg`} />
               }
               <Text textAlign={'center'} fontWeight={2} fontSize={[2, this.props.showInline ? 2 : 3]} my={0}>
-                How do you prefer do buy {this.state.selectedToken}?
+                How do you prefer to buy {this.state.selectedToken}?
               </Text>
             </Flex>
             <Flex mb={this.props.showInline ? 2 : 4} flexDirection={['column','row']} alignItems={'center'} justifyContent={'center'}>

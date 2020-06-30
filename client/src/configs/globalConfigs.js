@@ -2,6 +2,7 @@ import TokenSwap from '../TokenSwap/TokenSwap';
 import yDAIv3 from '../abis/iearn/yDAIv3.json';
 import yUSDCv3 from '../abis/iearn/yUSDCv3.json';
 import yUSDTv3 from '../abis/iearn/yUSDTv3.json';
+import NexusMutual from '../NexusMutual/NexusMutual';
 import { Web3Versions } from '@terminal-packages/sdk';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import StrategyPage from '../StrategyPage/StrategyPage';
@@ -666,6 +667,24 @@ const globalConfigs = {
       directProps:{
         showInline:true,
         showAllTokens:true
+      }
+    },
+    insurance:{
+      enabled:true,
+      icon:'Security',
+      route:'nexus-mutual',
+      label:'Nexus Mutual',
+      desc:'Buy tokens with Bank account or Credit card',
+      subComponent:NexusMutual,
+      props:{
+        availableTokens:{
+          "ETH":{"token":"ETH"},
+          "DAI":{"token":"DAI"},
+        }
+      },
+      directProps:{
+        ens:'idlefinancev3.nexusmutual.eth',
+        address:'0x78751B12Da02728F467A44eAc40F5cbc16Bd7934'
       }
     },
     tokenSwap:{
