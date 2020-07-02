@@ -226,7 +226,7 @@ class FunctionsUtil {
 
           // Update idleTokens balance
           idleTokensBalance = idleTokensBalance.plus(idleTokens);
-          if (idleTokensBalance.lt(0)){
+          if (idleTokensBalance.lte(0)){
             avgBuyPrice = this.BNify(0);
             idleTokensBalance = this.BNify(0);
           }
@@ -238,6 +238,65 @@ class FunctionsUtil {
     });
 
     return output;
+  }
+  getDepositTimestamp = async (enabledTokens=[],account) => {
+    account = account ? account : this.props.account;
+
+    if (!account || !enabledTokens || !enabledTokens.length || !this.props.availableTokens){
+      return [];
+    }
+
+    const etherscanTxs = await this.getEtherscanTxs(account,0,'latest',enabledTokens);
+
+    const deposits = {};
+
+    enabledTokens.forEach((selectedToken) => {
+      let amountLent = this.BNify(0);
+      let depositTimestamp = null;
+      deposits[selectedToken] = depositTimestamp;
+
+      const filteredTxs = Object.values(etherscanTxs).filter(tx => (tx.token === selectedToken));
+      if (filteredTxs && filteredTxs.length){
+
+        filteredTxs.forEach((tx,index) => {
+          // Skip transactions with no hash or pending
+          if (!tx.hash || (tx.status && tx.status === 'Pending') || !tx.tokenAmount){
+            return false;
+          }
+
+          switch (tx.action){
+            case 'Swap':
+            case 'Deposit':
+            case 'Receive':
+            case 'Migrate':
+              amountLent = amountLent.plus(tx.tokenAmount);
+              if (!depositTimestamp){
+                depositTimestamp = tx.timeStamp;
+              }
+            break;
+            case 'Send':
+            case 'Redeem':
+            case 'SwapOut':
+            case 'Withdraw':
+              amountLent = amountLent.minus(tx.tokenAmount);
+            break;
+            default:
+            break;
+          }
+
+          // Reset amountLent if below zero
+          if (amountLent.lt(0)){
+            amountLent = this.BNify(0);
+            depositTimestamp = null;
+          }
+        });
+      }
+
+      // Add token Data
+      deposits[selectedToken] = depositTimestamp;
+    });
+
+    return deposits;
   }
   getAmountLent = async (enabledTokens=[],account) => {
     account = account ? account : this.props.account;
@@ -252,7 +311,7 @@ class FunctionsUtil {
 
     enabledTokens.forEach((selectedToken) => {
       let amountLent = this.BNify(0);
-      amountLents[selectedToken] = [];
+      amountLents[selectedToken] = amountLent;
 
       const filteredTxs = Object.values(etherscanTxs).filter(tx => (tx.token === selectedToken));
       if (filteredTxs && filteredTxs.length){
@@ -1722,6 +1781,90 @@ class FunctionsUtil {
         callback_receipt(tx);
       }
     });
+  }
+  loadAssetField = async (field,token,tokenConfig,account) => {
+
+    let output = null;
+
+    switch (field){
+      case 'earningsPerc':
+        const [avgBuyPrice,idleTokenPrice] = await Promise.all([
+          this.getAvgBuyPrice([token],account),
+          this.getIdleTokenPrice(tokenConfig)
+        ]);
+
+        if (avgBuyPrice && avgBuyPrice[token] && avgBuyPrice[token].gt(0) && idleTokenPrice){
+          output = idleTokenPrice.div(avgBuyPrice[token]).minus(1).times(100);
+        }
+      break;
+      case 'daysFirstDeposit':
+        const depositTimestamp = await this.loadAssetField('depositTimestamp',token,tokenConfig,account);
+        if (depositTimestamp){
+          const currTimestamp = parseInt(new Date().getTime()/1000);
+          output = (currTimestamp-depositTimestamp)/86400;
+        }
+      break;
+      case 'avgAPY':
+        const [daysFirstDeposit,earningsPerc] = await Promise.all([
+          this.loadAssetField('daysFirstDeposit',token,tokenConfig,account),
+          this.loadAssetField('earningsPerc',token,tokenConfig,account) // Take earnings perc instead of earnings
+        ]);
+
+        if (daysFirstDeposit && earningsPerc){
+          output = earningsPerc.times(365).div(daysFirstDeposit);
+          // output = this.apr2apy(avgAPR.div(100)).times(100);
+          // debugger;
+        }
+      break;
+      case 'depositTimestamp':
+        const depositTimestamps = account ? await this.getDepositTimestamp([token],account) : false;
+        if (depositTimestamps && depositTimestamps[token]){
+          output = depositTimestamps[token];
+        }
+      break;
+      case 'amountLent':
+        const amountLents = account ? await this.getAmountLent([token],account) : false;
+        if (amountLents && amountLents[token]){
+          output = amountLents[token];
+        }
+      break;
+      case 'idleTokenBalance':
+        const idleTokenBalance = account ? await this.getTokenBalance(tokenConfig.idle.token,account) : false;
+        if (idleTokenBalance){
+          output = idleTokenBalance;
+        }
+      break;
+      case 'redeemableBalance':
+        const [idleTokenBalance2,idleTokenPrice1] = await Promise.all([
+          this.loadAssetField('idleTokenBalance',token,tokenConfig,account),
+          this.genericContractCall(tokenConfig.idle.token, 'tokenPrice')
+        ]);
+        if (idleTokenBalance2 && idleTokenPrice1){
+          const redeemableBalance = this.fixTokenDecimals(idleTokenBalance2.times(idleTokenPrice1),tokenConfig.decimals);
+          output = redeemableBalance;
+        }
+      break;
+      case 'earnings':
+        let [amountLent,redeemableBalance] = await Promise.all([
+          this.loadAssetField('amountLent',token,tokenConfig,account),
+          this.loadAssetField('redeemableBalance',token,tokenConfig,account)
+        ]);
+        if (!amountLent){
+          amountLent = this.BNify(0);
+        }
+        if (!redeemableBalance){
+          redeemableBalance = this.BNify(0);
+        }
+
+        // console.log('loadAssetField',amountLent.toString(),redeemableBalance.toString());
+
+        output = redeemableBalance.minus(amountLent);
+      break;
+      default:
+      break;
+    }
+
+    return output;
   }
   getIdleTokenPrice = async (tokenConfig,blockNumber='latest',timestamp=false) => {
 

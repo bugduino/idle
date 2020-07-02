@@ -29,29 +29,91 @@ class FundsOverview extends Component {
   }
 
   async componentDidMount(){
-    /*
+
+    const [avgAPY,days] = await Promise.all([
+      this.functionsUtil.loadAssetField('avgAPY',this.props.selectedToken,this.props.tokenConfig,this.props.account),
+      this.functionsUtil.loadAssetField('daysFirstDeposit',this.props.selectedToken,this.props.tokenConfig,this.props.account),
+    ]);
+
     const aggregatedValues = [
       {
         flexProps:{
-          px:[0,2],
-          width:[1,1/3],
-          id:'allocationChart',
+          width:[1,0.32],
+        },
+        props:{
+          title:'Avg APY',
+          children:(
+            <Flex
+              width={1}
+              alignItems={'center'}
+              height={['55px','59px']}
+              flexDirection={'column'}
+              justifyContent={'center'}
+            >
+              <Text
+                lineHeight={1}
+                fontWeight={[3,4]}
+                color={'copyColor'}
+                fontFamily={'counter'}
+                fontSize={['1.7em','1.7em']}
+                dangerouslySetInnerHTML={{ __html: (avgAPY ? avgAPY.toFixed(2)+'%' : '-') }}
+              />
+            </Flex>
+          )
+        }
+      },
+      {
+        flexProps:{
+          width:[1,0.32],
         },
         props:{
           title:'Current Allocation',
           children:(
-            <AssetField
-              {...this.props}
-              showLoader={true}
-              parentId={'allocationChart'}
-              token={this.props.selectedToken}
-              tokenConfig={this.props.tokenConfig}
-              fieldInfo={{
-                name:'allocationChart'
-              }}
-            />
+            <Flex
+              width={1}
+              id={'allocationChart'}
+              height={['55px','59px']}
+              flexDirection={'column'}
+            >
+              <AssetField
+                {...this.props}
+                showLoader={true}
+                fieldInfo={{
+                  name:'allocationChart'
+                }}
+                parentId={'allocationChart'}
+                token={this.props.selectedToken}
+                tokenConfig={this.props.tokenConfig}
+              />
+            </Flex>
           ),
           label:'',
+        }
+      },
+      {
+        flexProps:{
+          width:[1,0.32],
+        },
+        props:{
+          title:'Days since first deposit',
+          children:(
+            <Flex
+              width={1}
+              alignItems={'center'}
+              height={['55px','59px']}
+              flexDirection={'column'}
+              justifyContent={'center'}
+            >
+              <Text
+                lineHeight={1}
+                fontWeight={[3,4]}
+                color={'copyColor'}
+                fontFamily={'counter'}
+                fontSize={['1.7em','1.7em']}
+                dangerouslySetInnerHTML={{ __html: (days ? parseInt(days) : '-') }}
+              />
+            </Flex>
+          )
         }
       }
     ];
@@ -59,7 +121,6 @@ class FundsOverview extends Component {
     this.setState({
       aggregatedValues
     });
-    */
   }
 
   async componentDidUpdate(prevProps,prevState){
@@ -69,64 +130,67 @@ class FundsOverview extends Component {
   render() {
     return (
       <Flex
-        id="funds-overview"
         width={1}
+        id={"funds-overview"}
         flexDirection={'column'}
       >
-        <Flex
-          mb={3}
-          width={1}
-          mt={[2,0]}
-          alignItems={'center'}
-          justifyContent={'center'}
-          flexDirection={['column','row']}
-        >
-          {
-            this.state.aggregatedValues.map((v,i) => (
-              <Flex
-                {...v.flexProps}
-                flexDirection={'column'}
-                key={`aggregatedValue_${i}`}
-              >
-                <DashboardCard
-                  cardProps={{
-                    py:[3,4],
-                    mb:[2,0]
-                  }}
-                >
+        {
+          this.state.aggregatedValues.length>0 && 
+            <Flex
+              width={1}
+              mb={[0,3]}
+              mt={[2,0]}
+              alignItems={'center'}
+              flexDirection={['column','row']}
+              justifyContent={'space-between'}
+            >
+              {
+                this.state.aggregatedValues.map((v,i) => (
                   <Flex
-                    width={1}
-                    alignItems={'center'}
+                    {...v.flexProps}
                     flexDirection={'column'}
-                    justifyContent={'center'}
+                    key={`aggregatedValue_${i}`}
                   >
-                    {
-                      v.props.children ? v.props.children : (
-                        <Text
-                          lineHeight={1}
-                          fontWeight={[3,4]}
-                          color={'copyColor'}
-                          fontFamily={'counter'}
-                          fontSize={[4,'1.7em']}
-                          dangerouslySetInnerHTML={{ __html: v.props.value }}
-                        >
-                        </Text>
-                      )
-                    }
-                    <Text
-                      mt={2}
-                      fontWeight={2}
-                      fontSize={[1,2]}
-                      color={'cellText'}
+                    <DashboardCard
+                      cardProps={{
+                        py:[2,3],
+                        mb:[3,0]
+                      }}
                     >
-                      {v.props.title}
-                    </Text>
+                      <Flex
+                        width={1}
+                        alignItems={'center'}
+                        flexDirection={'column'}
+                        justifyContent={'center'}
+                      >
+                        {
+                          v.props.children ? v.props.children : (
+                            <Text
+                              lineHeight={1}
+                              fontWeight={[3,4]}
+                              color={'copyColor'}
+                              fontFamily={'counter'}
+                              fontSize={[4,'1.7em']}
+                              dangerouslySetInnerHTML={{ __html: v.props.value }}
+                            >
+                            </Text>
+                          )
+                        }
+                        <Text
+                          mt={2}
+                          fontWeight={2}
+                          fontSize={[1,2]}
+                          color={'cellText'}
+                        >
+                          {v.props.title}
+                        </Text>
+                      </Flex>
+                    </DashboardCard>
                   </Flex>
-                </DashboardCard>
-              </Flex>
-            ))
-          }
-        </Flex>
+                ))
+              }
+            </Flex>
+        }
         <DashboardCard
           cardProps={{
             px:2,

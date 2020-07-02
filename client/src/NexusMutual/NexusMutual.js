@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import ButtonLoader from '../ButtonLoader/ButtonLoader';
 import AssetSelector from '../AssetSelector/AssetSelector';
-import { Flex, Box, Text, Button, Input, Link, Progress } from "rimble-ui";
+import { Flex, Box, Text, Input, Link, Progress } from "rimble-ui";
 
 class NexusMutual extends Component {
 

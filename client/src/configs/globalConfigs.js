@@ -670,7 +670,7 @@ const globalConfigs = {
       }
     },
     insurance:{
-      enabled:true,
+      enabled:false,
       icon:'Security',
       route:'nexus-mutual',
       label:'Nexus Mutual',
