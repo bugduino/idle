@@ -214,6 +214,9 @@ class StrategyPage extends Component {
   }
 
   render() {
+
+    const riskScore = this.functionsUtil.getGlobalConfig(['messages','riskScore']);
+
     return (
       <Box width={1}>
         <Title mb={[3,4]}>{this.functionsUtil.getGlobalConfig(['strategies',this.props.selectedStrategy,'title'])} strategy</Title>
@@ -488,7 +491,7 @@ class StrategyPage extends Component {
                           },
                           {
                             title:'RISK SCORE',
-                            desc:`It's a single, consistently, comparable value for measuring protocol risk, based on factors including smart contract risk, collateralization and liquidity.<br /><br />The model outputs a 0-10 score, where <strong>0 is the most risky and 10 is the most safe.</strong>`,
+                            desc:riskScore,
                             props:{
                               width:[0.27,0.14],
                               justifyContent:['center','flex-start']
@@ -619,7 +622,7 @@ class StrategyPage extends Component {
                           },
                           {
                             title:'RISK SCORE',
-                            desc:`It's a single, consistently, comparable value for measuring protocol risk, based on factors including smart contract risk, collateralization and liquidity.<br /><br />The model outputs a 0-10 score, where <strong>0 is the most risky and 10 is the most safe.</strong>`,
+                            desc:riskScore,
                             props:{
                               width:[0.27,0.14],
                               justifyContent:['center','flex-start']
@@ -782,7 +785,7 @@ class StrategyPage extends Component {
                           },
                           {
                             title:'RISK SCORE',
-                            desc:`It's a single, consistently, comparable value for measuring protocol risk, based on factors including smart contract risk, collateralization and liquidity.<br /><br />The model outputs a 0-10 score, where <strong>0 is the most risky and 10 is the most safe.</strong>`,
+                            desc:riskScore,
                             props:{
                               width:[0.27,0.14],
                               justifyContent:['center','flex-start']
