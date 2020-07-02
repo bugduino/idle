@@ -251,7 +251,7 @@ class Dashboard extends Component {
           showResetButton:true
         });
       }
-    },15000);
+    },20000);
 
     if (!this.props.web3){
       return this.props.initWeb3();
