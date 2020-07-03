@@ -1,8 +1,9 @@
 import React from "react";
 import {
   Text,
-  Modal,
+  Link,
   Flex,
+  Modal,
   Button
 } from "rimble-ui";
 import ModalCard from './ModalCard';
@@ -39,6 +40,8 @@ class TransactionErrorModal extends React.Component {
 
   render() {
 
+    const isLedgerError = typeof this.props.modals.data.transactionError === 'string' && this.props.modals.data.transactionError.toLowerCase().includes('ledger');
+
     return (
       <Modal isOpen={this.props.isOpen}>
         <ModalCard closeFunc={ e => this.closeModal(e) }>
@@ -48,7 +51,16 @@ class TransactionErrorModal extends React.Component {
               <Text.p color={'dark-gray'} textAlign={'center'}>
                 The following error occured while trying to send a transaction:<br />
                 <Text.span color={'red'} fontWeight={3}>"{this.props.modals.data.transactionError}"</Text.span><br />
-                Make sure that your have enaugh funds in your wallet.
+                {
+                  isLedgerError ? (
+                    <Text.span
+                      fontSize={1}
+                    >
+                      <br />Make sure that your Ledger is <strong>connected</strong> and <strong>unlocked</strong>. Also check that both <strong>Contract data</strong> and <strong>Browser support</strong> are enabled in the Ledger settings.<br />
+                      We also suggest you to connect your Ledger with Metamask, read the <Link fontSize={1} color={'blue'} hoverColor={'blue'} target={'_blank'} rel={"nofollow noopener noreferrer"} href={'https://metamask.zendesk.com/hc/en-us/articles/360020394612-How-to-connect-a-Trezor-or-Ledger-Hardware-Wallet'}>instructions here</Link>.
+                    </Text.span>
+                  ) : 'Make sure that your have enaugh funds in your wallet.'
+                }
               </Text.p>
             </Flex>
             <Flex mb={3} flexDirection={'column'} alignItems={'center'} justifyContent={'center'}>

@@ -129,6 +129,9 @@ class RimbleTransaction extends React.Component {
     // console.log('RimbleWeb3 componentDidMount');
     this.initWeb3();
 
+    // TEST - Manually triggers transaction error
+    // this.openTransactionErrorModal(null,'Your Ledger device is Ineligible');
+
     window.testTransaction = (method) => {
       const transaction = this.createTransaction();
       transaction.method = method;
@@ -1315,12 +1318,7 @@ class RimbleTransaction extends React.Component {
               Sentry.captureException(error);
             }
 
-            // console.log(isError,error,typeof error.message === 'string',error.message.toLowerCase().includes('ledger'));
-            const isLedgerError = typeof error.message === 'string' && error.message.toLowerCase().includes('ledger');
-
-            // if (isLedgerError){
             this.openTransactionErrorModal(null,error.message);
-            // }
           }
 
           if (typeof callback === 'function') {
