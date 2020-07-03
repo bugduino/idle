@@ -2,7 +2,7 @@ import Title from '../Title/Title';
 import React, { Component } from 'react';
 import AssetField from '../AssetField/AssetField';
 import FunctionsUtil from '../utilities/FunctionsUtil';
-import { Flex, Text, Link, Icon, Image } from "rimble-ui";
+import { Flex, Text, Link, Icon, Tooltip, Image } from "rimble-ui";
 import DashboardCard from '../DashboardCard/DashboardCard';
 
 class StrategyBox extends Component {
@@ -162,14 +162,31 @@ class StrategyBox extends Component {
               token={this.state.selectedToken}
               selectedStrategy={this.props.strategy}
             />
-            <Text
-              fontSize={2}
-              fontWeight={4}
-              color={'cellText'}
-              textAlign={'center'}
+            <Flex
+              width={1}
+              alignItems={'center'}
+              justifyContent={'center'}
             >
-              APY
-            </Text>
+              <Text
+                fontSize={2}
+                fontWeight={4}
+                color={'cellText'}
+                textAlign={'center'}
+              >
+                APY
+              </Text>
+              <Tooltip
+                placement={'bottom'}
+                message={this.functionsUtil.getGlobalConfig(['messages','apyShort'])}
+              >
+                <Icon
+                  ml={1}
+                  name={"Info"}
+                  size={'1em'}
+                  color={'cellTitle'}
+                />
+              </Tooltip>
+            </Flex>
           </Flex>
           <Flex
             width={0.5}
@@ -195,14 +212,32 @@ class StrategyBox extends Component {
               token={this.state.selectedToken}
               selectedStrategy={this.props.strategy}
             />
-            <Text
-              fontSize={2}
-              fontWeight={4}
-              color={'cellText'}
-              textAlign={'center'}
+
+            <Flex
+              width={1}
+              alignItems={'center'}
+              justifyContent={'center'}
             >
-              SCORE
-            </Text>
+              <Text
+                fontSize={2}
+                fontWeight={4}
+                color={'cellText'}
+                textAlign={'center'}
+              >
+                SCORE
+              </Text>
+              <Tooltip
+                placement={'bottom'}
+                message={this.functionsUtil.getGlobalConfig(['messages','scoreShort'])}
+              >
+                <Icon
+                  ml={1}
+                  name={"Info"}
+                  size={'1em'}
+                  color={'cellTitle'}
+                />
+              </Tooltip>
+            </Flex>
           </Flex>
         </Flex>
         <Flex

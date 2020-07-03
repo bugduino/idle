@@ -97,6 +97,8 @@ const globalConfigs = {
     endpoint:'https://dev.lapisgroup.it/idle/newsletter.php'
   },
   messages:{
+    apyShort:'Annual Percentage Yield',
+    scoreShort:'Protocol Risk Score',
     riskScore:`It's a single, consistently, comparable value for measuring protocol risk, based on factors including smart contract risk, collateralization and liquidity.<br /><br />The model outputs a 0-10 score, where <strong>0 is the most risky and 10 is the most safe.</strong> Visit <a target="_blank" rel="nofollow noopener noreferrer" href="https://defiscore.io/overview">https://defiscore.io/overview</a> for further information.`
   },
   analytics:{
