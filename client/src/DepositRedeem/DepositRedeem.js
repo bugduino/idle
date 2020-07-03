@@ -137,7 +137,7 @@ class DepositRedeem extends Component {
 
   approveContract = async (callbackApprove,callbackReceiptApprove) => {
     const proxyContract = this.state.actionProxyContract[this.state.action];
-    if (proxyContract && this.state.metaTransactionsEnabled){
+    if (proxyContract && this.state.metaTransactionsEnabled && this.props.biconomy){
       this.functionsUtil.enableERC20(this.props.selectedToken,proxyContract.address,callbackApprove,callbackReceiptApprove);
     } else {
       this.functionsUtil.enableERC20(this.props.selectedToken,this.props.tokenConfig.idle.address,callbackApprove,callbackReceiptApprove);
@@ -147,7 +147,7 @@ class DepositRedeem extends Component {
   checkTokenApproved = async () => {
     let tokenApproved = false;
     const proxyContract = this.state.actionProxyContract[this.state.action];
-    if (proxyContract && this.state.metaTransactionsEnabled){
+    if (proxyContract && this.state.metaTransactionsEnabled && this.props.biconomy){
       tokenApproved = await this.functionsUtil.checkTokenApproved(this.props.selectedToken,proxyContract.address,this.props.account);
     } else {
       tokenApproved = await this.functionsUtil.checkTokenApproved(this.props.selectedToken,this.props.tokenConfig.idle.address,this.props.account);
