@@ -106,7 +106,7 @@ class Stats extends Component {
     newState.endTimestamp = parseInt(newState.endTimestampObj._d.getTime()/1000);
 
     // Set start date
-    newState.startTimestampObj = newState.endTimestampObj.clone().subtract(2,'week');
+    newState.startTimestampObj = newState.endTimestampObj.clone().subtract(1,'month');
     newState.startTimestamp = parseInt(newState.startTimestampObj._d.getTime()/1000);
 
     if (this.state.idleVersion && statsVersions[this.state.idleVersion].startTimestamp){
