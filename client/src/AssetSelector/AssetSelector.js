@@ -219,6 +219,7 @@ class AssetSelector extends Component {
         name={'assets'}
         options={this.state.options}
         innerProps={this.props.innerProps}
+        isSearchable={this.props.isSearchable}
         defaultValue={this.state.defaultValue}
         selectedToken={this.props.selectedToken}
         CustomOptionValue={this.state.CustomOptionValue}

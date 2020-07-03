@@ -226,6 +226,7 @@ class TokenSwap extends Component {
             <AssetSelector
               {...this.props}
               showBalance={false}
+              isSearchable={true}
               onChange={this.selectFromToken}
               selectedToken={this.state.selectedFromToken}
               availableTokens={this.props.toolProps.availableTokens}
@@ -243,6 +244,7 @@ class TokenSwap extends Component {
                 <AssetSelector
                   {...this.props}
                   showBalance={false}
+                  isSearchable={true}
                   onChange={this.selectDestToken}
                   selectedToken={this.state.selectedDestToken}
                   availableTokens={this.state.availableDestinationTokens}

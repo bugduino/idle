@@ -1,10 +1,14 @@
+import theme from "../theme";
 import Select from 'react-select';
-import { Flex, Text } from "rimble-ui";
 import React, { Component } from 'react';
+import { Flex, Text, Input } from "rimble-ui";
+import styles from './GenericSelector.module.scss';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import DashboardCard from '../DashboardCard/DashboardCard';
 
 class GenericSelector extends Component {
+
+  state = {};
 
   // Utils
   functionsUtil = null;
@@ -116,6 +120,26 @@ class GenericSelector extends Component {
       );
     };
 
+    const CustomInputContainer = this.props.CustomInputContainer ? this.props.CustomInputContainer : (props) => {
+
+      // console.log('CustomInputContainer',props);
+
+      if (!props.selectProps.isSearchable){
+        return null;
+      }
+      
+      return (
+        <Input
+          {...props}
+          fontSize={theme.fontSizes[2]}
+          color={theme.colors.copyColor}
+          fontWeight={theme.fontWeights[3]}
+          fontFamily={theme.fonts.sansSerif}
+          className={[styles.searchInput,!props.selectProps.menuIsOpen ? styles.searchInputHidden : null]}
+        />
+      );
+    };
+
     const CustomOption = (props) => {
 
       const options = props.selectProps.options;
@@ -155,15 +179,17 @@ class GenericSelector extends Component {
       CustomOption,
       ControlComponent,
       CustomValueContainer,
+      CustomInputContainer,
       CustomIndicatorSeparator
     });
   }
 
   render() {
+    const isSearchable = typeof this.props.isSearchable !== 'undefined' ? this.props.isSearchable : false;
     return (
       <Select
-        isSearchable={false}
         name={this.props.name}
+        isSearchable={isSearchable}
         options={this.props.options}
         defaultValue={this.props.defaultValue}
         onChange={ v => this.props.onChange(v.value) }
@@ -171,6 +197,7 @@ class GenericSelector extends Component {
             Menu: this.state.CustomMenu,
             Option: this.state.CustomOption,
             Control: this.state.ControlComponent,
+            Input: this.state.CustomInputContainer,
             SingleValue: this.state.CustomValueContainer,
             IndicatorSeparator: this.state.CustomIndicatorSeparator
         }}
