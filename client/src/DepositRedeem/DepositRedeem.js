@@ -864,6 +864,27 @@ class DepositRedeem extends Component {
                                 Seems like you are having some trouble with Meta-Transactions... Disable them by unchecking the box below and try again!
                               </Text>
                             </Flex>
+                          ) : this.functionsUtil.getWalletProvider() === 'WalletConnect' && this.state.metaTransactionsEnabled ? (
+                            <Flex
+                              width={1}
+                              alignItems={'center'}
+                              flexDirection={'column'}
+                              justifyContent={'center'}
+                            >
+                              <Icon
+                                size={'2.3em'}
+                                name={'Warning'}
+                                color={'cellText'}
+                              />
+                              <Text
+                                mt={1}
+                                fontSize={1}
+                                color={'cellText'}
+                                textAlign={'center'}
+                              >
+                                Please disable Meta-Transactions if you are using Argent Wallet to avoid failed transactions!
+                              </Text>
+                            </Flex>
                           ) : (
                             <Text
                               mt={1}
