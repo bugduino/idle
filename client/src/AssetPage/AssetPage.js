@@ -93,11 +93,12 @@ class AssetPage extends Component {
         <Flex
           width={1}
           mb={[3,4]}
+          alignItems={'center'}
+          flexDirection={'row'}
           justifyContent={'flex-start'}
-          flexDirection={['column','row']}
         >
           <Flex
-            width={[1,0.5]}
+            width={0.5}
           >
             <Breadcrumb
               isMobile={this.props.isMobile}
@@ -107,8 +108,7 @@ class AssetPage extends Component {
             />
           </Flex>
           <Flex
-            mt={[3,0]}
-            width={[1,0.5]}
+            width={0.5}
             justifyContent={'flex-end'}
           >
             <CardIconButton
