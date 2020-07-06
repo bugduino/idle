@@ -378,7 +378,7 @@ class DepositRedeem extends Component {
                 [this.state.action]: this.functionsUtil.BNify(0)
               }
             }));
-          } else if (txError){
+          } else if (this.state.metaTransactionsEnabled && txError){
             this.setState({
               txError:{
                 [this.state.action]: true
