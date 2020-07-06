@@ -99,17 +99,11 @@ class DashboardHeader extends Component {
           }
         </Flex>
         <AccountModal
-          context={this.props.context}
-          account={this.props.account}
-          isMobile={this.props.isMobile}
+          {...this.props}
           network={this.props.network.current}
-          setConnector={this.props.setConnector}
-          selectedToken={this.props.selectedToken}
-          accountBalance={this.props.accountBalance}
           isOpen={this.state.isModalOpen==='account'}
           closeModal={e => this.toggleModal('account') }
           idleTokenBalance={this.state.idleTokenBalance}
-          accountBalanceToken={this.props.accountBalanceToken}
         />
       </Box>
     );

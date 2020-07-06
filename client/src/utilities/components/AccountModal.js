@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  // Heading,
+  Heading,
   // Text,
   Modal,
   Box,
@@ -8,10 +8,11 @@ import {
   // Image,
   EthAddress
 } from "rimble-ui";
-import ButtonLoader from '../../ButtonLoader/ButtonLoader.js';
 import ModalCard from './ModalCard';
-import styles from '../../CryptoInput/CryptoInput.module.scss';
+import AssetField from '../../AssetField/AssetField.js';
 import FunctionsUtil from '../../utilities/FunctionsUtil';
+import ButtonLoader from '../../ButtonLoader/ButtonLoader.js';
+import styles from '../../CryptoInput/CryptoInput.module.scss';
 
 class AccountModal extends React.Component {
 
@@ -20,24 +21,46 @@ class AccountModal extends React.Component {
     balances: []
   }
 
-  loadBalances(){
-    const balances = [
-      {
-        'icon':'images/tokens/ETH.svg',
-        'amount':this.props.accountBalance
-      },
-      {
-        'icon':'images/tokens/'+this.props.selectedToken+'.svg',
-        'amount':this.props.accountBalanceToken
+  loadBalances = async () => {
 
-      },
-      {
-        'icon':`images/tokens/idle${this.props.selectedToken}.png`,
-        'amount':this.props.idleTokenBalance
-      }
-    ];
+    if (!this.props.availableStrategies || !this.props.contractsInitialized || !this.props.account || this.state.balances.length>0){
+      return false;
+    }
 
-    this.setState({balances});
+    const balances = [];
+    const allTokens = Object.keys(this.props.availableStrategies.best);
+
+    // await this.functionsUtil.asyncForEach(allTokens, async (baseToken) => {
+    allTokens.forEach( baseToken => {
+      const tokens = [];
+      tokens.push(baseToken);
+      Object.keys(this.props.availableStrategies).forEach( strategy => {
+        const strategyToken = this.props.availableStrategies[strategy][baseToken];
+        if (strategyToken){
+          tokens.push(strategyToken.idle.token);
+        }
+      });
+
+      balances.push(tokens);
+      /*
+      const tokenBalances = {};
+
+      tokenBalances[baseToken] = await this.functionsUtil.getTokenBalance(baseToken,this.props.account);
+
+      await this.functionsUtil.asyncForEach(Object.keys(this.props.availableStrategies), async (strategy) => {
+        const strategyToken = this.props.availableStrategies[strategy][baseToken];
+        if (strategyToken){
+          tokenBalances[strategyToken.idle.token] = await this.functionsUtil.getTokenBalance(strategyToken.idle.token,this.props.account);
+        }
+      });
+
+      balances.push(tokenBalances);
+      */
+    });
+
+    this.setState({
+      balances
+    });
   }
 
   // Utils
@@ -61,7 +84,11 @@ class AccountModal extends React.Component {
 
   componentDidUpdate(prevProps) {
     this.loadUtils();
-    if (prevProps !== this.props){
+
+    const accountChanged = prevProps.acccount !== this.props.account;
+    const contractsInitialized = !prevProps.contractsInitialized && this.props.contractsInitialized;
+    const availableStrategiesChanged = !prevProps.availableStrategies && this.props.availableStrategies;
+    if (availableStrategiesChanged || accountChanged || contractsInitialized){
       this.loadBalances();
     }
   }
@@ -92,41 +119,63 @@ class AccountModal extends React.Component {
 
   render(){
     if (this.props.account){
-      /*
-      const renderBalances = this.state.balances.map( (balance,i) => {
+      // let renderBalances = null;
+
+      const rows = (Object.keys(this.props.availableStrategies).length+1);
+      const renderBalances = this.state.balances.map( (tokens,i) => {
         return (
           <Flex
-            key={'balance_'+i}
-            width={['100%','auto']}
-            maxWidth={['90%','14em']}
-            borderRadius={'2rem'}
-            alignItems={'center'}
+            mt={2}
+            width={1}
             boxShadow={0}
-            p={1}
-            my={[1,2]}
-            mx={'auto'}
+            key={'balance_'+i}
+            alignItems={'center'}
+            flexDirection={'row'}
             >
-              <Flex justifyContent={['flex-end','flex-start']} width={[2/5,2/10]}>
-                <Image src={balance.icon} height={'32px'} ml={['0.5em','10px']} />
-              </Flex>
-              <Box width={[3/5,8/10]} pl={['0.6em','20px']}>
-                <Text
-                  border='0'
-                  borderColor='transparent'
-                  boxShadow='none !important'
-                  fontSize={[2, 3]}
-                  width={'100%'}
-                  bg={'transparent'}
-                  color={'dark-gray'}
-                  className={[styles.mainInput]}
-                >
-                  {!isNaN(this.functionsUtil.trimEth(balance.amount)) ? this.functionsUtil.trimEth(balance.amount) : this.functionsUtil.trimEth(0)}
-                </Text>
-              </Box>
+              {
+                tokens.map( (token,tokenIndex) => (
+                  <Flex
+                    width={1/rows}
+                    flexDirection={'row'}
+                    key={'balance_token_'+token}
+                    justifyContent={'flex-start'}
+                  >
+                    <AssetField
+                      token={token}
+                      tokenConfig={{
+                        token:token
+                      }}
+                      fieldInfo={{
+                        name:'icon',
+                        props:{
+                          mr:[1,2],
+                          ml:[1,4],
+                          width:['1.4em','2em'],
+                          height:['1.4em','2em']
+                        }
+                      }}
+                    />
+                    <AssetField
+                      {...this.props}
+                      token={token}
+                      tokenConfig={{
+                        token:token
+                      }}
+                      fieldInfo={{
+                        name:'tokenBalance',
+                        props:{
+                          fontSize:[0,2],
+                          fontWeight:500,
+                          color:'cellText'
+                        }
+                      }}
+                    />
+                  </Flex>
+                ) )
+              }
           </Flex>
         );
       });
-      */
 
       return (
         <Modal isOpen={this.props.isOpen}>
@@ -147,15 +196,20 @@ class AccountModal extends React.Component {
                     <EthAddress address={this.props.account} />
                   </Box>
                 </Flex>
-                {
-                /*
-                }
-                <Flex alignItems={'center'} flexDirection={'column'} width={'100%'}>
-                  <Heading.h4 textAlign={'center'}>Balance</Heading.h4>
-                  {renderBalances}
+                <Flex
+                  mb={3}
+                  width={'100%'}
+                  alignItems={'center'}
+                  maxWidth={['100%','30em']}
+                  flexDirection={'column'}
+                >
+                  <Heading.h4
+                    textAlign={'center'}
+                  >
+                    Balances
+                  </Heading.h4>
+                  { renderBalances }
                 </Flex>
-                */
-                }
               </Flex>
             </ModalCard.Body>
 
