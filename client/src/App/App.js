@@ -1,9 +1,4 @@
 import Web3 from "web3";
-import {
-  HashRouter as Router,
-  Switch,
-  Route
-} from "react-router-dom";
 import jQuery from 'jquery';
 import theme from "../theme";
 import Tos from "../Tos/Tos";
@@ -24,6 +19,7 @@ import PageNotFound from "../PageNotFound/PageNotFound";
 import Web3Debugger from "../Web3Debugger/Web3Debugger";
 import availableTokens from '../configs/availableTokens';
 import TransactionToastUtil from "../utilities/TransactionToastUtil";
+import { HashRouter as Router, Switch, Route } from "react-router-dom";
 import { ThemeProvider, Box, Text, Link, Image, Flex } from 'rimble-ui';
 
 class App extends Component {
@@ -217,12 +213,15 @@ class App extends Component {
 
     this.loadUtils();
 
+    window.BNify = this.functionsUtil.BNify;
+
     // Suppress warnings and errors in production
     const isProduction = window.location.origin.toLowerCase().includes(globalConfigs.baseURL.toLowerCase());
     if (isProduction){
       window.console.error = () => {};
       window.console.warn = () => {};
     }
+
     window.jQuery = jQuery;
 
     if (window.localStorage){

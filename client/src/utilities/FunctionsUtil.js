@@ -853,7 +853,7 @@ class FunctionsUtil {
           return false;
         }
 
-        let tokenPrice = await this.getIdleTokenPrice(tokenConfig,realTx.blockNumber,realTx.timeStamp);
+        const tokenPrice = await this.getIdleTokenPrice(tokenConfig,realTx.blockNumber,realTx.timeStamp);
 
         realTx.status = 'Completed';
         realTx.action = allowedMethods[tx.method];
@@ -1871,7 +1871,7 @@ class FunctionsUtil {
     const cachedDataKey = `idleTokenPrice_${tokenConfig.idle.token}_${blockNumber}`;
     if (blockNumber !== 'latest'){
       const cachedData = this.getCachedData(cachedDataKey);
-      if (cachedData !== null){
+      if (cachedData !== null && !this.BNify(cachedData).isNaN()){
         return cachedData;
       }
     }
@@ -1891,6 +1891,7 @@ class FunctionsUtil {
         data:null,
         timeDiff:null
       };
+      
       let afterPrice = {
         data:null,
         timeDiff:null
@@ -1928,13 +1929,13 @@ class FunctionsUtil {
       tokenPrice = this.fixTokenDecimals(tokenPrice,decimals);
     }
 
-    if (blockNumber !== 'latest'){
-      this.setCachedData(cachedDataKey,tokenPrice);
-    }
-
     // If price is NaN then return 1
     if (!tokenPrice || this.BNify(tokenPrice).isNaN() || this.BNify(tokenPrice).lt(1)){
       tokenPrice = this.BNify(1);
+    }
+
+    if (blockNumber !== 'latest'){
+      this.setCachedData(cachedDataKey,tokenPrice);
     }
 
     return tokenPrice;
