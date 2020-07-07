@@ -3,6 +3,7 @@ import Footer from '../Footer/Footer';
 import React, { Component } from 'react';
 import styles from './Landing.module.scss';
 import Partners from '../Partners/Partners';
+import RoundButton from '../RoundButton/RoundButton';
 import globalConfigs from '../configs/globalConfigs';
 import StrategyBox from '../StrategyBox/StrategyBox';
 import FunctionsUtil from '../utilities/FunctionsUtil';
@@ -298,6 +299,7 @@ class Landing extends Component {
     return (
       <Box
         height={'100vh'}
+        className={styles.mainViewport}
         style={{
           paddingBottom: !network.isCorrectNetwork ? "8em" : "0"
         }}
@@ -318,71 +320,116 @@ class Landing extends Component {
           />
           */
         }
-        <Box className={[styles.headerContainer]} px={[3,5]} pt={['2.5em', '3em']}>
+        <Box
+          px={[3,5]}
+          pt={['2.5em', '3em']}
+          className={styles.headerContainer}
+        >
           <Box position={'relative'} zIndex={10}>
-            <Flex flexDirection={'column'} alignItems={'center'} maxWidth={["50em", "70em"]} mx={'auto'} pb={3} textAlign={'center'} pt={['8vh', '8vh']}>
-              <Heading.h1
-                mb={'0.2em'}
-                fontWeight={5}
-                color={'white'}
+            <Flex
+              mt={[0,'6vh']}
+              alignItems={'flex-start'}
+              flexDirection={['column','row']}
+            >
+              <Flex
+                pb={3}
+                mx={'auto'}
+                width={[1,1/3]}
+                pt={['8vh', '8vh']}
                 textAlign={'center'}
-                lineHeight={'initial'}
-                fontFamily={'sansSerif'}
-                fontSize={['2em','3rem']}
+                flexDirection={'column'}
+                maxWidth={['50em', '25em']}
+                alignItems={['center','flex-start']}
               >
-                The best place for your money
-              </Heading.h1>
-              <Heading.h2
-                color={'white'}
-                fontWeight={500}
+                <Heading.h1
+                  fontWeight={5}
+                  color={'white'}
+                  fontFamily={'sansSerif'}
+                  fontSize={['2.2em','3.3rem']}
+                  textAlign={['center','left']}
+                  lineHeight={['initial','2.5rem']}
+                  style={{
+                    width:'100%',
+                    textAlignLast: this.props.isMobile ? 'center' : 'justify'
+                  }}
+                >
+                  The best place
+                </Heading.h1>
+                <Heading.h1
+                  mb={[2,3]}
+                  color={'white'}
+                  fontWeight={300}
+                  lineHeight={'initial'}
+                  fontFamily={'sansSerif'}
+                  fontSize={['2.2em','3.3rem']}
+                  textAlign={['center','left']}
+                  style={{
+                    width:'100%',
+                    textAlignLast: this.props.isMobile ? 'center' : 'justify'
+                  }}
+                >
+                  for your money
+                </Heading.h1>
+                <Heading.h2
+                  style={{
+                    width:'100%',
+                  }}
+                  color={'white'}
+                  fontWeight={400}
+                  fontSize={[2,'1.2em']}
+                  textAlign={['center','justify']}
+                >
+                  Choose your strategy and earn the yield you deserve without worry about finding the best option, either if you want to optimize returns or risks.
+                </Heading.h2>
+                {
+                  !this.props.isMobile && 
+                    <Flex
+                      mt={4}
+                    >
+                      <RoundButton
+                        handleClick={ (e) => {
+                          window.location.hash = this.functionsUtil.getGlobalConfig(['dashboard','baseRoute'])+'/'+Object.keys(this.functionsUtil.getGlobalConfig(['strategies']))[0];
+                        }}
+                      >
+                        Get Started
+                      </RoundButton>
+                    </Flex>
+                }
+              </Flex>
+              <Flex
+                mx={'auto'}
+                mt={[2,'10vh']}
+                width={[1,2/3]}
                 textAlign={'center'}
-                lineHeight={'initial'}
-                fontSize={[2,'1.25em']}
+                maxWidth={["50em", "50em"]}
+                flexDirection={['column','row']}
+                justifyContent={'space-between'}
               >
-                Earn the yield you deserve without worry about finding the best option,<br />either if you want to optimize returns or risks.
-              </Heading.h2>
+                {
+                  Object.keys(globalConfigs.strategies).map(strategy => (
+                    <StrategyBox
+                      {...this.props}
+                      strategy={strategy}
+                      key={`strategy_${strategy}`}
+                    />
+                  ))
+                }
+              </Flex>
             </Flex>
             <Flex
-              mt={[2,4]}
-              mx={'auto'}
-              textAlign={'center'}
-              maxWidth={["50em", "50em"]}
-              flexDirection={['column','row']}
-              justifyContent={'space-between'}
+              py={[3,4]}
+              mb={[3,5]}
+              alignItems={'center'}
+              flexDirection={'column'}
             >
-              {
-                Object.keys(globalConfigs.strategies).map(strategy => (
-                  <StrategyBox
-                    {...this.props}
-                    strategy={strategy}
-                    key={`strategy_${strategy}`}
-                  />
-                ))
-              }
-            </Flex>
-            {
-              /*
-              <Flex flexDirection={'column'} alignItems={'center'} maxWidth={["50em", "50em"]} mx={'auto'} textAlign={'center'}>
-                <LandingForm
-                  getAprs={this.getAprs}
-                  isMobile={this.props.isMobile}
-                  simpleID={this.props.simpleID}
-                  connecting={this.props.connecting}
-                  selectedTab={this.props.selectedTab}
-                  tokenConfig={this.props.tokenConfig}
-                  getAllocations={this.getAllocations}
-                  openBuyModal={this.props.openBuyModal}
-                  selectedToken={this.props.selectedToken}
-                  setSelectedToken={this.props.setSelectedToken}
-                  getAccountBalance={this.props.getAccountBalance}
-                  updateSelectedTab={this.props.updateSelectedTab}
-                  accountBalanceToken={this.props.accountBalanceToken}
-                />
-              </Flex>
-              */
-            }
-            <Flex flexDirection={'column'} py={[3,3]} mb={[3,5]} alignItems={'center'}>
-              <Link onClick={(e) => {this.functionsUtil.scrollTo(document.getElementById('how-it-works').offsetTop,300)}} textAlign={'center'} color={'dark-gray'} hoverColor={'dark-gray'} fontSize={2} fontWeight={3}>
+              <Link
+                fontSize={2}
+                fontWeight={3}
+                color={'dark-gray'}
+                textAlign={'center'}
+                hoverColor={'dark-gray'}
+                onClick={(e) => {this.functionsUtil.scrollTo(document.getElementById('how-it-works').offsetTop,300)}}
+              >
                 <Flex flexDirection={'column'} py={[2,1]} alignItems={'center'}>
                   <Box>
                     <Icon
@@ -399,7 +446,10 @@ class Landing extends Component {
           </Box>
         </Box>
 
-        <Box id='how-it-works' p={[3,0]}>
+        <Box
+          p={[3,4]}
+          id={'how-it-works'}
+        >
           <Flex flexDirection={['column','column']} alignItems={'center'} justifyContent={'center'}>
             <Box
               mb={[3,5]}

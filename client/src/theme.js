@@ -81,8 +81,9 @@ export default {
     transactions:{
       action:{
         send:'#4f4f4f',
-        swap:'#4f4f4f',
+        swap:'#3d53c0',
         redeem:'#10a0dd',
+        swapout:'#10a0dd',
         deposit:'#3d53c0',
         receive:'#4f4f4f',
         migrate:'#3d53c0',
@@ -91,8 +92,9 @@ export default {
       },
       actionBg:{
         send:'#dadada',
-        swap:'#dadada',
+        swap:'#ced6ff',
         redeem:'#ceeff6',
+        swapout:'#ceeff6',
         deposit:'#ced6ff',
         default:'#dadada',
         receive:'#dadada',
