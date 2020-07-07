@@ -874,13 +874,26 @@ class RimbleTransaction extends React.Component {
       ]);
 
       let accountBalance = res[0];
+
       if (accountBalance) {
+
+        // Convert to wei if decimals found
+        if (accountBalance.toString().includes('.')){
+          accountBalance = this.state.web3.utils.toWei(accountBalance);
+        }
+
+        // Convert to Eth amount
         accountBalance = this.state.web3.utils.fromWei(
           accountBalance,
-          "ether"
+          'ether'
         );
+
         accountBalance = this.functionsUtil.BNify(accountBalance).toString();
-        this.setState({ accountBalance });
+
+        this.setState({
+          accountBalance
+        });
+
         this.functionsUtil.customLog("account balance: ", accountBalance);
       }
 
@@ -1157,6 +1170,7 @@ class RimbleTransaction extends React.Component {
         .catch(e => console.error(e));
 
       if (gas) {
+
         gas = this.functionsUtil.BNify(gas);
         gas = gas.plus(gas.times(this.functionsUtil.BNify('0.3'))); // Increase 30% of enstimation
 
@@ -1164,6 +1178,7 @@ class RimbleTransaction extends React.Component {
         if (gasLimit && gas.lt(this.functionsUtil.BNify(gasLimit))){
           gas = this.functionsUtil.BNify(gasLimit);
         }
+
         // Convert gasLimit toBN with web3 utils
         gas = this.state.web3.utils.toBN(gas.integerValue(BigNumber.ROUND_FLOOR));
       }
