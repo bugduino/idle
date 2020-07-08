@@ -44,7 +44,7 @@ class Dashboard extends Component {
   async loadMenu() {
     const baseRoute = this.functionsUtil.getGlobalConfig(['dashboard','baseRoute']);
     const strategies = this.functionsUtil.getGlobalConfig(['strategies']);
-    const menu = Object.keys(strategies).map(strategy => ({
+    const menu = Object.keys(strategies).filter( s => ( !strategies[s].comingSoon ) ).map(strategy => ({
         submenu:[],
         color:'#fff',
         selected:false,

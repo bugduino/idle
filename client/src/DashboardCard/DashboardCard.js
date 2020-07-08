@@ -5,8 +5,9 @@ import styles from './DashboardCard.module.scss';
 class DashboardCard extends Component {
   render() {
     const isDisabled = this.props.isDisabled;
-    const isInteractive = this.props.isInteractive && !isDisabled;
     const isActive = this.props.isActive && !isDisabled;
+    const isInteractive = this.props.isInteractive && !isDisabled;
+    const isVisible = typeof this.props.isVisible !== 'undefined' ? this.props.isVisible : true;
 
     const cardProps = {
       p:0,
@@ -27,7 +28,7 @@ class DashboardCard extends Component {
       <Card
         {...cardProps}
         onClick={this.props.handleClick}
-        className={[isDisabled ? styles.disabled : null,isInteractive ? styles.interactive : null,isActive ? styles.active : null]}
+        className={[styles.defaultOpacity, isDisabled ? styles.disabled : null, isInteractive ? styles.interactive : null, isActive ? styles.active : null, !isVisible ? styles.hidden : null]}
       >
         {
           this.props.title && this.props.title.length>0 &&

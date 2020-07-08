@@ -128,6 +128,7 @@ const globalConfigs = {
     best:{
       token:'DAI',
       color:'#f32121',
+      comingSoon:false,
       title:'Best-Yield',
       iconName:'Whatshot',
       component: StrategyPage,
@@ -141,6 +142,7 @@ const globalConfigs = {
     risk:{
       token:'DAI',
       color:'#2196F3',
+      comingSoon:false,
       iconName:'Security',
       title:'Risk-Adjusted',
       component: StrategyPage,
@@ -148,6 +150,19 @@ const globalConfigs = {
       icon:'images/strategies/risk-on.svg',
       iconInactive:'images/strategies/risk-off.svg',
       desc:'Optimize your risk exposure across DeFi protocols',
+      descLong:'The Risk-Adjusted allocation strategy provides a way to earn the best rate at the lowest risk-level. The risk-management algorithm takes account of the total assets within a pool, incorporates underlying protocol rate functions and levels of supply and demand, skimming protocols with a bad score/rate mix, and finally determining an allocation that achieves the highest risk-return score possible after the rebalance happens.',
+      descShort:'The Risk-Adjusted allocation strategy provides a way to earn the best rate at the lowest risk-level.'
+    },
+    new:{
+      token:'DAI',
+      color:'#2196F3',
+      comingSoon:true,
+      iconName:'Adjust',
+      title:'Coming-Soon',
+      chartColor:'hsl(211,67%,47%)',
+      icon:'images/strategies/risk-on.svg',
+      iconInactive:'images/strategies/risk-off.svg',
+      desc:'New coming soon strategy',
       descLong:'The Risk-Adjusted allocation strategy provides a way to earn the best rate at the lowest risk-level. The risk-management algorithm takes account of the total assets within a pool, incorporates underlying protocol rate functions and levels of supply and demand, skimming protocols with a bad score/rate mix, and finally determining an allocation that achieves the highest risk-return score possible after the rebalance happens.',
       descShort:'The Risk-Adjusted allocation strategy provides a way to earn the best rate at the lowest risk-level.'
     }

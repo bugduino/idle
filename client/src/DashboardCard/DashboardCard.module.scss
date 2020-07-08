@@ -1,6 +1,12 @@
+.defaultOpacity{
+  opacity:1;
+  transition:all 0.15s ease-in-out !important;
+}
+.hidden{
+  opacity:0;
+}
 .interactive{
   cursor:pointer;
-  transition:all 0.15s ease-in-out !important;
 }
 .active,
 .interactive:hover{

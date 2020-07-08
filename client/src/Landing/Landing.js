@@ -8,6 +8,7 @@ import globalConfigs from '../configs/globalConfigs';
 import StrategyBox from '../StrategyBox/StrategyBox';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import NewsletterForm from '../NewsletterForm/NewsletterForm';
+import RoundIconButton from '../RoundIconButton/RoundIconButton';
 import { Image, Flex, Box, Heading, Link, Text, Icon } from 'rimble-ui'
 import FloatingToastMessage from '../FloatingToastMessage/FloatingToastMessage';
 
@@ -18,6 +19,8 @@ let componentUnmounted;
 class Landing extends Component {
   state = {
     avgApr:null,
+    carouselMax:1,
+    carouselIndex:0,
     activeCarousel:1,
     runConfetti:false,
     activeBullet:null,
@@ -25,6 +28,7 @@ class Landing extends Component {
     startCarousel:null,
     testPerformed:false,
     totalAllocation:null,
+    carouselOffsetLeft:0,
     setActiveCarousel:null,
     carouselIntervalID:null,
     protocolsAllocations:null,
@@ -106,12 +110,38 @@ class Landing extends Component {
       this.startCarousel();
     }
 
+    this.loadCarousel();
+
     if (this.props.contractsInitialized){
       // await Promise.all([
       //   this.getAprs(),
       //   this.getAllocations()
       // ]);
     }
+  }
+
+  handleCarousel = action => {
+    let carouselIndex = this.state.carouselIndex;
+    if (action==='next' && carouselIndex<this.state.carouselMax){
+      carouselIndex++;
+    } else if (action==='back' && carouselIndex>0){
+      carouselIndex--;
+    }
+
+    const $element = window.jQuery(`#carousel-cursor > div:eq(${carouselIndex})`);
+    const carouselOffsetLeft = -parseFloat($element.position().left)+'px';
+
+    this.setState({
+      carouselIndex,
+      carouselOffsetLeft
+    });
+  }
+
+  loadCarousel(){
+    const carouselMax = this.props.isMobile ? 2 : 1;
+    this.setState({
+      carouselMax
+    });
   }
 
   async componentDidUpdate(prevProps, prevState) {
@@ -126,6 +156,11 @@ class Landing extends Component {
       //   this.getAprs(),
       //   this.getAllocations()
       // ]);
+    }
+
+    const mobileChanged = prevProps.isMobile !== this.props.isMobile;
+    if (mobileChanged){
+      this.loadCarousel();
     }
   }
 
@@ -338,7 +373,7 @@ class Landing extends Component {
                 pt={['8vh', '8vh']}
                 textAlign={'center'}
                 flexDirection={'column'}
-                maxWidth={['50em', '25em']}
+                maxWidth={['50em', '24em']}
                 alignItems={['center','flex-start']}
               >
                 <Heading.h1
@@ -398,51 +433,102 @@ class Landing extends Component {
               </Flex>
               <Flex
                 mx={'auto'}
-                mt={[2,'10vh']}
+                mt={[0,'10vh']}
                 width={[1,2/3]}
+                maxWidth={"50em"}
                 textAlign={'center'}
-                maxWidth={["50em", "50em"]}
-                flexDirection={['column','row']}
-                justifyContent={'space-between'}
+                position={'relative'}
+                flexDirection={'column'}
+                height={['410px','460px']}
+                justifyContent={['flex-start','flex-end']}
               >
-                {
-                  Object.keys(globalConfigs.strategies).map(strategy => (
-                    <StrategyBox
-                      {...this.props}
-                      strategy={strategy}
-                      key={`strategy_${strategy}`}
-                    />
-                  ))
-                }
+                <Flex
+                  left={0}
+                  right={0}
+                  height={'400px'}
+                  top={['initial',0]}
+                  overflow={'hidden'}
+                  position={'absolute'}
+                  bottom={[0,'initial']}
+                  width={['300%','140%']}
+                >
+                  <Flex
+                    width={'100%'}
+                    top={['initial',0]}
+                    flexDirection={'row'}
+                    position={'absolute'}
+                    id={'carousel-cursor'}
+                    height={['auto','400px']}
+                    bottom={['5px','initial']}
+                    justifyContent={'space-between'}
+                    left={this.state.carouselOffsetLeft}
+                    style={{
+                      transition:'left 0.3s ease-in-out'
+                    }}
+                  >
+                    {
+                      Object.keys(globalConfigs.strategies).map((strategy,strategyIndex) => (
+                        <StrategyBox
+                          {...this.props}
+                          strategy={strategy}
+                          key={`strategy_${strategy}`}
+                        />
+                      ))
+                    }
+                  </Flex>
+                </Flex>
+                <Flex
+                  width={1}
+                  id={'carousel-container'}
+                  justifyContent={['center','flex-start']}
+                >
+                  <RoundIconButton
+                    buttonProps={{
+                      mr:[4,3]
+                    }}
+                    iconName={'ArrowBack'}
+                    disabled={this.state.carouselIndex === 0}
+                    handleClick={ e => this.handleCarousel('back') }
+                  />
+                  <RoundIconButton
+                    iconName={'ArrowForward'}
+                    handleClick={ e => this.handleCarousel('next') }
+                    disabled={this.state.carouselIndex === this.state.carouselMax}
+                  />
+                </Flex>
               </Flex>
             </Flex>
-            <Flex
-              py={[3,4]}
-              mb={[3,5]}
-              alignItems={'center'}
-              flexDirection={'column'}
-            >
-              <Link
-                fontSize={2}
-                fontWeight={3}
-                color={'dark-gray'}
-                textAlign={'center'}
-                hoverColor={'dark-gray'}
-                onClick={(e) => {this.functionsUtil.scrollTo(document.getElementById('how-it-works').offsetTop,300)}}
+            {
+              /*
+              <Flex
+                py={[3,4]}
+                mb={[3,5]}
+                alignItems={'center'}
+                flexDirection={'column'}
               >
-                <Flex flexDirection={'column'} py={[2,1]} alignItems={'center'}>
-                  <Box>
-                    <Icon
-                      size={"2.5em"}
-                      align={'center'}
-                      color={'dark-gray'}
-                      name={'KeyboardArrowDown'}
-                      className={styles.bounceArrow}
-                    />
-                  </Box>
-                </Flex>
-              </Link>
-            </Flex>
+                <Link
+                  fontSize={2}
+                  fontWeight={3}
+                  color={'dark-gray'}
+                  textAlign={'center'}
+                  hoverColor={'dark-gray'}
+                  onClick={(e) => {this.functionsUtil.scrollTo(document.getElementById('how-it-works').offsetTop,300)}}
+                >
+                  <Flex flexDirection={'column'} py={[2,1]} alignItems={'center'}>
+                    <Box>
+                      <Icon
+                        size={"2.5em"}
+                        align={'center'}
+                        color={'dark-gray'}
+                        name={'KeyboardArrowDown'}
+                        className={styles.bounceArrow}
+                      />
+                    </Box>
+                  </Flex>
+                </Link>
+              </Flex>
+              */
+            }
           </Box>
         </Box>
 
