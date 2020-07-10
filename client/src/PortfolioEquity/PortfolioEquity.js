@@ -149,7 +149,7 @@ class PortfolioEquity extends Component {
     let minChartValue = null;
     let maxChartValue = null;
     let aggregatedBalance = null;
-    const aggregatedBalances = [];
+    const aggregatedBalancesKeys = {};
     const currTimestamp = parseInt(new Date().getTime()/1000)+86400;
 
     const tokensData = {};
@@ -252,19 +252,23 @@ class PortfolioEquity extends Component {
 
         foundBalances[token] = filteredBalances;
       });
-  
-  
+
       const momentDate = this.functionsUtil.strToMoment(timeStamp*1000);
+
       if (startDate === null || momentDate.isSameOrAfter(startDate)){
+        
+        if (momentDate.isAfter(new Date(),'day')){
+          momentDate = this.functionsUtil.strToMoment(new Date());
+        }
+
+        const formattedDate = momentDate.format('YYYY/MM/DD HH:mm');
+
         // Save days for axisBottom format
         days[momentDate.format('YYYY/MM/DD')] = 1;
 
         aggregatedBalance = parseFloat(parseFloat(aggregatedBalance.toFixed(6)));
 
-        aggregatedBalances.push({
-          x:momentDate.format('YYYY/MM/DD HH:mm'),
-          y:aggregatedBalance
-        });
+        aggregatedBalancesKeys[formattedDate] = aggregatedBalance;
 
         minChartValue = minChartValue === null ? aggregatedBalance : Math.min(minChartValue,aggregatedBalance);
         maxChartValue = maxChartValue === null ? aggregatedBalance : Math.max(maxChartValue,aggregatedBalance);
@@ -275,6 +279,17 @@ class PortfolioEquity extends Component {
       prevTimestamp = timeStamp;
       prevBalances = foundBalances;
     }
+
+    const aggregatedBalances = Object.keys(aggregatedBalancesKeys).map(date => ({
+      x:date,
+      y:aggregatedBalancesKeys[date]
+    }));
+    /*
+    aggregatedBalances.push({
+      x:momentDate.format('YYYY/MM/DD HH:mm'),
+      y:aggregatedBalance
+    });
+    */
 
     // Add day before to start with zero balance
     /*
