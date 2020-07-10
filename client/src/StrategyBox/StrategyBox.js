@@ -100,11 +100,12 @@ class StrategyBox extends Component {
         isVisible={ typeof this.props.isVisible !== 'undefined' ? this.props.isVisible : true }
       >
         <Flex
+          mb={2}
           justifyContent={'center'}
         >
           <Image
             src={strategyInfo.icon}
-            height={['2.2em','3.2em']}
+            height={['2.2em','3em']}
           />
         </Flex>
         <Flex
@@ -143,7 +144,10 @@ class StrategyBox extends Component {
               justifyContent={'center'}
               height={['111px','127px']}
             >
-              Coming Soon
+              <Image
+                width={0.7}
+                src={'/images/coming-soon.png'}
+              />
             </Flex>
           ) : (
             <Flex

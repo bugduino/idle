@@ -9,7 +9,7 @@ import StrategyBox from '../StrategyBox/StrategyBox';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import NewsletterForm from '../NewsletterForm/NewsletterForm';
 import RoundIconButton from '../RoundIconButton/RoundIconButton';
-import { Image, Flex, Box, Heading, Link, Text, Icon } from 'rimble-ui'
+import { Image, Flex, Box, Heading, Link, Text } from 'rimble-ui';
 import FloatingToastMessage from '../FloatingToastMessage/FloatingToastMessage';
 
 let scrolling = false;
@@ -356,7 +356,8 @@ class Landing extends Component {
           */
         }
         <Box
-          px={[3,5]}
+          pl={[3,5]}
+          pr={[3,0]}
           pt={['2.5em', '3em']}
           className={styles.headerContainer}
         >
@@ -432,32 +433,33 @@ class Landing extends Component {
                 }
               </Flex>
               <Flex
-                mx={'auto'}
+                ml={'auto'}
+                mr={['auto',0]}
                 mt={[0,'10vh']}
                 width={[1,2/3]}
                 maxWidth={"50em"}
                 textAlign={'center'}
                 position={'relative'}
                 flexDirection={'column'}
-                height={['410px','460px']}
-                justifyContent={['flex-start','flex-end']}
+                height={['410px','560px']}
+                justifyContent={'flex-start'}
               >
                 <Flex
                   left={0}
                   right={0}
+                  width={'100%'}
                   height={'400px'}
-                  top={['initial',0]}
                   overflow={'hidden'}
                   position={'absolute'}
                   bottom={[0,'initial']}
-                  width={['300%','140%']}
+                  top={['initial','80px']}
                 >
                   <Flex
-                    width={'100%'}
                     top={['initial',0]}
                     flexDirection={'row'}
                     position={'absolute'}
                     id={'carousel-cursor'}
+                    width={['300%','140%']}
                     height={['auto','400px']}
                     bottom={['5px','initial']}
                     justifyContent={'space-between'}
@@ -479,6 +481,7 @@ class Landing extends Component {
                 </Flex>
                 <Flex
                   width={1}
+                  mt={[0,'20px']}
                   id={'carousel-container'}
                   justifyContent={['center','flex-start']}
                 >

@@ -21,14 +21,15 @@ class SmartNumber extends Component {
 
   render() {
     let formattedNumber = '-';
+    const number = typeof this.props.number !== 'undefined' && !isNaN(this.props.number) && this.props.number !== false && this.props.number !== null ? this.props.number : null;
 
-    if (!isNaN(this.props.number) && this.props.number !== false && this.props.number !== null){
+    if (number){
       switch (this.props.type){
         case 'money':
-          formattedNumber = this.functionsUtil.formatMoney(this.props.number,this.props.precision);
+          formattedNumber = this.functionsUtil.formatMoney(number,this.props.precision);
         break;
         default:
-          formattedNumber = this.functionsUtil.abbreviateNumber(this.props.number,this.props.decimals,this.props.maxPrecision,this.props.minPrecision);
+          formattedNumber = this.functionsUtil.abbreviateNumber(number,this.props.decimals,this.props.maxPrecision,this.props.minPrecision);
         break;
       }
     } else {
