@@ -360,6 +360,7 @@ class Landing extends Component {
           pr={[3,0]}
           pt={['2.5em', '3em']}
           className={styles.headerContainer}
+          minHeight={ Math.max((window.innerHeight+window.innerHeight*0.02),768) }
         >
           <Box position={'relative'} zIndex={10}>
             <Flex
@@ -381,7 +382,7 @@ class Landing extends Component {
                   fontWeight={5}
                   color={'white'}
                   fontFamily={'sansSerif'}
-                  fontSize={['2.2em','3.3rem']}
+                  fontSize={['2.2em','3.2rem']}
                   textAlign={['center','left']}
                   lineHeight={['initial','2.5rem']}
                   style={{
@@ -397,7 +398,7 @@ class Landing extends Component {
                   fontWeight={300}
                   lineHeight={'initial'}
                   fontFamily={'sansSerif'}
-                  fontSize={['2.2em','3.3rem']}
+                  fontSize={['2.2em','3.2rem']}
                   textAlign={['center','left']}
                   style={{
                     width:'100%',
