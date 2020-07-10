@@ -2,6 +2,8 @@ import TokenSwap from '../TokenSwap/TokenSwap';
 import yDAIv3 from '../abis/iearn/yDAIv3.json';
 import yUSDCv3 from '../abis/iearn/yUSDCv3.json';
 import yUSDTv3 from '../abis/iearn/yUSDTv3.json';
+import ySUSDv3 from '../abis/iearn/ySUSDv3.json';
+import yTUSDv3 from '../abis/iearn/yTUSDv3.json';
 import NexusMutual from '../NexusMutual/NexusMutual';
 import { Web3Versions } from '@terminal-packages/sdk';
 import FunctionsUtil from '../utilities/FunctionsUtil';
@@ -628,6 +630,17 @@ const globalConfigs = {
             migrateFunction:'migrateFromAaveToIdle',
             address:"0x625aE63000f46200499120B906716420bd059240",
           },
+          ySUSDv3:{
+            decimals:18,
+            enabled:true,
+            token:"ySUSDv3",
+            abi:ySUSDv3,
+            baseToken:'SUSD',
+            protocol:"iearn",
+            icon:'images/tokens/ySUSDv3.png',
+            migrateFunction:'migrateFromIearnToIdle',
+            address:"0xf61718057901f84c4eec4339ef8f0d86d2b45600",
+          },
           idleTUSDv2:{
             decimals:18,
             enabled:true,
@@ -646,6 +659,17 @@ const globalConfigs = {
             baseToken:'TUSD',
             migrateFunction:'migrateFromAaveToIdle',
             address:"0x4DA9b813057D04BAef4e5800E36083717b4a0341",
+          },
+          yTUSDv3:{
+            decimals:18,
+            enabled:true,
+            abi:yTUSDv3,
+            token:"yTUSDv3",
+            baseToken:'TUSD',
+            protocol:"iearn",
+            icon:'images/tokens/yTUSDv3.png',
+            migrateFunction:'migrateFromIearnToIdle',
+            address:"0x73a052500105205d34daf004eab301916da8190f",
           },
           cWBTC:{
             decimals:8,
