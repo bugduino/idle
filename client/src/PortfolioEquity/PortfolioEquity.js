@@ -253,7 +253,7 @@ class PortfolioEquity extends Component {
         foundBalances[token] = filteredBalances;
       });
 
-      const momentDate = this.functionsUtil.strToMoment(timeStamp*1000);
+      let momentDate = this.functionsUtil.strToMoment(timeStamp*1000);
 
       if (startDate === null || momentDate.isSameOrAfter(startDate)){
         
