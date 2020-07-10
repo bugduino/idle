@@ -105,7 +105,7 @@ class StrategyBox extends Component {
         >
           <Image
             src={strategyInfo.icon}
-            height={['2.2em','3em']}
+            height={['2.2em','2.8em']}
           />
         </Flex>
         <Flex
@@ -298,7 +298,7 @@ class StrategyBox extends Component {
         }
         <Flex
           width={1}
-          height={'58px'}
+          height={'64px'}
           boxShadow={'0px -6px 6px -4px rgba(0,0,0,0.15)'}
         >
           {
