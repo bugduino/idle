@@ -1329,11 +1329,11 @@ class RimbleTransaction extends React.Component {
 
             const isError = error instanceof Error;
 
-            if (this.functionsUtil.checkUrlOrigin() && isError){
+            if (typeof error.message !== 'undefined'){
+              this.openTransactionErrorModal(null,error.message);
+            } else if (this.functionsUtil.checkUrlOrigin() && isError){
               Sentry.captureException(error);
             }
-
-            this.openTransactionErrorModal(null,error.message);
           }
 
           if (typeof callback === 'function') {
