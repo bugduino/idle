@@ -139,11 +139,12 @@ class StrategyBox extends Component {
         {
           strategyInfo.comingSoon ? (
             <Flex
-              my={3}
-              alignItems={'end'}
+              mt={3}
+              mb={[0,3]}
+              height={'126px'}
               flexDirection={'row'}
               justifyContent={'center'}
-              height={['111px','127px']}
+              alignItems={['flex-end','end']}
             >
               <Image
                 width={1}
@@ -301,7 +302,7 @@ class StrategyBox extends Component {
           width={1}
           height={'64px'}
           position={'relative'}
-          boxShadow={'0px -6px 6px -4px rgba(0,0,0,0.15)'}
+          boxShadow={'0px -6px 6px -4px rgba(0,0,0,0.1)'}
         >
           {
             strategyInfo.comingSoon ? (
