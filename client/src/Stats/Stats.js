@@ -661,154 +661,170 @@ class Stats extends Component {
           </Flex>
           */
           }
-          <Flex
+          <Box
             mb={[3,4]}
-            flexDirection={['column','row']}
           >
             <Flex
-              width={[1,0.4]}
-            >
-              <Breadcrumb
-                showPathMobile={true}
-                text={'ASSETS OVERVIEW'}
-                isMobile={this.props.isMobile}
-                handleClick={ e => this.props.goToSection('stats') }
-                path={[this.functionsUtil.getGlobalConfig(['strategies',this.props.selectedStrategy,'title'])]}
-              />
-            </Flex>
-            <Flex
-              mt={[3,0]}
-              width={[1,0.6]}
               flexDirection={['column','row']}
-              justifyContent={['center','space-between']}
             >
               <Flex
-                width={[1,0.26]}
-                flexDirection={'column'}
+                width={[1,0.4]}
               >
-                <GenericSelector
-                  innerProps={{
-                    p:1,
-                    height:['100%','46px'],
-                  }}
-                  name={'idle-version'}
-                  defaultValue={
-                    {value:'v3',label:'Idle V3'}
-                  }
-                  options={versionsOptions}
-                  onChange={ v => this.setIdleVersion(v) }
+                <Breadcrumb
+                  showPathMobile={true}
+                  text={'ASSETS OVERVIEW'}
+                  isMobile={this.props.isMobile}
+                  handleClick={ e => this.props.goToSection('stats') }
+                  path={[this.functionsUtil.getGlobalConfig(['strategies',this.props.selectedStrategy,'title'])]}
                 />
               </Flex>
               <Flex
                 mt={[3,0]}
-                width={[1,0.3]}
-                flexDirection={'column'}
+                width={[1,0.6]}
+                flexDirection={['column','row']}
+                justifyContent={['center','space-between']}
               >
-                <AssetSelector
-                  innerProps={{
-                    p:1
-                  }}
-                  {...this.props}
-                />
-              </Flex>
-              <Flex
-                mt={[3,0]}
-                width={[1,0.39]}
-                flexDirection={'column'}
-              >
-                <DashboardCard
-                  cardProps={{
-                    p:1,
-                    display:'flex',
-                    alignItems:'center',
-                    height:['46px','100%'],
-                    justifyContent:'center'
-                  }}
-                  isInteractive={true}
-                  handleClick={ e => this.setDateRangeModal(true) }
+                <Flex
+                  width={[1,0.26]}
+                  flexDirection={'column'}
                 >
-                  <Text
-                    fontWeight={3}
-                    color={'copyColor'}
+                  <GenericSelector
+                    innerProps={{
+                      p:1,
+                      height:['100%','46px'],
+                    }}
+                    name={'idle-version'}
+                    defaultValue={
+                      {value:'v3',label:'Idle V3'}
+                    }
+                    options={versionsOptions}
+                    onChange={ v => this.setIdleVersion(v) }
+                  />
+                </Flex>
+                <Flex
+                  mt={[3,0]}
+                  width={[1,0.3]}
+                  flexDirection={'column'}
+                >
+                  <AssetSelector
+                    innerProps={{
+                      p:1
+                    }}
+                    {...this.props}
+                  />
+                </Flex>
+                <Flex
+                  mt={[3,0]}
+                  width={[1,0.39]}
+                  flexDirection={'column'}
+                >
+                  <DashboardCard
+                    cardProps={{
+                      p:1,
+                      display:'flex',
+                      alignItems:'center',
+                      height:['46px','100%'],
+                      justifyContent:'center'
+                    }}
+                    isInteractive={true}
+                    handleClick={ e => this.setDateRangeModal(true) }
                   >
-                  {
-                    this.state.quickSelection
-                    ?
-                      this.quickSelections[this.state.quickSelection]
-                    : this.state.startTimestampObj && this.state.endTimestampObj &&
-                      `${this.state.startTimestampObj.format('DD/MM/YY')} - ${this.state.endTimestampObj.format('DD/MM/YY')}`
-                  }
-                  </Text>
-                </DashboardCard>
+                    <Text
+                      fontWeight={3}
+                      color={'copyColor'}
+                    >
+                    {
+                      this.state.quickSelection
+                      ?
+                        this.quickSelections[this.state.quickSelection]
+                      : this.state.startTimestampObj && this.state.endTimestampObj &&
+                        `${this.state.startTimestampObj.format('DD/MM/YY')} - ${this.state.endTimestampObj.format('DD/MM/YY')}`
+                    }
+                    </Text>
+                  </DashboardCard>
+                </Flex>
               </Flex>
             </Flex>
-          </Flex>
-          <Flex
-            width={1}
+          </Box>
+          <Box
             mt={[3,0]}
             mb={[3,4]}
-            alignItems={'center'}
-            justifyContent={'center'}
-            flexDirection={['column','row']}
           >
             <Flex
-              mb={[2,0]}
-              pr={[0,2]}
-              width={[1,1/4]}
-              flexDirection={'column'}
+              width={1}
+              alignItems={'center'}
+              justifyContent={'center'}
+              flexDirection={['column','row']}
             >
-              <StatsCard
-                value={this.state.aum}
-                title={'Asset Under Management'}
-                label={this.props.selectedToken}
-              />
-            </Flex>
-            <Flex
-              mb={[2,0]}
-              pr={[0,2]}
-              width={[1,1/4]}
-              flexDirection={'column'}
-            >
-              <StatsCard
-                title={'Avg APY'}
-                label={'Annualized'}
+              <Flex
+                mb={[2,0]}
+                pr={[0,2]}
+                width={[1,1/4]}
+                flexDirection={'column'}
               >
-                <VariationNumber
-                  direction={'up'}
-                  iconPos={'right'}
-                  iconSize={'1.8em'}
-                  justifyContent={'flex-start'}
-                  >
-                  <Text
-                    lineHeight={1}
-                    fontWeight={[3,4]}
-                    color={'statValue'}
-                    fontSize={[4,5]}
-                  >
-                    {this.state.apr}
-                    <Text.span color={'statValue'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
-                  </Text>
-                </VariationNumber>
-              </StatsCard>
-            </Flex>
-            <Flex
-              mb={[2,0]}
-              pr={[0,2]}
-              width={[1,1/4]}
-              flexDirection={'column'}
-            >
-              <StatsCard
-                title={'Overperformance on Compound'}
-                label={'Annualized'}
+                <StatsCard
+                  value={this.state.aum}
+                  title={'Asset Under Management'}
+                  label={this.props.selectedToken}
+                />
+              </Flex>
+              <Flex
+                mb={[2,0]}
+                pr={[0,2]}
+                width={[1,1/4]}
+                flexDirection={'column'}
               >
-                {
-                  this.state.delta && !isNaN(this.state.delta) ? (
-                    <VariationNumber
-                      direction={'up'}
-                      iconPos={'right'}
-                      iconSize={'1.8em'}
-                      justifyContent={'flex-start'}
-                      >
+                <StatsCard
+                  title={'Avg APY'}
+                  label={'Annualized'}
+                >
+                  <VariationNumber
+                    direction={'up'}
+                    iconPos={'right'}
+                    iconSize={'1.8em'}
+                    justifyContent={'flex-start'}
+                    >
+                    <Text
+                      lineHeight={1}
+                      fontWeight={[3,4]}
+                      color={'statValue'}
+                      fontSize={[4,5]}
+                    >
+                      {this.state.apr}
+                      <Text.span color={'statValue'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
+                    </Text>
+                  </VariationNumber>
+                </StatsCard>
+              </Flex>
+              <Flex
+                mb={[2,0]}
+                pr={[0,2]}
+                width={[1,1/4]}
+                flexDirection={'column'}
+              >
+                <StatsCard
+                  title={'Overperformance on Compound'}
+                  label={'Annualized'}
+                >
+                  {
+                    this.state.delta && !isNaN(this.state.delta) ? (
+                      <VariationNumber
+                        direction={'up'}
+                        iconPos={'right'}
+                        iconSize={'1.8em'}
+                        justifyContent={'flex-start'}
+                        >
+                        <Text
+                          lineHeight={1}
+                          fontSize={[4,5]}
+                          fontWeight={[3,4]}
+                          color={'statValue'}
+                        >
+                          {this.state.delta}
+                          <Text.span color={'statValue'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
+                        </Text>
+                      </VariationNumber>
+                    ) : (
                       <Text
                         lineHeight={1}
                         fontSize={[4,5]}
@@ -816,61 +832,50 @@ class Stats extends Component {
                         color={'statValue'}
                       >
                         {this.state.delta}
-                        <Text.span color={'statValue'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
                       </Text>
-                    </VariationNumber>
-                  ) : (
-                    <Text
-                      lineHeight={1}
-                      fontSize={[4,5]}
-                      fontWeight={[3,4]}
-                      color={'statValue'}
-                    >
-                      {this.state.delta}
+                    )
+                  }
+                </StatsCard>
+              </Flex>
+              <Flex
+                mb={[2,0]}
+                pr={[0,2]}
+                width={[1,1/4]}
+                flexDirection={'column'}
+              >
+                <StatsCard
+                  label={' '}
+                  title={'Rebalances'}
+                  value={this.state.rebalances.toString()}
+                />
+              </Flex>
+              {
+              /*
+              <Flex width={[1,1/4]} flexDirection={'column'} px={[0,2]}>
+                <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
+                  <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
+                    <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Current APR</Text.span>
+                    <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
+                      {this.state.currApr}
+                      <Text.span color={'copyColor'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
                     </Text>
-                  )
-                }
-              </StatsCard>
+                  </Flex>
+                </Card>
+              </Flex>
+              <Flex width={[1,1/4]} flexDirection={'column'} px={[0,2]}>
+                <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
+                  <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
+                    <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Days Live</Text.span>
+                    <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
+                      {this.state.days}
+                    </Text>
+                  </Flex>
+                </Card>
+              </Flex>
+              */
+              }
             </Flex>
-            <Flex
-              mb={[2,0]}
-              pr={[0,2]}
-              width={[1,1/4]}
-              flexDirection={'column'}
-            >
-              <StatsCard
-                label={' '}
-                title={'Rebalances'}
-                value={this.state.rebalances.toString()}
-              />
-            </Flex>
-            {
-            /*
-            <Flex width={[1,1/4]} flexDirection={'column'} px={[0,2]}>
-              <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
-                <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                  <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Current APR</Text.span>
-                  <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
-                    {this.state.currApr}
-                    <Text.span color={'copyColor'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
-                  </Text>
-                </Flex>
-              </Card>
-            </Flex>
-            <Flex width={[1,1/4]} flexDirection={'column'} px={[0,2]}>
-              <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
-                <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                  <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Days Live</Text.span>
-                  <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
-                    {this.state.days}
-                  </Text>
-                </Flex>
-              </Card>
-            </Flex>
-            */
-            }
-          </Flex>
-
+          </Box>
 
           <DashboardCard
             title={'Historical Performance'}
