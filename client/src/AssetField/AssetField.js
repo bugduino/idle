@@ -357,6 +357,27 @@ class AssetField extends Component {
               }
             });
 
+            /*
+            // FAKE CHART DATA
+            aprChartData[0].data = [];
+            const startTimestamp = new Date().getTime();
+            let y = 20;
+            for (var i=0; i<=16; i++) {
+              const mDate = this.functionsUtil.strToMoment(startTimestamp).add(i,'day');
+              const x = mDate.format("YYYY/MM/DD HH:mm");
+              // Grow
+              if ((i>=5 && i<=10) || (i>=13)){
+                y+=Math.random()*4+2; // Risk
+                // y+=Math.random()*7+4; // Best
+              // Decrease
+              } else {
+                y-=Math.random()*3+1; // Risk
+                // y-=Math.random()*3+1; // Best
+              }
+              aprChartData[0].data.push({x,y});
+            }
+            */
+
             this.functionsUtil.setCachedData(cachedDataKey,aprChartData);
           }
 
@@ -400,7 +421,7 @@ class AssetField extends Component {
             useMesh:false,
             axisLeft:null,
             animate:false,
-            curve:'linear',
+            curve:'monotoneX',
             axisBottom:null,
             enableArea:true,
             areaOpacity:0.1,

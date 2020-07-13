@@ -41,32 +41,41 @@ class Header extends React.Component {
 
   render() {
     return (
-      <Box style={{
-        'position': 'absolute',
-        'left': '0',
-        'right': '0',
-        'zIndex': 99
+      <Box
+        style={{
+          left: '0',
+          right: '0',
+          zIndex: 99,
+          position: 'absolute',
         }}
       >
         <Flex
           pt={[3,4]}
-          ml={['1%',0]}
+          mx={'auto'}
           bg={"transparent"}
           width={['98%','100%']}
+          maxWidth={[1,'100em']}
           alignItems={['center','flex-start']}
         >
-          <Flex ml={[3, 5]} width={[1, 3/12]}>
-            <RouterLink to="/">
-              <Image src="images/logo.svg"
+          <Flex
+            ml={[3, 5]}
+            width={[1, 3/12]}
+          >
+            <RouterLink
+              to="/"
+            >
+              <Image
+                position={'relative'}
+                src={'images/logo.svg'}
                 height={['35px','48px']}
-                position={'relative'} />
+              />
             </RouterLink>
           </Flex>
           {
             !this.props.isMobile &&
               <Flex
                 width={[1,8/12]}
-                alignItems={"center"}
+                alignItems={'center'}
                 flexDirection={'row'}
                 justifyContent={"flex-end"}
               >

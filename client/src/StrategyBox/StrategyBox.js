@@ -83,7 +83,7 @@ class StrategyBox extends Component {
   render() {
     const strategyInfo = this.functionsUtil.getGlobalConfig(['strategies',this.props.strategy]);
     const strategyUrl = '/#'+this.functionsUtil.getGlobalConfig(['dashboard','baseRoute'])+'/'+this.props.strategy;
-    const chartColor = strategyInfo.chartColor ? strategyInfo.chartColor : null;
+    // const chartColor = strategyInfo.chartColor ? strategyInfo.chartColor : null;
     const tokenConfig = this.state.selectedToken ? this.props.availableStrategies[this.props.strategy][this.state.selectedToken] : null;
 
     return (
@@ -140,14 +140,14 @@ class StrategyBox extends Component {
           strategyInfo.comingSoon ? (
             <Flex
               my={3}
+              alignItems={'end'}
               flexDirection={'row'}
-              alignItems={'center'}
               justifyContent={'center'}
               height={['111px','127px']}
             >
               <Image
-                width={0.7}
-                src={'/images/coming-soon.png'}
+                width={1}
+                src={'/images/strategy-placeholder.jpg'}
               />
             </Flex>
           ) : (
@@ -274,32 +274,33 @@ class StrategyBox extends Component {
               justifyContent={'center'}
               id={`${this.props.strategy}_performance_chart`}
             >
+              <Image
+                width={1}
+                height={'60px'}
+                src={`/images/strategies/${this.props.strategy}-chart.png`} />
               {
                 /*
-                <Image
-                  width={1}
-                  height={'60px'}
-                  src={`/images/strategies/${this.props.strategy}-chart.png`} />
+                <AssetField
+                  fieldInfo={{
+                    name:'aprChart'
+                  }}
+                  chartProps={{
+                    lineWidth:2
+                  }}
+                  {...this.props}
+                  color={chartColor}
+                  tokenConfig={tokenConfig}
+                  token={this.state.selectedToken}
+                  rowId={`${this.props.strategy}_performance_chart`}
+                />
                 */
               }
-              <AssetField
-                fieldInfo={{
-                  name:'aprChart'
-                }}
-                chartProps={{
-                  lineWidth:2
-                }}
-                {...this.props}
-                color={chartColor}
-                tokenConfig={tokenConfig}
-                token={this.state.selectedToken}
-                rowId={`${this.props.strategy}_performance_chart`}
-              />
             </Flex>
         }
         <Flex
           width={1}
           height={'64px'}
+          position={'relative'}
           boxShadow={'0px -6px 6px -4px rgba(0,0,0,0.15)'}
         >
           {
