@@ -128,8 +128,9 @@ class Landing extends Component {
       carouselIndex--;
     }
 
+    const multiplier = this.props.isMobile ? 1 : 0.75;
     const $element = window.jQuery(`#carousel-cursor > div:eq(${carouselIndex})`);
-    const carouselOffsetLeft = -parseFloat($element.position().left*0.75)+'px';
+    const carouselOffsetLeft = -parseFloat($element.position().left*multiplier)+'px';
 
     this.setState({
       carouselIndex,

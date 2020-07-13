@@ -54,7 +54,7 @@ class Header extends React.Component {
           mx={'auto'}
           bg={"transparent"}
           width={['98%','100%']}
-          maxWidth={[1,'100em']}
+          maxWidth={['100%','100em']}
           alignItems={['center','flex-start']}
         >
           <Flex
