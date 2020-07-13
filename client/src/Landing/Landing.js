@@ -369,76 +369,79 @@ class Landing extends Component {
               flexDirection={['column','row']}
             >
               <Flex
-                pb={3}
-                mx={'auto'}
                 width={[1,1/3]}
-                pt={['8vh', '8vh']}
-                textAlign={'center'}
-                flexDirection={'column'}
-                maxWidth={['50em', '24em']}
-                alignItems={['center','flex-start']}
+                justifyContent={['center','flex-end']}
               >
-                <Heading.h1
-                  fontWeight={5}
-                  color={'white'}
-                  fontFamily={'sansSerif'}
-                  fontSize={['2.2em','3.2rem']}
-                  textAlign={['center','left']}
-                  lineHeight={['initial','2.5rem']}
-                  style={{
-                    width:'100%',
-                    textAlignLast: this.props.isMobile ? 'center' : 'justify'
-                  }}
+                <Flex
+                  pb={3}
+                  width={1}
+                  pt={['8vh', '8vh']}
+                  textAlign={'center'}
+                  flexDirection={'column'}
+                  maxWidth={['50em', '24em']}
+                  alignItems={['center','flex-start']}
                 >
-                  The best place
-                </Heading.h1>
-                <Heading.h1
-                  mb={[2,3]}
-                  color={'white'}
-                  fontWeight={300}
-                  lineHeight={'initial'}
-                  fontFamily={'sansSerif'}
-                  fontSize={['2.2em','3.2rem']}
-                  textAlign={['center','left']}
-                  style={{
-                    width:'100%',
-                    textAlignLast: this.props.isMobile ? 'center' : 'justify'
-                  }}
-                >
-                  for your money
-                </Heading.h1>
-                <Heading.h2
-                  style={{
-                    width:'100%',
-                  }}
-                  color={'white'}
-                  fontWeight={400}
-                  fontSize={[2,'1.2em']}
-                  textAlign={['center','justify']}
-                >
-                  Choose your strategy and earn the yield you deserve without worry about finding the best option, either if you want to optimize returns or risks.
-                </Heading.h2>
-                {
-                  !this.props.isMobile && 
-                    <Flex
-                      mt={4}
-                    >
-                      <RoundButton
-                        handleClick={ (e) => {
-                          window.location.hash = this.functionsUtil.getGlobalConfig(['dashboard','baseRoute'])+'/'+Object.keys(this.functionsUtil.getGlobalConfig(['strategies']))[0];
-                        }}
+                  <Heading.h1
+                    fontWeight={5}
+                    color={'white'}
+                    fontFamily={'sansSerif'}
+                    fontSize={['2.2em','3.2rem']}
+                    textAlign={['center','left']}
+                    lineHeight={['initial','2.5rem']}
+                    style={{
+                      width:'100%',
+                      textAlignLast: this.props.isMobile ? 'center' : 'justify'
+                    }}
+                  >
+                    The best place
+                  </Heading.h1>
+                  <Heading.h1
+                    mb={[2,3]}
+                    color={'white'}
+                    fontWeight={300}
+                    lineHeight={'initial'}
+                    fontFamily={'sansSerif'}
+                    fontSize={['2.2em','3.2rem']}
+                    textAlign={['center','left']}
+                    style={{
+                      width:'100%',
+                      textAlignLast: this.props.isMobile ? 'center' : 'justify'
+                    }}
+                  >
+                    for your money
+                  </Heading.h1>
+                  <Heading.h2
+                    style={{
+                      width:'100%',
+                    }}
+                    color={'white'}
+                    fontWeight={400}
+                    fontSize={[2,'1.2em']}
+                    textAlign={['center','justify']}
+                  >
+                    Choose your strategy and earn the yield you deserve without worry about finding the best option, either if you want to optimize returns or risks.
+                  </Heading.h2>
+                  {
+                    !this.props.isMobile && 
+                      <Flex
+                        mt={4}
                       >
-                        Get Started
-                      </RoundButton>
-                    </Flex>
-                }
+                        <RoundButton
+                          handleClick={ (e) => {
+                            window.location.hash = this.functionsUtil.getGlobalConfig(['dashboard','baseRoute'])+'/'+Object.keys(this.functionsUtil.getGlobalConfig(['strategies']))[0];
+                          }}
+                        >
+                          Get Started
+                        </RoundButton>
+                      </Flex>
+                  }
+                </Flex>
               </Flex>
               <Flex
-                ml={'auto'}
+                ml={[0,5]}
                 mr={['auto',0]}
                 mt={[0,'10vh']}
                 width={[1,2/3]}
-                maxWidth={"50em"}
                 textAlign={'center'}
                 position={'relative'}
                 flexDirection={'column'}
@@ -463,7 +466,7 @@ class Landing extends Component {
                     width={['300%','140%']}
                     height={['auto','400px']}
                     bottom={['5px','initial']}
-                    justifyContent={'space-between'}
+                    justifyContent={'flex-start'}
                     left={this.state.carouselOffsetLeft}
                     style={{
                       transition:'left 0.3s ease-in-out'

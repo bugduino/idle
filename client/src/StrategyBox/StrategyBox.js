@@ -91,6 +91,7 @@ class StrategyBox extends Component {
         cardProps={{
           pt:[3,4],
           ml:['0.35em',0],
+          width:[1,'21em'],
           mr:['0.35em','2em'],
           alignItems:'center',
           flexDirection:'column',
