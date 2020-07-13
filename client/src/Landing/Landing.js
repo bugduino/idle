@@ -129,7 +129,7 @@ class Landing extends Component {
     }
 
     const $element = window.jQuery(`#carousel-cursor > div:eq(${carouselIndex})`);
-    const carouselOffsetLeft = -parseFloat($element.position().left)+'px';
+    const carouselOffsetLeft = -parseFloat($element.position().left*0.75)+'px';
 
     this.setState({
       carouselIndex,
@@ -438,10 +438,10 @@ class Landing extends Component {
                 </Flex>
               </Flex>
               <Flex
-                ml={[0,5]}
                 mr={['auto',0]}
                 mt={[0,'10vh']}
                 width={[1,2/3]}
+                ml={[0,'100px']}
                 textAlign={'center'}
                 position={'relative'}
                 flexDirection={'column'}
