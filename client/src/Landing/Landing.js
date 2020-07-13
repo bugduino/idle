@@ -431,7 +431,7 @@ class Landing extends Component {
                             window.location.hash = this.functionsUtil.getGlobalConfig(['dashboard','baseRoute'])+'/'+Object.keys(this.functionsUtil.getGlobalConfig(['strategies']))[0];
                           }}
                         >
-                          Get Started
+                          Go to Dashboard
                         </RoundButton>
                       </Flex>
                   }
