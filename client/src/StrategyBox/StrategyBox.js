@@ -314,11 +314,14 @@ class StrategyBox extends Component {
                 <Text
                   mr={2}
                   fontSize={3}
-                  fontWeight={4}
+                  fontWeight={550}
                   color={'copyColor'}
+                  style={{
+                    fontStyle:'italic'
+                  }}
                   hoverColor={'copyColor'}
                 >
-                  Coming Soon!
+                  Coming Soon
                 </Text>
               </Flex>
             ) : (
