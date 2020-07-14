@@ -376,7 +376,7 @@ class Landing extends Component {
                 <Flex
                   pb={3}
                   width={1}
-                  pt={['8vh', '8vh']}
+                  pt={['8vh', '9vh']}
                   textAlign={'center'}
                   flexDirection={'column'}
                   maxWidth={['50em', '24em']}
@@ -446,8 +446,8 @@ class Landing extends Component {
                 textAlign={'center'}
                 position={'relative'}
                 flexDirection={'column'}
-                height={['410px','560px']}
-                justifyContent={'flex-start'}
+                height={['410px','460px']}
+                justifyContent={['flex-start','flex-end']}
               >
                 <Flex
                   left={0}
@@ -455,9 +455,9 @@ class Landing extends Component {
                   width={'100%'}
                   height={'400px'}
                   overflow={'hidden'}
+                  top={['initial','0']}
+                  bottom={['0','initial']}
                   position={'absolute'}
-                  bottom={[0,'initial']}
-                  top={['initial','80px']}
                 >
                   <Flex
                     top={['initial',0]}

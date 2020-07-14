@@ -164,7 +164,7 @@ const globalConfigs = {
       chartColor:'hsl(211,67%,47%)',
       icon:'images/strategies/solr-on.svg',
       iconInactive:'images/strategies/solr-off.svg',
-      desc:'Secured On-chain Landing Rate',
+      desc:'Secured On-chain Lending Rate',
       descLong:'The Risk-Adjusted allocation strategy provides a way to earn the best rate at the lowest risk-level. The risk-management algorithm takes account of the total assets within a pool, incorporates underlying protocol rate functions and levels of supply and demand, skimming protocols with a bad score/rate mix, and finally determining an allocation that achieves the highest risk-return score possible after the rebalance happens.',
       descShort:'The Risk-Adjusted allocation strategy provides a way to earn the best rate at the lowest risk-level.'
     }
