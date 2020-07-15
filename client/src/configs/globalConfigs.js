@@ -69,6 +69,12 @@ const globalConfigs = {
       iconModal:'walletconnect.png',
       subcaption:'Connect with QR code'
     },
+    walletlink:{
+      enabled:true,
+      icon:'coinbase.png',
+      name:'Coinbase Wallet',
+      subcaption:'Connect with QR code'
+    },
     fortmatic:{
       enabled:true,
       subcaption:'Login with phone-number'

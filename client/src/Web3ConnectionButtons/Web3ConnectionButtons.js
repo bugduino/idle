@@ -98,16 +98,24 @@ export default function Web3ConnectionButtons(props) {
           if (connectorInfo && connectorInfo.enabled){
             const walletIcon = connectorInfo.icon ? connectorInfo.icon : `${name.toLowerCase()}.svg`;
             return (
-              <ImageButton
-                caption={name}
-                isMobile={true}
+              <Flex
+                width={1}
                 key={`wallet_${name}`}
-                imageSrc={`images/${walletIcon}`}
-                imageProps={{width:'auto',height:'42px'}}
-                handleClick={ async () => await setConnector(connectorName,name)}
-                subcaption={ connectorInfo && connectorInfo.subcaption ? connectorInfo.subcaption : `Connect using ${name}` }
-                buttonStyle={ props.isMobile ? {justifyContent:'flex-start',flex:'0 100%'} : {justifyContent:'flex-start',flex:'0 48%'} }
-              />
+                style={{
+                  flex:'0 100%',
+                  justifyContent:'flex-start'
+                }}
+              >
+                <ImageButton
+                  caption={name}
+                  isMobile={true}
+                  width={[1,0.48]}
+                  imageSrc={`images/${walletIcon}`}
+                  imageProps={{width:'auto',height:'42px'}}
+                  handleClick={ async () => await setConnector(connectorName,name)}
+                  subcaption={ connectorInfo && connectorInfo.subcaption ? connectorInfo.subcaption : `Connect using ${name}` }
+                />
+              </Flex>
             )
           }
           return null;
@@ -130,10 +138,12 @@ export default function Web3ConnectionButtons(props) {
         const connectorInfo = globalConfigs.connectors[connectorName.toLowerCase()];
         if (connectorInfo && connectorInfo.enabled){
           const walletIcon = connectorInfo.iconModal ? connectorInfo.iconModal : (connectorInfo.icon ? connectorInfo.icon : `${connectorName.toLowerCase()}.svg`);
+
+          let caption = connectorInfo.name ? connectorInfo.name : connectorName;
           return (
             <ImageButton
               isMobile={true}
-              caption={connectorName}
+              caption={caption}
               key={`wallet_${connectorName}`}
               imageSrc={`images/${walletIcon}`}
               imageProps={{width:'auto',height:'42px'}}

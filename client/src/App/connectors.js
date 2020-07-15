@@ -1,3 +1,4 @@
+import WalletLink from 'walletlink';
 import AuthereumApi from 'authereum';
 import PortisApi from "@portis/web3";
 import FortmaticApi from "fortmatic";
@@ -8,6 +9,7 @@ import globalConfigs from '../configs/globalConfigs';
 import TorusConnector from './connectors/TorusConnector';
 import AuthereumConnector from './connectors/AuthereumConnector';
 import WalletConnectProvider from "@walletconnect/web3-provider";
+import WalletLinkConnector from './connectors/WalletLinkConnector';
 // import WalletConnectProvider from "@walletconnect/web3-subprovider";
 import WalletConnectConnector from './connectors/WalletConnectConnector';
 
@@ -34,7 +36,6 @@ const supportedNetworkURLs = {};
 Object.keys(globalConfigs.network.providers.infura).forEach((networkId,index) => {
   supportedNetworkURLs[networkId] = globalConfigs.network.providers.infura[networkId]+env.REACT_APP_INFURA_KEY;
 });
-
 
 const Injected = new InjectedConnector({
   supportedNetworks: [defaultNetwork]
@@ -82,6 +83,15 @@ const Authereum = new AuthereumConnector({
   network: globalConfigs.network.availableNetworks[defaultNetwork].toLowerCase()
 });
 
+const walletLink = new WalletLinkConnector({
+  api: WalletLink,
+  darkMode: false,
+  chainId: defaultNetwork,
+  appName: globalConfigs.appName,
+  infuraUrl: supportedNetworkURLs[defaultNetwork],
+  appLogoUrl: 'https://idle.finance/images/idle-mark.png',
+});
+
 const Torus = new TorusConnector({
   api: TorusApi,
   initParams:{
@@ -100,6 +110,7 @@ export default {
   Injected,
   Infura,
   WalletConnect,
+  walletLink,
   Fortmatic,
   Portis,
   Authereum,
