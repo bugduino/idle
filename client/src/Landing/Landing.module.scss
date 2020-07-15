@@ -95,6 +95,7 @@
 .bulletPoint.bulletTop{
   top: -17px;
   right: -23px;
+  border-width:0;
   border-bottom-width: 15px;
   border-style: solid;
   border-color:#0036ff;
@@ -109,6 +110,7 @@
 .bulletPoint.bulletBottom{
   bottom: -15px;
   right: -23px;
+  border-width:0;
   border-top-width: 15px;
   border-style: solid;
   border-color:#0036ff;
@@ -330,7 +332,7 @@
 }
 @media (max-width: 31em) {
   .headerContainer {
-    min-height: auto !important;
+    min-height: 101% !important;
     background-size:auto 100% !important;
     background-position:center 20% !important;
   }
