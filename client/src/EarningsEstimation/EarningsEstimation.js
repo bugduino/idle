@@ -88,10 +88,14 @@ class EarningsEstimation extends Component {
     };
 
     await this.functionsUtil.asyncForEach(Object.keys(amountLents),async (token) => {
-      const amountLent = amountLents[token];
       const tokenConfig = this.props.availableTokens[token];
-      const avgBuyPrice = await this.functionsUtil.getAvgBuyPrice([token],this.props.account);
-      const idleTokenPrice = await this.functionsUtil.getIdleTokenPrice(tokenConfig);
+
+      const [amountLent,avgBuyPrice,idleTokenPrice] = await Promise.all([
+        this.functionsUtil.convertTokenBalance(amountLents[token],token,tokenConfig,isRisk),
+        this.functionsUtil.getAvgBuyPrice([token],this.props.account),
+        this.functionsUtil.getIdleTokenPrice(tokenConfig)
+      ]);
+
       const earningsPerc = idleTokenPrice.div(avgBuyPrice[token]).minus(1);
       const earnings = amountLent.times(earningsPerc);
 
@@ -125,9 +129,9 @@ class EarningsEstimation extends Component {
         const amountLentUSD = await this.functionsUtil.convertTokenBalance(amountLent,token,tokenConfig,isRisk);
         const earningsYearUSD = await this.functionsUtil.convertTokenBalance(earningsYear,token,tokenConfig,isRisk);
 
-        aggregatedEarnings.earnings = aggregatedEarnings.earnings.plus(earningsUSD);
-        aggregatedEarnings.amountLent = aggregatedEarnings.amountLent.plus(amountLentUSD);
-        aggregatedEarnings.earningsYear = aggregatedEarnings.earningsYear.plus(earningsYearUSD);
+        aggregatedEarnings.earnings = aggregatedEarnings.earnings.plus(earnings);
+        aggregatedEarnings.amountLent = aggregatedEarnings.amountLent.plus(amountLent);
+        aggregatedEarnings.earningsYear = aggregatedEarnings.earningsYear.plus(earningsYear);
       }
     });
 
@@ -146,8 +150,8 @@ class EarningsEstimation extends Component {
     }
 
     this.setState({
-      estimationStepsPerc,
-      tokensEarnings
+      tokensEarnings,
+      estimationStepsPerc
     })
   }
 
@@ -221,7 +225,11 @@ class EarningsEstimation extends Component {
                         Object.keys(estimationSteps).map((label,estimateIndex) => {
                           const estimationStep = estimationSteps[label];
                           const estimationStepEarnings = tokenEarnings.earningsYear.times(this.functionsUtil.BNify(estimationStep.perc));
-                          const estimationStepEarningsFormatted = this.functionsUtil.formatMoney(estimationStepEarnings,this.props.isMobile ? 2 : estimationStepEarnings.lt(1) ? 3 : 2);
+                          let estimationStepEarningsFormatted = this.functionsUtil.formatMoney(estimationStepEarnings,this.props.isMobile ? 2 : estimationStepEarnings.lt(1) ? 3 : 2);
+                          const conversionRateField = this.functionsUtil.getGlobalConfig(['stats','tokens',token,'conversionRateField']);
+                          if (conversionRateField){
+                            estimationStepEarningsFormatted = '$ '+estimationStepEarningsFormatted;
+                          }
                           return (
                             <Flex
                               pr={2}
@@ -250,7 +258,7 @@ class EarningsEstimation extends Component {
                     alignItems={'center'}
                     flexDirection={'row'}
                     justifyContent={'center'}
-                    pb={ tokenIndex<Object.keys(this.state.tokensEarnings).length-1 ? '1.5em' : 0 }
+                    pb={ tokenIndex<Object.keys(this.state.tokensEarnings).length-1 ? '1em' : 0 }
                   >
                     <Flex
                       width={[0.15,0.1]}
