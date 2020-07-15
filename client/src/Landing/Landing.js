@@ -456,8 +456,11 @@ class Landing extends Component {
                   height={'400px'}
                   overflow={'hidden'}
                   top={['initial','0']}
-                  bottom={['0','initial']}
                   position={'absolute'}
+                  bottom={['0','initial']}
+                  style={{
+                    overflowY:'visible'
+                  }}
                 >
                   <Flex
                     top={['initial',0]}

@@ -96,7 +96,7 @@ class StrategyBox extends Component {
           alignItems:'center',
           flexDirection:'column',
           justifyContent:'flex-start',
-          height:['fit-content','auto']
+          height:['fit-content','400px']
         }}
         isVisible={ typeof this.props.isVisible !== 'undefined' ? this.props.isVisible : true }
       >
