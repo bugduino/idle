@@ -935,6 +935,7 @@ class FunctionsUtil {
             let action = null;
             let executeMetaTransactionContractAddr = null;
             let executeMetaTransactionInternalTransfers = [];
+            const IdleProxyMinterInfo = this.getGlobalConfig(['contract','deposit','proxyContract']);
 
             // Handle migration tx
             if (tokenConfig.migration && tokenConfig.migration.oldContract){
@@ -955,6 +956,13 @@ class FunctionsUtil {
               if (executeMetaTransactionReceipt.logs){
                 executeMetaTransactionContractAddr = tokenConfig.idle.address.replace('x','').toLowerCase();
                 executeMetaTransactionInternalTransfers = executeMetaTransactionReceipt.logs.filter((tx) => { return tx.address.toLowerCase()===tokenConfig.address.toLowerCase() && tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${executeMetaTransactionContractAddr}`; });
+
+                // Handle deposit made with proxy contract
+                if (!executeMetaTransactionInternalTransfers.length && IdleProxyMinterInfo){
+                  executeMetaTransactionContractAddr = IdleProxyMinterInfo.address.replace('x','').toLowerCase();
+                  executeMetaTransactionInternalTransfers = executeMetaTransactionReceipt.logs.filter((tx) => { return tx.address.toLowerCase()===tokenConfig.address.toLowerCase() && tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${executeMetaTransactionContractAddr}`; });
+                }
+
               } else if (executeMetaTransactionReceipt.events){
                 executeMetaTransactionInternalTransfers = Object.values(executeMetaTransactionReceipt.events).filter((tx) => { return tx.address.toLowerCase()===tokenConfig.address.toLowerCase(); });
               }
@@ -2305,15 +2313,12 @@ class FunctionsUtil {
       return cachedData;
     }
 
-    // const startTimestamp = parseInt(new Date().getTime()/1000)-60*60;
-    // let tokenData = await this.getTokenApiData(tokenConfig.address,isRisk,startTimestamp);
     let tokenData = await this.getTokenApiData(tokenConfig.address,isRisk,null,null,false,null,'desc',1);
 
     if (tokenData && tokenData.length){
       tokenData = tokenData.pop();
       if (tokenData && tokenData[conversionRateField]){
         const conversionRate = this.fixTokenDecimals(tokenData[conversionRateField],18);
-        // console.log('getTokenConversionRate',conversionRate.toString());
         return this.setCachedData(cachedDataKey,conversionRate);
       }
     }
