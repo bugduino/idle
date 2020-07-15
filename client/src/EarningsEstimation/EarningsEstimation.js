@@ -125,9 +125,9 @@ class EarningsEstimation extends Component {
           idleTokenPrice
         };
 
-        const earningsUSD = await this.functionsUtil.convertTokenBalance(earnings,token,tokenConfig,isRisk);
-        const amountLentUSD = await this.functionsUtil.convertTokenBalance(amountLent,token,tokenConfig,isRisk);
-        const earningsYearUSD = await this.functionsUtil.convertTokenBalance(earningsYear,token,tokenConfig,isRisk);
+        // const earningsUSD = await this.functionsUtil.convertTokenBalance(earnings,token,tokenConfig,isRisk);
+        // const amountLentUSD = await this.functionsUtil.convertTokenBalance(amountLent,token,tokenConfig,isRisk);
+        // const earningsYearUSD = await this.functionsUtil.convertTokenBalance(earningsYear,token,tokenConfig,isRisk);
 
         aggregatedEarnings.earnings = aggregatedEarnings.earnings.plus(earnings);
         aggregatedEarnings.amountLent = aggregatedEarnings.amountLent.plus(amountLent);
