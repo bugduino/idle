@@ -1252,13 +1252,13 @@ class FunctionsUtil {
     }
   }
 
-  getTokenApiData = async (address,isRisk=null,startTimestamp=null,endTimestamp=null,forceStartTimestamp=false) => {
+  getTokenApiData = async (address,isRisk=null,startTimestamp=null,endTimestamp=null,forceStartTimestamp=false,frequency=null,order=null,limit=null) => {
     if (globalConfigs.network.requiredNetwork!==1 || !globalConfigs.stats.enabled){
       return [];
     }
 
     // Check for cached data
-    const cachedDataKey = `tokenApiData_${address}_${isRisk}`;
+    const cachedDataKey = `tokenApiData_${address}_${isRisk}_${frequency}_${order}_${limit}`;
     let cachedData = this.getCachedData(cachedDataKey);
 
     if (cachedData !== null){
@@ -1280,8 +1280,9 @@ class FunctionsUtil {
     const apiInfo = globalConfigs.stats.rates;
     let endpoint = `${apiInfo.endpoint}${address}`;
 
-    if (startTimestamp || endTimestamp){
+    if (startTimestamp || endTimestamp || isRisk !== null || frequency !== null){
       const params = [];
+
       if (startTimestamp && parseInt(startTimestamp)){
         if (forceStartTimestamp){
           params.push(`start=${startTimestamp}`);
@@ -1290,9 +1291,27 @@ class FunctionsUtil {
           params.push(`start=${start}`);
         }
       }
+
       if (endTimestamp && parseInt(endTimestamp)){
         params.push(`end=${endTimestamp}`);
       }
+
+      if (isRisk !== null){
+        params.push(`isRisk=${isRisk}`);
+      }
+
+      if (frequency !== null && parseInt(frequency)){
+        params.push(`frequency=${frequency}`);
+      }
+
+      if (order !== null){
+        params.push(`order=${order}`);
+      }
+
+      if (limit !== null && parseInt(limit)){
+        params.push(`limit=${limit}`);
+      }
+
       if (params.length){
         endpoint += '?'+params.join('&');
       }
@@ -1891,7 +1910,7 @@ class FunctionsUtil {
         data:null,
         timeDiff:null
       };
-      
+
       let afterPrice = {
         data:null,
         timeDiff:null
@@ -1963,7 +1982,6 @@ class FunctionsUtil {
     if (this.props.cachedData && this.props.cachedData[key.toLowerCase()]){
       const cachedData = this.props.cachedData[key.toLowerCase()];
       if (!cachedData.expirationDate || cachedData.expirationDate>=parseInt(new Date().getTime()/1000)){
-        // console.log('getCachedData',key);
         return cachedData.data;
       }
     }
@@ -2281,19 +2299,21 @@ class FunctionsUtil {
   getTokenConversionRate = async (tokenConfig,isRisk,conversionRateField) => {
 
     // Check for cached data
-    const cachedDataKey = `tokenConversionRate_${tokenConfig.idle.address}_${isRisk}_${conversionRateField}`;
+    const cachedDataKey = `tokenConversionRate_${tokenConfig.address}_${isRisk}_${conversionRateField}`;
     const cachedData = this.getCachedData(cachedDataKey);
     if (cachedData !== null){
       return cachedData;
     }
 
-    const startTimestamp = parseInt(new Date().getTime()/1000)-60*60;
-    let tokenData = await this.getTokenApiData(tokenConfig.address,isRisk,startTimestamp);
+    // const startTimestamp = parseInt(new Date().getTime()/1000)-60*60;
+    // let tokenData = await this.getTokenApiData(tokenConfig.address,isRisk,startTimestamp);
+    let tokenData = await this.getTokenApiData(tokenConfig.address,isRisk,null,null,false,null,'desc',1);
 
     if (tokenData && tokenData.length){
       tokenData = tokenData.pop();
       if (tokenData && tokenData[conversionRateField]){
         const conversionRate = this.fixTokenDecimals(tokenData[conversionRateField],18);
+        // console.log('getTokenConversionRate',conversionRate.toString());
         return this.setCachedData(cachedDataKey,conversionRate);
       }
     }
@@ -2305,27 +2325,18 @@ class FunctionsUtil {
   */
   getTokenScore = async (tokenConfig,isRisk) => {
     // Check for cached data
-    const cachedDataKey = `tokenScore_${tokenConfig.idle.address}_${isRisk}`;
+    const cachedDataKey = `tokenScore_${tokenConfig.address}_${isRisk}`;
     const cachedData = this.getCachedData(cachedDataKey);
     if (cachedData !== null){
       return cachedData;
     }
 
-    const startTimestamp = parseInt(new Date().getTime()/1000)-60*60*2;
-    let tokenData = await this.getTokenApiData(tokenConfig.address,isRisk,startTimestamp);
+    const apiInfo = globalConfigs.stats.scores;
+    const endpoint = `${apiInfo.endpoint}${tokenConfig.address}?isRisk=${isRisk}`;
+    const tokenData = await this.makeCachedRequest(endpoint,apiInfo.TTL,true);
 
     if (tokenData){
-      tokenData = tokenData.filter( d => ( d.isRisk === isRisk ) );
-
-      let index = tokenData.length-1;
-      let tokenScore = this.BNify(0);
-      do{
-        const apiData = tokenData[index];
-        if (apiData && apiData.idleScore){
-          tokenScore = this.BNify(apiData.idleScore);
-        }
-      } while (tokenScore.lte(0) && (index--)>=0);
-
+      const tokenScore = this.BNify(tokenData[0].idleScore);
       if (tokenScore && tokenScore.gt(0)){
         // Set cached data
         return this.setCachedData(cachedDataKey,tokenScore);

@@ -172,8 +172,12 @@ const globalConfigs = {
   stats:{
     enabled:true, // Enable endpoint
     rates:{
-      TTL:3600, // 1 hour
+      TTL:300, // 5 minutes
       endpoint:'https://api.idle.finance/rates/'
+    },
+    scores:{
+      TTL:300, // 5 minutes
+      endpoint:'https://api.idle.finance/scores/'
     },
     versions:{
       v2:{

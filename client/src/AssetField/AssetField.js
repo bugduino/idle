@@ -338,7 +338,7 @@ class AssetField extends Component {
           if (cachedData !== null){
             aprChartData = cachedData;
           } else {
-            let apiResultsAprChart = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,isRisk,aprChartStartTimestamp);
+            let apiResultsAprChart = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,isRisk,aprChartStartTimestamp,null,false,43200);
             aprChartData = [{
               id:this.props.token,
               color: this.props.color ? this.props.color : 'hsl('+this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.token,'color','hsl']).join(',')+')',
@@ -508,7 +508,7 @@ class AssetField extends Component {
           const apr_start_timestamp =  Math.max(this.functionsUtil.getGlobalConfig(['stats','versions','v3','startTimestamp']),parseInt(apr_start_date._d.getTime()/1000));
           // const apr_end_timestamp = parseInt(apr_end_date._d.getTime()/1000);
 
-          let apiResultsPerformanceChart = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,isRisk,apr_start_timestamp);
+          let apiResultsPerformanceChart = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,isRisk,apr_start_timestamp,null,false,43200);
 
           const idleTokenPerformance = apiResultsPerformanceChart.map((d,i) => {
             let y = 0;

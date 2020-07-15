@@ -364,15 +364,15 @@ class StrategyPage extends Component {
                                   px:1
                                 }}
                                 defaultValue={
-                                  {value:'week',label:'Week'}
+                                  {value:'week',label:'1W'}
                                 }
                                 name={'performance-time'}
                                 options={[
-                                  {value:'week',label:'Week'},
-                                  {value:'month',label:'Month'},
-                                  {value:'month3',label:'3 Months'},
-                                  {value:'month6',label:'6 Months'},
-                                  {value:'all',label:'All'},
+                                  {value:'week',label:'1W'},
+                                  {value:'month',label:'1M'},
+                                  {value:'month3',label:'3M'},
+                                  {value:'month6',label:'6M'},
+                                  {value:'all',label:'MAX'},
                                 ]}
                                 onChange={ v => this.setPortfolioEquityQuickSelection(v) }
                               />
