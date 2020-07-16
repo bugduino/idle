@@ -245,7 +245,9 @@ class PortfolioEquity extends Component {
           const conversionRateField = this.functionsUtil.getGlobalConfig(['stats','tokens',token,'conversionRateField']);
           if (!this.props.chartToken && conversionRateField && lastTokenData && lastTokenData[conversionRateField]){
             tokenUsdConversionRate = this.functionsUtil.fixTokenDecimals(lastTokenData[conversionRateField],18);
-            lastTxBalance = lastTxBalance.times(tokenUsdConversionRate);
+            if (tokenUsdConversionRate.gt(0)){
+              lastTxBalance = lastTxBalance.times(tokenUsdConversionRate);
+            }
           }
 
           aggregatedBalance = aggregatedBalance.plus(lastTxBalance);
