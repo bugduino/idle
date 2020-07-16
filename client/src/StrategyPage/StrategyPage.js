@@ -467,7 +467,7 @@ class StrategyPage extends Component {
                             title:'POOL',
                             mobile:this.props.account !== null,
                             props:{
-                              width:[0.21, 0.14],
+                              width:[0.21, 0.12],
                             },
                             fields:[
                               {
@@ -481,7 +481,7 @@ class StrategyPage extends Component {
                           {
                             title:'APY',
                             props:{
-                              width:[0.2,this.state.depositedTokens.length>0 ? 0.11 : 0.14],
+                              width:[0.2,this.state.depositedTokens.length>0 ? 0.10 : 0.13],
                             },
                             fields:[
                               {
@@ -493,7 +493,7 @@ class StrategyPage extends Component {
                             title:'RISK SCORE',
                             desc:riskScore,
                             props:{
-                              width:[0.27,0.14],
+                              width:[0.27,0.17],
                               justifyContent:['center','flex-start']
                             },
                             fields:[
@@ -598,7 +598,7 @@ class StrategyPage extends Component {
                             title:'POOL',
                             mobile:false,
                             props:{
-                              width:0.14,
+                              width:0.12,
                             },
                             fields:[
                               {
@@ -612,7 +612,7 @@ class StrategyPage extends Component {
                           {
                             title:'APY',
                             props:{
-                              width:[0.18,0.11],
+                              width:[0.18,0.1],
                             },
                             fields:[
                               {
@@ -624,7 +624,7 @@ class StrategyPage extends Component {
                             title:'RISK SCORE',
                             desc:riskScore,
                             props:{
-                              width:[0.27,0.14],
+                              width:[0.27,0.17],
                               justifyContent:['center','flex-start']
                             },
                             fields:[
@@ -761,7 +761,7 @@ class StrategyPage extends Component {
                             title:'POOL',
                             mobile:this.props.account !== null,
                             props:{
-                              width:[0.21, 0.14],
+                              width:[0.21, 0.12],
                             },
                             fields:[
                               {
@@ -775,7 +775,7 @@ class StrategyPage extends Component {
                           {
                             title:'APY',
                             props:{
-                              width:[0.2,this.state.depositedTokens.length>0 ? 0.11 : 0.14],
+                              width:[0.2,this.state.depositedTokens.length>0 ? 0.10 : 0.13],
                             },
                             fields:[
                               {
@@ -787,7 +787,7 @@ class StrategyPage extends Component {
                             title:'RISK SCORE',
                             desc:riskScore,
                             props:{
-                              width:[0.27,0.14],
+                              width:[0.27,0.17],
                               justifyContent:['center','flex-start']
                             },
                             fields:[
