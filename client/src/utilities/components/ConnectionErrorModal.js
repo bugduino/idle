@@ -44,19 +44,20 @@ class ConnectionErrorModal extends React.Component {
 
   render() {
 
-    const isLedgerError = typeof this.props.modals.data.connectionError === 'string' && this.props.modals.data.connectionError.toLowerCase().includes('ledger');
+    const walletProvider = this.functionsUtil.getWalletProvider();
+    const isLedger = (walletProvider && walletProvider.toLowerCase() === 'ledger') || (typeof this.props.modals.data.connectionError === 'string' && this.props.modals.data.connectionError.toLowerCase().includes('ledger'));
 
     return (
       <Modal isOpen={this.props.isOpen}>
         <ModalCard closeFunc={ e => this.closeModal(e) }>
-          <ModalCard.Header title={ isLedgerError ? 'Ledger Error' : `Connection Error` } icon={'images/warning.svg'}></ModalCard.Header>
+          <ModalCard.Header title={ isLedger ? 'Ledger Error' : `Connection Error` } icon={'images/warning.svg'}></ModalCard.Header>
           <ModalCard.Body>
             <Flex my={1} width={1} flexDirection={'column'} mx={'auto'}>
               <Text.p color={'dark-gray'} textAlign={'center'}>
-                The following error occured while trying to connect with your { isLedgerError ? 'Ledger' : 'account' }:<br />
+                The following error occured while trying to connect with your { isLedger ? 'Ledger' : 'account' }:<br />
                 <Text.span color={'red'} fontWeight={3}>"{this.props.modals.data.connectionError}"</Text.span><br />
                 {
-                  isLedgerError ? (
+                  isLedger ? (
                     <Text.span>
                       Make sure that your Ledger is <strong>connected</strong> and <strong>unlocked</strong>. Also check that both <strong>Contract data</strong> and <strong>Browser support</strong> are enabled in the Ledger settings.<br />
 
