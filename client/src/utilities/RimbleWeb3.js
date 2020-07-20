@@ -175,6 +175,7 @@ class RimbleTransaction extends React.Component {
             await this.props.context.connector.disable();
           }
         } else {
+          // debugger;
           this.openConnectionErrorModal(null,this.props.context.error.message);
         }
       // WalletConnect double trigger initWeb3
@@ -1319,12 +1320,12 @@ class RimbleTransaction extends React.Component {
           // Show ToastProvider
           if (!isDeniedTx){
             window.toastProvider.addMessage("Something went wrong", {
-              secondaryMessage: "Please retry",
-              colorTheme: 'light',
+              icon: 'Block',
               actionHref: "",
               actionText: "",
               variant: "failure",
-              icon: 'Block'
+              colorTheme: 'light',
+              secondaryMessage: "Please retry",
             });
 
             const isError = error instanceof Error;
@@ -1347,12 +1348,12 @@ class RimbleTransaction extends React.Component {
       // TODO: should this be a custom error? What is the error here?
       // TODO: determine how to handle error messages globally
       window.toastProvider.addMessage("Something went really wrong, we are sorry", {
-        colorTheme: 'light',
-        secondaryMessage: "Try refreshing the page :(",
+        icon: 'Block',
         actionHref: "",
         actionText: "",
         variant: "failure",
-        icon: 'Block'
+        colorTheme: 'light',
+        secondaryMessage: "Try refreshing the page :(",
       });
 
       // console.log('Tx Failed',error);
@@ -1491,6 +1492,14 @@ class RimbleTransaction extends React.Component {
     }
 
     let modals = { ...this.state.modals };
+
+    // Handle generic error
+    if (error==='[object Object]'){
+      error = 'Unable to access to the wallet.'
+    }
+
+    // console.log('openConnectionErrorModal',typeof error,typeof error === 'object' ? JSON.stringify(error) : error);
+
     modals.data.connectionError = error;
 
     this.setState({ modals });

@@ -61,7 +61,7 @@ class ConnectionErrorModal extends React.Component {
                       Make sure that your Ledger is <strong>connected</strong> and <strong>unlocked</strong>. Also check that both <strong>Contract data</strong> and <strong>Browser support</strong> are enabled in the Ledger settings.<br />
 
                     </Text.span>
-                  ) : 'Make sure that your wallet is unlocked.'
+                  ) : 'Make sure that your wallet is unlocked and try again.'
                 }
               </Text.p>
             </Flex>
