@@ -836,7 +836,7 @@ class RimbleTransaction extends React.Component {
       // User denied account access...
       this.functionsUtil.customLog("User cancelled connect request. Error:", error);
 
-      console.log(error);
+      // console.log(error);
 
       // Catch ledger error
       if (error && error.message && error.message.includes('MULTIPLE_OPEN_CONNECTIONS_DISALLOWED')) {
@@ -1119,20 +1119,20 @@ class RimbleTransaction extends React.Component {
     if (!this.state.network.isCorrectNetwork) {
       // wrong network modal
       this.state.modals.methods.openWrongNetworkModal();
-      return;
+      return false;
     }
 
     // Is a wallet connected and verified?
     if (!this.state.account) {
     // if (!this.state.account || !this.state.accountValidated) {
       this.openConnectionModal();
-      return;
+      return false;
     }
 
     // Are there a minimum amount of funds?
     if (this.state.accountBalanceLow) {
       this.openLowFundsModal();
-      return;
+      return false;
     }
 
     // Is the contract loaded?
@@ -1160,9 +1160,15 @@ class RimbleTransaction extends React.Component {
 
     contract = contract.contract;
 
+    // Does the method exists?
+    // if (typeof contract.methods[contractMethod] === 'undefined'){
+    //   return false;
+    // }
+
     let manualConfirmationTimeoutId = null;
 
     try {
+
       this.functionsUtil.customLog('contractMethodSendWrapper',contractName,contract._address,account,contractMethod,params,(value ? { from: account, value } : { from: account }));
 
       // estimate gas price
@@ -1341,10 +1347,13 @@ class RimbleTransaction extends React.Component {
             callback(transaction,error);
           }
         });
+      
+      return true;
     } catch (error) {
 
       transaction.status = "error";
       this.updateTransaction(transaction);
+
       // TODO: should this be a custom error? What is the error here?
       // TODO: determine how to handle error messages globally
       window.toastProvider.addMessage("Something went really wrong, we are sorry", {
@@ -1356,8 +1365,6 @@ class RimbleTransaction extends React.Component {
         secondaryMessage: "Try refreshing the page :(",
       });
 
-      // console.log('Tx Failed',error);
-
       const isDeniedTx = error && error.message ? error.message.includes('User denied transaction signature') : false;
 
       const isError = error instanceof Error;
@@ -1366,8 +1373,11 @@ class RimbleTransaction extends React.Component {
       }
 
       if (typeof callback === 'function') {
+        // console.log('Tx Failed',error,transaction,typeof callback);
         callback(transaction,error);
       }
+
+      return false;
     }
   }
 

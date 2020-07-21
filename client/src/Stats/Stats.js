@@ -137,9 +137,9 @@ class Stats extends Component {
   }
 
   componentWillUnmount(){
-    if (document.getElementById('crisp-custom-style')){
-      document.getElementById('crisp-custom-style').remove();
-    }
+    // if (document.getElementById('crisp-custom-style')){
+    //   document.getElementById('crisp-custom-style').remove();
+    // }
   }
 
   setDateRange = (ranges,quickSelection=null) => {

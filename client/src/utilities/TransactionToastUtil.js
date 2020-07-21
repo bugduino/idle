@@ -136,7 +136,10 @@ class TransactionToastUtil extends React.Component {
     switch (transaction.method){
       case 'redeemIdleToken':
         transactionAction = 'Redeem';
-        break;
+      break;
+      case 'redeemGovTokens':
+        transactionAction = 'Redeem (Gov Tokens)';
+      break;
       case 'mintIdleToken':
       case 'mintIdleTokensProxy':
         transactionAction = 'Lending';

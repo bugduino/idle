@@ -27,6 +27,7 @@ class DepositRedeem extends Component {
     tokenApproved:false,
     contractPaused:false,
     buttonDisabled:false,
+    redeemGovTokens:false,
     fastBalanceSelector:{},
     actionProxyContract:{},
     migrationEnabled:false,
@@ -52,6 +53,12 @@ class DepositRedeem extends Component {
 
   async componentDidMount(){
 
+  }
+
+  toggleRedeemGovTokens = (redeemGovTokens) => {
+    this.setState({
+      redeemGovTokens
+    });
   }
 
   toggleMetaTransactionsEnabled = (metaTransactionsEnabled) => {
@@ -124,6 +131,11 @@ class DepositRedeem extends Component {
 
     if (actionChanged || fastBalanceSelectorChanged){
       this.setInputValue();
+    }
+
+    const redeemGovTokensChanged = prevState.redeemGovTokens !== this.state.redeemGovTokens;
+    if (redeemGovTokensChanged || actionChanged){
+      this.checkButtonDisabled();
     }
 
     const metaTransactionsChanged = prevState.metaTransactionsEnabled !== this.state.metaTransactionsEnabled;
@@ -305,17 +317,19 @@ class DepositRedeem extends Component {
 
   executeAction = async () => {
 
+    let contractSendResult = null;
+    const redeemGovTokens = this.state.redeemGovTokens;
     const inputValue = this.state.inputValue[this.state.action];
     const selectedPercentage = this.getFastBalanceSelector();
-
-    if (this.state.buttonDisabled || !inputValue || this.functionsUtil.BNify(inputValue).lte(0)){
-      return false;
-    }
 
     const loading = true;
 
     switch (this.state.action){
       case 'deposit':
+
+        if (this.state.buttonDisabled || !inputValue || this.functionsUtil.BNify(inputValue).lte(0)){
+          return false;
+        }
 
         if (!this.state.tokenApproved){
           return this.approveToken();
@@ -408,117 +422,189 @@ class DepositRedeem extends Component {
           // console.log('mintProxyContract',mintProxyContractInfo.function,depositParams);
           if (this.state.metaTransactionsEnabled){
             const functionSignature = mintProxyContract.methods[mintProxyContractInfo.function](...depositParams).encodeABI();
-            this.functionsUtil.sendBiconomyTxWithPersonalSign(mintProxyContractInfo.name, functionSignature, callbackDeposit, callbackReceiptDeposit);
+            contractSendResult = await this.functionsUtil.sendBiconomyTxWithPersonalSign(mintProxyContractInfo.name, functionSignature, callbackDeposit, callbackReceiptDeposit);
           } else {
-            this.props.contractMethodSendWrapper(mintProxyContractInfo.name, mintProxyContractInfo.function, depositParams, null, callbackDeposit, callbackReceiptDeposit, gasLimitDeposit);
+            contractSendResult = await this.props.contractMethodSendWrapper(mintProxyContractInfo.name, mintProxyContractInfo.function, depositParams, null, callbackDeposit, callbackReceiptDeposit, gasLimitDeposit);
           }
         } else {
           const _skipWholeRebalance = this.functionsUtil.getGlobalConfig(['contract','methods','deposit','skipRebalance']);
 
           // No need for callback atm
-          this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'mintIdleToken', [
+          contractSendResult = await this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'mintIdleToken', [
             tokensToDeposit, _skipWholeRebalance
           ], null, callbackDeposit, callbackReceiptDeposit, gasLimitDeposit);
         }
       break;
       case 'redeem':
-        let idleTokenToRedeem = null;
-        if (selectedPercentage){
-          idleTokenToRedeem = this.functionsUtil.BNify(this.props.idleTokenBalance).times(selectedPercentage);
-        } else {
-          const idleTokenPrice = await this.functionsUtil.genericContractCall(this.props.tokenConfig.idle.token, 'tokenPrice');
-          idleTokenToRedeem = this.functionsUtil.BNify(this.functionsUtil.normalizeTokenAmount(inputValue,this.props.tokenConfig.decimals)).div(idleTokenPrice);
-        }
 
-        // Normalize number
-        idleTokenToRedeem = this.functionsUtil.normalizeTokenAmount(idleTokenToRedeem,18);
+        if (redeemGovTokens){
+          const callbackRedeem = (tx,error) => {
+            const txSucceeded = tx.status === 'success';
 
-        if (!idleTokenToRedeem){
-          return false;
-        }
+            // Send Google Analytics event
+            const eventData = {
+              eventCategory: `Redeem_gov`,
+              eventAction: this.props.selectedToken,
+              eventLabel: tx.status,
+              eventValue: 0
+            };
 
-        // Get amounts for best allocations
-        const _skipRebalance = this.functionsUtil.getGlobalConfig(['contract','methods','redeem','skipRebalance']);
-        let paramsForRedeem = null;
-
-        if (this.props.account){
-          const callParams = { from: this.props.account, gas: this.props.web3.utils.toBN(5000000) };
-          paramsForRedeem = await this.functionsUtil.genericIdleCall('getParamsForRedeemIdleToken',[idleTokenToRedeem, _skipRebalance],callParams);
-        }
-
-        const _clientProtocolAmountsRedeem = paramsForRedeem && paramsForRedeem.length ? paramsForRedeem[1] : [];
-        const gasLimitRedeem = _clientProtocolAmountsRedeem.length && _clientProtocolAmountsRedeem.indexOf('0') === -1 ? this.functionsUtil.BNify(1500000) : this.functionsUtil.BNify(1000000);
-
-        const callbackRedeem = (tx,error) => {
-          const txSucceeded = tx.status === 'success';
-
-          // Send Google Analytics event
-          const eventData = {
-            eventCategory: `Redeem_partial`,
-            eventAction: this.props.selectedToken,
-            eventLabel: tx.status,
-            eventValue: parseInt(inputValue)
-          };
-
-          if (error){
-            eventData.eventLabel = this.functionsUtil.getTransactionError(error);
-          }
-
-          // Send Google Analytics event
-          if (error || eventData.status !== 'error'){
-            this.functionsUtil.sendGoogleAnalyticsEvent(eventData);
-          }
-
-          this.setState((prevState) => ({
-            processing: {
-              ...prevState.processing,
-              [this.state.action]:{
-                txHash:null,
-                loading:false
-              }
+            if (error){
+              eventData.eventLabel = this.functionsUtil.getTransactionError(error);
             }
-          }));
 
-          if (txSucceeded){
+            // Send Google Analytics event
+            if (error || eventData.status !== 'error'){
+              this.functionsUtil.sendGoogleAnalyticsEvent(eventData);
+            }
+
             this.setState((prevState) => ({
-              inputValue:{
-                ...prevState.inputValue,
-                [this.state.action]: this.functionsUtil.BNify(0)
+              processing: {
+                ...prevState.processing,
+                [this.state.action]:{
+                  txHash:null,
+                  loading:false
+                }
               }
             }));
-          }
-        };
 
-        const callbackReceiptRedeem = (tx) => {
-          const txHash = tx.transactionHash;
-          this.setState((prevState) => ({
-            processing: {
-              ...prevState.processing,
-              [this.state.action]:{
-                ...prevState.processing[this.state.action],
-                txHash
-              }
+            if (txSucceeded){
+              this.setState((prevState) => ({
+                inputValue:{
+                  ...prevState.inputValue,
+                  [this.state.action]: this.functionsUtil.BNify(0)
+                }
+              }));
             }
-          }));
-        };
+          };
 
-        this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'redeemIdleToken', [
-          idleTokenToRedeem, _skipRebalance, _clientProtocolAmountsRedeem
-        ], null, callbackRedeem, callbackReceiptRedeem, gasLimitRedeem);
+          const callbackReceiptRedeem = (tx) => {
+            const txHash = tx.transactionHash;
+            this.setState((prevState) => ({
+              processing: {
+                ...prevState.processing,
+                [this.state.action]:{
+                  ...prevState.processing[this.state.action],
+                  txHash
+                }
+              }
+            }));
+          };
+
+          contractSendResult = await this.props.contractMethodSendWrapper(
+            this.props.tokenConfig.idle.token,
+            'redeemGovTokens',
+            null, null, callbackRedeem, callbackReceiptRedeem
+          );
+
+        } else {
+
+          if (this.state.buttonDisabled || !inputValue || this.functionsUtil.BNify(inputValue).lte(0)){
+            return false;
+          }
+
+          let idleTokenToRedeem = null;
+          if (selectedPercentage){
+            idleTokenToRedeem = this.functionsUtil.BNify(this.props.idleTokenBalance).times(selectedPercentage);
+          } else {
+            const idleTokenPrice = await this.functionsUtil.genericContractCall(this.props.tokenConfig.idle.token, 'tokenPrice');
+            idleTokenToRedeem = this.functionsUtil.BNify(this.functionsUtil.normalizeTokenAmount(inputValue,this.props.tokenConfig.decimals)).div(idleTokenPrice);
+          }
+
+          // Normalize number
+          idleTokenToRedeem = this.functionsUtil.normalizeTokenAmount(idleTokenToRedeem,18);
+
+          if (!idleTokenToRedeem){
+            return false;
+          }
+
+          // Get amounts for best allocations
+          const _skipRebalance = this.functionsUtil.getGlobalConfig(['contract','methods','redeem','skipRebalance']);
+          let paramsForRedeem = null;
+
+          if (this.props.account){
+            const callParams = { from: this.props.account, gas: this.props.web3.utils.toBN(5000000) };
+            paramsForRedeem = await this.functionsUtil.genericIdleCall('getParamsForRedeemIdleToken',[idleTokenToRedeem, _skipRebalance],callParams);
+          }
+
+          const _clientProtocolAmountsRedeem = paramsForRedeem && paramsForRedeem.length ? paramsForRedeem[1] : [];
+          const gasLimitRedeem = _clientProtocolAmountsRedeem.length && _clientProtocolAmountsRedeem.indexOf('0') === -1 ? this.functionsUtil.BNify(1500000) : this.functionsUtil.BNify(1000000);
+
+          const callbackRedeem = (tx,error) => {
+            const txSucceeded = tx.status === 'success';
+
+            // Send Google Analytics event
+            const eventData = {
+              eventCategory: `Redeem_partial`,
+              eventAction: this.props.selectedToken,
+              eventLabel: tx.status,
+              eventValue: parseInt(inputValue)
+            };
+
+            if (error){
+              eventData.eventLabel = this.functionsUtil.getTransactionError(error);
+            }
+
+            // Send Google Analytics event
+            if (error || eventData.status !== 'error'){
+              this.functionsUtil.sendGoogleAnalyticsEvent(eventData);
+            }
+
+            this.setState((prevState) => ({
+              processing: {
+                ...prevState.processing,
+                [this.state.action]:{
+                  txHash:null,
+                  loading:false
+                }
+              }
+            }));
+
+            if (txSucceeded){
+              this.setState((prevState) => ({
+                inputValue:{
+                  ...prevState.inputValue,
+                  [this.state.action]: this.functionsUtil.BNify(0)
+                }
+              }));
+            }
+          };
+
+          const callbackReceiptRedeem = (tx) => {
+            const txHash = tx.transactionHash;
+            this.setState((prevState) => ({
+              processing: {
+                ...prevState.processing,
+                [this.state.action]:{
+                  ...prevState.processing[this.state.action],
+                  txHash
+                }
+              }
+            }));
+          };
+
+          contractSendResult = await this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'redeemIdleToken', [
+            idleTokenToRedeem, _skipRebalance, _clientProtocolAmountsRedeem
+          ], null, callbackRedeem, callbackReceiptRedeem, gasLimitRedeem);
+        }
       break;
       default:
       break;
     }
 
-    this.setState((prevState) => ({
-      processing: {
-        ...prevState.processing,
-        [this.state.action]:{
-          ...prevState.processing[this.state.action],
-          loading
+    // console.log('contractSendResult',contractSendResult);
+
+    if (contractSendResult !== false){
+      this.setState((prevState) => ({
+        processing: {
+          ...prevState.processing,
+          [this.state.action]:{
+            ...prevState.processing[this.state.action],
+            loading
+          }
         }
-      }
-    }));
+      }));
+    }
   }
 
   checkAction = () => {
@@ -549,23 +635,24 @@ class DepositRedeem extends Component {
     if (!this.state.action){
       return false;
     }
+
     if (!amount){
       amount = this.state.inputValue[this.state.action];
     }
-    let buttonDisabled = true;
-    if (amount !== null){
-      buttonDisabled = amount.lte(0);
-      switch (this.state.action){
-        case 'deposit':
-          buttonDisabled = buttonDisabled || amount.gt(this.props.tokenBalance);
-        break;
-        case 'redeem':
-          buttonDisabled = buttonDisabled || amount.gt(this.props.redeemableBalance);
-        break;
-        default:
-        break;
-      }
+
+    let buttonDisabled = amount === null || amount.lte(0);
+
+    switch (this.state.action){
+      case 'deposit':
+        buttonDisabled = buttonDisabled || (amount && amount.gt(this.props.tokenBalance));
+      break;
+      case 'redeem':
+        buttonDisabled = !this.state.redeemGovTokens && ( buttonDisabled || (amount && amount.gt(this.props.redeemableBalance)) );
+      break;
+      default:
+      break;
     }
+
     this.setState({
       buttonDisabled
     });
@@ -668,6 +755,8 @@ class DepositRedeem extends Component {
       return null;
     }
 
+    const redeemCompTokenEnabled = this.functionsUtil.getGlobalConfig(['contract','methods','redeemGovTokens','enabled']);
+    const redeemGovTokens = redeemCompTokenEnabled && this.state.redeemGovTokens && this.state.action === 'redeem';
     const metaTransactionsAvailable = this.props.biconomy && this.state.actionProxyContract[this.state.action];
     const useMetaTx = metaTransactionsAvailable && this.state.metaTransactionsEnabled;
     const totalBalance = this.state.action === 'deposit' ? this.props.tokenBalance : this.props.redeemableBalance;
@@ -909,6 +998,49 @@ class DepositRedeem extends Component {
                       </DashboardCard>
                     }
                     {
+                      (this.state.action === 'redeem' && redeemCompTokenEnabled) && (
+                        <DashboardCard
+                          cardProps={{
+                            py:3,
+                            px:2,
+                            my:3,
+                            display:'flex',
+                            alignItems:'center',
+                            flexDirection:'column',
+                            justifyContent:'center',
+                          }}
+                        >
+                          <Flex
+                            width={1}
+                            alignItems={'center'}
+                            flexDirection={'column'}
+                            justifyContent={'center'}
+                          >
+                            <Icon
+                              size={'2.3em'}
+                              name={'Info'}
+                              color={'cellText'}
+                            />
+                            <Text
+                              mt={1}
+                              fontSize={1}
+                              color={'cellText'}
+                              textAlign={'center'}
+                            >
+                              By redeeming your {this.props.selectedToken} you will automatically get also the proportional amount of governance tokens accrued.
+                            </Text>
+                          </Flex>
+                          <Checkbox
+                            mt={2}
+                            required={false}
+                            checked={this.state.redeemGovTokens}
+                            label={`Redeem governance tokens only`}
+                            onChange={ e => this.toggleRedeemGovTokens(e.target.checked) }
+                          />
+                        </DashboardCard>
+                      )
+                    }
+                    {
                       (this.state.contractPaused && this.state.action === 'deposit') ? (
                         <DashboardCard
                           cardProps={{
@@ -998,64 +1130,75 @@ class DepositRedeem extends Component {
                             flexDirection={'column'}
                           >
                             {
-                              totalBalance && 
-                                <Link
-                                  mb={1}
-                                  fontSize={1}
-                                  fontWeight={3}
-                                  color={'dark-gray'}
-                                  textAlign={'right'}
-                                  hoverColor={'copyColor'}
-                                  onClick={ (e) => this.setFastBalanceSelector(100) }
+                              !redeemGovTokens && (
+                                <Flex
+                                  mb={3}
+                                  width={1}
+                                  flexDirection={'column'}
                                 >
-                                  {totalBalance.toFixed(6)} {this.props.selectedToken}
-                                </Link>
-                            }
-                            <Input
-                              min={0}
-                              type={"number"}
-                              required={true}
-                              height={'3.4em'}
-                              borderRadius={2}
-                              fontWeight={500}
-                              boxShadow={'none !important'}
-                              onChange={this.changeInputValue.bind(this)}
-                              border={`1px solid ${theme.colors.divider}`}
-                              placeholder={`Insert ${this.props.selectedToken.toUpperCase()} amount`}
-                              value={this.state.inputValue[this.state.action] !== null ? this.functionsUtil.BNify(this.state.inputValue[this.state.action]).toString() : ''}
-                            />
-                            <Flex
-                              mt={2}
-                              alignItems={'center'}
-                              flexDirection={'row'}
-                              justifyContent={'space-between'}
-                            >
-                              {
-                                [25,50,75,100].map( percentage => (
-                                  <FastBalanceSelector
-                                    percentage={percentage}
-                                    key={`selector_${percentage}`}
-                                    onMouseDown={()=>this.setFastBalanceSelector(percentage)}
-                                    isActive={this.state.fastBalanceSelector[this.state.action] === parseInt(percentage)}
+                                  {
+                                    totalBalance && (
+                                      <Link
+                                        mb={1}
+                                        fontSize={1}
+                                        fontWeight={3}
+                                        color={'dark-gray'}
+                                        textAlign={'right'}
+                                        hoverColor={'copyColor'}
+                                        onClick={ (e) => this.setFastBalanceSelector(100) }
+                                      >
+                                        {totalBalance.toFixed(6)} {this.props.selectedToken}
+                                      </Link>
+                                    )
+                                  }
+                                  <Input
+                                    min={0}
+                                    type={"number"}
+                                    required={true}
+                                    height={'3.4em'}
+                                    borderRadius={2}
+                                    fontWeight={500}
+                                    boxShadow={'none !important'}
+                                    onChange={this.changeInputValue.bind(this)}
+                                    border={`1px solid ${theme.colors.divider}`}
+                                    placeholder={`Insert ${this.props.selectedToken.toUpperCase()} amount`}
+                                    value={this.state.inputValue[this.state.action] !== null ? this.functionsUtil.BNify(this.state.inputValue[this.state.action]).toString() : ''}
                                   />
-                                ))
-                              }
-                            </Flex>
+                                  <Flex
+                                    mt={2}
+                                    alignItems={'center'}
+                                    flexDirection={'row'}
+                                    justifyContent={'space-between'}
+                                  >
+                                    {
+                                      [25,50,75,100].map( percentage => (
+                                        <FastBalanceSelector
+                                          percentage={percentage}
+                                          key={`selector_${percentage}`}
+                                          onMouseDown={()=>this.setFastBalanceSelector(percentage)}
+                                          isActive={this.state.fastBalanceSelector[this.state.action] === parseInt(percentage)}
+                                        />
+                                      ))
+                                    }
+                                  </Flex>
+                                </Flex>
+                              )
+                            }
                             <Flex
-                              mt={3}
                               justifyContent={'center'}
                             >
                               <RoundButton
                                 buttonProps={{
-                                  width:[1,1/2],
-                                  disabled:this.state.buttonDisabled,
+                                  width:'auto',
+                                  minWidth:[1,1/2],
                                   style:{
                                     textTransform:'capitalize'
-                                  }
+                                  },
+                                  disabled:this.state.buttonDisabled
                                 }}
                                 handleClick={this.state.buttonDisabled ? null : this.executeAction.bind(this) }
                               >
-                                {this.state.action}
+                                {this.state.action}{ redeemGovTokens ? ' Gov Tokens' : '' }
                               </RoundButton>
                             </Flex>
                           </Flex>

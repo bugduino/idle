@@ -1674,7 +1674,7 @@ class FunctionsUtil {
 
     if (!contract){
       callback(null,'Contract not found');
-      return false
+      return false;
     }
 
     try{
@@ -1682,6 +1682,7 @@ class FunctionsUtil {
       let nonce = await contract.methods.getNonce(userAddress).call();
       let message = "Please provide your signature to send the transaction without paying gas. Tracking Id: ";
       let messageToSign = `${message}${nonce}`;
+
       const signature = await this.props.web3.eth.personal.sign(
         messageToSign,
         userAddress
@@ -1692,8 +1693,11 @@ class FunctionsUtil {
       // console.log('executeMetaTransaction', [userAddress, functionSignature, messageToSign, `${messageToSign.length}`, r, s, v]);
 
       this.contractMethodSendWrapper(contractName, 'executeMetaTransaction', [userAddress, functionSignature, message, `${messageToSign.length}`, r, s, v], callback, callback_receipt);
+
+      return true;
     } catch (error) {
       callback(null,error);
+      return false;
     }
   }
 
