@@ -1381,7 +1381,7 @@ class FunctionsUtil {
   normalizeTokenDecimals = tokenDecimals => {
     return this.BNify(`1e${tokenDecimals}`);
   }
-  normalizeTokenAmount = (tokenBalance,tokenDecimals) => {
+  normalizeTokenAmount = (tokenBalance,tokenDecimals,round=true) => {
     const normalizedTokenDecimals = this.normalizeTokenDecimals(tokenDecimals);
     return this.BNify(tokenBalance).times(normalizedTokenDecimals).integerValue(BigNumber.ROUND_FLOOR).toFixed();
   }
@@ -2222,6 +2222,26 @@ class FunctionsUtil {
     }
 
     return this.setCachedData(cachedDataKey,tokenAllocation);
+  }
+  getGovTokenBalance = async (govTokenConfig,account=null) => {
+    account = account ? account : this.props.account;
+    const idleTokenConfig = this.props.tokenConfig.idle;
+    let [tokenBalance, govTokensIndexes, usersGovTokensIndexes] = await Promise.all([
+      this.getContractBalance(idleTokenConfig.token),
+      this.genericIdleCall('govTokensIndexes',[govTokenConfig.address]),
+      this.genericIdleCall('usersGovTokensIndexes',[govTokenConfig.address,account]),
+    ]);
+
+    if (tokenBalance && govTokensIndexes && usersGovTokensIndexes){
+      tokenBalance = this.BNify(tokenBalance);
+      govTokensIndexes = this.BNify(govTokensIndexes);
+      usersGovTokensIndexes = this.BNify(usersGovTokensIndexes);
+
+      const normalizedTokenDecimals = this.normalizeTokenDecimals(govTokenConfig.decimals);
+      return tokenBalance.times(govTokensIndexes.minus(usersGovTokensIndexes)).div(normalizedTokenDecimals);
+    }
+
+    return null;
   }
   getAggregatedStats = async () => {
     let avgAPR = this.BNify(0);

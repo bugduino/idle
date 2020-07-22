@@ -3,52 +3,58 @@ import React, { Component } from 'react';
 import FlexLoader from '../FlexLoader/FlexLoader';
 import { Card, Flex, Image, Text } from "rimble-ui";
 import FunctionsUtil from '../utilities/FunctionsUtil';
+import GenericSelector from '../GenericSelector/GenericSelector';
 
 class EarningsEstimation extends Component {
   state = {
     tokensEarnings:null,
     estimationStepsPerc:null,
+    estimationStepsOptions:null,
+    estimationStepsDefaultOption:null,
     estimationSteps:{
       0:{
         'Week':{
-          width:1/12,
-          perc:1/52
+          perc:1/52,
+          width:1/12
         },
         'Month':{
-          width:3/12,
-          perc:1/12
+          perc:1/12,
+          width:3/12
         },
         '3 months':{
+          perc:3/12,
           width:8/12,
-          perc:3/12
+          optionName:'3M'
         }
       },
       25:{
         '3 months':{
-          width:3/12,
-          perc:3/12
+          perc:3/12,
+          width:3/12
         },
         '8 months':{
-          width:5/12,
-          perc:8/12
+          perc:8/12,
+          width:5/12
         },
         'Year':{
+          perc:1,
           width:4/12,
-          perc:1
+          optionName:'1Y'
         }
       },
       90:{
         'Year':{
+          perc:1,
           width:1/3,
-          perc:1
         },
         '2 Years':{
+          perc:2,
           width:1/3,
-          perc:2
         },
         '5 Years':{
+          perc:5,
           width:3/5,
-          perc:5
+          optionName:'5Y'
         }
       }
     }
@@ -72,6 +78,12 @@ class EarningsEstimation extends Component {
 
   async componentDidUpdate(prevProps,prevState){
     this.loadUtils();
+  }
+
+  setEstimationStepsPerc(estimationStepsPerc){
+    this.setState({
+      estimationStepsPerc
+    });
   }
 
   async loadEarnings(){
@@ -149,10 +161,27 @@ class EarningsEstimation extends Component {
       tokensEarnings['USD'] = aggregatedEarnings;
     }
 
+    let estimationStepsDefaultOption = null;
+    const estimationStepsOptions = Object.keys(this.state.estimationSteps).map( step => {
+      const estimationStep = Object.values(this.state.estimationSteps[step]).pop();
+      const label = estimationStep.optionName ? estimationStep.optionName : Object.keys(this.state.estimationSteps[step]).pop();
+      const value = parseInt(step);
+      const option = { value, label };
+
+      if (value === estimationStepsPerc){
+        estimationStepsDefaultOption = option;
+      }
+      return option;
+    });
+
+    // console.log(estimationStepsOptions,estimationStepsDefaultOption)
+
     this.setState({
       tokensEarnings,
-      estimationStepsPerc
-    })
+      estimationStepsPerc,
+      estimationStepsOptions,
+      estimationStepsDefaultOption,
+    });
   }
 
   render() {
@@ -187,6 +216,29 @@ class EarningsEstimation extends Component {
         boxShadow={1}
         borderRadius={2}
       >
+        <Flex
+          mt={2}
+          mb={3}
+          zIndex={9999}
+          justifyContent={'flex-end'}
+        >
+          <Flex
+            zIndex={9999}
+            width={[1,0.2]}
+            flexDirection={'column'}
+          >
+            <GenericSelector
+              innerProps={{
+                p:0,
+                px:1
+              }}
+              name={'estimation-step'}
+              options={this.state.estimationStepsOptions}
+              onChange={ v => this.setEstimationStepsPerc(v) }
+              defaultValue={this.state.estimationStepsDefaultOption}
+            />
+          </Flex>
+        </Flex>
         {
           Object.keys(this.state.tokensEarnings).map((token,tokenIndex) => {
             const tokenEarnings = this.state.tokensEarnings[token];
@@ -241,6 +293,9 @@ class EarningsEstimation extends Component {
                               <Text
                                 fontWeight={[3,4]}
                                 fontSize={[0,'1.2em']}
+                                style={{
+                                  wordBreak:'break-all'
+                                }}
                                 color={tokenEarnings.earnings.gte(estimationStepEarnings) ? 'copyColor' : 'legend'}
                               >
                                 {estimationStepEarningsFormatted}
