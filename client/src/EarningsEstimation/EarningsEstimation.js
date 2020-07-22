@@ -125,7 +125,7 @@ class EarningsEstimation extends Component {
           idleTokenPrice
         };
 
-        // const earningsUSD = await this.functionsUtil.convertTokenBalance(earnings,token,tokenConfig,isRisk);
+        // const earningsUSD = await this.functionsUtil.convertTokenBalance(earningsYearings,token,tokenConfig,isRisk);
         // const amountLentUSD = await this.functionsUtil.convertTokenBalance(amountLent,token,tokenConfig,isRisk);
         // const earningsYearUSD = await this.functionsUtil.convertTokenBalance(earningsYear,token,tokenConfig,isRisk);
 
@@ -297,7 +297,7 @@ class EarningsEstimation extends Component {
                         alignItems={'center'}
                         justifyContent={'flex-start'}
                       >
-                        <Image src={`images/tokens/${token}.svg`} height={['1.4em','2.4em']} />
+                        <Image src={`images/tokens/${token}.svg`} height={['1.4em','2.2em']} />
                       </Flex>
                     </Flex>
                   </Flex>

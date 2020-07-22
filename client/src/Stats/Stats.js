@@ -531,7 +531,7 @@ class Stats extends Component {
                       {
                         title:'APY',
                         props:{
-                          width: [0.19,0.12],
+                          width: [0.19,0.11],
                         },
                         fields:[
                           {
@@ -544,7 +544,7 @@ class Stats extends Component {
                         desc:this.functionsUtil.getGlobalConfig(['messages','riskScore']),
                         mobile:false,
                         props:{
-                          width:[0.27,0.14],
+                          width:[0.27,0.16],
                         },
                         fields:[
                           {
@@ -571,7 +571,7 @@ class Stats extends Component {
                       {
                         title:'',
                         props:{
-                          width:[0.3,0.17],
+                          width:[0.3,0.16],
                         },
                         parentProps:{
                           width:1
