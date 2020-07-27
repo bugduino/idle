@@ -2122,6 +2122,50 @@ class FunctionsUtil {
       return null;
     }
   }
+  getCompAPR = async (tokenConfig,cTokenIdleSupply=null) => {
+    const compDistribution = await this.getCompDistribution(tokenConfig,cTokenIdleSupply);
+    if (compDistribution){
+      const cTokenInfo = tokenConfig.protocols.find( p => (p.name === 'compound') );
+      const compValue = await this.convertTokenBalance(compDistribution,'COMP',tokenConfig,false);
+      const tokenAllocation = await this.getTokenAllocation(tokenConfig);
+      const compoundAllocation = tokenAllocation.protocolsAllocations[cTokenInfo.address.toLowerCase()];
+      return compValue.div(compoundAllocation);
+    }
+    return null;
+  }
+  getCompDistribution = async (tokenConfig,cTokenIdleSupply=null) => {
+    const cTokenInfo = tokenConfig.protocols.find( p => (p.name === 'compound') );
+    if (cTokenInfo){
+      const compSpeed = await this.genericContractCall('Comptroller','compSpeeds',[cTokenInfo.address]);
+      if (compSpeed){
+
+        // Get cToken total supply
+        const cTokenTotalSupply = await this.genericContractCall(cTokenInfo.token,'totalSupply');
+
+        // Get Idle liquidity supply
+        if (!cTokenIdleSupply){
+          cTokenIdleSupply = await this.genericContractCall(cTokenInfo.token,'balanceOf',[tokenConfig.idle.address]);
+        }
+
+        if (cTokenTotalSupply && cTokenIdleSupply){
+
+          // Calculate Idle supply percentage
+          const cTokenIdleSupplyPercentage = this.BNify(cTokenIdleSupply).div(this.BNify(cTokenTotalSupply));
+
+          // Get COMP distribution for Idle in a Year
+          const blocksPerYear = this.getGlobalConfig(['network','blocksPerYear']);
+
+          // Take 50% of distrubution for lenders side
+          const compDistribution = this.BNify(compSpeed).div(2).times(this.BNify(blocksPerYear)).times(cTokenIdleSupplyPercentage).div(1e18);
+
+          console.log('getCompDistribution',compSpeed.toString(),cTokenTotalSupply.toString(),cTokenIdleSupply.toString(),cTokenIdleSupplyPercentage.toString(),compDistribution.toString());
+
+          return compDistribution;
+        }
+      }
+    }
+    return null;
+  }
   genericContractCall = async (contractName, methodName, params = [], callParams = {}, blockNumber = 'latest') => {
     let contract = this.getContractByName(contractName);
 
@@ -2223,7 +2267,19 @@ class FunctionsUtil {
 
     return this.setCachedData(cachedDataKey,tokenAllocation);
   }
-  getGovTokenBalance = async (govTokenConfig,account=null) => {
+  getGovTokensBalances = async (address=null) => {
+    address = address ? address : this.props.tokenConfig.idle.address;
+    const govTokens = this.getGlobalConfig(['govTokens']);
+    const govTokensBalances = {}
+    await this.asyncForEach(Object.keys(govTokens),async (token) => {
+      const govTokenBalance = await this.getProtocolBalance(token,address);
+      if (govTokenBalance){
+        govTokensBalances[token] = this.fixTokenDecimals(govTokenBalance,govTokens[token].decimals);
+      }
+    });
+    return govTokensBalances;
+  }
+  getGovTokenUserBalance = async (govTokenConfig,account=null) => {
     account = account ? account : this.props.account;
     const idleTokenConfig = this.props.tokenConfig.idle;
     let [tokenBalance, govTokensIndexes, usersGovTokensIndexes] = await Promise.all([

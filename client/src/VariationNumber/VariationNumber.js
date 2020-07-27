@@ -15,10 +15,10 @@ class VariationNumber extends Component {
 
     return (
       <Flex
-        width={1}
         alignItems={'center'}
         flexDirection={'row'}
-        justifyContent={this.props.justifyContent ?this.props.justifyContent : 'center'}
+        width={ this.props.width ? this.props.width : 1 }
+        justifyContent={this.props.justifyContent ? this.props.justifyContent : 'center'}
       >
         {
           (!this.props.iconPos || this.props.iconPos==='left') &&

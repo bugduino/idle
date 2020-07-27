@@ -936,6 +936,25 @@ class RimbleTransaction extends React.Component {
       return false;
     }
 
+    const contracts = this.functionsUtil.getGlobalConfig(['contracts']);
+    await this.functionsUtil.asyncForEach(Object.keys(contracts),async (contractName) => {
+      const contractInfo = contracts[contractName];
+      await this.initContract(contractName, contractInfo.address, contractInfo.abi);
+    });
+
+    const govTokens = this.functionsUtil.getGlobalConfig(['govTokens']);
+    await this.functionsUtil.asyncForEach(Object.keys(govTokens),async (token) => {
+      const govTokenConfig = govTokens[token];
+      if (!govTokenConfig.enabled){
+        return;
+      }
+      // Initialize govToken contracts
+      let foundGovTokenContract = this.state.contracts.find(c => c.name === token);
+      if (!foundGovTokenContract) {
+        await this.initContract(token, govTokenConfig.address, govTokenConfig.abi);
+      }
+    });
+
     // Initialize Tokens Contracts
     await this.functionsUtil.asyncForEach(Object.keys(this.props.availableStrategies),async (strategy) => {
       
@@ -992,8 +1011,8 @@ class RimbleTransaction extends React.Component {
   getContractByName = async (contractName) => {
     let contract = this.state.contracts.find(c => c.name === contractName);
     if (!contract) {
-      const TOKEN = this.props.tokenConfig.abi;
-      contract = await this.initContract(contractName, TOKEN.address, TOKEN.abi);
+      const Token = this.props.tokenConfig.abi;
+      contract = await this.initContract(contractName, Token.address, Token.abi);
     }
     return contract.contract;
   }

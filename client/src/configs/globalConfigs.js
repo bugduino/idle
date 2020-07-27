@@ -1,3 +1,4 @@
+import COMP from '../abis/compound/COMP.json';
 import TokenSwap from '../TokenSwap/TokenSwap';
 import yDAIv3 from '../abis/iearn/yDAIv3.json';
 import yUSDCv3 from '../abis/iearn/yUSDCv3.json';
@@ -10,6 +11,7 @@ import FunctionsUtil from '../utilities/FunctionsUtil';
 import StrategyPage from '../StrategyPage/StrategyPage';
 import BuyModal from '../utilities/components/BuyModal';
 import TokenMigration from '../TokenMigration/TokenMigration';
+import Comptroller from '../abis/compound/Comptroller.json';
 import { RampInstantSDK } from '@ramp-network/ramp-instant-sdk';
 import IdleConverterV2 from '../contracts/IdleConverterV2.json';
 import IdleProxyMinter from '../contracts/IdleProxyMinter.json';
@@ -134,10 +136,18 @@ const globalConfigs = {
   },
   govTokens:{
     COMP:{
+      abi:COMP,
       decimals:18,
       enabled:true,
+      protocol:'compound',
       color:'hsl(162, 100%, 41%)',
       address:'0xc00e94cb662c3520282e6f5717214004a7f26888',
+    }
+  },
+  contracts:{
+    Comptroller:{
+      abi:Comptroller,
+      address:'0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b',
     }
   },
   strategies:{
@@ -295,6 +305,19 @@ const globalConfigs = {
           labelTextColorModifiers:['darker', 4]
         },
       },
+      COMP:{
+        enabled:true,
+        color:{
+          hex:'#eb9444',
+          rgb:[235, 148, 68],
+          hsl:['29', '81%', '59%']
+        },
+        startTimestamp:'2020-06-15',
+        conversionRateField:'compDAIPrice',
+        chart:{
+          labelTextColorModifiers:['darker', 4]
+        },
+      },
     },
     protocols:{
       compound:{
@@ -380,6 +403,7 @@ const globalConfigs = {
       4:'Rinkeby',
       42:'Kovan'
     },
+    blocksPerYear:2371428,
     firstBlockNumber:8119247,
     requiredConfirmations: 1,
     accountBalanceMinimum: 0, // in ETH for gas fees

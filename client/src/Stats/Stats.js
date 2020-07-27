@@ -45,6 +45,7 @@ class Stats extends Component {
     shouldRebalance:null,
     carouselOffsetLeft:0,
     startTimestampObj:null,
+    govTokensBalances:null,
     apiResults_unfiltered:null,
     dateRangeModalOpened:false
   };
@@ -272,6 +273,9 @@ class Stats extends Component {
       return false;
     }
 
+    // Get COMP APR
+    // const compAPR = await this.functionsUtil.getCompAPR(this.props.tokenConfig);
+
     const startTimestamp = this.state.minDate ? parseInt(this.functionsUtil.strToMoment(this.functionsUtil.strToMoment(this.state.minDate).format('DD/MM/YYYY 00:00:00'),'DD/MM/YYYY HH:mm:ss')._d.getTime()/1000) : null;
     const endTimestamp = this.state.maxDate ? parseInt(this.functionsUtil.strToMoment(this.functionsUtil.strToMoment(this.state.maxDate).format('DD/MM/YYYY 23:59:59'),'DD/MM/YYYY HH:mm:ss')._d.getTime()/1000) : null;
 
@@ -348,6 +352,8 @@ class Stats extends Component {
       }
     });
 
+    const govTokensBalances = await this.functionsUtil.getGovTokensBalances(this.props.tokenConfig.idle.address);
+
     this.setState({
       aum,
       apr,
@@ -355,6 +361,7 @@ class Stats extends Component {
       delta,
       apiResults,
       rebalances,
+      govTokensBalances,
       apiResults_unfiltered
     });
   }
@@ -778,22 +785,71 @@ class Stats extends Component {
                   title={'Avg APY'}
                   label={'Annualized'}
                 >
-                  <VariationNumber
-                    direction={'up'}
-                    iconPos={'right'}
-                    iconSize={'1.8em'}
-                    justifyContent={'flex-start'}
-                    >
-                    <Text
-                      lineHeight={1}
-                      fontWeight={[3,4]}
-                      color={'statValue'}
-                      fontSize={[4,5]}
-                    >
-                      {this.state.apr}
-                      <Text.span color={'statValue'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
-                    </Text>
-                  </VariationNumber>
+                  <Flex
+                    width={1}
+                    alignItems={'center'}
+                    flexDirection={['column','row']}
+                  >
+                    <VariationNumber
+                      direction={'up'}
+                      iconPos={'right'}
+                      iconSize={'1.8em'}
+                      justifyContent={'flex-start'}
+                      width={[1,this.state.govTokensBalances ? 0.5 : 1]}
+                      >
+                      <Text
+                        lineHeight={1}
+                        fontWeight={[3,4]}
+                        color={'statValue'}
+                        fontSize={[4,5]}
+                      >
+                        {this.state.apr}
+                        <Text.span color={'statValue'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
+                      </Text>
+                    </VariationNumber>
+                    {
+                      this.state.govTokensBalances && (
+                        <Flex
+                          width={[1,0.5]}
+                          alignItems={'center'}
+                          flexDirection={'row'}
+                          justifyContent={'center'}
+                        >
+                          <Text
+                            color={'legend'}
+                            lineHeight={1}
+                            fontSize={[1,1]}
+                            fontWeight={[3,4]}
+                          >
+                          (
+                          </Text>
+                          {
+                            Object.keys(this.state.govTokensBalances).map((govToken,govTokenIndex) => (
+                              <Text
+                                color={'legend'}
+                                lineHeight={1}
+                                fontSize={[1,1]}
+                                fontWeight={[3,4]}
+                                textAlign={'center'}
+                                ml={govTokenIndex ? 2 : 0}
+                                key={`govToken_${govToken}`}
+                              >
+                                +{this.state.govTokensBalances[govToken].toFixed(3)} {govToken}
+                              </Text>
+                            ))
+                          }
+                          <Text
+                            color={'legend'}
+                            lineHeight={1}
+                            fontSize={[1,2]}
+                            fontWeight={[3,4]}
+                          >
+                          )
+                          </Text>
+                        </Flex>
+                      )
+                    }
+                  </Flex>
                 </StatsCard>
               </Flex>
               <Flex
