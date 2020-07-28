@@ -809,7 +809,7 @@ class Stats extends Component {
                       </Text>
                     </VariationNumber>
                     {
-                      this.state.govTokensBalances && (
+                      this.state.govTokensBalances && Object.keys(this.state.govTokensBalances).length>0 && (
                         <Flex
                           width={[1,0.5]}
                           alignItems={'center'}
@@ -842,7 +842,7 @@ class Stats extends Component {
                           <Text
                             color={'legend'}
                             lineHeight={1}
-                            fontSize={[1,2]}
+                            fontSize={[1,1]}
                             fontWeight={[3,4]}
                           >
                           )

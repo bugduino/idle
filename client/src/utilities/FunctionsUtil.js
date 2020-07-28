@@ -2293,6 +2293,9 @@ class FunctionsUtil {
     const govTokens = this.getGlobalConfig(['govTokens']);
     const govTokensBalances = {}
     await this.asyncForEach(Object.keys(govTokens),async (token) => {
+      if (!govTokens[token].enabled){
+        return;
+      }
       const govTokenBalance = await this.getProtocolBalance(token,address);
       if (govTokenBalance){
         govTokensBalances[token] = this.fixTokenDecimals(govTokenBalance,govTokens[token].decimals);
