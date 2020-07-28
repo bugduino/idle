@@ -2122,15 +2122,36 @@ class FunctionsUtil {
       return null;
     }
   }
-  getCompAPR = async (tokenConfig,cTokenIdleSupply=null) => {
+
+  getCompAPR = async (tokenConfig,cTokenIdleSupply=null,compConversionRate=null) => {
     const compDistribution = await this.getCompDistribution(tokenConfig,cTokenIdleSupply);
     if (compDistribution){
       const cTokenInfo = tokenConfig.protocols.find( p => (p.name === 'compound') );
-      const compValue = await this.convertTokenBalance(compDistribution,'COMP',tokenConfig,false);
-      const tokenAllocation = await this.getTokenAllocation(tokenConfig);
-      const compoundAllocation = tokenAllocation.protocolsAllocations[cTokenInfo.address.toLowerCase()];
-      return compValue.div(compoundAllocation);
+      const compValue = compConversionRate ? this.BNify(compConversionRate).times(compDistribution) : await this.convertTokenBalance(compDistribution,'COMP',tokenConfig,false);
+
+      let compoundAllocation = null;
+      if (cTokenIdleSupply){
+        let [exchangeRate,tokenDecimals] = await Promise.all([
+          this.genericContractCall(cTokenInfo.token,cTokenInfo.functions.exchangeRate.name,cTokenInfo.functions.exchangeRate.params),
+          this.getTokenDecimals(cTokenInfo.token)
+        ]);
+        if (exchangeRate){
+          exchangeRate = this.fixTokenDecimals(exchangeRate,cTokenInfo.decimals);
+          compoundAllocation = this.fixTokenDecimals(cTokenIdleSupply,tokenDecimals,exchangeRate);
+          // console.log('getCompAPR',compValue.toString(),cTokenIdleSupply.toString(),exchangeRate.toString(),tokenDecimals.toString(),compoundAllocation.toString());
+        }
+      } else {
+        const tokenAllocation = await this.getTokenAllocation(tokenConfig);
+        compoundAllocation = tokenAllocation.protocolsAllocations[cTokenInfo.address.toLowerCase()];
+      }
+
+      if (compoundAllocation){
+        const compAPR = compValue.div(compoundAllocation);
+        return compAPR;
+      }
+
     }
+
     return null;
   }
   getCompDistribution = async (tokenConfig,cTokenIdleSupply=null) => {
@@ -2158,7 +2179,7 @@ class FunctionsUtil {
           // Take 50% of distrubution for lenders side
           const compDistribution = this.BNify(compSpeed).div(2).times(this.BNify(blocksPerYear)).times(cTokenIdleSupplyPercentage).div(1e18);
 
-          console.log('getCompDistribution',compSpeed.toString(),cTokenTotalSupply.toString(),cTokenIdleSupply.toString(),cTokenIdleSupplyPercentage.toString(),compDistribution.toString());
+          // console.log('getCompDistribution',compSpeed.toString(),cTokenTotalSupply.toString(),cTokenIdleSupply.toString(),cTokenIdleSupplyPercentage.toString(),compDistribution.toString());
 
           return compDistribution;
         }
@@ -2478,6 +2499,9 @@ class FunctionsUtil {
     if (tokenAllocation){
       tokenAprs.avgApr = this.getAvgApr(protocolsAprs,tokenAllocation.protocolsAllocations,tokenAllocation.totalAllocation);
     }
+
+    // Add COMP APR
+    // const compAPR = await this.functionsUtil.getCompAPR(this.props.tokenConfig,this.functionsUtil.BNify(1),this.functionsUtil.BNify(135));
 
     return this.setCachedData(cachedDataKey,tokenAprs);
   }

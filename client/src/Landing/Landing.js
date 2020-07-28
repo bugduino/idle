@@ -473,6 +473,7 @@ class Landing extends Component {
                     justifyContent={'flex-start'}
                     left={this.state.carouselOffsetLeft}
                     style={{
+                      overflowY:'visible',
                       transition:'left 0.3s ease-in-out'
                     }}
                   >
