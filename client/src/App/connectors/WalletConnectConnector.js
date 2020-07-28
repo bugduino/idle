@@ -18,12 +18,14 @@ export default class WalletConnectConnector extends Connector {
       });
     }
 
+    // console.log('onActivation',this.provider);
+
     if (this.provider){
 
       await this.provider.enable();
 
-      // Subscribe to accounts change
       /*
+      // Subscribe to accounts change
       this.provider.on("accountsChanged", (accounts) => {
         console.log('accountsChanged',accounts);
       });
@@ -59,7 +61,7 @@ export default class WalletConnectConnector extends Connector {
 
   async disable() {
     if (this.provider){
-      await this.provider.close();
+      this.provider.close();
       return this.provider;
     }
   }

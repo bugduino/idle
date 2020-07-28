@@ -162,21 +162,21 @@ class RimbleTransaction extends React.Component {
       this.initWeb3();
     } else if ( prevProps.context !== this.props.context ){
       if (this.props.context.error instanceof Error && this.props.context.error.message.length){
-
-        if (setConnectorName === 'WalletConnect' && this.props.context.error.message === 'User closed WalletConnect modal'){
-          this.functionsUtil.customLog('WalletConnect disconnected! Set Infura connector');
+        const errorMessage = this.props.context.error.message;
+        const isWalletConnectClosedModalError = (errorMessage === 'User closed WalletConnect modal' || errorMessage === 'User closed modal');
+        // console.log('componentDidUpdate',setConnectorName,errorMessage);
+        if (setConnectorName === 'WalletConnect' && isWalletConnectClosedModalError){
+          // this.functionsUtil.customLog('WalletConnect disconnected! Set Infura connector');
           this.props.setConnector('Infura',null);
-          this.functionsUtil.removeStoredItem('walletProvider');
-          this.functionsUtil.removeStoredItem('connectorName');
-          this.functionsUtil.setLocalStorage('context',JSON.stringify({active:this.props.context.active,connectorName:'Infura'}));
+          // this.functionsUtil.removeStoredItem('walletProvider');
+          // this.functionsUtil.removeStoredItem('connectorName');
+          // this.functionsUtil.setLocalStorage('context',JSON.stringify({active:this.props.context.active,connectorName:'Infura'}));
           setConnectorName = null;
-          await this.props.context.setConnector('Infura');
-          if (this.props.context.connector && typeof this.props.context.connector.disable === 'function'){
-            await this.props.context.connector.disable();
-          }
+          // await this.props.context.setConnector('Infura');
+        } else if (!isWalletConnectClosedModalError) {
+          this.openConnectionErrorModal(null,errorMessage);
         } else {
-          // debugger;
-          this.openConnectionErrorModal(null,this.props.context.error.message);
+          this.initWeb3();
         }
       // WalletConnect double trigger initWeb3
       } else if (this.props.context.active && this.props.context.connectorName!=='WalletConnect' && this.props.connectorName==='WalletConnect') {
@@ -242,7 +242,16 @@ class RimbleTransaction extends React.Component {
 
     // const last_context = localStorage ? JSON.parse(localStorage.getItem('context')) : null;
 
-    // this.functionsUtil.customLog('initWeb3',connectorName,setConnectorName);
+    // console.log('initWeb3',context.active,connectorName,context.connectorName,context.connector,(web3 && web3.currentProvider ? web3.currentProvider.disable : null),(context.connector ? context.connector.disable : null));
+    if (context && connectorName === 'Infura' && connectorName !== context.connectorName){
+      if (web3 && typeof web3.currentProvider.disable === 'function'){
+        web3.currentProvider.disable();
+      } else if (context.connector && typeof context.connector.disable === 'function'){
+        context.connector.disable();
+      }
+      web3 = null;
+      setConnectorName = null;
+    }
 
     const connectorNameChanged = (context.connectorName && context.connectorName !== connectorName) || (connectorName !== 'Infura' && connectorName !== setConnectorName);
 
@@ -302,6 +311,7 @@ class RimbleTransaction extends React.Component {
       }
     // Reset web3 if Infura
     } */
+    /*
     else if (context.active && (connectorName === 'Infura' || context.connectorName === "Infura")){
       if (typeof web3.currentProvider.disable === 'function'){
         await web3.currentProvider.disable();
@@ -311,6 +321,7 @@ class RimbleTransaction extends React.Component {
       web3 = null;
       setConnectorName = null;
     }
+    */
 
     let web3Host = null;
     let web3Provider = null;
