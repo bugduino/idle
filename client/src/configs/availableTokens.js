@@ -216,6 +216,7 @@ const availableTokens = {
   1:{ // Mainnet
     best:{
       DAI:{
+        token:'DAI',
         decimals:18,
         enabled:true,
         abi:ERC20.abi,
@@ -334,6 +335,7 @@ const availableTokens = {
       },
       USDC:{
         decimals:6,
+        token:'USDC',
         enabled:true,
         abi:ERC20.abi,
         color:'hsl(211, 67%, 47%)',
@@ -437,6 +439,7 @@ const availableTokens = {
       },
       USDT:{
         decimals:6,
+        token:'USDT',
         enabled:true,
         abi:ERC20.abi,
         color:'hsl(211, 67%, 47%)',
@@ -496,6 +499,7 @@ const availableTokens = {
       },
       SUSD:{
         decimals:18,
+        token:'SUSD',
         enabled:true,
         abi:ERC20.abi,
         color:'hsl(250, 31%, 15%)',
@@ -551,6 +555,7 @@ const availableTokens = {
       },
       TUSD:{
         decimals:18,
+        token:'TUSD',
         enabled:true,
         abi:ERC20.abi,
         color:'hsl(217, 100%, 20%)',
@@ -605,6 +610,7 @@ const availableTokens = {
       },
       WBTC:{
         decimals:8,
+        token:'WBTC',
         enabled:true,
         abi:ERC20.abi,
         color:'hsl(29, 81%, 59%)',
@@ -666,6 +672,7 @@ const availableTokens = {
     risk:{
       DAI:{
         decimals:18,
+        token:'DAI',
         enabled:true,
         abi:ERC20.abi,
         color:'hsl(40, 95%, 59%)',
@@ -783,6 +790,7 @@ const availableTokens = {
       },
       USDC:{
         decimals:6,
+        token:'USDC',
         enabled:true,
         abi:ERC20.abi,
         color:'hsl(211, 67%, 47%)',
@@ -886,6 +894,7 @@ const availableTokens = {
       },
       USDT:{
         decimals:6,
+        token:'USDT',
         enabled:true,
         abi:ERC20.abi,
         color:'hsl(211, 67%, 47%)',

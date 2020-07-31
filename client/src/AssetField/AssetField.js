@@ -81,7 +81,6 @@ class AssetField extends Component {
 
     let output = null;
     if (this.props.token){
-      let tokenAprs = null;
       switch (fieldName){
         case 'tokenBalance':
           let tokenBalance = this.props.account ? await this.functionsUtil.getTokenBalance(this.props.tokenConfig.token,this.props.account) : false;
@@ -224,15 +223,11 @@ class AssetField extends Component {
           output = tokenScore;
         break;
         case 'pool':
-          const tokenAllocation = await this.functionsUtil.getTokenAllocation(this.props.tokenConfig);
-
-          if (tokenAllocation && tokenAllocation.totalAllocation){
-            if (setState){
-              this.setStateSafe({
-                poolSize:tokenAllocation.totalAllocation.toString()
-              })
-            }
-            output = tokenAllocation.totalAllocation;
+          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account);
+          if (output && setState){
+            this.setStateSafe({
+              poolSize:output.toString()
+            })
           }
         break;
         case 'earningsPerc':
@@ -255,37 +250,25 @@ class AssetField extends Component {
           output = earningsPerc;
         break;
         case 'apr':
-          tokenAprs = await this.functionsUtil.getTokenAprs(this.props.tokenConfig);
-          if (tokenAprs && tokenAprs.avgApr !== null){
-            const tokenAPR = tokenAprs.avgApr;
-            if (setState){
-              this.setStateSafe({
-                tokenAPR:parseFloat(tokenAPR).toFixed(decimals)
-              });
-            }
-            output = tokenAPR;
+          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account);
+          if (output && setState){
+            this.setStateSafe({
+              tokenAPR:parseFloat(output).toFixed(decimals)
+            })
           }
         break;
         case 'apy':
-          const tokenAPR = await this.loadField('apr');
-          if (tokenAPR !== null){
-            if (!tokenAPR.isNaN()){
-              const tokenAPY = this.functionsUtil.apr2apy(tokenAPR.div(100)).times(100);
-              if (setState){
-                this.setStateSafe({
-                  tokenAPR:parseFloat(tokenAPR).toFixed(decimals),
-                  tokenAPY:parseFloat(tokenAPY).toFixed(decimals)
-                });
-              }
-              return tokenAPY;
+          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account);
+          // debugger;
+          if (output && setState){
+            if (!output.isNaN()){
+              this.setStateSafe({
+                tokenAPY:parseFloat(output).toFixed(decimals)
+              });
             } else {
-              if (setState){
-                this.setStateSafe({
-                  tokenAPR:false,
-                  tokenAPY:false
-                });
-              }
-              return false;
+              this.setStateSafe({
+                tokenAPY:false
+              });
             }
           }
         break;

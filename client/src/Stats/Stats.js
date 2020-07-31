@@ -303,7 +303,7 @@ class Stats extends Component {
     const idleTokens = this.functionsUtil.fixTokenDecimals(lastResult.idleSupply,18);
     const firstIdlePrice = this.functionsUtil.fixTokenDecimals(firstResult.idlePrice,this.props.tokenConfig.decimals);
     const lastIdlePrice = this.functionsUtil.fixTokenDecimals(lastResult.idlePrice,this.props.tokenConfig.decimals);
-    const aum = this.functionsUtil.formatMoney(parseFloat(idleTokens.times(lastIdlePrice)));
+    let aum = idleTokens.times(lastIdlePrice);
     const earning = lastIdlePrice.div(firstIdlePrice).minus(1).times(100);
     const apr = earning.times(365).div(days).toFixed(2);
 
@@ -354,6 +354,14 @@ class Stats extends Component {
     });
 
     const govTokensBalances = await this.functionsUtil.getGovTokensBalances(this.props.tokenConfig.idle.address);
+
+    // Add gov tokens balance to AUM
+    if (govTokensBalances.total){
+      aum = aum.plus(govTokensBalances.total);
+    }
+
+    // Format AUM
+    aum = this.functionsUtil.formatMoney(parseFloat(aum));
 
     this.setState({
       aum,
@@ -796,7 +804,7 @@ class Stats extends Component {
                       iconPos={'right'}
                       iconSize={'1.8em'}
                       justifyContent={'flex-start'}
-                      width={[1,this.state.govTokensBalances ? 0.5 : 1]}
+                      width={1}
                       >
                       <Text
                         lineHeight={1}
@@ -809,6 +817,7 @@ class Stats extends Component {
                       </Text>
                     </VariationNumber>
                     {
+                      /*
                       this.state.govTokensBalances && Object.keys(this.state.govTokensBalances).length>0 && (
                         <Flex
                           width={[1,0.5]}
@@ -849,6 +858,7 @@ class Stats extends Component {
                           </Text>
                         </Flex>
                       )
+                      */
                     }
                   </Flex>
                 </StatsCard>

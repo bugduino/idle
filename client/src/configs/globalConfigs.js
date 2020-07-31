@@ -138,7 +138,7 @@ const globalConfigs = {
     COMP:{
       abi:COMP,
       decimals:18,
-      enabled:false,
+      enabled:true,
       protocol:'compound',
       color:'hsl(162, 100%, 41%)',
       address:'0xc00e94cb662c3520282e6f5717214004a7f26888',
@@ -221,6 +221,7 @@ const globalConfigs = {
     },
     tokens:{
       DAI:{
+        decimals:18,
         enabled:true,
         color:{
           rgb:[250,184,51],
@@ -230,7 +231,8 @@ const globalConfigs = {
         chart:{
           labelTextColorModifiers:['darker', 2]
         },
-        startTimestamp:'2020-02-11'
+        startTimestamp:'2020-02-11',
+        address:'0x6b175474e89094c44da98b954eedeac495271d0f',
       },
       USD:{
         enabled:true,
@@ -242,9 +244,11 @@ const globalConfigs = {
         chart:{
           labelTextColorModifiers:['brighter', 2]
         },
-        startTimestamp:'2020-02-04'
+        address:null,
+        startTimestamp:'2020-02-04',
       },
       USDC:{
+        decimals:6,
         enabled:true,
         color:{
           hex:'#2875C8',
@@ -254,9 +258,11 @@ const globalConfigs = {
         chart:{
           labelTextColorModifiers:['brighter', 2]
         },
-        startTimestamp:'2020-02-04'
+        startTimestamp:'2020-02-04',
+        address:'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
       },
       USDT:{
+        decimals:6,
         enabled:true,
         color:{
           hex:'#22a079',
@@ -266,9 +272,11 @@ const globalConfigs = {
         chart:{
           labelTextColorModifiers:['darker', 4]
         },
-        startTimestamp:'2020-02-04'
+        startTimestamp:'2020-02-04',
+        address:'0xdac17f958d2ee523a2206206994597c13d831ec7',
       },
       TUSD:{
+        decimals:18,
         enabled:true,
         color:{
           hex:'#002868',
@@ -278,9 +286,11 @@ const globalConfigs = {
         chart:{
           labelTextColorModifiers:['brighter', 5]
         },
-        startTimestamp:'2020-06-22'
+        startTimestamp:'2020-06-22',
+        address:'0x0000000000085d4780b73119b644ae5ecd22b376',
       },
       SUSD:{
+        decimals:18,
         enabled:true,
         color:{
           hex:'#1e1a31',
@@ -290,9 +300,11 @@ const globalConfigs = {
         chart:{
           labelTextColorModifiers:['brighter', 5]
         },
-        startTimestamp:'2020-06-22'
+        startTimestamp:'2020-06-22',
+        address:'0x57ab1ec28d129707052df4df418d58a2d46d5f51',
       },
       WBTC:{
+        decimals:8,
         enabled:true,
         color:{
           hex:'#eb9444',
@@ -302,10 +314,12 @@ const globalConfigs = {
         startTimestamp:'2020-06-15',
         conversionRateField:'wbtcDAIPrice',
         chart:{
-          labelTextColorModifiers:['darker', 4]
+          labelTextColorModifiers:['darker', 4],
         },
+        address:'0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
       },
       COMP:{
+        decimals:18,
         enabled:true,
         color:{
           hex:'#eb9444',
@@ -317,6 +331,7 @@ const globalConfigs = {
         chart:{
           labelTextColorModifiers:['darker', 4]
         },
+        address:'0xc00e94cb662c3520282e6f5717214004a7f26888',
       },
     },
     protocols:{

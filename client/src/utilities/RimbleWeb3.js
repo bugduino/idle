@@ -950,7 +950,9 @@ class RimbleTransaction extends React.Component {
     const contracts = this.functionsUtil.getGlobalConfig(['contracts']);
     await this.functionsUtil.asyncForEach(Object.keys(contracts),async (contractName) => {
       const contractInfo = contracts[contractName];
-      await this.initContract(contractName, contractInfo.address, contractInfo.abi);
+      if (contractInfo.address !== null && contractInfo.abi !== null){
+        await this.initContract(contractName, contractInfo.address, contractInfo.abi);
+      }
     });
 
     const govTokens = this.functionsUtil.getGlobalConfig(['govTokens']);

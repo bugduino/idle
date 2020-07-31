@@ -5,6 +5,7 @@ import { Text } from "rimble-ui";
 import BigNumber from 'bignumber.js';
 import globalConfigs from '../configs/globalConfigs';
 // import availableTokens from '../configs/availableTokens';
+import { ChainId, Token, Fetcher, Route } from '@uniswap/sdk'
 
 const env = process.env;
 
@@ -1388,7 +1389,7 @@ class FunctionsUtil {
   fixTokenDecimals = (tokenBalance,tokenDecimals,exchangeRate) => {
     const normalizedTokenDecimals = this.normalizeTokenDecimals(tokenDecimals);
     let balance = this.BNify(tokenBalance).div(normalizedTokenDecimals);
-    if (exchangeRate){
+    if (exchangeRate && !exchangeRate.isNaN()){
       balance = balance.times(exchangeRate);
     }
     return balance;
@@ -1813,7 +1814,7 @@ class FunctionsUtil {
       }
     });
   }
-  loadAssetField = async (field,token,tokenConfig,account) => {
+  loadAssetField = async (field,token,tokenConfig,account,addGovTokens=true) => {
 
     let output = null;
 
@@ -1835,16 +1836,50 @@ class FunctionsUtil {
           output = (currTimestamp-depositTimestamp)/86400;
         }
       break;
+      case 'pool':
+        const tokenAllocation = await this.getTokenAllocation(tokenConfig,false,addGovTokens);
+
+        if (tokenAllocation && tokenAllocation.totalAllocation){
+          output = tokenAllocation.totalAllocation;
+        }
+      break;
+      case 'apr':
+        const tokenAprs = await this.getTokenAprs(tokenConfig,false,addGovTokens);
+
+        // console.log('apr',token,tokenAprs.avgApr ? tokenAprs.avgApr.toString() : null,compAPR ? compAPR.toString() : null);
+
+        if (tokenAprs && tokenAprs.avgApr !== null){
+          output = tokenAprs.avgApr;
+        }
+      break;
+      case 'apy':
+        let [tokenAPR,compAPR] = await Promise.all([
+          this.loadAssetField('apr',token,tokenConfig,account,true),
+          this.getCompAPR(token,tokenConfig)
+        ]);
+
+        if (tokenAPR !== null){
+          if (!tokenAPR.isNaN()){
+
+            let tokenAPY = this.apr2apy(tokenAPR.div(100)).times(100);
+            // console.log('apy',token,tokenAPR ? tokenAPR.toString() : null,compAPR ? compAPR.toString() : null,tokenAPY.toString());
+
+            // if (compAPR && addGovTokens){
+            //   tokenAPY = tokenAPY.plus(compAPR);
+            // }
+
+            output = tokenAPY;
+          }
+        }
+      break;
       case 'avgAPY':
         const [daysFirstDeposit,earningsPerc] = await Promise.all([
           this.loadAssetField('daysFirstDeposit',token,tokenConfig,account),
-          this.loadAssetField('earningsPerc',token,tokenConfig,account) // Take earnings perc instead of earnings
+          this.loadAssetField('earningsPerc',token,tokenConfig,account), // Take earnings perc instead of earnings
         ]);
 
         if (daysFirstDeposit && earningsPerc){
           output = earningsPerc.times(365).div(daysFirstDeposit);
-          // output = this.apr2apy(avgAPR.div(100)).times(100);
-          // debugger;
         }
       break;
       case 'depositTimestamp':
@@ -2122,71 +2157,6 @@ class FunctionsUtil {
       return null;
     }
   }
-
-  getCompAPR = async (tokenConfig,cTokenIdleSupply=null,compConversionRate=null) => {
-    const compDistribution = await this.getCompDistribution(tokenConfig,cTokenIdleSupply);
-    if (compDistribution){
-      const cTokenInfo = tokenConfig.protocols.find( p => (p.name === 'compound') );
-      const compValue = compConversionRate ? this.BNify(compConversionRate).times(compDistribution) : await this.convertTokenBalance(compDistribution,'COMP',tokenConfig,false);
-
-      let compoundAllocation = null;
-      if (cTokenIdleSupply){
-        let [exchangeRate,tokenDecimals] = await Promise.all([
-          this.genericContractCall(cTokenInfo.token,cTokenInfo.functions.exchangeRate.name,cTokenInfo.functions.exchangeRate.params),
-          this.getTokenDecimals(cTokenInfo.token)
-        ]);
-        if (exchangeRate){
-          exchangeRate = this.fixTokenDecimals(exchangeRate,cTokenInfo.decimals);
-          compoundAllocation = this.fixTokenDecimals(cTokenIdleSupply,tokenDecimals,exchangeRate);
-          // console.log('getCompAPR',compValue.toString(),cTokenIdleSupply.toString(),exchangeRate.toString(),tokenDecimals.toString(),compoundAllocation.toString());
-        }
-      } else {
-        const tokenAllocation = await this.getTokenAllocation(tokenConfig);
-        compoundAllocation = tokenAllocation.protocolsAllocations[cTokenInfo.address.toLowerCase()];
-      }
-
-      if (compoundAllocation){
-        const compAPR = compValue.div(compoundAllocation);
-        return compAPR;
-      }
-
-    }
-
-    return null;
-  }
-  getCompDistribution = async (tokenConfig,cTokenIdleSupply=null) => {
-    const cTokenInfo = tokenConfig.protocols.find( p => (p.name === 'compound') );
-    if (cTokenInfo){
-      const compSpeed = await this.genericContractCall('Comptroller','compSpeeds',[cTokenInfo.address]);
-      if (compSpeed){
-
-        // Get cToken total supply
-        const cTokenTotalSupply = await this.genericContractCall(cTokenInfo.token,'totalSupply');
-
-        // Get Idle liquidity supply
-        if (!cTokenIdleSupply){
-          cTokenIdleSupply = await this.genericContractCall(cTokenInfo.token,'balanceOf',[tokenConfig.idle.address]);
-        }
-
-        if (cTokenTotalSupply && cTokenIdleSupply){
-
-          // Calculate Idle supply percentage
-          const cTokenIdleSupplyPercentage = this.BNify(cTokenIdleSupply).div(this.BNify(cTokenTotalSupply));
-
-          // Get COMP distribution for Idle in a Year
-          const blocksPerYear = this.getGlobalConfig(['network','blocksPerYear']);
-
-          // Take 50% of distrubution for lenders side
-          const compDistribution = this.BNify(compSpeed).div(2).times(this.BNify(blocksPerYear)).times(cTokenIdleSupplyPercentage).div(1e18);
-
-          // console.log('getCompDistribution',compSpeed.toString(),cTokenTotalSupply.toString(),cTokenIdleSupply.toString(),cTokenIdleSupplyPercentage.toString(),compDistribution.toString());
-
-          return compDistribution;
-        }
-      }
-    }
-    return null;
-  }
   genericContractCall = async (contractName, methodName, params = [], callParams = {}, blockNumber = 'latest') => {
     let contract = this.getContractByName(contractName);
 
@@ -2220,7 +2190,7 @@ class FunctionsUtil {
   /*
   Get idleToken allocation between protocols
   */
-  getTokenAllocation = async (tokenConfig,protocolsAprs=false) => {
+  getTokenAllocation = async (tokenConfig,protocolsAprs=false,addGovTokens=true) => {
 
     // Check for cached data
     const cachedDataKey = `tokenAllocation_${tokenConfig.idle.address}`;
@@ -2282,32 +2252,191 @@ class FunctionsUtil {
     tokenAllocation.protocolsAllocations = protocolsAllocations;
     tokenAllocation.protocolsAllocationsPerc = protocolsAllocationsPerc;
 
+    if (addGovTokens){
+      const govTokensBalances = await this.getGovTokensBalances(tokenConfig.idle.address);
+
+      // Sum gov tokens balances
+      if (govTokensBalances.total){
+        const tokenUsdConversionRate = await this.getTokenConversionRate(tokenConfig,false);
+        if (tokenUsdConversionRate){
+          govTokensBalances.total = govTokensBalances.total.div(tokenUsdConversionRate);
+        }
+
+        tokenAllocation.totalAllocation = tokenAllocation.totalAllocation.plus(govTokensBalances.total);
+      }
+    }
+
     if (protocolsAprs){
       tokenAllocation.avgApr = this.getAvgApr(protocolsAprs,protocolsAllocations,totalAllocation);
     }
 
     return this.setCachedData(cachedDataKey,tokenAllocation);
   }
-  getGovTokensBalances = async (address=null) => {
+  getUniswapConversionRate = async (tokenConfigFrom,tokenConfigDest) => {
+    const cachedDataKey = `compUniswapConverstionRate_${tokenConfigFrom.address}_${tokenConfigDest.address}`;
+    const cachedData = this.getCachedData(cachedDataKey);
+    if (cachedData !== null && !this.BNify(cachedData).isNaN()){
+      return cachedData;
+    }
+
+    const tokenFrom = new Token(ChainId.MAINNET, tokenConfigFrom.address, tokenConfigFrom.decimals);
+    const tokenTo = new Token(ChainId.MAINNET, tokenConfigDest.address, tokenConfigDest.decimals);
+
+    const pair = await Fetcher.fetchPairData(tokenFrom, tokenTo);
+    const route = new Route([pair], tokenTo);
+
+    let output = null;
+    if (route && route.midPrice){
+      output = this.BNify(route.midPrice.toSignificant(tokenConfigDest.decimals));
+      this.setCachedData(cachedDataKey,output);
+    }
+    return output;
+  }
+  getCompAPR = async (token,tokenConfig,cTokenIdleSupply=null,compConversionRate=null) => {
+    const COMPTokenConfig = this.getGlobalConfig(['govTokens','COMP']);
+    if (!COMPTokenConfig.enabled){
+      return false;
+    }
+
+    const cachedDataKey = `getCompAPR_${tokenConfig.idle.token}_${cTokenIdleSupply}_${compConversionRate}`;
+    const cachedData = this.getCachedData(cachedDataKey);
+    if (cachedData !== null && !this.BNify(cachedData).isNaN()){
+      return cachedData;
+    }
+
+    let compAPR = null;
+
+    const compDistribution = await this.getCompDistribution(tokenConfig,cTokenIdleSupply);
+    if (compDistribution){
+      const cTokenInfo = tokenConfig.protocols.find( p => (p.name === 'compound') );
+
+      const DAITokenConfig = this.getGlobalConfig(['stats','tokens','DAI']);
+        
+      // Get COMP conversion rate
+      if (!compConversionRate){
+        compConversionRate = await this.getUniswapConversionRate(DAITokenConfig,COMPTokenConfig);
+        if (!compConversionRate || compConversionRate.isNaN()){
+          compConversionRate = this.BNify(1);
+        }
+      }
+
+      const compValue = this.BNify(compConversionRate).times(compDistribution);
+
+      let compoundAllocation = null;
+
+      cTokenIdleSupply = await this.genericContractCall(cTokenInfo.token,'totalSupply');
+      if (cTokenIdleSupply){
+        let [exchangeRate,tokenDecimals] = await Promise.all([
+          this.genericContractCall(cTokenInfo.token,cTokenInfo.functions.exchangeRate.name,cTokenInfo.functions.exchangeRate.params),
+          this.getTokenDecimals(cTokenInfo.token)
+        ]);
+        if (exchangeRate){
+          exchangeRate = this.fixTokenDecimals(exchangeRate,cTokenInfo.decimals);
+          compoundAllocation = this.fixTokenDecimals(cTokenIdleSupply,tokenDecimals,exchangeRate);
+          // console.log('getCompAPR',compValue.toString(),cTokenIdleSupply.toString(),exchangeRate.toString(),tokenDecimals.toString(),compoundAllocation.toString());
+        }
+      }
+
+      if (compoundAllocation){
+        compoundAllocation = await this.convertTokenBalance(compoundAllocation,token,tokenConfig,false);
+        compAPR = compValue.div(compoundAllocation).times(100);
+
+        // console.log('getCompAPR',cTokenInfo.token,compConversionRate.toString(),compDistribution.toString(),compValue.toString(),cTokenIdleSupply.toString(),compoundAllocation.toString(),compAPR.toString()+'%');
+
+        this.setCachedData(cachedDataKey,compAPR);
+      }
+    }
+
+    return compAPR;
+  }
+  getCompDistribution = async (tokenConfig,cTokenIdleSupply=null) => {
+
+    const cachedDataKey = `getCompDistribution_${tokenConfig.idle.token}_${cTokenIdleSupply}`;
+    const cachedData = this.getCachedData(cachedDataKey);
+    if (cachedData !== null && !this.BNify(cachedData).isNaN()){
+      return cachedData;
+    }
+
+    const cTokenInfo = tokenConfig.protocols.find( p => (p.name === 'compound') );
+    if (cTokenInfo){
+
+      // Get COMP distribution speed and Total Supply
+      const [compSpeed,cTokenTotalSupply] = await Promise.all([
+        this.genericContractCall('Comptroller','compSpeeds',[cTokenInfo.address]),
+        this.genericContractCall(cTokenInfo.token,'totalSupply')
+      ]);
+
+      if (compSpeed && cTokenTotalSupply){
+
+        // Get Idle liquidity supply
+        if (!cTokenIdleSupply){
+          cTokenIdleSupply = await this.genericContractCall(cTokenInfo.token,'balanceOf',[tokenConfig.idle.address]);
+        }
+
+        if (cTokenIdleSupply){
+
+          // Calculate Idle supply percentage
+          const cTokenIdleSupplyPercentage = this.BNify(cTokenIdleSupply).div(this.BNify(cTokenTotalSupply));
+
+          // Get COMP distribution for Idle in a Year
+          const blocksPerYear = this.getGlobalConfig(['network','blocksPerYear']);
+
+          // Take 50% of distrubution for lenders side
+          const compDistribution = this.BNify(compSpeed).times(this.BNify(blocksPerYear)).div(1e18).div(2);
+
+          // console.log('getCompDistribution',cTokenInfo.token,this.BNify(compSpeed).div(1e18).toString(),cTokenTotalSupply.toString(),cTokenIdleSupply.toString(),cTokenIdleSupplyPercentage.times(100).toString()+'%',compDistribution.toString());
+
+          this.setCachedData(cachedDataKey,compDistribution);
+
+          return compDistribution;
+        }
+      }
+    }
+    return null;
+  }
+  getGovTokensBalances = async (address=null,convertToken='DAI') => {
     address = address ? address : this.props.tokenConfig.idle.address;
     const govTokens = this.getGlobalConfig(['govTokens']);
     const govTokensBalances = {}
+
     await this.asyncForEach(Object.keys(govTokens),async (token) => {
-      if (!govTokens[token].enabled){
+      
+      const govTokenConfig = govTokens[token];
+
+      if (!govTokenConfig.enabled){
         return;
       }
-      const govTokenBalance = await this.getProtocolBalance(token,address);
+
+      const govTokenTonfig = govTokens[token];
+
+      // Get gov token balance
+      let govTokenBalance = await this.getProtocolBalance(token,address);
+
       if (govTokenBalance){
-        govTokensBalances[token] = this.fixTokenDecimals(govTokenBalance,govTokens[token].decimals);
+        // Get gov token conversion rate
+        const fromTokenConfig = this.getGlobalConfig(['stats','tokens',convertToken]);
+        const tokenConversionRate = await this.getUniswapConversionRate(fromTokenConfig,govTokenTonfig);
+
+        // Fix token decimals and convert
+        govTokensBalances[token] = this.fixTokenDecimals(govTokenBalance,govTokens[token].decimals,tokenConversionRate);
+
+        // Initialize Total gov Tokens
+        if (!govTokensBalances.total){
+          govTokensBalances.total = this.BNify(0);
+        }
+
+        // Sum Total gov Tokens
+        govTokensBalances.total = govTokensBalances.total.plus(govTokensBalances[token]);
       }
     });
+
     return govTokensBalances;
   }
   getGovTokenUserBalance = async (govTokenConfig,account=null) => {
     account = account ? account : this.props.account;
     const idleTokenConfig = this.props.tokenConfig.idle;
     let [tokenBalance, govTokensIndexes, usersGovTokensIndexes] = await Promise.all([
-      this.getContractBalance(idleTokenConfig.token),
+      this.getContractBalance(idleTokenConfig.token,account),
       this.genericIdleCall('govTokensIndexes',[govTokenConfig.address]),
       this.genericIdleCall('usersGovTokensIndexes',[govTokenConfig.address,account]),
     ]);
@@ -2323,7 +2452,7 @@ class FunctionsUtil {
 
     return null;
   }
-  getAggregatedStats = async () => {
+  getAggregatedStats = async (addGovTokens=true) => {
     let avgAPR = this.BNify(0);
     let totalAUM = this.BNify(0);
     await this.asyncForEach(Object.keys(this.props.availableStrategies),async (strategy) => {
@@ -2331,8 +2460,8 @@ class FunctionsUtil {
       const availableTokens = this.props.availableStrategies[strategy];
       await this.asyncForEach(Object.keys(availableTokens),async (token) => {
         const tokenConfig = availableTokens[token];
-        const tokenAllocation = await this.getTokenAllocation(tokenConfig);
-        const tokenAprs = await this.getTokenAprs(tokenConfig,tokenAllocation);
+        const tokenAllocation = await this.getTokenAllocation(tokenConfig,false,addGovTokens);
+        const tokenAprs = await this.getTokenAprs(tokenConfig,tokenAllocation,addGovTokens);
         if (tokenAllocation && tokenAllocation.totalAllocation && !tokenAllocation.totalAllocation.isNaN()){
           const totalAllocation = await this.convertTokenBalance(tokenAllocation.totalAllocation,token,tokenConfig,isRisk);
           totalAUM = totalAUM.plus(totalAllocation);
@@ -2396,9 +2525,8 @@ class FunctionsUtil {
   convertTokenBalance = async (tokenBalance,token,tokenConfig,isRisk) => {
     // Check for USD conversion rate
     tokenBalance = this.BNify(tokenBalance);
-    const conversionRateField = this.getGlobalConfig(['stats','tokens',token,'conversionRateField']);
-    if (conversionRateField && tokenBalance.gt(0)){
-      const tokenUsdConversionRate = await this.getTokenConversionRate(tokenConfig,isRisk,conversionRateField);
+    if (tokenBalance.gt(0)){
+      const tokenUsdConversionRate = await this.getTokenConversionRate(tokenConfig,isRisk);
       if (tokenUsdConversionRate){
         tokenBalance = tokenBalance.times(tokenUsdConversionRate);
       }
@@ -2408,7 +2536,14 @@ class FunctionsUtil {
   /*
   Get idleToken conversion rate
   */
-  getTokenConversionRate = async (tokenConfig,isRisk,conversionRateField) => {
+  getTokenConversionRate = async (tokenConfig,isRisk,conversionRateField=null) => {
+
+    if (!conversionRateField){
+      conversionRateField = this.getGlobalConfig(['stats','tokens',tokenConfig.token,'conversionRateField']);
+      if (!conversionRateField){
+        return null;
+      }
+    }
 
     // Check for cached data
     const cachedDataKey = `tokenConversionRate_${tokenConfig.address}_${isRisk}_${conversionRateField}`;
@@ -2457,10 +2592,10 @@ class FunctionsUtil {
   /*
   Get idleTokens aggregated APR
   */
-  getTokenAprs = async (tokenConfig,tokenAllocation=false) => {
+  getTokenAprs = async (tokenConfig,tokenAllocation=false,addGovTokens=true) => {
 
     // Check for cached data
-    const cachedDataKey = `tokenAprs_${tokenConfig.idle.address}`;
+    const cachedDataKey = `tokenAprs_${tokenConfig.idle.address}_${addGovTokens}`;
     const cachedData = this.getCachedData(cachedDataKey);
     if (cachedData !== null){
       return cachedData;
@@ -2501,10 +2636,15 @@ class FunctionsUtil {
 
     if (tokenAllocation){
       tokenAprs.avgApr = this.getAvgApr(protocolsAprs,tokenAllocation.protocolsAllocations,tokenAllocation.totalAllocation);
-    }
 
-    // Add COMP APR
-    // const compAPR = await this.functionsUtil.getCompAPR(this.props.tokenConfig,this.functionsUtil.BNify(1),this.functionsUtil.BNify(135));
+      if (addGovTokens){
+        const compAPR = await this.getCompAPR(tokenConfig.token,tokenConfig);
+
+        if (compAPR){
+          tokenAprs.avgApr = tokenAprs.avgApr.plus(compAPR);
+        }
+      }
+    }
 
     return this.setCachedData(cachedDataKey,tokenAprs);
   }
