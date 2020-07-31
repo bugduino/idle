@@ -1853,23 +1853,12 @@ class FunctionsUtil {
         }
       break;
       case 'apy':
-        let [tokenAPR,compAPR] = await Promise.all([
-          this.loadAssetField('apr',token,tokenConfig,account,true),
-          this.getCompAPR(token,tokenConfig)
-        ]);
+        const tokenApys = await this.getTokenAprs(tokenConfig,false,addGovTokens);
 
-        if (tokenAPR !== null){
-          if (!tokenAPR.isNaN()){
+        // console.log('apr',token,tokenApys.avgApr ? tokenApys.avgApr.toString() : null,tokenApys.avgApy ? tokenApys.avgApy.toString() : null);
 
-            let tokenAPY = this.apr2apy(tokenAPR.div(100)).times(100);
-            // console.log('apy',token,tokenAPR ? tokenAPR.toString() : null,compAPR ? compAPR.toString() : null,tokenAPY.toString());
-
-            // if (compAPR && addGovTokens){
-            //   tokenAPY = tokenAPY.plus(compAPR);
-            // }
-
-            output = tokenAPY;
-          }
+        if (tokenApys && tokenApys.avgApy !== null){
+          output = tokenApys.avgApy;
         }
       break;
       case 'avgAPY':
@@ -2382,7 +2371,7 @@ class FunctionsUtil {
           const blocksPerYear = this.getGlobalConfig(['network','blocksPerYear']);
 
           // Take 50% of distrubution for lenders side
-          const compDistribution = this.BNify(compSpeed).times(this.BNify(blocksPerYear)).div(1e18).div(2);
+          const compDistribution = this.BNify(compSpeed).times(this.BNify(blocksPerYear)).div(1e18);
 
           // console.log('getCompDistribution',cTokenInfo.token,this.BNify(compSpeed).div(1e18).toString(),cTokenTotalSupply.toString(),cTokenIdleSupply.toString(),cTokenIdleSupplyPercentage.times(100).toString()+'%',compDistribution.toString());
 
@@ -2619,31 +2608,39 @@ class FunctionsUtil {
     const aprs = Aprs.aprs;
 
     const protocolsAprs = {};
+    const protocolsApys = {};
 
-    tokenConfig.protocols.forEach((protocolInfo,i) => {
+    await this.asyncForEach(tokenConfig.protocols,async (protocolInfo,i) => {
       const protocolAddr = protocolInfo.address.toString().toLowerCase();
       const addrIndex = addresses.indexOf(protocolAddr);
       if ( addrIndex !== -1 ) {
-        const protocolApr = aprs[addrIndex];
-        protocolsAprs[protocolAddr] = this.BNify(+this.toEth(protocolApr));
+        let protocolApr = this.BNify(+this.toEth(aprs[addrIndex]));
+        let protocolApy = this.apr2apy(protocolApr.div(100)).times(100);
+
+        if (addGovTokens && protocolInfo.name === 'compound'){
+          const compAPR = await this.getCompAPR(tokenConfig.token,tokenConfig);
+
+          if (compAPR){
+            protocolApr = protocolApr.plus(compAPR);
+            protocolApy = protocolApy.plus(compAPR); 
+          }
+        }
+
+        protocolsApys[protocolAddr] = protocolApy;
+        protocolsAprs[protocolAddr] = protocolApr;
       }
     });
 
     const tokenAprs = {
       avgApr: null,
-      protocolsAprs
+      avgApy: null,
+      protocolsAprs,
+      protocolsApys
     };
 
     if (tokenAllocation){
       tokenAprs.avgApr = this.getAvgApr(protocolsAprs,tokenAllocation.protocolsAllocations,tokenAllocation.totalAllocation);
-
-      if (addGovTokens){
-        const compAPR = await this.getCompAPR(tokenConfig.token,tokenConfig);
-
-        if (compAPR){
-          tokenAprs.avgApr = tokenAprs.avgApr.plus(compAPR);
-        }
-      }
+      tokenAprs.avgApy = this.getAvgApr(protocolsApys,tokenAllocation.protocolsAllocations,tokenAllocation.totalAllocation);
     }
 
     return this.setCachedData(cachedDataKey,tokenAprs);
