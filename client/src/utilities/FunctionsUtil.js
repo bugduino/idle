@@ -2365,7 +2365,7 @@ class FunctionsUtil {
         if (cTokenIdleSupply){
 
           // Calculate Idle supply percentage
-          const cTokenIdleSupplyPercentage = this.BNify(cTokenIdleSupply).div(this.BNify(cTokenTotalSupply));
+          // const cTokenIdleSupplyPercentage = this.BNify(cTokenIdleSupply).div(this.BNify(cTokenTotalSupply));
 
           // Get COMP distribution for Idle in a Year
           const blocksPerYear = this.getGlobalConfig(['network','blocksPerYear']);
