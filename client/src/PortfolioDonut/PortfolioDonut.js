@@ -79,6 +79,16 @@ class PortfolioDonut extends Component {
       }
     });
 
+    // Add Gov Tokens
+    const govTokensUserBalance = await this.functionsUtil.getGovTokensUserBalance(this.props.account,this.props.availableTokens,'DAI');
+    if (govTokensUserBalance){
+      Object.keys(govTokensUserBalance).forEach( govToken => {
+        const govTokenBalance = this.functionsUtil.BNify(govTokensUserBalance[govToken]);
+        portfolio[govToken] = govTokenBalance;
+        totalFunds = totalFunds.plus(govTokenBalance);
+      });
+    }
+
     const chartData = [];
 
     Object.keys(portfolio).forEach(token => {

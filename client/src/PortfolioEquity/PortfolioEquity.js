@@ -1,11 +1,11 @@
 import theme from '../theme';
 import { Line } from '@nivo/line';
-import { Flex, Text } from "rimble-ui";
 import React, { Component } from 'react';
 // import { linearGradientDef } from '@nivo/core'
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import GenericChart from '../GenericChart/GenericChart';
-import DashboardCard from '../DashboardCard/DashboardCard';
+import ChartCustomTooltip from '../ChartCustomTooltip/ChartCustomTooltip';
+import ChartCustomTooltipRow from '../ChartCustomTooltipRow/ChartCustomTooltipRow';
 
 class PortfolioEquity extends Component {
   state = {
@@ -150,6 +150,7 @@ class PortfolioEquity extends Component {
     let maxChartValue = null;
     let aggregatedBalance = null;
     const aggregatedBalancesKeys = {};
+    const tokensBalancesPerDate = {};
     const currTimestamp = parseInt(new Date().getTime()/1000)+86400;
 
     const tokensData = {};
@@ -165,11 +166,10 @@ class PortfolioEquity extends Component {
 
     for (let timeStamp=firstTxTimestamp;timeStamp<=currTimestamp;timeStamp+=this.props.frequencySeconds){
 
-      timeStamp = Math.min(currTimestamp,timeStamp);
-
-      aggregatedBalance = this.functionsUtil.BNify(0);
-
       const foundBalances = {};
+      const tokensBalances = {};
+      timeStamp = Math.min(currTimestamp,timeStamp);
+      aggregatedBalance = this.functionsUtil.BNify(0);
 
       // await this.functionsUtil.asyncForEach(Object.keys(tokensBalance),async (token) => {
       // eslint-disable-next-line
@@ -249,7 +249,8 @@ class PortfolioEquity extends Component {
               lastTxBalance = lastTxBalance.times(tokenUsdConversionRate);
             }
           }
-
+          
+          tokensBalances[token] = lastTxBalance;
           aggregatedBalance = aggregatedBalance.plus(lastTxBalance);
           // console.log('3-',this.functionsUtil.strToMoment(timeStamp*1000).format('DD/MM/YYYY HH:mm'),token,lastTx.idleTokens.toString(),lastTx.balance.toString(),(tokenUsdConversionRate ? tokenUsdConversionRate.toString() : null),lastTxBalance.toString(),lastTx.tokenPrice.toString(),aggregatedBalance.toString());
         }
@@ -273,6 +274,7 @@ class PortfolioEquity extends Component {
         aggregatedBalance = parseFloat(parseFloat(aggregatedBalance.toFixed(6)));
 
         aggregatedBalancesKeys[formattedDate] = aggregatedBalance;
+        tokensBalancesPerDate[formattedDate] = tokensBalances;
 
         minChartValue = minChartValue === null ? aggregatedBalance : Math.min(minChartValue,aggregatedBalance);
         maxChartValue = maxChartValue === null ? aggregatedBalance : Math.max(maxChartValue,aggregatedBalance);
@@ -286,8 +288,17 @@ class PortfolioEquity extends Component {
 
     const aggregatedBalances = Object.keys(aggregatedBalancesKeys).map(date => ({
       x:date,
-      y:aggregatedBalancesKeys[date]
+      y:aggregatedBalancesKeys[date],
+      balances:tokensBalancesPerDate[date]
     }));
+
+    let itemIndex = 0;
+    aggregatedBalances.forEach( (item,index) => {
+      const itemPos = Math.floor(itemIndex/aggregatedBalances.length*100);
+      aggregatedBalances[index].itemPos = itemPos;
+      itemIndex++;
+    });
+
     /*
     aggregatedBalances.push({
       x:momentDate.format('YYYY/MM/DD HH:mm'),
@@ -406,41 +417,38 @@ class PortfolioEquity extends Component {
       fill:[{ match: '*', id: 'gradientA' }],
       */
       margin: this.props.isMobile ? { top: 20, right: 25, bottom: 25, left: 20 } : { top: 30, right: 50, bottom: 45, left: 50 },
-      sliceTooltip:(sliceData) => {
-        const { slice: {points} } = sliceData;
-        const point = points[0];
+      sliceTooltip:(slideData) => {
+        const { slice } = slideData;
+        const point = slice.points[0];
         return (
-          <DashboardCard
-            cardProps={{
-              py:2,
-              px:3,
-              left:'-110%'
-            }}
+          <ChartCustomTooltip
+            point={point}
           >
-            <Flex
-              width={1}
-              flexDirection={'column'}
-            >
-              <Text
-                mb={2}
-                fontSize={1}
-                fontWeight={3}
-                color={'cellText'}
-                textAlign={'right'}
-              >
-                {point.data.xFormatted}
-              </Text>
-              <Text
-                mb={2}
-                fontWeight={3}
-                fontSize={[1,2]}
-                textAlign={'right'}
-                color={'copyColor'}
-              >
-                 {point.data.yFormatted} {point.serieId}
-              </Text>
-            </Flex>
-          </DashboardCard>
+            <ChartCustomTooltipRow
+              label={point.serieId}
+              color={point.color}
+              value={`${point.data.yFormatted} $`}
+            />
+            {
+            typeof point.data.balances === 'object' && Object.keys(point.data.balances).length &&
+              Object.keys(point.data.balances).map(token => {
+                const color = this.functionsUtil.getGlobalConfig(['stats','tokens',token,'color','hex']);
+                const balance = point.data.balances[token];
+                let formattedBalance = this.functionsUtil.formatMoney(balance,2);
+                if (parseFloat(balance)>=0.01){
+                  return (
+                    <ChartCustomTooltipRow
+                      label={token}
+                      color={color}
+                      key={`row_${token}`}
+                      value={`${formattedBalance} $`}
+                    />
+                  );
+                }
+                return null;
+              })
+            }
+          </ChartCustomTooltip>
         );
       }
     };

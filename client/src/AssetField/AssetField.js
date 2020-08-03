@@ -83,16 +83,12 @@ class AssetField extends Component {
     if (this.props.token){
       switch (fieldName){
         case 'tokenBalance':
-          let tokenBalance = this.props.account ? await this.functionsUtil.getTokenBalance(this.props.tokenConfig.token,this.props.account) : false;
-          if (!tokenBalance){
-            tokenBalance = '-';
-          }
-          if (setState){
+          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account);
+          if (output && setState){
             this.setStateSafe({
-              tokenBalance:tokenBalance.toString()
-            });
+              tokenBalance:output.toString()
+            })
           }
-          output = tokenBalance;
         break;
         case 'amountToMigrate':
           const {
@@ -107,70 +103,48 @@ class AssetField extends Component {
           output = oldContractBalanceFormatted;
         break;
         case 'amountLent':
-          const amountLents = this.props.account ? await this.functionsUtil.getAmountLent([this.props.token],this.props.account) : false;
-          let amountLent = '-';
-          if (amountLents && amountLents[this.props.token]){
-            amountLent = amountLents[this.props.token];
-          }
-          if (setState){
+          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account);
+          if (output && setState){
             this.setStateSafe({
-              amountLent:amountLent.toString()
-            });
+              amountLent:output.toString()
+            })
           }
-          output = amountLent;
         break;
         case 'idleTokenBalance':
-          let idleTokenBalance1 = this.props.account ? await this.functionsUtil.getTokenBalance(this.props.tokenConfig.idle.token,this.props.account) : false;
-          if (!idleTokenBalance1){
-            idleTokenBalance1 = '-';
-          }
-          if (setState){
+          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account);
+          if (output && setState){
             this.setStateSafe({
-              idleTokenBalance:idleTokenBalance1.toString()
-            });
+              idleTokenBalance:output.toString()
+            })
           }
-          output = idleTokenBalance1;
         break;
         case 'redeemableBalanceCounter':
-          const [redeemableBalanceStart,tokenAPY1] = await Promise.all([
-            this.loadField('redeemableBalance'),
-            this.loadField('apy')
-          ]);
-          if (redeemableBalanceStart && tokenAPY1){
-            const earningPerYear = this.functionsUtil.BNify(redeemableBalanceStart).times(this.functionsUtil.BNify(tokenAPY1).div(100));
-            const redeemableBalanceEnd = this.functionsUtil.BNify(redeemableBalanceStart).plus(this.functionsUtil.BNify(earningPerYear));
+          const {
+            redeemableBalanceEnd,
+            redeemableBalanceStart
+          } = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account);
 
+          if (redeemableBalanceStart && redeemableBalanceEnd){
             if (setState){
               this.setStateSafe({
                 redeemableBalanceEnd,
                 redeemableBalanceStart
               });
             }
-            return {
+
+            output = {
               redeemableBalanceEnd,
               redeemableBalanceStart
             };
           }
         break;
         case 'earnings':
-          let [amountLent1,redeemableBalance1] = await Promise.all([
-            this.loadField('amountLent'),
-            this.loadField('redeemableBalance')
-          ]);
-          if (!amountLent1){
-            amountLent1 = this.functionsUtil.BNify(0);
-          }
-          if (!redeemableBalance1){
-            redeemableBalance1 = this.functionsUtil.BNify(0);
-          }
-          const earnings = redeemableBalance1.minus(amountLent1);
-
-          if (setState){
+          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account);
+          if (output && setState){
             this.setStateSafe({
-              earnings:earnings.toString()
-            });
+              earnings:output.toString()
+            })
           }
-          output = earnings;
         break;
         case 'earningsCounter':
           const [amountLent2,idleTokenPrice3,avgBuyPrice2,tokenAPY2] = await Promise.all([
@@ -198,19 +172,11 @@ class AssetField extends Component {
           }
         break;
         case 'redeemableBalance':
-          const [idleTokenBalance2,idleTokenPrice] = await Promise.all([
-            this.loadField('idleTokenBalance'),
-            this.functionsUtil.genericContractCall(this.props.tokenConfig.idle.token, 'tokenPrice')
-          ]);
-          if (idleTokenBalance2 && idleTokenPrice){
-            const redeemableBalance = this.functionsUtil.fixTokenDecimals(idleTokenBalance2.times(idleTokenPrice),this.props.tokenConfig.decimals);
-
-            if (setState){
-              this.setStateSafe({
-                redeemableBalance:redeemableBalance.toString()
-              });
-            }
-            output = redeemableBalance;
+          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account);
+          if (output && setState){
+            this.setStateSafe({
+              redeemableBalance:output.toString()
+            })
           }
         break;
         case 'score':
@@ -231,23 +197,13 @@ class AssetField extends Component {
           }
         break;
         case 'earningsPerc':
-          const [avgBuyPrice,idleTokenPrice2] = await Promise.all([
-            this.functionsUtil.getAvgBuyPrice([this.props.token],this.props.account),
-            this.functionsUtil.getIdleTokenPrice(this.props.tokenConfig)
-          ]);
-
-          let earningsPerc = 0;
-          if (avgBuyPrice && avgBuyPrice[this.props.token] && avgBuyPrice[this.props.token].gt(0) && idleTokenPrice2){
-            earningsPerc = idleTokenPrice2.div(avgBuyPrice[this.props.token]).minus(1).times(100);
-          }
-
-          if (setState){
+          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account);
+          if (output && setState){
             this.setStateSafe({
-              earningsPercDirection:parseFloat(earningsPerc)>0 ? 'up' : 'down',
-              earningsPerc:parseFloat(earningsPerc).toFixed(decimals)
-            });
+              earningsPercDirection:parseFloat(output)>0 ? 'up' : 'down',
+              earningsPerc:parseFloat(output).toFixed(decimals)
+            })
           }
-          output = earningsPerc;
         break;
         case 'apr':
           output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account);
@@ -318,48 +274,51 @@ class AssetField extends Component {
           let aprChartData = null;
           const cachedDataKey = `aprChart_${this.props.tokenConfig.address}_${isRisk}`;
           const cachedData = this.functionsUtil.getCachedData(cachedDataKey);
+
+          aprChartData = [{
+            id:this.props.token,
+            color: this.props.color ? this.props.color : 'hsl('+this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.token,'color','hsl']).join(',')+')',
+            data: []
+          }];
+
           if (cachedData !== null){
             aprChartData = cachedData;
           } else {
-            let apiResultsAprChart = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,isRisk,aprChartStartTimestamp,null,false,43200);
-            aprChartData = [{
-              id:this.props.token,
-              color: this.props.color ? this.props.color : 'hsl('+this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.token,'color','hsl']).join(',')+')',
-              data: []
-            }];
 
-            const frequencySeconds = this.functionsUtil.getFrequencySeconds('hour',12);
-
-            let prevTimestamp = null;
-            apiResultsAprChart.forEach((d,i) => {
-              if (prevTimestamp === null || d.timestamp-prevTimestamp>=frequencySeconds){
-                const x = this.functionsUtil.strToMoment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
-                const y = parseFloat(this.functionsUtil.fixTokenDecimals(d.idleRate,18));
-                aprChartData[0].data.push({ x, y });
-                prevTimestamp = d.timestamp;
-              }
-            });
-
-            /*
             // FAKE CHART DATA
-            aprChartData[0].data = [];
-            const startTimestamp = new Date().getTime();
-            let y = 20;
-            for (var i=0; i<=16; i++) {
-              const mDate = this.functionsUtil.strToMoment(startTimestamp).add(i,'day');
-              const x = mDate.format("YYYY/MM/DD HH:mm");
-              // Grow
-              if ((i>=5 && i<=10) || (i>=13)){
-                y+=Math.random()*4+2; // Risk
-                // y+=Math.random()*7+4; // Best
-              // Decrease
-              } else {
-                y-=Math.random()*3+1; // Risk
-                // y-=Math.random()*3+1; // Best
+            if (this.props.token === 'COMP'){
+              aprChartData[0].data = [];
+              const startTimestamp = new Date().getTime();
+              let y = 20;
+              for (var i=0; i<=16; i++) {
+                const mDate = this.functionsUtil.strToMoment(startTimestamp).add(i,'day');
+                const x = mDate.format("YYYY/MM/DD HH:mm");
+                // Grow
+                if ((i>=5 && i<=10) || (i>=13)){
+                  y+=Math.random()*4+2; // Risk
+                  // y+=Math.random()*7+4; // Best
+                // Decrease
+                } else {
+                  y-=Math.random()*3+1; // Risk
+                  // y-=Math.random()*3+1; // Best
+                }
+                aprChartData[0].data.push({x,y});
               }
-              aprChartData[0].data.push({x,y});
+            } else {
+              let apiResultsAprChart = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,isRisk,aprChartStartTimestamp,null,false,43200);
+
+              const frequencySeconds = this.functionsUtil.getFrequencySeconds('hour',12);
+
+              let prevTimestamp = null;
+              apiResultsAprChart.forEach((d,i) => {
+                if (prevTimestamp === null || d.timestamp-prevTimestamp>=frequencySeconds){
+                  const x = this.functionsUtil.strToMoment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
+                  const y = parseFloat(this.functionsUtil.fixTokenDecimals(d.idleRate,18));
+                  aprChartData[0].data.push({ x, y });
+                  prevTimestamp = d.timestamp;
+                }
+              });
             }
-            */
 
             this.functionsUtil.setCachedData(cachedDataKey,aprChartData);
           }

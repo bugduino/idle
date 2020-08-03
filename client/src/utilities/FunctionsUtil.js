@@ -1817,6 +1817,7 @@ class FunctionsUtil {
   loadAssetField = async (field,token,tokenConfig,account,addGovTokens=true) => {
 
     let output = null;
+    const govTokens = this.getGlobalConfig(['govTokens']);
 
     switch (field){
       case 'earningsPerc':
@@ -1837,19 +1838,26 @@ class FunctionsUtil {
         }
       break;
       case 'pool':
-        const tokenAllocation = await this.getTokenAllocation(tokenConfig,false,addGovTokens);
-
-        if (tokenAllocation && tokenAllocation.totalAllocation){
-          output = tokenAllocation.totalAllocation;
+        if (Object.keys(govTokens).includes(token)){
+          output = await this.getGovTokenPool(token);
+        } else {
+          const tokenAllocation = await this.getTokenAllocation(tokenConfig,false,addGovTokens);
+          if (tokenAllocation && tokenAllocation.totalAllocation){
+            output = tokenAllocation.totalAllocation;
+          }
         }
       break;
       case 'apr':
-        const tokenAprs = await this.getTokenAprs(tokenConfig,false,addGovTokens);
-
-        // console.log('apr',token,tokenAprs.avgApr ? tokenAprs.avgApr.toString() : null,compAPR ? compAPR.toString() : null);
-
-        if (tokenAprs && tokenAprs.avgApr !== null){
-          output = tokenAprs.avgApr;
+        switch (token){
+          case 'COMP':
+            output = await this.getCompAvgApr();
+          break;
+          default:
+            const tokenAprs = await this.getTokenAprs(tokenConfig,false,addGovTokens);
+            if (tokenAprs && tokenAprs.avgApr !== null){
+              output = tokenAprs.avgApr;
+            }
+          break;
         }
       break;
       case 'apy':
@@ -1883,10 +1891,37 @@ class FunctionsUtil {
           output = amountLents[token];
         }
       break;
+      case 'tokenBalance':
+        if (Object.keys(govTokens).includes(token)){
+          const govTokenConfig = govTokens[token];
+          output = await this.getGovTokenUserBalance(govTokenConfig,account);
+        } else {
+          let tokenBalance = account ? await this.getTokenBalance(tokenConfig.token,account) : false;
+          if (!tokenBalance || tokenBalance.isNaN()){
+            tokenBalance = '-';
+          }
+          output = tokenBalance;
+        }
+      break;
       case 'idleTokenBalance':
         const idleTokenBalance = account ? await this.getTokenBalance(tokenConfig.idle.token,account) : false;
         if (idleTokenBalance){
           output = idleTokenBalance;
+        }
+      break;
+      case 'redeemableBalanceCounter':
+        const [redeemableBalanceStart,tokenAPY1] = await Promise.all([
+          this.loadAssetField('redeemableBalance',token,tokenConfig,account),
+          this.loadAssetField('apy',token,tokenConfig,account)
+        ]);
+        if (redeemableBalanceStart && tokenAPY1){
+          const earningPerYear = this.BNify(redeemableBalanceStart).times(this.BNify(tokenAPY1).div(100));
+          const redeemableBalanceEnd = this.BNify(redeemableBalanceStart).plus(this.BNify(earningPerYear));
+
+          output = {
+            redeemableBalanceEnd,
+            redeemableBalanceStart
+          };
         }
       break;
       case 'redeemableBalance':
@@ -2147,10 +2182,15 @@ class FunctionsUtil {
     }
   }
   genericContractCall = async (contractName, methodName, params = [], callParams = {}, blockNumber = 'latest') => {
-    let contract = this.getContractByName(contractName);
+    const contract = this.getContractByName(contractName);
 
     if (!contract) {
       this.customLogError('Wrong contract name', contractName);
+      return null;
+    }
+
+    if (!contract.methods[methodName]) {
+      this.customLogError('Wrong method name', methodName);
       return null;
     }
 
@@ -2180,6 +2220,10 @@ class FunctionsUtil {
   Get idleToken allocation between protocols
   */
   getTokenAllocation = async (tokenConfig,protocolsAprs=false,addGovTokens=true) => {
+
+    if (!tokenConfig.idle){
+      return false;
+    }
 
     // Check for cached data
     const cachedDataKey = `tokenAllocation_${tokenConfig.idle.address}`;
@@ -2383,12 +2427,57 @@ class FunctionsUtil {
     }
     return null;
   }
-  getGovTokensBalances = async (address=null,convertToken='DAI') => {
-    address = address ? address : this.props.tokenConfig.idle.address;
+  getCompAvgApr = async (availableTokens=null) => {
+    if (!availableTokens){
+      availableTokens = this.props.availableStrategies[this.props.selectedStrategy];
+    }
+    let output = this.BNify(0);
+    let totalAllocation = this.BNify(0);
+    await this.asyncForEach(Object.keys(availableTokens),async (token) => {
+      const tokenConfig = availableTokens[token];
+      const [compApr,tokenAllocation] = await Promise.all([
+        this.getCompAPR(token,tokenConfig),
+        this.getTokenAllocation(tokenConfig,false,false)
+      ]);
+      
+      if (compApr && tokenAllocation){
+        output = output.plus(compApr.times(tokenAllocation.totalAllocation));
+        totalAllocation = totalAllocation.plus(tokenAllocation.totalAllocation);
+        // console.log(token,compApr.toString(),tokenAllocation.totalAllocation.toString(),output.toString(),totalAllocation.toString());
+      }
+    });
+
+    output = output.div(totalAllocation);
+
+    return output;
+  }
+  getGovTokenPool = async (govToken=null,availableTokens=null,convertToken=null) => {
+    let output = this.BNify(0);
+    if (!availableTokens){
+      availableTokens = this.props.availableStrategies[this.props.selectedStrategy];
+    }
+    await this.asyncForEach(Object.keys(availableTokens),async (token) => {
+      const tokenConfig = availableTokens[token];
+      const enabledTokens = govToken ? [govToken] : null;
+      const compTokenBalance = await this.getGovTokensBalances(tokenConfig.idle.address,convertToken,enabledTokens);
+      if (compTokenBalance && compTokenBalance.total){
+        output = output.plus(compTokenBalance.total);
+      }
+    });
+    return output;
+  }
+  getGovTokensBalances = async (address=null,convertToken='DAI',enabledTokens=null) => {
+    if (!address){
+      address = this.props.tokenConfig.idle.address;
+    }
     const govTokens = this.getGlobalConfig(['govTokens']);
     const govTokensBalances = {}
 
     await this.asyncForEach(Object.keys(govTokens),async (token) => {
+
+      if (enabledTokens && !enabledTokens.includes(token)){
+        return;
+      }
       
       const govTokenConfig = govTokens[token];
 
@@ -2396,15 +2485,16 @@ class FunctionsUtil {
         return;
       }
 
-      const govTokenTonfig = govTokens[token];
-
       // Get gov token balance
       let govTokenBalance = await this.getProtocolBalance(token,address);
 
       if (govTokenBalance){
         // Get gov token conversion rate
-        const fromTokenConfig = this.getGlobalConfig(['stats','tokens',convertToken]);
-        const tokenConversionRate = await this.getUniswapConversionRate(fromTokenConfig,govTokenTonfig);
+        let tokenConversionRate = null;
+        if (convertToken){
+          const fromTokenConfig = this.getGlobalConfig(['stats','tokens',convertToken]);
+          tokenConversionRate = await this.getUniswapConversionRate(fromTokenConfig,govTokenConfig);
+        }
 
         // Fix token decimals and convert
         govTokensBalances[token] = this.fixTokenDecimals(govTokenBalance,govTokens[token].decimals,tokenConversionRate);
@@ -2421,25 +2511,70 @@ class FunctionsUtil {
 
     return govTokensBalances;
   }
-  getGovTokenUserBalance = async (govTokenConfig,account=null) => {
-    account = account ? account : this.props.account;
-    const idleTokenConfig = this.props.tokenConfig.idle;
-    let [tokenBalance, govTokensIndexes, usersGovTokensIndexes] = await Promise.all([
-      this.getContractBalance(idleTokenConfig.token,account),
-      this.genericIdleCall('govTokensIndexes',[govTokenConfig.address]),
-      this.genericIdleCall('usersGovTokensIndexes',[govTokenConfig.address,account]),
-    ]);
-
-    if (tokenBalance && govTokensIndexes && usersGovTokensIndexes){
-      tokenBalance = this.BNify(tokenBalance);
-      govTokensIndexes = this.BNify(govTokensIndexes);
-      usersGovTokensIndexes = this.BNify(usersGovTokensIndexes);
-
-      const normalizedTokenDecimals = this.normalizeTokenDecimals(govTokenConfig.decimals);
-      return tokenBalance.times(govTokensIndexes.minus(usersGovTokensIndexes)).div(normalizedTokenDecimals);
+  getGovTokensUserBalance = async (account=null,availableTokens=null,convertToken=null) => {
+    if (!account){
+      account = this.props.account;
+    }
+    if (!availableTokens){
+      availableTokens = this.props.availableStrategies[this.props.selectedStrategy];
     }
 
-    return null;
+    const output = {};
+    const govTokens = this.getGlobalConfig(['govTokens']);
+
+    await this.asyncForEach(Object.keys(govTokens),async (token) => {
+      const govTokenConfig = govTokens[token];
+      if (!govTokenConfig.enabled){
+        return;
+      }
+      let govTokenBalance = await this.getGovTokenUserBalance(govTokenConfig,account,availableTokens,convertToken);
+      if (govTokenBalance){
+        output[token] = govTokenBalance;
+      }
+    });
+
+    return output;
+  }
+  getGovTokenUserBalance = async (govTokenConfig,account=null,availableTokens=null,convertToken=null) => {
+    if (!account){
+      account = this.props.account;
+    }
+    if (!availableTokens){
+      availableTokens = this.props.availableStrategies[this.props.selectedStrategy];
+    }
+
+    let output = this.BNify(0);
+
+    await this.asyncForEach(Object.keys(availableTokens),async (token) => {
+      const idleTokenConfig = availableTokens[token].idle;
+      let [tokenBalance, govTokensIndexes, usersGovTokensIndexes] = await Promise.all([
+        this.getContractBalance(idleTokenConfig.token,account),
+        this.genericContractCall(idleTokenConfig.token,'govTokensIndexes',[govTokenConfig.address]),
+        this.genericContractCall(idleTokenConfig.token,'usersGovTokensIndexes',[govTokenConfig.address,account]),
+      ]);
+
+      if (tokenBalance && govTokensIndexes && usersGovTokensIndexes){
+        tokenBalance = this.BNify(tokenBalance);
+        govTokensIndexes = this.BNify(govTokensIndexes);
+        usersGovTokensIndexes = this.BNify(usersGovTokensIndexes);
+
+        // Get gov token conversion rate
+        let tokenConversionRate = null;
+        if (convertToken){
+          const fromTokenConfig = this.getGlobalConfig(['stats','tokens',convertToken]);
+          if (fromTokenConfig){
+            tokenConversionRate = await this.getUniswapConversionRate(fromTokenConfig,govTokenConfig);
+          }
+        }
+
+        let govTokenBalance = tokenBalance.times(govTokensIndexes.minus(usersGovTokensIndexes));
+        govTokenBalance = this.fixTokenDecimals(govTokenBalance,govTokenConfig.decimals,tokenConversionRate);
+
+        output = output.plus(govTokenBalance);
+      }
+    });
+
+    return output;
   }
   getAggregatedStats = async (addGovTokens=true) => {
     let avgAPR = this.BNify(0);
@@ -2582,6 +2717,10 @@ class FunctionsUtil {
   Get idleTokens aggregated APR
   */
   getTokenAprs = async (tokenConfig,tokenAllocation=false,addGovTokens=true) => {
+
+    if (!tokenConfig.idle){
+      return false;
+    }
 
     // Check for cached data
     const cachedDataKey = `tokenAprs_${tokenConfig.idle.address}_${addGovTokens}`;

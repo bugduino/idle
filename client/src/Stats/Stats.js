@@ -39,13 +39,13 @@ class Stats extends Component {
     minStartTime:null,
     endTimestamp:null,
     showAdvanced:true,
+    govTokensPool:null,
     quickSelection:null,
     startTimestamp:null,
     endTimestampObj:null,
     shouldRebalance:null,
     carouselOffsetLeft:0,
     startTimestampObj:null,
-    govTokensBalances:null,
     apiResults_unfiltered:null,
     dateRangeModalOpened:false
   };
@@ -353,11 +353,10 @@ class Stats extends Component {
       }
     });
 
-    const govTokensBalances = await this.functionsUtil.getGovTokensBalances(this.props.tokenConfig.idle.address);
-
     // Add gov tokens balance to AUM
-    if (govTokensBalances.total){
-      aum = aum.plus(govTokensBalances.total);
+    const govTokensPool = await this.functionsUtil.getGovTokenPool(null,null,'DAI');
+    if (govTokensPool){
+      aum = aum.plus(govTokensPool);
     }
 
     // Format AUM
@@ -370,7 +369,7 @@ class Stats extends Component {
       delta,
       apiResults,
       rebalances,
-      govTokensBalances,
+      govTokensPool,
       apiResults_unfiltered
     });
   }

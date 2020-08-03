@@ -214,6 +214,15 @@ class StrategyPage extends Component {
   }
 
   render() {
+    /*
+    const govTokens = this.functionsUtil.getGlobalConfig(['govTokens']);
+    const availableGovTokens = Object.keys(govTokens).reduce((enabledTokens,token) => {
+      if (govTokens[token].enabled){
+        enabledTokens[token] = govTokens[token];
+      }
+      return enabledTokens;
+    },{});
+    */
 
     const riskScore = this.functionsUtil.getGlobalConfig(['messages','riskScore']);
 
@@ -852,6 +861,97 @@ class StrategyPage extends Component {
                   }
                 </Flex>
               </Flex>
+              {
+                /*
+                Object.keys(availableGovTokens).length>0 && 
+                  <Flex
+                    width={1}
+                    id="earnings-estimation"
+                    flexDirection={'column'}
+                  >
+                    <Title my={[3,4]}>Yield Farming</Title>
+                    <AssetsList
+                      enabledTokens={Object.keys(availableGovTokens)}
+                      handleClick={(props) => {}}
+                      cols={[
+                        {
+                          title:'CURRENCY',
+                          props:{
+                            width:[0.3,0.15]
+                          },
+                          fields:[
+                            {
+                              name:'icon',
+                              props:{
+                                mr:2,
+                                height:['1.4em','2.3em']
+                              }
+                            },
+                            {
+                              name:'tokenName'
+                            }
+                          ]
+                        },
+                        {
+                          title:'POOL',
+                          props:{
+                            width:[0.24, 0.19],
+                          },
+                          fields:[
+                            {
+                              name:'pool',
+                              props:{
+                                decimals:2
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          title:'APR',
+                          props:{
+                            width:[0.23,0.19],
+                          },
+                          fields:[
+                            {
+                              name:'apr'
+                            }
+                          ]
+                        },
+                        {
+                          title:'BALANCE',
+                          props:{
+                            width:[0.23,0.19],
+                            justifyContent:['center','flex-start']
+                          },
+                          fields:[
+                            {
+                              name:'balance'
+                            }
+                          ]
+                        },
+                        {
+                          title:'APR LAST WEEK',
+                          mobile:false,
+                          props:{
+                            width: 0.28,
+                          },
+                          parentProps:{
+                            width:1,
+                            pr:[2,4]
+                          },
+                          fields:[
+                            {
+                              name:'aprChart',
+                            }
+                          ]
+                        },
+                      ]}
+                      {...this.props}
+                      availableTokens={availableGovTokens}
+                    />
+                  </Flex>
+                */
+              }
               {
                 this.state.depositedTokens.length>0 &&
                   <Flex

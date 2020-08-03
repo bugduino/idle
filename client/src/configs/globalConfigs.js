@@ -322,9 +322,9 @@ const globalConfigs = {
         decimals:18,
         enabled:true,
         color:{
-          hex:'#eb9444',
-          rgb:[235, 148, 68],
-          hsl:['29', '81%', '59%']
+          hex:'#00d395',
+          rgb:[0, 211, 149],
+          hsl:['162', '100%', '41%']
         },
         startTimestamp:'2020-06-15',
         conversionRateField:'compDAIPrice',
