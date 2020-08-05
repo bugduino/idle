@@ -774,7 +774,16 @@ class FunctionsUtil {
       //   debugger;
       // }
 
-      // Remove Pending txs
+      // Debug transactions
+      /*
+      txsToProcess['xxxxx'] = {
+        status:'success',
+        created:new Date().getTime(),
+        method:'executeMetaTransaction',
+        token:selectedToken.toUpperCase(),
+        transactionHash:'0xd4a58d499679c7fb629520381064f6ee313b5eb833584f82fc0f566e8f7bcd4a'
+      };
+      */
 
       await this.asyncForEach(Object.keys(txsToProcess),async (txKey,i) => {
         const tx = txsToProcess[txKey];
@@ -806,7 +815,7 @@ class FunctionsUtil {
         const methodIsAllowed = Object.keys(allowedMethods).includes(tx.method);
 
         // Skip transaction if already present in etherscanTxs with same status
-        if (txHash && etherscanTxs[txHash] && etherscanTxs[txHash].tokenPrice){
+        if (txHash && etherscanTxs[txHash] && etherscanTxs[txHash].tokenPrice/* && txHash.toLowerCase() !== '0xd4a58d499679c7fb629520381064f6ee313b5eb833584f82fc0f566e8f7bcd4a'.toLowerCase()*/){
           return false;
         }
         // const txFound = etherscanTxs.find(etherscanTx => (etherscanTx.hash === tx.transactionHash && etherscanTx.status === tx.status) );
@@ -963,7 +972,6 @@ class FunctionsUtil {
                   executeMetaTransactionContractAddr = IdleProxyMinterInfo.address.replace('x','').toLowerCase();
                   executeMetaTransactionInternalTransfers = executeMetaTransactionReceipt.logs.filter((tx) => { return tx.address.toLowerCase()===tokenConfig.address.toLowerCase() && tx.topics[tx.topics.length-1].toLowerCase() === `0x00000000000000000000000${executeMetaTransactionContractAddr}`; });
                 }
-
               } else if (executeMetaTransactionReceipt.events){
                 executeMetaTransactionInternalTransfers = Object.values(executeMetaTransactionReceipt.events).filter((tx) => { return tx.address.toLowerCase()===tokenConfig.address.toLowerCase(); });
               }
@@ -977,7 +985,7 @@ class FunctionsUtil {
               return false;
             }
 
-            const internalTransfer = executeMetaTransactionInternalTransfers.pop();
+            const internalTransfer = executeMetaTransactionInternalTransfers[0];
 
             const metaTxValue = internalTransfer.data ? parseInt(internalTransfer.data,16) : (internalTransfer.raw && internalTransfer.raw.data) ? parseInt(internalTransfer.raw.data,16) : null;
 
@@ -989,6 +997,7 @@ class FunctionsUtil {
             realTx.action = action;
             realTx.value = metaTxValueFixed;
             realTx.tokenAmount = metaTxValueFixed;
+            // console.log(metaTxValueFixed.toString());
           break;
           case 'migrateFromCompoundToIdle':
           case 'migrateFromFulcrumToIdle':
