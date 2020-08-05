@@ -425,13 +425,16 @@ class PortfolioEquity extends Component {
             point={point}
           >
             <ChartCustomTooltipRow
-              label={point.serieId}
               color={point.color}
-              value={`${point.data.yFormatted} $`}
+              label={point.serieId}
+              value={`$ ${point.data.yFormatted}`}
             />
             {
             typeof point.data.balances === 'object' && Object.keys(point.data.balances).length &&
               Object.keys(point.data.balances).map(token => {
+                if (token === point.serieId){
+                  return null;
+                }
                 const color = this.functionsUtil.getGlobalConfig(['stats','tokens',token,'color','hex']);
                 const balance = point.data.balances[token];
                 let formattedBalance = this.functionsUtil.formatMoney(balance,2);
@@ -441,7 +444,7 @@ class PortfolioEquity extends Component {
                       label={token}
                       color={color}
                       key={`row_${token}`}
-                      value={`${formattedBalance} $`}
+                      value={`$ ${formattedBalance}`}
                     />
                   );
                 }

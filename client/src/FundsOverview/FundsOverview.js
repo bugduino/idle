@@ -10,7 +10,8 @@ import PortfolioEquity from '../PortfolioEquity/PortfolioEquity';
 class FundsOverview extends Component {
 
   state = {
-    aggregatedValues:[]
+    aggregatedValues:[],
+    govTokensUserBalance:null
   };
 
   // Utils
@@ -30,7 +31,11 @@ class FundsOverview extends Component {
 
   async componentDidMount(){
 
-    const [avgAPY,days] = await Promise.all([
+    const govTokenAvailableTokens = {};
+    govTokenAvailableTokens[this.props.selectedToken] = this.props.tokenConfig;
+
+    const [govTokensUserBalance,avgAPY,days] = await Promise.all([
+      this.functionsUtil.getGovTokensUserBalance(this.props.account,govTokenAvailableTokens,'DAI'),
       this.functionsUtil.loadAssetField('avgAPY',this.props.selectedToken,this.props.tokenConfig,this.props.account),
       this.functionsUtil.loadAssetField('daysFirstDeposit',this.props.selectedToken,this.props.tokenConfig,this.props.account),
     ]);
@@ -119,7 +124,8 @@ class FundsOverview extends Component {
     ];
 
     this.setState({
-      aggregatedValues
+      aggregatedValues,
+      govTokensUserBalance
     });
   }
 
@@ -278,21 +284,26 @@ class FundsOverview extends Component {
                   }
                 }}
               />
-              <AssetField
-                {...this.props}
-                token={this.props.selectedToken}
-                fieldInfo={{
-                  name:'earningsPerc',
-                  props:{
-                    fontSize:1,
-                    fontWeight:2,
-                    color:'cellText',
-                    flexProps:{
-                      justifyContent:'center'
+              <Flex
+                width={1}
+                mt={'-9px'}
+              >
+                <AssetField
+                  {...this.props}
+                  token={this.props.selectedToken}
+                  fieldInfo={{
+                    name:'earningsPerc',
+                    props:{
+                      fontSize:1,
+                      fontWeight:2,
+                      color:'cellText',
+                      flexProps:{
+                        justifyContent:'center'
+                      }
                     }
-                  }
-                }}
-              />
+                  }}
+                />
+              </Flex>
             </Flex>
             <Flex
               mb={[2,0]}
@@ -327,6 +338,56 @@ class FundsOverview extends Component {
                   }
                 }}
               />
+              {
+                this.state.govTokensUserBalance && Object.keys(this.state.govTokensUserBalance).length>0 && (
+                  <Flex
+                    width={1}
+                    alignItems={'center'}
+                    flexDirection={'row'}
+                    justifyContent={'center'}
+                  >
+                    {
+                    /*
+                    <Text
+                      fontSize={1}
+                      lineHeight={1}
+                      fontWeight={2}
+                      color={'cellText'}
+                    >
+                    (
+                    </Text>
+                    */
+                    }
+                    {
+                      Object.keys(this.state.govTokensUserBalance).map((govToken,govTokenIndex) => (
+                        <Text
+                          fontSize={1}
+                          lineHeight={1}
+                          fontWeight={2}
+                          color={'cellText'}
+                          textAlign={'center'}
+                          ml={govTokenIndex ? 2 : 0}
+                          key={`govToken_${govToken}`}
+                        >
+                          + ${this.state.govTokensUserBalance[govToken].toFixed(2)} {govToken}
+                        </Text>
+                      ))
+                    }
+                    {
+                    /*
+                    <Text
+                      fontSize={1}
+                      lineHeight={1}
+                      fontWeight={2}
+                      color={'cellText'}
+                    >
+                    )
+                    </Text>
+                    */
+                    }
+                  </Flex>
+                )
+              }
             </Flex>
             <Flex
               mb={[2,0]}

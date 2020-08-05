@@ -2,6 +2,7 @@ import Title from '../Title/Title';
 import { Box, Flex } from "rimble-ui";
 import React, { Component } from 'react';
 import Breadcrumb from '../Breadcrumb/Breadcrumb';
+import AssetsList from '../AssetsList/AssetsList';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import BuyModal from '../utilities/components/BuyModal';
 import FundsOverview from '../FundsOverview/FundsOverview';
@@ -84,6 +85,14 @@ class AssetPage extends Component {
 
   render() {
 
+    const govTokens = this.functionsUtil.getGlobalConfig(['govTokens']);
+    const availableGovTokens = Object.keys(govTokens).reduce((enabledTokens,token) => {
+      if (govTokens[token].enabled){
+        enabledTokens[token] = govTokens[token];
+      }
+      return enabledTokens;
+    },{});
+
     const userHasFunds = this.props.account && this.state.idleTokenBalance[this.props.selectedToken] && this.functionsUtil.BNify(this.state.idleTokenBalance[this.props.selectedToken]).gt(0);
 
     return (
@@ -146,6 +155,95 @@ class AssetPage extends Component {
               <Title my={[3,4]}>Funds Overview</Title>
               <FundsOverview
                 {...this.props}
+              />
+            </Flex>
+        }
+        {
+          this.props.account && Object.keys(availableGovTokens).length>0 && 
+            <Flex
+              width={1}
+              id="earnings-estimation"
+              flexDirection={'column'}
+            >
+              <Title my={[3,4]}>Yield Farming</Title>
+              <AssetsList
+                enabledTokens={Object.keys(availableGovTokens)}
+                handleClick={(props) => {}}
+                cols={[
+                  {
+                    title:'CURRENCY',
+                    props:{
+                      width:[0.3,0.15]
+                    },
+                    fields:[
+                      {
+                        name:'icon',
+                        props:{
+                          mr:2,
+                          height:['1.4em','2.3em']
+                        }
+                      },
+                      {
+                        name:'tokenName'
+                      }
+                    ]
+                  },
+                  {
+                    title:'UNCLAIMED',
+                    props:{
+                      width:[0.24, 0.19],
+                    },
+                    fields:[
+                      {
+                        name:'pool',
+                        props:{
+                          decimals:2
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    title:'REDEEMABLE',
+                    props:{
+                      width:[0.23,0.19],
+                      justifyContent:['center','flex-start']
+                    },
+                    fields:[
+                      {
+                        name:'tokenBalance'
+                      }
+                    ]
+                  },
+                  {
+                    title:'APR',
+                    props:{
+                      width:[0.23,0.19],
+                    },
+                    fields:[
+                      {
+                        name:'apr'
+                      }
+                    ]
+                  },
+                  {
+                    title:'APR LAST WEEK',
+                    mobile:false,
+                    props:{
+                      width: 0.28,
+                    },
+                    parentProps:{
+                      width:1,
+                      pr:[2,4]
+                    },
+                    fields:[
+                      {
+                        name:'aprChart',
+                      }
+                    ]
+                  },
+                ]}
+                {...this.props}
+                availableTokens={availableGovTokens}
               />
             </Flex>
         }

@@ -1819,6 +1819,14 @@ class FunctionsUtil {
     let output = null;
     const govTokens = this.getGlobalConfig(['govTokens']);
 
+    // Take available tokens for gov tokens fields
+    let govTokenAvailableTokens = null;
+    if (this.props.selectedStrategy && this.props.selectedToken){
+      const newTokenConfig = this.props.availableStrategies[this.props.selectedStrategy][this.props.selectedToken];
+      govTokenAvailableTokens = {};
+      govTokenAvailableTokens[newTokenConfig.token] = newTokenConfig;
+    }
+
     switch (field){
       case 'earningsPerc':
         const [avgBuyPrice,idleTokenPrice] = await Promise.all([
@@ -1839,7 +1847,7 @@ class FunctionsUtil {
       break;
       case 'pool':
         if (Object.keys(govTokens).includes(token)){
-          output = await this.getGovTokenPool(token);
+          output = await this.getGovTokenPool(token, govTokenAvailableTokens);
         } else {
           const tokenAllocation = await this.getTokenAllocation(tokenConfig,false,addGovTokens);
           if (tokenAllocation && tokenAllocation.totalAllocation){
@@ -1850,7 +1858,7 @@ class FunctionsUtil {
       case 'apr':
         switch (token){
           case 'COMP':
-            output = await this.getCompAvgApr();
+            output = await this.getCompAvgApr(govTokenAvailableTokens);
           break;
           default:
             const tokenAprs = await this.getTokenAprs(tokenConfig,false,addGovTokens);
@@ -1894,7 +1902,7 @@ class FunctionsUtil {
       case 'tokenBalance':
         if (Object.keys(govTokens).includes(token)){
           const govTokenConfig = govTokens[token];
-          output = await this.getGovTokenUserBalance(govTokenConfig,account);
+          output = await this.getGovTokenUserBalance(govTokenConfig,account,govTokenAvailableTokens);
         } else {
           let tokenBalance = account ? await this.getTokenBalance(tokenConfig.token,account) : false;
           if (!tokenBalance || tokenBalance.isNaN()){
@@ -2337,9 +2345,12 @@ class FunctionsUtil {
       return cachedData;
     }
 
-    let compAPR = null;
+    let compAPR = this.BNify(0);
 
     const compDistribution = await this.getCompDistribution(tokenConfig,cTokenIdleSupply);
+
+    // console.log('getCompAPR',compDistribution.toString());
+
     if (compDistribution){
       const cTokenInfo = tokenConfig.protocols.find( p => (p.name === 'compound') );
 
@@ -2393,38 +2404,44 @@ class FunctionsUtil {
     const cTokenInfo = tokenConfig.protocols.find( p => (p.name === 'compound') );
     if (cTokenInfo){
 
-      // Get COMP distribution speed and Total Supply
-      const [compSpeed,cTokenTotalSupply] = await Promise.all([
-        this.genericContractCall('Comptroller','compSpeeds',[cTokenInfo.address]),
-        this.genericContractCall(cTokenInfo.token,'totalSupply')
-      ]);
+      // Get IdleToken allocation in compound
+      const tokenAllocation = await this.getTokenAllocation(tokenConfig,false,false);
+      const compoundAllocationPerc = tokenAllocation.protocolsAllocationsPerc[cTokenInfo.address];
 
-      if (compSpeed && cTokenTotalSupply){
+      // Calculate distribution if compound allocation >= 0.1%
+      if (compoundAllocationPerc && compoundAllocationPerc.gte(0.1)){
 
-        // Get Idle liquidity supply
-        if (!cTokenIdleSupply){
-          cTokenIdleSupply = await this.genericContractCall(cTokenInfo.token,'balanceOf',[tokenConfig.idle.address]);
-        }
+        // Get COMP distribution speed and Total Supply
+        const [compSpeed,cTokenTotalSupply] = await Promise.all([
+          this.genericContractCall('Comptroller','compSpeeds',[cTokenInfo.address]),
+          this.genericContractCall(cTokenInfo.token,'totalSupply')
+        ]);
 
-        if (cTokenIdleSupply){
+        if (compSpeed && cTokenTotalSupply){
 
-          // Calculate Idle supply percentage
-          // const cTokenIdleSupplyPercentage = this.BNify(cTokenIdleSupply).div(this.BNify(cTokenTotalSupply));
+          // Get Idle liquidity supply
+          if (!cTokenIdleSupply){
+            cTokenIdleSupply = await this.genericContractCall(cTokenInfo.token,'balanceOf',[tokenConfig.idle.address]);
+          }
 
-          // Get COMP distribution for Idle in a Year
-          const blocksPerYear = this.getGlobalConfig(['network','blocksPerYear']);
+          if (cTokenIdleSupply){
 
-          // Take 50% of distrubution for lenders side
-          const compDistribution = this.BNify(compSpeed).times(this.BNify(blocksPerYear)).div(1e18);
+            // Get COMP distribution for Idle in a Year
+            const blocksPerYear = this.getGlobalConfig(['network','blocksPerYear']);
 
-          // console.log('getCompDistribution',cTokenInfo.token,this.BNify(compSpeed).div(1e18).toString(),cTokenTotalSupply.toString(),cTokenIdleSupply.toString(),cTokenIdleSupplyPercentage.times(100).toString()+'%',compDistribution.toString());
+            // Take 50% of distrubution for lenders side
+            const compDistribution = this.BNify(compSpeed).times(this.BNify(blocksPerYear)).div(1e18);
 
-          this.setCachedData(cachedDataKey,compDistribution);
+            // console.log('getCompDistribution',cTokenInfo.token,this.BNify(compSpeed).div(1e18).toString(),cTokenTotalSupply.toString(),cTokenIdleSupply.toString(),cTokenIdleSupplyPercentage.toString(),compDistribution.toString());
 
-          return compDistribution;
+            this.setCachedData(cachedDataKey,compDistribution);
+
+            return compDistribution;
+          }
         }
       }
     }
+
     return null;
   }
   getCompAvgApr = async (availableTokens=null) => {
@@ -2453,9 +2470,11 @@ class FunctionsUtil {
   }
   getGovTokenPool = async (govToken=null,availableTokens=null,convertToken=null) => {
     let output = this.BNify(0);
+
     if (!availableTokens){
       availableTokens = this.props.availableStrategies[this.props.selectedStrategy];
     }
+
     await this.asyncForEach(Object.keys(availableTokens),async (token) => {
       const tokenConfig = availableTokens[token];
       const enabledTokens = govToken ? [govToken] : null;

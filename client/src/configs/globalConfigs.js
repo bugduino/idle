@@ -138,7 +138,7 @@ const globalConfigs = {
     COMP:{
       abi:COMP,
       decimals:18,
-      enabled:false,
+      enabled:true,
       protocol:'compound',
       color:'hsl(162, 100%, 41%)',
       address:'0xc00e94cb662c3520282e6f5717214004a7f26888',
