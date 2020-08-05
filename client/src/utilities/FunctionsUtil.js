@@ -781,7 +781,7 @@ class FunctionsUtil {
         created:new Date().getTime(),
         method:'executeMetaTransaction',
         token:selectedToken.toUpperCase(),
-        transactionHash:'0xd4a58d499679c7fb629520381064f6ee313b5eb833584f82fc0f566e8f7bcd4a'
+        transactionHash:'0x000000000000000000000000000'
       };
       */
 
@@ -815,7 +815,7 @@ class FunctionsUtil {
         const methodIsAllowed = Object.keys(allowedMethods).includes(tx.method);
 
         // Skip transaction if already present in etherscanTxs with same status
-        if (txHash && etherscanTxs[txHash] && etherscanTxs[txHash].tokenPrice/* && txHash.toLowerCase() !== '0xd4a58d499679c7fb629520381064f6ee313b5eb833584f82fc0f566e8f7bcd4a'.toLowerCase()*/){
+        if (txHash && etherscanTxs[txHash] && etherscanTxs[txHash].tokenPrice/* && txHash.toLowerCase() !== '0x000000000000000000000000000'.toLowerCase()*/){
           return false;
         }
         // const txFound = etherscanTxs.find(etherscanTx => (etherscanTx.hash === tx.transactionHash && etherscanTx.status === tx.status) );
