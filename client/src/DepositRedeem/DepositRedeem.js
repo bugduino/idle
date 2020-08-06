@@ -414,9 +414,10 @@ class DepositRedeem extends Component {
           }));
         };
 
+        const depositMetaTransactionsEnabled = this.functionsUtil.getGlobalConfig(['contract','methods','deposit','metaTransactionsEnabled']);
         const gasLimitDeposit = this.functionsUtil.BNify(1000000);
         const mintProxyContractInfo = this.state.actionProxyContract[this.state.action];
-        if (mintProxyContractInfo && this.props.biconomy && this.state.metaTransactionsEnabled){
+        if (depositMetaTransactionsEnabled && mintProxyContractInfo && this.props.biconomy && this.state.metaTransactionsEnabled){
           const mintProxyContract = this.state.actionProxyContract[this.state.action].contract;
           const depositParams = [tokensToDeposit, this.props.tokenConfig.idle.address];
           // console.log('mintProxyContract',mintProxyContractInfo.function,depositParams);
@@ -431,7 +432,7 @@ class DepositRedeem extends Component {
 
           // No need for callback atm
           contractSendResult = await this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'mintIdleToken', [
-            tokensToDeposit, _skipWholeRebalance
+            tokensToDeposit, _skipWholeRebalance, '0x0000000000000000000000000000000000000000'
           ], null, callbackDeposit, callbackReceiptDeposit, gasLimitDeposit);
         }
       break;
@@ -491,12 +492,8 @@ class DepositRedeem extends Component {
             }));
           };
 
-          contractSendResult = await this.props.contractMethodSendWrapper(
-            this.props.tokenConfig.idle.token,
-            'redeemGovTokens',
-            null, null, callbackRedeem, callbackReceiptRedeem
-          );
-
+          contractSendResult = await this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'redeemIdleToken', [0], null, callbackRedeem, callbackReceiptRedeem);
+          
         } else {
 
           if (this.state.buttonDisabled || !inputValue || this.functionsUtil.BNify(inputValue).lte(0)){
@@ -517,18 +514,6 @@ class DepositRedeem extends Component {
           if (!idleTokenToRedeem){
             return false;
           }
-
-          // Get amounts for best allocations
-          const _skipRebalance = this.functionsUtil.getGlobalConfig(['contract','methods','redeem','skipRebalance']);
-          let paramsForRedeem = null;
-
-          if (this.props.account){
-            const callParams = { from: this.props.account, gas: this.props.web3.utils.toBN(5000000) };
-            paramsForRedeem = await this.functionsUtil.genericIdleCall('getParamsForRedeemIdleToken',[idleTokenToRedeem, _skipRebalance],callParams);
-          }
-
-          const _clientProtocolAmountsRedeem = paramsForRedeem && paramsForRedeem.length ? paramsForRedeem[1] : [];
-          const gasLimitRedeem = _clientProtocolAmountsRedeem.length && _clientProtocolAmountsRedeem.indexOf('0') === -1 ? this.functionsUtil.BNify(1500000) : this.functionsUtil.BNify(1000000);
 
           const callbackRedeem = (tx,error) => {
             const txSucceeded = tx.status === 'success';
@@ -583,9 +568,7 @@ class DepositRedeem extends Component {
             }));
           };
 
-          contractSendResult = await this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'redeemIdleToken', [
-            idleTokenToRedeem, _skipRebalance, _clientProtocolAmountsRedeem
-          ], null, callbackRedeem, callbackReceiptRedeem, gasLimitRedeem);
+          contractSendResult = await this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'redeemIdleToken', [idleTokenToRedeem], null, callbackRedeem, callbackReceiptRedeem);
         }
       break;
       default:

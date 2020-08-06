@@ -1597,6 +1597,8 @@ class FunctionsUtil {
       const oldContract = this.getContractByName(oldContractName);
       const migrationContract = this.getContractByName(tokenConfig.migration.migrationContract.name);
 
+      // console.log(oldContractName,tokenConfig.migration.migrationContract.name);
+
       if (oldContract && migrationContract){
         // Get old contract token decimals
         oldContractTokenDecimals = await this.getTokenDecimals(oldContractName);
@@ -1611,12 +1613,13 @@ class FunctionsUtil {
         // Check old contractBalance
         oldContractBalance = await this.getContractBalance(oldContractName,account);
 
-        // console.log('Migration - oldContractBalance',oldContractBalance ? oldContractBalance.toString() : null);
         if (oldContractBalance){
           oldContractBalanceFormatted = this.fixTokenDecimals(oldContractBalance,oldContractTokenDecimals);
           // Enable migration if old contract balance if greater than 0
           migrationEnabled = this.BNify(oldContractBalance).gt(0);
         }
+
+        // console.log('Migration - oldContractBalance',oldContractName,account,oldContractBalance,oldContractBalanceFormatted);
       }
     }
 
@@ -2415,10 +2418,12 @@ class FunctionsUtil {
 
       // Get IdleToken allocation in compound
       const tokenAllocation = await this.getTokenAllocation(tokenConfig,false,false);
-      const compoundAllocationPerc = tokenAllocation.protocolsAllocationsPerc[cTokenInfo.address];
+      const compoundAllocationPerc = tokenAllocation.protocolsAllocationsPerc[cTokenInfo.address.toLowerCase()];
+
+      // console.log('getCompDistribution 1',cTokenInfo.token,cTokenInfo.address,tokenAllocation.protocolsAllocationsPerc,compoundAllocationPerc ? compoundAllocationPerc.toString() : null);
 
       // Calculate distribution if compound allocation >= 0.1%
-      if (compoundAllocationPerc && compoundAllocationPerc.gte(0.1)){
+      if (compoundAllocationPerc && compoundAllocationPerc.gte(0.001)){
 
         // Get COMP distribution speed and Total Supply
         const [compSpeed,cTokenTotalSupply] = await Promise.all([
@@ -2426,12 +2431,16 @@ class FunctionsUtil {
           this.genericContractCall(cTokenInfo.token,'totalSupply')
         ]);
 
+        // console.log('getCompDistribution 2',cTokenInfo.token,compSpeed ? compSpeed.toString() : null,cTokenTotalSupply ? cTokenTotalSupply.toString() : null);
+
         if (compSpeed && cTokenTotalSupply){
 
           // Get Idle liquidity supply
           if (!cTokenIdleSupply){
             cTokenIdleSupply = await this.genericContractCall(cTokenInfo.token,'balanceOf',[tokenConfig.idle.address]);
           }
+
+          // console.log('getCompDistribution 3',cTokenInfo.token,cTokenIdleSupply ? cTokenIdleSupply.toString() : null);
 
           if (cTokenIdleSupply){
 
@@ -2441,7 +2450,7 @@ class FunctionsUtil {
             // Take 50% of distrubution for lenders side
             const compDistribution = this.BNify(compSpeed).times(this.BNify(blocksPerYear)).div(1e18);
 
-            // console.log('getCompDistribution',cTokenInfo.token,this.BNify(compSpeed).div(1e18).toString(),cTokenTotalSupply.toString(),cTokenIdleSupply.toString(),cTokenIdleSupplyPercentage.toString(),compDistribution.toString());
+            // console.log('getCompDistribution 4',cTokenInfo.token,this.BNify(compSpeed).div(1e18).toString(),cTokenTotalSupply.toString(),cTokenIdleSupply.toString(),compDistribution.toString());
 
             this.setCachedData(cachedDataKey,compDistribution);
 
@@ -2639,6 +2648,32 @@ class FunctionsUtil {
       return this.apr2apy(tokenAprs.avgApr.div(100));
     }
     return null;
+  }
+  getTokensToMigrate = async () => {
+
+    if (!this.props.availableTokens || !this.props.account){
+      return false;
+    }
+
+    const tokensToMigrate = {};
+    await this.asyncForEach(Object.keys(this.props.availableTokens),async (token) => {
+      const tokenConfig = this.props.availableTokens[token];
+      const {
+        migrationEnabled,
+        oldContractBalanceFormatted
+      } = await this.checkMigration(tokenConfig,this.props.account);
+
+      // console.log('getTokensToMigrate',token,migrationEnabled,oldContractBalanceFormatted);
+      
+      if (migrationEnabled){
+        tokensToMigrate[token] = {
+          tokenConfig,
+          oldContractBalanceFormatted
+        }
+      }
+    });
+
+    return tokensToMigrate;
   }
   /*
   Get protocols tokens balances

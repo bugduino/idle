@@ -815,50 +815,6 @@ class Stats extends Component {
                         <Text.span color={'statValue'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
                       </Text>
                     </VariationNumber>
-                    {
-                      /*
-                      this.state.govTokensBalances && Object.keys(this.state.govTokensBalances).length>0 && (
-                        <Flex
-                          width={[1,0.5]}
-                          alignItems={'center'}
-                          flexDirection={'row'}
-                          justifyContent={'center'}
-                        >
-                          <Text
-                            color={'legend'}
-                            lineHeight={1}
-                            fontSize={[1,1]}
-                            fontWeight={[3,4]}
-                          >
-                          (
-                          </Text>
-                          {
-                            Object.keys(this.state.govTokensBalances).map((govToken,govTokenIndex) => (
-                              <Text
-                                color={'legend'}
-                                lineHeight={1}
-                                fontSize={[1,1]}
-                                fontWeight={[3,4]}
-                                textAlign={'center'}
-                                ml={govTokenIndex ? 2 : 0}
-                                key={`govToken_${govToken}`}
-                              >
-                                +{this.state.govTokensBalances[govToken].toFixed(3)} {govToken}
-                              </Text>
-                            ))
-                          }
-                          <Text
-                            color={'legend'}
-                            lineHeight={1}
-                            fontSize={[1,1]}
-                            fontWeight={[3,4]}
-                          >
-                          )
-                          </Text>
-                        </Flex>
-                      )
-                      */
-                    }
                   </Flex>
                 </StatsCard>
               </Flex>

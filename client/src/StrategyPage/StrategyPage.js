@@ -17,7 +17,7 @@ import EarningsEstimation from '../EarningsEstimation/EarningsEstimation';
 class StrategyPage extends Component {
 
   state = {
-    tokensToMigrate:[],
+    tokensToMigrate:{},
     aggregatedValues:[],
     depositedTokens:null,
     remainingTokens:null,
@@ -179,21 +179,12 @@ class StrategyPage extends Component {
       }
 
       // Get tokens to migrate
-      const tokensToMigrate = [];
-      await this.functionsUtil.asyncForEach(Object.keys(this.props.availableTokens),async (token) => {
-        const tokenConfig = this.props.availableTokens[token];
-        const {migrationEnabled} = await this.functionsUtil.checkMigration(tokenConfig,this.props.account);
-        
-        if (migrationEnabled){
-          tokensToMigrate.push(token);
-        }
-      });
-
+      const tokensToMigrate = await this.functionsUtil.getTokensToMigrate();
 
       newState.tokensToMigrate = tokensToMigrate;
       newState.portfolioLoaded = true;
 
-      const remainingTokens = Object.keys(this.props.availableTokens).filter(token => (!newState.depositedTokens.includes(token) && !newState.tokensToMigrate.includes(token)) );
+      const remainingTokens = Object.keys(this.props.availableTokens).filter(token => (!newState.depositedTokens.includes(token) && !Object.keys(newState.tokensToMigrate).includes(token)) );
       newState.remainingTokens = remainingTokens;
 
       // Load and process Etherscan Txs
@@ -205,7 +196,7 @@ class StrategyPage extends Component {
     // Show available assets for not logged users
     } else {
       this.setState({
-        tokensToMigrate:[],
+        tokensToMigrate:{},
         depositedTokens:[],
         portfolioLoaded:true,
         remainingTokens:Object.keys(this.props.availableTokens),
@@ -424,12 +415,12 @@ class StrategyPage extends Component {
               }
               <Flex id="available-assets" width={1} flexDirection={'column'}>
                 {
-                  (this.state.depositedTokens.length>0 || this.state.tokensToMigrate.length>0 || this.state.remainingTokens.length>0 ) &&
+                  (this.state.depositedTokens.length>0 || Object.keys(this.state.tokensToMigrate).length>0 || this.state.remainingTokens.length>0 ) &&
                     <Title my={[3,4]}>Available assets</Title>
                 }
                 <Flex width={1} flexDirection={'column'}>
                   {
-                    this.state.tokensToMigrate.length>0 &&
+                    Object.keys(this.state.tokensToMigrate).length>0 &&
                     <Flex
                       width={1}
                       mb={[3,4]}
@@ -451,7 +442,7 @@ class StrategyPage extends Component {
                         </Heading.h4>
                       </Flex>
                       <AssetsList
-                        enabledTokens={this.state.tokensToMigrate}
+                        enabledTokens={Object.keys(this.state.tokensToMigrate)}
                         handleClick={(props) => this.props.changeToken(props.token)}
                         cols={[
                           {
@@ -834,7 +825,7 @@ class StrategyPage extends Component {
                               {
                                 name:'button',
                                 label: (props) => {
-                                  return this.state.tokensToMigrate.includes(props.token) ? 'Migrate' : 'Deposit';
+                                  return Object.keys(this.state.tokensToMigrate).includes(props.token) ? 'Migrate' : 'Deposit';
                                 },
                                 props:{
                                   width:1,
@@ -848,7 +839,7 @@ class StrategyPage extends Component {
                                 },
                                 funcProps:{
                                   mainColor: (props) => {
-                                    return this.state.tokensToMigrate.includes(props.token) ? 'migrate' : 'deposit'
+                                    return Object.keys(this.state.tokensToMigrate).includes(props.token) ? 'migrate' : 'deposit'
                                   }
                                 }
                               }

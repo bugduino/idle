@@ -21,7 +21,7 @@ const env = process.env;
 
 const globalConfigs = {
   appName: 'Idle',
-  version: 'v3.7',
+  version: 'v3.8',
   baseURL: 'https://idle.finance',
   baseToken: 'ETH',
   countries:{
@@ -138,7 +138,7 @@ const globalConfigs = {
     COMP:{
       abi:COMP,
       decimals:18,
-      enabled:false,
+      enabled:true,
       protocol:'compound',
       color:'hsl(162, 100%, 41%)',
       address:'0xc00e94cb662c3520282e6f5717214004a7f26888',
@@ -390,10 +390,12 @@ const globalConfigs = {
   contract:{
     methods:{
       redeem:{
-        skipRebalance:true
+        skipRebalance:true,
+        metaTransactionsEnabled:false
       },
       deposit:{
         skipRebalance:true,
+        metaTransactionsEnabled:false,
         proxyContract:{
           enabled:true,
           abi:IdleProxyMinter,
@@ -403,7 +405,7 @@ const globalConfigs = {
         }
       },
       redeemGovTokens:{
-        enabled:false
+        enabled:true
       },
       rebalance:{
         enabled:true,

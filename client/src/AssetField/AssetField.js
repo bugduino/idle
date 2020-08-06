@@ -213,6 +213,21 @@ class AssetField extends Component {
             })
           }
         break;
+        case 'apyNoGov':
+          output = await this.functionsUtil.loadAssetField('apy',this.props.token,this.props.tokenConfig,this.props.account,false);
+          // debugger;
+          if (output && setState){
+            if (!output.isNaN()){
+              this.setStateSafe({
+                tokenAPYNoGov:parseFloat(output).toFixed(decimals)
+              });
+            } else {
+              this.setStateSafe({
+                tokenAPYNoGov:false
+              });
+            }
+          }
+        break;
         case 'apy':
           output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account);
           // debugger;
@@ -678,6 +693,11 @@ class AssetField extends Component {
       case 'apr':
         output = this.state.tokenAPR ? (
           <Text {...fieldProps}>{this.state.tokenAPR}%</Text>
+        ) : loader
+      break;
+      case 'apyNoGov':
+        output = this.state.tokenAPYNoGov !== undefined ? (
+          <Text {...fieldProps}>{this.state.tokenAPYNoGov !== false ? this.state.tokenAPYNoGov : '-' }<small>%</small></Text>
         ) : loader
       break;
       case 'apy':
