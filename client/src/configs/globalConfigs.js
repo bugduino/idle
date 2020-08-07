@@ -40,8 +40,8 @@ const globalConfigs = {
     'KOR':'South Korea'
   },
   logs:{ // Enable logs levels
+    errorsEnabled:false,
     messagesEnabled:false,
-    errorsEnabled:false
   },
   connectors:{ // Connectors props
     metamask:{
@@ -139,6 +139,7 @@ const globalConfigs = {
       abi:COMP,
       decimals:18,
       enabled:true,
+      token:'COMP',
       protocol:'compound',
       color:'hsl(162, 100%, 41%)',
       address:'0xc00e94cb662c3520282e6f5717214004a7f26888',

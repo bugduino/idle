@@ -35,7 +35,7 @@ class FundsOverview extends Component {
     govTokenAvailableTokens[this.props.selectedToken] = this.props.tokenConfig;
 
     const [govTokensUserBalance,avgAPY,days] = await Promise.all([
-      this.functionsUtil.getGovTokensUserBalance(this.props.account,govTokenAvailableTokens,'DAI'),
+      this.functionsUtil.getGovTokensUserBalances(this.props.account,govTokenAvailableTokens,'DAI'),
       this.functionsUtil.loadAssetField('avgAPY',this.props.selectedToken,this.props.tokenConfig,this.props.account),
       this.functionsUtil.loadAssetField('daysFirstDeposit',this.props.selectedToken,this.props.tokenConfig,this.props.account),
     ]);

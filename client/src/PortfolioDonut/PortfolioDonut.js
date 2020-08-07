@@ -66,6 +66,7 @@ class PortfolioDonut extends Component {
     await this.functionsUtil.asyncForEach(Object.keys(this.props.availableTokens),async (token) => {
       const tokenConfig = this.props.availableTokens[token];
       const idleTokenBalance = await this.functionsUtil.getTokenBalance(tokenConfig.idle.token,this.props.account);
+
       if (idleTokenBalance){
         const tokenPrice = await this.functionsUtil.getIdleTokenPrice(tokenConfig);
         const tokenBalance = await this.functionsUtil.convertTokenBalance(idleTokenBalance.times(tokenPrice),token,tokenConfig,isRisk);
@@ -80,10 +81,10 @@ class PortfolioDonut extends Component {
     });
 
     // Add Gov Tokens
-    const govTokensUserBalance = await this.functionsUtil.getGovTokensUserBalance(this.props.account,this.props.availableTokens,'DAI');
-    if (govTokensUserBalance){
-      Object.keys(govTokensUserBalance).forEach( govToken => {
-        const govTokenBalance = this.functionsUtil.BNify(govTokensUserBalance[govToken]);
+    const govTokensUserBalances = await this.functionsUtil.getGovTokensUserBalances(this.props.account,this.props.availableTokens,'DAI');
+    if (govTokensUserBalances){
+      Object.keys(govTokensUserBalances).forEach( govToken => {
+        const govTokenBalance = this.functionsUtil.BNify(govTokensUserBalances[govToken]);
         portfolio[govToken] = govTokenBalance;
         totalFunds = totalFunds.plus(govTokenBalance);
       });

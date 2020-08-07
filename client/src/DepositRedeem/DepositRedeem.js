@@ -738,8 +738,9 @@ class DepositRedeem extends Component {
       return null;
     }
 
-    const redeemCompTokenEnabled = this.functionsUtil.getGlobalConfig(['contract','methods','redeemGovTokens','enabled']);
-    const redeemGovTokens = redeemCompTokenEnabled && this.state.redeemGovTokens && this.state.action === 'redeem';
+    const govTokensDisabled = this.props.tokenConfig.govTokensDisabled;
+    const redeemGovTokenEnabled = this.functionsUtil.getGlobalConfig(['contract','methods','redeemGovTokens','enabled']) && !govTokensDisabled;
+    const redeemGovTokens = redeemGovTokenEnabled && this.state.redeemGovTokens && this.state.action === 'redeem';
     const metaTransactionsAvailable = this.props.biconomy && this.state.actionProxyContract[this.state.action];
     const useMetaTx = metaTransactionsAvailable && this.state.metaTransactionsEnabled;
     const totalBalance = this.state.action === 'deposit' ? this.props.tokenBalance : this.props.redeemableBalance;
@@ -981,7 +982,7 @@ class DepositRedeem extends Component {
                       </DashboardCard>
                     }
                     {
-                      (this.state.action === 'redeem' && redeemCompTokenEnabled) && (
+                      (this.state.action === 'redeem' && redeemGovTokenEnabled) && (
                         <DashboardCard
                           cardProps={{
                             py:3,
@@ -1010,7 +1011,7 @@ class DepositRedeem extends Component {
                               color={'cellText'}
                               textAlign={'center'}
                             >
-                              By redeeming your {this.props.selectedToken} you will automatically get also the proportional amount of governance tokens accrued.
+                              By redeeming your {this.props.selectedToken} you will automatically get also the proportional amount of governance tokens accrued{ this.props.govTokensBalance && this.props.govTokensBalance.gt(0) ? ` (~ $${this.props.govTokensBalance.toFixed(2)})` : null }.
                             </Text>
                           </Flex>
                           <Checkbox

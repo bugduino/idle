@@ -90,6 +90,14 @@ class AssetField extends Component {
             })
           }
         break;
+        case 'tokenPrice':
+          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account);
+          if (output && setState){
+            this.setStateSafe({
+              tokenPrice:output.toString()
+            })
+          }
+        break;
         case 'amountToMigrate':
           const {
             oldContractBalanceFormatted
@@ -591,6 +599,11 @@ class AssetField extends Component {
       case 'tokenBalance':
         output = this.state.tokenBalance ? (
           <SmartNumber {...fieldProps} minPrecision={minPrecision} number={this.state.tokenBalance} />
+        ) : loader
+      break;
+      case 'tokenPrice':
+        output = this.state.tokenPrice ? (
+          <SmartNumber {...fieldProps} minPrecision={minPrecision} number={this.state.tokenPrice} />
         ) : loader
       break;
       case 'amountToMigrate':

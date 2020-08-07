@@ -3,12 +3,12 @@ import CountUp from 'react-countup';
 import React, { Component } from 'react';
 import FlexLoader from '../FlexLoader/FlexLoader';
 import AssetsList from '../AssetsList/AssetsList';
-import { Flex, Box, Heading, Text } from "rimble-ui";
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import DashboardCard from '../DashboardCard/DashboardCard';
 import PortfolioDonut from '../PortfolioDonut/PortfolioDonut';
 import GenericSelector from '../GenericSelector/GenericSelector';
 import PortfolioEquity from '../PortfolioEquity/PortfolioEquity';
+import { Flex, Box, Heading, Text, Tooltip, Icon } from "rimble-ui";
 import TransactionsList from '../TransactionsList/TransactionsList';
 import EarningsEstimation from '../EarningsEstimation/EarningsEstimation';
 
@@ -111,10 +111,11 @@ class StrategyPage extends Component {
           // debugger;
         });
 
-        const earningsStart = totalEarnings;
-        const earningsEnd = totalAmountLent.times(avgAPY.div(100));
+        // Add gov tokens to earnings
+        const govTokensTotalBalance = await this.functionsUtil.getGovTokensUserTotalBalance(this.props.account,this.props.availableTokens,'DAI');
 
-        // console.log(avgAPY.toString(),earningsStart.toString(),earningsEnd.toString());
+        const earningsStart = totalEarnings.plus(govTokensTotalBalance);
+        const earningsEnd = totalAmountLent.times(avgAPY.div(100)).plus(govTokensTotalBalance);
 
         newState.aggregatedValues = [
           {
@@ -135,6 +136,7 @@ class StrategyPage extends Component {
             },
             props:{
               title:'Total Earnings',
+              description:'Total earnings also include accrued interest and yield from governance tokens'+(govTokensTotalBalance && govTokensTotalBalance.gt(0) ? ` (~ $${govTokensTotalBalance.toFixed(2)})` : ''),
               children:(
                 <CountUp
                   delay={0}
@@ -285,14 +287,36 @@ class StrategyPage extends Component {
                                     </Text>
                                   )
                                 }
-                                <Text
-                                  mt={2}
-                                  fontWeight={2}
-                                  fontSize={[1,2]}
-                                  color={'cellText'}
-                                >
-                                  {v.props.title}
-                                </Text>
+                                  <Flex
+                                    mt={2}
+                                    width={1}
+                                    alignItems={'center'}
+                                    flexDirection={'row'}
+                                    justifyContent={'center'}
+                                  >
+                                    <Text
+                                      fontWeight={2}
+                                      fontSize={[1,2]}
+                                      color={'cellText'}
+                                    >
+                                      {v.props.title}
+                                    </Text>
+                                  {
+                                    v.props.description && (
+                                      <Tooltip
+                                        placement={'bottom'}
+                                        message={v.props.description}
+                                      >
+                                        <Icon
+                                          ml={2}
+                                          name={"Info"}
+                                          size={'1em'}
+                                          color={'cellTitle'}
+                                        />
+                                      </Tooltip>
+                                    )
+                                  }
+                                </Flex>
                               </Flex>
                             </DashboardCard>
                           </Flex>

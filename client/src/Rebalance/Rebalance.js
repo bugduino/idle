@@ -127,20 +127,7 @@ class Rebalance extends Component {
       );
     };
 
-    const _newAmount = 0;
-    let paramsForRebalance = null;
-
-    // Get amounts for best allocations
-    if (this.props.account){
-      const callParams = { from: this.props.account, gas: this.props.web3.utils.toBN(5000000) };
-      paramsForRebalance = await this.functionsUtil.genericIdleCall('getParamsForRebalance',[_newAmount],callParams);
-      this.functionsUtil.customLog('getParamsForRebalance',_newAmount,paramsForRebalance);
-    }
-
-    const _clientProtocolAmounts = paramsForRebalance ? paramsForRebalance[1] : [];
-    const gasLimit = _clientProtocolAmounts.length && _clientProtocolAmounts.indexOf('0') === -1 ? this.functionsUtil.BNify(1500000) : this.functionsUtil.BNify(1000000);
-
-    this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'rebalance', [_newAmount, _clientProtocolAmounts], null , callback, callback_receipt, gasLimit);
+    this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'rebalance', [], null , callback, callback_receipt);
 
     this.setState({
       processing:{

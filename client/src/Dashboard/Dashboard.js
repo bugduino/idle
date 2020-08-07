@@ -265,12 +265,7 @@ class Dashboard extends Component {
     this.loadUtils();
     await this.loadMenu();
     this.loadParams();
-
-    this.checkTokensToMigrate().then(() => {
-      this.checkWelcomeModal().then(() => {
-        this.checkProtocolsTokensBalances();
-      });
-    });
+    this.checkModals();
   }
 
   async componentDidUpdate(prevProps,prevState) {
@@ -293,40 +288,51 @@ class Dashboard extends Component {
     const contractsInitialized = this.props.contractsInitialized && prevProps.contractsInitialized !== this.props.contractsInitialized;
 
     if (accountChanged || accountInizialized || contractsInitialized){
-      this.checkTokensToMigrate().then(() => {
-        this.checkWelcomeModal().then(() => {
-          this.checkProtocolsTokensBalances();
-        });
-      });
+      this.checkModals();
     }
+  }
+
+  async checkModals(){
+
+    if (this.props.selectedToken || !this.props.accountInizialized || !this.props.contractsInitialized){
+      return null;
+    }
+
+    await this.checkTokensToMigrate();
+    await this.checkWelcomeModal();
+    await this.checkProtocolsTokensBalances();
   }
 
   async checkTokensToMigrate(){
 
     const showUpgradeModal = this.functionsUtil.getStoredItem('dontShowUpgradeModal',false,null) !== null ? false : true;
     if (this.props.selectedToken || !showUpgradeModal){
-      return false;
+      return null;
     }
 
     const tokensToMigrate = await this.functionsUtil.getTokensToMigrate();
     if (tokensToMigrate && Object.keys(tokensToMigrate).length>0){
       const activeModal = 'upgrade';
       if (activeModal !== this.state.activeModal){
-        await this.setState({
+        this.setState({
           activeModal,
           tokensToMigrate
         });
+
+        return activeModal;
       }
     }
+
+    return null;
   }
 
   async checkWelcomeModal(){
     if (!this.props.account || !this.props.accountInizialized || !this.props.contractsInitialized){
-      return false;
+      return null;
     }
 
     // Show welcome modal
-    if (this.props.account && !this.state.activeModal){
+    if (this.props.account && this.state.activeModal === null){
       let welcomeIsOpen = false;
 
       const welcomeModalProps = this.functionsUtil.getGlobalConfig(['modals','welcome']);
@@ -360,24 +366,28 @@ class Dashboard extends Component {
 
       const activeModal = welcomeIsOpen ? 'welcome' : this.state.activeModal;
       if (this.state.activeModal !== activeModal){
-        await this.setState({
+        this.setState({
           activeModal
         });
+
+        return activeModal;
       }
     }
+
+    return null;
   }
 
   async checkProtocolsTokensBalances() {
 
     if (!this.props.account || !this.props.accountInizialized || !this.props.contractsInitialized){
-      return false;
+      return null;
     }
 
     // Show migration modal if no other modals are opened
     const migrateModalEnabled = this.functionsUtil.getGlobalConfig(['modals','migrate','enabled']);
     const showMigrateModal = this.functionsUtil.getStoredItem('dontShowMigrateModal',false,null) !== null ? false : true;
 
-    if (!this.state.activeModal && migrateModalEnabled && showMigrateModal && !this.state.protocolsTokensBalances){
+    if (this.state.activeModal === null && migrateModalEnabled && showMigrateModal && !this.state.protocolsTokensBalances){
       const protocolsTokensBalances = await this.functionsUtil.getProtocolsTokensBalances();
       const activeModal = protocolsTokensBalances && Object.keys(protocolsTokensBalances).length>0 ? 'migrate' : null;
       const newState = {
@@ -385,7 +395,10 @@ class Dashboard extends Component {
         protocolsTokensBalances
       };
       this.setState(newState);
+      return activeModal;
     }
+
+    return null;
   }
 
   goToSection(section,isDashboard=true){

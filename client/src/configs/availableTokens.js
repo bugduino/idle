@@ -221,6 +221,7 @@ const availableTokens = {
         decimals:18,
         enabled:true,
         abi:ERC20.abi,
+        govTokensDisabled:false,
         color:'hsl(40, 95%, 59%)',
         address:'0x6b175474e89094c44da98b954eedeac495271d0f',
         zeroExInstant:{
@@ -243,7 +244,7 @@ const availableTokens = {
         idle:{
           abi:IdleTokenV4,
           token:'idleDAIYield',
-          address:'0x3fE7940616e5Bc47b0775a0dccf6237893353bB4',
+          address:'0x3fe7940616e5bc47b0775a0dccf6237893353bb4',
           // address:'0x78751b12da02728f467a44eac40f5cbc16bd7934'
         },
         migration:{
@@ -327,7 +328,7 @@ const availableTokens = {
             name:'dydx',
             enabled:true,
             abi:yToken,
-            address:'0xF424B10e1e9691ae5FB530FE4c3e6b9971013D49',
+            address:'0xb299BCDF056d17Bd1A46185eCA8bCE458B00DC4a',
             token:'yxDAI',
             decimals:18,
             functions:{
@@ -344,6 +345,7 @@ const availableTokens = {
         token:'USDC',
         enabled:true,
         abi:ERC20.abi,
+        govTokensDisabled:false,
         color:'hsl(211, 67%, 47%)',
         address:'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
         zeroExInstant:{
@@ -448,6 +450,7 @@ const availableTokens = {
         token:'USDT',
         enabled:true,
         abi:ERC20.abi,
+        govTokensDisabled:false,
         color:'hsl(211, 67%, 47%)',
         address:'0xdac17f958d2ee523a2206206994597c13d831ec7',
         wyre:{
@@ -508,6 +511,7 @@ const availableTokens = {
         token:'SUSD',
         enabled:true,
         abi:ERC20.abi,
+        govTokensDisabled:true,
         color:'hsl(250, 31%, 15%)',
         icon:'images/tokens/SUSD.svg',
         address:'0x57ab1ec28d129707052df4df418d58a2d46d5f51',
@@ -564,6 +568,7 @@ const availableTokens = {
         token:'TUSD',
         enabled:true,
         abi:ERC20.abi,
+        govTokensDisabled:true,
         color:'hsl(217, 100%, 20%)',
         address:'0x0000000000085d4780b73119b644ae5ecd22b376',
         wyre:{
@@ -619,6 +624,7 @@ const availableTokens = {
         token:'WBTC',
         enabled:true,
         abi:ERC20.abi,
+        govTokensDisabled:false,
         color:'hsl(29, 81%, 59%)',
         address:'0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
         wyre:{
@@ -681,6 +687,7 @@ const availableTokens = {
         token:'DAI',
         enabled:true,
         abi:ERC20.abi,
+        govTokensDisabled:false,
         color:'hsl(40, 95%, 59%)',
         address:'0x6b175474e89094c44da98b954eedeac495271d0f',
         zeroExInstant:{
@@ -782,7 +789,7 @@ const availableTokens = {
             name:'dydx',
             enabled:true,
             abi:yToken,
-            address:'0xF424B10e1e9691ae5FB530FE4c3e6b9971013D49',
+            address:'0xb299BCDF056d17Bd1A46185eCA8bCE458B00DC4a',
             token:'yxDAI',
             decimals:18,
             functions:{
@@ -799,6 +806,7 @@ const availableTokens = {
         token:'USDC',
         enabled:true,
         abi:ERC20.abi,
+        govTokensDisabled:false,
         color:'hsl(211, 67%, 47%)',
         address:'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
         zeroExInstant:{
@@ -903,6 +911,7 @@ const availableTokens = {
         token:'USDT',
         enabled:true,
         abi:ERC20.abi,
+        govTokensDisabled:false,
         color:'hsl(211, 67%, 47%)',
         address:'0xdac17f958d2ee523a2206206994597c13d831ec7',
         wyre:{

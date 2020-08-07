@@ -515,7 +515,11 @@ class RimbleTransaction extends React.Component {
   createContract = async (name, address, abi, useInfuraProvider=false) => {
     this.functionsUtil.customLog(`creating contract ${name} - addr: ${address}`);
 
-    let web3Provider = useInfuraProvider && this.state.web3Infura ? this.state.web3Infura : this.state.web3;
+    const web3Provider = useInfuraProvider && this.state.web3Infura ? this.state.web3Infura : this.state.web3;
+
+    if (!web3Provider){
+      return null;
+    }
 
     // Create contract on initialized web3 provider with given abi and address
     try {
@@ -528,6 +532,8 @@ class RimbleTransaction extends React.Component {
     } catch (error) {
       this.functionsUtil.customLogError("Could not create contract.",name,address,error);
     }
+
+    return null;
   }
 
   initSimpleID = () => {
@@ -879,13 +885,11 @@ class RimbleTransaction extends React.Component {
 
     try {
 
-      const res = await Promise.all([
+      let [accountBalance,accountBalanceToken,tokenDecimals] = await Promise.all([
         this.state.web3.eth.getBalance(this.state.account), // Get ETH balance
         this.getTokenBalance(this.state.account), // Get token balance
         this.getTokenDecimals()
       ]);
-
-      let accountBalance = res[0];
 
       if (accountBalance) {
 
@@ -908,9 +912,6 @@ class RimbleTransaction extends React.Component {
 
         this.functionsUtil.customLog("account balance: ", accountBalance);
       }
-
-      const tokenDecimals = res[2].toString();
-      let accountBalanceToken = res[1];
 
       // console.log('accountBalance',res,(accountBalanceToken ? accountBalanceToken.toString() : null),tokenDecimals,increaseAmount);
 
@@ -1023,11 +1024,13 @@ class RimbleTransaction extends React.Component {
 
   getContractByName = async (contractName) => {
     let contract = this.state.contracts.find(c => c.name === contractName);
-    if (!contract) {
-      const Token = this.props.tokenConfig.abi;
-      contract = await this.initContract(contractName, Token.address, Token.abi);
+
+    if (!contract && this.props.tokenConfig) {
+      const tokenConfig = this.props.tokenConfig;
+      contract = await this.initContract(contractName, tokenConfig.address, tokenConfig.abi);
     }
-    return contract.contract;
+
+    return contract ? contract.contract : null;
   }
 
   getTokenDecimals = async () => {
@@ -1051,6 +1054,17 @@ class RimbleTransaction extends React.Component {
 
   getTokenBalance = async (account) => {
     const contract = await this.getContractByName(this.props.selectedToken);
+
+    if (!contract) {
+      this.functionsUtil.customLogError('Wrong contract name', this.props.selectedToken);
+      return null;
+    }
+
+    if (!contract.methods['balanceOf']){
+      this.customLogError('Wrong method name balanceOf');
+      return null;
+    }
+
     return await contract.methods.balanceOf(account).call().catch(error => {
       this.functionsUtil.customLog(`Failed to get ${this.props.selectedToken} balance`, error);
     });

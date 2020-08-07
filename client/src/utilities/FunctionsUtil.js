@@ -1911,6 +1911,15 @@ class FunctionsUtil {
           output = amountLents[token];
         }
       break;
+      case 'tokenPrice':
+        if (Object.keys(govTokens).includes(token)){
+          const govTokenConfig = govTokens[token];
+          const DAITokenConfig = this.getGlobalConfig(['stats','tokens','DAI']);
+          output = await this.getUniswapConversionRate(DAITokenConfig,govTokenConfig);
+        } else {
+          output = await this.genericContractCall(tokenConfig.idle.token, 'tokenPrice');
+        }
+      break;
       case 'tokenBalance':
         if (Object.keys(govTokens).includes(token)){
           const govTokenConfig = govTokens[token];
@@ -1930,19 +1939,21 @@ class FunctionsUtil {
         }
       break;
       case 'redeemableBalanceCounter':
-        const [redeemableBalanceStart,tokenAPY1] = await Promise.all([
+        let [redeemableBalanceStart,tokenAPY1] = await Promise.all([
           this.loadAssetField('redeemableBalance',token,tokenConfig,account),
           this.loadAssetField('apy',token,tokenConfig,account)
         ]);
+
+        let redeemableBalanceEnd = null;
+
         if (redeemableBalanceStart && tokenAPY1){
           const earningPerYear = this.BNify(redeemableBalanceStart).times(this.BNify(tokenAPY1).div(100));
-          const redeemableBalanceEnd = this.BNify(redeemableBalanceStart).plus(this.BNify(earningPerYear));
-
-          output = {
-            redeemableBalanceEnd,
-            redeemableBalanceStart
-          };
+          redeemableBalanceEnd = this.BNify(redeemableBalanceStart).plus(this.BNify(earningPerYear));
         }
+        output = {
+          redeemableBalanceEnd,
+          redeemableBalanceStart
+        };
       break;
       case 'redeemableBalance':
         const [idleTokenBalance2,idleTokenPrice1] = await Promise.all([
@@ -2090,10 +2101,11 @@ class FunctionsUtil {
       return cachedData;
     }
 
-    let tokenBalanceOrig = await this.getContractBalance(contractName,walletAddr);
-    if (tokenBalanceOrig){
+    let tokenBalance = await this.getContractBalance(contractName,walletAddr);
+
+    if (tokenBalance){
       const tokenDecimals = await this.getTokenDecimals(contractName);
-      const tokenBalance = this.fixTokenDecimals(tokenBalanceOrig,tokenDecimals);
+      tokenBalance = this.fixTokenDecimals(tokenBalance,tokenDecimals);
 
       // Set cached data
       return this.setCachedData(cachedDataKey,tokenBalance);
@@ -2202,6 +2214,11 @@ class FunctionsUtil {
     }
   }
   genericContractCall = async (contractName, methodName, params = [], callParams = {}, blockNumber = 'latest') => {
+
+    if (!contractName){
+      return null;
+    }
+
     const contract = this.getContractByName(contractName);
 
     if (!contract) {
@@ -2216,11 +2233,14 @@ class FunctionsUtil {
 
     blockNumber = blockNumber !== 'latest' && blockNumber && !isNaN(blockNumber) ? parseInt(blockNumber) : blockNumber;
 
-    const value = await contract.methods[methodName](...params).call(callParams,blockNumber).catch(error => {
-      this.customLogError(`${contractName} contract method ${methodName} error: `, error);
-    });
-
-    return value;
+    try{
+      const value = await contract.methods[methodName](...params).call(callParams,blockNumber).catch(error => {
+        this.customLogError(`${contractName} contract method ${methodName} error: `, error);
+      });
+      return value;
+    } catch (error) {
+      this.customLogError("genericContractCall error", error);
+    }
   }
   asyncForEach = async (array, callback, async=true) => {
     if (async){
@@ -2548,7 +2568,24 @@ class FunctionsUtil {
 
     return govTokensBalances;
   }
-  getGovTokensUserBalance = async (account=null,availableTokens=null,convertToken=null) => {
+  getGovTokenConfigByAddress = (address) => {
+    const govTokens = this.getGlobalConfig(['govTokens']);
+    return Object.values(govTokens).find( tokenConfig => tokenConfig.address.toLowerCase() === address.toLowerCase() );
+  }
+  getGovTokensUserTotalBalance = async (account=null,availableTokens=null,convertToken=null) => {
+    const govTokensUserBalances = await this.getGovTokensUserBalances(account,availableTokens,convertToken);
+    if (govTokensUserBalances){
+      // debugger;
+      const govTokensEarnings = Object.values(govTokensUserBalances).reduce( (acc, govTokenAmount) => {
+        acc = acc.plus(this.BNify(govTokenAmount));
+        return acc;
+      }, this.BNify(0));
+
+      return govTokensEarnings;
+    }
+    return this.BNify(0);
+  }
+  getGovTokensUserBalances = async (account=null,availableTokens=null,convertToken=null,govTokenConfig=null) => {
     if (!account){
       account = this.props.account;
     }
@@ -2557,61 +2594,50 @@ class FunctionsUtil {
     }
 
     const output = {};
-    const govTokens = this.getGlobalConfig(['govTokens']);
 
-    await this.asyncForEach(Object.keys(govTokens),async (token) => {
-      const govTokenConfig = govTokens[token];
-      if (!govTokenConfig.enabled){
-        return;
-      }
-      let govTokenBalance = await this.getGovTokenUserBalance(govTokenConfig,account,availableTokens,convertToken);
-      if (govTokenBalance){
-        output[token] = govTokenBalance;
+    await this.asyncForEach(Object.keys(availableTokens),async (token) => {
+      const idleTokenConfig = availableTokens[token].idle;
+
+      // Get govTokens amounts
+      const govTokensAmounts = await this.genericContractCall(idleTokenConfig.token,'getGovTokensAmounts',[account]);
+
+      if (govTokensAmounts){
+        await this.asyncForEach(govTokensAmounts, async (govTokenAmount,govTokenIndex) => {
+          govTokenAmount = this.BNify(govTokenAmount);
+          // if (govTokenAmount.gt(0)){
+            // Get gov Token config by index
+            const govTokenAddress = await this.genericContractCall(idleTokenConfig.token,'govTokens',[govTokenIndex]);
+            govTokenConfig = govTokenConfig ? govTokenConfig : this.getGovTokenConfigByAddress(govTokenAddress);
+            if (govTokenConfig && govTokenConfig.address.toLowerCase() === govTokenAddress.toLowerCase()){
+
+              // Get gov token conversion rate
+              let tokenConversionRate = null;
+              if (convertToken){
+                const fromTokenConfig = this.getGlobalConfig(['stats','tokens',convertToken]);
+                if (fromTokenConfig){
+                  tokenConversionRate = await this.getUniswapConversionRate(fromTokenConfig,govTokenConfig);
+                }
+              }
+              govTokenAmount = this.fixTokenDecimals(govTokenAmount,govTokenConfig.decimals,tokenConversionRate);
+
+              // Initialize govToken balance
+              if (!output[govTokenConfig.token]){
+                output[govTokenConfig.token] = this.BNify(0); // this.BNify(1) for testing
+              }
+
+              // Add govTokens balance
+              output[govTokenConfig.token] = output[govTokenConfig.token].plus(govTokenAmount);
+            }
+          // }
+        });
       }
     });
 
     return output;
   }
   getGovTokenUserBalance = async (govTokenConfig,account=null,availableTokens=null,convertToken=null) => {
-    if (!account){
-      account = this.props.account;
-    }
-    if (!availableTokens){
-      availableTokens = this.props.availableStrategies[this.props.selectedStrategy];
-    }
-
-    let output = this.BNify(0);
-
-    await this.asyncForEach(Object.keys(availableTokens),async (token) => {
-      const idleTokenConfig = availableTokens[token].idle;
-      let [tokenBalance, govTokensIndexes, usersGovTokensIndexes] = await Promise.all([
-        this.getContractBalance(idleTokenConfig.token,account),
-        this.genericContractCall(idleTokenConfig.token,'govTokensIndexes',[govTokenConfig.address]),
-        this.genericContractCall(idleTokenConfig.token,'usersGovTokensIndexes',[govTokenConfig.address,account]),
-      ]);
-
-      if (tokenBalance && govTokensIndexes && usersGovTokensIndexes){
-        tokenBalance = this.BNify(tokenBalance);
-        govTokensIndexes = this.BNify(govTokensIndexes);
-        usersGovTokensIndexes = this.BNify(usersGovTokensIndexes);
-
-        // Get gov token conversion rate
-        let tokenConversionRate = null;
-        if (convertToken){
-          const fromTokenConfig = this.getGlobalConfig(['stats','tokens',convertToken]);
-          if (fromTokenConfig){
-            tokenConversionRate = await this.getUniswapConversionRate(fromTokenConfig,govTokenConfig);
-          }
-        }
-
-        let govTokenBalance = tokenBalance.times(govTokensIndexes.minus(usersGovTokensIndexes));
-        govTokenBalance = this.fixTokenDecimals(govTokenBalance,govTokenConfig.decimals,tokenConversionRate);
-
-        output = output.plus(govTokenBalance);
-      }
-    });
-
-    return output;
+    const govTokensUserBalances = await this.getGovTokensUserBalances(account,availableTokens,convertToken,govTokenConfig);
+    return govTokensUserBalances && govTokensUserBalances[govTokenConfig.token] ? govTokensUserBalances[govTokenConfig.token] : this.BNify(0);
   }
   getAggregatedStats = async (addGovTokens=true) => {
     let avgAPR = this.BNify(0);

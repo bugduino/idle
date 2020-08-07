@@ -720,16 +720,19 @@ class StatsChart extends Component {
 
           d.protocolsData.forEach((protocolData) => {
             const protocolPaused = this.functionsUtil.BNify(protocolData.rate).eq(0);
-            const protocolName = this.functionsUtil.capitalize(this.props.tokenConfig.protocols.filter((p) => { return p.address.toLowerCase() === protocolData.protocolAddr.toLowerCase() })[0].name);
-            if (!protocolPaused){
-              let allocation = parseFloat(this.functionsUtil.fixTokenDecimals(protocolData.allocation,this.props.tokenConfig.decimals));
-              keys[protocolName] = 1;
-              row[protocolName] = allocation;
-              row[`${protocolName}Color`] = 'hsl('+globalConfigs.stats.protocols[protocolName.toLowerCase()].color.hsl.join(',')+')';
-              // console.log(protocolName,this.functionsUtil.BNify(protocolData.allocation).toString(),this.props.tokenConfig.decimals,allocation);
-              maxChartValue = Math.max(maxChartValue,allocation);
-            } else {
-              row[protocolName] = 0;
+            const foundProtocol = this.props.tokenConfig.protocols.find((p) => { return p.address.toLowerCase() === protocolData.protocolAddr.toLowerCase() });
+            if (foundProtocol){
+              const protocolName = this.functionsUtil.capitalize(foundProtocol.name);
+              if (!protocolPaused){
+                let allocation = parseFloat(this.functionsUtil.fixTokenDecimals(protocolData.allocation,this.props.tokenConfig.decimals));
+                keys[protocolName] = 1;
+                row[protocolName] = allocation;
+                row[`${protocolName}Color`] = 'hsl('+globalConfigs.stats.protocols[protocolName.toLowerCase()].color.hsl.join(',')+')';
+                // console.log(protocolName,this.functionsUtil.BNify(protocolData.allocation).toString(),this.props.tokenConfig.decimals,allocation);
+                maxChartValue = Math.max(maxChartValue,allocation);
+              } else {
+                row[protocolName] = 0;
+              }
             }
           });
 

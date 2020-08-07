@@ -17,8 +17,10 @@ class AssetPage extends Component {
     tokenBalance:{},
     tokenApproved:{},
     activeModal:null,
+    govTokensBalance:{},
     idleTokenBalance:{},
     redeemableBalance:{},
+    govTokensDisabled:{},
     componentMounted:false
   };
 
@@ -50,17 +52,22 @@ class AssetPage extends Component {
       const newState = {...this.state};
       await this.functionsUtil.asyncForEach(Object.keys(this.props.availableTokens),async (token) => {
         const tokenConfig = this.props.availableTokens[token];
+        const govTokenAvailableTokens = {};
+        govTokenAvailableTokens[token] = tokenConfig;
 
-        const [tokenBalance,idleTokenPrice,idleTokenBalance,tokenApproved] = await Promise.all([
+        const [tokenBalance,idleTokenPrice,idleTokenBalance,tokenApproved,govTokensBalance] = await Promise.all([
           this.functionsUtil.getTokenBalance(token,this.props.account),
           this.functionsUtil.genericContractCall(tokenConfig.idle.token, 'tokenPrice'),
           this.functionsUtil.getTokenBalance(tokenConfig.idle.token,this.props.account),
           this.functionsUtil.checkTokenApproved(token,tokenConfig.idle.address,this.props.account),
+          this.functionsUtil.getGovTokensUserTotalBalance(this.props.account,govTokenAvailableTokens,'DAI')
         ]);
 
         newState.tokenBalance[token] = tokenBalance;
         newState.tokenApproved[token] = tokenApproved;
         newState.idleTokenBalance[token] = idleTokenBalance;
+        newState.govTokensBalance[token] = govTokensBalance;
+        newState.govTokensDisabled[token] = tokenConfig.govTokensDisabled;
         newState.redeemableBalance[token] = idleTokenBalance ? this.functionsUtil.fixTokenDecimals(idleTokenBalance.times(idleTokenPrice),tokenConfig.decimals) : this.functionsUtil.BNify(0);
       });
 
@@ -140,6 +147,7 @@ class AssetPage extends Component {
             {...this.props}
             tokenBalance={this.state.tokenBalance[this.props.selectedToken]}
             tokenApproved={this.state.tokenApproved[this.props.selectedToken]}
+            govTokensBalance={this.state.govTokensBalance[this.props.selectedToken]}
             idleTokenBalance={this.state.idleTokenBalance[this.props.selectedToken]}
             redeemableBalance={this.state.redeemableBalance[this.props.selectedToken]}
           />
@@ -159,7 +167,7 @@ class AssetPage extends Component {
             </Flex>
         }
         {
-          this.props.account && Object.keys(availableGovTokens).length>0 && 
+          this.props.account && !this.state.govTokensDisabled[this.props.selectedToken] && Object.keys(availableGovTokens).length>0 && 
             <Flex
               width={1}
               id="earnings-estimation"
@@ -171,7 +179,7 @@ class AssetPage extends Component {
                 handleClick={(props) => {}}
                 cols={[
                   {
-                    title:'CURRENCY',
+                    title:'TOKEN',
                     props:{
                       width:[0.3,0.15]
                     },
@@ -226,7 +234,7 @@ class AssetPage extends Component {
                     ]
                   },
                   {
-                    title:'APR LAST WEEK',
+                    title:'TOKEN PRICE',
                     mobile:false,
                     props:{
                       width: 0.28,
@@ -237,7 +245,17 @@ class AssetPage extends Component {
                     },
                     fields:[
                       {
-                        name:'aprChart',
+                        name:'tokenPrice',
+                        props:{
+                          unit:'$',
+                          unitPos:'left',
+                          unitProps:{
+                            mr:1,
+                            fontWeight:3,
+                            fontSize:[0,2],
+                            color:'cellText'
+                          }
+                        }
                       }
                     ]
                   },
