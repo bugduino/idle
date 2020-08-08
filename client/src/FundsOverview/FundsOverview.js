@@ -221,7 +221,7 @@ class FundsOverview extends Component {
           >
             <Flex
               mb={[2,0]}
-              width={[1,0.2]}
+              width={[1,1/6]}
               alignItems={'center'}
               flexDirection={'column'}
               justifyContent={'flex-start'}
@@ -253,7 +253,7 @@ class FundsOverview extends Component {
             </Flex>
             <Flex
               mb={[2,0]}
-              width={[1,0.2]}
+              width={[1,1/6]}
               alignItems={'center'}
               flexDirection={'column'}
               justifyContent={'flex-start'}
@@ -307,7 +307,7 @@ class FundsOverview extends Component {
             </Flex>
             <Flex
               mb={[2,0]}
-              width={[1,0.2]}
+              width={[1,1/6]}
               alignItems={'center'}
               flexDirection={'column'}
               justifyContent={'flex-start'}
@@ -391,7 +391,7 @@ class FundsOverview extends Component {
             </Flex>
             <Flex
               mb={[2,0]}
-              width={[1,0.2]}
+              width={[1,1/6]}
               alignItems={'center'}
               flexDirection={'column'}
               justifyContent={'flex-start'}
@@ -423,7 +423,7 @@ class FundsOverview extends Component {
             </Flex>
             <Flex
               mb={[2,0]}
-              width={[1,0.2]}
+              width={[1,1/6]}
               alignItems={'center'}
               flexDirection={'column'}
               justifyContent={'flex-start'}
@@ -454,7 +454,7 @@ class FundsOverview extends Component {
             </Flex>
             <Flex
               mb={[2,0]}
-              width={[1,0.2]}
+              width={[1,1/6]}
               alignItems={'center'}
               flexDirection={'column'}
               justifyContent={'flex-start'}

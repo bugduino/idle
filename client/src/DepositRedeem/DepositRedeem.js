@@ -1142,7 +1142,7 @@ class DepositRedeem extends Component {
                                               textAlign={'right'}
                                               hoverColor={'copyColor'}
                                             >
-                                              Fees: {this.props.tokenFeesPercentage.times(100).toFixed(2)}%
+                                              Fees: {this.props.tokenFeesPercentage.times(100).toFixed(2)}% on gains
                                             </Text>
                                           )
                                         }

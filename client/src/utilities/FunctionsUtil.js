@@ -193,11 +193,11 @@ class FunctionsUtil {
       let avgBuyPrice = this.BNify(0);
 
       // Try to get the avgBuyPrice with using the new method
-      const tokenConfig = this.props.availableTokens[selectedToken];
-      const userAvgPrice = await this.genericContractCall(tokenConfig.idle.token, 'userAvgPrices', [account]);
-      if (userAvgPrice){
-        avgBuyPrice = this.fixTokenDecimals(userAvgPrice,tokenConfig.decimals);
-      } else {
+      // const tokenConfig = this.props.availableTokens[selectedToken];
+      // const userAvgPrice = await this.genericContractCall(tokenConfig.idle.token, 'userAvgPrices', [account]);
+      // if (userAvgPrice){
+      //   avgBuyPrice = this.fixTokenDecimals(userAvgPrice,tokenConfig.decimals);
+      // } else {
 
         let idleTokensBalance= this.BNify(0);
         const filteredTxs = Object.values(etherscanTxs).filter(tx => (tx.token === selectedToken));
@@ -241,7 +241,7 @@ class FunctionsUtil {
             }
           });
         }
-      }
+      // }
 
       // Add token Data
       output[selectedToken] = avgBuyPrice;
@@ -2684,6 +2684,7 @@ class FunctionsUtil {
       tokenPrice,
     ] = await Promise.all([
       this.getTokenFees(tokenConfig),
+      // this.genericContractCall(tokenConfig.idle.token, 'userAvgPrices', [account]),
       this.getAvgBuyPrice([tokenConfig.token], account),
       this.getTokenBalance(tokenConfig.idle.token, account),
       this.genericContractCall(tokenConfig.idle.token, 'tokenPrice'),
@@ -2691,6 +2692,7 @@ class FunctionsUtil {
 
     if (tokenPrice && avgBuyPrice && avgBuyPrice[tokenConfig.token] && balance && feePercentage){
       avgBuyPrice = avgBuyPrice[tokenConfig.token];
+      // avgBuyPrice = this.fixTokenDecimals(avgBuyPrice,tokenConfig.decimals);
       tokenPrice = this.fixTokenDecimals(tokenPrice,tokenConfig.decimals);
 
       const priceDiff = tokenPrice.minus(avgBuyPrice);

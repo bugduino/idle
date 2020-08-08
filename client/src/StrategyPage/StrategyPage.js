@@ -63,6 +63,7 @@ class StrategyPage extends Component {
 
       // Get deposited tokens
       const portfolio = await this.functionsUtil.getAccountPortfolio(this.props.availableTokens,this.props.account);
+
       if (portfolio){
         const depositedTokens = Object.keys(portfolio.tokensBalance).filter(token => {
           return this.functionsUtil.BNify(portfolio.tokensBalance[token].idleTokenBalance).gt(0);
@@ -98,17 +99,19 @@ class StrategyPage extends Component {
           if (tokenEarnings){
             totalEarnings = totalEarnings.plus(tokenEarnings);
           }
+
           if (tokenAPY){
             avgAPY = avgAPY.plus(tokenAPY.times(tokenWeight));
           }
+
           if (tokenScore){
             avgScore = avgScore.plus(tokenScore.times(tokenWeight));
           }
+
           if (amountLentToken){
             totalAmountLent = totalAmountLent.plus(amountLentToken);
           }
 
-          // debugger;
         });
 
         // Add gov tokens to earnings
@@ -191,7 +194,7 @@ class StrategyPage extends Component {
 
       // Load and process Etherscan Txs
       const firstBlockNumber = this.functionsUtil.getGlobalConfig(['network','firstBlockNumber']);
-      await this.functionsUtil.getEtherscanTxs(this.props.account,firstBlockNumber,'latest',Object.keys(this.props.availableTokens));
+      await this.functionsUtil.getEtherscanTxs(this.props.account,firstBlockNumber,'latest',Object.keys(this.props.availableTokens))
 
       // Portfolio loaded
       this.setState(newState);
