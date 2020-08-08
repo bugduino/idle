@@ -185,6 +185,7 @@ class FunctionsUtil {
     }
 
     const output = {};
+    const etherscanTxs = await this.getEtherscanTxs(account,0,'latest',enabledTokens);
 
     await this.asyncForEach(enabledTokens, async (selectedToken) => {
 
@@ -197,7 +198,6 @@ class FunctionsUtil {
       if (userAvgPrice){
         avgBuyPrice = this.fixTokenDecimals(userAvgPrice,tokenConfig.decimals);
       } else {
-        const etherscanTxs = await this.getEtherscanTxs(account,0,'latest',enabledTokens);
 
         let idleTokensBalance= this.BNify(0);
         const filteredTxs = Object.values(etherscanTxs).filter(tx => (tx.token === selectedToken));
