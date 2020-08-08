@@ -415,7 +415,9 @@ class DepositRedeem extends Component {
         };
 
         const depositMetaTransactionsEnabled = this.functionsUtil.getGlobalConfig(['contract','methods','deposit','metaTransactionsEnabled']);
-        const gasLimitDeposit = this.functionsUtil.BNify(1000000);
+        // const gasLimitDeposit = this.functionsUtil.BNify(1000000);
+
+        // Use Proxy Contract if enabled
         const mintProxyContractInfo = this.state.actionProxyContract[this.state.action];
         if (depositMetaTransactionsEnabled && mintProxyContractInfo && this.props.biconomy && this.state.metaTransactionsEnabled){
           const mintProxyContract = this.state.actionProxyContract[this.state.action].contract;
@@ -425,15 +427,16 @@ class DepositRedeem extends Component {
             const functionSignature = mintProxyContract.methods[mintProxyContractInfo.function](...depositParams).encodeABI();
             contractSendResult = await this.functionsUtil.sendBiconomyTxWithPersonalSign(mintProxyContractInfo.name, functionSignature, callbackDeposit, callbackReceiptDeposit);
           } else {
-            contractSendResult = await this.props.contractMethodSendWrapper(mintProxyContractInfo.name, mintProxyContractInfo.function, depositParams, null, callbackDeposit, callbackReceiptDeposit, gasLimitDeposit);
+            contractSendResult = await this.props.contractMethodSendWrapper(mintProxyContractInfo.name, mintProxyContractInfo.function, depositParams, null, callbackDeposit, callbackReceiptDeposit);
           }
+        // Use main contract if no proxy contract exists
         } else {
           const _skipWholeRebalance = this.functionsUtil.getGlobalConfig(['contract','methods','deposit','skipRebalance']);
 
           // No need for callback atm
           contractSendResult = await this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'mintIdleToken', [
             tokensToDeposit, _skipWholeRebalance, '0x0000000000000000000000000000000000000000'
-          ], null, callbackDeposit, callbackReceiptDeposit, gasLimitDeposit);
+          ], null, callbackDeposit, callbackReceiptDeposit);
         }
       break;
       case 'redeem':
@@ -1007,6 +1010,7 @@ class DepositRedeem extends Component {
                             />
                             <Text
                               mt={1}
+                              px={2}
                               fontSize={1}
                               color={'cellText'}
                               textAlign={'center'}
@@ -1121,18 +1125,42 @@ class DepositRedeem extends Component {
                                   flexDirection={'column'}
                                 >
                                   {
-                                    totalBalance && (
-                                      <Link
+                                    (totalBalance || this.props.tokenFeesPercentage) && (
+                                      <Flex
                                         mb={1}
-                                        fontSize={1}
-                                        fontWeight={3}
-                                        color={'dark-gray'}
-                                        textAlign={'right'}
-                                        hoverColor={'copyColor'}
-                                        onClick={ (e) => this.setFastBalanceSelector(100) }
+                                        width={1}
+                                        alignItems={'center'}
+                                        flexDirection={'row'}
+                                        justifyContent={'space-between'}
                                       >
-                                        {totalBalance.toFixed(6)} {this.props.selectedToken}
-                                      </Link>
+                                        {
+                                          this.props.tokenFeesPercentage && (
+                                            <Text
+                                              fontSize={1}
+                                              fontWeight={3}
+                                              color={'dark-gray'}
+                                              textAlign={'right'}
+                                              hoverColor={'copyColor'}
+                                            >
+                                              Fees: {this.props.tokenFeesPercentage.times(100).toFixed(2)}%
+                                            </Text>
+                                          )
+                                        }
+                                        {
+                                          totalBalance && (
+                                            <Link
+                                              fontSize={1}
+                                              fontWeight={3}
+                                              color={'dark-gray'}
+                                              textAlign={'right'}
+                                              hoverColor={'copyColor'}
+                                              onClick={ (e) => this.setFastBalanceSelector(100) }
+                                            >
+                                              {totalBalance.toFixed(6)} {this.props.selectedToken}
+                                            </Link>
+                                          )
+                                        }
+                                      </Flex>
                                     )
                                   }
                                   <Input

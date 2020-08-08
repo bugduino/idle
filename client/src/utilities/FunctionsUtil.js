@@ -185,53 +185,62 @@ class FunctionsUtil {
     }
 
     const output = {};
-    const etherscanTxs = await this.getEtherscanTxs(account,0,'latest',enabledTokens);
 
-    enabledTokens.forEach((selectedToken) => {
+    await this.asyncForEach(enabledTokens, async (selectedToken) => {
 
       output[selectedToken] = [];
       let avgBuyPrice = this.BNify(0);
-      let idleTokensBalance= this.BNify(0);
-      const filteredTxs = Object.values(etherscanTxs).filter(tx => (tx.token === selectedToken));
 
-      if (filteredTxs && filteredTxs.length){
+      // Try to get the avgBuyPrice with using the new method
+      const tokenConfig = this.props.availableTokens[selectedToken];
+      const userAvgPrice = await this.genericContractCall(tokenConfig.idle.token, 'userAvgPrices', [account]);
+      if (userAvgPrice){
+        avgBuyPrice = this.fixTokenDecimals(userAvgPrice,tokenConfig.decimals);
+      } else {
+        const etherscanTxs = await this.getEtherscanTxs(account,0,'latest',enabledTokens);
 
-        filteredTxs.forEach((tx,index) => {
+        let idleTokensBalance= this.BNify(0);
+        const filteredTxs = Object.values(etherscanTxs).filter(tx => (tx.token === selectedToken));
 
-          // Skip transactions with no hash or pending
-          if (!tx.hash || (tx.status && tx.status === 'Pending') || !tx.idleTokens || !tx.tokenPrice){
-            return false;
-          }
+        if (filteredTxs && filteredTxs.length){
 
-          const prevAvgBuyPrice = avgBuyPrice;
-          let idleTokens = this.BNify(tx.idleTokens);
-          const tokenPrice = this.BNify(tx.tokenPrice);
+          filteredTxs.forEach((tx,index) => {
 
-          // Deposited
-          switch (tx.action){
-            case 'Deposit':
-            case 'Receive':
-            case 'Swap':
-            case 'Migrate':
-              avgBuyPrice = idleTokens.times(tokenPrice).plus(prevAvgBuyPrice.times(idleTokensBalance)).div(idleTokensBalance.plus(idleTokens));
-            break;
-            case 'Withdraw':
-            case 'Send':
-            case 'Redeem':
-            case 'SwapOut':
-              idleTokens = idleTokens.times(this.BNify(-1));
-            break;
-            default:
-            break;
-          }
+            // Skip transactions with no hash or pending
+            if (!tx.hash || (tx.status && tx.status === 'Pending') || !tx.idleTokens || !tx.tokenPrice){
+              return false;
+            }
 
-          // Update idleTokens balance
-          idleTokensBalance = idleTokensBalance.plus(idleTokens);
-          if (idleTokensBalance.lte(0)){
-            avgBuyPrice = this.BNify(0);
-            idleTokensBalance = this.BNify(0);
-          }
-        });
+            const prevAvgBuyPrice = avgBuyPrice;
+            let idleTokens = this.BNify(tx.idleTokens);
+            const tokenPrice = this.BNify(tx.tokenPrice);
+
+            // Deposited
+            switch (tx.action){
+              case 'Deposit':
+              case 'Receive':
+              case 'Swap':
+              case 'Migrate':
+                avgBuyPrice = idleTokens.times(tokenPrice).plus(prevAvgBuyPrice.times(idleTokensBalance)).div(idleTokensBalance.plus(idleTokens));
+              break;
+              case 'Withdraw':
+              case 'Send':
+              case 'Redeem':
+              case 'SwapOut':
+                idleTokens = idleTokens.times(this.BNify(-1));
+              break;
+              default:
+              break;
+            }
+
+            // Update idleTokens balance
+            idleTokensBalance = idleTokensBalance.plus(idleTokens);
+            if (idleTokensBalance.lte(0)){
+              avgBuyPrice = this.BNify(0);
+              idleTokensBalance = this.BNify(0);
+            }
+          });
+        }
       }
 
       // Add token Data
@@ -1920,6 +1929,9 @@ class FunctionsUtil {
           output = await this.genericContractCall(tokenConfig.idle.token, 'tokenPrice');
         }
       break;
+      case 'fee':
+        output = await this.getUserTokenFees(tokenConfig,account);
+      break;
       case 'tokenBalance':
         if (Object.keys(govTokens).includes(token)){
           const govTokenConfig = govTokens[token];
@@ -2101,10 +2113,15 @@ class FunctionsUtil {
       return cachedData;
     }
 
-    let tokenBalance = await this.getContractBalance(contractName,walletAddr);
+    let [
+      tokenBalance,
+      tokenDecimals
+    ] = await Promise.all([
+      this.getContractBalance(contractName,walletAddr),
+      this.getTokenDecimals(contractName)
+    ]);
 
     if (tokenBalance){
-      const tokenDecimals = await this.getTokenDecimals(contractName);
       tokenBalance = this.fixTokenDecimals(tokenBalance,tokenDecimals);
 
       // Set cached data
@@ -2569,6 +2586,9 @@ class FunctionsUtil {
     return govTokensBalances;
   }
   getGovTokenConfigByAddress = (address) => {
+    if (!address){
+      return false;
+    }
     const govTokens = this.getGlobalConfig(['govTokens']);
     return Object.values(govTokens).find( tokenConfig => tokenConfig.address.toLowerCase() === address.toLowerCase() );
   }
@@ -2635,6 +2655,53 @@ class FunctionsUtil {
 
     return output;
   }
+  getTokenFees = async (tokenConfig=null) => {
+    if (!tokenConfig && this.props.tokenConfig){
+      tokenConfig = this.props.tokenConfig;
+    }
+    const fee = await this.genericContractCall(tokenConfig.idle.token, 'fee');
+    if (fee){
+      return this.BNify(fee).div(this.BNify(100000));
+    }
+    return null;
+  }
+  getUserTokenFees = async (tokenConfig=null,account=null) => {
+    if (!tokenConfig && this.props.tokenConfig){
+      tokenConfig = this.props.tokenConfig;
+    }
+    if (!account && this.props.account){
+      account = this.props.account;
+    }
+
+    if (!account || !tokenConfig){
+      return false;
+    }
+
+    let [
+      feePercentage,
+      avgBuyPrice,
+      balance,
+      tokenPrice,
+    ] = await Promise.all([
+      this.getTokenFees(tokenConfig),
+      this.getAvgBuyPrice([tokenConfig.token], account),
+      this.getTokenBalance(tokenConfig.idle.token, account),
+      this.genericContractCall(tokenConfig.idle.token, 'tokenPrice'),
+    ]);
+
+    if (tokenPrice && avgBuyPrice && avgBuyPrice[tokenConfig.token] && balance && feePercentage){
+      avgBuyPrice = avgBuyPrice[tokenConfig.token];
+      tokenPrice = this.fixTokenDecimals(tokenPrice,tokenConfig.decimals);
+
+      const priceDiff = tokenPrice.minus(avgBuyPrice);
+      const gain = priceDiff.times(balance).times(tokenPrice);
+      const fees = gain.times(feePercentage);
+
+      return fees;
+    }
+
+    return null;
+  }
   getGovTokenUserBalance = async (govTokenConfig,account=null,availableTokens=null,convertToken=null) => {
     const govTokensUserBalances = await this.getGovTokensUserBalances(account,availableTokens,convertToken,govTokenConfig);
     return govTokensUserBalances && govTokensUserBalances[govTokenConfig.token] ? govTokensUserBalances[govTokenConfig.token] : this.BNify(0);
@@ -2654,6 +2721,17 @@ class FunctionsUtil {
           totalAUM = totalAUM.plus(totalAllocation);
           if (tokenAprs.avgApr && !tokenAprs.avgApr.isNaN()){
             avgAPR = avgAPR.plus(totalAllocation.times(tokenAprs.avgApr))
+          }
+        }
+
+        // Get old token allocation
+        if (tokenConfig.migration && tokenConfig.migration.oldContract){
+          const oldTokenConfig = Object.assign({},tokenConfig);
+          oldTokenConfig.idle = tokenConfig.migration.oldContract;
+          const oldTokenAllocation = await this.getTokenAllocation(oldTokenConfig,false,false);
+          if (oldTokenAllocation && oldTokenAllocation.totalAllocation && !oldTokenAllocation.totalAllocation.isNaN()){
+            const oldTokenTotalAllocation = await this.convertTokenBalance(oldTokenAllocation.totalAllocation,token,oldTokenConfig,isRisk);
+            totalAUM = totalAUM.plus(oldTokenTotalAllocation);
           }
         }
       });

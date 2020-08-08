@@ -242,7 +242,7 @@ class FundsOverview extends Component {
                     decimals:4,
                     maxPrecision:8,
                     fontWeight:300,
-                    fontSize:['1.8em','2.2em'],
+                    fontSize:['1.8em','1.9em'],
                     color:theme.colors.counter,
                     flexProps:{
                       justifyContent:'center'
@@ -271,12 +271,12 @@ class FundsOverview extends Component {
                 fieldInfo={{
                   name:'redeemableBalanceCounter',
                   props:{
-                    decimals:7,
+                    decimals:6,
                     maxPrecision:8,
                     style:{
                       fontWeight:300,
-                      fontSize: this.props.isMobile ? '1.8em' : '2.2em',
-                      color:theme.colors.counter
+                      color:theme.colors.counter,
+                      fontSize: this.props.isMobile ? '1.8em' : '1.9em',
                     },
                     flexProps:{
                       justifyContent:'center'
@@ -325,11 +325,11 @@ class FundsOverview extends Component {
                 fieldInfo={{
                   name:'earningsCounter',
                   props:{
-                    decimals:7,
+                    decimals:6,
                     maxPrecision:8,
                     style:{
                       fontWeight:300,
-                      fontSize:this.props.isMobile ? '1.8em' : '2.2em',
+                      fontSize:this.props.isMobile ? '1.8em' : '1.9em',
                       color:theme.colors.counter
                     },
                     flexProps:{
@@ -401,6 +401,38 @@ class FundsOverview extends Component {
                 fontSize={[3,4]}
                 component={Heading.h3}
               >
+                Fees
+              </Title>
+              <AssetField
+                {...this.props}
+                token={this.props.selectedToken}
+                fieldInfo={{
+                  name:'fee',
+                  props:{
+                    decimals:6,
+                    maxPrecision:8,
+                    fontWeight:300,
+                    fontSize:['1.8em','1.9em'],
+                    color:theme.colors.counter,
+                    flexProps:{
+                      justifyContent:'center'
+                    }
+                  }
+                }}
+              />
+            </Flex>
+            <Flex
+              mb={[2,0]}
+              width={[1,0.2]}
+              alignItems={'center'}
+              flexDirection={'column'}
+              justifyContent={'flex-start'}
+            >
+              <Title
+                mb={2}
+                fontSize={[3,4]}
+                component={Heading.h3}
+              >
                 Current APY
               </Title>
               <AssetField
@@ -411,7 +443,7 @@ class FundsOverview extends Component {
                   props:{
                     decimals:2,
                     fontWeight:300,
-                    fontSize:['1.8em','2.2em'],
+                    fontSize:['1.8em','1.9em'],
                     color:theme.colors.counter,
                     flexProps:{
                       justifyContent:'center'
@@ -442,7 +474,7 @@ class FundsOverview extends Component {
                   props:{
                     decimals:1,
                     fontWeight:300,
-                    fontSize:['1.8em','2.2em'],
+                    fontSize:['1.8em','1.9em'],
                     color:theme.colors.counter,
                     flexProps:{
                       justifyContent:'center'

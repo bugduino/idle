@@ -14,6 +14,7 @@ import EstimatedEarnings from '../EstimatedEarnings/EstimatedEarnings';
 class AssetPage extends Component {
 
   state = {
+    tokenFees:{},
     tokenBalance:{},
     tokenApproved:{},
     activeModal:null,
@@ -21,6 +22,7 @@ class AssetPage extends Component {
     idleTokenBalance:{},
     redeemableBalance:{},
     govTokensDisabled:{},
+    tokenFeesPercentage:{},
     componentMounted:false
   };
 
@@ -47,7 +49,7 @@ class AssetPage extends Component {
     });
   }
 
-  async loadTokensBalance(){
+  async loadTokensInfo(){
     if (this.props.account){
       const newState = {...this.state};
       await this.functionsUtil.asyncForEach(Object.keys(this.props.availableTokens),async (token) => {
@@ -55,18 +57,30 @@ class AssetPage extends Component {
         const govTokenAvailableTokens = {};
         govTokenAvailableTokens[token] = tokenConfig;
 
-        const [tokenBalance,idleTokenPrice,idleTokenBalance,tokenApproved,govTokensBalance] = await Promise.all([
+        const [
+          tokenFeesPercentage,
+          tokenBalance,
+          tokenFees,
+          idleTokenPrice,
+          idleTokenBalance,
+          tokenApproved,
+          govTokensBalance
+        ] = await Promise.all([
+          this.functionsUtil.getTokenFees(tokenConfig),
           this.functionsUtil.getTokenBalance(token,this.props.account),
+          this.functionsUtil.getUserTokenFees(tokenConfig,this.props.account),
           this.functionsUtil.genericContractCall(tokenConfig.idle.token, 'tokenPrice'),
           this.functionsUtil.getTokenBalance(tokenConfig.idle.token,this.props.account),
           this.functionsUtil.checkTokenApproved(token,tokenConfig.idle.address,this.props.account),
           this.functionsUtil.getGovTokensUserTotalBalance(this.props.account,govTokenAvailableTokens,'DAI')
         ]);
 
+        newState.tokenFees[token] = tokenFees;
         newState.tokenBalance[token] = tokenBalance;
         newState.tokenApproved[token] = tokenApproved;
         newState.idleTokenBalance[token] = idleTokenBalance;
         newState.govTokensBalance[token] = govTokensBalance;
+        newState.tokenFeesPercentage[token] = tokenFeesPercentage;
         newState.govTokensDisabled[token] = tokenConfig.govTokensDisabled;
         newState.redeemableBalance[token] = idleTokenBalance ? this.functionsUtil.fixTokenDecimals(idleTokenBalance.times(idleTokenPrice),tokenConfig.decimals) : this.functionsUtil.BNify(0);
       });
@@ -78,7 +92,7 @@ class AssetPage extends Component {
 
   async componentWillMount(){
     this.loadUtils();
-    await this.loadTokensBalance();
+    await this.loadTokensInfo();
   }
 
   async componentDidUpdate(prevProps, prevState) {
@@ -86,7 +100,7 @@ class AssetPage extends Component {
     const transactionsChanged = prevProps.transactions && this.props.transactions && Object.values(prevProps.transactions).filter(tx => (tx.status==='success')).length !== Object.values(this.props.transactions).filter(tx => (tx.status==='success')).length;
     const accountChanged = prevProps.account !== this.props.account;
     if (accountChanged || transactionsChanged){
-      this.loadTokensBalance();
+      this.loadTokensInfo();
     }
   }
 
@@ -145,11 +159,13 @@ class AssetPage extends Component {
         >
           <DepositRedeem
             {...this.props}
+            tokenFees={this.state.tokenFees[this.props.selectedToken]}
             tokenBalance={this.state.tokenBalance[this.props.selectedToken]}
             tokenApproved={this.state.tokenApproved[this.props.selectedToken]}
             govTokensBalance={this.state.govTokensBalance[this.props.selectedToken]}
             idleTokenBalance={this.state.idleTokenBalance[this.props.selectedToken]}
             redeemableBalance={this.state.redeemableBalance[this.props.selectedToken]}
+            tokenFeesPercentage={this.state.tokenFeesPercentage[this.props.selectedToken]}
           />
         </Flex>
         {
@@ -163,6 +179,7 @@ class AssetPage extends Component {
               <Title my={[3,4]}>Funds Overview</Title>
               <FundsOverview
                 {...this.props}
+                tokenFees={this.state.tokenFees[this.props.selectedToken]}
               />
             </Flex>
         }
@@ -181,7 +198,7 @@ class AssetPage extends Component {
                   {
                     title:'TOKEN',
                     props:{
-                      width:[0.3,0.15]
+                      width:[0.3,0.22]
                     },
                     fields:[
                       {
@@ -199,7 +216,7 @@ class AssetPage extends Component {
                   {
                     title:'UNCLAIMED',
                     props:{
-                      width:[0.24, 0.19],
+                      width:[0.24, 0.20],
                     },
                     fields:[
                       {
@@ -213,7 +230,7 @@ class AssetPage extends Component {
                   {
                     title:'REDEEMABLE',
                     props:{
-                      width:[0.23,0.19],
+                      width:[0.23,0.20],
                       justifyContent:['center','flex-start']
                     },
                     fields:[
@@ -237,7 +254,7 @@ class AssetPage extends Component {
                     title:'TOKEN PRICE',
                     mobile:false,
                     props:{
-                      width: 0.28,
+                      width: 0.19,
                     },
                     parentProps:{
                       width:1,
