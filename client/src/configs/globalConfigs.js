@@ -218,14 +218,14 @@ const globalConfigs = {
         startTimestamp:1589801874,
         enabledStrategies:['best','risk'],
         enabledTokens:['DAI','USDC','USDT'],
-      },
+      },/*
       v4:{
         label:'Idle V4',
         endTimestamp:null,
         startTimestamp:1597057346,
         enabledStrategies:['best','risk'],
         enabledTokens:['DAI','USDC','USDT'],
-      }
+      }*/
     },
     tokens:{
       DAI:{

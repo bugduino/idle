@@ -236,6 +236,13 @@ class AssetPage extends Component {
                     fields:[
                       {
                         name:'tokenBalance'
+                      },
+                      {
+                        name:'tooltip',
+                        props:{
+                          placement:'bottom',
+                          message:'The shown balance may be lower than the real one.',
+                        }
                       }
                     ]
                   },

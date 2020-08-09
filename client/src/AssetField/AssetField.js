@@ -4,10 +4,10 @@ import React, { Component } from 'react';
 import { linearGradientDef } from '@nivo/core'
 import SmartNumber from '../SmartNumber/SmartNumber';
 import FunctionsUtil from '../utilities/FunctionsUtil';
-import { Image, Text, Loader, Button } from "rimble-ui";
 import GenericChart from '../GenericChart/GenericChart';
 import VariationNumber from '../VariationNumber/VariationNumber';
 import AllocationChart from '../AllocationChart/AllocationChart';
+import { Image, Text, Loader, Button, Tooltip, Icon } from "rimble-ui";
 
 class AssetField extends Component {
 
@@ -763,6 +763,20 @@ class AssetField extends Component {
             showLoader={typeof this.props.showLoader !== 'undefined' ? this.props.showLoader : false}
           />
         ) : loader
+      break;
+      case 'tooltip':
+        output = (
+          <Tooltip
+            {...fieldProps}
+          >
+            <Icon
+              ml={2}
+              name={"Info"}
+              size={'1em'}
+              color={'cellTitle'}
+            />
+          </Tooltip>
+        );
       break;
       case 'aprChart':
         output = this.state.aprChartData ? (

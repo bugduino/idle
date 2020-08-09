@@ -463,9 +463,34 @@ const availableTokens = {
           token:'usdt'
         },
         idle:{
-          abi:IdleTokenV3,
+          abi:IdleTokenV4,
           token:'idleUSDTYield',
+          address:'0xF34842d05A1c888Ca02769A633DF37177415C2f8',
           address:'0x63D27B3DA94A9E871222CB0A32232674B02D2f2D'
+        },
+
+        migration:{
+          enabled:true,
+          message:'Idle now supports yield farming and governance tokens distribution. Migrate now your USDT with just one click!',
+          oldContract:{
+            abi:IdleTokenV3,
+            token:'idleUSDT',
+            name:'idleUSDTYieldV2',
+            address:'0x63D27B3DA94A9E871222CB0A32232674B02D2f2D'
+          },
+          migrationContract:{
+            abi:IdleConverterPersonalSignV4,
+            token:'idleUSDT',
+            name:'IdleConverterV4',
+            address:'0xcF61eA643d3eE6042A743F1Ab012D55863805876',
+            oldAddresses:['0x60753b3a588ff8fe8204595dc295a132c1bb50ae','0xC74d886ebaA5674E21A1CB0Be3997BDDcE6ad525'],
+            functions:[
+              {
+                label:'Migrate',
+                name:'migrateFromToIdle'
+              },
+            ]
+          }
         },
         protocols:[
           {
