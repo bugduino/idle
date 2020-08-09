@@ -216,7 +216,7 @@ class AssetPage extends Component {
                   {
                     title:'UNCLAIMED',
                     props:{
-                      width:[0.24, 0.20],
+                      width:[0.25, 0.20],
                     },
                     fields:[
                       {
@@ -230,7 +230,7 @@ class AssetPage extends Component {
                   {
                     title:'REDEEMABLE',
                     props:{
-                      width:[0.23,0.20],
+                      width:[0.25,0.20],
                       justifyContent:['center','flex-start']
                     },
                     fields:[
@@ -242,11 +242,14 @@ class AssetPage extends Component {
                   {
                     title:'APR',
                     props:{
-                      width:[0.23,0.19],
+                      width:[0.20,0.19],
                     },
                     fields:[
                       {
-                        name:'apr'
+                        name:'apr',
+                        parentProps:{
+                          alignItems:['center','flex-start']
+                        }
                       }
                     ]
                   },

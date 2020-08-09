@@ -402,7 +402,7 @@ const globalConfigs = {
         metaTransactionsEnabled:false
       },
       deposit:{
-        skipRebalance:true,
+        skipMint:true,
         metaTransactionsEnabled:false,
         proxyContract:{
           enabled:false,

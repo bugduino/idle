@@ -249,6 +249,7 @@ const availableTokens = {
         },
         migration:{
           enabled:true,
+          message:'Idle now supports yield farming and governance tokens distribution. Migrate now your DAI with just one click!',
           oldContract:{
             // abi:IdleTokenV2,
             // token:'idleDAI',
@@ -363,17 +364,19 @@ const availableTokens = {
           token:'usdc'
         },
         idle:{
-          abi:IdleTokenV3,
+          abi:IdleTokenV4,
           token:'idleUSDCYield',
-          address:'0x12B98C621E8754Ae70d0fDbBC73D6208bC3e3cA6'
+          address:'0x5274891bEC421B39D23760c04A6755eCB444797C',
         },
         migration:{
           enabled:true,
+          message:'Idle now supports yield farming and governance tokens distribution. Migrate now your USDC with just one click!',
           oldContract:{
-            abi:IdleTokenV2,
+            abi:IdleTokenV3,
             token:'idleUSDC',
-            name:'idleUSDCOld',
-            address:'0xeB66ACc3d011056B00ea521F8203580C2E5d3991',
+            name:'idleUSDCYieldV2',
+            address:'0x12B98C621E8754Ae70d0fDbBC73D6208bC3e3cA6'
+            // address:'0xeB66ACc3d011056B00ea521F8203580C2E5d3991',
           },
           migrationContract:{
             abi:IdleConverterPersonalSignV4,
@@ -512,6 +515,7 @@ const availableTokens = {
         enabled:true,
         abi:ERC20.abi,
         govTokensDisabled:true,
+        skipMintForDeposit:false,
         color:'hsl(250, 31%, 15%)',
         icon:'images/tokens/SUSD.svg',
         address:'0x57ab1ec28d129707052df4df418d58a2d46d5f51',
@@ -569,6 +573,7 @@ const availableTokens = {
         enabled:true,
         abi:ERC20.abi,
         govTokensDisabled:true,
+        skipMintForDeposit:false,
         color:'hsl(217, 100%, 20%)',
         address:'0x0000000000085d4780b73119b644ae5ecd22b376',
         wyre:{

@@ -431,11 +431,12 @@ class DepositRedeem extends Component {
           }
         // Use main contract if no proxy contract exists
         } else {
-          const _skipWholeRebalance = this.functionsUtil.getGlobalConfig(['contract','methods','deposit','skipRebalance']);
+          let _skipMint = this.functionsUtil.getGlobalConfig(['contract','methods','deposit','skipMint']);
+          _skipMint = typeof this.props.tokenConfig.skipMintForDeposit !== 'undefined' ? this.props.tokenConfig.skipMintForDeposit : _skipMint;
 
           // No need for callback atm
           contractSendResult = await this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'mintIdleToken', [
-            tokensToDeposit, _skipWholeRebalance, '0x0000000000000000000000000000000000000000'
+            tokensToDeposit, _skipMint, '0x0000000000000000000000000000000000000000'
           ], null, callbackDeposit, callbackReceiptDeposit);
         }
       break;

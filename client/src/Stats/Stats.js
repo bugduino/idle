@@ -35,7 +35,7 @@ class Stats extends Component {
     buttonGroups:[],
     apiResults:null,
     carouselIndex:0,
-    idleVersion:'v3',
+    idleVersion:'v4',
     minStartTime:null,
     endTimestamp:null,
     showAdvanced:true,

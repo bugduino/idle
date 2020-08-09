@@ -114,7 +114,7 @@ class UpgradeModal extends React.Component {
                 color={'mid-gray'}
                 textAlign={'center'}
               >
-                Idle now supports yield farming and governance tokens distribution, and you can migrate your portfolio with just one click!
+                Idle now supports yield farming and governance tokens distribution, migrate now your portfolio with just one click!
               </Text>
             </Flex>
             <Flex
