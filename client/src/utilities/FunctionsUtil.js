@@ -2295,7 +2295,8 @@ class FunctionsUtil {
       avgApr: null,
       totalAllocation:null,
       protocolsAllocations:null,
-      protocolsAllocationsPerc:null
+      protocolsAllocationsPerc:null,
+      totalAllocationWithUnlent:null
     };
 
     const exchangeRates = {};
@@ -2337,14 +2338,14 @@ class FunctionsUtil {
     });
 
     tokenAllocation.unlentBalance = this.BNify(0);
-    totalAllocation.totalAllocationWithUnlent = totalAllocation;
+    tokenAllocation.totalAllocationWithUnlent = totalAllocation;
 
     // Add unlent balance to the pool
     let unlentBalance = await this.getProtocolBalance(tokenConfig.token,tokenConfig.idle.address);
     if (unlentBalance){
       unlentBalance = this.fixTokenDecimals(unlentBalance,tokenConfig.decimals);
       tokenAllocation.unlentBalance = unlentBalance;
-      totalAllocation.totalAllocationWithUnlent = totalAllocation.totalAllocationWithUnlent.plus(unlentBalance);
+      tokenAllocation.totalAllocationWithUnlent = tokenAllocation.totalAllocationWithUnlent.plus(unlentBalance);
     }
 
     Object.keys(protocolsAllocations).forEach((protocolAddr,i) => {
@@ -2740,7 +2741,7 @@ class FunctionsUtil {
           const totalAllocation = await this.convertTokenBalance(tokenAllocation.totalAllocationWithUnlent,token,tokenConfig,isRisk);
           totalAUM = totalAUM.plus(totalAllocation);
           // console.log(strategy,token,totalAllocation.toString(),totalAUM.toString());
-          if (tokenAprs.avgApr && !tokenAprs.avgApr.isNaN()){
+          if (tokenAprs && tokenAprs.avgApr && !tokenAprs.avgApr.isNaN()){
             avgAPR = avgAPR.plus(totalAllocation.times(tokenAprs.avgApr))
           }
         }
