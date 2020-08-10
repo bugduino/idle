@@ -21,7 +21,7 @@ const env = process.env;
 
 const globalConfigs = {
   appName: 'Idle',
-  version: 'v3.8',
+  version: 'v3.9',
   baseURL: 'https://idle.finance',
   baseToken: 'ETH',
   countries:{
@@ -214,18 +214,18 @@ const globalConfigs = {
       },
       v3:{
         label:'Idle V3',
-        endTimestamp:null,
+        endTimestamp:1597077000,
         startTimestamp:1589801874,
         enabledStrategies:['best','risk'],
         enabledTokens:['DAI','USDC','USDT'],
-      },/*
+      },
       v4:{
         label:'Idle V4',
         endTimestamp:null,
-        startTimestamp:1597057346,
+        startTimestamp:1597077000,
         enabledStrategies:['best','risk'],
         enabledTokens:['DAI','USDC','USDT'],
-      }*/
+      }
     },
     tokens:{
       DAI:{
@@ -403,6 +403,7 @@ const globalConfigs = {
       },
       deposit:{
         skipMint:true,
+        minAmountForMint:10000,
         metaTransactionsEnabled:false,
         proxyContract:{
           enabled:false,

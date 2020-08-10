@@ -1008,6 +1008,17 @@ class RimbleTransaction extends React.Component {
             await this.initContract(oldContract.name, oldContract.address, oldContract.abi);
           }
 
+          // Initialize protocols contracts
+          if (tokenConfig.migration.oldProtocols){
+            tokenConfig.migration.oldProtocols.forEach(async (p,i) => {
+              let foundProtocolContract = this.state.contracts.find(c => c.name === p.token);
+              if (!foundProtocolContract) {
+                this.functionsUtil.customLog('initializeContracts, init '+p.token+' contract',p);
+                await this.initContract(p.token, p.address, p.abi);
+              }
+            });
+          }
+
           if (tokenConfig.migration.migrationContract){
             const migrationContract = tokenConfig.migration.migrationContract;
             this.functionsUtil.customLog('initializeContracts, init '+migrationContract.name+' contract',migrationContract);

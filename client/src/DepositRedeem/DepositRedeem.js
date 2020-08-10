@@ -431,8 +431,18 @@ class DepositRedeem extends Component {
           }
         // Use main contract if no proxy contract exists
         } else {
+
           let _skipMint = this.functionsUtil.getGlobalConfig(['contract','methods','deposit','skipMint']);
           _skipMint = typeof this.props.tokenConfig.skipMintForDeposit !== 'undefined' ? this.props.tokenConfig.skipMintForDeposit : _skipMint;
+
+          // Mint if someone mint over X amount
+          const minAmountForMint = this.functionsUtil.getGlobalConfig(['contract','methods','deposit','minAmountForMint']);
+          if (minAmountForMint){
+            const amountToDeposit = await this.functionsUtil.convertTokenBalance(inputValue,this.props.selectedToken,this.props.tokenConfig,false);
+            if (amountToDeposit.gte(this.functionsUtil.BNify(minAmountForMint))){
+              _skipMint = false;
+            }
+          }
 
           // No need for callback atm
           contractSendResult = await this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'mintIdleToken', [
@@ -619,6 +629,9 @@ class DepositRedeem extends Component {
   }
 
   checkButtonDisabled = (amount=null) => {
+
+    return true;
+
     if (!this.state.action){
       return false;
     }

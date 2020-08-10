@@ -260,6 +260,22 @@ const availableTokens = {
             name:'idleDAIYieldV2',
             address:'0x78751b12da02728f467a44eac40f5cbc16bd7934',
           },
+          oldProtocols:[
+            {
+              name:'dydx',
+              enabled:true,
+              abi:yToken,
+              address:'0xf424b10e1e9691ae5fb530fe4c3e6b9971013d49',
+              token:'yxDAIOld',
+              decimals:18,
+              functions:{
+                exchangeRate:{
+                  name:'price',
+                  params:[]
+                }
+              }
+            }
+          ],
           migrationContract:{
             token:'idleDAI',
             abi:IdleConverterPersonalSignV4,
@@ -466,7 +482,6 @@ const availableTokens = {
           abi:IdleTokenV4,
           token:'idleUSDTYield',
           address:'0xF34842d05A1c888Ca02769A633DF37177415C2f8',
-          address:'0x63D27B3DA94A9E871222CB0A32232674B02D2f2D'
         },
 
         migration:{
@@ -551,18 +566,18 @@ const availableTokens = {
           token:'susd'
         },
         idle:{
-          abi:IdleTokenV3,
+          abi:IdleTokenV4,
           token:'idleSUSDYield',
-          address:'0xe79e177d2a5c7085027d7c64c8f271c81430fc9b'
+          address:'0xf52cdcd458bf455aed77751743180ec4a595fd3f',
         },
         migration:{
           enabled:true,
-          message:'A minor issue has been recently discovered in idleSUSD Smart-contract. Please use the section below to migrate or redeem your position.',
+          message:'Idle now supports yield farming and governance tokens distribution. Migrate now your SUSD with just one click!',
           oldContract:{
             abi:IdleTokenV3,
             token:'idleSUSD',
-            name:'idleSUSDYieldOld',
-            address:'0xb39ca0261a1b2986a6a9Fe38d344B56374963dE5',
+            name:'idleSUSDYieldV2',
+            address:'0xe79e177d2a5c7085027d7c64c8f271c81430fc9b',
           },
           migrationContract:{
             abi:IdleConverterPersonalSignV4,
@@ -610,16 +625,16 @@ const availableTokens = {
         idle:{
           abi:IdleTokenV3,
           token:'idleTUSDYield',
-          address:'0x51C77689A9c2e8cCBEcD4eC9770a1fA5fA83EeF1'
+          address:'0xc278041fDD8249FE4c1Aad1193876857EEa3D68c',
         },
         migration:{
           enabled:true,
-          message:'A minor issue has been recently discovered in idleTUSD Smart-contract. Please use the section below to migrate or redeem your position.',
+          message:'Idle now supports yield farming and governance tokens distribution. Migrate now your TUSD with just one click!',
           oldContract:{
             abi:IdleTokenV3,
             token:'idleTUSD',
-            name:'idleTUSDYieldOld',
-            address:'0x7DB7A4a50b26602E56536189Aa94678C80F8E5b6',
+            name:'idleTUSDYieldV2',
+            address:'0x51C77689A9c2e8cCBEcD4eC9770a1fA5fA83EeF1',
           },
           migrationContract:{
             abi:IdleConverterPersonalSignV4,
@@ -664,9 +679,32 @@ const availableTokens = {
           token:'wbtc'
         },
         idle:{
-          abi:IdleTokenV3,
+          abi:IdleTokenV4,
           token:'idleWBTCYield',
-          address:'0xD6f279B7ccBCD70F8be439d25B9Df93AEb60eC55'
+          address:'0x8C81121B15197fA0eEaEE1DC75533419DcfD3151',
+        },
+        migration:{
+          enabled:true,
+          message:'Idle now supports yield farming and governance tokens distribution. Migrate now your WBTC with just one click!',
+          oldContract:{
+            abi:IdleTokenV3,
+            token:'idleWBTC',
+            name:'idleWBTCYieldV2',
+            address:'0xD6f279B7ccBCD70F8be439d25B9Df93AEb60eC55'
+          },
+          migrationContract:{
+            abi:IdleConverterPersonalSignV4,
+            token:'idleWBTC',
+            name:'IdleConverterV4',
+            address:'0xcF61eA643d3eE6042A743F1Ab012D55863805876',
+            oldAddresses:['0x60753b3a588ff8fe8204595dc295a132c1bb50ae','0xC74d886ebaA5674E21A1CB0Be3997BDDcE6ad525'],
+            functions:[
+              {
+                label:'Migrate',
+                name:'migrateFromToIdle'
+              },
+            ]
+          }
         },
         protocols:[
           {

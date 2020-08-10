@@ -35,7 +35,8 @@ class Stats extends Component {
     buttonGroups:[],
     apiResults:null,
     carouselIndex:0,
-    idleVersion:'v3',
+    idleVersion:null,
+    statsVersions:{},
     minStartTime:null,
     endTimestamp:null,
     showAdvanced:true,
@@ -92,8 +93,11 @@ class Stats extends Component {
 
     const statsVersions = globalConfigs.stats.versions;
 
-    if (this.state.idleVersion && statsVersions[this.state.idleVersion].endTimestamp){
-      const newEndTimestampObj = moment(moment(statsVersions[this.state.idleVersion].endTimestamp*1000).format('YYYY-MM-DD HH:mm'),'YYYY-MM-DD HH:mm');
+    newState.latestVersion = Object.keys(statsVersions).pop();
+    newState.idleVersion = newState.latestVersion;
+
+    if (newState.idleVersion && statsVersions[newState.idleVersion].endTimestamp){
+      const newEndTimestampObj = moment(moment(statsVersions[newState.idleVersion].endTimestamp*1000).format('YYYY-MM-DD HH:mm'),'YYYY-MM-DD HH:mm');
       if (newState.endTimestampObj.isAfter(newEndTimestampObj)){
         newState.endTimestampObj = newEndTimestampObj;
         newState.endTimestamp = parseInt(newState.endTimestampObj._d.getTime()/1000);
@@ -110,8 +114,8 @@ class Stats extends Component {
     newState.startTimestampObj = newState.endTimestampObj.clone().subtract(1,'month');
     newState.startTimestamp = parseInt(newState.startTimestampObj._d.getTime()/1000);
 
-    if (this.state.idleVersion && statsVersions[this.state.idleVersion].startTimestamp){
-      const newStartTimestampObj = moment(moment(statsVersions[this.state.idleVersion].startTimestamp*1000).format('YYYY-MM-DD HH:mm'),'YYYY-MM-DD HH:mm');
+    if (newState.idleVersion && statsVersions[newState.idleVersion].startTimestamp){
+      const newStartTimestampObj = moment(moment(statsVersions[newState.idleVersion].startTimestamp*1000).format('YYYY-MM-DD HH:mm'),'YYYY-MM-DD HH:mm');
       if (newState.startTimestampObj.isBefore(newStartTimestampObj)){
         newState.startTimestampObj = newStartTimestampObj;
         newState.startTimestamp = parseInt(newState.startTimestampObj._d.getTime()/1000);
@@ -633,6 +637,8 @@ class Stats extends Component {
         }
       });
 
+      const versionDefaultValue = versionsOptions.find( v => (v.value === this.state.idleVersion) );
+
       return (
         <Flex
           p={0}
@@ -709,9 +715,7 @@ class Stats extends Component {
                       height:['100%','46px'],
                     }}
                     name={'idle-version'}
-                    defaultValue={
-                      {value:'v3',label:'Idle V3'}
-                    }
+                    defaultValue={versionDefaultValue}
                     options={versionsOptions}
                     onChange={ v => this.setIdleVersion(v) }
                   />
@@ -933,7 +937,7 @@ class Stats extends Component {
               justifyContent={'space-between'}
             >
               {
-                this.state.idleVersion === 'v3' && 
+                this.state.idleVersion === this.state.latestVersion && 
                 <Flex
                   pt={2}
                   width={[1,1/3]}
@@ -952,7 +956,7 @@ class Stats extends Component {
                   />
                 </Flex>
               }
-              <Flex id={'chart-ALL'} width={[1, this.state.idleVersion === 'v3' ? 2/3 : 1]} mb={[0,3]}>
+              <Flex id={'chart-ALL'} width={[1, this.state.idleVersion === this.state.latestVersion ? 2/3 : 1]} mb={[0,3]}>
                 <Flex alignItems={'flex-start'} justifyContent={'flex-start'} flexDirection={'column'} width={1}>
                   <Heading.h4
                     mb={2}

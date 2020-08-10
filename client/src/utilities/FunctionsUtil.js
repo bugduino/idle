@@ -2307,7 +2307,11 @@ class FunctionsUtil {
       const contractName = protocolInfo.token;
       const protocolAddr = protocolInfo.address.toLowerCase();
 
-      let [protocolBalance, tokenDecimals, exchangeRate] = await Promise.all([
+      let [
+        protocolBalance,
+        tokenDecimals,
+        exchangeRate
+      ] = await Promise.all([
         this.getProtocolBalance(contractName,tokenConfig.idle.address),
         this.getTokenDecimals(contractName),
         ( protocolInfo.functions.exchangeRate ? this.genericContractCall(contractName,protocolInfo.functions.exchangeRate.name,protocolInfo.functions.exchangeRate.params) : null )
@@ -2331,6 +2335,14 @@ class FunctionsUtil {
 
       // console.log('getTokenAllocation',contractName,protocolAddr,protocolAllocation.toString(),exchangeRate ? exchangeRate.toString() : null,totalAllocation.toString());
     });
+
+    // Add unlent balance to the pool
+    let unlentBalance = await this.getProtocolBalance(tokenConfig.token,tokenConfig.idle.address);
+    if (unlentBalance){
+      unlentBalance = this.fixTokenDecimals(unlentBalance,tokenConfig.decimals);
+      // unlentBalance = await this.convertTokenBalance(unlentBalance,tokenConfig.token,tokenConfig,false);
+      totalAllocation = this.BNify(totalAllocation).plus(unlentBalance);
+    }
 
     Object.keys(protocolsAllocations).forEach((protocolAddr,i) => {
       const protocolAllocation = protocolsAllocations[protocolAddr];
@@ -2721,19 +2733,35 @@ class FunctionsUtil {
         if (tokenAllocation && tokenAllocation.totalAllocation && !tokenAllocation.totalAllocation.isNaN()){
           const totalAllocation = await this.convertTokenBalance(tokenAllocation.totalAllocation,token,tokenConfig,isRisk);
           totalAUM = totalAUM.plus(totalAllocation);
+          // console.log(strategy,token,totalAllocation.toString(),totalAUM.toString());
           if (tokenAprs.avgApr && !tokenAprs.avgApr.isNaN()){
             avgAPR = avgAPR.plus(totalAllocation.times(tokenAprs.avgApr))
           }
         }
 
+
         // Get old token allocation
         if (tokenConfig.migration && tokenConfig.migration.oldContract){
           const oldTokenConfig = Object.assign({},tokenConfig);
           oldTokenConfig.idle = tokenConfig.migration.oldContract;
+
+          // Replace protocols with old protocols
+          if (oldTokenConfig.migration.oldProtocols){
+            oldTokenConfig.migration.oldProtocols.forEach( oldProtocol => {
+              const foundProtocol = oldTokenConfig.protocols.find( p => (p.name === oldProtocol.name) );
+              if (foundProtocol){
+                const protocolPos = oldTokenConfig.protocols.indexOf(foundProtocol);
+                oldTokenConfig.protocols[protocolPos] = oldProtocol;
+              }
+            });
+            // debugger;
+          }
+
           const oldTokenAllocation = await this.getTokenAllocation(oldTokenConfig,false,false);
           if (oldTokenAllocation && oldTokenAllocation.totalAllocation && !oldTokenAllocation.totalAllocation.isNaN()){
             const oldTokenTotalAllocation = await this.convertTokenBalance(oldTokenAllocation.totalAllocation,token,oldTokenConfig,isRisk);
             totalAUM = totalAUM.plus(oldTokenTotalAllocation);
+            // console.log(strategy,token,'old',oldTokenTotalAllocation.toString(),totalAUM.toString());
           }
         }
       });
