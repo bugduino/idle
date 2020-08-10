@@ -2336,12 +2336,15 @@ class FunctionsUtil {
       // console.log('getTokenAllocation',contractName,protocolAddr,protocolAllocation.toString(),exchangeRate ? exchangeRate.toString() : null,totalAllocation.toString());
     });
 
+    tokenAllocation.unlentBalance = this.BNify(0);
+    totalAllocation.totalAllocationWithUnlent = totalAllocation;
+
     // Add unlent balance to the pool
     let unlentBalance = await this.getProtocolBalance(tokenConfig.token,tokenConfig.idle.address);
     if (unlentBalance){
       unlentBalance = this.fixTokenDecimals(unlentBalance,tokenConfig.decimals);
-      // unlentBalance = await this.convertTokenBalance(unlentBalance,tokenConfig.token,tokenConfig,false);
-      totalAllocation = this.BNify(totalAllocation).plus(unlentBalance);
+      tokenAllocation.unlentBalance = unlentBalance;
+      totalAllocation.totalAllocationWithUnlent = totalAllocation.totalAllocationWithUnlent.plus(unlentBalance);
     }
 
     Object.keys(protocolsAllocations).forEach((protocolAddr,i) => {
@@ -2410,7 +2413,7 @@ class FunctionsUtil {
 
     const compDistribution = await this.getCompDistribution(tokenConfig,cTokenIdleSupply);
 
-    // console.log('getCompAPR',compDistribution.toString());
+    // console.log('getCompAPR',token,compDistribution ? compDistribution.toString() : null);
 
     if (compDistribution){
       const cTokenInfo = tokenConfig.protocols.find( p => (p.name === 'compound') );
@@ -2430,6 +2433,9 @@ class FunctionsUtil {
       let compoundAllocation = null;
 
       cTokenIdleSupply = await this.genericContractCall(cTokenInfo.token,'totalSupply');
+
+      // console.log('getCompAPR',cTokenInfo.token,cTokenIdleSupply ? cTokenIdleSupply.toString() : null);
+
       if (cTokenIdleSupply){
         let [exchangeRate,tokenDecimals] = await Promise.all([
           this.genericContractCall(cTokenInfo.token,cTokenInfo.functions.exchangeRate.name,cTokenInfo.functions.exchangeRate.params),
@@ -2438,7 +2444,7 @@ class FunctionsUtil {
         if (exchangeRate){
           exchangeRate = this.fixTokenDecimals(exchangeRate,cTokenInfo.decimals);
           compoundAllocation = this.fixTokenDecimals(cTokenIdleSupply,tokenDecimals,exchangeRate);
-          // console.log('getCompAPR',compValue.toString(),cTokenIdleSupply.toString(),exchangeRate.toString(),tokenDecimals.toString(),compoundAllocation.toString());
+          // console.log('getCompAPR',token,compValue.toString(),cTokenIdleSupply.toString(),exchangeRate.toString(),tokenDecimals.toString(),compoundAllocation.toString());
         }
       }
 
@@ -2636,11 +2642,11 @@ class FunctionsUtil {
       if (govTokensAmounts){
         await this.asyncForEach(govTokensAmounts, async (govTokenAmount,govTokenIndex) => {
           govTokenAmount = this.BNify(govTokenAmount);
-          // if (govTokenAmount.gt(0)){
-            // Get gov Token config by index
-            const govTokenAddress = await this.genericContractCall(idleTokenConfig.token,'govTokens',[govTokenIndex]);
+          // Get gov Token config by index
+          const govTokenAddress = await this.genericContractCall(idleTokenConfig.token,'govTokens',[govTokenIndex]);
+          if (govTokenAddress){
             govTokenConfig = govTokenConfig ? govTokenConfig : this.getGovTokenConfigByAddress(govTokenAddress);
-            if (govTokenConfig && govTokenConfig.address.toLowerCase() === govTokenAddress.toLowerCase()){
+            if (govTokenConfig && govTokenConfig.address && govTokenConfig.address.toLowerCase() === govTokenAddress.toLowerCase()){
 
               // Get gov token conversion rate
               let tokenConversionRate = null;
@@ -2660,7 +2666,7 @@ class FunctionsUtil {
               // Add govTokens balance
               output[govTokenConfig.token] = output[govTokenConfig.token].plus(govTokenAmount);
             }
-          // }
+          }
         });
       }
     });
@@ -2730,8 +2736,8 @@ class FunctionsUtil {
         const tokenConfig = availableTokens[token];
         const tokenAllocation = await this.getTokenAllocation(tokenConfig,false,addGovTokens);
         const tokenAprs = await this.getTokenAprs(tokenConfig,tokenAllocation,addGovTokens);
-        if (tokenAllocation && tokenAllocation.totalAllocation && !tokenAllocation.totalAllocation.isNaN()){
-          const totalAllocation = await this.convertTokenBalance(tokenAllocation.totalAllocation,token,tokenConfig,isRisk);
+        if (tokenAllocation && tokenAllocation.totalAllocationWithUnlent && !tokenAllocation.totalAllocationWithUnlent.isNaN()){
+          const totalAllocation = await this.convertTokenBalance(tokenAllocation.totalAllocationWithUnlent,token,tokenConfig,isRisk);
           totalAUM = totalAUM.plus(totalAllocation);
           // console.log(strategy,token,totalAllocation.toString(),totalAUM.toString());
           if (tokenAprs.avgApr && !tokenAprs.avgApr.isNaN()){
@@ -2758,8 +2764,8 @@ class FunctionsUtil {
           }
 
           const oldTokenAllocation = await this.getTokenAllocation(oldTokenConfig,false,false);
-          if (oldTokenAllocation && oldTokenAllocation.totalAllocation && !oldTokenAllocation.totalAllocation.isNaN()){
-            const oldTokenTotalAllocation = await this.convertTokenBalance(oldTokenAllocation.totalAllocation,token,oldTokenConfig,isRisk);
+          if (oldTokenAllocation && oldTokenAllocation.totalAllocation && !oldTokenAllocation.totalAllocationWithUnlent.isNaN()){
+            const oldTokenTotalAllocation = await this.convertTokenBalance(oldTokenAllocation.totalAllocationWithUnlent,token,oldTokenConfig,isRisk);
             totalAUM = totalAUM.plus(oldTokenTotalAllocation);
             // console.log(strategy,token,'old',oldTokenTotalAllocation.toString(),totalAUM.toString());
           }
@@ -2955,6 +2961,7 @@ class FunctionsUtil {
 
         if (addGovTokens && protocolInfo.name === 'compound'){
           const compAPR = await this.getCompAPR(tokenConfig.token,tokenConfig);
+          // debugger;
 
           if (compAPR){
             protocolApr = protocolApr.plus(compAPR);
