@@ -94,7 +94,7 @@ class Stats extends Component {
     const statsVersions = globalConfigs.stats.versions;
 
     newState.latestVersion = Object.keys(statsVersions).pop();
-    newState.idleVersion = newState.latestVersion;
+    newState.idleVersion = this.state.idleVersion === null ? newState.latestVersion : this.state.idleVersion;
 
     if (newState.idleVersion && statsVersions[newState.idleVersion].endTimestamp){
       const newEndTimestampObj = moment(moment(statsVersions[newState.idleVersion].endTimestamp*1000).format('YYYY-MM-DD HH:mm'),'YYYY-MM-DD HH:mm');
@@ -130,6 +130,7 @@ class Stats extends Component {
     newState.maxDate = newState.maxEndDate._d;
 
     // console.log('loadParams',newState);
+    // debugger;
 
     if (newState !== this.state){
       await this.setState(newState);
@@ -715,8 +716,8 @@ class Stats extends Component {
                       height:['100%','46px'],
                     }}
                     name={'idle-version'}
-                    defaultValue={versionDefaultValue}
                     options={versionsOptions}
+                    defaultValue={versionDefaultValue}
                     onChange={ v => this.setIdleVersion(v) }
                   />
                 </Flex>
@@ -956,7 +957,12 @@ class Stats extends Component {
                   />
                 </Flex>
               }
-              <Flex id={'chart-ALL'} width={[1, this.state.idleVersion === this.state.latestVersion ? 2/3 : 1]} mb={[0,3]}>
+              <Flex
+                mb={[0,3]}
+                id={'chart-ALL'}
+                pl={[0,this.state.idleVersion === this.state.latestVersion ? 0 : 3]}
+                width={[1, this.state.idleVersion === this.state.latestVersion ? 2/3 : 1]}
+              >
                 <Flex alignItems={'flex-start'} justifyContent={'flex-start'} flexDirection={'column'} width={1}>
                   <Heading.h4
                     mb={2}
@@ -971,7 +977,7 @@ class Stats extends Component {
                     Allocations over time
                   </Heading.h4>
                   <StatsChart
-                    height={ 350 }
+                    height={350}
                     {...this.state}
                     chartMode={'ALL'}
                     parentId={'chart-ALL'}

@@ -630,8 +630,6 @@ class DepositRedeem extends Component {
 
   checkButtonDisabled = (amount=null) => {
 
-    return true;
-
     if (!this.state.action){
       return false;
     }
