@@ -627,6 +627,8 @@ class Migrate extends Component {
       return null;
     }
 
+    const biconomyEnabled = this.functionsUtil.getGlobalConfig(['network','providers','biconomy','enabled']);
+
     return (
       this.state.loading && this.props.account ? (
         <DashboardCard
@@ -827,47 +829,49 @@ class Migrate extends Component {
                               You are one step away from the migration of your{ this.props.isMigrationTool ? this.state.oldIdleTokens.toFixed(4) : ' old' } {this.state.oldTokenName}{ this.props.isMigrationTool ? ` into the Idle ${this.props.tokenConfig.token} ${this.props.selectedStrategy} strategy` : '' }!
                             </Text>
                             <Flex
+                              width={1}
                               alignItems={'center'}
                               flexDirection={'column'}
                               justifyContent={'space-between'}
                             >
                             {
-                              <Flex
-                                py={3}
-                                px={2}
-                                mt={2}
-                                width={1}
-                                borderRadius={2}
-                                alignItems={'center'}
-                                flexDirection={'column'}
-                                justifyContent={'center'}
-                                backgroundColor={'dashboardBg'}
-                                border={`1px solid ${this.props.theme.colors.boxBorder}`}
-                              >
-                                <Text
-                                  mt={1}
-                                  fontSize={1}
-                                  color={'cellText'}
-                                  textAlign={'center'}
+                              biconomyEnabled && 
+                                <Flex
+                                  py={3}
+                                  px={2}
+                                  mt={2}
+                                  width={1}
+                                  borderRadius={2}
+                                  alignItems={'center'}
+                                  flexDirection={'column'}
+                                  justifyContent={'center'}
+                                  backgroundColor={'dashboardBg'}
+                                  border={`1px solid ${this.props.theme.colors.boxBorder}`}
                                 >
+                                  <Text
+                                    mt={1}
+                                    fontSize={1}
+                                    color={'cellText'}
+                                    textAlign={'center'}
+                                  >
+                                    {
+                                      this.props.biconomy ?
+                                        `Meta-Transactions allow you to migrate without spending a dime! But, if you are stuck, please disable it and try again.`
+                                      :
+                                        'Your wallet does not support Meta-transactions, you are still able to migrate with a normal transaction.'
+                                    }
+                                  </Text>
                                   {
-                                    this.props.biconomy ?
-                                      `Meta-Transactions allow you to migrate without spending a dime! But, if you are stuck, please disable it and try again.`
-                                    :
-                                      'Your wallet does not support Meta-transactions, you are still able to migrate with a normal transaction.'
+                                  this.props.biconomy &&
+                                    <Checkbox
+                                      mt={2}
+                                      required={false}
+                                      label={"Migrate with Meta-Transaction"}
+                                      checked={this.state.metaTransactionsEnabled}
+                                      onChange={ e => this.toggleMetaTransactionsEnabled(e.target.checked) }
+                                    />
                                   }
-                                </Text>
-                                {
-                                this.props.biconomy &&
-                                  <Checkbox
-                                    mt={2}
-                                    required={false}
-                                    label={"Migrate with Meta-Transaction"}
-                                    checked={this.state.metaTransactionsEnabled}
-                                    onChange={ e => this.toggleMetaTransactionsEnabled(e.target.checked) }
-                                  />
-                                }
-                              </Flex>
+                                </Flex>
                             }
                             {
                               this.props.tokenConfig.migration.migrationContract.functions.map((functionInfo,i) => {
@@ -876,7 +880,7 @@ class Migrate extends Component {
                                   <RoundButton
                                     buttonProps={{
                                       mt:3,
-                                      width:[1,0.7],
+                                      width:[1,0.5],
                                       mainColor:this.props.theme.colors.migrate
                                     }}
                                     key={`migrate_${i}`}
