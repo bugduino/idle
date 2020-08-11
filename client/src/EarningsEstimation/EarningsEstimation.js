@@ -252,7 +252,6 @@ class EarningsEstimation extends Component {
                 id={`asset-${token}`}
                 flexDirection={'row'}
                 key={`asset-${token}`}
-                pt={ token === 'USD' ? 2 : null }
                 borderTop={ token === 'USD' ? `1px solid ${theme.colors.divider}` : null }
               >
                 <Flex
@@ -290,6 +289,7 @@ class EarningsEstimation extends Component {
                               pr={2}
                               justifyContent={'flex-end'}
                               width={estimationStep.width}
+                              pt={ token === 'USD' ? 2 : null }
                               key={`asset-estimate-${token}-${estimateIndex}`}
                               borderRight={`1px solid ${theme.colors.divider}`}
                             >
@@ -312,10 +312,10 @@ class EarningsEstimation extends Component {
                   <Flex
                     width={1}
                     zIndex={1}
-                    pt={'2.2em'}
                     alignItems={'center'}
                     flexDirection={'row'}
                     justifyContent={'center'}
+                    pt={ token === 'USD' ? '2.8em' : '2.2em' }
                     pb={ tokenIndex<Object.keys(this.state.tokensEarnings).length-1 ? '1em' : 0 }
                   >
                     <Flex
