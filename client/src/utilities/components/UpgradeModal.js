@@ -77,6 +77,24 @@ class UpgradeModal extends React.Component {
     }
   }
 
+  convert = async (token) => {
+    const convertTool = this.functionsUtil.getGlobalConfig(['tools','tokenMigration']);
+    const gaEventsEnabled = this.functionsUtil.getGlobalConfig(['globalConfigs','analytics','google','events','enabled']);
+    // Send Google Analytics event
+    if (gaEventsEnabled){
+      await this.functionsUtil.sendGoogleAnalyticsEvent({
+        eventCategory: 'UpgradeModal',
+        eventAction: 'migrate',
+        eventLabel: `${this.props.selectedStrategy}_${token}`
+      });
+      this.props.goToSection(`tools/${convertTool.route}/${token}`);
+      this.props.closeModal();
+    } else {
+      this.props.goToSection(`tools/${convertTool.route}/${token}`);
+      this.props.closeModal();
+    }
+  }
+
   render() {
 
     const fieldProps = {
@@ -164,7 +182,6 @@ class UpgradeModal extends React.Component {
                 </Flex>
               </Flex>
               <Flex
-                mb={3}
                 width={1}
                 alignItems={'center'}
                 flexDirection={'column'}
@@ -273,7 +290,116 @@ class UpgradeModal extends React.Component {
                 }
               </Flex>
               <Flex
-                mb={3}
+                width={1}
+                alignItems={'center'}
+                flexDirection={'column'}
+              >
+                {
+                  this.props.oldIdleTokensToMigrate && Object.keys(this.props.oldIdleTokensToMigrate).map( token => {
+                    const tokenConfig = this.props.oldIdleTokensToMigrate[token].tokenConfig;
+                    const balance = this.props.oldIdleTokensToMigrate[token].balance;
+                    const newTokenConfig = this.props.availableTokens[tokenConfig.baseToken];
+                    return (
+                      <Flex
+                        mt={2}
+                        width={1}
+                        alignItems={'center'}
+                        flexDirection={'row'}
+                        key={`token_${token}`}
+                        justifyContent={'space-between'}
+                      >
+                        <Flex
+                          width={0.28}
+                          alignItems={'center'}
+                          flexDirection={'row'}
+                        >
+                          <AssetField
+                            fieldInfo={{
+                              name:'icon',
+                              props:{
+                                mr:2,
+                                height:'2.3em'
+                              }
+                            }}
+                            tokenConfig={tokenConfig}
+                            token={token}
+                          />
+                          <AssetField
+                            fieldInfo={{
+                              name:'tokenName',
+                              props:fieldProps
+                            }}
+                            tokenConfig={tokenConfig}
+                            token={token}
+                          />
+                        </Flex>
+                        <Flex
+                          width={0.19}
+                          alignItems={'center'}
+                          justifyContent={'center'}
+                        >
+                          <SmartNumber
+                            {...fieldProps}
+                            minPrecision={5}
+                            number={balance}
+                            flexProps={{
+                              justifyContent:'center'
+                            }}
+                          />
+                        </Flex>
+                        <Flex
+                          width={0.19}
+                          alignItems={'center'}
+                          justifyContent={'center'}
+                        >
+                          <AssetField
+                            {...this.props}
+                            fieldInfo={{
+                              name:'apyNoGov',
+                              props:fieldProps
+                            }}
+                            token={newTokenConfig.token}
+                            tokenConfig={newTokenConfig}
+                          />
+                        </Flex>
+                        <Flex
+                          width={0.19}
+                          alignItems={'center'}
+                          justifyContent={'center'}
+                        >
+                          <AssetField
+                            {...this.props}
+                            fieldInfo={{
+                              name:'apy',
+                              props:fieldProps
+                            }}
+                            token={newTokenConfig.token}
+                            tokenConfig={newTokenConfig}
+                          />
+                        </Flex>
+                        <Flex
+                          width={0.15}
+                          alignItems={'center'}
+                          justifyContent={'center'}
+                        >
+                          <RoundButton
+                            handleClick={ e => this.convert(token) }
+                            buttonProps={{
+                              size:'small',
+                              width:'100%',
+                              className:header_styles.gradientButton
+                            }}
+                          >
+                            MIGRATE
+                          </RoundButton>
+                        </Flex>
+                      </Flex>
+                    );
+                  })
+                }
+              </Flex>
+              <Flex
+                my={3}
                 alignItems={'center'}
                 flexDirection={'column'}
                 justifyContent={'center'}
@@ -286,14 +412,18 @@ class UpgradeModal extends React.Component {
                 >
                   MIGRATE LATER
                 </RoundButton>
-                <Checkbox
-                  mt={2}
-                  required={false}
-                  color={'mid-gray'}
-                  checked={this.state.dontShowAgain}
-                  label={`Don't show this popup again`}
-                  onChange={ e => this.toggleDontShowAgain(e.target.checked) }
-                />
+                {
+                  /*
+                  <Checkbox
+                    mt={2}
+                    required={false}
+                    color={'mid-gray'}
+                    checked={this.state.dontShowAgain}
+                    label={`Don't show this popup again`}
+                    onChange={ e => this.toggleDontShowAgain(e.target.checked) }
+                  />
+                  */
+                }
               </Flex>
             </Flex>
           </ModalCard.Body>

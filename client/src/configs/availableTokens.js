@@ -251,10 +251,6 @@ const availableTokens = {
           enabled:true,
           message:'Idle now supports yield farming and governance tokens distribution. Migrate now your DAI with just one click!',
           oldContract:{
-            // abi:IdleTokenV2,
-            // token:'idleDAI',
-            // name:'idleDAIOld',
-            // address:'0x10eC0D497824e342bCB0EDcE00959142aAa766dD',
             abi:IdleTokenV3,
             token:'idleDAI',
             name:'idleDAIYieldV2',
@@ -557,7 +553,7 @@ const availableTokens = {
         govTokensDisabled:true,
         skipMintForDeposit:false,
         color:'hsl(250, 31%, 15%)',
-        icon:'images/tokens/SUSD.svg',
+        // icon:'images/tokens/SUSD.svg',
         address:'0x57ab1ec28d129707052df4df418d58a2d46d5f51',
         wyre:{
           destCurrency:'SUSD'

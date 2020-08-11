@@ -33,7 +33,7 @@ class TokenMigration extends Component {
   }
 
   async loadTokens(){
-    const selectedFromToken = Object.keys(this.props.toolProps.availableTokens)[0];
+    const selectedFromToken = this.props.urlParams.param2 && this.props.toolProps.availableTokens[this.props.urlParams.param2] ? this.props.urlParams.param2 : Object.keys(this.props.toolProps.availableTokens)[0];
 
     await this.functionsUtil.asyncForEach(Object.keys(this.props.toolProps.availableTokens),async (token) => {
       const tokenConfig = this.props.toolProps.availableTokens[token];
@@ -48,6 +48,11 @@ class TokenMigration extends Component {
 
   async componentDidUpdate(prevProps,prevState){
     this.loadUtils();
+
+    const tokenFromChanged = prevProps.urlParams.param2 !== this.props.urlParams.param2;
+    if (tokenFromChanged){
+      await this.loadTokens();
+    }
   }
 
   selectFromToken = async (selectedFromToken) => {

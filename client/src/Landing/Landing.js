@@ -458,9 +458,6 @@ class Landing extends Component {
                   top={['initial','0']}
                   position={'absolute'}
                   bottom={['0','initial']}
-                  style={{
-                    overflowY:'visible'
-                  }}
                 >
                   <Flex
                     top={['initial',0]}

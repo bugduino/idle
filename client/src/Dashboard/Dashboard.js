@@ -25,8 +25,10 @@ class Dashboard extends Component {
     pageComponent:null,
     currentSection:null,
     selectedSection:null,
+    tokensToMigrate:null,
     showResetButton:false,
     selectedSubsection:null,
+    oldIdleTokensToMigrate:null,
     protocolsTokensBalances:null,
   };
 
@@ -156,12 +158,14 @@ class Dashboard extends Component {
         }
       } else {
         currentRoute += '/'+params.section;
+
         if (params.param1 && params.param1.length){
           currentRoute += '/'+params.param1;
         }
-        if (params.param2 && params.param2.length){
-          currentRoute += '/'+params.param2;
-        }
+
+        // if (params.param2 && params.param2.length){
+        //   currentRoute += '/'+params.param2;
+        // }
       }
     }
 
@@ -209,6 +213,8 @@ class Dashboard extends Component {
         selectedSection = m;
       }
     });
+
+    // console.log('pageComponent',params,pageComponent);
 
     // Exit if no strategy and token selected
     if (!pageComponent){
@@ -306,17 +312,20 @@ class Dashboard extends Component {
   async checkTokensToMigrate(){
 
     const showUpgradeModal = this.functionsUtil.getStoredItem('dontShowUpgradeModal',false,null) !== null ? false : true;
-    if (this.props.selectedToken || !showUpgradeModal){
+    if (this.props.selectedToken || !showUpgradeModal || !this.props.availableTokens){
       return null;
     }
 
     const tokensToMigrate = await this.functionsUtil.getTokensToMigrate();
-    if (tokensToMigrate && Object.keys(tokensToMigrate).length>0){
+    const oldIdleTokensToMigrate = await this.functionsUtil.getProtocolsTokensBalances('idle');
+    
+    if ((tokensToMigrate && Object.keys(tokensToMigrate).length>0) || (oldIdleTokensToMigrate && Object.keys(oldIdleTokensToMigrate).length>0)){
       const activeModal = 'upgrade';
       if (activeModal !== this.state.activeModal){
         this.setState({
           activeModal,
-          tokensToMigrate
+          tokensToMigrate,
+          oldIdleTokensToMigrate
         });
 
         return activeModal;
@@ -565,6 +574,7 @@ class Dashboard extends Component {
                     <PageComponent
                       {...this.props}
                       match={{ params:{} }}
+                      urlParams={this.state.params}
                       changeToken={this.changeToken.bind(this)}
                       goToSection={this.goToSection.bind(this)}
                       selectedSection={this.state.selectedSection}
@@ -582,6 +592,7 @@ class Dashboard extends Component {
           goToSection={this.goToSection.bind(this)}
           tokensToMigrate={this.state.tokensToMigrate}
           isOpen={this.state.activeModal === 'upgrade'}
+          oldIdleTokensToMigrate={this.state.oldIdleTokensToMigrate}
         />
         <MigrateModal
           {...this.props}

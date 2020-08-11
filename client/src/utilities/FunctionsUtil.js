@@ -1871,8 +1871,8 @@ class FunctionsUtil {
           output = await this.getGovTokenPool(token, govTokenAvailableTokens);
         } else {
           const tokenAllocation = await this.getTokenAllocation(tokenConfig,false,addGovTokens);
-          if (tokenAllocation && tokenAllocation.totalAllocation){
-            output = tokenAllocation.totalAllocation;
+          if (tokenAllocation && tokenAllocation.totalAllocationWithUnlent){
+            output = tokenAllocation.totalAllocationWithUnlent;
           }
         }
       break;
@@ -2803,8 +2803,6 @@ class FunctionsUtil {
         migrationEnabled,
         oldContractBalanceFormatted
       } = await this.checkMigration(tokenConfig,this.props.account);
-
-      // console.log('getTokensToMigrate',token,migrationEnabled,oldContractBalanceFormatted);
       
       if (migrationEnabled){
         tokensToMigrate[token] = {
@@ -2819,7 +2817,7 @@ class FunctionsUtil {
   /*
   Get protocols tokens balances
   */
-  getProtocolsTokensBalances = async () => {
+  getProtocolsTokensBalances = async (protocol=null) => {
     if (!this.props.account){
       return false;
     }
@@ -2829,6 +2827,9 @@ class FunctionsUtil {
     if (protocolsTokens){
       await this.asyncForEach(Object.keys(protocolsTokens),async (token) => {
         const tokenConfig = protocolsTokens[token];
+        if (protocol !== null && tokenConfig.protocol.toLowerCase() !== protocol.toLowerCase() ){
+          return;
+        }
         let tokenContract = this.getContractByName(tokenConfig.token);
         if (!tokenContract && tokenConfig.abi){
           tokenContract = await this.props.initContract(tokenConfig.token,tokenConfig.address,tokenConfig.abi);

@@ -249,8 +249,11 @@ class EarningsEstimation extends Component {
             // console.log(tokenEarnings.earnings.toFixed(10),tokenEarnings.earningsYear.toFixed(10),finalEarnings.toFixed(10),cursorPerc.toFixed(10),estimationStepPerc.toFixed(10));
             return (
               <Flex
-                key={`asset-${token}`}
+                id={`asset-${token}`}
                 flexDirection={'row'}
+                key={`asset-${token}`}
+                pt={ token === 'USD' ? 2 : null }
+                borderTop={ token === 'USD' ? `1px solid ${theme.colors.divider}` : null }
               >
                 <Flex
                   width={[1,0.93]}
