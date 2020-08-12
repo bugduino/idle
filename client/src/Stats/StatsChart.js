@@ -1304,36 +1304,35 @@ class StatsChart extends Component {
         const totalItems = apiResults.length;
 
         const idleChartData = apiResults.map((d,i) => {
-          const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
 
-          const tokenPrice = this.functionsUtil.fixTokenDecimals(d.idlePrice,this.props.tokenConfig.decimals);
           let y = 0;
           let apy = 0;
+          let days = 0;
+          const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
+          const tokenPrice = this.functionsUtil.fixTokenDecimals(d.idlePrice,this.props.tokenConfig.decimals);
 
           if (!firstTokenPrice){
             firstTokenPrice = tokenPrice;
           } else {
             y = parseFloat(tokenPrice.div(firstTokenPrice).minus(1).times(100));
 
-            const days = (d.timestamp-apiResults[0].timestamp)/86400;
+            days = (d.timestamp-apiResults[0].timestamp)/86400;
             const earning = tokenPrice.div(firstTokenPrice).minus(1).times(100);
             apy = earning.times(365).div(days).toFixed(2);
+
+            // console.log(firstTokenPrice.toString(),tokenPrice.toString(),earning.toString(),days,y,apy);
           }
 
           if (firstIdleBlock === null){
             firstIdleBlock = parseInt(d.blocknumber);
           }
 
-          maxChartValue = Math.max(maxChartValue,y);
+          maxChartValue = Math.max(maxChartValue,y,apy);
 
           const itemPos = Math.floor(itemIndex/totalItems*100);
           const blocknumber = d.blocknumber;
 
-          // console.log(x,d.timestamp,blocknumber,firstTokenPrice.toString(),tokenPrice.toString(),y);
-
           itemIndex++;
-
-          // prevTokenPrice = tokenPrice;
 
           return { x, y, apy, blocknumber, itemPos };
         });

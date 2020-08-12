@@ -314,8 +314,8 @@ class AssetPage extends Component {
           <Flex
             mb={[3,4]}
             width={1}
-            id={'transactions-container'}
             flexDirection={'column'}
+            id={'transactions-container'}
           >
             <Title my={[3,4]}>Transactions</Title>
             <TransactionsList

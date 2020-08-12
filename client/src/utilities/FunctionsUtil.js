@@ -1846,6 +1846,9 @@ class FunctionsUtil {
       const newTokenConfig = this.props.availableStrategies[this.props.selectedStrategy][this.props.selectedToken];
       govTokenAvailableTokens = {};
       govTokenAvailableTokens[newTokenConfig.token] = newTokenConfig;
+    } else if (!Object.keys(govTokens).includes(token)){
+      govTokenAvailableTokens = {};
+      govTokenAvailableTokens[token] = tokenConfig;
     }
 
     switch (field){
@@ -1971,11 +1974,11 @@ class FunctionsUtil {
           const govTokenConfig = govTokens[token];
           output = await this.getGovTokenUserBalance(govTokenConfig,account,govTokenAvailableTokens);
         } else {
-          const [fee,govTokensBalance,idleTokenPrice1,idleTokenBalance2] = await Promise.all([
+          const [fee,idleTokenPrice1,idleTokenBalance2,govTokensBalance] = await Promise.all([
             this.loadAssetField('fee',token,tokenConfig,account),
-            this.getGovTokensUserTotalBalance(account,null,'DAI'),
             this.genericContractCall(tokenConfig.idle.token, 'tokenPrice'),
             this.loadAssetField('idleTokenBalance',token,tokenConfig,account),
+            this.getGovTokensUserTotalBalance(account,govTokenAvailableTokens,'DAI'),
           ]);
 
           if (idleTokenBalance2 && idleTokenPrice1){
@@ -2983,7 +2986,6 @@ class FunctionsUtil {
 
         if (addGovTokens && protocolInfo.name === 'compound'){
           const compAPR = await this.getCompAPR(tokenConfig.token,tokenConfig);
-          // debugger;
 
           if (compAPR){
             protocolApr = protocolApr.plus(compAPR);

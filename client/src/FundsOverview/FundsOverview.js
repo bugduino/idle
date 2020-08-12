@@ -124,7 +124,18 @@ class FundsOverview extends Component {
       }
     ];
 
-    const compAPR = await this.functionsUtil.getCompAPR(this.props.selectedToken,this.props.tokenConfig);
+    let [tokenAllocation,compAPR] = await Promise.all([
+      this.functionsUtil.getTokenAllocation(this.props.tokenConfig,false,false),
+      this.functionsUtil.getCompAPR(this.props.selectedToken,this.props.tokenConfig)
+    ]);
+
+    if (tokenAllocation){
+      const compoundInfo = this.props.tokenConfig.protocols.find( p => (p.name === 'compound') );
+      if (tokenAllocation.protocolsAllocationsPerc[compoundInfo.address.toLowerCase()]){
+        const compoundAllocationPerc = tokenAllocation.protocolsAllocationsPerc[compoundInfo.address.toLowerCase()];
+        compAPR = compAPR.times(compoundAllocationPerc);
+      }
+    }
 
     this.setState({
       compAPR,
@@ -446,7 +457,7 @@ class FundsOverview extends Component {
                       color={'cellText'}
                       textAlign={'center'}
                     >
-                      + {this.state.compAPR.toFixed(2)}% COMP
+                      {this.state.compAPR.toFixed(2)}% COMP
                     </Text>
                   </Flex>
                 )
