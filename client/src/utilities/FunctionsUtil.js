@@ -1968,12 +1968,21 @@ class FunctionsUtil {
         };
       break;
       case 'redeemableBalance':
-        const [idleTokenBalance2,idleTokenPrice1] = await Promise.all([
+        const [fee,govTokensBalance,idleTokenPrice1,idleTokenBalance2] = await Promise.all([
+          this.loadAssetField('fee',token,tokenConfig,account),
+          this.getGovTokensUserTotalBalance(account,null,'DAI'),
+          this.genericContractCall(tokenConfig.idle.token, 'tokenPrice'),
           this.loadAssetField('idleTokenBalance',token,tokenConfig,account),
-          this.genericContractCall(tokenConfig.idle.token, 'tokenPrice')
         ]);
         if (idleTokenBalance2 && idleTokenPrice1){
-          const redeemableBalance = this.fixTokenDecimals(idleTokenBalance2.times(idleTokenPrice1),tokenConfig.decimals);
+          let redeemableBalance = this.fixTokenDecimals(idleTokenBalance2.times(idleTokenPrice1),tokenConfig.decimals);
+          
+          if (govTokensBalance && !this.BNify(govTokensBalance).isNaN()){
+            redeemableBalance = redeemableBalance.plus(this.BNify(govTokensBalance));
+          }
+          if (fee && !this.BNify(fee).isNaN()){
+            redeemableBalance = redeemableBalance.minus(this.BNify(fee));
+          }
           output = redeemableBalance;
         }
       break;
@@ -2693,7 +2702,7 @@ class FunctionsUtil {
     }
 
     if (!account || !tokenConfig){
-      return false;
+      return null;
     }
 
     let [
@@ -2765,8 +2774,8 @@ class FunctionsUtil {
           }
 
           const oldTokenAllocation = await this.getTokenAllocation(oldTokenConfig,false,false);
-          if (oldTokenAllocation && oldTokenAllocation.totalAllocation && !oldTokenAllocation.totalAllocationWithUnlent.isNaN()){
-            const oldTokenTotalAllocation = await this.convertTokenBalance(oldTokenAllocation.totalAllocationWithUnlent,token,oldTokenConfig,isRisk);
+          if (oldTokenAllocation && oldTokenAllocation.totalAllocation && !oldTokenAllocation.totalAllocation.isNaN()){
+            const oldTokenTotalAllocation = await this.convertTokenBalance(oldTokenAllocation.totalAllocation,token,oldTokenConfig,isRisk);
             totalAUM = totalAUM.plus(oldTokenTotalAllocation);
             // console.log(strategy,token,'old',oldTokenTotalAllocation.toString(),totalAUM.toString());
           }

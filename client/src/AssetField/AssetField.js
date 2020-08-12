@@ -163,16 +163,13 @@ class AssetField extends Component {
           }
         break;
         case 'earningsCounter':
-          const [amountLent2,idleTokenPrice3,avgBuyPrice2,tokenAPY2] = await Promise.all([
-            this.loadField('amountLent'),
-            this.functionsUtil.getIdleTokenPrice(this.props.tokenConfig),
-            this.functionsUtil.getAvgBuyPrice([this.props.token],this.props.account),
-            this.loadField('apy')
+          const [tokenAPY2,earningsStart,amountLent2] = await Promise.all([
+            this.functionsUtil.loadAssetField('apy',this.props.token,this.props.tokenConfig,this.props.account),
+            this.functionsUtil.loadAssetField('earnings',this.props.token,this.props.tokenConfig,this.props.account),
+            this.functionsUtil.loadAssetField('amountLent',this.props.token,this.props.tokenConfig,this.props.account)
           ]);
 
-          if (amountLent2 && idleTokenPrice3 && avgBuyPrice2 && avgBuyPrice2[this.props.token] && tokenAPY2){
-            const earningsPerc = idleTokenPrice3.div(avgBuyPrice2[this.props.token]).minus(1);
-            const earningsStart = amountLent2.gt(0) ? amountLent2.times(earningsPerc) : 0;
+          if (amountLent2 && earningsStart && tokenAPY2){
             const earningsEnd = amountLent2.gt(0) ? amountLent2.times(tokenAPY2.div(100)) : 0;
 
             if (setState){
@@ -181,6 +178,7 @@ class AssetField extends Component {
                 earningsStart
               });
             }
+            
             return {
               earningsEnd,
               earningsStart

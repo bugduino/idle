@@ -222,7 +222,7 @@ class AssetPage extends Component {
                       {
                         name:'pool',
                         props:{
-                          decimals:2
+                          decimals:4
                         }
                       }
                     ]
@@ -235,7 +235,10 @@ class AssetPage extends Component {
                     },
                     fields:[
                       {
-                        name:'tokenBalance'
+                        name:'tokenBalance',
+                        props:{
+                          decimals:4
+                        }
                       },
                       {
                         name:'tooltip',

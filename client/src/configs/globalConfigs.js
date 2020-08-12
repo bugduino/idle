@@ -214,7 +214,7 @@ const globalConfigs = {
       },
       v3:{
         label:'Idle V3',
-        endTimestamp:1597077000,
+        endTimestamp:1597247321,
         startTimestamp:1589801874,
         enabledStrategies:['best','risk'],
         enabledTokens:['DAI','USDC','USDT'],
@@ -222,7 +222,7 @@ const globalConfigs = {
       v4:{
         label:'Idle V4',
         endTimestamp:null,
-        startTimestamp:1597077000,
+        startTimestamp:1597247321,
         enabledStrategies:['best','risk'],
         enabledTokens:['DAI','USDC','USDT'],
       }
@@ -350,6 +350,14 @@ const globalConfigs = {
           hsl:['162', '100%', '41%']
         }
       },
+      compoundWithCOMP:{
+        rateField:'compoundAdditionalAPR',
+        label:'Compound + COMP',
+        color:{
+          rgb:[0, 153, 107],
+          hsl:['162', '100%', '30%']
+        }
+      },
       fulcrum:{
         label:'Fulcrum',
         color:{
@@ -404,6 +412,7 @@ const globalConfigs = {
       deposit:{
         skipMint:true,
         minAmountForMint:10000,
+        skipMintCheckboxEnabled:true,
         metaTransactionsEnabled:false,
         proxyContract:{
           enabled:false,

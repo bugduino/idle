@@ -10,8 +10,8 @@ import AssetSelector from '../AssetSelector/AssetSelector';
 import TxProgressBar from '../TxProgressBar/TxProgressBar';
 import ShareModal from '../utilities/components/ShareModal';
 import TransactionField from '../TransactionField/TransactionField';
-import { Flex, Text, Input, Box, Icon, Link, Checkbox } from "rimble-ui";
 import FastBalanceSelector from '../FastBalanceSelector/FastBalanceSelector';
+import { Flex, Text, Input, Box, Icon, Link, Checkbox, Tooltip } from "rimble-ui";
 
 class DepositRedeem extends Component {
 
@@ -23,6 +23,7 @@ class DepositRedeem extends Component {
     canRedeem:false,
     canDeposit:false,
     action:'deposit',
+    directMint:false,
     activeModal:null,
     tokenApproved:false,
     contractPaused:false,
@@ -53,6 +54,12 @@ class DepositRedeem extends Component {
 
   async componentDidMount(){
 
+  }
+
+  toggleSkipMint = (directMint) => {
+    this.setState({
+      directMint
+    });
   }
 
   toggleRedeemGovTokens = (redeemGovTokens) => {
@@ -101,9 +108,8 @@ class DepositRedeem extends Component {
 
   async loadAPY(){
     const tokenAprs = await this.functionsUtil.getTokenAprs(this.props.tokenConfig);
-    if (tokenAprs && tokenAprs.avgApr !== null){
-      const tokenAPR = tokenAprs.avgApr;
-      const tokenAPY = this.functionsUtil.apr2apy(tokenAPR.div(100)).times(100).toFixed(2);
+    if (tokenAprs && tokenAprs.avgApy !== null){
+      const tokenAPY = this.functionsUtil.BNify(tokenAprs.avgApy).times(100).toFixed(2);
       this.setState({
         tokenAPY
       });
@@ -432,7 +438,7 @@ class DepositRedeem extends Component {
         // Use main contract if no proxy contract exists
         } else {
 
-          let _skipMint = this.functionsUtil.getGlobalConfig(['contract','methods','deposit','skipMint']);
+          let _skipMint = !this.state.directMint && this.functionsUtil.getGlobalConfig(['contract','methods','deposit','skipMint']);
           _skipMint = typeof this.props.tokenConfig.skipMintForDeposit !== 'undefined' ? this.props.tokenConfig.skipMintForDeposit : _skipMint;
 
           // Mint if someone mint over X amount
@@ -754,6 +760,8 @@ class DepositRedeem extends Component {
     }
 
     const govTokensDisabled = this.props.tokenConfig.govTokensDisabled;
+    const skipMintForDepositEnabled = typeof this.props.tokenConfig.skipMintForDeposit !== 'undefined' ? this.props.tokenConfig.skipMintForDeposit : true;
+    const skipMintCheckboxEnabled = this.functionsUtil.getGlobalConfig(['contract','methods','deposit','skipMintCheckboxEnabled']) && skipMintForDepositEnabled;
     const redeemGovTokenEnabled = this.functionsUtil.getGlobalConfig(['contract','methods','redeemGovTokens','enabled']) && !govTokensDisabled;
     const redeemGovTokens = redeemGovTokenEnabled && this.state.redeemGovTokens && this.state.action === 'redeem';
     const metaTransactionsAvailable = this.props.biconomy && this.state.actionProxyContract[this.state.action];
@@ -1130,6 +1138,50 @@ class DepositRedeem extends Component {
                             flexDirection={'column'}
                           >
                             {
+                              (skipMintCheckboxEnabled && this.state.action === 'deposit') && (
+                                <DashboardCard
+                                  cardProps={{
+                                    py:3,
+                                    px:2,
+                                    mb:3,
+                                    display:'flex',
+                                    alignItems:'center',
+                                    flexDirection:'column',
+                                    justifyContent:'center',
+                                  }}
+                                >
+                                  <Flex
+                                    width={1}
+                                    alignItems={'center'}
+                                    flexDirection={'column'}
+                                    justifyContent={'center'}
+                                  >
+                                    <Icon
+                                      size={'2.3em'}
+                                      name={'Info'}
+                                      color={'cellText'}
+                                    />
+                                    <Text
+                                      mt={1}
+                                      px={2}
+                                      fontSize={1}
+                                      color={'cellText'}
+                                      textAlign={'center'}
+                                    >
+                                      By checking this flag you can rebalance the pool and help all users gain an additional APR
+                                    </Text>
+                                  </Flex>
+                                  <Checkbox
+                                    mt={2}
+                                    required={false}
+                                    label={`Rebalance the pool`}
+                                    checked={this.state.directMint}
+                                    onChange={ e => this.toggleSkipMint(e.target.checked) }
+                                  />
+                                </DashboardCard>
+                              )
+                            }
+                            {
                               !redeemGovTokens && (
                                 <Flex
                                   mb={3}
@@ -1147,15 +1199,31 @@ class DepositRedeem extends Component {
                                       >
                                         {
                                           this.props.tokenFeesPercentage && (
-                                            <Text
-                                              fontSize={1}
-                                              fontWeight={3}
-                                              color={'dark-gray'}
-                                              textAlign={'right'}
-                                              hoverColor={'copyColor'}
+                                            <Flex
+                                              alignItems={'center'}
+                                              flexDirection={'row'}
                                             >
-                                              Fees: {this.props.tokenFeesPercentage.times(100).toFixed(2)}% on gains
-                                            </Text>
+                                              <Text
+                                                fontSize={1}
+                                                fontWeight={3}
+                                                color={'dark-gray'}
+                                                textAlign={'right'}
+                                                hoverColor={'copyColor'}
+                                              >
+                                                Performance fee: {this.props.tokenFeesPercentage.times(100).toFixed(2)}%
+                                              </Text>
+                                              <Tooltip
+                                                placement={'top'}
+                                                message={`This fee is charged on positive returns generated by Idle`}
+                                              >
+                                                <Icon
+                                                  ml={1}
+                                                  name={"Info"}
+                                                  size={'1em'}
+                                                  color={'cellTitle'}
+                                                />
+                                              </Tooltip>
+                                            </Flex>
                                           )
                                         }
                                         {

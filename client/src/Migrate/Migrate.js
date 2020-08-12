@@ -587,12 +587,12 @@ class Migrate extends Component {
 
         // Call migration contract function to migrate funds
         const oldIdleTokens = this.state.oldIdleTokens;
-        // const toMigrate = this.functionsUtil.integerValue(this.state.oldContractBalance);
-        const toMigrate =  this.functionsUtil.normalizeTokenAmount('1',this.state.oldContractTokenDecimals).toString(); // TEST AMOUNT
+        const toMigrate = this.functionsUtil.integerValue(this.state.oldContractBalance);
+        // const toMigrate =  this.functionsUtil.normalizeTokenAmount('1',this.state.oldContractTokenDecimals).toString(); // TEST AMOUNT
 
         const migrationParams = [toMigrate,this.props.tokenConfig.migration.oldContract.address,this.props.tokenConfig.idle.address,this.props.tokenConfig.address];
 
-        console.log('Migration params',migrationContractInfo.name, migrationMethod, migrationParams);
+        // console.log('Migration params',migrationContractInfo.name, migrationMethod, migrationParams);
 
         // Check if Biconomy is enabled
         if (this.props.biconomy && this.state.metaTransactionsEnabled){

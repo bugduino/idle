@@ -1338,11 +1338,25 @@ class StatsChart extends Component {
           return { x, y, apy, blocknumber, itemPos };
         });
 
-        await this.functionsUtil.asyncForEach(this.props.tokenConfig.protocols,async (p) => {
+        const compoundProtocol = this.props.tokenConfig.protocols.find( p => (p.name === 'compound'));
+
+        const protocols = Object.assign([],this.props.tokenConfig.protocols);
+        // Add Compound + COMP
+        protocols.unshift({
+          decimals:16,
+          enabled:true,
+          name:'compoundWithCOMP',
+          address:compoundProtocol.address,
+        });
+
+        await this.functionsUtil.asyncForEach(protocols,async (p) => {
+
+          const protocolInfo = globalConfigs.stats.protocols[p.name];
+          const rateField = protocolInfo.rateField ? protocolInfo.rateField : 'rate';
 
           const chartRow = {
-            id:this.functionsUtil.capitalize(p.name),
-            color: 'hsl('+globalConfigs.stats.protocols[p.name].color.hsl.join(',')+')',
+            id:protocolInfo.label,
+            color: 'hsl('+protocolInfo.color.hsl.join(',')+')',
             data: []
           };
 
@@ -1360,13 +1374,13 @@ class StatsChart extends Component {
               return pData.protocolAddr.toLowerCase() === p.address.toLowerCase()
             });
 
-            if (protocolData){
+            if (protocolData && protocolData[rateField]){
 
               if (!firstProtocolData){
                 firstProtocolData = protocolData;
               }
 
-              const protocolPaused = this.functionsUtil.BNify(protocolData.rate).eq(0);
+              const protocolPaused = this.functionsUtil.BNify(protocolData[rateField]).eq(0);
               if (!protocolPaused){
 
                 // Start new protocols from Idle performances
@@ -1388,7 +1402,7 @@ class StatsChart extends Component {
                 const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
 
                 // Take data from
-                if (globalConfigs.stats.protocols[p.name] && globalConfigs.stats.protocols[p.name].data && globalConfigs.stats.protocols[p.name].data[p.address.toLowerCase()] && globalConfigs.stats.protocols[p.name].data[p.address.toLowerCase()][d.blocknumber]){
+                if (protocolInfo && protocolInfo.data && protocolInfo.data[p.address.toLowerCase()] && protocolInfo.data[p.address.toLowerCase()][d.blocknumber]){
                   tokenExchangeRate = this.functionsUtil.BNify(globalConfigs.stats.protocols[p.name].data[p.address.toLowerCase()][d.blocknumber]);
                   tokenPriceFixed = this.functionsUtil.fixTokenDecimals(tokenExchangeRate,p.decimals);
                 }/* else if (p.name === 'aave'){
@@ -1490,14 +1504,14 @@ class StatsChart extends Component {
             format: value => parseFloat(value).toFixed(2)+'%',
           },
           axisBottom: this.props.isMobile ? null : {
+            legend: '',
             tickSize: 0,
             format: '%b %d',
             tickPadding: 10,
-            tickValues: this.props.isMobile ? 'every 4 days' : ( this.props.showAdvanced ? 'every 3 days' : 'every 2 days'),
-            orient: 'bottom',
-            legend: '',
             legendOffset: 0,
-            legendPosition: 'middle'
+            orient: 'bottom',
+            legendPosition: 'middle',
+            tickValues: this.props.isMobile ? 'every 4 days' : ( this.props.showAdvanced ? 'every 3 days' : 'every 2 days'),
           },
           gridYValues,
           pointSize:0,
@@ -1514,8 +1528,8 @@ class StatsChart extends Component {
           pointLabelYOffset:-12,
           legends:[
             {
-              itemWidth: this.props.isMobile ? 70 : 80,
               itemHeight: 18,
+              itemWidth: this.props.isMobile ? 70 : 100,
               translateX: this.props.isMobile ? -35 : 0,
               translateY: this.props.isMobile ? 40 : 65,
               symbolSize: 10,

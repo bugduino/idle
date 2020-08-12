@@ -303,7 +303,9 @@ class Stats extends Component {
     window.moment = moment;
 
     let days = (lastResult.timestamp-firstResult.timestamp)/86400;
-    // days = Math.max(days,1);
+    if (days === 0){
+      days = 1;
+    }
 
     const idleTokens = this.functionsUtil.fixTokenDecimals(lastResult.idleSupply,18);
     const firstIdlePrice = this.functionsUtil.fixTokenDecimals(firstResult.idlePrice,this.props.tokenConfig.decimals);
