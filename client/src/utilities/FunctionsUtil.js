@@ -1850,13 +1850,13 @@ class FunctionsUtil {
 
     switch (field){
       case 'earningsPerc':
-        const [avgBuyPrice,idleTokenPrice] = await Promise.all([
-          this.getAvgBuyPrice([token],account),
-          this.getIdleTokenPrice(tokenConfig)
+        let [amountLent1,redeemableBalance1] = await Promise.all([
+          this.loadAssetField('amountLent',token,tokenConfig,account),
+          this.loadAssetField('redeemableBalance',token,tokenConfig,account)
         ]);
 
-        if (avgBuyPrice && avgBuyPrice[token] && avgBuyPrice[token].gt(0) && idleTokenPrice){
-          output = idleTokenPrice.div(avgBuyPrice[token]).minus(1).times(100);
+        if (amountLent1 && redeemableBalance1){
+          output = redeemableBalance1.div(amountLent1).minus(1).times(100);
         }
       break;
       case 'daysFirstDeposit':
@@ -1934,8 +1934,7 @@ class FunctionsUtil {
       break;
       case 'tokenBalance':
         if (Object.keys(govTokens).includes(token)){
-          const govTokenConfig = govTokens[token];
-          output = await this.getGovTokenUserBalance(govTokenConfig,account,govTokenAvailableTokens);
+          output = await this.getTokenBalance(token,account);
         } else {
           let tokenBalance = account ? await this.getTokenBalance(tokenConfig.token,account) : false;
           if (!tokenBalance || tokenBalance.isNaN()){
@@ -1968,39 +1967,51 @@ class FunctionsUtil {
         };
       break;
       case 'redeemableBalance':
-        const [fee,govTokensBalance,idleTokenPrice1,idleTokenBalance2] = await Promise.all([
-          this.loadAssetField('fee',token,tokenConfig,account),
-          this.getGovTokensUserTotalBalance(account,null,'DAI'),
-          this.genericContractCall(tokenConfig.idle.token, 'tokenPrice'),
-          this.loadAssetField('idleTokenBalance',token,tokenConfig,account),
-        ]);
-        if (idleTokenBalance2 && idleTokenPrice1){
-          let redeemableBalance = this.fixTokenDecimals(idleTokenBalance2.times(idleTokenPrice1),tokenConfig.decimals);
-          
-          if (govTokensBalance && !this.BNify(govTokensBalance).isNaN()){
-            redeemableBalance = redeemableBalance.plus(this.BNify(govTokensBalance));
+        if (Object.keys(govTokens).includes(token)){
+          const govTokenConfig = govTokens[token];
+          output = await this.getGovTokenUserBalance(govTokenConfig,account,govTokenAvailableTokens);
+        } else {
+          const [fee,govTokensBalance,idleTokenPrice1,idleTokenBalance2] = await Promise.all([
+            this.loadAssetField('fee',token,tokenConfig,account),
+            this.getGovTokensUserTotalBalance(account,null,'DAI'),
+            this.genericContractCall(tokenConfig.idle.token, 'tokenPrice'),
+            this.loadAssetField('idleTokenBalance',token,tokenConfig,account),
+          ]);
+
+          if (idleTokenBalance2 && idleTokenPrice1){
+            let redeemableBalance = this.fixTokenDecimals(idleTokenBalance2.times(idleTokenPrice1),tokenConfig.decimals);
+
+            if (govTokensBalance && !this.BNify(govTokensBalance).isNaN()){
+              redeemableBalance = redeemableBalance.plus(this.BNify(govTokensBalance));
+            }
+            if (fee && !this.BNify(fee).isNaN()){
+              redeemableBalance = redeemableBalance.minus(this.BNify(fee));
+            }
+
+            output = redeemableBalance;
           }
-          if (fee && !this.BNify(fee).isNaN()){
-            redeemableBalance = redeemableBalance.minus(this.BNify(fee));
-          }
-          output = redeemableBalance;
         }
       break;
       case 'earnings':
-        let [amountLent,redeemableBalance] = await Promise.all([
+        let [fee1,amountLent,redeemableBalance2] = await Promise.all([
+          this.loadAssetField('fee',token,tokenConfig,account),
           this.loadAssetField('amountLent',token,tokenConfig,account),
           this.loadAssetField('redeemableBalance',token,tokenConfig,account)
         ]);
+
         if (!amountLent){
           amountLent = this.BNify(0);
         }
-        if (!redeemableBalance){
-          redeemableBalance = this.BNify(0);
+        if (!redeemableBalance2){
+          redeemableBalance2 = this.BNify(0);
         }
 
-        // console.log('loadAssetField',amountLent.toString(),redeemableBalance.toString());
+        output = redeemableBalance2.minus(amountLent);
 
-        output = redeemableBalance.minus(amountLent);
+        if (fee1 && !this.BNify(fee1).isNaN()){
+          output = output.plus(this.BNify(fee1));
+        }
+
       break;
       default:
       break;

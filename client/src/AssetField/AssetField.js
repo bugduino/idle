@@ -178,7 +178,7 @@ class AssetField extends Component {
                 earningsStart
               });
             }
-            
+
             return {
               earningsEnd,
               earningsStart

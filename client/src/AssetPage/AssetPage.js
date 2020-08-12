@@ -198,7 +198,7 @@ class AssetPage extends Component {
                   {
                     title:'TOKEN',
                     props:{
-                      width:[0.3,0.22]
+                      width:[0.33,0.22]
                     },
                     fields:[
                       {
@@ -214,15 +214,15 @@ class AssetPage extends Component {
                     ]
                   },
                   {
-                    title:'UNCLAIMED',
+                    title:'BALANCE',
                     props:{
-                      width:[0.25, 0.20],
+                      width:[0.33, 0.26],
                     },
                     fields:[
                       {
-                        name:'pool',
+                        name:'tokenBalance',
                         props:{
-                          decimals:4
+                          decimals: this.props.isMobile ? 6 : 8
                         }
                       }
                     ]
@@ -230,14 +230,14 @@ class AssetPage extends Component {
                   {
                     title:'REDEEMABLE',
                     props:{
-                      width:[0.25,0.20],
+                      width:[0.33,0.26],
                       justifyContent:['center','flex-start']
                     },
                     fields:[
                       {
-                        name:'tokenBalance',
+                        name:'redeemableBalance',
                         props:{
-                          decimals:4
+                          decimals: this.props.isMobile ? 6 : 8
                         }
                       },
                       {
@@ -248,7 +248,7 @@ class AssetPage extends Component {
                         }
                       }
                     ]
-                  },
+                  },/*
                   {
                     title:'APR',
                     props:{
@@ -262,12 +262,12 @@ class AssetPage extends Component {
                         }
                       }
                     ]
-                  },
+                  },*/
                   {
                     title:'TOKEN PRICE',
                     mobile:false,
                     props:{
-                      width: 0.19,
+                      width: 0.26,
                     },
                     parentProps:{
                       width:1,

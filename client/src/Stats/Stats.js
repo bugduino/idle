@@ -287,7 +287,7 @@ class Stats extends Component {
 
 
     const isRisk = this.state.idleVersion === 'v3' && this.props.selectedStrategy === 'risk';
-    let apiResults_unfiltered = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,isRisk,startTimestamp,endTimestamp,true,7200);
+    let apiResults_unfiltered = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,isRisk,startTimestamp,endTimestamp,true,3600);
 
     const apiResults = this.filterTokenData(apiResults_unfiltered);
 

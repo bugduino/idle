@@ -10,6 +10,7 @@ import PortfolioEquity from '../PortfolioEquity/PortfolioEquity';
 class FundsOverview extends Component {
 
   state = {
+    compAPR:null,
     aggregatedValues:[],
     govTokensUserBalance:null
   };
@@ -123,7 +124,10 @@ class FundsOverview extends Component {
       }
     ];
 
+    const compAPR = await this.functionsUtil.getCompAPR(this.props.selectedToken,this.props.tokenConfig);
+
     this.setState({
+      compAPR,
       aggregatedValues,
       govTokensUserBalance
     });
@@ -347,18 +351,6 @@ class FundsOverview extends Component {
                     justifyContent={'center'}
                   >
                     {
-                    /*
-                    <Text
-                      fontSize={1}
-                      lineHeight={1}
-                      fontWeight={2}
-                      color={'cellText'}
-                    >
-                    (
-                    </Text>
-                    */
-                    }
-                    {
                       Object.keys(this.state.govTokensUserBalance).map((govToken,govTokenIndex) => (
                         <Text
                           fontSize={1}
@@ -372,18 +364,6 @@ class FundsOverview extends Component {
                           + ${this.state.govTokensUserBalance[govToken].toFixed(2)} {govToken}
                         </Text>
                       ))
-                    }
-                    {
-                    /*
-                    <Text
-                      fontSize={1}
-                      lineHeight={1}
-                      fontWeight={2}
-                      color={'cellText'}
-                    >
-                    )
-                    </Text>
-                    */
                     }
                   </Flex>
                 )
@@ -451,6 +431,26 @@ class FundsOverview extends Component {
                   }
                 }}
               />
+              {
+                this.state.compAPR && (
+                  <Flex
+                    width={1}
+                    alignItems={'center'}
+                    flexDirection={'row'}
+                    justifyContent={'center'}
+                  >
+                    <Text
+                      fontSize={1}
+                      lineHeight={1}
+                      fontWeight={2}
+                      color={'cellText'}
+                      textAlign={'center'}
+                    >
+                      + {this.state.compAPR.toFixed(2)}% COMP
+                    </Text>
+                  </Flex>
+                )
+              }
             </Flex>
             <Flex
               mb={[2,0]}
