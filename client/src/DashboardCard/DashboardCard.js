@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { Heading, Card } from "rimble-ui";
 import styles from './DashboardCard.module.scss';
+import { Flex, Icon, Heading, Card, Tooltip } from "rimble-ui";
 
 class DashboardCard extends Component {
   render() {
@@ -32,18 +32,37 @@ class DashboardCard extends Component {
       >
         {
           this.props.title && this.props.title.length>0 &&
-            <Heading.h4
+            <Flex
               mt={[3,4]}
               ml={[3,4]}
-              fontWeight={4}
-              fontSize={[2,3]}
-              textAlign={'left'}
-              color={'dark-gray'}
-              lineHeight={'initial'}
-              {...this.props.titleProps}
+              alignItems={'center'}
+              flexDirection={'row'}
             >
-              {this.props.title}
-            </Heading.h4>
+              <Heading.h4
+                fontWeight={4}
+                fontSize={[2,3]}
+                textAlign={'left'}
+                color={'dark-gray'}
+                lineHeight={'initial'}
+                {...this.props.titleProps}
+              >
+                {this.props.title}
+              </Heading.h4>
+              {
+                this.props.description && this.props.description.length>0 &&
+                  <Tooltip
+                    placement={'top'}
+                    message={this.props.description}
+                  >
+                    <Icon
+                      ml={2}
+                      name={"Info"}
+                      size={'1em'}
+                      color={'cellTitle'}
+                    />
+                  </Tooltip>
+              }
+            </Flex>
         }
         {this.props.children}
       </Card>

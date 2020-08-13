@@ -254,7 +254,7 @@ class FundsOverview extends Component {
                 fieldInfo={{
                   name:'amountLent',
                   props:{
-                    decimals:4,
+                    decimals:5,
                     maxPrecision:8,
                     fontWeight:300,
                     fontSize:['1.8em','1.9em'],
@@ -286,7 +286,7 @@ class FundsOverview extends Component {
                 fieldInfo={{
                   name:'redeemableBalanceCounter',
                   props:{
-                    decimals:6,
+                    decimals:7,
                     maxPrecision:8,
                     style:{
                       fontWeight:300,
@@ -340,7 +340,7 @@ class FundsOverview extends Component {
                 fieldInfo={{
                   name:'earningsCounter',
                   props:{
-                    decimals:6,
+                    decimals:7,
                     maxPrecision:8,
                     style:{
                       fontWeight:300,
@@ -372,7 +372,7 @@ class FundsOverview extends Component {
                           ml={govTokenIndex ? 2 : 0}
                           key={`govToken_${govToken}`}
                         >
-                          + ${this.state.govTokensUserBalance[govToken].toFixed(2)} {govToken}
+                          ${this.state.govTokensUserBalance[govToken].toFixed(4)} {govToken}
                         </Text>
                       ))
                     }
@@ -398,13 +398,15 @@ class FundsOverview extends Component {
                 {...this.props}
                 token={this.props.selectedToken}
                 fieldInfo={{
-                  name:'fee',
+                  name:'feesCounter',
                   props:{
-                    decimals:6,
+                    decimals:7,
                     maxPrecision:8,
-                    fontWeight:300,
-                    fontSize:['1.8em','1.9em'],
-                    color:theme.colors.counter,
+                    style:{
+                      fontWeight:300,
+                      fontSize:this.props.isMobile ? '1.8em' : '1.9em',
+                      color:theme.colors.counter
+                    },
                     flexProps:{
                       justifyContent:'center'
                     }

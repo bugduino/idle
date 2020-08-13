@@ -16,6 +16,7 @@ import { RampInstantSDK } from '@ramp-network/ramp-instant-sdk';
 import IdleConverterV2 from '../contracts/IdleConverterV2.json';
 import IdleProxyMinter from '../contracts/IdleProxyMinter.json';
 import IdleRebalancerV3 from '../contracts/IdleRebalancerV3.json';
+import UniswapV2Router02 from '../abis/uniswap/UniswapV2Router02.json';
 
 const env = process.env;
 
@@ -149,6 +150,10 @@ const globalConfigs = {
     Comptroller:{
       abi:Comptroller,
       address:'0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b',
+    },
+    UniswapRouter:{
+      abi:UniswapV2Router02,
+      address:'0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
     }
   },
   strategies:{
@@ -210,19 +215,22 @@ const globalConfigs = {
         startTimestamp:null,
         endTimestamp:1589752999,
         enabledStrategies:['best'],
+        showPerformanceTooltip:false,
         enabledTokens:['DAI','USDC'],
       },
       v3:{
         label:'Idle V3',
-        endTimestamp:1597247321,
+        endTimestamp:1597237542,
         startTimestamp:1589801874,
+        showPerformanceTooltip:false,
         enabledStrategies:['best','risk'],
         enabledTokens:['DAI','USDC','USDT'],
       },
       v4:{
         label:'Idle V4',
         endTimestamp:null,
-        startTimestamp:1597247321,
+        startTimestamp:1597345383,
+        showPerformanceTooltip:true,
         enabledStrategies:['best','risk'],
         enabledTokens:['DAI','USDC','USDT'],
       }
@@ -241,6 +249,7 @@ const globalConfigs = {
         },
         startTimestamp:'2020-02-11',
         address:'0x6b175474e89094c44da98b954eedeac495271d0f',
+        performanceTooltip:'APR is calculated proportionally to historical allocations of each lending protocol in the selected time period. This pool has 1% unlent reserve to help reduce gas costs.',
       },
       USD:{
         enabled:true,
@@ -268,6 +277,7 @@ const globalConfigs = {
         },
         startTimestamp:'2020-02-04',
         address:'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+        performanceTooltip:'APR is calculated proportionally to historical allocations of each lending protocol in the selected time period. This pool has 1% unlent reserve to help reduce gas costs.',
       },
       USDT:{
         decimals:6,
@@ -282,6 +292,7 @@ const globalConfigs = {
         },
         startTimestamp:'2020-02-04',
         address:'0xdac17f958d2ee523a2206206994597c13d831ec7',
+        performanceTooltip:'APR is calculated proportionally to historical allocations of each lending protocol in the selected time period. This pool has 1% unlent reserve to help reduce gas costs.',
       },
       TUSD:{
         decimals:18,
@@ -325,6 +336,7 @@ const globalConfigs = {
           labelTextColorModifiers:['darker', 4],
         },
         address:'0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
+        performanceTooltip:'APR is calculated proportionally to historical allocations of each lending protocol in the selected time period. This pool has 1% unlent reserve to help reduce gas costs.',
       },
       COMP:{
         decimals:18,

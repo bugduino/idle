@@ -162,6 +162,30 @@ class AssetField extends Component {
             })
           }
         break;
+        case 'feesCounter':
+          const [earningsCounter,feePercentage] = await Promise.all([
+            this.loadField('earningsCounter'),
+            this.functionsUtil.getTokenFees(this.props.tokenConfig)
+          ]);
+
+          if (earningsCounter && feePercentage){
+
+            const feesStart = earningsCounter.earningsStart.times(feePercentage);
+            const feesEnd = earningsCounter.earningsEnd.times(feePercentage);
+
+            if (setState){
+              this.setStateSafe({
+                feesEnd,
+                feesStart
+              });
+            }
+
+            output = {
+              feesEnd,
+              feesStart
+            };
+          }
+        break;
         case 'earningsCounter':
           const [tokenAPY2,earningsStart,amountLent2] = await Promise.all([
             this.functionsUtil.loadAssetField('apy',this.props.token,this.props.tokenConfig,this.props.account),
@@ -170,7 +194,7 @@ class AssetField extends Component {
           ]);
 
           if (amountLent2 && earningsStart && tokenAPY2){
-            const earningsEnd = amountLent2.gt(0) ? amountLent2.times(tokenAPY2.div(100)) : 0;
+            const earningsEnd = amountLent2.gt(0) ? amountLent2.times(tokenAPY2.div(100)).plus(earningsStart) : 0;
 
             if (setState){
               this.setStateSafe({
@@ -179,7 +203,9 @@ class AssetField extends Component {
               });
             }
 
-            return {
+            // console.log('earningsCounter',earningsStart.toString(),earningsEnd.toString());
+
+            output = {
               earningsEnd,
               earningsStart
             };
@@ -638,6 +664,25 @@ class AssetField extends Component {
             decimals={decimals}
             end={parseFloat(this.state.redeemableBalanceEnd)}
             start={parseFloat(this.state.redeemableBalanceStart)}
+            formattingFn={ n => this.functionsUtil.abbreviateNumber(n,decimals,maxPrecision,minPrecision) }
+          >
+            {({ countUpRef, start }) => (
+              <span style={fieldProps.style} ref={countUpRef} />
+            )}
+          </CountUp>
+        ) : loader
+      break;
+      case 'feesCounter':
+        output = this.state.feesStart && this.state.feesEnd ? (
+          <CountUp
+            delay={0}
+            decimal={'.'}
+            separator={''}
+            useEasing={false}
+            duration={31536000}
+            decimals={decimals}
+            end={parseFloat(this.state.feesEnd)}
+            start={parseFloat(this.state.feesStart)}
             formattingFn={ n => this.functionsUtil.abbreviateNumber(n,decimals,maxPrecision,minPrecision) }
           >
             {({ countUpRef, start }) => (

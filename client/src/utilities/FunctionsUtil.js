@@ -5,7 +5,7 @@ import { Text } from "rimble-ui";
 import BigNumber from 'bignumber.js';
 import globalConfigs from '../configs/globalConfigs';
 // import availableTokens from '../configs/availableTokens';
-import { ChainId, Token, Fetcher, Route } from '@uniswap/sdk'
+// import { ChainId, Token, Fetcher, Route } from '@uniswap/sdk';
 
 const env = process.env;
 
@@ -1953,17 +1953,21 @@ class FunctionsUtil {
         }
       break;
       case 'redeemableBalanceCounter':
-        let [redeemableBalanceStart,tokenAPY1] = await Promise.all([
+        let [tokenAPY1,amountLent2,redeemableBalanceStart] = await Promise.all([
+          this.loadAssetField('apy',token,tokenConfig,account),
+          this.loadAssetField('amountLent',token,tokenConfig,account),
           this.loadAssetField('redeemableBalance',token,tokenConfig,account),
-          this.loadAssetField('apy',token,tokenConfig,account)
         ]);
 
         let redeemableBalanceEnd = null;
 
-        if (redeemableBalanceStart && tokenAPY1){
-          const earningPerYear = this.BNify(redeemableBalanceStart).times(this.BNify(tokenAPY1).div(100));
-          redeemableBalanceEnd = this.BNify(redeemableBalanceStart).plus(this.BNify(earningPerYear));
+        if (redeemableBalanceStart && tokenAPY1 && amountLent2){
+          const earningPerYear = amountLent2.times(tokenAPY1.div(100));
+          redeemableBalanceEnd = redeemableBalanceStart.plus(earningPerYear);
         }
+
+        // console.log('redeemableBalanceCounter',redeemableBalanceStart.toString(),redeemableBalanceEnd.toString());
+
         output = {
           redeemableBalanceEnd,
           redeemableBalanceStart
@@ -1974,30 +1978,29 @@ class FunctionsUtil {
           const govTokenConfig = govTokens[token];
           output = await this.getGovTokenUserBalance(govTokenConfig,account,govTokenAvailableTokens);
         } else {
-          const [fee,idleTokenPrice1,idleTokenBalance2,govTokensBalance] = await Promise.all([
-            this.loadAssetField('fee',token,tokenConfig,account),
+          const [idleTokenPrice1,idleTokenBalance2,govTokensBalance] = await Promise.all([
             this.genericContractCall(tokenConfig.idle.token, 'tokenPrice'),
             this.loadAssetField('idleTokenBalance',token,tokenConfig,account),
             this.getGovTokensUserTotalBalance(account,govTokenAvailableTokens,'DAI'),
           ]);
 
           if (idleTokenBalance2 && idleTokenPrice1){
-            let redeemableBalance = this.fixTokenDecimals(idleTokenBalance2.times(idleTokenPrice1),tokenConfig.decimals);
+            const tokenBalance = this.fixTokenDecimals(idleTokenBalance2.times(idleTokenPrice1),tokenConfig.decimals);
+
+            let redeemableBalance = tokenBalance;
 
             if (govTokensBalance && !this.BNify(govTokensBalance).isNaN()){
               redeemableBalance = redeemableBalance.plus(this.BNify(govTokensBalance));
             }
-            if (fee && !this.BNify(fee).isNaN()){
-              redeemableBalance = redeemableBalance.minus(this.BNify(fee));
-            }
 
             output = redeemableBalance;
+
+            // console.log('redeemableBalance',tokenBalance.toString(),govTokensBalance.toString(),output.toString());
           }
         }
       break;
       case 'earnings':
-        let [fee1,amountLent,redeemableBalance2] = await Promise.all([
-          this.loadAssetField('fee',token,tokenConfig,account),
+        let [amountLent,redeemableBalance2] = await Promise.all([
           this.loadAssetField('amountLent',token,tokenConfig,account),
           this.loadAssetField('redeemableBalance',token,tokenConfig,account)
         ]);
@@ -2011,10 +2014,11 @@ class FunctionsUtil {
 
         output = redeemableBalance2.minus(amountLent);
 
-        if (fee1 && !this.BNify(fee1).isNaN()){
-          output = output.plus(this.BNify(fee1));
-        }
+        // if (fee1 && !this.BNify(fee1).isNaN()){
+        //   output = output.minus(this.BNify(fee1));
+        // }
 
+        // console.log('earnings',amountLent.toString(),redeemableBalance2.toString(),output.toString());
       break;
       default:
       break;
@@ -2402,6 +2406,16 @@ class FunctionsUtil {
     return this.setCachedData(cachedDataKey,tokenAllocation);
   }
   getUniswapConversionRate = async (tokenConfigFrom,tokenConfigDest) => {
+    const WETHAddr = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
+    const one = this.normalizeTokenDecimals(18);
+    const unires = await this.genericContractCall('UniswapRouter','getAmountsIn',[one.toFixed(),[tokenConfigFrom.address, WETHAddr, tokenConfigDest.address]]);
+    if (unires){
+      return this.BNify(unires[0]).div(one);
+    }
+    return null;
+  }
+  /*
+  getUniswapConversionRate_old = async (tokenConfigFrom,tokenConfigDest) => {
     const cachedDataKey = `compUniswapConverstionRate_${tokenConfigFrom.address}_${tokenConfigDest.address}`;
     const cachedData = this.getCachedData(cachedDataKey);
     if (cachedData !== null && !this.BNify(cachedData).isNaN()){
@@ -2421,6 +2435,7 @@ class FunctionsUtil {
     }
     return output;
   }
+  */
   getCompAPR = async (token,tokenConfig,cTokenIdleSupply=null,compConversionRate=null) => {
     const COMPTokenConfig = this.getGlobalConfig(['govTokens','COMP']);
     if (!COMPTokenConfig.enabled){
@@ -2721,25 +2736,19 @@ class FunctionsUtil {
 
     let [
       feePercentage,
-      avgBuyPrice,
-      balance,
-      tokenPrice,
+      amountLent,
+      redeemableBalance
     ] = await Promise.all([
       this.getTokenFees(tokenConfig),
-      // this.genericContractCall(tokenConfig.idle.token, 'userAvgPrices', [account]),
-      this.getAvgBuyPrice([tokenConfig.token], account),
-      this.getTokenBalance(tokenConfig.idle.token, account),
-      this.genericContractCall(tokenConfig.idle.token, 'tokenPrice'),
+      this.loadAssetField('amountLent',tokenConfig.token,tokenConfig,account),
+      this.loadAssetField('redeemableBalance',tokenConfig.token,tokenConfig,account)
     ]);
 
-    if (tokenPrice && avgBuyPrice && avgBuyPrice[tokenConfig.token] && balance && feePercentage){
-      avgBuyPrice = avgBuyPrice[tokenConfig.token];
-      // avgBuyPrice = this.fixTokenDecimals(avgBuyPrice,tokenConfig.decimals);
-      tokenPrice = this.fixTokenDecimals(tokenPrice,tokenConfig.decimals);
-
-      const priceDiff = tokenPrice.minus(avgBuyPrice);
-      const gain = priceDiff.times(balance).times(tokenPrice);
+    if (feePercentage && amountLent && redeemableBalance){
+      const gain = redeemableBalance.minus(amountLent);
       const fees = gain.times(feePercentage);
+
+      // console.log('fees',tokenConfig.token,amountLent.toString(),redeemableBalance.toString(),gain.toString(),fees.toString());
 
       return fees;
     }

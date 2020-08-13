@@ -9,11 +9,11 @@ import StatsCard from '../StatsCard/StatsCard';
 import AssetsList from '../AssetsList/AssetsList';
 import FlexLoader from '../FlexLoader/FlexLoader';
 import Breadcrumb from '../Breadcrumb/Breadcrumb';
-import { Flex, Text, Heading, Box } from 'rimble-ui';
 import globalConfigs from '../configs/globalConfigs';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import DashboardCard from '../DashboardCard/DashboardCard';
 import AssetSelector from '../AssetSelector/AssetSelector';
+import { Flex, Text, Heading, Box, Icon } from 'rimble-ui';
 import GenericSelector from '../GenericSelector/GenericSelector';
 import RoundIconButton from '../RoundIconButton/RoundIconButton';
 import VariationNumber from '../VariationNumber/VariationNumber';
@@ -287,7 +287,7 @@ class Stats extends Component {
 
 
     const isRisk = this.state.idleVersion === 'v3' && this.props.selectedStrategy === 'risk';
-    let apiResults_unfiltered = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,isRisk,startTimestamp,endTimestamp,true,3600);
+    let apiResults_unfiltered = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,isRisk,startTimestamp,endTimestamp,true,7200);
 
     const apiResults = this.filterTokenData(apiResults_unfiltered);
 
@@ -640,6 +640,8 @@ class Stats extends Component {
         }
       });
 
+      const performanceTooltip = globalConfigs.stats.versions[this.state.idleVersion].showPerformanceTooltip ? this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.selectedToken,'performanceTooltip']) : null;
+
       const versionDefaultValue = versionsOptions.find( v => (v.value === this.state.idleVersion) );
 
       return (
@@ -768,430 +770,471 @@ class Stats extends Component {
               </Flex>
             </Flex>
           </Box>
-          <Box
-            mt={[3,0]}
-            mb={[3,4]}
-          >
-            <Flex
-              width={1}
-              alignItems={'center'}
-              justifyContent={'center'}
-              flexDirection={['column','row']}
-            >
+
+          {
+            (globalConfigs.stats.versions[this.state.idleVersion].startTimestamp>parseInt(new Date().getTime()/1000)) ? (
               <Flex
-                mb={[2,0]}
-                pr={[0,2]}
-                width={[1,1/4]}
-                flexDirection={'column'}
+                width={1}
+                alignItems={'center'}
+                flexDirection={'row'}
+                justifyContent={'center'}
               >
-                <StatsCard
-                  value={this.state.aum}
-                  title={'Asset Under Management'}
-                  label={this.props.selectedToken}
-                />
+                <DashboardCard
+                  cardProps={{
+                    p:3,
+                    width:[1,0.5],
+                  }}
+                >
+                  <Flex
+                    alignItems={'center'}
+                    flexDirection={'column'}
+                  >
+                    <Icon
+                      size={'2.3em'}
+                      color={'cellText'}
+                      name={'AccessTime'}
+                    />
+                    <Text
+                      mt={2}
+                      fontSize={2}
+                      color={'cellText'}
+                      textAlign={'center'}
+                    >
+                      Idle Stats {this.state.idleVersion} will be available shortly!
+                    </Text>
+                  </Flex>
+                </DashboardCard>
               </Flex>
-              <Flex
-                mb={[2,0]}
-                pr={[0,2]}
-                width={[1,1/4]}
-                flexDirection={'column'}
+            ) : (
+              <Box
+                width={1}
               >
-                <StatsCard
-                  title={'Avg APY'}
-                  label={'Annualized'}
+                <Box
+                  mt={[3,0]}
+                  mb={[3,4]}
                 >
                   <Flex
                     width={1}
                     alignItems={'center'}
+                    justifyContent={'center'}
                     flexDirection={['column','row']}
                   >
-                    <VariationNumber
-                      direction={'up'}
-                      iconPos={'right'}
-                      iconSize={'1.8em'}
-                      justifyContent={'flex-start'}
-                      width={1}
+                    <Flex
+                      mb={[2,0]}
+                      pr={[0,2]}
+                      width={[1,1/4]}
+                      flexDirection={'column'}
+                    >
+                      <StatsCard
+                        value={this.state.aum}
+                        title={'Asset Under Management'}
+                        label={this.props.selectedToken}
+                      />
+                    </Flex>
+                    <Flex
+                      mb={[2,0]}
+                      pr={[0,2]}
+                      width={[1,1/4]}
+                      flexDirection={'column'}
+                    >
+                      <StatsCard
+                        title={'Avg APY'}
+                        label={'Annualized'}
                       >
-                      <Text
-                        lineHeight={1}
-                        fontWeight={[3,4]}
-                        color={'statValue'}
-                        fontSize={[4,5]}
+                        <Flex
+                          width={1}
+                          alignItems={'center'}
+                          flexDirection={['column','row']}
+                        >
+                          <VariationNumber
+                            direction={'up'}
+                            iconPos={'right'}
+                            iconSize={'1.8em'}
+                            justifyContent={'flex-start'}
+                            width={1}
+                            >
+                            <Text
+                              lineHeight={1}
+                              fontWeight={[3,4]}
+                              color={'statValue'}
+                              fontSize={[4,5]}
+                            >
+                              {this.state.apr}
+                              <Text.span color={'statValue'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
+                            </Text>
+                          </VariationNumber>
+                        </Flex>
+                      </StatsCard>
+                    </Flex>
+                    <Flex
+                      mb={[2,0]}
+                      pr={[0,2]}
+                      width={[1,1/4]}
+                      flexDirection={'column'}
+                    >
+                      <StatsCard
+                        title={'Overperformance on Compound'}
+                        label={'Annualized'}
                       >
-                        {this.state.apr}
-                        <Text.span color={'statValue'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
-                      </Text>
-                    </VariationNumber>
+                        {
+                          this.state.delta && !isNaN(this.state.delta) ? (
+                            <VariationNumber
+                              direction={'up'}
+                              iconPos={'right'}
+                              iconSize={'1.8em'}
+                              justifyContent={'flex-start'}
+                              >
+                              <Text
+                                lineHeight={1}
+                                fontSize={[4,5]}
+                                fontWeight={[3,4]}
+                                color={'statValue'}
+                              >
+                                {this.state.delta}
+                                <Text.span color={'statValue'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
+                              </Text>
+                            </VariationNumber>
+                          ) : (
+                            <Text
+                              lineHeight={1}
+                              fontSize={[4,5]}
+                              fontWeight={[3,4]}
+                              color={'statValue'}
+                            >
+                              {this.state.delta}
+                            </Text>
+                          )
+                        }
+                      </StatsCard>
+                    </Flex>
+                    <Flex
+                      mb={[2,0]}
+                      pr={[0,2]}
+                      width={[1,1/4]}
+                      flexDirection={'column'}
+                    >
+                      <StatsCard
+                        label={' '}
+                        title={'Rebalances'}
+                        value={this.state.rebalances.toString()}
+                      />
+                    </Flex>
+                    {
+                    /*
+                    <Flex width={[1,1/4]} flexDirection={'column'} px={[0,2]}>
+                      <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
+                        <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
+                          <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Current APR</Text.span>
+                          <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
+                            {this.state.currApr}
+                            <Text.span color={'copyColor'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
+                          </Text>
+                        </Flex>
+                      </Card>
+                    </Flex>
+                    <Flex width={[1,1/4]} flexDirection={'column'} px={[0,2]}>
+                      <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
+                        <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
+                          <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Days Live</Text.span>
+                          <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
+                            {this.state.days}
+                          </Text>
+                        </Flex>
+                      </Card>
+                    </Flex>
+                    */
+                    }
                   </Flex>
-                </StatsCard>
-              </Flex>
-              <Flex
-                mb={[2,0]}
-                pr={[0,2]}
-                width={[1,1/4]}
-                flexDirection={'column'}
-              >
-                <StatsCard
-                  title={'Overperformance on Compound'}
-                  label={'Annualized'}
+                </Box>
+
+                <DashboardCard
+                  title={'Historical Performance'}
+                  description={performanceTooltip}
+                  cardProps={{
+                    mb:[3,4]
+                  }}
                 >
-                  {
-                    this.state.delta && !isNaN(this.state.delta) ? (
-                      <VariationNumber
-                        direction={'up'}
-                        iconPos={'right'}
-                        iconSize={'1.8em'}
+                  <Flex id='chart-PRICE' width={1} mb={3}>
+                    <StatsChart
+                      height={ 350 }
+                      {...this.state}
+                      chartMode={'PRICE'}
+                      parentId={'chart-PRICE'}
+                      isMobile={this.props.isMobile}
+                      contracts={this.props.contracts}
+                      apiResults={this.state.apiResults}
+                      apiResults_unfiltered={this.state.apiResults_unfiltered}
+                    />
+                  </Flex>
+                </DashboardCard>
+
+                <DashboardCard
+                  cardProps={{
+                    pb:3,
+                    mb:[3,4]
+                  }}
+                >
+                  <Flex
+                    flexDirection={['column','row']}
+                    justifyContent={'space-between'}
+                  >
+                    {
+                      this.state.idleVersion === this.state.latestVersion && 
+                      <Flex
+                        pt={2}
+                        width={[1,1/3]}
+                        id={'allocation-chart'}
+                        flexDirection={'column'}
+                        alignItems={'flex-start'}
                         justifyContent={'flex-start'}
-                        >
-                        <Text
-                          lineHeight={1}
-                          fontSize={[4,5]}
-                          fontWeight={[3,4]}
-                          color={'statValue'}
-                        >
-                          {this.state.delta}
-                          <Text.span color={'statValue'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
-                        </Text>
-                      </VariationNumber>
-                    ) : (
-                      <Text
-                        lineHeight={1}
-                        fontSize={[4,5]}
-                        fontWeight={[3,4]}
-                        color={'statValue'}
                       >
-                        {this.state.delta}
-                      </Text>
-                    )
-                  }
-                </StatsCard>
-              </Flex>
-              <Flex
-                mb={[2,0]}
-                pr={[0,2]}
-                width={[1,1/4]}
-                flexDirection={'column'}
-              >
-                <StatsCard
-                  label={' '}
-                  title={'Rebalances'}
-                  value={this.state.rebalances.toString()}
-                />
-              </Flex>
-              {
-              /*
-              <Flex width={[1,1/4]} flexDirection={'column'} px={[0,2]}>
-                <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
-                  <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                    <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Current APR</Text.span>
-                    <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
-                      {this.state.currApr}
-                      <Text.span color={'copyColor'} fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
-                    </Text>
+                        <AllocationChart
+                          height={310}
+                          {...this.props}
+                          parentId={'allocation-chart'}
+                        />
+                        <Rebalance
+                          {...this.props}
+                        />
+                      </Flex>
+                    }
+                    <Flex
+                      mb={[0,3]}
+                      id={'chart-ALL'}
+                      pl={[0,this.state.idleVersion === this.state.latestVersion ? 0 : 3]}
+                      width={[1, this.state.idleVersion === this.state.latestVersion ? 2/3 : 1]}
+                    >
+                      <Flex alignItems={'flex-start'} justifyContent={'flex-start'} flexDirection={'column'} width={1}>
+                        <Heading.h4
+                          mb={2}
+                          ml={3}
+                          mt={[3,4]}
+                          fontWeight={4}
+                          fontSize={[2,3]}
+                          textAlign={'left'}
+                          color={'dark-gray'}
+                          lineHeight={'initial'}
+                        >
+                          Allocations over time
+                        </Heading.h4>
+                        <StatsChart
+                          height={350}
+                          {...this.state}
+                          chartMode={'ALL'}
+                          parentId={'chart-ALL'}
+                          isMobile={this.props.isMobile}
+                          contracts={this.props.contracts}
+                          apiResults={this.state.apiResults}
+                          apiResults_unfiltered={this.state.apiResults_unfiltered}
+                        />
+                      </Flex>
+                    </Flex>
                   </Flex>
-                </Card>
-              </Flex>
-              <Flex width={[1,1/4]} flexDirection={'column'} px={[0,2]}>
-                <Card my={[2,2]} py={3} pl={0} pr={'10px'} borderRadius={'10px'} boxShadow={0}>
-                  <Flex alignItems={'center'} justifyContent={'center'} flexDirection={'column'} width={1}>
-                    <Text.span color={'copyColor'} fontWeight={2} fontSize={'90%'}>Days Live</Text.span>
-                    <Text lineHeight={1} mt={1} color={'copyColor'} fontSize={[4,'26px']} fontWeight={3} textAlign={'center'}>
-                      {this.state.days}
-                    </Text>
-                  </Flex>
-                </Card>
-              </Flex>
-              */
-              }
-            </Flex>
-          </Box>
+                </DashboardCard>
 
-          <DashboardCard
-            title={'Historical Performance'}
-            titleProps={{
-              mb:2
-            }}
-            cardProps={{
-              mb:[3,4]
-            }}
-          >
-            <Flex id='chart-PRICE' width={1} mb={3}>
-              <StatsChart
-                height={ 350 }
-                {...this.state}
-                chartMode={'PRICE'}
-                parentId={'chart-PRICE'}
-                isMobile={this.props.isMobile}
-                contracts={this.props.contracts}
-                apiResults={this.state.apiResults}
-                apiResults_unfiltered={this.state.apiResults_unfiltered}
-              />
-            </Flex>
-          </DashboardCard>
-
-          <DashboardCard
-            cardProps={{
-              pb:3,
-              mb:[3,4]
-            }}
-          >
-            <Flex
-              flexDirection={['column','row']}
-              justifyContent={'space-between'}
-            >
-              {
-                this.state.idleVersion === this.state.latestVersion && 
                 <Flex
-                  pt={2}
-                  width={[1,1/3]}
-                  id={'allocation-chart'}
-                  flexDirection={'column'}
-                  alignItems={'flex-start'}
-                  justifyContent={'flex-start'}
-                >
-                  <AllocationChart
-                    height={310}
-                    {...this.props}
-                    parentId={'allocation-chart'}
-                  />
-                  <Rebalance
-                    {...this.props}
-                  />
-                </Flex>
-              }
-              <Flex
-                mb={[0,3]}
-                id={'chart-ALL'}
-                pl={[0,this.state.idleVersion === this.state.latestVersion ? 0 : 3]}
-                width={[1, this.state.idleVersion === this.state.latestVersion ? 2/3 : 1]}
-              >
-                <Flex alignItems={'flex-start'} justifyContent={'flex-start'} flexDirection={'column'} width={1}>
-                  <Heading.h4
-                    mb={2}
-                    ml={3}
-                    mt={[3,4]}
-                    fontWeight={4}
-                    fontSize={[2,3]}
-                    textAlign={'left'}
-                    color={'dark-gray'}
-                    lineHeight={'initial'}
-                  >
-                    Allocations over time
-                  </Heading.h4>
-                  <StatsChart
-                    height={350}
-                    {...this.state}
-                    chartMode={'ALL'}
-                    parentId={'chart-ALL'}
-                    isMobile={this.props.isMobile}
-                    contracts={this.props.contracts}
-                    apiResults={this.state.apiResults}
-                    apiResults_unfiltered={this.state.apiResults_unfiltered}
-                  />
-                </Flex>
-              </Flex>
-            </Flex>
-          </DashboardCard>
-
-          <Flex
-            position={'relative'}
-          >
-            <Flex
-              width={1}
-              id={'carousel-container'}
-              justifyContent={'flex-end'}
-            >
-              <RoundIconButton
-                buttonProps={{
-                  mr:3
-                }}
-                iconName={'ArrowBack'}
-                disabled={this.state.carouselIndex === 0}
-                handleClick={ e => this.handleCarousel('back') }
-              />
-              <RoundIconButton
-                iconName={'ArrowForward'}
-                handleClick={ e => this.handleCarousel('next') }
-                disabled={this.state.carouselIndex === this.state.carouselMax}
-              />
-            </Flex>
-            <Flex
-              mt={5}
-              height={'400px'}
-              position={'absolute'}
-              id={'carousel-cursor'}
-              width={['444%','200%']}
-              justifyContent={'flex-start'}
-              left={this.state.carouselOffsetLeft}
-              style={{
-                transition:'left 0.3s ease-in-out'
-              }}
-            >
-              <DashboardCard
-                cardProps={{
-                  mr:4,
-                  height:'fit-content',
-                  style:this.props.isMobile ? {width:'100%'} : {width:'32vw'}
-                }}
-              >
-                <Flex
-                  width={1}
-                  id='chart-AUM'
+                  position={'relative'}
                 >
                   <Flex
-                    mb={3}
                     width={1}
-                    flexDirection={'column'}
-                    alignItems={'flex-start'}
-                    justifyContent={'center'}
+                    id={'carousel-container'}
+                    justifyContent={'flex-end'}
                   >
-                    <Heading.h4
-                      ml={3}
-                      mt={3}
-                      mb={2}
-                      fontWeight={4}
-                      fontSize={[2,3]}
-                      textAlign={'left'}
-                      color={'dark-gray'}
-                      lineHeight={'initial'}
-                    >
-                      Asset Under Management
-                    </Heading.h4>
-                    <StatsChart
-                      height={300}
-                      {...this.state}
-                      chartMode={'AUM'}
-                      parentId={'chart-AUM'}
-                      isMobile={this.props.isMobile}
-                      contracts={this.props.contracts}
-                      apiResults={this.state.apiResults}
-                      apiResults_unfiltered={this.state.apiResults_unfiltered}
+                    <RoundIconButton
+                      buttonProps={{
+                        mr:3
+                      }}
+                      iconName={'ArrowBack'}
+                      disabled={this.state.carouselIndex === 0}
+                      handleClick={ e => this.handleCarousel('back') }
+                    />
+                    <RoundIconButton
+                      iconName={'ArrowForward'}
+                      handleClick={ e => this.handleCarousel('next') }
+                      disabled={this.state.carouselIndex === this.state.carouselMax}
                     />
                   </Flex>
-                </Flex>
-              </DashboardCard>
-              <DashboardCard
-                cardProps={{
-                  mr:4,
-                  height:'fit-content',
-                  style:this.props.isMobile ? {width:'100%'} : {width:'32vw'}
-                }}
-              >
-                <Flex id='chart-APR' width={1}>
                   <Flex
-                    mb={3}
-                    width={1}
-                    flexDirection={'column'}
-                    alignItems={'flex-start'}
-                    justifyContent={'center'}
+                    mt={5}
+                    height={'400px'}
+                    position={'absolute'}
+                    id={'carousel-cursor'}
+                    width={['444%','200%']}
+                    justifyContent={'flex-start'}
+                    left={this.state.carouselOffsetLeft}
+                    style={{
+                      transition:'left 0.3s ease-in-out'
+                    }}
                   >
-                    <Heading.h4
-                      mb={2}
-                      ml={3}
-                      mt={3}
-                      fontWeight={4}
-                      fontSize={[2,3]}
-                      textAlign={'left'}
-                      color={'dark-gray'}
-                      lineHeight={'initial'}
+                    <DashboardCard
+                      cardProps={{
+                        mr:4,
+                        height:'fit-content',
+                        style:this.props.isMobile ? {width:'100%'} : {width:'32vw'}
+                      }}
                     >
-                      APRs
-                    </Heading.h4>
-                    <StatsChart
-                      height={300}
-                      {...this.state}
-                      chartMode={'APR'}
-                      parentId={'chart-APR'}
-                      isMobile={this.props.isMobile}
-                      contracts={this.props.contracts}
-                      apiResults={this.state.apiResults}
-                      apiResults_unfiltered={this.state.apiResults_unfiltered}
-                    />
+                      <Flex
+                        width={1}
+                        id='chart-AUM'
+                      >
+                        <Flex
+                          mb={3}
+                          width={1}
+                          flexDirection={'column'}
+                          alignItems={'flex-start'}
+                          justifyContent={'center'}
+                        >
+                          <Heading.h4
+                            ml={3}
+                            mt={3}
+                            mb={2}
+                            fontWeight={4}
+                            fontSize={[2,3]}
+                            textAlign={'left'}
+                            color={'dark-gray'}
+                            lineHeight={'initial'}
+                          >
+                            Asset Under Management
+                          </Heading.h4>
+                          <StatsChart
+                            height={300}
+                            {...this.state}
+                            chartMode={'AUM'}
+                            parentId={'chart-AUM'}
+                            isMobile={this.props.isMobile}
+                            contracts={this.props.contracts}
+                            apiResults={this.state.apiResults}
+                            apiResults_unfiltered={this.state.apiResults_unfiltered}
+                          />
+                        </Flex>
+                      </Flex>
+                    </DashboardCard>
+                    <DashboardCard
+                      cardProps={{
+                        mr:4,
+                        height:'fit-content',
+                        style:this.props.isMobile ? {width:'100%'} : {width:'32vw'}
+                      }}
+                    >
+                      <Flex id='chart-APR' width={1}>
+                        <Flex
+                          mb={3}
+                          width={1}
+                          flexDirection={'column'}
+                          alignItems={'flex-start'}
+                          justifyContent={'center'}
+                        >
+                          <Heading.h4
+                            mb={2}
+                            ml={3}
+                            mt={3}
+                            fontWeight={4}
+                            fontSize={[2,3]}
+                            textAlign={'left'}
+                            color={'dark-gray'}
+                            lineHeight={'initial'}
+                          >
+                            APRs
+                          </Heading.h4>
+                          <StatsChart
+                            height={300}
+                            {...this.state}
+                            chartMode={'APR'}
+                            parentId={'chart-APR'}
+                            isMobile={this.props.isMobile}
+                            contracts={this.props.contracts}
+                            apiResults={this.state.apiResults}
+                            apiResults_unfiltered={this.state.apiResults_unfiltered}
+                          />
+                        </Flex>
+                      </Flex>
+                    </DashboardCard>
+                    <DashboardCard
+                      cardProps={{
+                        mr:4,
+                        height:'fit-content',
+                        style:this.props.isMobile ? {width:'100%'} : {width:'32vw'}
+                      }}
+                    >
+                      <Flex id='chart-SCORE' width={1}>
+                        <Flex
+                          mb={3}
+                          width={1}
+                          flexDirection={'column'}
+                          alignItems={'flex-start'}
+                          justifyContent={'center'}
+                        >
+                          <Heading.h4
+                            mb={2}
+                            ml={3}
+                            mt={3}
+                            fontWeight={4}
+                            fontSize={[2,3]}
+                            textAlign={'left'}
+                            color={'dark-gray'}
+                            lineHeight={'initial'}
+                          >
+                            Risk Score
+                          </Heading.h4>
+                          <StatsChart
+                            height={300}
+                            {...this.state}
+                            chartMode={'SCORE'}
+                            parentId={'chart-SCORE'}
+                            isMobile={this.props.isMobile}
+                            contracts={this.props.contracts}
+                            apiResults={this.state.apiResults}
+                            apiResults_unfiltered={this.state.apiResults_unfiltered}
+                          />
+                        </Flex>
+                      </Flex>
+                    </DashboardCard>
+                    <DashboardCard
+                      cardProps={{
+                        mr:4,
+                        height:'fit-content',
+                        style:this.props.isMobile ? {width:'100%'} : {width:'32vw'}
+                      }}
+                    >
+                      <Flex id='chart-VOL' width={1}>
+                        <Flex
+                          mb={3}
+                          width={1}
+                          flexDirection={'column'}
+                          alignItems={'flex-start'}
+                          justifyContent={'center'}
+                        >
+                          <Heading.h4
+                            mb={2}
+                            ml={3}
+                            mt={3}
+                            fontWeight={4}
+                            fontSize={[2,3]}
+                            textAlign={'left'}
+                            color={'dark-gray'}
+                            lineHeight={'initial'}
+                          >
+                            Volume
+                          </Heading.h4>
+                          <StatsChart
+                            height={300}
+                            {...this.state}
+                            chartMode={'VOL'}
+                            parentId={'chart-VOL'}
+                            isMobile={this.props.isMobile}
+                            contracts={this.props.contracts}
+                            apiResults={this.state.apiResults}
+                            apiResults_unfiltered={this.state.apiResults_unfiltered}
+                          />
+                        </Flex>
+                      </Flex>
+                    </DashboardCard>
                   </Flex>
                 </Flex>
-              </DashboardCard>
-              <DashboardCard
-                cardProps={{
-                  mr:4,
-                  height:'fit-content',
-                  style:this.props.isMobile ? {width:'100%'} : {width:'32vw'}
-                }}
-              >
-                <Flex id='chart-SCORE' width={1}>
-                  <Flex
-                    mb={3}
-                    width={1}
-                    flexDirection={'column'}
-                    alignItems={'flex-start'}
-                    justifyContent={'center'}
-                  >
-                    <Heading.h4
-                      mb={2}
-                      ml={3}
-                      mt={3}
-                      fontWeight={4}
-                      fontSize={[2,3]}
-                      textAlign={'left'}
-                      color={'dark-gray'}
-                      lineHeight={'initial'}
-                    >
-                      Risk Score
-                    </Heading.h4>
-                    <StatsChart
-                      height={300}
-                      {...this.state}
-                      chartMode={'SCORE'}
-                      parentId={'chart-SCORE'}
-                      isMobile={this.props.isMobile}
-                      contracts={this.props.contracts}
-                      apiResults={this.state.apiResults}
-                      apiResults_unfiltered={this.state.apiResults_unfiltered}
-                    />
-                  </Flex>
-                </Flex>
-              </DashboardCard>
-              <DashboardCard
-                cardProps={{
-                  mr:4,
-                  height:'fit-content',
-                  style:this.props.isMobile ? {width:'100%'} : {width:'32vw'}
-                }}
-              >
-                <Flex id='chart-VOL' width={1}>
-                  <Flex
-                    mb={3}
-                    width={1}
-                    flexDirection={'column'}
-                    alignItems={'flex-start'}
-                    justifyContent={'center'}
-                  >
-                    <Heading.h4
-                      mb={2}
-                      ml={3}
-                      mt={3}
-                      fontWeight={4}
-                      fontSize={[2,3]}
-                      textAlign={'left'}
-                      color={'dark-gray'}
-                      lineHeight={'initial'}
-                    >
-                      Volume
-                    </Heading.h4>
-                    <StatsChart
-                      height={300}
-                      {...this.state}
-                      chartMode={'VOL'}
-                      parentId={'chart-VOL'}
-                      isMobile={this.props.isMobile}
-                      contracts={this.props.contracts}
-                      apiResults={this.state.apiResults}
-                      apiResults_unfiltered={this.state.apiResults_unfiltered}
-                    />
-                  </Flex>
-                </Flex>
-              </DashboardCard>
-            </Flex>
-          </Flex>
+              </Box>
+            )
+          }
+
 
           <DateRangeModal
             minDate={this.state.minDate}
