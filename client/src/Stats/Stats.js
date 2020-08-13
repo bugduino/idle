@@ -129,7 +129,7 @@ class Stats extends Component {
     newState.minDate = newState.minStartTime._d;
     newState.maxDate = newState.maxEndDate._d;
 
-    // console.log('loadParams',newState);
+    // console.log('loadParams',this.state.idleVersion,newState.idleVersion);
     // debugger;
 
     if (newState !== this.state){
