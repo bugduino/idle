@@ -254,7 +254,7 @@ class FundsOverview extends Component {
                 fieldInfo={{
                   name:'amountLent',
                   props:{
-                    decimals:5,
+                    decimals:4,
                     maxPrecision:8,
                     fontWeight:300,
                     fontSize:['1.8em','1.9em'],

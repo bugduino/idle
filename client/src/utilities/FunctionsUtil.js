@@ -308,6 +308,20 @@ class FunctionsUtil {
 
     return deposits;
   }
+  getAmountDeposited = async (tokenConfig,account) => {
+    let [tokenBalance,userAvgPrice] = await Promise.all([
+      this.getTokenBalance(tokenConfig.idle.token,account),
+      this.genericContractCall(tokenConfig.idle.token, 'userAvgPrices', [account])
+    ]);
+
+    if (tokenBalance && userAvgPrice){
+      userAvgPrice = this.fixTokenDecimals(userAvgPrice,tokenConfig.decimals);
+      const amountDeposited = tokenBalance.times(userAvgPrice);
+      return amountDeposited;
+    }
+
+    return null;
+  }
   getAmountLent = async (enabledTokens=[],account) => {
     account = account ? account : this.props.account;
 
@@ -1918,6 +1932,7 @@ class FunctionsUtil {
         }
       break;
       case 'amountLent':
+        // output = account ? await this.getAmountDeposited(tokenConfig,account) : false;
         const amountLents = account ? await this.getAmountLent([token],account) : false;
         if (amountLents && amountLents[token]){
           output = amountLents[token];
@@ -2782,7 +2797,7 @@ class FunctionsUtil {
         // Get old token allocation
         if (tokenConfig.migration && tokenConfig.migration.oldContract){
           const oldTokenConfig = Object.assign({},tokenConfig);
-          oldTokenConfig.idle = tokenConfig.migration.oldContract;
+          oldTokenConfig.idle = Object.assign({},tokenConfig.migration.oldContract);
 
           // Replace protocols with old protocols
           if (oldTokenConfig.migration.oldProtocols){
@@ -2793,7 +2808,6 @@ class FunctionsUtil {
                 oldTokenConfig.protocols[protocolPos] = oldProtocol;
               }
             });
-            // debugger;
           }
 
           const oldTokenAllocation = await this.getTokenAllocation(oldTokenConfig,false,false);

@@ -285,7 +285,6 @@ class Stats extends Component {
     const startTimestamp = this.state.minDate ? parseInt(this.functionsUtil.strToMoment(this.functionsUtil.strToMoment(this.state.minDate).format('DD/MM/YYYY 00:00:00'),'DD/MM/YYYY HH:mm:ss')._d.getTime()/1000) : null;
     const endTimestamp = this.state.maxDate ? parseInt(this.functionsUtil.strToMoment(this.functionsUtil.strToMoment(this.state.maxDate).format('DD/MM/YYYY 23:59:59'),'DD/MM/YYYY HH:mm:ss')._d.getTime()/1000) : null;
 
-
     const isRisk = ['v3','v4'].includes(this.state.idleVersion) && this.props.selectedStrategy === 'risk';
     let apiResults_unfiltered = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,isRisk,startTimestamp,endTimestamp,true,7200);
 
@@ -1238,7 +1237,6 @@ class Stats extends Component {
               </Box>
             )
           }
-
 
           <DateRangeModal
             minDate={this.state.minDate}
