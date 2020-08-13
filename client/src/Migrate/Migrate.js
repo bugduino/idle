@@ -605,7 +605,7 @@ class Migrate extends Component {
 
         // Mint if someone mint over X amount
         const minAmountForMint = this.functionsUtil.getGlobalConfig(['contract','methods','migrate','minAmountForMint']);
-        if (false && minAmountForMint){
+        if (minAmountForMint){
           const amountToDeposit = await this.functionsUtil.convertTokenBalance(oldIdleTokens,this.props.selectedToken,this.props.tokenConfig,false);
           if (amountToDeposit.gte(this.functionsUtil.BNify(minAmountForMint))){
             _skipRebalance = false;
@@ -614,8 +614,7 @@ class Migrate extends Component {
 
         const migrationParams = [toMigrate,this.props.tokenConfig.migration.oldContract.address,this.props.tokenConfig.idle.address,this.props.tokenConfig.address,_skipRebalance];
 
-        console.log('Migration params',oldIdleTokens,migrationContractInfo.name, migrationMethod, migrationParams);
-
+        // console.log('Migration params',oldIdleTokens,migrationContractInfo.name, migrationMethod, migrationParams);
         // debugger;
 
         // Check if Biconomy is enabled
