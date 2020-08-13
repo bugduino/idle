@@ -595,19 +595,28 @@ class Migrate extends Component {
           }));
         };
 
+        const useMetaTx = this.props.biconomy && this.state.metaTransactionsEnabled && !this.state.biconomyLimitReached;
+
         // Call migration contract function to migrate funds
         const oldIdleTokens = this.state.oldIdleTokens;
         const toMigrate = this.functionsUtil.integerValue(this.state.oldContractBalance);
         // const toMigrate =  this.functionsUtil.normalizeTokenAmount('1',this.state.oldContractTokenDecimals).toString(); // TEST AMOUNT
 
-        let _skipRebalance = this.functionsUtil.getGlobalConfig(['contract','methods','migrate','skipMint']);
-        _skipRebalance = typeof this.props.tokenConfig.skipMintForDeposit !== 'undefined' ? this.props.tokenConfig.skipMintForDeposit : _skipRebalance;
+        let _skipRebalance = this.functionsUtil.getGlobalConfig(['contract','methods','migrate','skipRebalance']);
 
         // Mint if someone mint over X amount
-        const minAmountForMint = this.functionsUtil.getGlobalConfig(['contract','methods','migrate','minAmountForMint']);
-        if (minAmountForMint){
+        let minAmountForRebalance = null;
+
+        // Check if the amount is over a certain amount to rebalance the pool
+        if (useMetaTx){
+          minAmountForRebalance = this.functionsUtil.getGlobalConfig(['contract','methods','migrate','minAmountForRebalanceMetaTx']);
+        } else {
+          minAmountForRebalance = this.functionsUtil.getGlobalConfig(['contract','methods','migrate','minAmountForRebalance']);
+        }
+
+        if (minAmountForRebalance){
           const amountToDeposit = await this.functionsUtil.convertTokenBalance(oldIdleTokens,this.props.selectedToken,this.props.tokenConfig,false);
-          if (amountToDeposit.gte(this.functionsUtil.BNify(minAmountForMint))){
+          if (amountToDeposit.gte(this.functionsUtil.BNify(minAmountForRebalance))){
             _skipRebalance = false;
           }
         }
@@ -618,7 +627,7 @@ class Migrate extends Component {
         // debugger;
 
         // Check if Biconomy is enabled
-        if (this.props.biconomy && this.state.metaTransactionsEnabled && !this.state.biconomyLimitReached){
+        if (useMetaTx){
           const functionSignature = migrationContract.methods[migrationMethod](...migrationParams).encodeABI();
           this.functionsUtil.sendBiconomyTxWithPersonalSign(migrationContractInfo.name, functionSignature, callbackMigrate, callbackReceiptMigrate);
           // this.functionsUtil.sendBiconomyTx(migrationContractInfo.name, migrationContractInfo.address, functionSignature, callbackMigrate, callbackReceiptMigrate);

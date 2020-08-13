@@ -163,6 +163,7 @@ const globalConfigs = {
       comingSoon:false,
       addGovTokens:true,
       title:'Best-Yield',
+      titlePostfix:'V4',
       iconName:'Whatshot',
       component: StrategyPage,
       chartColor:'hsl(40,95%,59%)',
@@ -179,6 +180,7 @@ const globalConfigs = {
       addGovTokens:false,
       iconName:'Security',
       title:'Risk-Adjusted',
+      titlePostfix:'V3',
       component: StrategyPage,
       chartColor:'hsl(211,67%,47%)',
       icon:'images/strategies/risk-on.svg',
@@ -438,8 +440,9 @@ const globalConfigs = {
         }
       },
       migrate:{
-        skipMint:true,
-        minAmountForMint:2000
+        skipRebalance:true,
+        minAmountForRebalance:2000,
+        minAmountForRebalanceMetaTx:50000
       },
       redeemGovTokens:{
         enabled:true

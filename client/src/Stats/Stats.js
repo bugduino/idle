@@ -473,11 +473,11 @@ class Stats extends Component {
                 </CountUp>
                 <Title
                   fontWeight={3}
-                  fontSize={[2,3]}
+                  fontSize={[2,2]}
                   color={'cellTitle'}
                   textAlign={['center','right']}
                 >
-                  Assets Under Management
+                  Assets Under Management <Text.span color={'cellTitle'} fontWeight={3} fontSize={'70%'}>(V3 + V4)</Text.span>
                 </Title>
               </Box>
           }
@@ -500,7 +500,24 @@ class Stats extends Component {
                     mt={3}
                     mb={[3,4]}
                   >
-                    {strategyInfo.title}
+                    <Flex
+                      flexDirection={'row'}
+                      alignItems={'baseline'}
+                      justifyContent={'center'}
+                    >
+                      {strategyInfo.title}
+                      {
+                        strategyInfo.titlePostfix &&
+                          <Text
+                            ml={2}
+                            fontWeight={3}
+                            fontSize={[3,4]}
+                            color={'dark-gray'}
+                          >
+                            {strategyInfo.titlePostfix}
+                          </Text>
+                      }
+                    </Flex>
                   </Title>
                   <AssetsList
                     enabledTokens={enabledTokens}

@@ -168,7 +168,7 @@ class AssetField extends Component {
             this.functionsUtil.getTokenFees(this.props.tokenConfig)
           ]);
 
-          if (earningsCounter && feePercentage){
+          if (earningsCounter && earningsCounter.earningsStart && earningsCounter.earningsEnd && feePercentage){
 
             const feesStart = earningsCounter.earningsStart.times(feePercentage);
             const feesEnd = earningsCounter.earningsEnd.times(feePercentage);
