@@ -246,7 +246,7 @@ class UpgradeModal extends React.Component {
                           <AssetField
                             {...this.props}
                             fieldInfo={{
-                              name:'apyNoGov',
+                              name:'oldApy',
                               props:fieldProps
                             }}
                             token={token}
@@ -355,7 +355,7 @@ class UpgradeModal extends React.Component {
                           <AssetField
                             {...this.props}
                             fieldInfo={{
-                              name:'apyNoGov',
+                              name:'oldApy',
                               props:fieldProps
                             }}
                             token={newTokenConfig.token}

@@ -277,7 +277,7 @@ const availableTokens = {
             abi:IdleConverterPersonalSignV4,
             name:'IdleConverterV4',
             address:'0xa55caa40b32a02becfad1d0d29c4f1cf38c4c743',
-            oldAddresses:['0x60753b3a588ff8fe8204595dc295a132c1bb50ae','0xC74d886ebaA5674E21A1CB0Be3997BDDcE6ad525'],
+            oldAddresses:[],
             functions:[
               {
                 label:'Migrate',
@@ -395,7 +395,7 @@ const availableTokens = {
             token:'idleUSDC',
             name:'IdleConverterV4',
             address:'0xa55caa40b32a02becfad1d0d29c4f1cf38c4c743',
-            oldAddresses:['0x60753b3a588ff8fe8204595dc295a132c1bb50ae','0xC74d886ebaA5674E21A1CB0Be3997BDDcE6ad525'],
+            oldAddresses:[],
             functions:[
               {
                 label:'Migrate',
@@ -494,7 +494,7 @@ const availableTokens = {
             token:'idleUSDT',
             name:'IdleConverterV4',
             address:'0xa55caa40b32a02becfad1d0d29c4f1cf38c4c743',
-            oldAddresses:['0x60753b3a588ff8fe8204595dc295a132c1bb50ae','0xC74d886ebaA5674E21A1CB0Be3997BDDcE6ad525'],
+            oldAddresses:[],
             functions:[
               {
                 label:'Migrate',
@@ -580,7 +580,7 @@ const availableTokens = {
             token:'idleSUSD',
             name:'IdleConverterV4',
             address:'0xa55caa40b32a02becfad1d0d29c4f1cf38c4c743',
-            oldAddresses:['0x60753b3a588ff8fe8204595dc295a132c1bb50ae','0xC74d886ebaA5674E21A1CB0Be3997BDDcE6ad525'],
+            oldAddresses:[],
             functions:[
               {
                 label:'Migrate',
@@ -637,7 +637,7 @@ const availableTokens = {
             token:'idleTUSD',
             name:'IdleConverterV4',
             address:'0xa55caa40b32a02becfad1d0d29c4f1cf38c4c743',
-            oldAddresses:['0x60753b3a588ff8fe8204595dc295a132c1bb50ae','0xC74d886ebaA5674E21A1CB0Be3997BDDcE6ad525'],
+            oldAddresses:[],
             functions:[
               {
                 label:'Migrate',
@@ -693,7 +693,7 @@ const availableTokens = {
             token:'idleWBTC',
             name:'IdleConverterV4',
             address:'0xa55caa40b32a02becfad1d0d29c4f1cf38c4c743',
-            oldAddresses:['0x60753b3a588ff8fe8204595dc295a132c1bb50ae','0xC74d886ebaA5674E21A1CB0Be3997BDDcE6ad525'],
+            oldAddresses:[],
             functions:[
               {
                 label:'Migrate',
@@ -789,7 +789,7 @@ const availableTokens = {
             token:'idleDAI',
             name:'IdleConverterV4',
             address:'0xa55caa40b32a02becfad1d0d29c4f1cf38c4c743',
-            oldAddresses:['0x60753b3a588ff8fe8204595dc295a132c1bb50ae','0xC74d886ebaA5674E21A1CB0Be3997BDDcE6ad525'],
+            oldAddresses:[],
             functions:[
               {
                 label:'Migrate',
@@ -905,7 +905,7 @@ const availableTokens = {
             token:'idleUSDC',
             name:'IdleConverterV4',
             address:'0xa55caa40b32a02becfad1d0d29c4f1cf38c4c743',
-            oldAddresses:['0x60753b3a588ff8fe8204595dc295a132c1bb50ae','0xC74d886ebaA5674E21A1CB0Be3997BDDcE6ad525'],
+            oldAddresses:[],
             functions:[
               {
                 label:'Migrate',

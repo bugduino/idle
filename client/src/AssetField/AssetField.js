@@ -251,6 +251,43 @@ class AssetField extends Component {
             })
           }
         break;
+        case 'oldApy':
+          if (this.props.tokenConfig.migration && this.props.tokenConfig.migration.oldContract){
+            const oldTokenConfig = Object.assign({},this.props.tokenConfig);
+            oldTokenConfig.idle = Object.assign({},this.props.tokenConfig.migration.oldContract);
+
+            // Override token with name
+            oldTokenConfig.idle.token = oldTokenConfig.idle.name;
+
+            // Replace protocols with old protocols
+            if (oldTokenConfig.migration.oldProtocols){
+              oldTokenConfig.migration.oldProtocols.forEach( oldProtocol => {
+                const foundProtocol = oldTokenConfig.protocols.find( p => (p.name === oldProtocol.name) );
+                if (foundProtocol){
+                  const protocolPos = oldTokenConfig.protocols.indexOf(foundProtocol);
+                  oldTokenConfig.protocols[protocolPos] = oldProtocol;
+                }
+              });
+            }
+
+            output = await this.functionsUtil.loadAssetField('apy',this.props.token,oldTokenConfig,this.props.account,false);
+
+          } else {
+            output = await this.loadField('apyNoGov');
+          }
+
+          if (output && setState){
+            if (!output.isNaN()){
+              this.setStateSafe({
+                oldAPY:parseFloat(output).toFixed(decimals)
+              });
+            } else {
+              this.setStateSafe({
+                oldAPY:false
+              });
+            }
+          }
+        break;
         case 'apyNoGov':
           output = await this.functionsUtil.loadAssetField('apy',this.props.token,this.props.tokenConfig,this.props.account,false);
           // debugger;
@@ -760,6 +797,11 @@ class AssetField extends Component {
       case 'apr':
         output = this.state.tokenAPR ? (
           <Text {...fieldProps}>{this.state.tokenAPR}%</Text>
+        ) : loader
+      break;
+      case 'oldApy':
+        output = this.state.oldAPY !== undefined ? (
+          <Text {...fieldProps}>{this.state.oldAPY !== false ? this.state.oldAPY : '-' }<small>%</small></Text>
         ) : loader
       break;
       case 'apyNoGov':

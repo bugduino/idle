@@ -13,16 +13,16 @@ import BuyModal from '../utilities/components/BuyModal';
 import Comptroller from '../abis/compound/Comptroller.json';
 import TokenMigration from '../TokenMigration/TokenMigration';
 import { RampInstantSDK } from '@ramp-network/ramp-instant-sdk';
-import IdleConverterV2 from '../contracts/IdleConverterV2.json';
 import IdleProxyMinter from '../contracts/IdleProxyMinter.json';
 import IdleRebalancerV3 from '../contracts/IdleRebalancerV3.json';
 import UniswapV2Router02 from '../abis/uniswap/UniswapV2Router02.json';
+import IdleConverterPersonalSignV4 from '../contracts/IdleConverterPersonalSignV4.json';
 
 const env = process.env;
 
 const globalConfigs = {
   appName: 'Idle',
-  version: 'v3.9',
+  version: 'v4.0',
   baseURL: 'https://idle.finance',
   baseToken: 'ETH',
   countries:{
@@ -442,7 +442,7 @@ const globalConfigs = {
       migrate:{
         skipRebalance:true,
         minAmountForRebalance:2000,
-        minAmountForRebalanceMetaTx:50000
+        minAmountForRebalanceMetaTx:20000
       },
       redeemGovTokens:{
         enabled:true
@@ -538,10 +538,10 @@ const globalConfigs = {
       subComponent:TokenMigration,
       props:{
         migrationContract:{
-          abi:IdleConverterV2,
-          name:'IdleConverterV3',
-          address:'0xC74d886ebaA5674E21A1CB0Be3997BDDcE6ad525',
-          oldAddresses:['0x4ea4e749cb81854606d1912d1c4bde1e9005ab76'],
+          name:'IdleConverterV4',
+          abi:IdleConverterPersonalSignV4,
+          address:'0xa55caa40b32a02becfad1d0d29c4f1cf38c4c743',
+          oldAddresses:[],
           functions:[
             {
               label:'Migrate',
