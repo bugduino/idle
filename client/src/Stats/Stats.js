@@ -137,9 +137,9 @@ class Stats extends Component {
     }
   }
 
-  componentWillMount() {
+  async componentWillMount() {
     this.loadUtils();
-    this.loadParams();
+    await this.loadParams();
   }
 
   componentWillUnmount(){
@@ -286,7 +286,7 @@ class Stats extends Component {
     const endTimestamp = this.state.maxDate ? parseInt(this.functionsUtil.strToMoment(this.functionsUtil.strToMoment(this.state.maxDate).format('DD/MM/YYYY 23:59:59'),'DD/MM/YYYY HH:mm:ss')._d.getTime()/1000) : null;
 
 
-    const isRisk = this.state.idleVersion === 'v3' && this.props.selectedStrategy === 'risk';
+    const isRisk = ['v3','v4'].includes(this.state.idleVersion) && this.props.selectedStrategy === 'risk';
     let apiResults_unfiltered = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,isRisk,startTimestamp,endTimestamp,true,7200);
 
     const apiResults = this.filterTokenData(apiResults_unfiltered);
@@ -640,7 +640,11 @@ class Stats extends Component {
         }
       });
 
-      const performanceTooltip = globalConfigs.stats.versions[this.state.idleVersion].showPerformanceTooltip ? this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.selectedToken,'performanceTooltip']) : null;
+      let performanceTooltip = null;
+      if (this.state.idleVersion && globalConfigs.stats.versions[this.state.idleVersion]){
+        const showPerformanceTooltip = this.functionsUtil.getGlobalConfig(['stats','versions',this.state.idleVersion,'showPerformanceTooltip']);
+        performanceTooltip = showPerformanceTooltip ? this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.selectedToken,'performanceTooltip']) : null;
+      }
 
       const versionDefaultValue = versionsOptions.find( v => (v.value === this.state.idleVersion) );
 
@@ -772,7 +776,7 @@ class Stats extends Component {
           </Box>
 
           {
-            (globalConfigs.stats.versions[this.state.idleVersion].startTimestamp>parseInt(new Date().getTime()/1000)) ? (
+            this.state.idleVersion && (globalConfigs.stats.versions[this.state.idleVersion].startTimestamp>parseInt(new Date().getTime()/1000)) ? (
               <Flex
                 width={1}
                 alignItems={'center'}
