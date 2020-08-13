@@ -619,11 +619,12 @@ class Migrate extends Component {
           if (amountToDeposit.gte(this.functionsUtil.BNify(minAmountForRebalance))){
             _skipRebalance = false;
           }
+          // console.log('amountToDeposit',amountToDeposit.toString(),minAmountForRebalance.toString(),_skipRebalance);
         }
 
         const migrationParams = [toMigrate,this.props.tokenConfig.migration.oldContract.address,this.props.tokenConfig.idle.address,this.props.tokenConfig.address,_skipRebalance];
 
-        // console.log('Migration params',oldIdleTokens,migrationContractInfo.name, migrationMethod, migrationParams);
+        // console.log('Migration params',oldIdleTokens,minAmountForRebalance,migrationContractInfo.name, migrationMethod, migrationParams);
         // debugger;
 
         // Check if Biconomy is enabled

@@ -203,8 +203,6 @@ class AssetField extends Component {
               });
             }
 
-            // console.log('earningsCounter',earningsStart.toString(),earningsEnd.toString());
-
             output = {
               earningsEnd,
               earningsStart
