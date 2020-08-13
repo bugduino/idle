@@ -1882,7 +1882,7 @@ class FunctionsUtil {
 
     // Remove gov tokens for risk adjusted strategy
     const strategyInfo = this.getGlobalConfig(['strategies',this.props.selectedStrategy]);
-    if (strategyInfo && typeof strategyInfo.addGovTokens !== 'undefined'){
+    if (addGovTokens && strategyInfo && typeof strategyInfo.addGovTokens !== 'undefined'){
       addGovTokens = strategyInfo.addGovTokens;
     }
 
