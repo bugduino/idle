@@ -10,8 +10,8 @@ import { Web3Versions } from '@terminal-packages/sdk';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import StrategyPage from '../StrategyPage/StrategyPage';
 import BuyModal from '../utilities/components/BuyModal';
-import TokenMigration from '../TokenMigration/TokenMigration';
 import Comptroller from '../abis/compound/Comptroller.json';
+import TokenMigration from '../TokenMigration/TokenMigration';
 import { RampInstantSDK } from '@ramp-network/ramp-instant-sdk';
 import IdleConverterV2 from '../contracts/IdleConverterV2.json';
 import IdleProxyMinter from '../contracts/IdleProxyMinter.json';
@@ -161,6 +161,7 @@ const globalConfigs = {
       token:'DAI',
       color:'#f32121',
       comingSoon:false,
+      addGovTokens:true,
       title:'Best-Yield',
       iconName:'Whatshot',
       component: StrategyPage,
@@ -175,6 +176,7 @@ const globalConfigs = {
       token:'DAI',
       color:'#2196F3',
       comingSoon:false,
+      addGovTokens:false,
       iconName:'Security',
       title:'Risk-Adjusted',
       component: StrategyPage,
@@ -189,6 +191,7 @@ const globalConfigs = {
       token:'DAI',
       color:'#2196F3',
       comingSoon:true,
+      addGovTokens:true,
       iconName:'Adjust',
       title:'SOLR',
       chartColor:'hsl(211,67%,47%)',
@@ -229,7 +232,7 @@ const globalConfigs = {
       v4:{
         label:'Idle V4',
         endTimestamp:null,
-        startTimestamp:1597345383,
+        startTimestamp:1597442400,
         showPerformanceTooltip:true,
         enabledStrategies:['best','risk'],
         enabledTokens:['DAI','USDC','USDT'],
@@ -434,6 +437,10 @@ const globalConfigs = {
           address:'0x7C4414aA6B0c6CB1Bc7e5BFb7433138426AC637a',
         }
       },
+      migrate:{
+        skipMint:true,
+        minAmountForMint:2000
+      },
       redeemGovTokens:{
         enabled:true
       },
@@ -469,14 +476,18 @@ const globalConfigs = {
         }
       },
       biconomy:{
-        enabled:false,
+        enabled:true,
         enableLogin:false,
         supportedNetworks:[1,42],
         disabledWallets:['authereum'],
+        endpoints:{
+          limits:'https://api.biconomy.io/api/v1/dapp/checkLimits'
+        },
         params:{
           debug: false,
           apiKey: env.REACT_APP_BICONOMY_KEY,
-          dappId: env.REACT_APP_BICONOMY_APPID
+          dappId: env.REACT_APP_BICONOMY_APPID,
+          apiId: '36572ec9-ae5c-4c4a-9530-f3ae7c7ac829'
         }
       },
       terminal:{

@@ -1236,7 +1236,7 @@ class RimbleTransaction extends React.Component {
       if (gas) {
 
         gas = this.functionsUtil.BNify(gas);
-        gas = gas.plus(gas.times(this.functionsUtil.BNify('0.3'))); // Increase 30% of enstimation
+        gas = gas.plus(gas.times(this.functionsUtil.BNify('0.2'))); // Increase 20% of enstimation
 
         // Check if gas is under the gasLimit param
         if (gasLimit && gas.lt(this.functionsUtil.BNify(gasLimit))){

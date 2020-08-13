@@ -276,7 +276,7 @@ const availableTokens = {
             token:'idleDAI',
             abi:IdleConverterPersonalSignV4,
             name:'IdleConverterV4',
-            address:'0xcF61eA643d3eE6042A743F1Ab012D55863805876',
+            address:'0xa55caa40b32a02becfad1d0d29c4f1cf38c4c743',
             oldAddresses:['0x60753b3a588ff8fe8204595dc295a132c1bb50ae','0xC74d886ebaA5674E21A1CB0Be3997BDDcE6ad525'],
             functions:[
               {
@@ -394,7 +394,7 @@ const availableTokens = {
             abi:IdleConverterPersonalSignV4,
             token:'idleUSDC',
             name:'IdleConverterV4',
-            address:'0xcF61eA643d3eE6042A743F1Ab012D55863805876',
+            address:'0xa55caa40b32a02becfad1d0d29c4f1cf38c4c743',
             oldAddresses:['0x60753b3a588ff8fe8204595dc295a132c1bb50ae','0xC74d886ebaA5674E21A1CB0Be3997BDDcE6ad525'],
             functions:[
               {
@@ -493,7 +493,7 @@ const availableTokens = {
             abi:IdleConverterPersonalSignV4,
             token:'idleUSDT',
             name:'IdleConverterV4',
-            address:'0xcF61eA643d3eE6042A743F1Ab012D55863805876',
+            address:'0xa55caa40b32a02becfad1d0d29c4f1cf38c4c743',
             oldAddresses:['0x60753b3a588ff8fe8204595dc295a132c1bb50ae','0xC74d886ebaA5674E21A1CB0Be3997BDDcE6ad525'],
             functions:[
               {
@@ -579,7 +579,7 @@ const availableTokens = {
             abi:IdleConverterPersonalSignV4,
             token:'idleSUSD',
             name:'IdleConverterV4',
-            address:'0xcF61eA643d3eE6042A743F1Ab012D55863805876',
+            address:'0xa55caa40b32a02becfad1d0d29c4f1cf38c4c743',
             oldAddresses:['0x60753b3a588ff8fe8204595dc295a132c1bb50ae','0xC74d886ebaA5674E21A1CB0Be3997BDDcE6ad525'],
             functions:[
               {
@@ -636,7 +636,7 @@ const availableTokens = {
             abi:IdleConverterPersonalSignV4,
             token:'idleTUSD',
             name:'IdleConverterV4',
-            address:'0xcF61eA643d3eE6042A743F1Ab012D55863805876',
+            address:'0xa55caa40b32a02becfad1d0d29c4f1cf38c4c743',
             oldAddresses:['0x60753b3a588ff8fe8204595dc295a132c1bb50ae','0xC74d886ebaA5674E21A1CB0Be3997BDDcE6ad525'],
             functions:[
               {
@@ -692,7 +692,7 @@ const availableTokens = {
             abi:IdleConverterPersonalSignV4,
             token:'idleWBTC',
             name:'IdleConverterV4',
-            address:'0xcF61eA643d3eE6042A743F1Ab012D55863805876',
+            address:'0xa55caa40b32a02becfad1d0d29c4f1cf38c4c743',
             oldAddresses:['0x60753b3a588ff8fe8204595dc295a132c1bb50ae','0xC74d886ebaA5674E21A1CB0Be3997BDDcE6ad525'],
             functions:[
               {
@@ -788,7 +788,7 @@ const availableTokens = {
             abi:IdleConverterPersonalSignV4,
             token:'idleDAI',
             name:'IdleConverterV4',
-            address:'0xcF61eA643d3eE6042A743F1Ab012D55863805876',
+            address:'0xa55caa40b32a02becfad1d0d29c4f1cf38c4c743',
             oldAddresses:['0x60753b3a588ff8fe8204595dc295a132c1bb50ae','0xC74d886ebaA5674E21A1CB0Be3997BDDcE6ad525'],
             functions:[
               {
@@ -904,7 +904,7 @@ const availableTokens = {
             abi:IdleConverterPersonalSignV4,
             token:'idleUSDC',
             name:'IdleConverterV4',
-            address:'0xcF61eA643d3eE6042A743F1Ab012D55863805876',
+            address:'0xa55caa40b32a02becfad1d0d29c4f1cf38c4c743',
             oldAddresses:['0x60753b3a588ff8fe8204595dc295a132c1bb50ae','0xC74d886ebaA5674E21A1CB0Be3997BDDcE6ad525'],
             functions:[
               {

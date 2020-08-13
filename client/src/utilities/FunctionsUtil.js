@@ -3,9 +3,11 @@ import axios from 'axios';
 import moment from 'moment';
 import { Text } from "rimble-ui";
 import BigNumber from 'bignumber.js';
+import { toBuffer } from "ethereumjs-util";
 import globalConfigs from '../configs/globalConfigs';
 // import availableTokens from '../configs/availableTokens';
 // import { ChainId, Token, Fetcher, Route } from '@uniswap/sdk';
+const ethereumjsABI = require('ethereumjs-abi');
 
 const env = process.env;
 
@@ -1141,9 +1143,9 @@ class FunctionsUtil {
     }
     return null;
   }
-  makeRequest = async(endpoint,error_callback=false) => {
+  makeRequest = async(endpoint,error_callback=false,config=null) => {
     const data = await axios
-                  .get(endpoint)
+                  .get(endpoint,config)
                   .catch(err => {
                     if (typeof error_callback === 'function'){
                       error_callback(err);
@@ -1705,6 +1707,28 @@ class FunctionsUtil {
     };
   };
 
+  constructMetaTransactionMessage = (nonce, chainId, functionSignature, contractAddress) => {
+    return ethereumjsABI.soliditySHA3(
+      ["uint256","address","uint256","bytes"],
+      [nonce, contractAddress, chainId, toBuffer(functionSignature)]
+    );
+  }
+
+  checkBiconomyLimits = async (userAddress) => {
+    const biconomyInfo = this.getGlobalConfig(['network','providers','biconomy']);
+    const res = await this.makeRequest(`${biconomyInfo.endpoints.limits}?userAddress=${userAddress}&apiId=${biconomyInfo.params.apiId}`,null,{
+      headers:{
+        'x-api-key':biconomyInfo.params.apiKey
+      }
+    });
+    
+    if (res && res.data){
+      return res.data;
+    }
+
+    return null;
+  }
+
   sendBiconomyTxWithPersonalSign = async (contractName,functionSignature,callback,callback_receipt) => {
     const contract = this.getContractByName(contractName);
 
@@ -1714,13 +1738,14 @@ class FunctionsUtil {
     }
 
     try{
-      let userAddress = this.props.account;
-      let nonce = await contract.methods.getNonce(userAddress).call();
-      let message = "Please provide your signature to send the transaction without paying gas. Tracking Id: ";
-      let messageToSign = `${message}${nonce}`;
+
+      const userAddress = this.props.account;
+      const nonce = await contract.methods.getNonce(userAddress).call();
+      const chainId = this.getGlobalConfig(['network','requiredNetwork']);
+      const messageToSign = this.constructMetaTransactionMessage(nonce, chainId, functionSignature, contract._address);
 
       const signature = await this.props.web3.eth.personal.sign(
-        messageToSign,
+        "0x" + messageToSign.toString("hex"),
         userAddress
       );
 
@@ -1728,10 +1753,11 @@ class FunctionsUtil {
 
       // console.log('executeMetaTransaction', [userAddress, functionSignature, messageToSign, `${messageToSign.length}`, r, s, v]);
 
-      this.contractMethodSendWrapper(contractName, 'executeMetaTransaction', [userAddress, functionSignature, message, `${messageToSign.length}`, r, s, v], callback, callback_receipt);
+      this.contractMethodSendWrapper(contractName, 'executeMetaTransaction', [userAddress, functionSignature, r, s, v], callback, callback_receipt);
 
       return true;
     } catch (error) {
+      console.error(error);
       callback(null,error);
       return false;
     }
@@ -1853,6 +1879,12 @@ class FunctionsUtil {
 
     let output = null;
     const govTokens = this.getGlobalConfig(['govTokens']);
+
+    // Remove gov tokens for risk adjusted strategy
+    const strategyInfo = this.getGlobalConfig(['strategies',this.props.selectedStrategy]);
+    if (strategyInfo && typeof strategyInfo.addGovTokens !== 'undefined'){
+      addGovTokens = strategyInfo.addGovTokens;
+    }
 
     // Take available tokens for gov tokens fields
     let govTokenAvailableTokens = null;

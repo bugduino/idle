@@ -50,11 +50,6 @@
     "type": "event"
   },
   {
-    "payable": true,
-    "stateMutability": "payable",
-    "type": "fallback"
-  },
-  {
     "constant": false,
     "inputs": [
       {
@@ -66,16 +61,6 @@
         "internalType": "bytes",
         "name": "functionSignature",
         "type": "bytes"
-      },
-      {
-        "internalType": "string",
-        "name": "message",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "length",
-        "type": "string"
       },
       {
         "internalType": "bytes32",
@@ -103,6 +88,21 @@
     ],
     "payable": true,
     "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getChainID",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -213,19 +213,19 @@
         "type": "address"
       },
       {
-        "internalType": "string",
-        "name": "message",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "length",
-        "type": "string"
-      },
-      {
         "internalType": "uint256",
         "name": "nonce",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "chainID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "functionSignature",
+        "type": "bytes"
       },
       {
         "internalType": "bytes32",
@@ -277,6 +277,11 @@
         "internalType": "address",
         "name": "_underlying",
         "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_skipRebalance",
+        "type": "bool"
       }
     ],
     "name": "migrateFromToIdle",
@@ -313,6 +318,11 @@
         "internalType": "address",
         "name": "_underlying",
         "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_skipRebalance",
+        "type": "bool"
       }
     ],
     "name": "migrateFromCompoundToIdle",
@@ -349,6 +359,11 @@
         "internalType": "address",
         "name": "_underlying",
         "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_skipRebalance",
+        "type": "bool"
       }
     ],
     "name": "migrateFromFulcrumToIdle",
@@ -385,6 +400,11 @@
         "internalType": "address",
         "name": "_underlying",
         "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_skipRebalance",
+        "type": "bool"
       }
     ],
     "name": "migrateFromAaveToIdle",
@@ -421,6 +441,11 @@
         "internalType": "address",
         "name": "_underlying",
         "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_skipRebalance",
+        "type": "bool"
       }
     ],
     "name": "migrateFromIearnToIdle",

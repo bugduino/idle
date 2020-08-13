@@ -34,6 +34,7 @@ class Migrate extends Component {
     migrationEnabled:null,
     fastBalanceSelector:{},
     oldContractBalance:null,
+    biconomyLimitReached:false,
     metaTransactionsEnabled:true,
     oldContractTokenDecimals:null,
     migrationContractApproved:null,
@@ -384,8 +385,7 @@ class Migrate extends Component {
     
     loading = false;
 
-    // Set migration contract balance
-    return this.setState({
+    const newState = {
       loading,
       oldTokenName,
       oldIdleTokens,
@@ -394,7 +394,17 @@ class Migrate extends Component {
       oldIdleTokensConverted,
       oldContractTokenDecimals,
       migrationContractApproved
-    });
+    };
+
+    if (this.props.biconomy){
+      const biconomyLimits = await this.functionsUtil.checkBiconomyLimits(this.props.account);
+      if (biconomyLimits && !biconomyLimits.allowed){
+        newState.biconomyLimitReached = true;
+      }
+    }
+
+    // Set migration contract balance
+    return this.setState(newState);
   }
 
   disapproveMigration = async (e) => {
@@ -590,12 +600,26 @@ class Migrate extends Component {
         const toMigrate = this.functionsUtil.integerValue(this.state.oldContractBalance);
         // const toMigrate =  this.functionsUtil.normalizeTokenAmount('1',this.state.oldContractTokenDecimals).toString(); // TEST AMOUNT
 
-        const migrationParams = [toMigrate,this.props.tokenConfig.migration.oldContract.address,this.props.tokenConfig.idle.address,this.props.tokenConfig.address];
+        let _skipRebalance = this.functionsUtil.getGlobalConfig(['contract','methods','migrate','skipMint']);
+        _skipRebalance = typeof this.props.tokenConfig.skipMintForDeposit !== 'undefined' ? this.props.tokenConfig.skipMintForDeposit : _skipRebalance;
 
-        // console.log('Migration params',migrationContractInfo.name, migrationMethod, migrationParams);
+        // Mint if someone mint over X amount
+        const minAmountForMint = this.functionsUtil.getGlobalConfig(['contract','methods','migrate','minAmountForMint']);
+        if (false && minAmountForMint){
+          const amountToDeposit = await this.functionsUtil.convertTokenBalance(oldIdleTokens,this.props.selectedToken,this.props.tokenConfig,false);
+          if (amountToDeposit.gte(this.functionsUtil.BNify(minAmountForMint))){
+            _skipRebalance = false;
+          }
+        }
+
+        const migrationParams = [toMigrate,this.props.tokenConfig.migration.oldContract.address,this.props.tokenConfig.idle.address,this.props.tokenConfig.address,_skipRebalance];
+
+        console.log('Migration params',oldIdleTokens,migrationContractInfo.name, migrationMethod, migrationParams);
+
+        // debugger;
 
         // Check if Biconomy is enabled
-        if (this.props.biconomy && this.state.metaTransactionsEnabled){
+        if (this.props.biconomy && this.state.metaTransactionsEnabled && !this.state.biconomyLimitReached){
           const functionSignature = migrationContract.methods[migrationMethod](...migrationParams).encodeABI();
           this.functionsUtil.sendBiconomyTxWithPersonalSign(migrationContractInfo.name, functionSignature, callbackMigrate, callbackReceiptMigrate);
           // this.functionsUtil.sendBiconomyTx(migrationContractInfo.name, migrationContractInfo.address, functionSignature, callbackMigrate, callbackReceiptMigrate);
@@ -627,7 +651,7 @@ class Migrate extends Component {
       return null;
     }
 
-    const biconomyEnabled = this.functionsUtil.getGlobalConfig(['network','providers','biconomy','enabled']);
+    const biconomyEnabled = this.functionsUtil.getGlobalConfig(['network','providers','biconomy','enabled']) && !this.state.biconomyLimitReached;
 
     return (
       this.state.loading && this.props.account ? (

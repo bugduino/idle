@@ -130,12 +130,8 @@ class AllocationChart extends Component {
     this.props.tokenConfig.protocols.forEach((protocolInfo,i)=>{
       const protocolName = protocolInfo.name;
       const protocolAddr = protocolInfo.address.toLowerCase();
-      const protocolLoaded = totalAllocation && protocolsAllocations && protocolsAllocations[protocolAddr];
-      const protocolAllocation = protocolLoaded ? parseFloat(protocolsAllocations[protocolAddr].toString()) : null;
-      const protocolAllocationPerc = protocolAllocation !== null ? parseFloat(protocolAllocation)/parseFloat(totalAllocation.toString()) : null;
-      const protocolAllocationPercParsed = protocolAllocationPerc === null ? 0 : parseFloat((protocolAllocationPerc*100).toFixed(1));
-
-      if (protocolAllocationPercParsed){
+      if (protocolsAllocationsPerc[protocolAddr]){
+        const protocolAllocationPercParsed = parseFloat(protocolsAllocationsPerc[protocolAddr].times(100).toFixed(2));
         chartData.push({
           id:protocolAddr,
           value:protocolAllocationPercParsed,
@@ -143,6 +139,7 @@ class AllocationChart extends Component {
           label: globalConfigs.stats.protocols[protocolName].label ? globalConfigs.stats.protocols[protocolName].label : this.functionsUtil.capitalize(protocolName)
         });
       }
+
     });
 
     this.setState({
