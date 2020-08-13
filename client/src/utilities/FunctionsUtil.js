@@ -1721,7 +1721,7 @@ class FunctionsUtil {
         'x-api-key':biconomyInfo.params.apiKey
       }
     });
-    
+
     if (res && res.data){
       return res.data;
     }
@@ -2061,11 +2061,9 @@ class FunctionsUtil {
 
         output = redeemableBalance2.minus(amountLent);
 
-        // if (fee1 && !this.BNify(fee1).isNaN()){
-        //   output = output.minus(this.BNify(fee1));
-        // }
-
-        // console.log('earnings',amountLent.toString(),redeemableBalance2.toString(),output.toString());
+        if (output.lt(this.BNify(0))){
+          output = this.BNify(0);
+        }
       break;
       default:
       break;

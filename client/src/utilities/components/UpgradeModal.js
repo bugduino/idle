@@ -116,7 +116,7 @@ class UpgradeModal extends React.Component {
         >
           <ModalCard.Header
             iconHeight={'40px'}
-            icon={`images/alert.svg`}
+            icon={`images/migrate.svg`}
             title={'Upgrade Available'}
           >
           </ModalCard.Header>
