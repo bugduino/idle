@@ -2381,12 +2381,12 @@ class FunctionsUtil {
       const protocolAddr = protocolInfo.address.toLowerCase();
 
       let [
-        protocolBalance,
         tokenDecimals,
+        protocolBalance,
         exchangeRate
       ] = await Promise.all([
-        this.getProtocolBalance(contractName,tokenConfig.idle.address),
         this.getTokenDecimals(contractName),
+        this.getProtocolBalance(contractName,tokenConfig.idle.address),
         ( protocolInfo.functions.exchangeRate ? this.genericContractCall(contractName,protocolInfo.functions.exchangeRate.name,protocolInfo.functions.exchangeRate.params) : null )
       ]);
 
@@ -2410,6 +2410,7 @@ class FunctionsUtil {
     });
 
     tokenAllocation.unlentBalance = this.BNify(0);
+    tokenAllocation.protocolsBalances = protocolsBalances;
     tokenAllocation.totalAllocationWithUnlent = totalAllocation;
 
     // Add unlent balance to the pool
