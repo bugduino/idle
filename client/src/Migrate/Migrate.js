@@ -30,6 +30,7 @@ class Migrate extends Component {
     inputValue:{},
     oldTokenName:null,
     oldIdleTokens:null,
+    skipMigration:false,
     buttonDisabled:false,
     migrationEnabled:null,
     fastBalanceSelector:{},
@@ -57,6 +58,12 @@ class Migrate extends Component {
         action
       });
     }
+  }
+
+  toggleSkipMigration = (skipMigration) => {
+    this.setState({
+      skipMigration
+    });
   }
 
   changeInputValue = (e) => {
@@ -660,6 +667,39 @@ class Migrate extends Component {
       return null;
     }
 
+    const SkipMigrationComponent = (props) => (
+      <DashboardCard
+        cardProps={{
+          py:3,
+          px:2,
+          my:2,
+          display:'flex',
+          alignItems:'center',
+          flexDirection:'column',
+          justifyContent:'center',
+        }}
+      >
+        <Flex
+          width={1}
+          alignItems={'center'}
+          flexDirection={'column'}
+          justifyContent={'center'}
+        >
+          <Icon
+            size={'2.3em'}
+            color={'cellText'}
+            name={'FastForward'}
+          />
+        </Flex>
+        <Checkbox
+          required={false}
+          checked={this.state.skipMigration}
+          label={`Skip migration and deposit in Idle v4`}
+          onChange={ e => this.toggleSkipMigration(e.target.checked) }
+        />
+      </DashboardCard>
+    );
+
     const biconomyEnabled = this.functionsUtil.getGlobalConfig(['network','providers','biconomy','enabled']) && !this.state.biconomyLimitReached;
 
     return (
@@ -690,7 +730,7 @@ class Migrate extends Component {
           />
         </DashboardCard>
       ) : (
-        this.state.migrationEnabled ? (
+        (this.state.migrationEnabled && !this.state.skipMigration) ? (
           <Box width={1}>
             {
               !this.props.isMigrationTool &&
@@ -735,6 +775,10 @@ class Migrate extends Component {
                   mt={2}
                   flexDirection={'column'}
                 >
+                  {
+                    !this.props.isMigrationTool && 
+                      <SkipMigrationComponent />
+                  }
                   <Text mb={2}>
                     Choose the action:
                   </Text>
@@ -1042,7 +1086,22 @@ class Migrate extends Component {
               )
             }
           </Box>
-        ) : (this.props.children ? this.props.children : null)
+        ) : (
+          <Flex
+            width={1}
+            alignItems={'center'}
+            flexDirection={'column'}
+            justifyContent={'center'}
+          >
+            {
+              (!this.props.isMigrationTool && this.state.migrationEnabled) && 
+                <SkipMigrationComponent />
+            }
+            {
+              this.props.children ? this.props.children : null
+            }
+          </Flex>
+        )
       )
     )
   }
