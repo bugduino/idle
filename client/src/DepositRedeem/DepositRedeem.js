@@ -325,8 +325,10 @@ class DepositRedeem extends Component {
 
     let contractSendResult = null;
     const redeemGovTokens = this.state.redeemGovTokens;
+    const isRisk = this.props.selectedStrategy === 'risk';
     const inputValue = this.state.inputValue[this.state.action];
     const selectedPercentage = this.getFastBalanceSelector();
+    const govTokensEnabled = this.functionsUtil.getGlobalConfig(['strategies',this.props.selectedStrategy,'govTokensEnabled']);
 
     const loading = true;
 
@@ -422,12 +424,13 @@ class DepositRedeem extends Component {
 
         const depositMetaTransactionsEnabled = this.functionsUtil.getGlobalConfig(['contract','methods','deposit','metaTransactionsEnabled']);
         // const gasLimitDeposit = this.functionsUtil.BNify(1000000);
+        let depositParams = [];
 
         // Use Proxy Contract if enabled
         const mintProxyContractInfo = this.state.actionProxyContract[this.state.action];
         if (depositMetaTransactionsEnabled && mintProxyContractInfo && this.props.biconomy && this.state.metaTransactionsEnabled){
           const mintProxyContract = this.state.actionProxyContract[this.state.action].contract;
-          const depositParams = [tokensToDeposit, this.props.tokenConfig.idle.address];
+          depositParams = [tokensToDeposit, this.props.tokenConfig.idle.address];
           // console.log('mintProxyContract',mintProxyContractInfo.function,depositParams);
           if (this.state.metaTransactionsEnabled){
             const functionSignature = mintProxyContract.methods[mintProxyContractInfo.function](...depositParams).encodeABI();
@@ -450,10 +453,14 @@ class DepositRedeem extends Component {
             }
           }
 
+          // Old contract params
+          if (isRisk){
+            depositParams = [tokensToDeposit, _skipMint];
+          } else {
+            depositParams = [tokensToDeposit, _skipMint, '0x0000000000000000000000000000000000000000'];
+          }
           // No need for callback atm
-          contractSendResult = await this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'mintIdleToken', [
-            tokensToDeposit, _skipMint, '0x0000000000000000000000000000000000000000'
-          ], null, callbackDeposit, callbackReceiptDeposit);
+          contractSendResult = await this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'mintIdleToken', depositParams, null, callbackDeposit, callbackReceiptDeposit);
         }
       break;
       case 'redeem':
@@ -588,7 +595,15 @@ class DepositRedeem extends Component {
             }));
           };
 
-          contractSendResult = await this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'redeemIdleToken', [idleTokenToRedeem], null, callbackRedeem, callbackReceiptRedeem);
+          let redeemParams = [];
+          // Old contract params
+          if (isRisk){
+            redeemParams = [idleTokenToRedeem, true, []];
+          } else {
+            redeemParams = [idleTokenToRedeem];
+          }
+
+          contractSendResult = await this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'redeemIdleToken', redeemParams, null, callbackRedeem, callbackReceiptRedeem);
         }
       break;
       default:
@@ -758,11 +773,11 @@ class DepositRedeem extends Component {
     if (!this.props.selectedToken || !this.props.tokenConfig){
       return null;
     }
-
     const govTokensDisabled = this.props.tokenConfig.govTokensDisabled;
+    const govTokensEnabled = this.functionsUtil.getGlobalConfig(['strategies',this.props.selectedStrategy,'govTokensEnabled']);
     const skipMintForDepositEnabled = typeof this.props.tokenConfig.skipMintForDeposit !== 'undefined' ? this.props.tokenConfig.skipMintForDeposit : true;
     const skipMintCheckboxEnabled = this.functionsUtil.getGlobalConfig(['contract','methods','deposit','skipMintCheckboxEnabled']) && skipMintForDepositEnabled;
-    const redeemGovTokenEnabled = this.functionsUtil.getGlobalConfig(['contract','methods','redeemGovTokens','enabled']) && !govTokensDisabled;
+    const redeemGovTokenEnabled = this.functionsUtil.getGlobalConfig(['contract','methods','redeemGovTokens','enabled']) && !govTokensDisabled && govTokensEnabled;
     const redeemGovTokens = redeemGovTokenEnabled && this.state.redeemGovTokens && this.state.action === 'redeem';
     const metaTransactionsAvailable = this.props.biconomy && this.state.actionProxyContract[this.state.action];
     const useMetaTx = metaTransactionsAvailable && this.state.metaTransactionsEnabled;
