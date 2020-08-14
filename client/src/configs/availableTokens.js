@@ -869,8 +869,8 @@ const availableTokens = {
             name:'dydx',
             enabled:true,
             abi:yToken,
-            address:'0xb299BCDF056d17Bd1A46185eCA8bCE458B00DC4a',
-            token:'yxDAI',
+            address:'0xf424b10e1e9691ae5fb530fe4c3e6b9971013d49',
+            token:'yxDAIOld',
             decimals:18,
             functions:{
               exchangeRate:{
@@ -975,7 +975,7 @@ const availableTokens = {
             enabled:true,
             abi:yToken,
             address:'0x0d81b042bb9939b4d32cdf7861774c442a2685ce',
-            token:'yxUSDC',
+            token:'yxUSDCOld',
             decimals:18,
             functions:{
               exchangeRate:{
