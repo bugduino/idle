@@ -390,6 +390,22 @@ const availableTokens = {
             address:'0x12B98C621E8754Ae70d0fDbBC73D6208bC3e3cA6'
             // address:'0xeB66ACc3d011056B00ea521F8203580C2E5d3991',
           },
+          oldProtocols:[
+            {
+              abi:yToken,
+              name:'dydx',
+              enabled:true,
+              address:'0x0d81b042bb9939b4d32cdf7861774c442a2685ce',
+              token:'yxUSDCOld',
+              decimals:18,
+              functions:{
+                exchangeRate:{
+                  name:'price',
+                  params:[]
+                }
+              }
+            }
+          ],
           migrationContract:{
             abi:IdleConverterPersonalSignV4,
             token:'idleUSDC',
@@ -448,7 +464,7 @@ const availableTokens = {
             name:'dydx',
             enabled:true,
             abi:yToken,
-            address:'0x0d81b042bb9939b4d32cdf7861774c442a2685ce',
+            address:'0xd2F45883627f26EC34825486ca4c25235A0da0C3',
             token:'yxUSDC',
             decimals:18,
             functions:{
