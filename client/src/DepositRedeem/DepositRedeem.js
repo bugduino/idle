@@ -328,7 +328,6 @@ class DepositRedeem extends Component {
     const isRisk = this.props.selectedStrategy === 'risk';
     const inputValue = this.state.inputValue[this.state.action];
     const selectedPercentage = this.getFastBalanceSelector();
-    const govTokensEnabled = this.functionsUtil.getGlobalConfig(['strategies',this.props.selectedStrategy,'govTokensEnabled']);
 
     const loading = true;
 
