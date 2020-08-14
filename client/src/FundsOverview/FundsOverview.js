@@ -131,9 +131,11 @@ class FundsOverview extends Component {
 
     if (tokenAllocation){
       const compoundInfo = this.props.tokenConfig.protocols.find( p => (p.name === 'compound') );
-      if (tokenAllocation.protocolsAllocationsPerc[compoundInfo.address.toLowerCase()]){
-        const compoundAllocationPerc = tokenAllocation.protocolsAllocationsPerc[compoundInfo.address.toLowerCase()];
-        compAPR = compAPR.times(compoundAllocationPerc);
+      if (compoundInfo){
+        if (tokenAllocation.protocolsAllocationsPerc[compoundInfo.address.toLowerCase()]){
+          const compoundAllocationPerc = tokenAllocation.protocolsAllocationsPerc[compoundInfo.address.toLowerCase()];
+          compAPR = compAPR.times(compoundAllocationPerc);
+        }
       }
     }
 

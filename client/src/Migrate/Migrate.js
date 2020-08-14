@@ -602,30 +602,30 @@ class Migrate extends Component {
         const toMigrate = this.functionsUtil.integerValue(this.state.oldContractBalance);
         // const toMigrate =  this.functionsUtil.normalizeTokenAmount('1',this.state.oldContractTokenDecimals).toString(); // TEST AMOUNT
 
-        let _skipRebalance = this.functionsUtil.getGlobalConfig(['contract','methods','migrate','skipRebalance']);
+        let _skipRebalance = typeof this.props.tokenConfig.skipMintForDeposit !== 'undefined' ? this.props.tokenConfig.skipMintForDeposit : this.functionsUtil.getGlobalConfig(['contract','methods','migrate','skipRebalance']);
 
         // Mint if someone mint over X amount
-        let minAmountForRebalance = null;
+        if (_skipRebalance){
+          let minAmountForRebalance = null;
 
-        // Check if the amount is over a certain amount to rebalance the pool
-        if (useMetaTx){
-          minAmountForRebalance = this.functionsUtil.getGlobalConfig(['contract','methods','migrate','minAmountForRebalanceMetaTx']);
-        } else {
-          minAmountForRebalance = this.functionsUtil.getGlobalConfig(['contract','methods','migrate','minAmountForRebalance']);
-        }
-
-        if (minAmountForRebalance){
-          const amountToDeposit = await this.functionsUtil.convertTokenBalance(oldIdleTokens,this.props.selectedToken,this.props.tokenConfig,false);
-          if (amountToDeposit.gte(this.functionsUtil.BNify(minAmountForRebalance))){
-            _skipRebalance = false;
+          // Check if the amount is over a certain amount to rebalance the pool
+          if (useMetaTx){
+            minAmountForRebalance = this.functionsUtil.getGlobalConfig(['contract','methods','migrate','minAmountForRebalanceMetaTx']);
+          } else {
+            minAmountForRebalance = this.functionsUtil.getGlobalConfig(['contract','methods','migrate','minAmountForRebalance']);
           }
-          // console.log('amountToDeposit',amountToDeposit.toString(),minAmountForRebalance.toString(),_skipRebalance);
+
+          if (minAmountForRebalance){
+            const amountToDeposit = await this.functionsUtil.convertTokenBalance(oldIdleTokens,this.props.selectedToken,this.props.tokenConfig,false);
+            if (amountToDeposit.gte(this.functionsUtil.BNify(minAmountForRebalance))){
+              _skipRebalance = false;
+            }
+          }
         }
 
         const migrationParams = [toMigrate,this.props.tokenConfig.migration.oldContract.address,this.props.tokenConfig.idle.address,this.props.tokenConfig.address,_skipRebalance];
 
         // console.log('Migration params',oldIdleTokens,minAmountForRebalance,migrationContractInfo.name, migrationMethod, migrationParams);
-        // debugger;
 
         // Check if Biconomy is enabled
         if (useMetaTx){
