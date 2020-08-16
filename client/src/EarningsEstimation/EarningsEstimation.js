@@ -13,17 +13,17 @@ class EarningsEstimation extends Component {
     estimationStepsDefaultOption:null,
     estimationSteps:{
       0:{
-        'Week':{
-          perc:1/52,
+        'Month':{
+          perc:2/12,
           width:1/12
         },
-        'Month':{
-          perc:1/12,
-          width:3/12
+        '2 months':{
+          perc:2/12,
+          width:2/12
         },
         '3 months':{
           perc:3/12,
-          width:8/12,
+          width:3/12,
           optionName:'3M'
         }
       },

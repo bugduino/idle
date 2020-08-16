@@ -2828,6 +2828,7 @@ class FunctionsUtil {
         // Get old token allocation
         if (tokenConfig.migration && tokenConfig.migration.oldContract){
           const oldTokenConfig = Object.assign({},tokenConfig);
+          oldTokenConfig.protocols = Object.assign([],tokenConfig.protocols);
           oldTokenConfig.idle = Object.assign({},tokenConfig.migration.oldContract);
 
           // Replace protocols with old protocols
@@ -2847,6 +2848,8 @@ class FunctionsUtil {
             totalAUM = totalAUM.plus(oldTokenTotalAllocation);
             // console.log(strategy,token,'old',oldTokenTotalAllocation.toString(),totalAUM.toString());
           }
+
+          // debugger;
         }
       });
     });

@@ -109,7 +109,7 @@ class DepositRedeem extends Component {
   async loadAPY(){
     const tokenAprs = await this.functionsUtil.getTokenAprs(this.props.tokenConfig);
     if (tokenAprs && tokenAprs.avgApy !== null){
-      const tokenAPY = this.functionsUtil.BNify(tokenAprs.avgApy).times(100).toFixed(2);
+      const tokenAPY = this.functionsUtil.BNify(tokenAprs.avgApy).toFixed(2);
       this.setState({
         tokenAPY
       });
@@ -601,6 +601,8 @@ class DepositRedeem extends Component {
           } else {
             redeemParams = [idleTokenToRedeem];
           }
+
+          // console.log(redeemParams,idleTokenToRedeem);
 
           contractSendResult = await this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'redeemIdleToken', redeemParams, null, callbackRedeem, callbackReceiptRedeem);
         }
@@ -1268,7 +1270,7 @@ class DepositRedeem extends Component {
                                     onChange={this.changeInputValue.bind(this)}
                                     border={`1px solid ${theme.colors.divider}`}
                                     placeholder={`Insert ${this.props.selectedToken.toUpperCase()} amount`}
-                                    value={this.state.inputValue[this.state.action] !== null ? this.functionsUtil.BNify(this.state.inputValue[this.state.action]).toString() : ''}
+                                    value={this.state.inputValue[this.state.action] !== null ? this.functionsUtil.BNify(this.state.inputValue[this.state.action]).toFixed() : ''}
                                   />
                                   <Flex
                                     mt={2}

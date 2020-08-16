@@ -635,7 +635,7 @@ const availableTokens = {
           token:'tusd'
         },
         idle:{
-          abi:IdleTokenV3,
+          abi:IdleTokenV4,
           token:'idleTUSDYield',
           address:'0xc278041fDD8249FE4c1Aad1193876857EEa3D68c',
         },
