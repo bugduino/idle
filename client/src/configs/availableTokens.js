@@ -388,7 +388,6 @@ const availableTokens = {
             token:'idleUSDC',
             name:'idleUSDCYieldV2',
             address:'0x12B98C621E8754Ae70d0fDbBC73D6208bC3e3cA6'
-            // address:'0xeB66ACc3d011056B00ea521F8203580C2E5d3991',
           },
           oldProtocols:[
             {
@@ -495,7 +494,6 @@ const availableTokens = {
           token:'idleUSDTYield',
           address:'0xF34842d05A1c888Ca02769A633DF37177415C2f8',
         },
-
         migration:{
           enabled:true,
           message:'Idle now supports yield farming and governance tokens distribution. Migrate now your USDT with just one click!',

@@ -551,6 +551,7 @@ const globalConfigs = {
             },
           ]
         },
+        availableStrategies:['best'],
         availableTokens:{
           idleDAIv2:{
             decimals:18,

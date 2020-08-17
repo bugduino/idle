@@ -60,7 +60,10 @@ class TokenMigration extends Component {
 
     let selectedDestToken = null;
     const availableDestinationTokens = {};
-    Object.keys(this.props.availableStrategies).forEach( strategy => {
+
+    const availableStrategies = typeof this.props.toolProps.availableStrategies !== 'undefined' ? this.props.toolProps.availableStrategies : Object.keys(this.props.availableStrategies);
+
+    availableStrategies.forEach( strategy => {
       const strategyAvailableTokens =  this.props.availableStrategies[strategy];
       const baseTokenConfig = strategyAvailableTokens[tokenInfo.baseToken];
       if (!baseTokenConfig){
