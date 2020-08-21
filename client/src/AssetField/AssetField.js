@@ -358,7 +358,8 @@ class AssetField extends Component {
         break;
         case 'aprChart':
           // Set start timestamp for v3 tokens
-          const aprChartStartTimestamp = Math.max(this.functionsUtil.getGlobalConfig(['stats','versions','v3','startTimestamp']),parseInt(this.functionsUtil.strToMoment(this.functionsUtil.strToMoment(new Date()).format('DD/MM/YYYY 00:00:00'),'DD/MM/YYYY HH:mm:ss').subtract(7,'days')._d.getTime()/1000));
+          const aprChartEndTimestamp = isRisk ? this.functionsUtil.getGlobalConfig(['stats','versions','v3','endTimestamp']) : null;
+          const aprChartStartTimestamp = isRisk ? aprChartEndTimestamp-(7*24*60*60) : Math.max(this.functionsUtil.getGlobalConfig(['stats','versions','v3','startTimestamp']),parseInt(this.functionsUtil.strToMoment(this.functionsUtil.strToMoment(new Date()).format('DD/MM/YYYY 00:00:00'),'DD/MM/YYYY HH:mm:ss').subtract(7,'days')._d.getTime()/1000));
 
           // Check for cached data
           let aprChartData = null;
@@ -395,18 +396,17 @@ class AssetField extends Component {
                 aprChartData[0].data.push({x,y});
               }
             } else {
-              let apiResultsAprChart = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,isRisk,aprChartStartTimestamp,null,false,43200);
-
               const frequencySeconds = this.functionsUtil.getFrequencySeconds('hour',12);
+              const apiResultsAprChart = await this.functionsUtil.getTokenApiData(this.props.tokenConfig.address,isRisk,aprChartStartTimestamp,aprChartEndTimestamp,false,frequencySeconds);
 
-              let prevTimestamp = null;
+              // if (isRisk){
+              //   debugger;
+              // }
+
               apiResultsAprChart.forEach((d,i) => {
-                if (prevTimestamp === null || d.timestamp-prevTimestamp>=frequencySeconds){
-                  const x = this.functionsUtil.strToMoment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
-                  const y = parseFloat(this.functionsUtil.fixTokenDecimals(d.idleRate,18));
-                  aprChartData[0].data.push({ x, y });
-                  prevTimestamp = d.timestamp;
-                }
+                const x = this.functionsUtil.strToMoment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
+                const y = parseFloat(this.functionsUtil.fixTokenDecimals(d.idleRate,18));
+                aprChartData[0].data.push({ x, y });
               });
             }
 
