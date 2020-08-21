@@ -236,7 +236,7 @@ const globalConfigs = {
       v4:{
         label:'Idle V4',
         endTimestamp:null,
-        startTimestamp:1597442400,
+        startTimestamp:1598220000,
         showPerformanceTooltip:true,
         enabledStrategies:['best','risk'],
         enabledTokens:['DAI','USDC','USDT'],
@@ -430,7 +430,7 @@ const globalConfigs = {
       },
       deposit:{
         skipMint:true,
-        minAmountForMint:2000,
+        minAmountForMint:5000,
         skipMintCheckboxEnabled:true,
         metaTransactionsEnabled:false,
         proxyContract:{
@@ -443,7 +443,7 @@ const globalConfigs = {
       },
       migrate:{
         skipRebalance:true,
-        minAmountForRebalance:2000,
+        minAmountForRebalance:5000,
         minAmountForRebalanceMetaTx:10000
       },
       redeemGovTokens:{

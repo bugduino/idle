@@ -14,16 +14,16 @@ class EarningsEstimation extends Component {
     estimationSteps:{
       0:{
         'Month':{
-          perc:2/12,
-          width:1/12
+          perc:1/12,
+          width:1/3
         },
         '2 months':{
-          perc:2/12,
-          width:2/12
+          perc:1/6,
+          width:1/3
         },
         '3 months':{
-          perc:3/12,
-          width:3/12,
+          perc:1/4,
+          width:1/3,
           optionName:'3M'
         }
       },
