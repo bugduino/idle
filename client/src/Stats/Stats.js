@@ -306,23 +306,77 @@ class Stats extends Component {
       days = 1;
     }
 
+    let apr = null;
+    let delta = 'N/A';
+
     const idleTokens = this.functionsUtil.fixTokenDecimals(lastResult.idleSupply,18);
     const firstIdlePrice = this.functionsUtil.fixTokenDecimals(firstResult.idlePrice,this.props.tokenConfig.decimals);
     const lastIdlePrice = this.functionsUtil.fixTokenDecimals(lastResult.idlePrice,this.props.tokenConfig.decimals);
     let aum = idleTokens.times(lastIdlePrice);
-    const earning = lastIdlePrice.div(firstIdlePrice).minus(1).times(100);
-    const apr = earning.times(365).div(days).toFixed(2);
-
     const compoundInfo = this.props.tokenConfig.protocols.filter((p) => { return p.name === 'compound' })[0];
     const firstCompoundData = compoundInfo ? firstResult.protocolsData.filter((p) => { return p.protocolAddr.toLowerCase() === compoundInfo.address.toLowerCase() })[0] : null;
     const lastCompoundData = compoundInfo ? lastResult.protocolsData.filter((p) => { return p.protocolAddr.toLowerCase() === compoundInfo.address.toLowerCase() })[0] : null;
 
-    let delta = 'N/A';
-    if (firstCompoundData && lastCompoundData){
-      const firstCompoundPrice = this.functionsUtil.fixTokenDecimals(firstCompoundData.price,this.props.tokenConfig.decimals);
-      const lastCompoundPrice = this.functionsUtil.fixTokenDecimals(lastCompoundData.price,this.props.tokenConfig.decimals);
-      const compoundApr = lastCompoundPrice.div(firstCompoundPrice).minus(1).times(100);
-      delta = earning.minus(compoundApr).times(365).div(days).toFixed(2);
+    if (this.state.idleVersion === 'v4') {
+
+      apr = apiResults.reduce( (sum,r) => {
+        const idleRate = this.functionsUtil.fixTokenDecimals(r.idleRate,18);
+        return this.functionsUtil.BNify(sum).plus(idleRate);
+      },0);
+
+      // Calculate average
+      apr = apr.div(apiResults.length);
+
+      if (compoundInfo){
+        const compoundWithCOMPInfo = globalConfigs.stats.protocols.compoundWithCOMP;
+        const rateField = compoundWithCOMPInfo.rateField ? compoundWithCOMPInfo.rateField : 'rate';
+
+        let compoundAvgApr = apiResults.reduce( (sum,r) => {
+
+          const compoundData = r.protocolsData.find((pData,x) => {
+            return pData.protocolAddr.toLowerCase() === compoundInfo.address.toLowerCase()
+          });
+
+          let compoundRate = typeof rateField === 'object' && rateField.length ? rateField.reduce((acc,field) => {
+            if (compoundData[field]){
+              return this.functionsUtil.BNify(acc).plus(this.functionsUtil.BNify(compoundData[field]));
+            }
+            return this.functionsUtil.BNify(acc);
+          },0) : this.functionsUtil.BNify(compoundData[rateField]);
+
+          compoundRate = this.functionsUtil.fixTokenDecimals(compoundRate,18);
+
+          return this.functionsUtil.BNify(sum).plus(compoundRate);
+        },0);
+
+        // Calculate average
+        compoundAvgApr = compoundAvgApr.div(apiResults.length);
+
+        // compoundAvgApr = this.functionsUtil.apr2apy(compoundAvgApr.div(100)).times(100);
+        // apr = this.functionsUtil.apr2apy(apr.div(100)).times(100);
+
+        delta = apr.minus(compoundAvgApr);
+        if (parseFloat(delta)<0){
+          delta = 0
+        }
+        delta = delta.toFixed(2);
+      }
+
+      apr = apr.toFixed(2);
+
+    } else {
+      const earning = lastIdlePrice.div(firstIdlePrice).minus(1).times(100);
+      apr = earning.times(365).div(days).toFixed(2);
+      if (firstCompoundData && lastCompoundData){
+        const firstCompoundPrice = this.functionsUtil.fixTokenDecimals(firstCompoundData.price,this.props.tokenConfig.decimals);
+        const lastCompoundPrice = this.functionsUtil.fixTokenDecimals(lastCompoundData.price,this.props.tokenConfig.decimals);
+        const compoundApr = lastCompoundPrice.div(firstCompoundPrice).minus(1).times(100);
+        delta = earning.minus(compoundApr).times(365).div(days);
+        if (parseFloat(delta)<0){
+          delta = 0
+        }
+        delta = delta.toFixed(2);
+      }
     }
 
     // Count rebalances
@@ -978,12 +1032,13 @@ class Stats extends Component {
                     <StatsChart
                       height={ 350 }
                       {...this.state}
-                      chartMode={'PRICE'}
                       parentId={'chart-PRICE'}
                       isMobile={this.props.isMobile}
                       contracts={this.props.contracts}
                       apiResults={this.state.apiResults}
+                      idleVersion={this.state.idleVersion}
                       apiResults_unfiltered={this.state.apiResults_unfiltered}
+                      chartMode={this.state.idleVersion === this.state.latestVersion ? 'PRICE_V4' : 'PRICE'}
                     />
                   </Flex>
                 </DashboardCard>
@@ -1045,6 +1100,7 @@ class Stats extends Component {
                           isMobile={this.props.isMobile}
                           contracts={this.props.contracts}
                           apiResults={this.state.apiResults}
+                          idleVersion={this.state.idleVersion}
                           apiResults_unfiltered={this.state.apiResults_unfiltered}
                         />
                       </Flex>
@@ -1124,6 +1180,7 @@ class Stats extends Component {
                             isMobile={this.props.isMobile}
                             contracts={this.props.contracts}
                             apiResults={this.state.apiResults}
+                            idleVersion={this.state.idleVersion}
                             apiResults_unfiltered={this.state.apiResults_unfiltered}
                           />
                         </Flex>
@@ -1164,6 +1221,7 @@ class Stats extends Component {
                             isMobile={this.props.isMobile}
                             contracts={this.props.contracts}
                             apiResults={this.state.apiResults}
+                            idleVersion={this.state.idleVersion}
                             apiResults_unfiltered={this.state.apiResults_unfiltered}
                           />
                         </Flex>
@@ -1204,6 +1262,7 @@ class Stats extends Component {
                             isMobile={this.props.isMobile}
                             contracts={this.props.contracts}
                             apiResults={this.state.apiResults}
+                            idleVersion={this.state.idleVersion}
                             apiResults_unfiltered={this.state.apiResults_unfiltered}
                           />
                         </Flex>
@@ -1244,6 +1303,7 @@ class Stats extends Component {
                             isMobile={this.props.isMobile}
                             contracts={this.props.contracts}
                             apiResults={this.state.apiResults}
+                            idleVersion={this.state.idleVersion}
                             apiResults_unfiltered={this.state.apiResults_unfiltered}
                           />
                         </Flex>

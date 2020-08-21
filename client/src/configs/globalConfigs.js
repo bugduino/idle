@@ -162,8 +162,8 @@ const globalConfigs = {
       color:'#f32121',
       comingSoon:false,
       addGovTokens:true,
-      title:'Best-Yield',
       titlePostfix:'V4',
+      title:'Best-Yield',
       iconName:'Whatshot',
       govTokensEnabled:true,
       component: StrategyPage,
@@ -220,6 +220,7 @@ const globalConfigs = {
       v2:{
         label:'Idle V2',
         startTimestamp:null,
+        additionalProtocols:[],
         endTimestamp:1589752999,
         enabledStrategies:['best'],
         showPerformanceTooltip:false,
@@ -227,19 +228,27 @@ const globalConfigs = {
       },
       v3:{
         label:'Idle V3',
+        additionalProtocols:[],
         endTimestamp:1597237542,
         startTimestamp:1589801874,
         showPerformanceTooltip:false,
         enabledStrategies:['best','risk'],
-        enabledTokens:['DAI','USDC','USDT'],
+        enabledTokens:['DAI','USDC','USDT','TUSD','SUSD','WBTC'],
       },
       v4:{
         label:'Idle V4',
         endTimestamp:null,
-        startTimestamp:1598220000,
+        startTimestamp:1597442400, // 1598220000
         showPerformanceTooltip:true,
-        enabledStrategies:['best','risk'],
-        enabledTokens:['DAI','USDC','USDT'],
+        enabledStrategies:['best'],
+        enabledTokens:['DAI','USDC','USDT','TUSD','SUSD','WBTC'],
+        additionalProtocols:[
+          {
+            decimals:16,
+            protocol:'compound',
+            name:'compoundWithCOMP',
+          }
+        ]
       }
     },
     tokens:{
@@ -370,7 +379,7 @@ const globalConfigs = {
         }
       },
       compoundWithCOMP:{
-        rateField:'compoundAdditionalAPR',
+        rateField:['rate','compoundAdditionalAPR'],
         label:'Compound + COMP',
         color:{
           rgb:[0, 153, 107],

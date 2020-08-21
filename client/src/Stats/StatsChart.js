@@ -156,16 +156,24 @@ class StatsChart extends Component {
     const maxGridLines = 4;
     const apiResults = this.props.apiResults;
     const apiResults_unfiltered = this.props.apiResults_unfiltered;
+    const totalItems = apiResults.length;
+    const protocols = Object.assign([],this.props.tokenConfig.protocols);
+    const compoundProtocol = this.props.tokenConfig.protocols.find( p => (p.name === 'compound'));
+
+    const versionInfo = globalConfigs.stats.versions[this.props.idleVersion];
 
     let keys = {};
     let tempData = {};
     let gridYStep = 0;
+    let itemIndex = 0;
     let chartData = [];
     let chartProps = {};
     let chartType = Line;
     let gridYValues = [];
     let maxChartValue = 0;
     let axisBottomIndex = 0;
+    let idleChartData = null;
+    let firstIdleBlock = null;
 
     switch (this.props.chartMode){
       case 'VOL':
@@ -1295,15 +1303,325 @@ class StatsChart extends Component {
           }
         };
       break;
+      case 'PRICE_V4':
+
+        itemIndex = 0;
+        maxChartValue = 0;
+        let prevApy = null;
+        let prevApr = null;
+        let prevData = null;
+        let startBalance = this.functionsUtil.BNify(1);
+        let currentBalance = this.functionsUtil.BNify(1);
+        let avgApy = this.functionsUtil.BNify(0);
+
+        // console.log('PRICE_V4',apiResults);
+
+        idleChartData = apiResults.map((d,i) => {
+
+          let y = 0;
+          let apy = 0;
+          const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
+          const apr = this.functionsUtil.fixTokenDecimals(d.idleRate,18).div(100);
+          // const apy = this.functionsUtil.apr2apy(apr);
+          
+          avgApy = avgApy.plus(apr.times(100));
+
+          if (prevApr){
+            const days = (d.timestamp-prevData.timestamp)/86400;
+            const totDays = (d.timestamp-apiResults[0].timestamp)/86400;
+
+            const earnings = currentBalance.times(prevApr.times(days).div(365));
+            currentBalance = currentBalance.plus(earnings);
+
+            const earning = currentBalance.div(startBalance).minus(1).times(100);
+            y = parseFloat(earning);
+
+            // apy = earning.times(365).div(totDays).toFixed(2);
+            apy = avgApy.div(i+1).toFixed(2);
+          }
+
+          prevData = d;
+          // prevApy = apy;
+          prevApr = apr;
+
+          if (firstIdleBlock === null){
+            firstIdleBlock = parseInt(d.blocknumber);
+          }
+
+          maxChartValue = Math.max(maxChartValue,y);
+
+          const itemPos = Math.floor(itemIndex/totalItems*100);
+          const blocknumber = d.blocknumber;
+
+          itemIndex++;
+
+          return { x, y, apy, blocknumber, itemPos };
+        });
+
+        // Add Additional protocols
+        if (versionInfo.additionalProtocols && versionInfo.additionalProtocols.length>0){
+          versionInfo.additionalProtocols.forEach( additionalProtocol => {
+            const protocolInfo = this.props.tokenConfig.protocols.find( p => (p.name === additionalProtocol.protocol));
+            if (protocolInfo){
+              additionalProtocol.enabled = true;
+              additionalProtocol.address = protocolInfo.address;
+              protocols.unshift(additionalProtocol);
+            }
+          });
+        }
+
+        protocols.forEach( p => {
+
+          const protocolInfo = globalConfigs.stats.protocols[p.name];
+          const rateField = protocolInfo.rateField ? protocolInfo.rateField : 'rate';
+
+          const chartRow = {
+            id:protocolInfo.label,
+            color: 'hsl('+protocolInfo.color.hsl.join(',')+')',
+            data: []
+          };
+
+          itemIndex = 0;
+          prevApy = null;
+          prevApr = null;
+          prevData = null;
+          let baseProfit = 0;
+          let firstProtocolData = null;
+          let firstProtocolBlock = null;
+          avgApy = this.functionsUtil.BNify(0);
+          startBalance = this.functionsUtil.BNify(1);
+          currentBalance = this.functionsUtil.BNify(1);
+
+          apiResults.forEach( (d,i) => {
+
+            const protocolData = d.protocolsData.find((pData,x) => {
+              return pData.protocolAddr.toLowerCase() === p.address.toLowerCase()
+            });
+
+            if (protocolData){
+
+              if (!firstProtocolData){
+                firstProtocolData = protocolData;
+              }
+
+              const protocolRate = typeof rateField === 'object' && rateField.length ? rateField.reduce((acc,field) => {
+                if (protocolData[field]){
+                  return this.functionsUtil.BNify(acc).plus(this.functionsUtil.BNify(protocolData[field]));
+                }
+                return this.functionsUtil.BNify(acc);
+              },0) : this.functionsUtil.BNify(protocolData[rateField]);
+
+              const protocolPaused = protocolRate.eq(0);
+              if (!protocolPaused){
+
+                // Start new protocols from Idle performances
+                if (firstProtocolBlock === null){
+                  firstProtocolBlock = parseInt(d.blocknumber);
+                  if (firstProtocolBlock>firstIdleBlock){
+                    const idlePerformance = idleChartData.find(d1 => (d1.blocknumber>=firstProtocolBlock) );
+                    if (idlePerformance){
+                      baseProfit = idlePerformance.y;
+                    }
+                  }
+                }
+
+                let rowData = {};
+
+                let y = 0;
+                let apy = 0;
+                const x = moment(d.timestamp*1000).format("YYYY/MM/DD HH:mm");
+                const apr = this.functionsUtil.fixTokenDecimals(protocolRate,18).div(100);
+
+                avgApy = avgApy.plus(apr.times(100));
+                // const apy = this.functionsUtil.apr2apy(apr);
+
+                if (prevData){
+                  const days = (d.timestamp-prevData.timestamp)/86400;
+                  const totDays = (d.timestamp-apiResults[0].timestamp)/86400;
+
+                  const earnings = currentBalance.times(prevApr.times(days).div(365));
+                  currentBalance = currentBalance.plus(earnings);
+
+                  const earning = currentBalance.div(startBalance).minus(1).times(100);
+                  y = parseFloat(earning)+baseProfit;
+
+                  apy = avgApy.div(i+1).toFixed(2);
+                }
+
+                prevData = d;
+                prevApr = apr;
+
+                if (firstIdleBlock === null){
+                  firstIdleBlock = parseInt(d.blocknumber);
+                }
+
+                maxChartValue = Math.max(maxChartValue,y);
+
+                const itemPos = Math.floor(itemIndex/totalItems*100);
+                const blocknumber = d.blocknumber;
+
+                itemIndex++;
+
+                rowData = {
+                  x,
+                  y,
+                  apy,
+                  itemPos
+                };
+
+                itemIndex++;
+                chartRow.data.push(rowData);
+              }
+            }
+          });
+
+          chartData.push(chartRow);
+        });
+
+        gridYStep = parseFloat(maxChartValue/maxGridLines);
+        gridYValues = [0];
+        for (let i=1;i<=5;i++){
+          gridYValues.push(i*gridYStep);
+        }
+
+        chartData.push({
+          id:'Idle',
+          color: 'hsl('+globalConfigs.stats.protocols.idle.color.hsl.join(',')+')',
+          data: idleChartData
+        });
+
+        // Set chart type
+        chartType = Line;
+
+        chartProps = {
+          xScale:{
+            type: 'time',
+            format: '%Y/%m/%d %H:%M',
+            // precision: 'day',
+          },
+          xFormat:'time:%b %d %H:%M',
+          yFormat:value => parseFloat(value).toFixed(3)+'%',
+          yScale:{
+            type: 'linear',
+            stacked: false,
+            // min: 1
+          },
+          axisLeft:{
+            legend: '',
+            tickSize: 0,
+            orient: 'left',
+            tickPadding: 10,
+            tickRotation: 0,
+            legendOffset: -70,
+            tickValues:gridYValues,
+            legendPosition: 'middle',
+            format: value => parseFloat(value).toFixed(2)+'%',
+          },
+          axisBottom: this.props.isMobile ? null : {
+            legend: '',
+            tickSize: 0,
+            format: '%b %d',
+            tickPadding: 10,
+            legendOffset: 0,
+            orient: 'bottom',
+            legendPosition: 'middle',
+            tickValues: this.props.isMobile ? 'every 4 days' : ( this.props.showAdvanced ? 'every 3 days' : 'every 2 days'),
+          },
+          gridYValues,
+          pointSize:0,
+          useMesh:true,
+          animate:false,
+          pointLabel:"y",
+          curve:'monotoneX',
+          enableArea:false,
+          enableSlices:'x',
+          enableGridX:false,
+          enableGridY:true,
+          pointBorderWidth:1,
+          colors:d => d.color,
+          pointLabelYOffset:-12,
+          legends:[
+            {
+              itemHeight: 18,
+              itemWidth: this.props.isMobile ? 70 : 100,
+              translateX: this.props.isMobile ? -35 : 0,
+              translateY: this.props.isMobile ? 40 : 65,
+              symbolSize: 10,
+              itemsSpacing: 5,
+              direction: 'row',
+              anchor: 'bottom-left',
+              symbolShape: 'circle',
+              itemTextColor: theme.colors.legend,
+              effects: [
+                {
+                  on: 'hover',
+                  style: {
+                    itemTextColor: '#000'
+                  }
+                }
+              ]
+            }
+          ],
+          theme:{
+            axis: {
+              ticks: {
+                text: {
+                  fontSize: this.props.isMobile ? 12: 14,
+                  fontWeight:600,
+                  fill:theme.colors.legend,
+                  fontFamily: theme.fonts.sansSerif
+                }
+              }
+            },
+            grid: {
+              line: {
+                stroke: theme.colors.lineChartStroke, strokeDasharray: '10 6'
+              }
+            },
+            legends:{
+              text:{
+                fontSize: this.props.isMobile ? 12: 14,
+                fontWeight:500,
+                fontFamily: theme.fonts.sansSerif
+              }
+            }
+          },
+          pointColor:{ from: 'color', modifiers: []},
+          margin: this.props.isMobile ? { top: 20, right: 20, bottom: 40, left: 65 } : { top: 20, right: 40, bottom: 80, left: 80 },
+          sliceTooltip:(slideData) => {
+            const { slice } = slideData;
+            const point = slice.points[0];
+            return (
+              <CustomTooltip
+                point={point}
+              >
+                {
+                typeof slice.points === 'object' && slice.points.length &&
+                  slice.points.map(point => {
+                    const protocolName = point.serieId;
+                    const protocolEarning = point.data.yFormatted;
+                    const protocolApy = point.data.apy;
+                    return (
+                      <CustomTooltipRow
+                        key={point.id}
+                        label={protocolName}
+                        color={point.color}
+                        value={`${protocolEarning} <small>(${protocolApy}% APY)</small>`}
+                      />
+                    );
+                  })
+                }
+              </CustomTooltip>
+            );
+          }
+        };
+      break;
       case 'PRICE':
-
-        let itemIndex = 0;
-        let firstIdleBlock = null;
         // let prevTokenPrice = null;
+        maxChartValue = 0;
         let firstTokenPrice = null;
-        const totalItems = apiResults.length;
 
-        const idleChartData = apiResults.map((d,i) => {
+        idleChartData = apiResults.map((d,i) => {
 
           let y = 0;
           let apy = 0;
@@ -1327,7 +1645,7 @@ class StatsChart extends Component {
             firstIdleBlock = parseInt(d.blocknumber);
           }
 
-          maxChartValue = Math.max(maxChartValue,y,apy);
+          maxChartValue = Math.max(maxChartValue,y);
 
           const itemPos = Math.floor(itemIndex/totalItems*100);
           const blocknumber = d.blocknumber;
@@ -1337,16 +1655,17 @@ class StatsChart extends Component {
           return { x, y, apy, blocknumber, itemPos };
         });
 
-        const compoundProtocol = this.props.tokenConfig.protocols.find( p => (p.name === 'compound'));
-
-        const protocols = Object.assign([],this.props.tokenConfig.protocols);
-        // Add Compound + COMP
-        protocols.unshift({
-          decimals:16,
-          enabled:true,
-          name:'compoundWithCOMP',
-          address:compoundProtocol.address,
-        });
+        // Add Additional protocols
+        if (versionInfo.additionalProtocols && versionInfo.additionalProtocols.length>0){
+          versionInfo.additionalProtocols.forEach( additionalProtocol => {
+            const protocolInfo = this.props.tokenConfig.protocols.find( p => (p.name === additionalProtocol.protocol));
+            if (protocolInfo){
+              additionalProtocol.enabled = true;
+              additionalProtocol.address = protocolInfo.address;
+              protocols.unshift(additionalProtocol);
+            }
+          });
+        }
 
         await this.functionsUtil.asyncForEach(protocols,async (p) => {
 
