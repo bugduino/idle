@@ -239,8 +239,8 @@ const globalConfigs = {
         label:'Idle V4',
         endTimestamp:null,
         startTimestamp:1597442400, // 1598220000
-        showPerformanceTooltip:true,
         enabledStrategies:['best'],
+        showPerformanceTooltip:true,
         enabledTokens:['DAI','USDC','USDT','TUSD','SUSD','WBTC'],
         additionalProtocols:[
           {
