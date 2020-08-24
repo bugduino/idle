@@ -300,7 +300,7 @@ class Dashboard extends Component {
 
   async checkModals(){
 
-    if (this.props.selectedToken || !this.props.accountInizialized || !this.props.contractsInitialized){
+    if (this.props.selectedToken || !this.props.accountInizialized || !this.props.contractsInitialized || !this.props.availableStrategies || !this.props.availableTokens){
       return null;
     }
 

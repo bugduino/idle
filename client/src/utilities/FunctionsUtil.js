@@ -2877,6 +2877,7 @@ class FunctionsUtil {
     }
 
     const tokensToMigrate = {};
+
     await this.asyncForEach(Object.keys(this.props.availableStrategies),async (strategy) => {
       if (selectedStrategy && selectedStrategy !== strategy){
         return;
@@ -2890,7 +2891,9 @@ class FunctionsUtil {
         } = await this.checkMigration(tokenConfig,this.props.account);
         
         if (migrationEnabled){
-          tokensToMigrate[token] = {
+          const tokenKey = selectedStrategy ? token : tokenConfig.idle.token;
+          tokensToMigrate[tokenKey] = {
+            token,
             strategy,
             tokenConfig,
             oldContractBalanceFormatted

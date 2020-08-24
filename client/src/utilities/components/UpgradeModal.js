@@ -102,6 +102,10 @@ class UpgradeModal extends React.Component {
 
   render() {
 
+    if (!this.props.availableStrategies || !this.props.availableTokens){
+      return null;
+    }
+
     const fieldProps = {
       fontWeight:3,
       fontSize:[2,3],
@@ -192,17 +196,18 @@ class UpgradeModal extends React.Component {
                 flexDirection={'column'}
               >
                 {
-                  this.props.tokensToMigrate && Object.keys(this.props.tokensToMigrate).map( token => {
-                    const strategy = this.props.tokensToMigrate[token].strategy;
-                    const tokenConfig = this.props.tokensToMigrate[token].tokenConfig;
-                    const balance = this.props.tokensToMigrate[token].oldContractBalanceFormatted;
+                  this.props.tokensToMigrate && Object.keys(this.props.tokensToMigrate).map( tokenKey => {
+                    const token = this.props.tokensToMigrate[tokenKey].token;
+                    const strategy = this.props.tokensToMigrate[tokenKey].strategy;
+                    const tokenConfig = this.props.tokensToMigrate[tokenKey].tokenConfig;
+                    const balance = this.props.tokensToMigrate[tokenKey].oldContractBalanceFormatted;
                     return (
                       <Flex
                         mt={2}
                         width={1}
                         alignItems={'center'}
                         flexDirection={'row'}
-                        key={`token_${token}`}
+                        key={`token_${tokenKey}`}
                         justifyContent={'space-between'}
                       >
                         <Flex
@@ -303,8 +308,19 @@ class UpgradeModal extends React.Component {
                 {
                   this.props.oldIdleTokensToMigrate && Object.keys(this.props.oldIdleTokensToMigrate).map( token => {
                     const tokenConfig = this.props.oldIdleTokensToMigrate[token].tokenConfig;
+
+                    if (!tokenConfig){
+                      return null;
+                    }
+
                     const balance = this.props.oldIdleTokensToMigrate[token].balance;
-                    const newTokenConfig = this.props.availableTokens[tokenConfig.baseToken];
+                    let newTokenConfig = null;
+
+                    if (tokenConfig.availableStrategies && !this.props.availableTokens[tokenConfig.baseToken]){
+                      newTokenConfig = this.props.availableStrategies[tokenConfig.availableStrategies[0]][tokenConfig.baseToken];
+                    } else {
+                      newTokenConfig = this.props.availableTokens[tokenConfig.baseToken];
+                    }
                     return (
                       <Flex
                         mt={2}
