@@ -122,12 +122,10 @@ class GenericSelector extends Component {
 
     const CustomInputContainer = this.props.CustomInputContainer ? this.props.CustomInputContainer : (props) => {
 
-      // console.log('CustomInputContainer',props);
-
       if (!props.selectProps.isSearchable){
         return null;
       }
-      
+
       return (
         <Input
           {...props}
@@ -165,6 +163,7 @@ class GenericSelector extends Component {
           flexDirection={'row'}
           style={{cursor:'pointer'}}
           justifyContent={'flex-start'}
+          className={styles.genericSelector}
           backgroundColor={ props.isFocused ? '#fbfbfb' : '#ffffff' }
         >
           <CustomOptionValue

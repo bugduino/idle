@@ -170,6 +170,7 @@ class TokenMigration extends Component {
               {...this.props}
               id={'token-from'}
               showBalance={true}
+              isSearchable={true}
               onChange={this.selectFromToken}
               selectedToken={this.state.selectedFromToken}
               availableTokens={this.props.toolProps.availableTokens}

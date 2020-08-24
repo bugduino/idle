@@ -8,6 +8,7 @@ import yTUSDv3 from '../abis/iearn/yTUSDv3.json';
 import NexusMutual from '../NexusMutual/NexusMutual';
 import { Web3Versions } from '@terminal-packages/sdk';
 import FunctionsUtil from '../utilities/FunctionsUtil';
+import IdleTokenV2 from '../contracts/IdleTokenV2.json';
 import StrategyPage from '../StrategyPage/StrategyPage';
 import BuyModal from '../utilities/components/BuyModal';
 import Comptroller from '../abis/compound/Comptroller.json';
@@ -577,6 +578,7 @@ const globalConfigs = {
             enabled:true,
             protocol:'idle',
             baseToken:'DAI',
+            abi:IdleTokenV2,
             token:'idleDAIOld',
             icon:'images/tokens/idleDAI.svg',
             migrateFunction:'migrateFromToIdle',
@@ -635,6 +637,7 @@ const globalConfigs = {
             decimals:18,
             enabled:true,
             protocol:'idle',
+            abi:IdleTokenV2,
             baseToken:'USDC',
             token:'idleUSDCOld',
             icon:'images/tokens/idleUSDC.svg',
@@ -742,6 +745,7 @@ const globalConfigs = {
           idleSUSDv2:{
             decimals:18,
             enabled:true,
+            abi:IdleTokenV2,
             protocol:'idle',
             baseToken:'SUSD',
             token:'idleSUSDYieldOld',
@@ -772,6 +776,7 @@ const globalConfigs = {
           idleTUSDv2:{
             decimals:18,
             enabled:true,
+            abi:IdleTokenV2,
             protocol:'idle',
             baseToken:'TUSD',
             token:'idleTUSDYieldOld',
