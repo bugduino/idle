@@ -292,9 +292,6 @@ class Dashboard extends Component {
     const strategyChanged = this.props.selectedStrategy && prevProps.selectedStrategy !== this.props.selectedStrategy;
     const accountInizialized = this.props.accountInizialized && prevProps.accountInizialized !== this.props.accountInizialized;
     const contractsInitialized = this.props.contractsInitialized && prevProps.contractsInitialized !== this.props.contractsInitialized;
-    const availableTokensChanged = this.props.availableTokens && JSON.stringify(prevProps.availableTokens) !== JSON.stringify(this.props.availableTokens);
-
-    // console.log('componentDidUpdate',prevProps.selectedStrategy,this.props.selectedStrategy,this.props.selectedToken,strategyChanged);
 
     if (accountChanged || accountInizialized || contractsInitialized || strategyChanged){
       this.checkModals();
@@ -302,8 +299,6 @@ class Dashboard extends Component {
   }
 
   async checkModals(){
-
-    // console.log('checkModals',this.props.selectedToken,this.props.selectedStrategy,this.props.availableTokens);
 
     if (this.props.selectedToken || !this.props.accountInizialized || !this.props.contractsInitialized){
       return null;

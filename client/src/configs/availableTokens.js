@@ -4,11 +4,8 @@ import CHAI from '../abis/chai/CHAI.json';
 import iToken from '../abis/fulcrum/iToken.json';
 import aToken from '../abis/aave/AToken.json';
 import yToken from '../abis/dydx/yToken.json';
-// import idleDAIv1 from '../contracts/IdleDAI.json';
-import IdleTokenV2 from '../contracts/IdleTokenV2.json';
 import IdleTokenV3 from '../contracts/IdleTokenV3.json';
 import IdleTokenV4 from '../contracts/IdleTokenV4.json';
-// import IdleMcdBridgeV1 from '../contracts/IdleMcdBridgeV1.json';
 import IdleConverterPersonalSignV4 from '../contracts/IdleConverterPersonalSignV4.json';
 
 const availableTokens = {

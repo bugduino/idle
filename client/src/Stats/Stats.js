@@ -141,9 +141,7 @@ class Stats extends Component {
     newState.maxEndDate = moment();
 
     newState.endTimestampObj = moment(moment().format('YYYY-MM-DD 23:59'),'YYYY-MM-DD HH:mm');
-
-    const statsVersions = globalConfigs.stats.versions;
-
+    
     newState.latestVersion = this.getLatestAvailableVersion();
     newState.idleVersion = this.state.idleVersion === null ? newState.latestVersion : this.state.idleVersion;
 
