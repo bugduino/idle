@@ -158,7 +158,7 @@ class StatsChart extends Component {
     const apiResults_unfiltered = this.props.apiResults_unfiltered;
     const totalItems = apiResults.length;
     const protocols = Object.assign([],this.props.tokenConfig.protocols);
-    const compoundProtocol = this.props.tokenConfig.protocols.find( p => (p.name === 'compound'));
+    // const compoundProtocol = this.props.tokenConfig.protocols.find( p => (p.name === 'compound'));
 
     const versionInfo = globalConfigs.stats.versions[this.props.idleVersion];
 
@@ -1307,7 +1307,7 @@ class StatsChart extends Component {
 
         itemIndex = 0;
         maxChartValue = 0;
-        let prevApy = null;
+        // let prevApy = null;
         let prevApr = null;
         let prevData = null;
         let startBalance = this.functionsUtil.BNify(1);
@@ -1328,7 +1328,7 @@ class StatsChart extends Component {
 
           if (prevApr){
             const days = (d.timestamp-prevData.timestamp)/86400;
-            const totDays = (d.timestamp-apiResults[0].timestamp)/86400;
+            // const totDays = (d.timestamp-apiResults[0].timestamp)/86400;
 
             const earnings = currentBalance.times(prevApr.times(days).div(365));
             currentBalance = currentBalance.plus(earnings);
@@ -1382,7 +1382,7 @@ class StatsChart extends Component {
           };
 
           itemIndex = 0;
-          prevApy = null;
+          // prevApy = null;
           prevApr = null;
           prevData = null;
           let baseProfit = 0;
@@ -1437,7 +1437,7 @@ class StatsChart extends Component {
 
                 if (prevData){
                   const days = (d.timestamp-prevData.timestamp)/86400;
-                  const totDays = (d.timestamp-apiResults[0].timestamp)/86400;
+                  // const totDays = (d.timestamp-apiResults[0].timestamp)/86400;
 
                   const earnings = currentBalance.times(prevApr.times(days).div(365));
                   currentBalance = currentBalance.plus(earnings);
@@ -1458,7 +1458,7 @@ class StatsChart extends Component {
                 maxChartValue = Math.max(maxChartValue,y);
 
                 const itemPos = Math.floor(itemIndex/totalItems*100);
-                const blocknumber = d.blocknumber;
+                // const blocknumber = d.blocknumber;
 
                 itemIndex++;
 
