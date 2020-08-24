@@ -107,7 +107,7 @@ class Stats extends Component {
       return null;
     }
 
-    const versionInfo = globalConfigs.stats.versions[version];
+    const versionInfo = Object.assign({},globalConfigs.stats.versions[version]);
 
     if (versionInfo.strategiesParams && versionInfo.strategiesParams[this.props.selectedStrategy]){
       const versionInfoExtra = versionInfo.strategiesParams[this.props.selectedStrategy];
@@ -141,11 +141,13 @@ class Stats extends Component {
     newState.maxEndDate = moment();
 
     newState.endTimestampObj = moment(moment().format('YYYY-MM-DD 23:59'),'YYYY-MM-DD HH:mm');
-    
+
     newState.latestVersion = this.getLatestAvailableVersion();
     newState.idleVersion = this.state.idleVersion === null ? newState.latestVersion : this.state.idleVersion;
 
     const versionInfo = this.getVersionInfo(newState.idleVersion);
+
+    // console.log('loadParams',newState.latestVersion,newState.idleVersion,versionInfo);
 
     if (newState.idleVersion && versionInfo.endTimestamp){
       const newEndTimestampObj = moment(moment(versionInfo.endTimestamp*1000).format('YYYY-MM-DD HH:mm'),'YYYY-MM-DD HH:mm');
