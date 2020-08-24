@@ -444,7 +444,7 @@ class DepositRedeem extends Component {
           _skipMint = typeof this.props.tokenConfig.skipMintForDeposit !== 'undefined' ? this.props.tokenConfig.skipMintForDeposit : _skipMint;
 
           // Mint if someone mint over X amount
-          const minAmountForMint = this.functionsUtil.getGlobalConfig(['contract','methods','deposit','minAmountForMint']);
+          const minAmountForMint = this.props.tokenConfig.deposit && this.props.tokenConfig.deposit.minAmountForMint ? this.props.tokenConfig.deposit.minAmountForMint : this.functionsUtil.getGlobalConfig(['contract','methods','deposit','minAmountForMint']);
           if (minAmountForMint){
             const amountToDeposit = await this.functionsUtil.convertTokenBalance(inputValue,this.props.selectedToken,this.props.tokenConfig,false);
             if (amountToDeposit.gte(this.functionsUtil.BNify(minAmountForMint))){
@@ -911,8 +911,8 @@ class DepositRedeem extends Component {
                             }
                           }}
                           isInteractive={true}
-                          isActive={ this.state.action === 'redeem' }
                           isDisabled={ !this.state.canRedeem }
+                          isActive={ this.state.action === 'redeem' }
                         >
                           <Flex
                             my={1}
