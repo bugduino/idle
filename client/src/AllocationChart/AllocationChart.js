@@ -19,6 +19,7 @@ class AllocationChart extends Component {
 
   // Utils
   functionsUtil = null;
+  componentUnmounted = false;
 
   loadUtils(){
     if (this.functionsUtil){
@@ -32,6 +33,10 @@ class AllocationChart extends Component {
     this.loadUtils();
   }
 
+  componentWillUnmount(){
+    this.componentUnmounted = true;
+  }
+
   async componentDidMount(){
     this.loadData();
   }
@@ -41,7 +46,7 @@ class AllocationChart extends Component {
 
     const tokenChanged = prevProps.selectedToken !== this.props.selectedToken;
     if (tokenChanged){
-      this.setState({
+      this.setStateSafe({
         chartData:null,
         chartProps:null,
         selectedSlice:null,
@@ -54,6 +59,13 @@ class AllocationChart extends Component {
     } else if (prevProps.isMobile !== this.props.isMobile){
       this.loadData()
     }
+  }
+
+  async setStateSafe(newState,callback=null) {
+    if (!this.componentUnmounted){
+      return this.setState(newState,callback);
+    }
+    return null;
   }
 
   async loadData(){
@@ -75,12 +87,12 @@ class AllocationChart extends Component {
       motionStiffness:90,
       colors:d => d.color,
       onMouseEnter:(data, e) => {
-        this.setState({
+        this.setStateSafe({
           selectedSlice:data
         });
       },
       onMouseLeave:(data, e) => {
-        this.setState({
+        this.setStateSafe({
           selectedSlice:null
         });
       },
@@ -142,7 +154,7 @@ class AllocationChart extends Component {
 
     });
 
-    this.setState({
+    this.setStateSafe({
       chartData,
       chartProps,
       totalAllocation,
