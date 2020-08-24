@@ -325,7 +325,6 @@ class DepositRedeem extends Component {
 
     let contractSendResult = null;
     const redeemGovTokens = this.state.redeemGovTokens;
-    const isRisk = this.props.selectedStrategy === 'risk';
     const inputValue = this.state.inputValue[this.state.action];
     const selectedPercentage = this.getFastBalanceSelector();
 
