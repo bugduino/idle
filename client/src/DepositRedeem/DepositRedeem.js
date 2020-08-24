@@ -452,12 +452,8 @@ class DepositRedeem extends Component {
             }
           }
 
-          // Old contract params
-          if (isRisk){
-            depositParams = [tokensToDeposit, _skipMint];
-          } else {
-            depositParams = [tokensToDeposit, _skipMint, '0x0000000000000000000000000000000000000000'];
-          }
+          depositParams = [tokensToDeposit, _skipMint, '0x0000000000000000000000000000000000000000'];
+          
           // No need for callback atm
           contractSendResult = await this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'mintIdleToken', depositParams, null, callbackDeposit, callbackReceiptDeposit);
         }
@@ -594,14 +590,7 @@ class DepositRedeem extends Component {
             }));
           };
 
-          let redeemParams = [];
-          // Old contract params
-          if (isRisk){
-            redeemParams = [idleTokenToRedeem, true, []];
-          } else {
-            redeemParams = [idleTokenToRedeem];
-          }
-
+          let redeemParams = [idleTokenToRedeem];
           // console.log(redeemParams,idleTokenToRedeem);
 
           contractSendResult = await this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'redeemIdleToken', redeemParams, null, callbackRedeem, callbackReceiptRedeem);
