@@ -255,6 +255,7 @@ class AssetField extends Component {
           if (this.props.tokenConfig.migration && this.props.tokenConfig.migration.oldContract){
             const oldTokenConfig = Object.assign({},this.props.tokenConfig);
             oldTokenConfig.idle = Object.assign({},this.props.tokenConfig.migration.oldContract);
+            oldTokenConfig.protocols = Object.values(this.props.tokenConfig.protocols);
 
             // Override token with name
             oldTokenConfig.idle.token = oldTokenConfig.idle.name;

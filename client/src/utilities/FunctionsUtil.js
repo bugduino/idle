@@ -2828,7 +2828,7 @@ class FunctionsUtil {
         // Get old token allocation
         if (tokenConfig.migration && tokenConfig.migration.oldContract){
           const oldTokenConfig = Object.assign({},tokenConfig);
-          oldTokenConfig.protocols = Object.assign([],tokenConfig.protocols);
+          oldTokenConfig.protocols = Object.values(tokenConfig.protocols);
           oldTokenConfig.idle = Object.assign({},tokenConfig.migration.oldContract);
 
           // Replace protocols with old protocols
