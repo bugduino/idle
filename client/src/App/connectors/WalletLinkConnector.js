@@ -53,7 +53,7 @@ export default class WalletLinkConnector extends Connector {
   async disable() {
     const provider = this.getProvider();
     if (provider){
-      await provider.disable();
+      await provider.close();
       return provider;
     }
   }
