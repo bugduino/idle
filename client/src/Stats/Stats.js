@@ -35,7 +35,7 @@ class Stats extends Component {
     buttonGroups:[],
     apiResults:null,
     carouselIndex:0,
-    idleVersion:'v4',
+    idleVersion:null,
     statsVersions:{},
     minStartTime:null,
     endTimestamp:null,
@@ -60,12 +60,63 @@ class Stats extends Component {
 
   // Utils
   functionsUtil = null;
+  componentUnmounted = null;
   loadUtils(){
     if (this.functionsUtil){
       this.functionsUtil.setProps(this.props);
     } else {
       this.functionsUtil = new FunctionsUtil(this.props);
     }
+  }
+
+  async componentWillMount() {
+    this.loadUtils();
+    await this.loadParams();
+  }
+
+  componentWillUnmount(){
+    this.componentUnmounted = true;
+  }
+
+  async setStateSafe(newState,callback=null) {
+    if (!this.componentUnmounted){
+      return this.setState(newState,callback);
+    }
+    return null;
+  }
+
+  getLatestAvailableVersion(){
+    const statsVersions = globalConfigs.stats.versions;
+    let latestVersion = null;
+    Object.keys(statsVersions).forEach( version => {
+      const versionInfo = statsVersions[version];
+      if (versionInfo.enabledStrategies.includes(this.props.selectedStrategy)){
+        latestVersion = version;
+      }
+    });
+
+    return latestVersion;
+  }
+
+  getVersionInfo(version){
+    if (!version){
+      version = this.state.idleVersion;
+    }
+
+    if (!globalConfigs.stats.versions[version]){
+      return null;
+    }
+
+    const versionInfo = globalConfigs.stats.versions[version];
+
+    if (versionInfo.strategiesParams && versionInfo.strategiesParams[this.props.selectedStrategy]){
+      const versionInfoExtra = versionInfo.strategiesParams[this.props.selectedStrategy];
+      Object.keys(versionInfoExtra).forEach( param => {
+        versionInfo[param] = versionInfoExtra[param];
+      });
+    }
+
+    return versionInfo;
   }
 
   async loadParams() {
@@ -93,11 +144,13 @@ class Stats extends Component {
 
     const statsVersions = globalConfigs.stats.versions;
 
-    newState.latestVersion = Object.keys(statsVersions).pop();
+    newState.latestVersion = this.getLatestAvailableVersion();
     newState.idleVersion = this.state.idleVersion === null ? newState.latestVersion : this.state.idleVersion;
 
-    if (newState.idleVersion && statsVersions[newState.idleVersion].endTimestamp){
-      const newEndTimestampObj = moment(moment(statsVersions[newState.idleVersion].endTimestamp*1000).format('YYYY-MM-DD HH:mm'),'YYYY-MM-DD HH:mm');
+    const versionInfo = this.getVersionInfo(newState.idleVersion);
+
+    if (newState.idleVersion && versionInfo.endTimestamp){
+      const newEndTimestampObj = moment(moment(versionInfo.endTimestamp*1000).format('YYYY-MM-DD HH:mm'),'YYYY-MM-DD HH:mm');
       if (newState.endTimestampObj.isAfter(newEndTimestampObj)){
         newState.endTimestampObj = newEndTimestampObj;
         newState.endTimestamp = parseInt(newState.endTimestampObj._d.getTime()/1000);
@@ -114,8 +167,8 @@ class Stats extends Component {
     newState.startTimestampObj = newState.endTimestampObj.clone().subtract(1,'month');
     newState.startTimestamp = parseInt(newState.startTimestampObj._d.getTime()/1000);
 
-    if (newState.idleVersion && statsVersions[newState.idleVersion].startTimestamp){
-      const newStartTimestampObj = moment(moment(statsVersions[newState.idleVersion].startTimestamp*1000).format('YYYY-MM-DD HH:mm'),'YYYY-MM-DD HH:mm');
+    if (newState.idleVersion && versionInfo.startTimestamp){
+      const newStartTimestampObj = moment(moment(versionInfo.startTimestamp*1000).format('YYYY-MM-DD HH:mm'),'YYYY-MM-DD HH:mm');
       if (newState.startTimestampObj.isBefore(newStartTimestampObj)){
         newState.startTimestampObj = newStartTimestampObj;
         newState.startTimestamp = parseInt(newState.startTimestampObj._d.getTime()/1000);
@@ -133,19 +186,8 @@ class Stats extends Component {
     // debugger;
 
     if (newState !== this.state){
-      await this.setState(newState);
+      await this.setStateSafe(newState);
     }
-  }
-
-  async componentWillMount() {
-    this.loadUtils();
-    await this.loadParams();
-  }
-
-  componentWillUnmount(){
-    // if (document.getElementById('crisp-custom-style')){
-    //   document.getElementById('crisp-custom-style').remove();
-    // }
   }
 
   setDateRange = (ranges,quickSelection=null) => {
@@ -173,21 +215,21 @@ class Stats extends Component {
       startTimestampObj
     };
 
-    this.setState(newState);
+    this.setStateSafe(newState);
 
     return newState;
   }
 
   toggleAdvancedCharts = (e) => {
     e.preventDefault();
-    this.setState({
+    this.setStateSafe({
       showAdvanced:!this.state.showAdvanced
     });
   }
 
   setDateRangeModal = (dateRangeModalOpened) => {
     if (dateRangeModalOpened !== this.state.dateRangeModalOpened){
-      this.setState({
+      this.setStateSafe({
         dateRangeModalOpened
       });
     }
@@ -227,7 +269,7 @@ class Stats extends Component {
 
     const totalAUMEndOfYear = totalAUM.plus(totalAUM.times(avgAPY.div(100)));
 
-    this.setState({
+    this.setStateSafe({
       totalAUM,
       totalAUMEndOfYear
     });
@@ -235,7 +277,7 @@ class Stats extends Component {
 
   loadCarousel(){
     const carouselMax = this.props.isMobile ? 3 : 2;
-    this.setState({
+    this.setStateSafe({
       carouselMax
     });
   }
@@ -267,7 +309,7 @@ class Stats extends Component {
   }
 
   setIdleVersion = idleVersion => {
-    this.setState({
+    this.setStateSafe({
       idleVersion
     });
   }
@@ -422,7 +464,7 @@ class Stats extends Component {
     // Format AUM
     aum = this.functionsUtil.formatMoney(parseFloat(aum));
 
-    this.setState({
+    this.setStateSafe({
       aum,
       apr,
       days,
@@ -435,8 +477,7 @@ class Stats extends Component {
   }
 
   selectToken = async (strategy,token) => {
-    await this.props.setStrategy(strategy);
-    await this.props.setToken(token);
+    await this.props.setStrategyToken(strategy,token);
     this.props.changeToken(token);
   }
 
@@ -451,7 +492,7 @@ class Stats extends Component {
     const $element = window.jQuery(`#carousel-cursor > div:eq(${carouselIndex})`);
     const carouselOffsetLeft = -parseFloat($element.position().left)+'px';
 
-    this.setState({
+    this.setStateSafe({
       carouselIndex,
       carouselOffsetLeft
     });
@@ -698,20 +739,21 @@ class Stats extends Component {
         </Flex>
       );
     } else {
-
       const versionsOptions = Object.keys(globalConfigs.stats.versions).filter( version => {
-        const versionInfo = globalConfigs.stats.versions[version];
+        const versionInfo = this.getVersionInfo(version);
         return versionInfo.enabledTokens.includes(this.props.selectedToken) && versionInfo.enabledStrategies.includes(this.props.selectedStrategy);
       }).map( version => {
-        const versionInfo = globalConfigs.stats.versions[version];
+        const versionInfo = this.getVersionInfo(version);
         return {
           value:version,
           label:versionInfo.label
         }
       });
 
+      const versionInfo = this.getVersionInfo(this.state.idleVersion);
+
       let performanceTooltip = null;
-      if (this.state.idleVersion && globalConfigs.stats.versions[this.state.idleVersion]){
+      if (this.state.idleVersion && versionInfo){
         const showPerformanceTooltip = this.functionsUtil.getGlobalConfig(['stats','versions',this.state.idleVersion,'showPerformanceTooltip']);
         performanceTooltip = showPerformanceTooltip ? this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.selectedToken,'performanceTooltip']) : null;
       }
@@ -846,7 +888,7 @@ class Stats extends Component {
           </Box>
 
           {
-            this.state.idleVersion && (globalConfigs.stats.versions[this.state.idleVersion].startTimestamp>parseInt(new Date().getTime()/1000)) ? (
+            this.state.idleVersion && (versionInfo.startTimestamp>parseInt(new Date().getTime()/1000)) ? (
               <Flex
                 width={1}
                 alignItems={'center'}

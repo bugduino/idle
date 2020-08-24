@@ -2870,26 +2870,33 @@ class FunctionsUtil {
     }
     return null;
   }
-  getTokensToMigrate = async () => {
+  getTokensToMigrate = async (selectedStrategy=null) => {
 
-    if (!this.props.availableTokens || !this.props.account){
+    if (!this.props.availableStrategies || !this.props.account){
       return false;
     }
 
     const tokensToMigrate = {};
-    await this.asyncForEach(Object.keys(this.props.availableTokens),async (token) => {
-      const tokenConfig = this.props.availableTokens[token];
-      const {
-        migrationEnabled,
-        oldContractBalanceFormatted
-      } = await this.checkMigration(tokenConfig,this.props.account);
-      
-      if (migrationEnabled){
-        tokensToMigrate[token] = {
-          tokenConfig,
-          oldContractBalanceFormatted
-        }
+    await this.asyncForEach(Object.keys(this.props.availableStrategies),async (strategy) => {
+      if (selectedStrategy && selectedStrategy !== strategy){
+        return;
       }
+      const availableTokens = this.props.availableStrategies[strategy];
+      await this.asyncForEach(Object.keys(availableTokens),async (token) => {
+        const tokenConfig = availableTokens[token];
+        const {
+          migrationEnabled,
+          oldContractBalanceFormatted
+        } = await this.checkMigration(tokenConfig,this.props.account);
+        
+        if (migrationEnabled){
+          tokensToMigrate[token] = {
+            strategy,
+            tokenConfig,
+            oldContractBalanceFormatted
+          }
+        }
+      });
     });
 
     return tokensToMigrate;

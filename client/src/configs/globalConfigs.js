@@ -232,6 +232,11 @@ const globalConfigs = {
         endTimestamp:1597237542,
         startTimestamp:1589801874,
         showPerformanceTooltip:false,
+        strategiesParams:{
+          risk:{
+            endTimestamp:1597233922,
+          }
+        },
         enabledStrategies:['best','risk'],
         enabledTokens:['DAI','USDC','USDT','TUSD','SUSD','WBTC'],
       },
@@ -239,8 +244,13 @@ const globalConfigs = {
         label:'Idle V4',
         endTimestamp:null,
         startTimestamp:1597442400, // 1598220000
-        enabledStrategies:['best'],
+        enabledStrategies:['best','risk'],
         showPerformanceTooltip:true,
+        strategiesParams:{
+          risk:{
+            startTimestamp:1598319170,
+          }
+        },
         enabledTokens:['DAI','USDC','USDT','TUSD','SUSD','WBTC'],
         additionalProtocols:[
           {
@@ -452,7 +462,7 @@ const globalConfigs = {
       },
       migrate:{
         skipRebalance:true,
-        minAmountForRebalance:5000,
+        minAmountForRebalance:0,
         minAmountForRebalanceMetaTx:10000
       },
       redeemGovTokens:{
@@ -560,7 +570,7 @@ const globalConfigs = {
             },
           ]
         },
-        availableStrategies:['best'],
+        availableStrategies:['best','risk'],
         availableTokens:{
           idleDAIv2:{
             decimals:18,

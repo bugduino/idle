@@ -220,10 +220,9 @@ class Dashboard extends Component {
     if (!pageComponent){
       return this.goToSection('/',false);
     }
-    // console.log('currentSection',currentSection,'selectedStrategy',selectedStrategy,'selectedToken',selectedToken,'currentRoute',currentRoute);
 
-    await this.props.setStrategy(selectedStrategy);
-    await this.props.setToken(selectedToken);
+    // console.log('loadParams',selectedStrategy,selectedToken);
+    await this.props.setStrategyToken(selectedStrategy,selectedToken);
 
     await this.setState({
       menu,
@@ -290,15 +289,21 @@ class Dashboard extends Component {
     }
 
     const accountChanged = prevProps.account !== this.props.account;
+    const strategyChanged = this.props.selectedStrategy && prevProps.selectedStrategy !== this.props.selectedStrategy;
     const accountInizialized = this.props.accountInizialized && prevProps.accountInizialized !== this.props.accountInizialized;
     const contractsInitialized = this.props.contractsInitialized && prevProps.contractsInitialized !== this.props.contractsInitialized;
+    const availableTokensChanged = this.props.availableTokens && JSON.stringify(prevProps.availableTokens) !== JSON.stringify(this.props.availableTokens);
 
-    if (accountChanged || accountInizialized || contractsInitialized){
+    // console.log('componentDidUpdate',prevProps.selectedStrategy,this.props.selectedStrategy,this.props.selectedToken,strategyChanged);
+
+    if (accountChanged || accountInizialized || contractsInitialized || strategyChanged){
       this.checkModals();
     }
   }
 
   async checkModals(){
+
+    // console.log('checkModals',this.props.selectedToken,this.props.selectedStrategy,this.props.availableTokens);
 
     if (this.props.selectedToken || !this.props.accountInizialized || !this.props.contractsInitialized){
       return null;
@@ -318,6 +323,8 @@ class Dashboard extends Component {
 
     const tokensToMigrate = await this.functionsUtil.getTokensToMigrate();
     const oldIdleTokensToMigrate = await this.functionsUtil.getProtocolsTokensBalances('idle');
+
+    // console.log('tokensToMigrate',tokensToMigrate);
     
     if ((tokensToMigrate && Object.keys(tokensToMigrate).length>0) || (oldIdleTokensToMigrate && Object.keys(oldIdleTokensToMigrate).length>0)){
       const activeModal = 'upgrade';

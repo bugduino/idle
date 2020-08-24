@@ -167,10 +167,45 @@ class App extends Component {
       }
     }
 
+    // console.log('loadAvailableTokens',newState);
+
     await this.setState(newState);
   }
 
-  async setStrategy(selectedStrategy){
+  async setStrategyToken(selectedStrategy,selectedToken){
+
+    const callback = () => {
+      this.loadAvailableTokens();
+    }
+
+    const newState = {
+      tokenConfig:!selectedToken ? null : this.state.tokenConfig,
+      availableTokens:!selectedToken ? null : this.state.availableTokens,
+      selectedToken:!selectedToken ? selectedToken :this.state.selectedToken,
+      selectedStrategy:!selectedStrategy ? selectedStrategy :this.state.selectedStrategy,
+    };
+
+    if (selectedStrategy && this.state.availableStrategies && selectedStrategy !== this.state.selectedStrategy && Object.keys(this.state.availableStrategies).includes(selectedStrategy.toLowerCase())){
+      newState.selectedStrategy = selectedStrategy.toLowerCase();
+    }
+
+    if (selectedToken && selectedToken !== this.state.selectedToken) {
+      if ( this.state.availableTokens && Object.keys(this.state.availableTokens).includes(selectedToken.toUpperCase()) ){
+        newState.selectedToken = selectedToken.toUpperCase();
+        newState.tokenConfig = this.state.availableTokens[selectedToken];
+      } else if (this.state.availableStrategies && Object.keys(this.state.availableStrategies[selectedStrategy]).includes(selectedToken.toUpperCase())) {
+        newState.selectedToken = selectedToken.toUpperCase();
+        newState.tokenConfig = this.state.availableStrategies[selectedStrategy][newState.selectedToken];
+        newState.availableTokens = this.state.availableStrategies[selectedStrategy];
+      }
+    }
+
+    // console.log('setStrategyToken',newState);
+
+    await this.setState(newState,callback);
+  }
+
+  async setStrategy(selectedStrategy) {
 
     const callback = () => {
       this.loadAvailableTokens();
@@ -188,7 +223,7 @@ class App extends Component {
     }
   }
 
-  async setToken(selectedToken){
+  async setToken(selectedToken) {
 
     const callback = () => {
       this.loadAvailableTokens();
@@ -484,6 +519,7 @@ class App extends Component {
                                                     setCachedData={this.setCachedData.bind(this)}
                                                     selectedStrategy={this.state.selectedStrategy}
                                                     userRejectedValidation={userRejectedValidation}
+                                                    setStrategyToken={this.setStrategyToken.bind(this)}
                                                     accountValidationPending={accountValidationPending}
                                                     availableStrategies={this.state.availableStrategies}
                                                     connectAndValidateAccount={connectAndValidateAccount}

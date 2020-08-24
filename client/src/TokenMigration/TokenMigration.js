@@ -126,8 +126,7 @@ class TokenMigration extends Component {
       migrationSucceeded:false
     };
 
-    await this.props.setStrategy(destTokenConfig.strategy);
-    this.props.setToken(tokenInfo.baseToken);
+    await this.props.setStrategyToken(destTokenConfig.strategy,tokenInfo.baseToken);
 
     this.setState({
       tokenConfig,

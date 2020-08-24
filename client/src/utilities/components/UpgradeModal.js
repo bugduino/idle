@@ -60,7 +60,12 @@ class UpgradeModal extends React.Component {
     });
   }
 
-  migrate = async (token) => {
+  migrate = async (token,strategy=null) => {
+
+    if (!strategy){
+      strategy = this.props.selectedStrategy;
+    }
+
     const gaEventsEnabled = this.functionsUtil.getGlobalConfig(['globalConfigs','analytics','google','events','enabled']);
     // Send Google Analytics event
     if (gaEventsEnabled){
@@ -69,10 +74,10 @@ class UpgradeModal extends React.Component {
         eventAction: 'migrate',
         eventLabel: `${this.props.selectedStrategy}_${token}`
       });
-      this.props.goToSection(`${this.props.selectedStrategy}/${token}`);
+      this.props.goToSection(`${strategy}/${token}`);
       this.props.closeModal();
     } else {
-      this.props.goToSection(`${this.props.selectedStrategy}/${token}`);
+      this.props.goToSection(`${strategy}/${token}`);
       this.props.closeModal();
     }
   }
@@ -188,6 +193,7 @@ class UpgradeModal extends React.Component {
               >
                 {
                   this.props.tokensToMigrate && Object.keys(this.props.tokensToMigrate).map( token => {
+                    const strategy = this.props.tokensToMigrate[token].strategy;
                     const tokenConfig = this.props.tokensToMigrate[token].tokenConfig;
                     const balance = this.props.tokensToMigrate[token].oldContractBalanceFormatted;
                     return (
@@ -274,7 +280,7 @@ class UpgradeModal extends React.Component {
                           justifyContent={'center'}
                         >
                           <RoundButton
-                            handleClick={ e => this.migrate(token) }
+                            handleClick={ e => this.migrate(token,strategy) }
                             buttonProps={{
                               size:'small',
                               width:'100%',

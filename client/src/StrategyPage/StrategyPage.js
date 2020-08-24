@@ -28,6 +28,7 @@ class StrategyPage extends Component {
 
   // Utils
   functionsUtil = null;
+  componentUnmounted = false;
 
   loadUtils(){
     if (this.functionsUtil){
@@ -41,6 +42,10 @@ class StrategyPage extends Component {
     this.loadUtils();
   }
 
+  componentWillUnmount(){
+    this.componentUnmounted = true;
+  }
+
   async componentDidMount(){
     await this.loadPortfolio();
   }
@@ -49,8 +54,15 @@ class StrategyPage extends Component {
     this.loadUtils();
   }
 
+  async setStateSafe(newState,callback=null) {
+    if (!this.componentUnmounted){
+      return this.setState(newState,callback);
+    }
+    return null;
+  }
+
   setPortfolioEquityQuickSelection(portfolioEquityQuickSelection){
-    this.setState({
+    this.setStateSafe({
       portfolioEquityQuickSelection
     });
   }
@@ -184,7 +196,7 @@ class StrategyPage extends Component {
       }
 
       // Get tokens to migrate
-      const tokensToMigrate = await this.functionsUtil.getTokensToMigrate();
+      const tokensToMigrate = await this.functionsUtil.getTokensToMigrate(this.props.selectedStrategy);
 
       newState.tokensToMigrate = tokensToMigrate;
       newState.portfolioLoaded = true;
@@ -197,10 +209,10 @@ class StrategyPage extends Component {
       await this.functionsUtil.getEtherscanTxs(this.props.account,firstBlockNumber,'latest',Object.keys(this.props.availableTokens))
 
       // Portfolio loaded
-      this.setState(newState);
+      this.setStateSafe(newState);
     // Show available assets for not logged users
     } else {
-      this.setState({
+      this.setStateSafe({
         tokensToMigrate:{},
         depositedTokens:[],
         portfolioLoaded:true,
