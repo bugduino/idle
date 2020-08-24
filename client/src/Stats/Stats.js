@@ -606,7 +606,7 @@ class Stats extends Component {
                           <Text
                             ml={2}
                             fontWeight={3}
-                            fontSize={[3,4]}
+                            fontSize={[2,4]}
                             color={'dark-gray'}
                           >
                             {strategyInfo.titlePostfix}

@@ -179,7 +179,7 @@ const globalConfigs = {
       token:'DAI',
       color:'#2196F3',
       comingSoon:false,
-      titlePostfix:'V3',
+      titlePostfix:'V4',
       addGovTokens:false,
       iconName:'Security',
       title:'Risk-Adjusted',
@@ -249,7 +249,7 @@ const globalConfigs = {
         showPerformanceTooltip:true,
         strategiesParams:{
           risk:{
-            startTimestamp:1598319170,
+            startTimestamp:1599183170,
           }
         },
         enabledTokens:['DAI','USDC','USDT','TUSD','SUSD','WBTC'],
@@ -463,7 +463,7 @@ const globalConfigs = {
       },
       migrate:{
         skipRebalance:true,
-        minAmountForRebalance:0,
+        minAmountForRebalance:5000,
         minAmountForRebalanceMetaTx:10000
       },
       redeemGovTokens:{

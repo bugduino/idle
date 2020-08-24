@@ -903,7 +903,7 @@ class Migrate extends Component {
                               color={'cellText'}
                               textAlign={'center'}
                             >
-                              You are one step away from the migration of your{ this.props.isMigrationTool ? this.state.oldIdleTokens.toFixed(4) : ' old' } {this.state.oldTokenName}{ this.props.isMigrationTool ? ` into the Idle ${this.props.tokenConfig.token} ${this.props.selectedStrategy} strategy` : '' }!
+                              You are one step away from the migration of your { this.props.isMigrationTool ? this.state.oldIdleTokens.toFixed(4) : 'old' } {this.state.oldTokenName}{ this.props.isMigrationTool ? ` into the Idle ${this.props.tokenConfig.token} ${this.props.selectedStrategy} strategy` : '' }!
                             </Text>
                             <Flex
                               width={1}
