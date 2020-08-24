@@ -12,208 +12,6 @@ import IdleTokenV4 from '../contracts/IdleTokenV4.json';
 import IdleConverterPersonalSignV4 from '../contracts/IdleConverterPersonalSignV4.json';
 
 const availableTokens = {
-  42:{ // Kovan
-    /*
-    risk:{
-      DAI:{
-        decimals:18,
-        enabled:true,
-        abi:ERC20.abi,
-        address:'0x4F96Fe3b7A6Cf9725f59d353F723c1bDb64CA6Aa',
-        zeroExInstant:{
-          orderSource: 'https://api.0x.org/sra/',
-          assetData:'0xf47261b00000000000000000000000006b175474e89094c44da98b954eedeac495271d0f',
-          affiliateInfo: {
-              feeRecipient: '0x4215606a720477178AdFCd5A59775C63138711e8',
-              feePercentage: 0.0025
-          },
-        },
-        wyre:{
-          destCurrency:'DAI'
-        },
-        ramp:{
-          swapAsset:'DAI'
-        },
-        defiPrime:{
-          token:'dai'
-        },
-        idle:{
-          abi:IdleTokenV2,
-          token:'idleDAI',
-          address:'0x199e7c55B44fFBD2934bFC3bDeE05F6EC2b547CF'
-        },
-        migration:{
-          enabled:false,
-          oldContract:{
-            abi:idleDAIv1.abi,
-            token:'idleSAI',
-            name:'oldContract',
-            address:'0x4Cc31d87E658504a9db6c9337102c408A3bdE90d',
-          },
-          migrationContract:{
-            abi:IdleMcdBridgeV1,
-            token:'idleSAI',
-            name:'migrationContract',
-            address:'0xE293a3576f22A6BAF841Ed6bb80953F445e1b22a',
-            oldAddresses:['0x556659f45381dEE8BA429C295363E39645abE834'],
-            functions:[
-              {
-                name:'bridgeIdleV1ToIdleV2',
-                label:'MIGRATE TO idleSAI v2',
-                params:['0x4Cc31d87E658504a9db6c9337102c408A3bdE90d','0x5266C66FC100d2FBE5dbCfE8a8789568D2d2F720']
-              },
-              {
-                name:'bridgeIdleV1ToIdleV2',
-                label:'MIGRATE TO idleDAI v2',
-                params:['0x4Cc31d87E658504a9db6c9337102c408A3bdE90d','0x199e7c55B44fFBD2934bFC3bDeE05F6EC2b547CF']
-              },
-            ]
-          }
-        },
-        protocols:[
-          {
-            name:'compound',
-            enabled:true,
-            abi:cToken.abi,
-            address:'0xe7bc397dbd069fc7d0109c0636d06888bb50668c',
-            token:'cDAI',
-            decimals:28,
-            functions:{
-              exchangeRate:{
-                name:'exchangeRateStored',
-                params:[]
-              }
-            },
-          },
-          {
-            name:'fulcrum',
-            enabled:true,
-            abi:iToken,
-            address:'0x6c1e2b0f67e00c06c8e2be7dc681ab785163ff4d',
-            token:'iDAI',
-            decimals:18,
-            functions:{
-              exchangeRate:{
-                name:'tokenPrice',
-                params:[]
-              }
-            },
-          }
-        ]
-      },
-      USDC:{
-        enabled:false,
-        abi:ERC20.abi,
-        address:'0xC4375B7De8af5a38a93548eb8453a498222C4fF2',
-        zeroExInstant:{
-          orderSource: 'https://api.0x.org/sra/',
-          assetData:'0xf47261b0000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-          affiliateInfo: {
-              feeRecipient: '0x4215606a720477178AdFCd5A59775C63138711e8',
-              feePercentage: 0.0025
-          },
-        },
-        wyre:{
-          destCurrency:'USDC'
-        },
-        defiPrime:{
-          token:'usdc'
-        },
-        idle:{
-          abi:IdleTokenV2,
-          token:'idleUSDC',
-          address:'0x17c5efC8dbd9b1b34457eE46c3C8e0F928e80dbE'
-        },
-        protocols:[
-          {
-            name:'compound',
-            enabled:true,
-            abi:cToken.abi,
-            address:'0x63c344bf8651222346dd870be254d4347c9359f7',
-            token:'cUSDC',
-            decimals:28,
-            functions:{
-              exchangeRate:{
-                name:'exchangeRateStored',
-                params:[]
-              }
-            },
-          },
-          {
-            name:'fulcrum',
-            enabled:true,
-            abi:iToken,
-            address:'0xA1e58F3B1927743393b25f261471E1f2D3D9f0F6',
-            token:'iUSDC',
-            decimals:18,
-            functions:{
-              exchangeRate:{
-                name:'tokenPrice',
-                params:[]
-              }
-            },
-          }
-        ]
-      }
-    },
-    best:{
-      USDC:{
-        enabled:false,
-        abi:ERC20.abi,
-        address:'0xC4375B7De8af5a38a93548eb8453a498222C4fF2',
-        zeroExInstant:{
-          orderSource: 'https://api.0x.org/sra/',
-          assetData:'0xf47261b0000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-          affiliateInfo: {
-              feeRecipient: '0x4215606a720477178AdFCd5A59775C63138711e8',
-              feePercentage: 0.0025
-          },
-        },
-        wyre:{
-          destCurrency:'USDC'
-        },
-        defiPrime:{
-          token:'usdc'
-        },
-        idle:{
-          abi:IdleTokenV2,
-          token:'idleUSDC',
-          address:'0x17c5efC8dbd9b1b34457eE46c3C8e0F928e80dbE'
-        },
-        protocols:[
-          {
-            name:'compound',
-            enabled:true,
-            abi:cToken.abi,
-            address:'0x63c344bf8651222346dd870be254d4347c9359f7',
-            token:'cUSDC',
-            decimals:28,
-            functions:{
-              exchangeRate:{
-                name:'exchangeRateStored',
-                params:[]
-              }
-            },
-          },
-          {
-            name:'fulcrum',
-            enabled:true,
-            abi:iToken,
-            address:'0xA1e58F3B1927743393b25f261471E1f2D3D9f0F6',
-            token:'iUSDC',
-            decimals:18,
-            functions:{
-              exchangeRate:{
-                name:'tokenPrice',
-                params:[]
-              }
-            },
-          }
-        ]
-      }
-    }
-    */
-  },
   1:{ // Mainnet
     best:{
       DAI:{
@@ -682,6 +480,9 @@ const availableTokens = {
         govTokensDisabled:false,
         color:'hsl(29, 81%, 59%)',
         address:'0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
+        deposit:{
+          minAmountForMint:2000,
+        },
         wyre:{
           destCurrency:'WBTC'
         },
@@ -786,18 +587,34 @@ const availableTokens = {
           token:'dai'
         },
         idle:{
-          abi:IdleTokenV3,
+          abi:IdleTokenV4,
           token:'idleDAISafe',
-          address:'0x1846bdfDB6A0f5c473dEc610144513bd071999fB'
+          address:'0xa14ea0e11121e6e951e87c66afe460a00bcd6a16'
         },
         migration:{
           enabled:true,
           oldContract:{
-            abi:IdleTokenV2,
+            abi:IdleTokenV3,
             token:'idleDAI',
-            name:'idleDAIOld',
-            address:'0x10eC0D497824e342bCB0EDcE00959142aAa766dD',
+            name:'idleDAISafeV2',
+            address:'0x1846bdfDB6A0f5c473dEc610144513bd071999fB'
           },
+          oldProtocols:[
+            {
+              name:'dydx',
+              enabled:true,
+              abi:yToken,
+              address:'0xf424b10e1e9691ae5fb530fe4c3e6b9971013d49',
+              token:'yxDAIOld',
+              decimals:18,
+              functions:{
+                exchangeRate:{
+                  name:'price',
+                  params:[]
+                }
+              }
+            }
+          ],
           migrationContract:{
             abi:IdleConverterPersonalSignV4,
             token:'idleDAI',
@@ -867,8 +684,8 @@ const availableTokens = {
             name:'dydx',
             enabled:true,
             abi:yToken,
-            address:'0xf424b10e1e9691ae5fb530fe4c3e6b9971013d49',
-            token:'yxDAIOld',
+            address:'0xb299BCDF056d17Bd1A46185eCA8bCE458B00DC4a',
+            token:'yxDAI',
             decimals:18,
             functions:{
               exchangeRate:{
@@ -902,18 +719,34 @@ const availableTokens = {
           token:'usdc'
         },
         idle:{
-          abi:IdleTokenV3,
+          abi:IdleTokenV4,
           token:'idleUSDCSafe',
-          address:'0xcDdB1Bceb7a1979C6caa0229820707429dd3Ec6C'
+          address:'0x3391bc034f2935ef0e1e41619445f998b2680d35'
         },
         migration:{
           enabled:true,
           oldContract:{
-            abi:IdleTokenV2,
+            abi:IdleTokenV3,
             token:'idleUSDC',
-            name:'idleUSDCOld',
-            address:'0xeB66ACc3d011056B00ea521F8203580C2E5d3991',
+            name:'idleUSDCSafeV2',
+            address:'0xcDdB1Bceb7a1979C6caa0229820707429dd3Ec6C',
           },
+          oldProtocols:[
+            {
+              name:'dydx',
+              enabled:true,
+              abi:yToken,
+              address:'0x0d81b042bb9939b4d32cdf7861774c442a2685ce',
+              token:'yxUSDCOld',
+              decimals:18,
+              functions:{
+                exchangeRate:{
+                  name:'price',
+                  params:[]
+                }
+              }
+            }
+          ],
           migrationContract:{
             abi:IdleConverterPersonalSignV4,
             token:'idleUSDC',
@@ -972,8 +805,8 @@ const availableTokens = {
             name:'dydx',
             enabled:true,
             abi:yToken,
-            address:'0x0d81b042bb9939b4d32cdf7861774c442a2685ce',
-            token:'yxUSDCOld',
+            address:'0xd2F45883627f26EC34825486ca4c25235A0da0C3',
+            token:'yxUSDC',
             decimals:18,
             functions:{
               exchangeRate:{
@@ -999,9 +832,31 @@ const availableTokens = {
           token:'usdt'
         },
         idle:{
-          abi:IdleTokenV3,
+          abi:IdleTokenV4,
           token:'idleUSDTSafe',
-          address:'0x42740698959761baf1b06baa51efbd88cb1d862b'
+          address:'0x28fAc5334C9f7262b3A3Fe707e250E01053e07b5'
+        },
+        migration:{
+          enabled:true,
+          oldContract:{
+            abi:IdleTokenV3,
+            token:'idleUSDT',
+            name:'idleUSDTSafeV2',
+            address:'0x42740698959761baf1b06baa51efbd88cb1d862b'
+          },
+          migrationContract:{
+            abi:IdleConverterPersonalSignV4,
+            token:'idleDAI',
+            name:'IdleConverterV4',
+            address:'0xa55caa40b32a02becfad1d0d29c4f1cf38c4c743',
+            oldAddresses:[],
+            functions:[
+              {
+                label:'Migrate',
+                name:'migrateFromToIdle'
+              },
+            ]
+          }
         },
         protocols:[
           {
