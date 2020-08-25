@@ -159,10 +159,6 @@ const globalConfigs = {
       abi:UniswapV2Router02,
       address:'0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
     },
-    BatchConverterDAI:{
-      abi:IdleBatchConverter,
-      address:'0xe969bd6c4a9708f7536f47a2a73bb84ab3eff6fd'
-    }
   },
   strategies:{
     best:{
@@ -559,19 +555,33 @@ const globalConfigs = {
   },
   tools:{
     batchMigration:{
-      enabled:false,
+      enabled:true,
       icon:'FileDownload',
       route:'batch-migration',
       label:'Batch Migration',
       subComponent:BatchMigration,
-      desc:'Deposit your old Idle Tokens',
+      desc:'Deposit your old Idle Tokens into a batch and wait until the whole batch is converted to the new idle token.',
       props:{
         availableTokens:{
           idleDAIYield:{
+            decimals:18,
             abi:IdleTokenV3,
-            token:'idleDAI',
+            strategy:'best',
             baseToken:'DAI',
+            name:'idleDAIYieldV2',
+            token:'idleDAIYieldV2',
             address:'0x78751b12da02728f467a44eac40f5cbc16bd7934',
+            migrationContract:{
+              abi:IdleBatchConverter,
+              name:'IdleBatchConverterDAI',
+              address:'0xe969bd6c4a9708f7536f47a2a73bb84ab3eff6fd',
+              functions:[
+                {
+                  label:'Deposit',
+                  name:'deposit'
+                },
+              ]
+            },
           }
         }
       }

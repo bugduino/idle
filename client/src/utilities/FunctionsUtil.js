@@ -1890,8 +1890,10 @@ class FunctionsUtil {
     let govTokenAvailableTokens = null;
     if (this.props.selectedStrategy && this.props.selectedToken){
       const newTokenConfig = this.props.availableStrategies[this.props.selectedStrategy][this.props.selectedToken];
-      govTokenAvailableTokens = {};
-      govTokenAvailableTokens[newTokenConfig.token] = newTokenConfig;
+      if (newTokenConfig){
+        govTokenAvailableTokens = {};
+        govTokenAvailableTokens[newTokenConfig.token] = newTokenConfig;
+      }
     } else if (!Object.keys(govTokens).includes(token)){
       govTokenAvailableTokens = {};
       govTokenAvailableTokens[token] = tokenConfig;

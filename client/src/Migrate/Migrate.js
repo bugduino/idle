@@ -630,7 +630,7 @@ class Migrate extends Component {
           }
         }
 
-        const migrationParams = [toMigrate,this.props.tokenConfig.migration.oldContract.address,this.props.tokenConfig.idle.address,this.props.tokenConfig.address,_skipRebalance];
+        const migrationParams = this.props.migrationParams ? this.props.migrationParams : [toMigrate,this.props.tokenConfig.migration.oldContract.address,this.props.tokenConfig.idle.address,this.props.tokenConfig.address,_skipRebalance];
 
         // console.log('Migration params',oldIdleTokens,minAmountForRebalance,migrationContractInfo.name, migrationMethod, migrationParams);
 
@@ -881,9 +881,9 @@ class Migrate extends Component {
                           >
                             <TxProgressBar
                               web3={this.props.web3}
-                              waitText={`Migration estimated in`}
                               hash={this.state.processing.migrate.txHash}
                               endMessage={`Finalizing migration request...`}
+                              waitText={ this.props.waitText ? this.props.waitText : 'Migration estimated in'}
                               sendingMessage={ this.props.biconomy && this.state.metaTransactionsEnabled ? 'Sending meta-transaction...' : 'Sending transaction...' }
                             />
                           </Flex>
@@ -895,7 +895,7 @@ class Migrate extends Component {
                             <Icon
                               size={'2.3em'}
                               color={'cellText'}
-                              name={ this.props.isMigrationTool ? 'SwapHoriz' : 'Repeat' }
+                              name={ this.props.migrationIcon ? this.props.migrationIcon : (this.props.isMigrationTool ? 'SwapHoriz' : 'Repeat') }
                             />
                             <Text
                               mt={1}
@@ -903,7 +903,15 @@ class Migrate extends Component {
                               color={'cellText'}
                               textAlign={'center'}
                             >
-                              You are one step away from the migration of your { this.props.isMigrationTool ? this.state.oldIdleTokens.toFixed(4) : 'old' } {this.state.oldTokenName}{ this.props.isMigrationTool ? ` into the Idle ${this.props.tokenConfig.token} ${this.props.selectedStrategy} strategy` : '' }!
+                              {
+                                this.props.migrationText ? this.props.migrationText : (
+                                  <Text.span
+                                    color={'cellText'}
+                                  >
+                                    You are one step away from the migration of your { this.props.isMigrationTool ? this.state.oldIdleTokens.toFixed(4) : 'old' } {this.state.oldTokenName}{ this.props.isMigrationTool ? ` into the Idle ${this.props.tokenConfig.token} ${this.props.selectedStrategy} strategy` : '' }!
+                                  </Text.span>
+                                )
+                              }
                             </Text>
                             <Flex
                               width={1}
