@@ -27,6 +27,7 @@ class BatchMigration extends Component {
 
   state = {
     canClaim:false,
+    batchTotals:{},
     action:'deposit',
     batchDeposits:{},
     tokenConfig:null,
@@ -36,9 +37,10 @@ class BatchMigration extends Component {
         loading:false
       },
     },
-    hasClaimable:false,
     selectedToken:null,
-    migrationSucceeded:false,
+    batchCompleted:false,
+    claimSucceeded:false,
+    migrationSucceeded:true,
     selectedTokenConfig:null,
     availableDestinationTokens:null,
   };
@@ -68,7 +70,8 @@ class BatchMigration extends Component {
 
     const newState = {};
     const batchDeposits = {};
-    const hasClaimable = false;
+    const batchTotals = {};
+    let batchCompleted = false;
 
     if (currBatchIndex !== null){
       for (let batchIndex = 0; batchIndex <= currBatchIndex ; batchIndex++){
@@ -80,9 +83,10 @@ class BatchMigration extends Component {
           batchDeposit = this.functionsUtil.fixTokenDecimals(batchDeposit,this.state.selectedTokenConfig.decimals);
           if (batchDeposit.gt(0)){
             batchDeposits[batchIndex] = batchDeposit;
+            batchTotals[batchIndex] = batchTotal;
             // Check claimable
             if (batchIndex < currBatchIndex){
-              hasClaimable = true;
+              batchCompleted = true;
             }
           }
         }
@@ -90,13 +94,14 @@ class BatchMigration extends Component {
 
       newState.batchDeposits = batchDeposits;
     }
-    
+
     const hasDeposited = (batchDeposits && Object.keys(batchDeposits).length>0);
-    
-    newState.hasClaimable = hasClaimable;
-    newState.canClaim = hasClaimable || hasDeposited;
-    newState.action = hasClaimable ? 'redeem' : 'deposit';
-    
+
+    newState.batchTotals = batchTotals;
+    newState.batchCompleted = batchCompleted;
+    newState.canClaim = batchCompleted || hasDeposited;
+    newState.action = batchCompleted ? 'redeem' : 'deposit';
+
     this.setState(newState);
   }
 
@@ -176,7 +181,7 @@ class BatchMigration extends Component {
   }
 
   claim = async () => {
-    if (!this.state.hasClaimable){
+    if (!this.state.batchCompleted){
       return null;
     }
 
@@ -205,6 +210,7 @@ class BatchMigration extends Component {
       }
 
       this.setState((prevState) => ({
+        claimSucceeded:txSucceeded,
         processing: {
           ...prevState.processing,
           claim:{
@@ -457,7 +463,17 @@ class BatchMigration extends Component {
                                     color={'cellText'}
                                     textAlign={'center'}
                                   >
-                                    Your have successfully deposited {Object.values(this.state.batchDeposits)[0].toFixed(4)} {this.state.selectedToken}, please wait until the batch is completed to claim your tokens.
+                                    {
+                                      this.state.batchCompleted ? (
+                                        <Text.span
+                                          color={'cellText'}
+                                        >The batch is completed, click on the "Claim" button to withdraw your tokens.</Text.span>
+                                      ) : (
+                                        <Text.span
+                                          color={'cellText'}
+                                        >Your have successfully deposited {Object.values(this.state.batchDeposits)[0].toFixed(4)} {this.state.selectedToken}, please wait until the batch is completed to claim your tokens.</Text.span>
+                                      )
+                                    }
                                   </Text>
                                 </Flex>
                               ) : this.state.migrationSucceeded ? (
@@ -518,7 +534,26 @@ class BatchMigration extends Component {
                           >
                             <TxProgressBar web3={this.props.web3} waitText={`Claim estimated in`} endMessage={`Finalizing approve request...`} hash={this.state.processing.claim.txHash} />
                           </Flex>
-                        ) : this.state.hasClaimable ? (
+                        ) : this.state.migrationSucceeded ? (
+                          <Flex
+                            alignItems={'center'}
+                            flexDirection={'column'}
+                          >
+                            <Icon
+                              size={'2.3em'}
+                              name={'DoneAll'}
+                              color={this.props.theme.colors.transactions.status.completed}
+                            />
+                            <Text
+                              mt={2}
+                              fontSize={2}
+                              color={'cellText'}
+                              textAlign={'center'}
+                            >
+                              Your have successfully withdrawn your {this.state.selectedToken}!
+                            </Text>
+                          </Flex>
+                        ) : this.state.batchCompleted ? (
                           <Flex
                             alignItems={'center'}
                             flexDirection={'column'}

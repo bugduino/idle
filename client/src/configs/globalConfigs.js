@@ -160,6 +160,28 @@ const globalConfigs = {
       address:'0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
     },
   },
+  tokens:{
+    DAI:{
+      zeroExInstant:{
+        orderSource: 'https://api.0x.org/sra/',
+        assetData:'0xf47261b00000000000000000000000006b175474e89094c44da98b954eedeac495271d0f',
+        affiliateInfo: {
+            feeRecipient: '0x4215606a720477178AdFCd5A59775C63138711e8',
+            feePercentage: 0.0025
+        },
+      },
+    },
+    USDC:{
+      zeroExInstant:{
+        orderSource: 'https://api.0x.org/sra/',
+        assetData:'0xf47261b0000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+        affiliateInfo: {
+            feeRecipient: '0x4215606a720477178AdFCd5A59775C63138711e8',
+            feePercentage: 0.0025
+        },
+      },
+    },
+  },
   strategies:{
     best:{
       token:'DAI',
@@ -1572,10 +1594,11 @@ const globalConfigs = {
         supportedTokens:['USDC','DAI'],
         remoteResources:{'https://instant.0x.org/v3/instant.js':{}},
         getInitParams: (props,globalConfigs,buyParams,onSuccess,onClose) => {
-          const tokenConfig = props.availableTokens[buyParams.selectedToken];
+
+          const tokenParams = globalConfigs.tokens[buyParams.selectedToken];
           const connectorName = window.RimbleWeb3_context ? window.RimbleWeb3_context.connectorName : null;
 
-          if (!tokenConfig.zeroExInstant){
+          if (!tokenParams.zeroExInstant){
             return null;
           }
 
@@ -1583,10 +1606,10 @@ const globalConfigs = {
             networkId: globalConfigs.network.requiredNetwork,
             chainId: globalConfigs.network.requiredNetwork,
             provider: connectorName && connectorName!=='Injected' && window.RimbleWeb3_context.connector[connectorName.toLowerCase()] ? window.RimbleWeb3_context.connector[window.RimbleWeb3_context.connectorName.toLowerCase()].provider : window.ethereum,
-            orderSource: tokenConfig.zeroExInstant.orderSource,
-            affiliateInfo: tokenConfig.zeroExInstant.affiliateInfo,
-            defaultSelectedAssetData: tokenConfig.zeroExInstant.assetData,
-            availableAssetDatas: [tokenConfig.zeroExInstant.assetData],
+            orderSource: tokenParams.zeroExInstant.orderSource,
+            affiliateInfo: tokenParams.zeroExInstant.affiliateInfo,
+            defaultSelectedAssetData: tokenParams.zeroExInstant.assetData,
+            availableAssetDatas: [tokenParams.zeroExInstant.assetData],
             shouldDisableAnalyticsTracking: true,
             onSuccess: onSuccess ? onSuccess : () => {},
             onClose: onClose ? onClose : () => {}

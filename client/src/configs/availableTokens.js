@@ -19,14 +19,6 @@ const availableTokens = {
         govTokensDisabled:false,
         color:'hsl(40, 95%, 59%)',
         address:'0x6b175474e89094c44da98b954eedeac495271d0f',
-        zeroExInstant:{
-          orderSource: 'https://api.0x.org/sra/',
-          assetData:'0xf47261b00000000000000000000000006b175474e89094c44da98b954eedeac495271d0f',
-          affiliateInfo: {
-              feeRecipient: '0x4215606a720477178AdFCd5A59775C63138711e8',
-              feePercentage: 0.0025
-          },
-        },
         wyre:{
           destCurrency:'DAI'
         },
@@ -156,14 +148,6 @@ const availableTokens = {
         govTokensDisabled:false,
         color:'hsl(211, 67%, 47%)',
         address:'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-        zeroExInstant:{
-          orderSource: 'https://api.0x.org/sra/',
-          assetData:'0xf47261b0000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-          affiliateInfo: {
-              feeRecipient: '0x4215606a720477178AdFCd5A59775C63138711e8',
-              feePercentage: 0.0025
-          },
-        },
         wyre:{
           destCurrency:'USDC'
         },
@@ -566,14 +550,6 @@ const availableTokens = {
         govTokensDisabled:false,
         color:'hsl(40, 95%, 59%)',
         address:'0x6b175474e89094c44da98b954eedeac495271d0f',
-        zeroExInstant:{
-          orderSource: 'https://api.0x.org/sra/',
-          assetData:'0xf47261b00000000000000000000000006b175474e89094c44da98b954eedeac495271d0f',
-          affiliateInfo: {
-              feeRecipient: '0x4215606a720477178AdFCd5A59775C63138711e8',
-              feePercentage: 0.0025
-          },
-        },
         wyre:{
           destCurrency:'DAI'
         },
@@ -701,14 +677,6 @@ const availableTokens = {
         govTokensDisabled:false,
         color:'hsl(211, 67%, 47%)',
         address:'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-        zeroExInstant:{
-          orderSource: 'https://api.0x.org/sra/',
-          assetData:'0xf47261b0000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-          affiliateInfo: {
-              feeRecipient: '0x4215606a720477178AdFCd5A59775C63138711e8',
-              feePercentage: 0.0025
-          },
-        },
         wyre:{
           destCurrency:'USDC'
         },
