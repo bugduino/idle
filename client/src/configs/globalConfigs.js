@@ -577,7 +577,7 @@ const globalConfigs = {
   },
   tools:{
     batchMigration:{
-      enabled:true,
+      enabled:false,
       icon:'FileDownload',
       route:'batch-migration',
       label:'Batch Migration',
