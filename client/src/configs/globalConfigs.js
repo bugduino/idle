@@ -11,11 +11,14 @@ import FunctionsUtil from '../utilities/FunctionsUtil';
 import IdleTokenV2 from '../contracts/IdleTokenV2.json';
 import StrategyPage from '../StrategyPage/StrategyPage';
 import BuyModal from '../utilities/components/BuyModal';
+import IdleTokenV3 from '../contracts/IdleTokenV3.json';
 import Comptroller from '../abis/compound/Comptroller.json';
 import TokenMigration from '../TokenMigration/TokenMigration';
+import BatchMigration from '../BatchMigration/BatchMigration';
 import { RampInstantSDK } from '@ramp-network/ramp-instant-sdk';
 import IdleProxyMinter from '../contracts/IdleProxyMinter.json';
 import IdleRebalancerV3 from '../contracts/IdleRebalancerV3.json';
+import IdleBatchConverter from '../contracts/IdleBatchConverter.json';
 import UniswapV2Router02 from '../abis/uniswap/UniswapV2Router02.json';
 import IdleConverterPersonalSignV4 from '../contracts/IdleConverterPersonalSignV4.json';
 
@@ -155,6 +158,10 @@ const globalConfigs = {
     UniswapRouter:{
       abi:UniswapV2Router02,
       address:'0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
+    },
+    BatchConverterDAI:{
+      abi:IdleBatchConverter,
+      address:'0xe969bd6c4a9708f7536f47a2a73bb84ab3eff6fd'
     }
   },
   strategies:{
@@ -163,7 +170,7 @@ const globalConfigs = {
       color:'#f32121',
       comingSoon:false,
       addGovTokens:true,
-      titlePostfix:'V4',
+      titlePostfix:null,
       title:'Best-Yield',
       iconName:'Whatshot',
       govTokensEnabled:true,
@@ -179,7 +186,7 @@ const globalConfigs = {
       token:'DAI',
       color:'#2196F3',
       comingSoon:false,
-      titlePostfix:'V4',
+      titlePostfix:null,
       addGovTokens:true,
       iconName:'Security',
       title:'Risk-Adjusted',
@@ -551,6 +558,24 @@ const globalConfigs = {
     }
   },
   tools:{
+    batchMigration:{
+      enabled:false,
+      icon:'FileDownload',
+      route:'batch-migration',
+      label:'Batch Migration',
+      subComponent:BatchMigration,
+      desc:'Deposit your old Idle Tokens',
+      props:{
+        availableTokens:{
+          idleDAIYield:{
+            abi:IdleTokenV3,
+            token:'idleDAI',
+            baseToken:'DAI',
+            address:'0x78751b12da02728f467a44eac40f5cbc16bd7934',
+          }
+        }
+      }
+    },
     tokenMigration:{
       enabled:true,
       icon:'SwapHoriz',

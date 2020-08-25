@@ -88,7 +88,9 @@ class Utils extends Component {
               </Title>
               <Flex
                 width={1}
-                flexDirection={['column','row']}
+                style={{
+                  flexWrap:'wrap'
+                }}
               >
               {
                 this.props.selectedSection.submenu.map( (tool,toolIndex) => (
@@ -97,9 +99,11 @@ class Utils extends Component {
                     key={`tool_${toolIndex}`}
                     cardProps={{
                       p:[3,4],
-                      mb:[3,0],
+                      mb:[3,3],
                       mr:[0,'2%'],
-                      width:[1,0.31],
+                      style:{
+                        flex: this.props.isMobile ? '1' : '0 0 31%'
+                      },
                       alignItems:'center',
                       flexDirection:'column',
                       justifyContent:'center'

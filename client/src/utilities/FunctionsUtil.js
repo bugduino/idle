@@ -2357,7 +2357,7 @@ class FunctionsUtil {
     // Check for cached data
     const cachedDataKey = `tokenAllocation_${tokenConfig.idle.address}`;
     const cachedData = this.getCachedData(cachedDataKey);
-    if (cachedData !== null){
+    if (cachedData !== null) {
       return cachedData;
     }
 
@@ -2399,19 +2399,23 @@ class FunctionsUtil {
         exchangeRate = this.fixTokenDecimals(exchangeRate,protocolInfo.decimals);
       }
 
-      const protocolAllocation = this.fixTokenDecimals(protocolBalance,tokenDecimals,exchangeRate);
+      let protocolAllocation = this.fixTokenDecimals(protocolBalance,tokenDecimals,exchangeRate);
 
-      totalAllocation = totalAllocation.plus(protocolAllocation);
+      if (protocolAllocation.lt(this.BNify(0.00000001))){
+        protocolBalance = this.BNify(0);
+        protocolAllocation = this.BNify(0);
+      }
 
       protocolsBalances[protocolAddr] = protocolBalance;
       protocolsAllocations[protocolAddr] = protocolAllocation;
+      totalAllocation = totalAllocation.plus(protocolAllocation);
 
       // console.log('getTokenAllocation',contractName,protocolAddr,protocolAllocation.toString(),exchangeRate ? exchangeRate.toString() : null,totalAllocation.toString());
     });
 
     tokenAllocation.unlentBalance = this.BNify(0);
     tokenAllocation.protocolsBalances = protocolsBalances;
-    tokenAllocation.totalAllocationWithUnlent = totalAllocation;
+    tokenAllocation.totalAllocationWithUnlent = this.BNify(totalAllocation);
 
     // Add unlent balance to the pool
     let unlentBalance = await this.getProtocolBalance(tokenConfig.token,tokenConfig.idle.address);
@@ -2441,7 +2445,7 @@ class FunctionsUtil {
           govTokensBalances.total = govTokensBalances.total.div(tokenUsdConversionRate);
         }
 
-        tokenAllocation.totalAllocation = tokenAllocation.totalAllocation.plus(govTokensBalances.total);
+        tokenAllocation.totalAllocationWithUnlent = tokenAllocation.totalAllocationWithUnlent.plus(govTokensBalances.total);
       }
     }
 
@@ -2522,10 +2526,11 @@ class FunctionsUtil {
       // console.log('getCompAPR',cTokenInfo.token,cTokenIdleSupply ? cTokenIdleSupply.toString() : null);
 
       if (cTokenIdleSupply){
-        let [exchangeRate,tokenDecimals] = await Promise.all([
-          this.genericContractCall(cTokenInfo.token,cTokenInfo.functions.exchangeRate.name,cTokenInfo.functions.exchangeRate.params),
-          this.getTokenDecimals(cTokenInfo.token)
+        let [tokenDecimals,exchangeRate] = await Promise.all([
+          this.getTokenDecimals(cTokenInfo.token),
+          this.genericContractCall(cTokenInfo.token,cTokenInfo.functions.exchangeRate.name,cTokenInfo.functions.exchangeRate.params)
         ]);
+
         if (exchangeRate){
           exchangeRate = this.fixTokenDecimals(exchangeRate,cTokenInfo.decimals);
           compoundAllocation = this.fixTokenDecimals(cTokenIdleSupply,tokenDecimals,exchangeRate);
@@ -2560,18 +2565,14 @@ class FunctionsUtil {
       const tokenAllocation = await this.getTokenAllocation(tokenConfig,false,false);
       const compoundAllocationPerc = tokenAllocation.protocolsAllocationsPerc[cTokenInfo.address.toLowerCase()];
 
-      // console.log('getCompDistribution 1',cTokenInfo.token,cTokenInfo.address,tokenAllocation.protocolsAllocationsPerc,compoundAllocationPerc ? compoundAllocationPerc.toString() : null);
-
       // Calculate distribution if compound allocation >= 0.1%
       if (compoundAllocationPerc && compoundAllocationPerc.gte(0.001)){
 
         // Get COMP distribution speed and Total Supply
-        const [compSpeed,cTokenTotalSupply] = await Promise.all([
-          this.genericContractCall('Comptroller','compSpeeds',[cTokenInfo.address]),
-          this.genericContractCall(cTokenInfo.token,'totalSupply')
+        const [cTokenTotalSupply,compSpeed] = await Promise.all([
+          this.genericContractCall(cTokenInfo.token,'totalSupply'),
+          this.genericContractCall('Comptroller','compSpeeds',[cTokenInfo.address])
         ]);
-
-        // console.log('getCompDistribution 2',cTokenInfo.token,compSpeed ? compSpeed.toString() : null,cTokenTotalSupply ? cTokenTotalSupply.toString() : null);
 
         if (compSpeed && cTokenTotalSupply){
 
@@ -2580,8 +2581,6 @@ class FunctionsUtil {
             cTokenIdleSupply = await this.genericContractCall(cTokenInfo.token,'balanceOf',[tokenConfig.idle.address]);
           }
 
-          // console.log('getCompDistribution 3',cTokenInfo.token,cTokenIdleSupply ? cTokenIdleSupply.toString() : null);
-
           if (cTokenIdleSupply){
 
             // Get COMP distribution for Idle in a Year
@@ -2589,8 +2588,6 @@ class FunctionsUtil {
 
             // Take 50% of distrubution for lenders side
             const compDistribution = this.BNify(compSpeed).times(this.BNify(blocksPerYear)).div(1e18);
-
-            // console.log('getCompDistribution 4',cTokenInfo.token,this.BNify(compSpeed).div(1e18).toString(),cTokenTotalSupply.toString(),cTokenIdleSupply.toString(),compDistribution.toString());
 
             this.setCachedData(cachedDataKey,compDistribution);
 
@@ -3056,7 +3053,7 @@ class FunctionsUtil {
 
           if (compAPR){
             protocolApr = protocolApr.plus(compAPR);
-            protocolApy = protocolApy.plus(compAPR); 
+            protocolApy = protocolApy.plus(compAPR);
           }
         }
 
@@ -3075,6 +3072,9 @@ class FunctionsUtil {
     if (tokenAllocation){
       tokenAprs.avgApr = this.getAvgApr(protocolsAprs,tokenAllocation.protocolsAllocations,tokenAllocation.totalAllocation);
       tokenAprs.avgApy = this.getAvgApr(protocolsApys,tokenAllocation.protocolsAllocations,tokenAllocation.totalAllocation);
+      // if (tokenConfig.token === 'DAI'){
+      //   console.log('getTokenAprs',tokenAllocation.totalAllocation.toFixed(6),tokenAllocation.totalAllocationWithUnlent.toFixed(6),tokenConfig.idle.token,tokenAprs.avgApr.toFixed(6),tokenAprs.avgApy.toFixed(6));
+      // }
     }
 
     return this.setCachedData(cachedDataKey,tokenAprs);
