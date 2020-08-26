@@ -40,7 +40,7 @@ class BatchMigration extends Component {
     selectedToken:null,
     batchCompleted:false,
     claimSucceeded:false,
-    migrationSucceeded:true,
+    migrationSucceeded:false,
     selectedTokenConfig:null,
     availableDestinationTokens:null,
   };
@@ -534,7 +534,7 @@ class BatchMigration extends Component {
                           >
                             <TxProgressBar web3={this.props.web3} waitText={`Claim estimated in`} endMessage={`Finalizing approve request...`} hash={this.state.processing.claim.txHash} />
                           </Flex>
-                        ) : this.state.migrationSucceeded ? (
+                        ) : this.state.claimSucceeded ? (
                           <Flex
                             alignItems={'center'}
                             flexDirection={'column'}
