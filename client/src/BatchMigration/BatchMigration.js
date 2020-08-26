@@ -79,7 +79,7 @@ class BatchMigration extends Component {
           this.functionsUtil.genericContractCall(this.state.selectedTokenConfig.migrationContract.name,'batchTotals',[batchIndex]),
           this.functionsUtil.genericContractCall(this.state.selectedTokenConfig.migrationContract.name,'batchDeposits',[this.props.account,batchIndex])
         ]);
-        if (batchTotal !== null){
+        if (batchTotal && batchTotal !== null){
           batchTotals[batchIndex] = this.functionsUtil.fixTokenDecimals(batchTotal,this.state.selectedTokenConfig.decimals);
         }
         if (batchDeposit !== null){
