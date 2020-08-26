@@ -40,7 +40,7 @@ const availableTokens = {
           oldContract:{
             abi:IdleTokenV3,
             token:'idleDAI',
-            name:'idleDAIYieldV2',
+            name:'idleDAIYieldV3',
             address:'0x78751b12da02728f467a44eac40f5cbc16bd7934',
           },
           oldProtocols:[
@@ -165,7 +165,7 @@ const availableTokens = {
           oldContract:{
             abi:IdleTokenV3,
             token:'idleUSDC',
-            name:'idleUSDCYieldV2',
+            name:'idleUSDCYieldV3',
             address:'0x12B98C621E8754Ae70d0fDbBC73D6208bC3e3cA6'
           },
           oldProtocols:[
@@ -279,7 +279,7 @@ const availableTokens = {
           oldContract:{
             abi:IdleTokenV3,
             token:'idleUSDT',
-            name:'idleUSDTYieldV2',
+            name:'idleUSDTYieldV3',
             address:'0x63D27B3DA94A9E871222CB0A32232674B02D2f2D'
           },
           migrationContract:{
@@ -365,7 +365,7 @@ const availableTokens = {
           oldContract:{
             abi:IdleTokenV3,
             token:'idleSUSD',
-            name:'idleSUSDYieldV2',
+            name:'idleSUSDYieldV3',
             address:'0xe79e177d2a5c7085027d7c64c8f271c81430fc9b',
           },
           migrationContract:{
@@ -422,7 +422,7 @@ const availableTokens = {
           oldContract:{
             abi:IdleTokenV3,
             token:'idleTUSD',
-            name:'idleTUSDYieldV2',
+            name:'idleTUSDYieldV3',
             address:'0x51C77689A9c2e8cCBEcD4eC9770a1fA5fA83EeF1',
           },
           migrationContract:{
@@ -481,7 +481,7 @@ const availableTokens = {
           oldContract:{
             abi:IdleTokenV3,
             token:'idleWBTC',
-            name:'idleWBTCYieldV2',
+            name:'idleWBTCYieldV3',
             address:'0xD6f279B7ccBCD70F8be439d25B9Df93AEb60eC55'
           },
           migrationContract:{
@@ -569,7 +569,7 @@ const availableTokens = {
           oldContract:{
             abi:IdleTokenV3,
             token:'idleDAI',
-            name:'idleDAISafeV2',
+            name:'idleDAISafeV3',
             address:'0x1846bdfDB6A0f5c473dEc610144513bd071999fB'
           },
           oldProtocols:[
@@ -693,7 +693,7 @@ const availableTokens = {
           oldContract:{
             abi:IdleTokenV3,
             token:'idleUSDC',
-            name:'idleUSDCSafeV2',
+            name:'idleUSDCSafeV3',
             address:'0xcDdB1Bceb7a1979C6caa0229820707429dd3Ec6C',
           },
           oldProtocols:[
@@ -806,7 +806,7 @@ const availableTokens = {
           oldContract:{
             abi:IdleTokenV3,
             token:'idleUSDT',
-            name:'idleUSDTSafeV2',
+            name:'idleUSDTSafeV3',
             address:'0x42740698959761baf1b06baa51efbd88cb1d862b'
           },
           migrationContract:{

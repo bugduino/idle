@@ -4,8 +4,8 @@ import RoundButton from '../RoundButton/RoundButton';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import DashboardCard from '../DashboardCard/DashboardCard';
 import TxProgressBar from '../TxProgressBar/TxProgressBar';
-import { Box, Flex, Text, Icon, Checkbox, Input } from "rimble-ui";
 import TransactionField from '../TransactionField/TransactionField';
+import { Box, Flex, Text, Icon, Checkbox, Input, Link } from "rimble-ui";
 import FastBalanceSelector from '../FastBalanceSelector/FastBalanceSelector';
 
 class Migrate extends Component {
@@ -667,6 +667,9 @@ class Migrate extends Component {
       return null;
     }
 
+    const batchMigrationInfo = this.functionsUtil.getGlobalConfig(['tools','batchMigration']);
+    const batchMigrationEnabled = batchMigrationInfo.enabled && typeof batchMigrationInfo.props.availableTokens[this.props.tokenConfig.idle.token] !== 'undefined';
+
     const SkipMigrationComponent = (props) => (
       <DashboardCard
         cardProps={{
@@ -868,6 +871,30 @@ class Migrate extends Component {
                   mt={3}
                   flexDirection={'column'}
                 >
+                  {
+                    (batchMigrationEnabled && !this.props.isMigrationTool) &&
+                      <Flex
+                        mb={3}
+                        width={1}
+                        alignItems={'center'}
+                        flexDirection={'row'}
+                        justifyContent={'center'}
+                      >
+                        <Link
+                          textAlign={'center'}
+                          hoverColor={'primary'}
+                          href={`/#/dashboard/tools/${batchMigrationInfo.route}/${this.props.tokenConfig.idle.token}`}
+                        >
+                          Gas fees too high? Save gas with our Batch Migrator!
+                        </Link>
+                        <Icon
+                          ml={1}
+                          size={'1em'}
+                          color={'primary'}
+                          name={'LocalGasStation'}
+                        />
+                      </Flex>
+                  }
                   <DashboardCard
                     cardProps={{
                       p:3,
