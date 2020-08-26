@@ -582,7 +582,7 @@ const globalConfigs = {
       route:'batch-migration',
       label:'Batch Migration',
       subComponent:BatchMigration,
-      desc:'Deposit your old Idle Tokens into a batch and wait until the whole batch is converted to the new idle token.',
+      desc:'Deposit your Idle Tokens V3 into a batch and wait until it is converted to the Idle Token V4.',
       props:{
         availableTokens:{
           idleDAIYield:{

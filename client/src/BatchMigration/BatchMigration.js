@@ -75,15 +75,18 @@ class BatchMigration extends Component {
 
     if (currBatchIndex !== null){
       for (let batchIndex = 0; batchIndex <= currBatchIndex ; batchIndex++){
-        let [batchDeposit,batchTotal] = await Promise.all([
-          this.functionsUtil.genericContractCall(this.state.selectedTokenConfig.migrationContract.name,'batchDeposits',[this.props.account,batchIndex]),
-          this.functionsUtil.genericContractCall(this.state.selectedTokenConfig.migrationContract.name,'batchTotals',[this.props.account,batchIndex]),
+        let [batchTotal,batchDeposit] = await Promise.all([
+          this.functionsUtil.genericContractCall(this.state.selectedTokenConfig.migrationContract.name,'batchTotals',[batchIndex]),
+          this.functionsUtil.genericContractCall(this.state.selectedTokenConfig.migrationContract.name,'batchDeposits',[this.props.account,batchIndex])
         ]);
+        if (batchTotal !== null){
+          batchTotals[batchIndex] = this.functionsUtil.fixTokenDecimals(batchTotal,this.state.selectedTokenConfig.decimals);
+        }
         if (batchDeposit !== null){
           batchDeposit = this.functionsUtil.fixTokenDecimals(batchDeposit,this.state.selectedTokenConfig.decimals);
           if (batchDeposit.gt(0)){
+
             batchDeposits[batchIndex] = batchDeposit;
-            batchTotals[batchIndex] = batchTotal;
             // Check claimable
             if (batchIndex < currBatchIndex){
               batchCompleted = true;
@@ -267,6 +270,9 @@ class BatchMigration extends Component {
       return null;
     }
 
+    const batchId = this.state.batchDeposits && Object.keys(this.state.batchDeposits).length>0 ? Object.keys(this.state.batchDeposits)[0] : null;
+    const batchDeposit = this.state.batchDeposits && Object.values(this.state.batchDeposits).length>0 ? Object.values(this.state.batchDeposits)[0] : null;
+
     return (
       <Flex
         width={1}
@@ -447,7 +453,7 @@ class BatchMigration extends Component {
                             }}
                           >
                             {
-                              (this.state.batchDeposits && Object.keys(this.state.batchDeposits).length>0) ? (
+                              batchId ? (
                                 <Flex
                                   alignItems={'center'}
                                   flexDirection={'column'}
@@ -471,7 +477,17 @@ class BatchMigration extends Component {
                                       ) : (
                                         <Text.span
                                           color={'cellText'}
-                                        >Your have successfully deposited {Object.values(this.state.batchDeposits)[0].toFixed(4)} {this.state.selectedToken}, please wait until the batch is completed to claim your tokens.</Text.span>
+                                        >
+                                          Your have successfully deposited {batchDeposit.toFixed(4)} {this.state.selectedToken}, please wait until the batch is completed to claim your tokens.
+                                          {
+                                            typeof this.state.batchTotals[batchId] !== 'undefined' && 
+                                            <Text.span
+                                              color={'cellText'}
+                                            >
+                                              <br />Batch pool: {this.state.batchTotals[batchId].toFixed(4)} {this.state.selectedToken}
+                                            </Text.span>
+                                          }
+                                        </Text.span>
                                       )
                                     }
                                   </Text>
