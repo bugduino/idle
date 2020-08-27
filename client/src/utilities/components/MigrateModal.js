@@ -103,7 +103,7 @@ class MigrateModal extends React.Component {
                 color={'mid-gray'}
                 textAlign={'center'}
               >
-                You can migrate you funds from Compound, Aave, Fulcrum, iEarn and Idle V2 with just one transaction and with no cost.
+                You can migrate your funds from Compound, Aave, Fulcrum, iEarn and Idle V2 with just one transaction and with no cost.
               </Text>
             </Flex>
             <Flex
