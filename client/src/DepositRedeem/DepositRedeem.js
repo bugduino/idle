@@ -1117,9 +1117,9 @@ class DepositRedeem extends Component {
                                 >
                                   {
                                     useMetaTx ?
-                                      `To ${this.functionsUtil.capitalize(this.state.action)} your ${this.props.selectedToken} into Idle using Meta-Transaction you need to enable our Smart-Contract first.`
+                                      `To ${this.functionsUtil.capitalize(this.state.action)} your ${this.props.selectedToken} into Idle using Meta-Transaction you need to approve our Smart-Contract first.`
                                     :
-                                      `To ${this.functionsUtil.capitalize(this.state.action)} your ${this.props.selectedToken} into Idle you need to enable our Smart-Contract first.`
+                                      `To ${this.functionsUtil.capitalize(this.state.action)} your ${this.props.selectedToken} into Idle you need to approve our Smart-Contract first.`
                                   }
                                 </Text>
                                 <RoundButton
@@ -1129,7 +1129,7 @@ class DepositRedeem extends Component {
                                   }}
                                   handleClick={this.approveToken.bind(this)}
                                 >
-                                  Enable
+                                  Approve
                                 </RoundButton>
                               </Flex>
                             )

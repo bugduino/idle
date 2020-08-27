@@ -43,6 +43,7 @@ class BatchMigration extends Component {
     claimSucceeded:false,
     migrationSucceeded:false,
     selectedTokenConfig:null,
+    migrationContractApproved:false,
     availableDestinationTokens:null,
   };
 
@@ -65,9 +66,16 @@ class BatchMigration extends Component {
   async checkBatchs(){
 
     const migrationContractInfo = this.state.selectedTokenConfig.migrationContract;
-    await this.props.initContract(migrationContractInfo.name,migrationContractInfo.address,migrationContractInfo.abi);
 
-    const currBatchIndex = await this.functionsUtil.genericContractCall(this.state.selectedTokenConfig.migrationContract.name,'currBatch');
+    await Promise.all([
+      this.props.initContract(migrationContractInfo.name,migrationContractInfo.address,migrationContractInfo.abi),
+      this.props.initContract(this.state.selectedTokenConfig.name,this.state.selectedTokenConfig.address,this.state.selectedTokenConfig.abi)
+    ]);
+
+    const [currBatchIndex,migrationContractApproved] = await Promise.all([
+      this.functionsUtil.genericContractCall(this.state.selectedTokenConfig.migrationContract.name,'currBatch'),
+      this.functionsUtil.checkTokenApproved(this.state.selectedTokenConfig.name,migrationContractInfo.address,this.props.account)
+    ]);
 
     const newState = {};
     const batchDeposits = {};
@@ -106,6 +114,7 @@ class BatchMigration extends Component {
     newState.canDeposit = !hasDeposited;
     newState.canClaim = batchCompleted || hasDeposited;
     newState.action = hasDeposited ? 'redeem' : 'deposit';
+    newState.migrationContractApproved = migrationContractApproved;
 
     this.setState(newState);
   }
@@ -307,97 +316,202 @@ class BatchMigration extends Component {
               availableTokens={this.props.toolProps.availableTokens}
             />
           </Box>
+          <DashboardCard
+            cardProps={{
+              p:3,
+              px:4,
+              mt:3,
+            }}
+          >
+            <Flex
+              alignItems={'center'}
+              flexDirection={'column'}
+            > 
+              {
+                /*
+                <Icon
+                  mb={2}
+                  size={'2.3em'}
+                  color={'cellText'}
+                  name={'HelpOutline'}
+                />
+                */
+              }
+              <Flex
+                width={1}
+                alignItems={'center'}
+                flexDirection={'row'}
+              >
+                <Icon
+                  size={'1.5em'}
+                  name={ this.state.migrationContractApproved ? 'CheckBox' : 'LooksOne'}
+                  color={ this.state.migrationContractApproved ? this.props.theme.colors.transactions.status.completed : 'cellText'}
+                />
+                <Text
+                  ml={2}
+                  fontSize={2}
+                  color={'cellText'}
+                  textAlign={'left'}
+                >
+                  Approve the batch migration contract
+                </Text>
+              </Flex>
+              <Flex
+                mt={2}
+                width={1}
+                alignItems={'center'}
+                flexDirection={'row'}
+              >
+                <Icon
+                  size={'1.5em'}
+                  name={ !this.state.canDeposit ? 'CheckBox' : 'LooksTwo'}
+                  color={ !this.state.canDeposit ? this.props.theme.colors.transactions.status.completed : 'cellText'}
+                />
+                <Text
+                  ml={2}
+                  fontSize={2}
+                  color={'cellText'}
+                  textAlign={'left'}
+                >
+                  Deposit your {this.state.selectedTokenConfig.token}
+                </Text>
+              </Flex>
+              <Flex
+                mt={2}
+                width={1}
+                alignItems={'center'}
+                flexDirection={'row'}
+              >
+                <Icon
+                  size={'1.5em'}
+                  name={ this.state.batchCompleted ? 'CheckBox' : 'Looks3'}
+                  color={ this.state.batchCompleted ? this.props.theme.colors.transactions.status.completed : 'cellText'}
+                />
+                <Text
+                  ml={2}
+                  fontSize={2}
+                  color={'cellText'}
+                  textAlign={'left'}
+                >
+                  Wait for the batch to be migrated
+                </Text>
+              </Flex>
+              <Flex
+                mt={2}
+                width={1}
+                alignItems={'center'}
+                flexDirection={'row'}
+              >
+                <Icon
+                  size={'1.5em'}
+                  name={'Looks4'}
+                  color={'cellText'}
+                />
+                <Text
+                  ml={2}
+                  fontSize={2}
+                  color={'cellText'}
+                  textAlign={'left'}
+                >
+                  Claim your {this.state.selectedToken}V4
+                </Text>
+              </Flex>
+            </Flex>
+          </DashboardCard>
           {
             this.state.selectedToken ? (
               <Box width={1}>
-                <Flex
-                  mt={2}
-                  flexDirection={'column'}
-                >
-                  <Text mb={2}>
-                    Choose the action:
-                  </Text>
-                  <Flex
-                    alignItems={'center'}
-                    flexDirection={'row'}
-                    justifyContent={'space-between'}
-                  >
-                    <DashboardCard
-                      cardProps={{
-                        p:3,
-                        width:0.48,
-                        onMouseDown:() => {
-                          return this.state.canDeposit ? this.setAction('deposit') : null;
-                        }
-                      }}
-                      isInteractive={true}
-                      isDisabled={ !this.state.canDeposit }
-                      isActive={ this.state.action === 'deposit' }
+                {
+                  this.state.migrationContractApproved && 
+                    <Flex
+                      mt={2}
+                      flexDirection={'column'}
                     >
+                      <Text mb={2}>
+                        Choose the action:
+                      </Text>
                       <Flex
-                        my={1}
                         alignItems={'center'}
                         flexDirection={'row'}
-                        justifyContent={'center'}
+                        justifyContent={'space-between'}
                       >
-                        <TransactionField
-                          transaction={{
-                            action:'deposit'
-                          }}
-                          fieldInfo={{
-                            name:'icon',
-                            props:{
-                              mr:3
+                        <DashboardCard
+                          cardProps={{
+                            p:3,
+                            width:0.48,
+                            onMouseDown:() => {
+                              return this.state.canDeposit ? this.setAction('deposit') : null;
                             }
                           }}
-                        />
-                        <Text
-                          fontSize={3}
-                          fontWeight={3}
+                          isInteractive={true}
+                          isDisabled={ !this.state.canDeposit }
+                          isActive={ this.state.action === 'deposit' }
                         >
-                          Deposit
-                        </Text>
-                      </Flex>
-                    </DashboardCard>
-                    <DashboardCard
-                      cardProps={{
-                        p:3,
-                        width:0.48,
-                        onMouseDown:() => {
-                          return this.state.canClaim ? this.setAction('redeem') : null;
-                        }
-                      }}
-                      isInteractive={true}
-                      isDisabled={ !this.state.canClaim }
-                      isActive={ this.state.action === 'redeem' }
-                    >
-                      <Flex
-                        my={1}
-                        alignItems={'center'}
-                        flexDirection={'row'}
-                        justifyContent={'center'}
-                      >
-                        <TransactionField
-                          transaction={{
-                            action:'redeem'
-                          }}
-                          fieldInfo={{
-                            name:'icon',
-                            props:{
-                              mr:3
+                          <Flex
+                            my={1}
+                            alignItems={'center'}
+                            flexDirection={'row'}
+                            justifyContent={'center'}
+                          >
+                            <TransactionField
+                              transaction={{
+                                action:'deposit'
+                              }}
+                              fieldInfo={{
+                                name:'icon',
+                                props:{
+                                  mr:3
+                                }
+                              }}
+                            />
+                            <Text
+                              fontSize={3}
+                              fontWeight={3}
+                            >
+                              Deposit
+                            </Text>
+                          </Flex>
+                        </DashboardCard>
+                        <DashboardCard
+                          cardProps={{
+                            p:3,
+                            width:0.48,
+                            onMouseDown:() => {
+                              return this.state.canClaim ? this.setAction('redeem') : null;
                             }
                           }}
-                        />
-                        <Text
-                          fontSize={3}
-                          fontWeight={3}
+                          isInteractive={true}
+                          isDisabled={ !this.state.canClaim }
+                          isActive={ this.state.action === 'redeem' }
                         >
-                          Claim
-                        </Text>
+                          <Flex
+                            my={1}
+                            alignItems={'center'}
+                            flexDirection={'row'}
+                            justifyContent={'center'}
+                          >
+                            <TransactionField
+                              transaction={{
+                                action:'redeem'
+                              }}
+                              fieldInfo={{
+                                name:'icon',
+                                props:{
+                                  mr:3
+                                }
+                              }}
+                            />
+                            <Text
+                              fontSize={3}
+                              fontWeight={3}
+                            >
+                              Claim
+                            </Text>
+                          </Flex>
+                        </DashboardCard>
                       </Flex>
-                    </DashboardCard>
-                  </Flex>
-                </Flex>
+                    </Flex>
+                }
                 {
                   this.state.action === 'deposit' ? (
                     <Migrate
@@ -454,7 +568,7 @@ class BatchMigration extends Component {
                           <DashboardCard
                             cardProps={{
                               p:3,
-                              mt:3
+                              my:3
                             }}
                           >
                             {
@@ -483,7 +597,7 @@ class BatchMigration extends Component {
                                         <Text.span
                                           color={'cellText'}
                                         >
-                                          Your have successfully deposited {batchDeposit.toFixed(4)} {this.state.selectedTokenConfig.token}, please wait until the batch is completed to claim your tokens.
+                                          Your have successfully deposited {batchDeposit.toFixed(4)} {this.state.selectedTokenConfig.token}, please wait until the batch is migrated to claim your tokens.
                                           {
                                             typeof this.state.batchTotals[batchId] !== 'undefined' && 
                                             <Text.span
@@ -545,7 +659,7 @@ class BatchMigration extends Component {
                     <DashboardCard
                       cardProps={{
                         p:3,
-                        mt:3
+                        my:3
                       }}
                     >
                       {
@@ -629,7 +743,7 @@ class BatchMigration extends Component {
                               <Text.span
                                 color={'cellText'}
                               >
-                                Your have successfully deposited {batchDeposit.toFixed(4)} {this.state.selectedTokenConfig.token}, please wait until the batch is completed to claim your V4 tokens.
+                                Your have successfully deposited {batchDeposit.toFixed(4)} {this.state.selectedTokenConfig.token}, please wait until the batch is migrated to claim your V4 tokens.
                                 {
                                   typeof this.state.batchTotals[batchId] !== 'undefined' && 
                                   <Text.span

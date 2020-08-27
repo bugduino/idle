@@ -292,7 +292,6 @@ class Migrate extends Component {
       const migrationContract = this.functionsUtil.getContractByName(migrationContractName);
       if (migrationContract){
         const oldContractName = this.props.tokenConfig.migration.oldContract.name;
-        // console.log(this.props.tokenConfig.migration.oldContract,oldContractName,migrationContractInfo.address,this.props.account)
         const tokenApproved = await this.functionsUtil.checkTokenApproved(oldContractName,migrationContractInfo.address,this.props.account);
         return tokenApproved;
       }
@@ -1029,7 +1028,7 @@ class Migrate extends Component {
                               color={'cellText'}
                               textAlign={'center'}
                             >
-                              To migrate your { !this.props.isMigrationTool ? 'old' : '' } {this.state.oldTokenName} you need to enable our Smart-Contract first.
+                              To migrate your { !this.props.isMigrationTool ? 'old' : '' } {this.state.oldTokenName} you need to approve our Smart-Contract first.
                             </Text>
                             <RoundButton
                               buttonProps={{
@@ -1038,7 +1037,7 @@ class Migrate extends Component {
                               }}
                               handleClick={this.approveMigration.bind(this)}
                             >
-                              Enable
+                              Approve
                             </RoundButton>
                           </Flex>
                         )
