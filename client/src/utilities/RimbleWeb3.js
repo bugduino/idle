@@ -1226,6 +1226,10 @@ class RimbleTransaction extends React.Component {
 
     try {
 
+      if (!value){
+        value = this.functionsUtil.BNify(0);
+      }
+
       this.functionsUtil.customLog('contractMethodSendWrapper',contractName,contract._address,account,contractMethod,params,(value ? { from: account, value } : { from: account }));
 
       // estimate gas price

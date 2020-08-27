@@ -2029,10 +2029,10 @@ class FunctionsUtil {
           const govTokenConfig = govTokens[token];
           output = await this.getGovTokenUserBalance(govTokenConfig,account,govTokenAvailableTokens);
         } else {
-          const [idleTokenPrice1,idleTokenBalance2,govTokensBalance] = await Promise.all([
+          let [idleTokenPrice1,idleTokenBalance2,govTokensBalance] = await Promise.all([
             this.genericContractCall(tokenConfig.idle.token, 'tokenPrice'),
             this.loadAssetField('idleTokenBalance',token,tokenConfig,account),
-            this.getGovTokensUserTotalBalance(account,govTokenAvailableTokens,'DAI'),
+            this.getGovTokensUserTotalBalance(account,govTokenAvailableTokens,token),
           ]);
 
           if (idleTokenBalance2 && idleTokenPrice1){
