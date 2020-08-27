@@ -325,7 +325,7 @@ class AssetPage extends Component {
                 {
                   title: this.props.isMobile ? '' : 'HASH',
                   props:{
-                    width:[0.15,0.22]
+                    width:[0.15,0.24]
                   },
                   fields:[
                     {
@@ -355,7 +355,7 @@ class AssetPage extends Component {
                 {
                   title:'DATE',
                   props:{
-                    width:0.32,
+                    width:[0.32,0.23],
                   },
                   fields:[
                     {
@@ -366,7 +366,7 @@ class AssetPage extends Component {
                 {
                   title:'STATUS',
                   props:{
-                    width:0.18,
+                    width:[0.18,0.22],
                     justifyContent:['center','flex-start']
                   },
                   fields:[
@@ -385,7 +385,7 @@ class AssetPage extends Component {
                 {
                   title:'AMOUNT',
                   props:{
-                    width:0.21,
+                    width:0.19,
                   },
                   fields:[
                     {
@@ -396,7 +396,7 @@ class AssetPage extends Component {
                 {
                   title:'ASSET',
                   props:{
-                    width:0.15,
+                    width:[0.15,0.20],
                     justifyContent:['center','flex-start']
                   },
                   fields:[

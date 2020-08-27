@@ -1012,7 +1012,7 @@ class StrategyPage extends Component {
                         {
                           title: this.props.isMobile ? '' : 'HASH',
                           props:{
-                            width:[0.15,0.22]
+                            width:[0.15,0.24]
                           },
                           fields:[
                             {
@@ -1031,7 +1031,7 @@ class StrategyPage extends Component {
                           title:'ACTION',
                           mobile:false,
                           props:{
-                            width:[0.15,0.15],
+                            width:0.15,
                           },
                           fields:[
                             {
@@ -1042,7 +1042,7 @@ class StrategyPage extends Component {
                         {
                           title:'DATE',
                           props:{
-                            width:[0.32,0.18],
+                            width:[0.32,0.23],
                           },
                           fields:[
                             {
@@ -1053,7 +1053,7 @@ class StrategyPage extends Component {
                         {
                           title:'STATUS',
                           props:{
-                            width:[0.18,0.18],
+                            width:[0.18,0.22],
                             justifyContent:['center','flex-start']
                           },
                           fields:[
@@ -1072,7 +1072,7 @@ class StrategyPage extends Component {
                         {
                           title:'AMOUNT',
                           props:{
-                            width:[0.21,0.14],
+                            width:0.19,
                           },
                           fields:[
                             {
@@ -1083,7 +1083,7 @@ class StrategyPage extends Component {
                         {
                           title:'ASSET',
                           props:{
-                            width:[0.15,0.13],
+                            width:[0.15,0.20],
                             justifyContent:['center','flex-start']
                           },
                           fields:[
