@@ -32,7 +32,6 @@ const availableTokens = {
           abi:IdleTokenV4,
           token:'idleDAIYield',
           address:'0x3fe7940616e5bc47b0775a0dccf6237893353bb4',
-          // address:'0x78751b12da02728f467a44eac40f5cbc16bd7934'
         },
         migration:{
           enabled:true,

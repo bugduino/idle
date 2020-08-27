@@ -590,13 +590,53 @@ const globalConfigs = {
             abi:IdleTokenV3,
             strategy:'best',
             baseToken:'DAI',
-            name:'idleDAIYieldV2',
-            token:'idleDAIYieldV2',
+            name:'idleDAIYieldV3',
+            token:'idleDAIYieldV3',
             address:'0x78751b12da02728f467a44eac40f5cbc16bd7934',
             migrationContract:{
               abi:IdleBatchConverter,
               name:'IdleBatchConverterDAI',
-              address:'0xe969bd6c4a9708f7536f47a2a73bb84ab3eff6fd',
+              address:'0xe0BfD08dA4DAf8f8BA11d1c3802009E75f963497',
+              functions:[
+                {
+                  label:'Deposit',
+                  name:'deposit'
+                },
+              ]
+            },
+          },
+          idleUSDCYield:{
+            decimals:18,
+            abi:IdleTokenV3,
+            strategy:'best',
+            baseToken:'USDC',
+            name:'idleUSDCYieldV3',
+            token:'idleUSDCYieldV3',
+            address:'0x12B98C621E8754Ae70d0fDbBC73D6208bC3e3cA6',
+            migrationContract:{
+              abi:IdleBatchConverter,
+              name:'IdleBatchConverterUSDC',
+              address:'0x86c8b56d124c2a8e7ea8a9e6a7f8ed99dde5cca8',
+              functions:[
+                {
+                  label:'Deposit',
+                  name:'deposit'
+                },
+              ]
+            },
+          },
+          idleUSDTYield:{
+            decimals:18,
+            abi:IdleTokenV3,
+            strategy:'best',
+            baseToken:'USDT',
+            name:'idleUSDTYieldV3',
+            token:'idleUSDTYieldV3',
+            address:'0x63D27B3DA94A9E871222CB0A32232674B02D2f2D',
+            migrationContract:{
+              abi:IdleBatchConverter,
+              name:'IdleBatchConverterUSDT',
+              address:'0xee5c50c7c49dec47dde2f9b0233b9e14a8f00cf2',
               functions:[
                 {
                   label:'Deposit',

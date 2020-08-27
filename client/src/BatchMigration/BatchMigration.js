@@ -28,6 +28,7 @@ class BatchMigration extends Component {
   state = {
     canClaim:false,
     batchTotals:{},
+    canDeposit:true,
     action:'deposit',
     batchDeposits:{},
     tokenConfig:null,
@@ -102,8 +103,9 @@ class BatchMigration extends Component {
 
     newState.batchTotals = batchTotals;
     newState.batchCompleted = batchCompleted;
+    newState.canDeposit = !hasDeposited;
     newState.canClaim = batchCompleted || hasDeposited;
-    newState.action = batchCompleted ? 'redeem' : 'deposit';
+    newState.action = hasDeposited ? 'redeem' : 'deposit';
 
     this.setState(newState);
   }
@@ -261,6 +263,8 @@ class BatchMigration extends Component {
   migrationCallback = () => {
     this.setState({
       migrationSucceeded:true
+    },() => {
+      this.checkBatchs();
     });
   }
 
@@ -323,10 +327,11 @@ class BatchMigration extends Component {
                         p:3,
                         width:0.48,
                         onMouseDown:() => {
-                          this.setAction('deposit');
+                          return this.state.canDeposit ? this.setAction('deposit') : null;
                         }
                       }}
                       isInteractive={true}
+                      isDisabled={ !this.state.canDeposit }
                       isActive={ this.state.action === 'deposit' }
                     >
                       <Flex
@@ -407,7 +412,7 @@ class BatchMigration extends Component {
                       selectedToken={this.state.selectedToken}
                       migrationCallback={this.migrationCallback}
                       selectedStrategy={this.props.selectedStrategy}
-                      migrationText={`Deposit your ${this.state.selectedToken} and wait until it is converted to the new ${this.state.tokenConfig.idle.token}.`}
+                      migrationText={`Deposit your ${this.state.selectedTokenConfig.token} and wait until it is converted to the new ${this.state.tokenConfig.idle.token}.`}
                     >
                       {
                         !this.props.account ? (
@@ -473,18 +478,18 @@ class BatchMigration extends Component {
                                       this.state.batchCompleted ? (
                                         <Text.span
                                           color={'cellText'}
-                                        >The batch is completed, click on the "Claim" button to withdraw your tokens.</Text.span>
+                                        >The batch has been migrated, click on the "Claim" button to withdraw your tokens.</Text.span>
                                       ) : (
                                         <Text.span
                                           color={'cellText'}
                                         >
-                                          Your have successfully deposited {batchDeposit.toFixed(4)} {this.state.selectedToken}, please wait until the batch is completed to claim your tokens.
+                                          Your have successfully deposited {batchDeposit.toFixed(4)} {this.state.selectedTokenConfig.token}, please wait until the batch is completed to claim your tokens.
                                           {
                                             typeof this.state.batchTotals[batchId] !== 'undefined' && 
                                             <Text.span
                                               color={'cellText'}
                                             >
-                                              <br />Batch pool: {this.state.batchTotals[batchId].toFixed(4)} {this.state.selectedToken}
+                                              <br />Batch pool: {this.state.batchTotals[batchId].toFixed(4)} {this.state.selectedTokenConfig.token}
                                             </Text.span>
                                           }
                                         </Text.span>
@@ -508,7 +513,7 @@ class BatchMigration extends Component {
                                     color={'cellText'}
                                     textAlign={'center'}
                                   >
-                                    Your have successfully deposited your {this.state.selectedToken} into the batch!
+                                    Your have successfully deposited your {this.state.selectedTokenConfig.token} into the batch!
                                   </Text>
                                 </Flex>
                               ) : (
@@ -527,7 +532,7 @@ class BatchMigration extends Component {
                                     color={'cellText'}
                                     textAlign={'center'}
                                   >
-                                    You don't have any {this.state.selectedToken} in your wallet.
+                                    You don't have any {this.state.selectedTokenConfig.token} in your wallet.
                                   </Text>
                                 </Flex>
                               )
@@ -566,7 +571,7 @@ class BatchMigration extends Component {
                               color={'cellText'}
                               textAlign={'center'}
                             >
-                              Your have successfully withdrawn your {this.state.selectedToken}!
+                              Your have successfully withdrawn your {this.state.selectedToken} V4!
                             </Text>
                           </Flex>
                         ) : this.state.batchCompleted ? (
@@ -585,7 +590,7 @@ class BatchMigration extends Component {
                               color={'cellText'}
                               textAlign={'center'}
                             >
-                              The batch is completed!<br />You can now claim your {this.state.tokenConfig.idle.token}.
+                              The batch has been migrated!<br />You can now claim your {this.state.tokenConfig.idle.token} V4.
                             </Text>
                             <Flex
                               width={1}
@@ -621,7 +626,19 @@ class BatchMigration extends Component {
                               color={'cellText'}
                               textAlign={'center'}
                             >
-                              Please wait until the batch is completed to claim your tokens.
+                              <Text.span
+                                color={'cellText'}
+                              >
+                                Your have successfully deposited {batchDeposit.toFixed(4)} {this.state.selectedTokenConfig.token}, please wait until the batch is completed to claim your V4 tokens.
+                                {
+                                  typeof this.state.batchTotals[batchId] !== 'undefined' && 
+                                  <Text.span
+                                    color={'cellText'}
+                                  >
+                                    <br />Batch pool: {this.state.batchTotals[batchId].toFixed(4)} {this.state.selectedTokenConfig.token}
+                                  </Text.span>
+                                }
+                              </Text.span>
                             </Text>
                           </Flex>
                         )

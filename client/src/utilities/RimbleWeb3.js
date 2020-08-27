@@ -1370,6 +1370,8 @@ class RimbleTransaction extends React.Component {
         .on("receipt", receiptCallback)
         .on("confirmation", confirmationCallback)
         .on("error", error => {
+
+          // console.log('Tx error',error);
           
           const isDeniedTx = error && error.message && typeof error.message.includes === 'function' ? error.message.includes('User denied transaction signature') : false;
           
@@ -1378,7 +1380,6 @@ class RimbleTransaction extends React.Component {
           transaction.recentEvent = "error";
           this.updateTransaction(transaction);
 
-          // console.log('Tx error',error);
 
           // Show ToastProvider
           if (!isDeniedTx){
@@ -1407,6 +1408,8 @@ class RimbleTransaction extends React.Component {
       
       return true;
     } catch (error) {
+
+      // console.log('Tx catch error',error);
 
       transaction.status = "error";
       this.updateTransaction(transaction);
@@ -1464,6 +1467,8 @@ class RimbleTransaction extends React.Component {
     transaction.lastUpdated = Date.now();
     transactions[`tx${updatedTransaction.created}`] = transaction;
     this.setState({ transactions });
+
+    // console.log('updateTransaction',transactions);
 
     // Save transactions in localStorage only if pending or succeeded
     if (['pending','success','confirmed'].includes(transaction.status.toLowerCase())){

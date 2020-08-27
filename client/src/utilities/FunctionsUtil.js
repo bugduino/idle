@@ -850,14 +850,16 @@ class FunctionsUtil {
 
         if (txPending && methodIsAllowed && tx.params.length){
           // console.log('processStoredTxs',tx.method,tx.status,tx.params);
+          const isMigrationTx = allowedMethods[tx.method] === 'Migrate';
+          const decimals = isMigrationTx ? 18 : tokenConfig.decimals;
           etherscanTxs[`t${tx.created}`] = {
             status:'Pending',
             token:selectedToken,
-            tokenSymbol:selectedToken,
+            tokenSymbol:isMigrationTx ? tokenConfig.idle.token : selectedToken,
             action:allowedMethods[tx.method],
             timeStamp:parseInt(tx.created/1000),
             hash:txHash ? tx.transactionHash : null,
-            value: this.fixTokenDecimals(tx.params[0],tokenConfig.decimals).toString()
+            value: this.fixTokenDecimals(tx.params[0],decimals).toString()
           };
           return false;
         }
