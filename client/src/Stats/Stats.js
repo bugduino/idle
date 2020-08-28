@@ -182,7 +182,7 @@ class Stats extends Component {
     newState.minDate = newState.minStartTime._d;
     newState.maxDate = newState.maxEndDate._d;
 
-    // console.log('loadParams',this.state.idleVersion,newState.idleVersion);
+    // console.log('loadParams',newState);
     // debugger;
 
     if (newState !== this.state){
@@ -202,6 +202,14 @@ class Stats extends Component {
     }
 
     endTimestampObj = moment(endTimestampObj.format('YYYY-MM-DD 23:59'),'YYYY-MM-DD HH:mm');
+
+    if (startTimestampObj.isBefore(this.state.minStartTime)){
+      startTimestampObj = this.state.minStartTime;
+    }
+
+    if (endTimestampObj.isAfter(this.state.maxEndDate)){
+      endTimestampObj = this.state.maxEndDate;
+    }
 
     const startTimestamp = parseInt(startTimestampObj._d.getTime()/1000);
     const endTimestamp = parseInt(endTimestampObj._d.getTime()/1000);
