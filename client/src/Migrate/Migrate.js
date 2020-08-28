@@ -442,8 +442,10 @@ class Migrate extends Component {
           const eventData = {
             eventCategory: 'Migrate',
             eventAction: 'approve',
-            eventLabel: tx.status
+            eventLabel: tx ? tx.status : null
           };
+
+          const txSucceeded = tx && tx.status === 'success';
 
           // console.log('callbackApprove',tx,error);
 
@@ -457,7 +459,7 @@ class Migrate extends Component {
           }
 
           this.setState((prevState) => ({
-            migrationContractApproved: (tx.status === 'success'), // True
+            migrationContractApproved: txSucceeded, // True
             processing: {
               ...prevState.processing,
               approve:{
@@ -466,6 +468,10 @@ class Migrate extends Component {
               }
             }
           }));
+
+          if (typeof this.props.callbackApprove === 'function' && txSucceeded){
+            this.props.callbackApprove(tx);
+          }
 
           this.checkMigration();
         };

@@ -525,6 +525,7 @@ class BatchMigration extends Component {
                       tokenConfig={this.state.tokenConfig}
                       selectedToken={this.state.selectedToken}
                       migrationCallback={this.migrationCallback}
+                      callbackApprove={this.checkBatchs.bind(this)}
                       selectedStrategy={this.props.selectedStrategy}
                       migrationText={`Deposit your ${this.state.selectedTokenConfig.token} and wait until it is converted to the new ${this.state.tokenConfig.idle.token}.`}
                     >

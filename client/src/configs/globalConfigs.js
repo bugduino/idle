@@ -577,7 +577,7 @@ const globalConfigs = {
   },
   tools:{
     batchMigration:{
-      enabled:false,
+      enabled:true,
       icon:'FileDownload',
       route:'batch-migration',
       label:'Batch Migration',
@@ -637,6 +637,46 @@ const globalConfigs = {
               abi:IdleBatchConverter,
               name:'IdleBatchConverterUSDT',
               address:'0xee5c50c7c49dec47dde2f9b0233b9e14a8f00cf2',
+              functions:[
+                {
+                  label:'Deposit',
+                  name:'deposit'
+                },
+              ]
+            },
+          },
+          idleSUSDYield:{
+            decimals:18,
+            abi:IdleTokenV3,
+            strategy:'best',
+            baseToken:'SUSD',
+            name:'idleSUSDYieldV3',
+            token:'idleSUSDYieldV3',
+            address:'0xe79e177d2a5c7085027d7c64c8f271c81430fc9b',
+            migrationContract:{
+              abi:IdleBatchConverter,
+              name:'IdleBatchConverterSUSD',
+              address:'0xE2eE519399a49f1A2004a25DA61e82867A69b9b1',
+              functions:[
+                {
+                  label:'Deposit',
+                  name:'deposit'
+                },
+              ]
+            },
+          },
+          idleTUSDYield:{
+            decimals:18,
+            abi:IdleTokenV3,
+            strategy:'best',
+            baseToken:'TUSD',
+            name:'idleTUSDYieldV3',
+            token:'idleTUSDYieldV3',
+            address:'0x51C77689A9c2e8cCBEcD4eC9770a1fA5fA83EeF1',
+            migrationContract:{
+              abi:IdleBatchConverter,
+              name:'IdleBatchConverterTUSD',
+              address:'0x174a273f0ea28e55b6dd13259aa43d262b863a86',
               functions:[
                 {
                   label:'Deposit',
