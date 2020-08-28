@@ -2997,13 +2997,24 @@ class FunctionsUtil {
 
     const apiInfo = globalConfigs.stats.scores;
     const endpoint = `${apiInfo.endpoint}${tokenConfig.address}?isRisk=${isRisk}`;
-    const tokenData = await this.makeCachedRequest(endpoint,apiInfo.TTL,true);
+    let tokenData = await this.makeCachedRequest(endpoint,apiInfo.TTL,true);
 
     if (tokenData){
-      const tokenScore = this.BNify(tokenData[0].idleScore);
+      let tokenScore = this.BNify(tokenData[0].idleScore);
       if (tokenScore && tokenScore.gt(0)){
         // Set cached data
         return this.setCachedData(cachedDataKey,tokenScore);
+      // Take latest historical valid score
+      } else {
+        const timestamp = parseInt(new Date().getTime()/1000);
+        const startTimestamp = parseInt(timestamp)-(60*60*24);
+        tokenData = await this.getTokenApiData(tokenConfig.address,isRisk,startTimestamp,null,true,null,'DESC');
+
+        const filteredTokenData = tokenData.filter( d => (this.BNify(d.idleScore).gt(0)) );
+        if (filteredTokenData.length){
+          tokenScore = this.BNify(filteredTokenData[0].idleScore);
+          return this.setCachedData(cachedDataKey,tokenScore);
+        }
       }
     }
 
