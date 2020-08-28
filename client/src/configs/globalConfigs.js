@@ -243,6 +243,7 @@ const globalConfigs = {
       endpoint:'https://api.idle.finance/scores/'
     },
     versions:{
+      /*
       v2:{
         label:'Idle V2',
         startTimestamp:null,
@@ -252,6 +253,7 @@ const globalConfigs = {
         showPerformanceTooltip:false,
         enabledTokens:['DAI','USDC'],
       },
+      */
       v3:{
         label:'Idle V3',
         additionalProtocols:[],
