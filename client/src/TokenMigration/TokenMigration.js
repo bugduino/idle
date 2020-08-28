@@ -43,6 +43,10 @@ class TokenMigration extends Component {
       }
     });
 
+    if (selectedFromToken && selectedFromToken !== this.props.urlParams.param2){
+      this.changeFromToken(selectedFromToken);
+    }
+
     this.selectFromToken(selectedFromToken);
   }
 
@@ -53,6 +57,11 @@ class TokenMigration extends Component {
     if (tokenFromChanged){
       await this.loadTokens();
     }
+  }
+
+  changeFromToken = (selectedToken) => {
+    const convertTool = this.functionsUtil.getGlobalConfig(['tools','tokenMigration']);
+    this.props.goToSection(`tools/${convertTool.route}/${selectedToken}`);
   }
 
   selectFromToken = async (selectedFromToken) => {
@@ -171,7 +180,7 @@ class TokenMigration extends Component {
               id={'token-from'}
               showBalance={true}
               isSearchable={true}
-              onChange={this.selectFromToken}
+              onChange={this.changeFromToken}
               selectedToken={this.state.selectedFromToken}
               availableTokens={this.props.toolProps.availableTokens}
             />
