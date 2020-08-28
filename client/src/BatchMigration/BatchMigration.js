@@ -310,7 +310,7 @@ class BatchMigration extends Component {
               {...this.props}
               id={'token-from'}
               showBalance={true}
-              isSearchable={true}
+              isSearchable={false}
               onChange={this.selectFromToken}
               selectedToken={this.state.selectedToken}
               availableTokens={this.props.toolProps.availableTokens}
