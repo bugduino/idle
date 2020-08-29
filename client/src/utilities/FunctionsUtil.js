@@ -1218,11 +1218,12 @@ class FunctionsUtil {
   checkUrlOrigin = () => {
     return window.location.origin.toLowerCase().includes(globalConfigs.baseURL.toLowerCase());
   }
-  sendGoogleAnalyticsEvent = async (eventData) => {
+  sendGoogleAnalyticsEvent = async (eventData,callback=null) => {
 
     const googleEventsInfo = globalConfigs.analytics.google.events;
     const debugEnabled = googleEventsInfo.debugEnabled;
     const originOk = window.location.origin.toLowerCase().includes(globalConfigs.baseURL.toLowerCase());
+    
     if (googleEventsInfo.enabled && window.ga && ( debugEnabled || originOk)){
 
       // Check if testnet postfix required
@@ -1247,7 +1248,16 @@ class FunctionsUtil {
 
         window.ga('send', 'event', eventData);
       }));
+
+      if (typeof callback === 'function'){
+        callback();
+      }
     }
+
+    if (typeof callback === 'function'){
+      callback();
+    }
+
     return false;
   }
   createContract = async (name, address, abi) => {

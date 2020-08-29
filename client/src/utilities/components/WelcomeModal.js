@@ -102,23 +102,29 @@ class WelcomeModal extends React.Component {
 
   closeModal = async () => {
 
+    const closeModal = () => {
+      this.props.closeModal();
+    };
+
     try{
       // Prevent sending email
       this.sendUserInfo(false);
 
       // Send Google Analytics event
       if (globalConfigs.analytics.google.events.enabled){
-        await this.functionsUtil.sendGoogleAnalyticsEvent({
+        this.functionsUtil.sendGoogleAnalyticsEvent({
           eventCategory: 'UI',
           eventAction: 'continue_without_email',
           eventLabel: 'WelcomeModal'
-        });
-        this.props.closeModal();
+        },closeModal);
+
+        // Call callback after 1 second if stuck
+        setTimeout(closeModal,1000);
       } else {
-        this.props.closeModal();
+        closeModal();
       }
     } catch (err) {
-      this.props.closeModal();
+      closeModal();
     }
   }
 
