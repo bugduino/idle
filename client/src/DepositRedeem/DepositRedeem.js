@@ -25,6 +25,7 @@ class DepositRedeem extends Component {
     action:'deposit',
     directMint:false,
     activeModal:null,
+    unlentBalance:null,
     tokenApproved:false,
     contractPaused:false,
     buttonDisabled:false,
@@ -260,13 +261,16 @@ class DepositRedeem extends Component {
     const [
       tokenApproved,
       contractPaused,
+      unlentBalance,
       {migrationEnabled}
     ] = await Promise.all([
       this.checkTokenApproved(),
       this.functionsUtil.checkContractPaused(),
+      this.functionsUtil.getUnlentBalance(this.props.tokenConfig),
       this.functionsUtil.checkMigration(this.props.tokenConfig,this.props.account)
     ]);
 
+    newState.unlentBalance = unlentBalance;
     newState.tokenApproved = tokenApproved;
     newState.contractPaused = contractPaused;
     newState.migrationEnabled = migrationEnabled;
@@ -815,7 +819,7 @@ class DepositRedeem extends Component {
                     flexDirection={'column'}
                   >
                     <Icon
-                      size={'2.3em'}
+                      size={'1.8em'}
                       name={'Input'}
                       color={'cellText'}
                     />
@@ -951,7 +955,7 @@ class DepositRedeem extends Component {
                               justifyContent={'center'}
                             >
                               <Icon
-                                size={'2.3em'}
+                                size={'1.8em'}
                                 name={'Warning'}
                                 color={'cellText'}
                               />
@@ -972,7 +976,7 @@ class DepositRedeem extends Component {
                               justifyContent={'center'}
                             >
                               <Icon
-                                size={'2.3em'}
+                                size={'1.8em'}
                                 name={'Warning'}
                                 color={'cellText'}
                               />
@@ -1009,6 +1013,51 @@ class DepositRedeem extends Component {
                       </DashboardCard>
                     }
                     {
+                      (this.state.action === 'redeem' && this.state.unlentBalance) &&
+                        <DashboardCard
+                          cardProps={{
+                            py:3,
+                            px:2,
+                            my:3,
+                            display:'flex',
+                            alignItems:'center',
+                            flexDirection:'column',
+                            justifyContent:'center',
+                          }}
+                        >
+                          <Flex
+                            width={1}
+                            alignItems={'center'}
+                            flexDirection={'column'}
+                            justifyContent={'center'}
+                          >
+                            <Icon
+                              size={'1.8em'}
+                              name={'FlashOn'}
+                              color={'cellText'}
+                            />
+                            <Text
+                              mt={1}
+                              px={2}
+                              fontSize={1}
+                              color={'cellText'}
+                              textAlign={'center'}
+                            >
+                              Available balance for Flash Redeem:
+                            </Text>
+                            <Text
+                              fontSize={1}
+                              fontWeight={3}
+                              color={'dark-gray'}
+                              textAlign={'center'}
+                              hoverColor={'copyColor'}
+                            >
+                              {this.state.unlentBalance.toFixed(4)} {this.props.selectedToken}
+                            </Text>
+                          </Flex>
+                        </DashboardCard>
+                    }
+                    {
                       (this.state.action === 'redeem' && redeemGovTokenEnabled) && (
                         <DashboardCard
                           cardProps={{
@@ -1028,7 +1077,7 @@ class DepositRedeem extends Component {
                             justifyContent={'center'}
                           >
                             <Icon
-                              size={'2.3em'}
+                              size={'1.8em'}
                               name={'Info'}
                               color={'cellText'}
                             />
@@ -1065,7 +1114,7 @@ class DepositRedeem extends Component {
                             flexDirection={'column'}
                           >
                             <Icon
-                              size={'2.3em'}
+                              size={'1.8em'}
                               name={'Warning'}
                               color={'cellText'}
                             />
@@ -1105,7 +1154,7 @@ class DepositRedeem extends Component {
                                 flexDirection={'column'}
                               >
                                 <Icon
-                                  size={'2.3em'}
+                                  size={'1.8em'}
                                   name={'LockOpen'}
                                   color={'cellText'}
                                 />
@@ -1161,7 +1210,7 @@ class DepositRedeem extends Component {
                                     justifyContent={'center'}
                                   >
                                     <Icon
-                                      size={'2.3em'}
+                                      size={'1.8em'}
                                       name={'Info'}
                                       color={'cellText'}
                                     />
