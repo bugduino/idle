@@ -286,6 +286,7 @@ class Migrate extends Component {
   }
 
   checkMigrationContractApproved = async () => {
+
     if (this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract){
       const migrationContractInfo = this.props.tokenConfig.migration.migrationContract;
       const migrationContractName = migrationContractInfo.name;
@@ -617,8 +618,9 @@ class Migrate extends Component {
         let _skipRebalance = typeof this.props.tokenConfig.skipMintForDeposit !== 'undefined' ? this.props.tokenConfig.skipMintForDeposit : this.functionsUtil.getGlobalConfig(['contract','methods','migrate','skipRebalance']);
 
         // Mint if someone mint over X amount
+        let minAmountForRebalance = null;
+        
         if (_skipRebalance){
-          let minAmountForRebalance = null;
 
           // Check if the amount is over a certain amount to rebalance the pool
           if (useMetaTx){
