@@ -529,6 +529,7 @@ class Stats extends Component {
       const strategies = this.functionsUtil.getGlobalConfig(['strategies']);
       const enabledTokens = [];
       const statsTokens = this.functionsUtil.getGlobalConfig(['stats','tokens']);
+      const statsProtocols = this.functionsUtil.getGlobalConfig(['stats','protocols']);
       Object.keys(statsTokens).forEach(token => {
         const tokenInfo = statsTokens[token];
         if (tokenInfo.enabled){
@@ -737,6 +738,41 @@ class Stats extends Component {
                     selectedStrategy={strategy}
                     availableTokens={availableTokens}
                   />
+                  {
+                    !this.props.isMobile &&
+                      <Flex
+                        mt={2}
+                        alignItems={'center'}
+                        flexDirection={'row'}
+                        justifyContent={'flex-end'}
+                      >
+                        {
+                          Object.values(statsProtocols).filter( p => (p.legend) ).map( (p,index) => (
+                            <Flex
+                              mr={3}
+                              alignItems={'center'}
+                              flexDirection={'row'}
+                              key={`legend_${index}`}
+                            >
+                              <Box
+                                mr={1}
+                                width={'10px'}
+                                height={'10px'}
+                                borderRadius={'50%'}
+                                backgroundColor={`rgb(${p.color.rgb.join(',')})`}
+                              >
+                              </Box>
+                              <Text.span
+                                fontSize={1}
+                                color={'cellText'}
+                              >
+                                {p.label}
+                              </Text.span>
+                            </Flex>
+                          ))
+                        }
+                      </Flex>
+                  }
                 </Box>
               );
             })

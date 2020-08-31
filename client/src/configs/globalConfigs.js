@@ -410,6 +410,7 @@ const globalConfigs = {
     },
     protocols:{
       compound:{
+        legend:true,
         label:'Compound',
         color:{
           rgb:[0, 209, 146],
@@ -425,6 +426,7 @@ const globalConfigs = {
         }
       },
       fulcrum:{
+        legend:true,
         label:'Fulcrum',
         color:{
           rgb:[2, 138, 192],
@@ -433,6 +435,7 @@ const globalConfigs = {
       },
       dsr:{
         label:'DSR',
+        legend:true,
         icon:'CHAI.png',
         color:{
           rgb:[222, 52, 67],
@@ -441,6 +444,7 @@ const globalConfigs = {
       },
       dydx:{
         label:'DyDx',
+        legend:true,
         color:{
           rgb:[87, 87, 90],
           hsl:['240', '2%', '35%']
@@ -451,6 +455,7 @@ const globalConfigs = {
       },
       aave:{
         label:'Aave',
+        legend:true,
         color:{
           rgb:[230, 131, 206],
           hsl:['315', '66%', '71%']
