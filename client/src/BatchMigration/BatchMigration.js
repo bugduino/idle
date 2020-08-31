@@ -581,7 +581,7 @@ class BatchMigration extends Component {
                                   <Icon
                                     size={'2.3em'}
                                     color={'cellText'}
-                                    name={'AccessTime'}
+                                    name={'HourglassEmpty'}
                                   />
                                   <Text
                                     mt={2}
@@ -598,7 +598,7 @@ class BatchMigration extends Component {
                                         <Text.span
                                           color={'cellText'}
                                         >
-                                          Your have successfully deposited {batchDeposit.toFixed(4)} {this.state.selectedTokenConfig.token}, please wait until the batch is migrated to claim your tokens.
+                                          You have successfully deposited {batchDeposit.toFixed(4)} {this.state.selectedTokenConfig.token}, please wait until the batch is migrated to claim your tokens.
                                           {
                                             typeof this.state.batchTotals[batchId] !== 'undefined' && 
                                             <Text.span
@@ -628,7 +628,7 @@ class BatchMigration extends Component {
                                     color={'cellText'}
                                     textAlign={'center'}
                                   >
-                                    Your have successfully deposited your {this.state.selectedTokenConfig.token} into the batch!
+                                    You have successfully deposited your {this.state.selectedTokenConfig.token} into the batch!
                                   </Text>
                                 </Flex>
                               ) : (
@@ -686,7 +686,7 @@ class BatchMigration extends Component {
                               color={'cellText'}
                               textAlign={'center'}
                             >
-                              Your have successfully withdrawn your {this.state.selectedToken} V4!
+                              You have successfully withdrawn your {this.state.selectedToken} V4!
                             </Text>
                           </Flex>
                         ) : this.state.batchCompleted ? (
@@ -733,7 +733,7 @@ class BatchMigration extends Component {
                             <Icon
                               size={'2.3em'}
                               color={'cellText'}
-                              name={'AccessTime'}
+                              name={'HourglassEmpty'}
                             />
                             <Text
                               mt={2}
@@ -744,7 +744,7 @@ class BatchMigration extends Component {
                               <Text.span
                                 color={'cellText'}
                               >
-                                Your have successfully deposited {batchDeposit.toFixed(4)} {this.state.selectedTokenConfig.token}, please wait until the batch is migrated to claim your V4 tokens.
+                                You have successfully deposited {batchDeposit.toFixed(4)} {this.state.selectedTokenConfig.token}, please wait until the batch is migrated to claim your V4 tokens.
                                 {
                                   typeof this.state.batchTotals[batchId] !== 'undefined' && 
                                   <Text.span
