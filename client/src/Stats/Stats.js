@@ -556,14 +556,14 @@ class Stats extends Component {
               >
                 <CountUp
                   delay={0}
-                  decimals={5}
+                  decimals={4}
                   decimal={'.'}
                   separator={''}
                   useEasing={false}
                   duration={31536000}
                   start={parseFloat(this.state.totalAUM)}
                   end={parseFloat(this.state.totalAUMEndOfYear)}
-                  formattingFn={ n => '$ '+this.functionsUtil.formatMoney(n,5) }
+                  formattingFn={ n => '$ '+this.functionsUtil.formatMoney(n,4) }
                 >
                   {({ countUpRef, start }) => (
                     <span
