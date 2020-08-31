@@ -266,7 +266,8 @@ class PortfolioEquity extends Component {
           momentDate = this.functionsUtil.strToMoment(new Date());
         }
 
-        const formattedDate = momentDate.format('YYYY/MM/DD HH:mm');
+        // Force date to midnight
+        const formattedDate = momentDate.format('YYYY/MM/DD 00:00');
 
         // Save days for axisBottom format
         days[momentDate.format('YYYY/MM/DD')] = 1;
