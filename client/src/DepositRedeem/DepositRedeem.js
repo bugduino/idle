@@ -1016,7 +1016,7 @@ class DepositRedeem extends Component {
                       (this.state.action === 'redeem' && this.state.unlentBalance) &&
                         <DashboardCard
                           cardProps={{
-                            py:3,
+                            py:2,
                             px:2,
                             my:3,
                             display:'flex',
@@ -1037,13 +1037,12 @@ class DepositRedeem extends Component {
                               color={'cellText'}
                             />
                             <Text
-                              mt={1}
                               px={2}
                               fontSize={1}
                               color={'cellText'}
                               textAlign={'center'}
                             >
-                              Available balance for Flash Redeem:
+                              Available balance for Flash Redeem
                             </Text>
                             <Text
                               fontSize={1}
@@ -1078,8 +1077,8 @@ class DepositRedeem extends Component {
                           >
                             <Icon
                               size={'1.8em'}
-                              name={'Info'}
                               color={'cellText'}
+                              name={'InfoOutline'}
                             />
                             <Text
                               mt={1}
@@ -1211,8 +1210,8 @@ class DepositRedeem extends Component {
                                   >
                                     <Icon
                                       size={'1.8em'}
-                                      name={'Info'}
                                       color={'cellText'}
+                                      name={'InfoOutline'}
                                     />
                                     <Text
                                       mt={1}
