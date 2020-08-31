@@ -37,6 +37,7 @@ class DashboardCard extends Component {
               ml={[3,4]}
               alignItems={'center'}
               flexDirection={'row'}
+              {...this.props.titleParentProps}
             >
               <Heading.h4
                 fontWeight={4}

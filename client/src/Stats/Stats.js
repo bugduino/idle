@@ -1324,6 +1324,12 @@ class Stats extends Component {
                         height:'fit-content',
                         style:this.props.isMobile ? {width:'100%'} : {width:'32vw'}
                       }}
+                      title={'Risk Score'}
+                      description={'Idle Risk Score is a weighted average of the underlying protocols risks assessed by DeFi Score'}
+                      titleParentProps={{
+                        ml:16,
+                        mt:16
+                      }}
                     >
                       <Flex id='chart-SCORE' width={1}>
                         <Flex
@@ -1333,18 +1339,6 @@ class Stats extends Component {
                           alignItems={'flex-start'}
                           justifyContent={'center'}
                         >
-                          <Heading.h4
-                            mb={2}
-                            ml={3}
-                            mt={3}
-                            fontWeight={4}
-                            fontSize={[2,3]}
-                            textAlign={'left'}
-                            color={'dark-gray'}
-                            lineHeight={'initial'}
-                          >
-                            Risk Score
-                          </Heading.h4>
                           <StatsChart
                             height={300}
                             {...this.state}
