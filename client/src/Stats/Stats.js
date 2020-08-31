@@ -41,6 +41,7 @@ class Stats extends Component {
     endTimestamp:null,
     showAdvanced:true,
     govTokensPool:null,
+    unlentBalance:null,
     quickSelection:null,
     startTimestamp:null,
     endTimestampObj:null,
@@ -469,6 +470,11 @@ class Stats extends Component {
     // Format AUM
     aum = this.functionsUtil.formatMoney(parseFloat(aum));
 
+    let unlentBalance = await this.functionsUtil.getUnlentBalance(this.props.tokenConfig);
+    if (unlentBalance){
+      unlentBalance = this.functionsUtil.formatMoney(parseFloat(unlentBalance));
+    }
+
     this.setStateSafe({
       aum,
       apr,
@@ -477,6 +483,7 @@ class Stats extends Component {
       apiResults,
       rebalances,
       govTokensPool,
+      unlentBalance,
       apiResults_unfiltered
     });
   }
@@ -985,7 +992,8 @@ class Stats extends Component {
                       <StatsCard
                         value={this.state.aum}
                         title={'Asset Under Management'}
-                        label={this.props.selectedToken}
+                        label={ this.state.unlentBalance ? `Swap buffer: ${this.state.unlentBalance} ${this.props.selectedToken}` : this.props.selectedToken }
+                        labelTooltip={ this.state.unlentBalance ? 'Funds available for quick redeem' : null}
                       />
                     </Flex>
                     <Flex

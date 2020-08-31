@@ -1223,7 +1223,7 @@ class FunctionsUtil {
     const googleEventsInfo = globalConfigs.analytics.google.events;
     const debugEnabled = googleEventsInfo.debugEnabled;
     const originOk = window.location.origin.toLowerCase().includes(globalConfigs.baseURL.toLowerCase());
-    
+
     if (googleEventsInfo.enabled && window.ga && ( debugEnabled || originOk)){
 
       // Check if testnet postfix required
@@ -2359,6 +2359,13 @@ class FunctionsUtil {
   apr2apy = (apr) => {
     return (this.BNify(1).plus(this.BNify(apr).div(12))).pow(12).minus(1);
   }
+  getUnlentBalance = async (tokenConfig) => {
+    let unlentBalance = await this.getProtocolBalance(tokenConfig.token,tokenConfig.idle.address);
+    if (unlentBalance){
+      unlentBalance = this.fixTokenDecimals(unlentBalance,tokenConfig.decimals);
+    }
+    return unlentBalance;
+  }
   /*
   Get idleToken allocation between protocols
   */
@@ -2432,9 +2439,8 @@ class FunctionsUtil {
     tokenAllocation.totalAllocationWithUnlent = this.BNify(totalAllocation);
 
     // Add unlent balance to the pool
-    let unlentBalance = await this.getProtocolBalance(tokenConfig.token,tokenConfig.idle.address);
+    let unlentBalance = await this.getUnlentBalance(tokenConfig);
     if (unlentBalance){
-      unlentBalance = this.fixTokenDecimals(unlentBalance,tokenConfig.decimals);
       tokenAllocation.unlentBalance = unlentBalance;
       tokenAllocation.totalAllocationWithUnlent = tokenAllocation.totalAllocationWithUnlent.plus(unlentBalance);
     }

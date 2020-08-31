@@ -435,7 +435,6 @@ const globalConfigs = {
       },
       dsr:{
         label:'DSR',
-        legend:true,
         icon:'CHAI.png',
         color:{
           rgb:[222, 52, 67],

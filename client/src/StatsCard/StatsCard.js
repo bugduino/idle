@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import { Flex, Heading, Text } from "rimble-ui";
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import DashboardCard from '../DashboardCard/DashboardCard';
+import { Flex, Heading, Text, Tooltip, Icon } from "rimble-ui";
 
 class StatsCard extends Component {
 
@@ -70,15 +70,36 @@ class StatsCard extends Component {
             : null
           }
           {
-            (this.props.label && this.props.label.toString().length>0) && 
-              <Text
+            (this.props.label && this.props.label.toString().length>0) && (
+              <Flex
                 mt={[3,2]}
-                fontSize={1}
-                fontWeight={3}
-                color={'legend'}
+                alignItems={'center'}
+                flexDirection={'row'}
               >
-                {this.props.label}
-              </Text>
+                <Text
+                  fontSize={1}
+                  fontWeight={3}
+                  color={'legend'}
+                >
+                  {this.props.label}
+                </Text>
+                {
+                  (this.props.labelTooltip && this.props.labelTooltip.length>0) && (
+                    <Tooltip
+                      placement={'top'}
+                      message={this.props.labelTooltip}
+                    >
+                      <Icon
+                        ml={2}
+                        name={"Info"}
+                        size={'1em'}
+                        color={'cellTitle'}
+                      />
+                    </Tooltip>
+                  )
+                }
+              </Flex>
+            )
           }
         </Flex>
       </DashboardCard>
