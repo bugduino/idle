@@ -579,7 +579,7 @@ const globalConfigs = {
   },
   tools:{
     batchMigration:{
-      enabled:false,
+      enabled:true,
       icon:'FileDownload',
       route:'batch-migration',
       label:'Batch Migration',
@@ -679,6 +679,86 @@ const globalConfigs = {
               abi:IdleBatchConverter,
               name:'IdleBatchConverterTUSD',
               address:'0x174a273f0ea28e55b6dd13259aa43d262b863a86',
+              functions:[
+                {
+                  label:'Deposit',
+                  name:'deposit'
+                },
+              ]
+            },
+          },
+          idleWBTCYield:{
+            decimals:18,
+            abi:IdleTokenV3,
+            strategy:'best',
+            baseToken:'WBTC',
+            name:'idleWBTCYieldV3',
+            token:'idleWBTCYieldV3',
+            address:'0xD6f279B7ccBCD70F8be439d25B9Df93AEb60eC55',
+            migrationContract:{
+              abi:IdleBatchConverter,
+              name:'IdleBatchConverterWBTC',
+              address:'0xbfDC7d97559173B52EF2A2f1bC9BeCf97B0D401D',
+              functions:[
+                {
+                  label:'Deposit',
+                  name:'deposit'
+                },
+              ]
+            },
+          },
+          idleDAISafe:{
+            decimals:18,
+            abi:IdleTokenV3,
+            strategy:'risk',
+            baseToken:'DAI',
+            name:'idleDAISafeV3',
+            token:'idleDAISafeV3',
+            address:'0x1846bdfDB6A0f5c473dEc610144513bd071999fB',
+            migrationContract:{
+              abi:IdleBatchConverter,
+              name:'IdleBatchConverterDAISafe',
+              address:'0x08db226d63cE724A6091Ba82D28dFc76ceCa23d8',
+              functions:[
+                {
+                  label:'Deposit',
+                  name:'deposit'
+                },
+              ]
+            },
+          },
+          idleUSDCSafe:{
+            decimals:18,
+            abi:IdleTokenV3,
+            strategy:'risk',
+            baseToken:'USDC',
+            name:'idleUSDCSafeV3',
+            token:'idleUSDCSafeV3',
+            address:'0xcDdB1Bceb7a1979C6caa0229820707429dd3Ec6C',
+            migrationContract:{
+              abi:IdleBatchConverter,
+              name:'IdleBatchConverterUSDCSafe',
+              address:'0xA6C89A31D59f9C68D9Cba28d690C5E52058fb472',
+              functions:[
+                {
+                  label:'Deposit',
+                  name:'deposit'
+                },
+              ]
+            },
+          },
+          idleUSDTSafe:{
+            decimals:18,
+            abi:IdleTokenV3,
+            strategy:'risk',
+            baseToken:'USDT',
+            name:'idleUSDTSafeV3',
+            token:'idleUSDTSafeV3',
+            address:'0x42740698959761baf1b06baa51efbd88cb1d862b',
+            migrationContract:{
+              abi:IdleBatchConverter,
+              name:'IdleBatchConverterUSDTSafe',
+              address:'0xd47B96Fb33b79a4Dd81a2bfa676eBB669166f619',
               functions:[
                 {
                   label:'Deposit',
