@@ -942,7 +942,7 @@ class Stats extends Component {
                         value={this.state.aum}
                         title={'Asset Under Management'}
                         label={ this.state.unlentBalance ? `Swap buffer: ${this.state.unlentBalance} ${this.props.selectedToken}` : this.props.selectedToken }
-                        labelTooltip={ this.state.unlentBalance ? 'Funds available for Flash Redeem' : null}
+                        labelTooltip={ this.state.unlentBalance ? 'Funds available for Cheap Redeem' : null}
                       />
                     </Flex>
                     <Flex

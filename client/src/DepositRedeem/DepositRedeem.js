@@ -5,13 +5,14 @@ import FlexLoader from '../FlexLoader/FlexLoader';
 import RoundButton from '../RoundButton/RoundButton';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import BuyModal from '../utilities/components/BuyModal';
+import CurveDeposit from '../CurveDeposit/CurveDeposit';
 import DashboardCard from '../DashboardCard/DashboardCard';
 import AssetSelector from '../AssetSelector/AssetSelector';
 import TxProgressBar from '../TxProgressBar/TxProgressBar';
 import ShareModal from '../utilities/components/ShareModal';
 import TransactionField from '../TransactionField/TransactionField';
 import FastBalanceSelector from '../FastBalanceSelector/FastBalanceSelector';
-import { Flex, Text, Input, Box, Icon, Link, Checkbox, Tooltip } from "rimble-ui";
+import { Flex, Text, Input, Box, Icon, Link, Checkbox, Tooltip, Image } from "rimble-ui";
 
 class DepositRedeem extends Component {
 
@@ -25,15 +26,18 @@ class DepositRedeem extends Component {
     action:'deposit',
     directMint:false,
     activeModal:null,
+    showBuyFlow:false,
     unlentBalance:null,
     tokenApproved:false,
     contractPaused:false,
     buttonDisabled:false,
     redeemGovTokens:false,
+    canDepositCurve:false,
     fastBalanceSelector:{},
     actionProxyContract:{},
     migrationEnabled:false,
     componentMounted:false,
+    depositCurveEnabled:false,
     metaTransactionsEnabled:true
   };
 
@@ -57,6 +61,19 @@ class DepositRedeem extends Component {
 
   }
 
+  setShowBuyFlow = (showBuyFlow) => {
+    this.setState({
+      showBuyFlow
+    });
+  }
+
+  toggleDepositCurve = (depositCurveEnabled) => {
+    this.setState({
+      depositCurveEnabled,
+      action: depositCurveEnabled ? 'boost' : 'deposit'
+    });
+  }
+
   toggleSkipMint = (directMint) => {
     this.setState({
       directMint
@@ -76,7 +93,7 @@ class DepositRedeem extends Component {
   }
 
   async loadProxyContracts(){
-    const actions = ['deposit','redeem'];
+    const actions = ['deposit','redeem','boost'];
     const newState = {
       actionProxyContract:{}
     };
@@ -256,9 +273,6 @@ class DepositRedeem extends Component {
       });
     }
 
-    const newState = {...this.state};
-    newState.canDeposit = this.props.tokenBalance && this.functionsUtil.BNify(this.props.tokenBalance).gt(0);
-    newState.canRedeem = this.props.idleTokenBalance && this.functionsUtil.BNify(this.props.idleTokenBalance).gt(0);
     const [
       tokenApproved,
       contractPaused,
@@ -271,10 +285,22 @@ class DepositRedeem extends Component {
       this.functionsUtil.checkMigration(this.props.tokenConfig,this.props.account)
     ]);
 
+    const canDeposit = this.props.tokenBalance && this.functionsUtil.BNify(this.props.tokenBalance).gt(0);
+    const canRedeem = this.props.idleTokenBalance && this.functionsUtil.BNify(this.props.idleTokenBalance).gt(0);
+
+    const curveConfig = this.functionsUtil.getGlobalConfig(['curve']);
+    const canDepositCurve = curveConfig.enabled && Object.keys(curveConfig.availableTokens).includes(this.props.tokenConfig.idle.token) && curveConfig.availableTokens[this.props.tokenConfig.idle.token].enabled && canRedeem;
+
+    const newState = {...this.state};
+
+    newState.canRedeem = canRedeem;
+    newState.canDeposit = canDeposit;
     newState.unlentBalance = unlentBalance;
     newState.tokenApproved = tokenApproved;
     newState.contractPaused = contractPaused;
+    newState.canDepositCurve = canDepositCurve;
     newState.migrationEnabled = migrationEnabled;
+
     newState.txError = {
       redeem:false,
       deposit:false
@@ -291,13 +317,19 @@ class DepositRedeem extends Component {
       approve:{
         txHash:null,
         loading:false
+      },
+      boost:{
+        txHash:null,
+        loading:false
       }
     };
     newState.inputValue = {
+      boost:null,
       redeem:null,
       deposit:null
     };
     newState.fastBalanceSelector = {
+      boost:null,
       redeem:null,
       deposit:null
     };
@@ -333,9 +365,17 @@ class DepositRedeem extends Component {
     const inputValue = this.state.inputValue[this.state.action];
     const selectedPercentage = this.getFastBalanceSelector();
 
-    const loading = true;
+    let loading = true;
 
     switch (this.state.action){
+      // Handle deposit in curve
+      case 'boost':
+        if (!this.state.canDepositCurve || this.functionsUtil.BNify(this.props.idleTokenBalance).lte(0)){
+          return false;
+        }
+
+
+      break;
       case 'deposit':
 
         if (this.state.buttonDisabled || !inputValue || this.functionsUtil.BNify(inputValue).lte(0)){
@@ -611,7 +651,8 @@ class DepositRedeem extends Component {
           contractSendResult = await this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'redeemIdleToken', redeemParams, null, callbackRedeem, callbackReceiptRedeem);
         }
       break;
-      default:
+      default: // Reset loading if not handled action
+        loading = false;
       break;
     }
 
@@ -664,9 +705,12 @@ class DepositRedeem extends Component {
       amount = this.state.inputValue[this.state.action];
     }
 
-    let buttonDisabled = amount === null || amount.lte(0);
+    let buttonDisabled = false;
 
     switch (this.state.action){
+      case 'boost':
+        buttonDisabled = this.props.idleTokenBalance.lte(0);
+      break;
       case 'deposit':
         buttonDisabled = buttonDisabled || (amount && amount.gt(this.props.tokenBalance));
       break;
@@ -691,6 +735,9 @@ class DepositRedeem extends Component {
     let amount = null;
 
     switch(this.state.action){
+      case 'boost':
+        amount = this.props.idleTokenBalance ? this.functionsUtil.BNify(this.props.idleTokenBalance).times(selectedPercentage) : null;
+      break;
       case 'deposit':
         amount = this.props.tokenBalance ? this.functionsUtil.BNify(this.props.tokenBalance).times(selectedPercentage) : null;
       break;
@@ -752,14 +799,15 @@ class DepositRedeem extends Component {
   setAction = (action) => {
     switch (action.toLowerCase()){
       case 'deposit':
-        // if (!this.state.canDeposit){
-        //   action = null;
-        // }
+        
       break;
       case 'redeem':
         if (!this.state.canRedeem){
           action = null;
         }
+      break;
+      case 'boost':
+
       break;
       default:
         action = null;
@@ -773,23 +821,32 @@ class DepositRedeem extends Component {
     }
   }
 
-  render() {
+  render(){
 
     if (!this.props.selectedToken || !this.props.tokenConfig){
       return null;
     }
+
     const govTokensDisabled = this.props.tokenConfig.govTokensDisabled;
     const govTokensEnabled = this.functionsUtil.getGlobalConfig(['strategies',this.props.selectedStrategy,'govTokensEnabled']);
     const skipMintForDepositEnabled = typeof this.props.tokenConfig.skipMintForDeposit !== 'undefined' ? this.props.tokenConfig.skipMintForDeposit : true;
     const skipMintCheckboxEnabled = this.functionsUtil.getGlobalConfig(['contract','methods','deposit','skipMintCheckboxEnabled']) && skipMintForDepositEnabled;
+
     const redeemGovTokenEnabled = this.functionsUtil.getGlobalConfig(['contract','methods','redeemGovTokens','enabled']) && !govTokensDisabled && govTokensEnabled;
     const redeemGovTokens = redeemGovTokenEnabled && this.state.redeemGovTokens && this.state.action === 'redeem';
+
+    const depositCurve = this.state.depositCurveEnabled && this.state.action === 'boost';
+
     const metaTransactionsAvailable = this.props.biconomy && this.state.actionProxyContract[this.state.action];
     const useMetaTx = metaTransactionsAvailable && this.state.metaTransactionsEnabled;
     const totalBalance = this.state.action === 'deposit' ? this.props.tokenBalance : this.props.redeemableBalance;
-    const showBuyFlow = this.state.tokenApproved && !this.state.contractPaused && !this.state.migrationEnabled && this.state.action === 'deposit' && this.state.componentMounted && !this.state.canDeposit;
     const migrateText = this.state.migrationEnabled && this.props.tokenConfig.migration.message !== undefined ? this.props.tokenConfig.migration.message : null;
 
+    const curveConfig = this.functionsUtil.getGlobalConfig(['curve']);
+    const canPerformAction = !depositCurve && ((this.state.action === 'deposit' && this.state.canDeposit) || (this.state.action === 'redeem' && this.state.canRedeem) || redeemGovTokens);
+    const showDepositCurve = this.state.canDepositCurve && ['deposit','boost'].includes(this.state.action);
+
+    const showBuyFlow = (!showDepositCurve || this.state.showBuyFlow) && !this.state.depositCurveEnabled && this.state.tokenApproved && !this.state.contractPaused && !this.state.migrationEnabled && this.state.action === 'deposit' && this.state.componentMounted && !this.state.canDeposit;
     return (
       <Flex
         width={1}
@@ -875,11 +932,12 @@ class DepositRedeem extends Component {
                             p:3,
                             width:0.48,
                             onMouseDown:() => {
-                              this.setAction('deposit');
+                              const action = this.state.depositCurveEnabled ? 'boost' : 'deposit';
+                              this.setAction(action);
                             }
                           }}
                           isInteractive={true}
-                          isActive={ this.state.action === 'deposit' }
+                          isActive={ ['deposit','boost'].includes(this.state.action) }
                         >
                           <Flex
                             my={1}
@@ -1045,8 +1103,8 @@ class DepositRedeem extends Component {
                           >
                             <Icon
                               size={'1.8em'}
-                              name={'FlashOn'}
                               color={'cellText'}
+                              name={'LocalGasStation'}
                             />
                             <Text
                               px={2}
@@ -1054,7 +1112,7 @@ class DepositRedeem extends Component {
                               color={'cellText'}
                               textAlign={'center'}
                             >
-                              Available balance for Flash Redeem
+                              Available balance for Cheap Redeem
                             </Text>
                             <Text
                               fontSize={1}
@@ -1195,14 +1253,119 @@ class DepositRedeem extends Component {
                             )
                           }
                         </DashboardCard>
-                      ) : !showBuyFlow && (
+                      ) : (!showBuyFlow || this.state.canDepositCurve) && (
                         !this.state.processing[this.state.action].loading ? (
                           <Flex
                             mt={3}
                             flexDirection={'column'}
                           >
                             {
-                              (skipMintCheckboxEnabled && this.state.action === 'deposit') && (
+                              /*
+                              this.state.action === 'deposit' && (
+                                <DashboardCard
+                                  cardProps={{
+                                    py:2,
+                                    px:2,
+                                    mb:3,
+                                    display:'flex',
+                                    alignItems:'center',
+                                    flexDirection:'column',
+                                    justifyContent:'center',
+                                  }}
+                                >
+                                  <Flex
+                                    width={1}
+                                    alignItems={'center'}
+                                    flexDirection={'column'}
+                                    justifyContent={'center'}
+                                  >
+                                    <Icon
+                                      name={'Tune'}
+                                      size={'1.8em'}
+                                      color={'cellText'}
+                                    />
+                                    <Checkbox
+                                      mt={2}
+                                      required={false}
+                                      label={`Show advanced options`}
+                                      checked={this.state.showAdvancedOptions}
+                                      onChange={ e => this.toggleAdvancedOptions(e.target.checked) }
+                                    />
+                                  </Flex>
+                                </DashboardCard>
+                              )
+                              */
+                            }
+                            {
+                              showDepositCurve && (
+                                <Flex
+                                  width={1}
+                                  flexDirection={'column'}
+                                  justifyContent={'center'}
+                                >
+                                  <DashboardCard
+                                    isRainbow={true}
+                                    cardProps={{
+                                      py:3,
+                                      px:2,
+                                      display:'flex',
+                                      alignItems:'center',
+                                      flexDirection:'column',
+                                      mb:showBuyFlow ? 0 : 3,
+                                      justifyContent:'center',
+                                    }}
+                                  >
+                                    <Flex
+                                      width={1}
+                                      alignItems={'center'}
+                                      flexDirection={'column'}
+                                      justifyContent={'center'}
+                                    >
+                                      <Image
+                                        height={'1.8em'}
+                                        src={curveConfig.icon}
+                                      />
+                                      <Text
+                                        mt={2}
+                                        px={2}
+                                        fontSize={1}
+                                        color={'dark-gray'}
+                                        textAlign={'center'}
+                                      >
+                                        Deposit your tokens in the Curve Pool and boost your APY up to 20%.
+                                        <Link
+                                          ml={1}
+                                          mainColor={'primary'}
+                                          hoverColor={'primary'}
+                                          onClick={ e => this.props.openTooltipModal('How Curve works',this.functionsUtil.getGlobalConfig(['messages','curveInstructions'])) }
+                                        >
+                                          Read More
+                                        </Link>
+                                      </Text>
+                                      <Checkbox
+                                        mt={2}
+                                        required={false}
+                                        label={`Deposit in Curve`}
+                                        checked={this.state.depositCurveEnabled}
+                                        onChange={ e => this.toggleDepositCurve(e.target.checked) }
+                                      />
+                                    </Flex>
+                                  </DashboardCard>
+                                  {
+                                    (!this.state.showBuyFlow && !this.state.depositCurveEnabled && !this.state.canDeposit) &&
+                                      <Link
+                                        textAlign={'center'}
+                                        hoverColor={'primary'}
+                                        onClick={ e => this.setShowBuyFlow(true) }
+                                      >
+                                        I just want to deposit more {this.props.selectedToken}
+                                      </Link>
+                                  }
+                                </Flex>
+                              )
+                            }
+                            {
+                              (this.state.canDeposit && skipMintCheckboxEnabled && this.state.action === 'deposit') && (
                                 <DashboardCard
                                   cardProps={{
                                     py:3,
@@ -1246,7 +1409,7 @@ class DepositRedeem extends Component {
                               )
                             }
                             {
-                              !redeemGovTokens && (
+                              (!redeemGovTokens && canPerformAction) && (
                                 <Flex
                                   mb={3}
                                   width={1}
@@ -1254,57 +1417,82 @@ class DepositRedeem extends Component {
                                 >
                                   {
                                     (totalBalance || this.props.tokenFeesPercentage) && (
-                                      <Flex
+                                      <Box
                                         mb={1}
                                         width={1}
-                                        alignItems={'center'}
-                                        flexDirection={'row'}
-                                        justifyContent={'space-between'}
                                       >
                                         {
-                                          this.props.tokenFeesPercentage && (
+                                          this.state.action === 'boost' ? (
                                             <Flex
+                                              width={1}
                                               alignItems={'center'}
-                                              flexDirection={'row'}
+                                              justifyContent={'flex-end'}
                                             >
-                                              <Text
+                                              <Link
                                                 fontSize={1}
                                                 fontWeight={3}
                                                 color={'dark-gray'}
                                                 textAlign={'right'}
                                                 hoverColor={'copyColor'}
+                                                onClick={ (e) => this.setFastBalanceSelector(100) }
                                               >
-                                                Performance fee: {this.props.tokenFeesPercentage.times(100).toFixed(2)}%
-                                              </Text>
-                                              <Tooltip
-                                                placement={'top'}
-                                                message={`This fee is charged on positive returns generated by Idle`}
-                                              >
-                                                <Icon
-                                                  ml={1}
-                                                  name={"Info"}
-                                                  size={'1em'}
-                                                  color={'cellTitle'}
-                                                />
-                                              </Tooltip>
+                                                {this.props.idleTokenBalance.toFixed(6)} {this.props.tokenConfig.idle.token}
+                                              </Link>
+                                            </Flex>
+                                          ) : (
+                                            <Flex
+                                              width={1}
+                                              alignItems={'center'}
+                                              flexDirection={'row'}
+                                              justifyContent={'space-between'}
+                                            >
+                                            {
+                                              this.props.tokenFeesPercentage && (
+                                                <Flex
+                                                  alignItems={'center'}
+                                                  flexDirection={'row'}
+                                                >
+                                                  <Text
+                                                    fontSize={1}
+                                                    fontWeight={3}
+                                                    color={'dark-gray'}
+                                                    textAlign={'right'}
+                                                    hoverColor={'copyColor'}
+                                                  >
+                                                    Performance fee: {this.props.tokenFeesPercentage.times(100).toFixed(2)}%
+                                                  </Text>
+                                                  <Tooltip
+                                                    placement={'top'}
+                                                    message={`This fee is charged on positive returns generated by Idle`}
+                                                  >
+                                                    <Icon
+                                                      ml={1}
+                                                      name={"Info"}
+                                                      size={'1em'}
+                                                      color={'cellTitle'}
+                                                    />
+                                                  </Tooltip>
+                                                </Flex>
+                                              )
+                                            }
+                                            {
+                                              totalBalance && (
+                                                <Link
+                                                  fontSize={1}
+                                                  fontWeight={3}
+                                                  color={'dark-gray'}
+                                                  textAlign={'right'}
+                                                  hoverColor={'copyColor'}
+                                                  onClick={ (e) => this.setFastBalanceSelector(100) }
+                                                >
+                                                  {totalBalance.toFixed(6)} {this.props.selectedToken}
+                                                </Link>
+                                              )
+                                            }
                                             </Flex>
                                           )
                                         }
-                                        {
-                                          totalBalance && (
-                                            <Link
-                                              fontSize={1}
-                                              fontWeight={3}
-                                              color={'dark-gray'}
-                                              textAlign={'right'}
-                                              hoverColor={'copyColor'}
-                                              onClick={ (e) => this.setFastBalanceSelector(100) }
-                                            >
-                                              {totalBalance.toFixed(6)} {this.props.selectedToken}
-                                            </Link>
-                                          )
-                                        }
-                                      </Flex>
+                                      </Box>
                                     )
                                   }
                                   <Input
@@ -1315,9 +1503,9 @@ class DepositRedeem extends Component {
                                     borderRadius={2}
                                     fontWeight={500}
                                     boxShadow={'none !important'}
+                                    placeholder={`Insert amount`}
                                     onChange={this.changeInputValue.bind(this)}
                                     border={`1px solid ${theme.colors.divider}`}
-                                    placeholder={`Insert ${this.props.selectedToken.toUpperCase()} amount`}
                                     value={this.state.inputValue[this.state.action] !== null ? this.functionsUtil.BNify(this.state.inputValue[this.state.action]).toFixed() : ''}
                                   />
                                   <Flex
@@ -1340,23 +1528,26 @@ class DepositRedeem extends Component {
                                 </Flex>
                               )
                             }
-                            <Flex
-                              justifyContent={'center'}
-                            >
-                              <RoundButton
-                                buttonProps={{
-                                  width:'auto',
-                                  minWidth:[1,1/2],
-                                  style:{
-                                    textTransform:'capitalize'
-                                  },
-                                  disabled:this.state.buttonDisabled
-                                }}
-                                handleClick={this.state.buttonDisabled ? null : this.executeAction.bind(this) }
-                              >
-                                {this.state.action}{ redeemGovTokens ? ' Gov Tokens' : '' }
-                              </RoundButton>
-                            </Flex>
+                            {
+                              canPerformAction && 
+                                <Flex
+                                  justifyContent={'center'}
+                                >
+                                  <RoundButton
+                                    buttonProps={{
+                                      width:'auto',
+                                      minWidth:[1,1/2],
+                                      style:{
+                                        textTransform:'capitalize'
+                                      },
+                                      disabled:this.state.buttonDisabled
+                                    }}
+                                    handleClick={this.state.buttonDisabled ? null : this.executeAction.bind(this) }
+                                  >
+                                    {this.state.action}{ redeemGovTokens ? ' Gov Tokens' : (depositCurve ? ' in Curve' : '') }
+                                  </RoundButton>
+                                </Flex>
+                            }
                           </Flex>
                         ) : (
                           <Flex
@@ -1398,6 +1589,12 @@ class DepositRedeem extends Component {
             }
           </Migrate>
         </Flex>
+        {
+          this.state.depositCurveEnabled &&
+            <CurveDeposit
+              {...this.props}
+            />
+        }
         {
           showBuyFlow &&
             <Flex

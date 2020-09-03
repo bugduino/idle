@@ -96,6 +96,9 @@ class TransactionField extends Component {
           case 'deposit':
             icon = "ArrowDownward";
           break;
+          case 'boost':
+            icon = "TrendingUp";
+          break;
           case 'redeem':
             icon = "ArrowUpward";
           break;
