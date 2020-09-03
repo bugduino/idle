@@ -369,7 +369,6 @@ class StrategyPage extends Component {
                         width={[1,0.60]}
                         flexDirection={'column'}
                         maxWidth={['auto','55em']}
-                        id={"portfolio-performance"}
                       >
                         <DashboardCard>
                           <Flex
@@ -417,14 +416,21 @@ class StrategyPage extends Component {
                               />
                             </Flex>
                           </Flex>
-                          <PortfolioEquity
-                            {...this.props}
-                            enabledTokens={[]}
-                            parentId={'portfolio-performance'}
-                            parentIdHeight={'portfolio-composition'}
-                            quickDateSelection={this.state.portfolioEquityQuickSelection}
-                            frequencySeconds={this.functionsUtil.getFrequencySeconds('day',1)}
-                          />
+                          <Flex
+                            ml={[0,3]}
+                            aligItems={'center'}
+                            justifyContent={'center'}
+                            id={"portfolio-performance"}
+                          >
+                            <PortfolioEquity
+                              {...this.props}
+                              enabledTokens={[]}
+                              parentId={'portfolio-performance'}
+                              parentIdHeight={'portfolio-composition'}
+                              quickDateSelection={this.state.portfolioEquityQuickSelection}
+                              frequencySeconds={this.functionsUtil.getFrequencySeconds('day',1)}
+                            />
+                          </Flex>
                         </DashboardCard>
                       </Flex>
                     </Flex>
