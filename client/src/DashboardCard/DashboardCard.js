@@ -8,6 +8,7 @@ class DashboardCard extends Component {
     const isActive = this.props.isActive && !isDisabled;
     const isInteractive = this.props.isInteractive && !isDisabled;
     const isVisible = typeof this.props.isVisible !== 'undefined' ? this.props.isVisible : true;
+    const isRainbow = typeof this.props.isRainbow !== 'undefined' ? this.props.isRainbow : false;
 
     const cardProps = {
       p:0,
@@ -28,7 +29,16 @@ class DashboardCard extends Component {
       <Card
         {...cardProps}
         onClick={this.props.handleClick}
-        className={[styles.defaultOpacity, isDisabled ? styles.disabled : null, isInteractive ? styles.interactive : null, isActive ? styles.active : null, !isVisible ? styles.hidden : null]}
+        className={
+          [
+            styles.defaultOpacity,
+            isActive ? styles.active : null,
+            !isVisible ? styles.hidden : null,
+            isRainbow ? styles.rainbow : null,
+            isDisabled ? styles.disabled : null,
+            isInteractive ? styles.interactive : null,
+          ]
+        }
       >
         {
           this.props.title && this.props.title.length>0 &&

@@ -1037,7 +1037,11 @@ class Migrate extends Component {
                               color={'cellText'}
                               textAlign={'center'}
                             >
-                              To migrate your { !this.props.isMigrationTool ? 'old' : '' } {this.state.oldTokenName} you need to approve our Smart-Contract first.
+                              {
+                                this.props.approveText ? this.props.approveText : (
+                                  <>To migrate your { !this.props.isMigrationTool ? 'old' : '' } {this.state.oldTokenName} you need to approve our Smart-Contract first.</>
+                                )
+                              }
                             </Text>
                             <RoundButton
                               buttonProps={{

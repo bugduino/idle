@@ -2,6 +2,7 @@ import React from "react";
 import ModalCard from './ModalCard';
 import { Text, Modal, Flex } from "rimble-ui";
 import FunctionsUtil from '../../utilities/FunctionsUtil';
+import RoundButton from '../../RoundButton/RoundButton.js';
 
 class TooltipModal extends React.Component {
 
@@ -47,7 +48,6 @@ class TooltipModal extends React.Component {
           <ModalCard.Body>
             <Flex
               width={1}
-              mb={'24px'}
               flexDirection={'column'}
             >
               <Text
@@ -57,6 +57,21 @@ class TooltipModal extends React.Component {
                 dangerouslySetInnerHTML={{ __html: this.props.content }}
               >
               </Text>
+            </Flex>
+            <Flex
+              my={3}
+              alignItems={'center'}
+              flexDirection={'column'}
+              justifyContent={'center'}
+            >
+              <RoundButton
+                handleClick={this.closeModal}
+                buttonProps={{
+                  width:['100%','40%']
+                }}
+              >
+                GOT IT
+              </RoundButton>
             </Flex>
           </ModalCard.Body>
         </ModalCard>
