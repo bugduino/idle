@@ -154,7 +154,6 @@ class FundsOverview extends Component {
     return (
       <Flex
         width={1}
-        id={"funds-overview"}
         flexDirection={'column'}
       >
         {
@@ -222,6 +221,8 @@ class FundsOverview extends Component {
         >
           <Flex
             width={1}
+            ml={[0,3]}
+            id={"funds-overview"}
           >
             <PortfolioEquity
               {...this.props}
