@@ -106,8 +106,11 @@ class FunctionsUtil {
     const depositProxyContractInfo = this.getGlobalConfig(['contract','methods','deposit','proxyContract']);
     const migrationContractAddr = tokenConfig.migration && tokenConfig.migration.migrationContract ? tokenConfig.migration.migrationContract.address : null;
     const migrationContractOldAddrs = tokenConfig.migration && tokenConfig.migration.migrationContract && tokenConfig.migration.migrationContract.oldAddresses ? tokenConfig.migration.migrationContract.oldAddresses : [];
+    const batchMigration = this.getGlobalConfig(['tools','batchMigration','props','availableTokens',tokenConfig.idle.token]);
+    const batchMigrationContractAddr = batchMigration && batchMigration.migrationContract ? batchMigration.migrationContract.address : null;
 
-    const isMigrationTx = migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).indexOf(tx.from.toLowerCase()) !== -1 ) && tx.contractAddress.toLowerCase() === idleTokenAddress.toLowerCase();
+    const isBatchMigrationTx = batchMigrationContractAddr && tx.from.toLowerCase() === batchMigrationContractAddr.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase();    
+    const isMigrationTx = isBatchMigrationTx || (migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).indexOf(tx.from.toLowerCase()) !== -1 ) && tx.contractAddress.toLowerCase() === idleTokenAddress.toLowerCase());
     const isSendTransferTx = !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === idleTokenAddress.toLowerCase();
     const isReceiveTransferTx = !isMigrationTx && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === idleTokenAddress.toLowerCase();
     const isDepositTx = !isMigrationTx && !isSendTransferTx && !isReceiveTransferTx && (tx.to.toLowerCase() === idleTokenAddress.toLowerCase() || (depositProxyContractInfo && tx.to.toLowerCase() === depositProxyContractInfo.address.toLowerCase()));
@@ -517,6 +520,9 @@ class FunctionsUtil {
       const migrationContractOldAddrs = tokenConfig.migration && tokenConfig.migration.migrationContract && tokenConfig.migration.migrationContract.oldAddresses ? tokenConfig.migration.migrationContract.oldAddresses : [];
       const tokenMigrationToolParams = this.getGlobalConfig(['tools','tokenMigration','props','migrationContract']);
 
+      const batchMigration = this.getGlobalConfig(['tools','batchMigration','props','availableTokens',tokenConfig.idle.token]);
+      const batchMigrationContractAddr = batchMigration && batchMigration.migrationContract ? batchMigration.migrationContract.address : null;
+
       results.forEach(
         tx => {
 
@@ -525,7 +531,9 @@ class FunctionsUtil {
           const isRightToken = internalTxs.length>1 && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === tokenConfig.address.toLowerCase()).length>0;
           const isSendTransferTx = internalTxs.length === 1 && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
           const isReceiveTransferTx = internalTxs.length === 1 && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
-          const isMigrationTx = migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).includes(tx.from.toLowerCase()) ) && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
+          const isBatchMigrationTx = batchMigrationContractAddr && tx.from.toLowerCase() === batchMigrationContractAddr.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase();
+
+          const isMigrationTx = isBatchMigrationTx || (migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).includes(tx.from.toLowerCase()) ) && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase());
           const isConversionTx = tokenMigrationToolParams && (tx.from.toLowerCase() === tokenMigrationToolParams.address.toLowerCase() || tokenMigrationToolParams.oldAddresses.map((v) => { return v.toLowerCase(); }).includes(tx.from.toLowerCase())) && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
           const isDepositTx = isRightToken && !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && (tx.to.toLowerCase() === tokenConfig.idle.address.toLowerCase() || (depositProxyContractInfo && tx.to.toLowerCase() === depositProxyContractInfo.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase()).length>0 ));
           const isRedeemTx = isRightToken && !isMigrationTx && tx.contractAddress.toLowerCase() === tokenConfig.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase()).length && tx.to.toLowerCase() === this.props.account.toLowerCase();
