@@ -15,9 +15,9 @@ function withdraw(uint256 batchId) external
 
 import Migrate from '../Migrate/Migrate';
 import React, { Component } from 'react';
-import { Flex, Box, Text, Icon } from "rimble-ui";
 import RoundButton from '../RoundButton/RoundButton';
 import FunctionsUtil from '../utilities/FunctionsUtil';
+import { Flex, Box, Text, Icon, Link } from "rimble-ui";
 import AssetSelector from '../AssetSelector/AssetSelector';
 import DashboardCard from '../DashboardCard/DashboardCard';
 import TxProgressBar from '../TxProgressBar/TxProgressBar';
@@ -109,6 +109,7 @@ class BatchMigration extends Component {
 
     const hasDeposited = (batchDeposits && Object.keys(batchDeposits).length>0);
 
+    newState.claimSucceeded = false;
     newState.batchTotals = batchTotals;
     newState.batchCompleted = batchCompleted;
     newState.canDeposit = !hasDeposited;
@@ -270,10 +271,9 @@ class BatchMigration extends Component {
   }
 
   migrationCallback = () => {
+    this.checkBatchs();
     this.setState({
       migrationSucceeded:true
-    },() => {
-      this.checkBatchs();
     });
   }
 
@@ -404,8 +404,8 @@ class BatchMigration extends Component {
               >
                 <Icon
                   size={'1.5em'}
-                  name={'Looks4'}
-                  color={'cellText'}
+                  name={ this.state.claimSucceeded ? 'CheckBox' : 'Looks4'}
+                  color={ this.state.claimSucceeded ? this.props.theme.colors.transactions.status.completed : 'cellText'}
                 />
                 <Text
                   ml={2}
@@ -524,9 +524,9 @@ class BatchMigration extends Component {
                       waitText={'Deposit estimated in'}
                       tokenConfig={this.state.tokenConfig}
                       selectedToken={this.state.selectedToken}
-                      migrationCallback={this.migrationCallback}
                       callbackApprove={this.checkBatchs.bind(this)}
                       selectedStrategy={this.props.selectedStrategy}
+                      migrationCallback={this.migrationCallback.bind(this)}
                       migrationText={`Deposit your ${this.state.selectedTokenConfig.token} and wait until it is converted to the new ${this.state.tokenConfig.idle.token}.`}
                     >
                       {
@@ -688,6 +688,14 @@ class BatchMigration extends Component {
                             >
                               You have successfully withdrawn your {this.state.selectedToken} V4!
                             </Text>
+                            <Link
+                              mt={2}
+                              textAlign={'center'}
+                              hoverColor={'primary'}
+                              onClick={ e => this.props.goToSection(this.state.selectedTokenConfig.strategy+'/'+this.state.selectedTokenConfig.baseToken) }
+                            >
+                              Go to the Dashboard
+                            </Link>
                           </Flex>
                         ) : this.state.batchCompleted ? (
                           <Flex
