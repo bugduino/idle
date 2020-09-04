@@ -142,7 +142,7 @@ class CurveDeposit extends Component {
           <DashboardCard
             cardProps={{
               p:3,
-              px:4
+              px:[2,4]
             }}
           >
             <Flex

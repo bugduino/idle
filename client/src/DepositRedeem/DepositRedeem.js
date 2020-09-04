@@ -1590,7 +1590,7 @@ class DepositRedeem extends Component {
           </Migrate>
         </Flex>
         {
-          this.state.depositCurveEnabled &&
+          showDepositCurve && this.state.depositCurveEnabled &&
             <CurveDeposit
               {...this.props}
             />
