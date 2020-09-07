@@ -637,7 +637,11 @@ class Migrate extends Component {
           }
         }
 
-        const migrationParams = this.props.migrationParams ? this.props.migrationParams : [toMigrate,this.props.tokenConfig.migration.oldContract.address,this.props.tokenConfig.idle.address,this.props.tokenConfig.address,_skipRebalance];
+        let migrationParams = this.props.migrationParams ? this.props.migrationParams : [toMigrate,this.props.tokenConfig.migration.oldContract.address,this.props.tokenConfig.idle.address,this.props.tokenConfig.address,_skipRebalance];
+
+        if (typeof migrationParams === 'function'){
+          migrationParams = migrationParams(toMigrate);
+        }
 
         // console.log('Migration params',oldIdleTokens,minAmountForRebalance,migrationContractInfo.name, migrationMethod, migrationParams);
 

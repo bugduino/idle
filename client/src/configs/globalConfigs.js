@@ -5,6 +5,8 @@ import yUSDCv3 from '../abis/iearn/yUSDCv3.json';
 import yUSDTv3 from '../abis/iearn/yUSDTv3.json';
 import ySUSDv3 from '../abis/iearn/ySUSDv3.json';
 import yTUSDv3 from '../abis/iearn/yTUSDv3.json';
+import CurveSwap from '../abis/curve/CurveSwap.json';
+import CurvePool from '../abis/curve/CurvePool.json';
 import NexusMutual from '../NexusMutual/NexusMutual';
 import { Web3Versions } from '@terminal-packages/sdk';
 import FunctionsUtil from '../utilities/FunctionsUtil';
@@ -143,24 +145,34 @@ const globalConfigs = {
   curve:{
     enabled:true,
     icon:'images/protocols/curve.svg',
+    rates:{
+      endpoint:'https://pushservice.curve.fi/apys/y'
+    },
+    poolContract:{
+      abi:CurvePool,
+      decimals:18,
+      name:'idleCurvePool',
+      address:'0xdf5e0e81dff6faf3a7e52ba697820c5e32d806a8'
+    },
+    migrationContract:{
+      abi:CurveSwap,
+      name:'idleCurveSwap',
+      address:'0x45F783CCE6B7FF23B2ab2D70e416cdb7D6055f51',
+      functions:[
+        {
+          label:'Deposit',
+          name:'add_liquidity'
+        },
+      ]
+    },
     availableTokens:{
       idleDAIYield:{
         enabled:true,
-        migrationContract:{
-          abi:IdleBatchConverter,
-          name:'IdleCurveDAIYield',
-          address:'0x0000000000000000000000000000000000000000',
-          functions:[
-            {
-              label:'Deposit',
-              name:'add_liquidity'
-            },
-          ]
+        migrationParams:{
+          n_coins:4,
+          coinIndex:0
         },
       },
-      idleSUSDYield:{
-        enabled:true
-      }
     }
   },
   govTokens:{

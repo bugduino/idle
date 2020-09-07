@@ -2048,13 +2048,13 @@ class FunctionsUtil {
           output = await this.getGovTokenUserBalance(govTokenConfig,account,govTokenAvailableTokens);
         } else {
           let [idleTokenPrice1,idleTokenBalance2,govTokensBalance] = await Promise.all([
-            this.genericContractCall(tokenConfig.idle.token, 'tokenPrice'),
+            this.getIdleTokenPrice(tokenConfig),
             this.loadAssetField('idleTokenBalance',token,tokenConfig,account),
             this.getGovTokensUserTotalBalance(account,govTokenAvailableTokens,token),
           ]);
 
           if (idleTokenBalance2 && idleTokenPrice1){
-            const tokenBalance = this.fixTokenDecimals(idleTokenBalance2.times(idleTokenPrice1),tokenConfig.decimals);
+            const tokenBalance = idleTokenBalance2.times(idleTokenPrice1);
 
             let redeemableBalance = tokenBalance;
 
@@ -2064,7 +2064,7 @@ class FunctionsUtil {
 
             output = redeemableBalance;
 
-            // console.log('redeemableBalance',tokenBalance.toString(),govTokensBalance.toString(),output.toString());
+            // console.log('redeemableBalance',idleTokenBalance2.toFixed(4),idleTokenPrice1.toFixed(4),tokenBalance.toFixed(4),govTokensBalance.toFixed(4),output.toFixed(4));
           }
         }
       break;
@@ -2165,6 +2165,8 @@ class FunctionsUtil {
       this.setCachedData(cachedDataKey,tokenPrice);
     }
 
+    // console.log('getIdleTokenPrice',tokenPrice.toString());
+
     return tokenPrice;
   }
   clearCachedData = () => {
@@ -2195,7 +2197,7 @@ class FunctionsUtil {
     }
     return defaultValue;
   }
-  getTokenBalance = async (contractName,walletAddr) => {
+  getTokenBalance = async (contractName,walletAddr,fixDecimals=true) => {
     if (!walletAddr){
       return false;
     }
@@ -2216,7 +2218,9 @@ class FunctionsUtil {
     ]);
 
     if (tokenBalance){
-      tokenBalance = this.fixTokenDecimals(tokenBalance,tokenDecimals);
+      if (fixDecimals){
+        tokenBalance = this.fixTokenDecimals(tokenBalance,tokenDecimals);
+      }
 
       // Set cached data
       return this.setCachedData(cachedDataKey,tokenBalance);
@@ -2514,6 +2518,92 @@ class FunctionsUtil {
     return output;
   }
   */
+  getCurveTokenBalance = async (account=null,fixDecimals=true) => {
+    const curvePoolContract = await this.getCurvePoolContract();
+    if (curvePoolContract){
+      account = account ? account : this.props.account;
+      return await this.getTokenBalance(curvePoolContract.name,account,fixDecimals);
+    }
+    return null;
+  }
+  getCurveRedeemableIdleTokens = async (account) => {
+    const migrationContract = await this.getCurveSwapContract();
+    let [curveTokenBalance,curveTokenPrice] = await Promise.all([
+      this.getCurveTokenBalance(account),
+      this.genericContractCall(migrationContract.name,'get_virtual_price'),
+    ]);
+    if (curveTokenBalance && curveTokenPrice){
+      return this.BNify(curveTokenBalance).times(this.fixTokenDecimals(curveTokenPrice,18));
+    }
+    return null;
+  }
+  getCurvePoolContract = async () => {
+    const poolContractInfo = this.getGlobalConfig(['curve','poolContract']);
+    if (poolContractInfo){
+      let curvePoolContract = this.getContractByName(poolContractInfo.name);
+      if (!curvePoolContract && poolContractInfo.abi){
+        curvePoolContract = await this.props.initContract(poolContractInfo.name,poolContractInfo.address,poolContractInfo.abi);
+      }
+    }
+    return poolContractInfo;
+  }
+  getCurveSwapContract = async () => {
+    const migrationContractInfo = this.getGlobalConfig(['curve','migrationContract']);
+    if (migrationContractInfo){
+      let migrationContract = this.getContractByName(migrationContractInfo.name);
+      if (!migrationContract && migrationContractInfo.abi){
+        migrationContract = await this.props.initContract(migrationContractInfo.name,migrationContractInfo.address,migrationContractInfo.abi);
+      }
+    }
+    return migrationContractInfo;
+  }
+  getCurveAmounts = async (token,amount) => {
+    const curveTokenConfig = this.getGlobalConfig(['curve','availableTokens',token]);
+    if (curveTokenConfig){
+      const migrationParams = curveTokenConfig.migrationParams;
+      if (migrationParams.n_coins){
+        const amounts = [];
+        for (var i = 0; i < migrationParams.n_coins; i++) {
+          if (migrationParams.coinIndex === i){
+            amounts.push(this.integerValue(amount));
+          } else {
+            amounts.push(0);
+          }
+        }
+        return amounts;
+      }
+    }
+    return null;
+  }
+  getCurveSlippage = async (token,amount,deposit=true) => {
+    let slippage = null;
+    const migrationContract = await this.getCurveSwapContract();
+    if (migrationContract){
+      const amounts = await this.getCurveAmounts(token,amount);
+      let [virtualPrice,tokenAmount] = await Promise.all([
+        this.genericContractCall(migrationContract.name,'get_virtual_price'),
+        this.genericContractCall(migrationContract.name,'calc_token_amount',[amounts,deposit]),
+      ]);
+
+      if (virtualPrice && tokenAmount){
+        amount = this.BNify(amount);
+        virtualPrice = this.BNify(virtualPrice);
+        tokenAmount = this.BNify(tokenAmount).times(virtualPrice);
+        if (deposit){
+          slippage = tokenAmount.div(amount);
+        } else {
+          slippage = amount.div(tokenAmount);
+        }
+
+        slippage = this.fixTokenDecimals(slippage,18);
+
+        // console.log('getCurveSlippage',tokenAmount.toString(),amount.toString(),slippage.toString());
+
+        return slippage;
+      }
+    }
+    return null;
+  }
   getCompAPR = async (token,tokenConfig,cTokenIdleSupply=null,compConversionRate=null) => {
     const COMPTokenConfig = this.getGlobalConfig(['govTokens','COMP']);
     if (!COMPTokenConfig.enabled){
