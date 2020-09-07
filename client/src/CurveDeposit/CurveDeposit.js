@@ -1,18 +1,3 @@
-/*
-// batchDeposits[user][batchId] = amount
-mapping (address => mapping (uint256 => uint256)) public batchDeposits;
-mapping (uint256 => uint256) batchTotals; // in idleToken
-mapping (uint256 => uint256) batchRedeemedTotals; // in newIdleToken
-
-uint256 public currBatch;
-address public idleToken;
-address public newIdleToken;
-address public underlying;
-
-function deposit() external
-function withdraw(uint256 batchId) external
-*/
-
 import Migrate from '../Migrate/Migrate';
 import React, { Component } from 'react';
 import { Flex, Box, Text, Icon } from "rimble-ui";
@@ -23,13 +8,8 @@ import DashboardCard from '../DashboardCard/DashboardCard';
 class CurveDeposit extends Component {
 
   state = {
-    processing:{
-      claim:{
-        txHash:null,
-        loading:false
-      },
-    },
     tokenConfig:null,
+    depositSlippage:null,
     curveTokensBalance:null,
     migrationSucceeded:false,
     migrationContractApproved:false,
@@ -51,23 +31,54 @@ class CurveDeposit extends Component {
     await this.initToken();
   }
 
-  async initToken(){
+  async getMigrationParams(toMigrate) {
+    const migrationParams = [];
+    const curveTokenConfig = this.functionsUtil.getGlobalConfig(['curve','availableTokens',this.props.tokenConfig.idle.token]);
 
-    const curveConfig = this.functionsUtil.getGlobalConfig(['curve']);
-    const curveTokenConfig = curveConfig.availableTokens[this.props.tokenConfig.idle.token];
+    if (!curveTokenConfig){
+      return false;
+    }
+
+    const migrationContract = this.state.tokenConfig.migration.migrationContract;
+    const migrationContractParams = curveTokenConfig.migrationParams;
+    if (migrationContractParams.n_coins){
+      const amounts = [];
+      for (var i = 0; i < migrationContractParams.n_coins; i++) {
+        if (migrationContractParams.coinIndex === i){
+          amounts.push(toMigrate);
+        } else {
+          amounts.push(0);
+        }
+      }
+
+      const minMintAmount = await this.functionsUtil.genericContractCall(migrationContract.name,'calc_token_amount',[amounts,true]);
+
+      migrationParams.push(amounts);
+      migrationParams.push(minMintAmount);
+    }
+
+    return migrationParams;
+  }
+
+  async initToken(){
 
     let migrationContractApproved = false;
 
-    // Init migration contract
-    if (curveTokenConfig.migrationContract){
-      const migrationContract = this.functionsUtil.getContractByName(curveTokenConfig.migrationContract.name);
-      if (!migrationContract && curveTokenConfig.migrationContract.abi){
-        await this.props.initContract(curveTokenConfig.migrationContract.name,curveTokenConfig.migrationContract.address,curveTokenConfig.migrationContract.abi);
-      }
-
+    // Init and check migration contract
+    const migrationContract = await this.functionsUtil.getCurveSwapContract();
+    if (migrationContract){
       // Check migration contract
-      migrationContractApproved = await this.functionsUtil.checkTokenApproved(this.props.tokenConfig.idle.token,curveTokenConfig.migrationContract.address,this.props.account);
+      migrationContractApproved = await this.functionsUtil.checkTokenApproved(this.props.tokenConfig.idle.token,migrationContract.address,this.props.account);
     }
+
+    let redeemableBalance = this.functionsUtil.BNify(this.props.idleTokenBalance);
+    const idleTokenPrice = await this.functionsUtil.getIdleTokenPrice(this.props.tokenConfig);
+    if (idleTokenPrice){
+      redeemableBalance = redeemableBalance.times(idleTokenPrice);
+    }
+
+    const normalizeIdleTokenBalance = this.functionsUtil.normalizeTokenAmount(redeemableBalance,18);
+    const depositSlippage = await this.functionsUtil.getCurveSlippage(this.props.tokenConfig.idle.token,normalizeIdleTokenBalance);
 
     // Copy token config
     const tokenConfig = Object.assign({},this.props.tokenConfig);
@@ -79,8 +90,6 @@ class CurveDeposit extends Component {
       token:this.props.tokenConfig.idle.token,
       address:this.props.tokenConfig.idle.address
     };
-    
-    const migrationContract = curveTokenConfig.migrationContract;
 
     tokenConfig.migration = {
       enabled:true,
@@ -90,20 +99,13 @@ class CurveDeposit extends Component {
 
     this.setState({
       tokenConfig,
+      depositSlippage,
       migrationContractApproved
     });
   }
 
   async componentDidUpdate(prevProps,prevState){
     this.loadUtils();
-  }
-
-  setAction = (action) => {
-    if (action !== null && ['deposit','redeem'].includes(action.toLowerCase())){
-      this.setState({
-        action
-      });
-    }
   }
 
   approveCallback = () => {
@@ -113,8 +115,6 @@ class CurveDeposit extends Component {
   migrationCallback = () => {
     this.setState({
       migrationSucceeded:true
-    },() => {
-      this.checkBatchs();
     });
   }
 
@@ -196,16 +196,16 @@ class CurveDeposit extends Component {
                 <Migrate
                   {...this.props}
                   showActions={false}
-                  migrationParams={[]}
                   getTokenPrice={false}
                   isMigrationTool={true}
                   migrationIcon={'FileDownload'}
                   waitText={'Deposit estimated in'}
                   tokenConfig={this.state.tokenConfig}
                   callbackApprove={this.approveCallback.bind(this)}
+                  migrationParams={this.getMigrationParams.bind(this)}
                   migrationCallback={this.migrationCallback.bind(this)}
+                  migrationText={`Deposit your ${this.props.tokenConfig.idle.token} in the Curve pool to boost your APY. Current slipppage: ${this.state.depositSlippage.toFixed(2)}%`}
                   approveText={`To deposit your ${this.props.tokenConfig.idle.token} you need to approve Curve smart-contract first.`}
-                  migrationText={`Deposit your ${this.props.tokenConfig.idle.token} in the Curve pool to boost your APY`}
                 >
                   {
                     !this.props.account ? (
