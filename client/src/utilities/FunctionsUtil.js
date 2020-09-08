@@ -1211,6 +1211,17 @@ class FunctionsUtil {
   getGlobalConfigs = () => {
     return globalConfigs;
   }
+  getArrayPath = (path,array) => {
+    if (path.length>0){
+      const prop = path.shift();
+      if (!path.length){
+        return array[prop] ? array[prop] : null;
+      } else if (array[prop]) {
+        return this.getArrayPath(path,array[prop]);
+      }
+    }
+    return null;
+  }
   getGlobalConfig = (path,configs=false) => {
     configs = configs ? configs : globalConfigs;
     if (path.length>0){
@@ -2328,6 +2339,9 @@ class FunctionsUtil {
       return null;
     }
   }
+  getBlockNumber = async () => {
+    return await this.props.web3.eth.getBlockNumber();
+  }
   genericContractCall = async (contractName, methodName, params = [], callParams = {}, blockNumber = 'latest') => {
 
     if (!contractName){
@@ -2518,6 +2532,40 @@ class FunctionsUtil {
     return output;
   }
   */
+  getCurveAPY = async () => {
+    const curveRatesInfo = this.getGlobalConfig(['curve','rates']);
+    if (curveRatesInfo){
+      const results = await this.makeRequest(curveRatesInfo.endpoint);
+      if (results && results.data){
+        const apy = this.getArrayPath(curveRatesInfo.path,results.data);
+        if (apy){
+          return this.BNify(apy).times(100);
+        }
+      }
+    }
+    return null;
+  }
+  getCurveAPYContract = async () => {
+    const curveSwapContract = await this.getCurveSwapContract();
+    if (curveSwapContract){
+      const blockNumber = await this.getBlockNumber();
+      if (blockNumber){
+        const blocksForPrevTokenPrice = 10;
+        let [tokenPrice,prevTokenPrice] = await Promise.all([
+          this.genericContractCall(curveSwapContract.name,'get_virtual_price'),
+          this.genericContractCall(curveSwapContract.name,'get_virtual_price',[],{},blockNumber-blocksForPrevTokenPrice)
+        ]);
+
+        if (tokenPrice && prevTokenPrice){
+
+          const blocksMultiplier = this.BNify(this.getGlobalConfig(['network','blocksPerYear'])).div(blocksForPrevTokenPrice);
+          const curveAPR = this.BNify(tokenPrice).div(prevTokenPrice).minus(1).times(blocksMultiplier);
+          return this.apr2apy(curveAPR).times(100);
+        }
+      }
+    }
+    return null;
+  }
   getCurveTokenBalance = async (account=null,fixDecimals=true) => {
     const curvePoolContract = await this.getCurvePoolContract();
     if (curvePoolContract){
