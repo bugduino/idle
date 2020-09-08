@@ -146,7 +146,8 @@ const globalConfigs = {
     enabled:true,
     icon:'images/protocols/curve.svg',
     rates:{
-      endpoint:'https://pushservice.curve.fi/apys/y'
+      path:['apy','day','y'],
+      endpoint:'https://www.curve.fi/raw-stats/apys.json'
     },
     poolContract:{
       abi:CurvePool,

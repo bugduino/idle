@@ -22,6 +22,7 @@ class DepositRedeem extends Component {
     tokenAPY:'-',
     inputValue:{},
     processing:{},
+    curveAPY:null,
     canRedeem:false,
     canDeposit:false,
     action:'deposit',
@@ -145,8 +146,17 @@ class DepositRedeem extends Component {
     const tokenAprs = await this.functionsUtil.getTokenAprs(this.props.tokenConfig);
     if (tokenAprs && tokenAprs.avgApy !== null){
       const tokenAPY = this.functionsUtil.BNify(tokenAprs.avgApy).toFixed(2);
+
+      let curveAPY = null;
+      if (this.state.canDepositCurve){
+        curveAPY = await this.functionsUtil.getCurveAPY();
+        if (curveAPY){
+          curveAPY = curveAPY.plus(tokenAPY);
+        }
+      }
       this.setState({
-        tokenAPY
+        tokenAPY,
+        curveAPY
       });
     }
   }
@@ -1150,7 +1160,7 @@ class DepositRedeem extends Component {
                                 color={'dark-gray'}
                                 textAlign={'center'}
                               >
-                                Deposit your tokens in the Curve Pool and boost your APY up to 20%.
+                                Deposit your tokens in the Curve Pool and boost your APY up to {this.state.curveAPY ? this.state.curveAPY.toFixed(2) : '-'}%.
                                 <Link
                                   ml={1}
                                   mainColor={'primary'}
