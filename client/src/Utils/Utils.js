@@ -102,7 +102,7 @@ class Utils extends Component {
                       mb:[3,3],
                       mr:[0,'2%'],
                       style:{
-                        flex: this.props.isMobile ? '1' : '0 0 31%'
+                        flex: this.props.isMobile ? '1 1 100%' : '0 0 31%'
                       },
                       alignItems:'center',
                       flexDirection:'column',
