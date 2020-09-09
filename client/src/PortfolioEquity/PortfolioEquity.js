@@ -44,6 +44,11 @@ class PortfolioEquity extends Component {
         this.componentDidMount();
       });
     }
+
+    const mobileChanged = prevProps.isMobile !== this.props.isMobile;
+    if (mobileChanged){
+      this.loadChartData();
+    }
   }
 
   async loadChartData() {
@@ -176,6 +181,7 @@ class PortfolioEquity extends Component {
       Object.keys(tokensBalance).forEach(token => {
 
         let lastTokenData = null;
+        const lastTokenDataUnfiltered = Object.values(tokensData[token]).pop();
         const filteredTokenData = tokensData[token].filter(tx => (tx.timestamp>=prevTimestamp && tx.timestamp<=timeStamp));
         if (filteredTokenData && filteredTokenData.length){
           lastTokenData = filteredTokenData.pop();
@@ -200,8 +206,6 @@ class PortfolioEquity extends Component {
               const idleTokens = idleTokenBalance[token];
               const idlePrice = this.functionsUtil.fixTokenDecimals(lastTokenData.idlePrice,tokenDecimals);
               let newBalance = idleTokens.times(idlePrice);
-
-              // console.log('1-',this.functionsUtil.strToMoment(timeStamp*1000).format('DD/MM/YYYY HH:mm'),token,idleTokens.toString(),newBalance.toString(),idlePrice.toString());
 
               // Set new balance and tokenPrice
               lastFilteredTx.balance = newBalance;
@@ -230,8 +234,6 @@ class PortfolioEquity extends Component {
                 }
               break;
             }
-
-            // console.log('2-',this.functionsUtil.strToMoment(tx.timeStamp*1000).format('DD/MM/YYYY HH:mm'),token,idleTokenBalance[token].toString(),tx.balance.toString(),tx.tokenPrice.toString());
           });
         }
 
@@ -243,16 +245,18 @@ class PortfolioEquity extends Component {
           // Convert token balance to USD
           let tokenUsdConversionRate = null;
           const conversionRateField = this.functionsUtil.getGlobalConfig(['stats','tokens',token,'conversionRateField']);
-          if (!this.props.chartToken && conversionRateField && lastTokenData && lastTokenData[conversionRateField]){
-            tokenUsdConversionRate = this.functionsUtil.fixTokenDecimals(lastTokenData[conversionRateField],18);
-            if (tokenUsdConversionRate.gt(0)){
-              lastTxBalance = lastTxBalance.times(tokenUsdConversionRate);
+          if (!this.props.chartToken && conversionRateField){
+            const conversionRate = lastTokenData && lastTokenData[conversionRateField] ? lastTokenData[conversionRateField] : lastTokenDataUnfiltered && lastTokenDataUnfiltered[conversionRateField] ? lastTokenDataUnfiltered[conversionRateField] : null;
+            if (conversionRate){
+              tokenUsdConversionRate = this.functionsUtil.fixTokenDecimals(conversionRate,18);
+              if (tokenUsdConversionRate.gt(0)){
+                lastTxBalance = lastTxBalance.times(tokenUsdConversionRate);
+              }
             }
           }
           
           tokensBalances[token] = lastTxBalance;
           aggregatedBalance = aggregatedBalance.plus(lastTxBalance);
-          // console.log('3-',this.functionsUtil.strToMoment(timeStamp*1000).format('DD/MM/YYYY HH:mm'),token,lastTx.idleTokens.toString(),lastTx.balance.toString(),(tokenUsdConversionRate ? tokenUsdConversionRate.toString() : null),lastTxBalance.toString(),lastTx.tokenPrice.toString(),aggregatedBalance.toString());
         }
 
         foundBalances[token] = filteredBalances;
@@ -280,8 +284,6 @@ class PortfolioEquity extends Component {
         minChartValue = minChartValue === null ? aggregatedBalance : Math.min(minChartValue,aggregatedBalance);
         maxChartValue = maxChartValue === null ? aggregatedBalance : Math.max(maxChartValue,aggregatedBalance);
       }
-
-      // console.log(this.functionsUtil.strToMoment(timeStamp*1000).format('DD/MM/YYYY HH:mm'),aggregatedBalance.toFixed(5),this.functionsUtil.formatMoney(aggregatedBalance));
 
       prevTimestamp = timeStamp;
       prevBalances = foundBalances;
@@ -377,7 +379,17 @@ class PortfolioEquity extends Component {
       gridYValues,
       pointSize:0,
       useMesh:true,
-      axisLeft:null,
+      axisLeft: this.props.isMobile ? null : {
+        legend: '',
+        tickSize: 0,
+        orient: 'left',
+        tickPadding: 10,
+        tickRotation: 0,
+        legendOffset: -70,
+        tickValues:gridYValues,
+        legendPosition: 'middle',
+        format: v => this.functionsUtil.abbreviateNumber(v,2),
+      },
       animate:true,
       pointLabel:'y',
       areaOpacity:0.1,
