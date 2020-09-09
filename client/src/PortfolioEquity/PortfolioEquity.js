@@ -281,6 +281,8 @@ class PortfolioEquity extends Component {
         aggregatedBalancesKeys[formattedDate] = aggregatedBalance;
         tokensBalancesPerDate[formattedDate] = tokensBalances;
 
+        // console.log(formattedDate,tokensBalances);
+
         minChartValue = minChartValue === null ? aggregatedBalance : Math.min(minChartValue,aggregatedBalance);
         maxChartValue = maxChartValue === null ? aggregatedBalance : Math.max(maxChartValue,aggregatedBalance);
       }
