@@ -518,11 +518,11 @@ class Migrate extends Component {
     if (migrationContract){
 
       // Check if the migration contract is approved
-      const migrationContractApproved = await this.checkMigrationContractApproved();
+      // const migrationContractApproved = await this.checkMigrationContractApproved();
 
-      if (!migrationContractApproved){
-        return this.approveMigration();
-      } else {
+      // if (!migrationContractApproved){
+      //   return this.approveMigration();
+      // } else {
         const callbackMigrate = (tx,error) => {
 
           if (!error && tx && tx.status === 'error'){
@@ -662,7 +662,7 @@ class Migrate extends Component {
             }
           }
         }));
-      }
+      // }
     }
 
     return false;
