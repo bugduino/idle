@@ -584,6 +584,8 @@ const globalConfigs = {
   tools:{
     batchMigration:{
       enabled:true,
+      claimEnabled:true,
+      depositEnabled:false,
       icon:'FileDownload',
       route:'batch-migration',
       label:'Batch Migration',

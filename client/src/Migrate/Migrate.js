@@ -676,6 +676,7 @@ class Migrate extends Component {
 
     const batchMigrationInfo = this.functionsUtil.getGlobalConfig(['tools','batchMigration']);
     const batchMigrationEnabled = batchMigrationInfo.enabled && typeof batchMigrationInfo.props.availableTokens[this.props.tokenConfig.idle.token] !== 'undefined';
+    const batchMigrationDepositEnabled = batchMigrationInfo.depositEnabled;
 
     const SkipMigrationComponent = (props) => (
       <DashboardCard
@@ -879,7 +880,7 @@ class Migrate extends Component {
                   flexDirection={'column'}
                 >
                   {
-                    (batchMigrationEnabled && !this.props.isMigrationTool) &&
+                    (batchMigrationEnabled && batchMigrationDepositEnabled && !this.props.isMigrationTool) &&
                       <Flex
                         mb={3}
                         width={1}

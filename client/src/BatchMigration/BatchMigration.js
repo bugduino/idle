@@ -38,6 +38,7 @@ class BatchMigration extends Component {
         loading:false
       },
     },
+    hasDeposited:false,
     selectedToken:null,
     batchCompleted:false,
     claimSucceeded:false,
@@ -109,10 +110,14 @@ class BatchMigration extends Component {
 
     const hasDeposited = (batchDeposits && Object.keys(batchDeposits).length>0);
 
+    const batchMigrationInfo = this.functionsUtil.getGlobalConfig(['tools','batchMigration']);
+    const batchMigrationDepositEnabled = batchMigrationInfo.depositEnabled;
+
     newState.claimSucceeded = false;
     newState.batchTotals = batchTotals;
     newState.batchCompleted = batchCompleted;
-    newState.canDeposit = !hasDeposited;
+    newState.hasDeposited = hasDeposited;
+    newState.canDeposit = !hasDeposited && batchMigrationDepositEnabled;
     newState.canClaim = batchCompleted || hasDeposited;
     newState.action = hasDeposited ? 'redeem' : 'deposit';
     newState.migrationContractApproved = migrationContractApproved;
@@ -283,6 +288,9 @@ class BatchMigration extends Component {
       return null;
     }
 
+    const batchMigrationInfo = this.functionsUtil.getGlobalConfig(['tools','batchMigration']);
+    const batchMigrationDepositEnabled = batchMigrationInfo.depositEnabled;
+
     const batchId = this.state.batchDeposits && Object.keys(this.state.batchDeposits).length>0 ? Object.keys(this.state.batchDeposits)[0] : null;
     const batchDeposit = this.state.batchDeposits && Object.values(this.state.batchDeposits).length>0 ? Object.values(this.state.batchDeposits)[0] : null;
 
@@ -316,113 +324,106 @@ class BatchMigration extends Component {
               availableTokens={this.props.toolProps.availableTokens}
             />
           </Box>
-          <DashboardCard
-            cardProps={{
-              p:3,
-              px:4,
-              mt:3,
-            }}
-          >
-            <Flex
-              alignItems={'center'}
-              flexDirection={'column'}
-            > 
-              {
-                /*
-                <Icon
-                  mb={2}
-                  size={'2.3em'}
-                  color={'cellText'}
-                  name={'HelpOutline'}
-                />
-                */
-              }
-              <Flex
-                width={1}
-                alignItems={'center'}
-                flexDirection={'row'}
+          {
+            (this.state.canDeposit || this.state.canClaim) && 
+              <DashboardCard
+                cardProps={{
+                  p:3,
+                  px:4,
+                  mt:3,
+                }}
               >
-                <Icon
-                  size={'1.5em'}
-                  name={ this.state.migrationContractApproved ? 'CheckBox' : 'LooksOne'}
-                  color={ this.state.migrationContractApproved ? this.props.theme.colors.transactions.status.completed : 'cellText'}
-                />
-                <Text
-                  ml={2}
-                  fontSize={2}
-                  color={'cellText'}
-                  textAlign={'left'}
-                >
-                  Approve the batch migration contract
-                </Text>
-              </Flex>
-              <Flex
-                mt={2}
-                width={1}
-                alignItems={'center'}
-                flexDirection={'row'}
-              >
-                <Icon
-                  size={'1.5em'}
-                  name={ !this.state.canDeposit ? 'CheckBox' : 'LooksTwo'}
-                  color={ !this.state.canDeposit ? this.props.theme.colors.transactions.status.completed : 'cellText'}
-                />
-                <Text
-                  ml={2}
-                  fontSize={2}
-                  color={'cellText'}
-                  textAlign={'left'}
-                >
-                  Deposit your {this.state.selectedTokenConfig.token}
-                </Text>
-              </Flex>
-              <Flex
-                mt={2}
-                width={1}
-                alignItems={'center'}
-                flexDirection={'row'}
-              >
-                <Icon
-                  size={'1.5em'}
-                  name={ this.state.batchCompleted ? 'CheckBox' : 'Looks3'}
-                  color={ this.state.batchCompleted ? this.props.theme.colors.transactions.status.completed : 'cellText'}
-                />
-                <Text
-                  ml={2}
-                  fontSize={2}
-                  color={'cellText'}
-                  textAlign={'left'}
-                >
-                  Wait for the batch to be migrated
-                </Text>
-              </Flex>
-              <Flex
-                mt={2}
-                width={1}
-                alignItems={'center'}
-                flexDirection={'row'}
-              >
-                <Icon
-                  size={'1.5em'}
-                  name={ this.state.claimSucceeded ? 'CheckBox' : 'Looks4'}
-                  color={ this.state.claimSucceeded ? this.props.theme.colors.transactions.status.completed : 'cellText'}
-                />
-                <Text
-                  ml={2}
-                  fontSize={2}
-                  color={'cellText'}
-                  textAlign={'left'}
-                >
-                  Claim your {this.state.selectedToken}V4
-                </Text>
-              </Flex>
-            </Flex>
-          </DashboardCard>
+                <Flex
+                  alignItems={'center'}
+                  flexDirection={'column'}
+                > 
+                  <Flex
+                    width={1}
+                    alignItems={'center'}
+                    flexDirection={'row'}
+                  >
+                    <Icon
+                      size={'1.5em'}
+                      name={ this.state.migrationContractApproved ? 'CheckBox' : 'LooksOne'}
+                      color={ this.state.migrationContractApproved ? this.props.theme.colors.transactions.status.completed : 'cellText'}
+                    />
+                    <Text
+                      ml={2}
+                      fontSize={2}
+                      color={'cellText'}
+                      textAlign={'left'}
+                    >
+                      Approve the batch migration contract
+                    </Text>
+                  </Flex>
+                  <Flex
+                    mt={2}
+                    width={1}
+                    alignItems={'center'}
+                    flexDirection={'row'}
+                  >
+                    <Icon
+                      size={'1.5em'}
+                      name={ this.state.hasDeposited ? 'CheckBox' : 'LooksTwo'}
+                      color={ this.state.hasDeposited ? this.props.theme.colors.transactions.status.completed : 'cellText'}
+                    />
+                    <Text
+                      ml={2}
+                      fontSize={2}
+                      color={'cellText'}
+                      textAlign={'left'}
+                    >
+                      Deposit your {this.state.selectedTokenConfig.token}
+                    </Text>
+                  </Flex>
+                  <Flex
+                    mt={2}
+                    width={1}
+                    alignItems={'center'}
+                    flexDirection={'row'}
+                  >
+                    <Icon
+                      size={'1.5em'}
+                      name={ this.state.batchCompleted ? 'CheckBox' : 'Looks3'}
+                      color={ this.state.batchCompleted ? this.props.theme.colors.transactions.status.completed : 'cellText'}
+                    />
+                    <Text
+                      ml={2}
+                      fontSize={2}
+                      color={'cellText'}
+                      textAlign={'left'}
+                    >
+                      Wait for the batch to be migrated
+                    </Text>
+                  </Flex>
+                  <Flex
+                    mt={2}
+                    width={1}
+                    alignItems={'center'}
+                    flexDirection={'row'}
+                  >
+                    <Icon
+                      size={'1.5em'}
+                      name={ this.state.claimSucceeded ? 'CheckBox' : 'Looks4'}
+                      color={ this.state.claimSucceeded ? this.props.theme.colors.transactions.status.completed : 'cellText'}
+                    />
+                    <Text
+                      ml={2}
+                      fontSize={2}
+                      color={'cellText'}
+                      textAlign={'left'}
+                    >
+                      Claim your {this.state.selectedToken}V4
+                    </Text>
+                  </Flex>
+                </Flex>
+              </DashboardCard>
+          }
           {
             this.state.selectedToken ? (
               <Box width={1}>
                 {
-                  this.state.migrationContractApproved && 
+                  this.state.migrationContractApproved && (this.state.canDeposit || this.state.canClaim) && 
                     <Flex
                       mt={2}
                       flexDirection={'column'}
@@ -513,150 +514,172 @@ class BatchMigration extends Component {
                     </Flex>
                 }
                 {
-                  this.state.action === 'deposit' ? (
-                    <Migrate
-                      {...this.props}
-                      showActions={false}
-                      migrationParams={[]}
-                      getTokenPrice={false}
-                      isMigrationTool={true}
-                      migrationIcon={'FileDownload'}
-                      waitText={'Deposit estimated in'}
-                      tokenConfig={this.state.tokenConfig}
-                      selectedToken={this.state.selectedToken}
-                      callbackApprove={this.checkBatchs.bind(this)}
-                      selectedStrategy={this.props.selectedStrategy}
-                      migrationCallback={this.migrationCallback.bind(this)}
-                      migrationText={`Deposit your ${this.state.selectedTokenConfig.token} and wait until it is converted to the new ${this.state.tokenConfig.idle.token}.`}
-                    >
-                      {
-                        !this.props.account ? (
-                          <DashboardCard
-                            cardProps={{
-                              p:3,
-                              mt:3
-                            }}
-                          >
-                            <Flex
-                              alignItems={'center'}
-                              flexDirection={'column'}
+                  this.state.action === 'deposit' ? 
+                    batchMigrationDepositEnabled ? (
+                      <Migrate
+                        {...this.props}
+                        showActions={false}
+                        migrationParams={[]}
+                        getTokenPrice={false}
+                        isMigrationTool={true}
+                        migrationIcon={'FileDownload'}
+                        waitText={'Deposit estimated in'}
+                        tokenConfig={this.state.tokenConfig}
+                        selectedToken={this.state.selectedToken}
+                        callbackApprove={this.checkBatchs.bind(this)}
+                        selectedStrategy={this.props.selectedStrategy}
+                        migrationCallback={this.migrationCallback.bind(this)}
+                        migrationText={`Deposit your ${this.state.selectedTokenConfig.token} and wait until it is converted to the new ${this.state.tokenConfig.idle.token}.`}
+                      >
+                        {
+                          !this.props.account ? (
+                            <DashboardCard
+                              cardProps={{
+                                p:3,
+                                mt:3
+                              }}
                             >
-                              <Icon
-                                size={'2.3em'}
-                                name={'Input'}
-                                color={'cellText'}
-                              />
-                              <Text
-                                mt={2}
-                                fontSize={2}
-                                color={'cellText'}
-                                textAlign={'center'}
+                              <Flex
+                                alignItems={'center'}
+                                flexDirection={'column'}
                               >
-                                Please connect with your wallet interact with Idle.
-                              </Text>
-                              <RoundButton
-                                buttonProps={{
-                                  mt:2,
-                                  width:[1,1/2]
-                                }}
-                                handleClick={this.props.connectAndValidateAccount}
-                              >
-                                Connect
-                              </RoundButton>
-                            </Flex>
-                          </DashboardCard>
-                        ) : (
-                          <DashboardCard
-                            cardProps={{
-                              p:3,
-                              my:3
-                            }}
+                                <Icon
+                                  size={'2.3em'}
+                                  name={'Input'}
+                                  color={'cellText'}
+                                />
+                                <Text
+                                  mt={2}
+                                  fontSize={2}
+                                  color={'cellText'}
+                                  textAlign={'center'}
+                                >
+                                  Please connect with your wallet interact with Idle.
+                                </Text>
+                                <RoundButton
+                                  buttonProps={{
+                                    mt:2,
+                                    width:[1,1/2]
+                                  }}
+                                  handleClick={this.props.connectAndValidateAccount}
+                                >
+                                  Connect
+                                </RoundButton>
+                              </Flex>
+                            </DashboardCard>
+                          ) : (
+                            <DashboardCard
+                              cardProps={{
+                                p:3,
+                                my:3
+                              }}
+                            >
+                              {
+                                batchId ? (
+                                  <Flex
+                                    alignItems={'center'}
+                                    flexDirection={'column'}
+                                  >
+                                    <Icon
+                                      size={'2.3em'}
+                                      color={'cellText'}
+                                      name={'HourglassEmpty'}
+                                    />
+                                    <Text
+                                      mt={2}
+                                      fontSize={2}
+                                      color={'cellText'}
+                                      textAlign={'center'}
+                                    >
+                                      {
+                                        this.state.batchCompleted ? (
+                                          <Text.span
+                                            color={'cellText'}
+                                          >The batch has been migrated, click on the "Claim" button to withdraw your tokens.</Text.span>
+                                        ) : (
+                                          <Text.span
+                                            color={'cellText'}
+                                          >
+                                            You have successfully deposited {batchDeposit.toFixed(4)} {this.state.selectedTokenConfig.token}, please wait until the batch is migrated to claim your tokens.
+                                            {
+                                              typeof this.state.batchTotals[batchId] !== 'undefined' && 
+                                              <Text.span
+                                                color={'cellText'}
+                                              >
+                                                <br />Batch pool: {this.state.batchTotals[batchId].toFixed(4)} {this.state.selectedTokenConfig.token}
+                                              </Text.span>
+                                            }
+                                          </Text.span>
+                                        )
+                                      }
+                                    </Text>
+                                  </Flex>
+                                ) : this.state.migrationSucceeded ? (
+                                  <Flex
+                                    alignItems={'center'}
+                                    flexDirection={'column'}
+                                  >
+                                    <Icon
+                                      size={'2.3em'}
+                                      name={'DoneAll'}
+                                      color={this.props.theme.colors.transactions.status.completed}
+                                    />
+                                    <Text
+                                      mt={2}
+                                      fontSize={2}
+                                      color={'cellText'}
+                                      textAlign={'center'}
+                                    >
+                                      You have successfully deposited your {this.state.selectedTokenConfig.token} into the batch!
+                                    </Text>
+                                  </Flex>
+                                ) : (
+                                  <Flex
+                                    alignItems={'center'}
+                                    flexDirection={'column'}
+                                  >
+                                    <Icon
+                                      size={'2.3em'}
+                                      name={'MoneyOff'}
+                                      color={'cellText'}
+                                    />
+                                    <Text
+                                      mt={2}
+                                      fontSize={2}
+                                      color={'cellText'}
+                                      textAlign={'center'}
+                                    >
+                                      You don't have any {this.state.selectedTokenConfig.token} in your wallet.
+                                    </Text>
+                                  </Flex>
+                                )
+                              }
+                            </DashboardCard>
+                          )
+                        }
+                      </Migrate>
+                    ) : (
+                      <DashboardCard
+                        cardProps={{
+                          p:3,
+                          my:3
+                        }}
+                      >
+                        <Flex
+                          alignItems={'center'}
+                          flexDirection={'column'}
+                        >
+                          <Text
+                            fontSize={2}
+                            color={'cellText'}
+                            textAlign={'center'}
                           >
-                            {
-                              batchId ? (
-                                <Flex
-                                  alignItems={'center'}
-                                  flexDirection={'column'}
-                                >
-                                  <Icon
-                                    size={'2.3em'}
-                                    color={'cellText'}
-                                    name={'HourglassEmpty'}
-                                  />
-                                  <Text
-                                    mt={2}
-                                    fontSize={2}
-                                    color={'cellText'}
-                                    textAlign={'center'}
-                                  >
-                                    {
-                                      this.state.batchCompleted ? (
-                                        <Text.span
-                                          color={'cellText'}
-                                        >The batch has been migrated, click on the "Claim" button to withdraw your tokens.</Text.span>
-                                      ) : (
-                                        <Text.span
-                                          color={'cellText'}
-                                        >
-                                          You have successfully deposited {batchDeposit.toFixed(4)} {this.state.selectedTokenConfig.token}, please wait until the batch is migrated to claim your tokens.
-                                          {
-                                            typeof this.state.batchTotals[batchId] !== 'undefined' && 
-                                            <Text.span
-                                              color={'cellText'}
-                                            >
-                                              <br />Batch pool: {this.state.batchTotals[batchId].toFixed(4)} {this.state.selectedTokenConfig.token}
-                                            </Text.span>
-                                          }
-                                        </Text.span>
-                                      )
-                                    }
-                                  </Text>
-                                </Flex>
-                              ) : this.state.migrationSucceeded ? (
-                                <Flex
-                                  alignItems={'center'}
-                                  flexDirection={'column'}
-                                >
-                                  <Icon
-                                    size={'2.3em'}
-                                    name={'DoneAll'}
-                                    color={this.props.theme.colors.transactions.status.completed}
-                                  />
-                                  <Text
-                                    mt={2}
-                                    fontSize={2}
-                                    color={'cellText'}
-                                    textAlign={'center'}
-                                  >
-                                    You have successfully deposited your {this.state.selectedTokenConfig.token} into the batch!
-                                  </Text>
-                                </Flex>
-                              ) : (
-                                <Flex
-                                  alignItems={'center'}
-                                  flexDirection={'column'}
-                                >
-                                  <Icon
-                                    size={'2.3em'}
-                                    name={'MoneyOff'}
-                                    color={'cellText'}
-                                  />
-                                  <Text
-                                    mt={2}
-                                    fontSize={2}
-                                    color={'cellText'}
-                                    textAlign={'center'}
-                                  >
-                                    You don't have any {this.state.selectedTokenConfig.token} in your wallet.
-                                  </Text>
-                                </Flex>
-                              )
-                            }
-                          </DashboardCard>
-                        )
-                      }
-                    </Migrate>
-                  ) : (
+                            Batch migration is disabled for this asset.
+                          </Text>
+                        </Flex>
+                      </DashboardCard>
+                    )
+                  : (
                     <DashboardCard
                       cardProps={{
                         p:3,
