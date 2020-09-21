@@ -19,6 +19,9 @@ const availableTokens = {
         govTokensDisabled:false,
         color:'hsl(40, 95%, 59%)',
         address:'0x6b175474e89094c44da98b954eedeac495271d0f',
+        deposit:{
+          minAmountForMint:10000,
+        },
         wyre:{
           destCurrency:'DAI'
         },
@@ -147,6 +150,9 @@ const availableTokens = {
         govTokensDisabled:false,
         color:'hsl(211, 67%, 47%)',
         address:'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+        deposit:{
+          minAmountForMint:10000,
+        },
         wyre:{
           destCurrency:'USDC'
         },
@@ -461,7 +467,7 @@ const availableTokens = {
         color:'hsl(29, 81%, 59%)',
         address:'0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
         deposit:{
-          minAmountForMint:2000,
+          minAmountForMint:5000,
         },
         wyre:{
           destCurrency:'WBTC'
@@ -676,6 +682,9 @@ const availableTokens = {
         govTokensDisabled:false,
         color:'hsl(211, 67%, 47%)',
         address:'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+        deposit:{
+          minAmountForMint:10000,
+        },
         wyre:{
           destCurrency:'USDC'
         },
