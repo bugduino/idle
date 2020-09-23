@@ -32,6 +32,10 @@ class TransactionsList extends Component {
         swap:'Swap-In',
         swapout:'Swap-Out',
         withdraw:'Withdraw',
+        // curvein:'CurveIn',
+        // curveout:'CurveOut',
+        // curvezapin:'CurveZapIn',
+        // curvezapout:'CurveZapOut',
       },
       status:{
         completed:'Completed',
@@ -70,7 +74,7 @@ class TransactionsList extends Component {
     if (e){
       e.preventDefault();
     }
-    const page = Math.min(this.state.totalPages,this.state.page+1);
+    const page = Math.min(this.state.totalPages,this.state.page+1);this.processTxs(page);
     this.setState({
       page
     });
@@ -149,20 +153,29 @@ class TransactionsList extends Component {
       assets[token] = token;
     });
 
+    let actions = {...this.state.filters.actions};
+    
+    const enabledActions = typeof this.props.enabledActions !== 'undefined' ? this.props.enabledActions : [];
+
+    if (enabledActions.length){
+      actions = {};
+      enabledActions.forEach( action => {
+        actions[action.toLowerCase()] = action;
+      });
+    }
+
     const etherscanTxs = await this.functionsUtil.getEtherscanTxs(this.props.account,lastBlockNumber,'latest',enabledTokens);
 
     // Merge new txs with previous ones
     if (etherscanTxs && etherscanTxs.length){
       etherscanTxs.forEach((tx) => {
-        if (tx.hash){
-          prevTxs[tx.hash] = tx;
+        if (tx.hashKey){
+          prevTxs[tx.hashKey] = tx;
         } else {
           prevTxs[`t${tx.timeStamp}`] = tx;
         }
       });
     }
-
-    // console.log('prevTxs',prevTxs);
 
     const lastTx = Object.values(prevTxs).pop();
 
@@ -177,26 +190,27 @@ class TransactionsList extends Component {
       lastBlockNumber,
       filters:{
         ...prevState.filters,
-        assets
+        assets,
+        actions
       }
     }), () => {
       this.processTxs()
     });
   };
 
-  processTxs(){
+  processTxs = (page=null) => {
 
-    // let totalInterestsAccrued = 0;
-    let depositedSinceLastRedeem = 0;
-    let totalRedeemed = 0;
+    page = page ? page : this.state.page;
+
+    const availableActions = Object.keys(this.state.filters.actions).map( action => (action.toLowerCase()) );
 
     // Sort prevTxs by timeStamp
     const txsIndexes = Object.values(this.state.prevTxs)
                         .filter(tx => (!!parseFloat(tx.value))) // Filter txs with value
-                        .filter(tx => ( 
+                        .filter(tx => (
                           (this.state.activeFilters.status === null || tx.status.toLowerCase() === this.state.activeFilters.status.toLowerCase()) && 
-                          (this.state.activeFilters.actions === null || tx.action.toLowerCase() === this.state.activeFilters.actions.toLowerCase()) && 
-                          (this.state.activeFilters.assets === null || tx.token.toLowerCase() === this.state.activeFilters.assets.toLowerCase())
+                          (this.state.activeFilters.assets === null || tx.token.toLowerCase() === this.state.activeFilters.assets.toLowerCase()) &&
+                          ( availableActions.includes(tx.action.toLowerCase()) && (this.state.activeFilters.actions === null || (tx.action.toLowerCase() === this.state.activeFilters.actions.toLowerCase()) ))
                         )) // Filter by activeFilters
                         .sort((a,b) => (a.timeStamp > b.timeStamp) ? -1 : 1 );
 
@@ -206,62 +220,50 @@ class TransactionsList extends Component {
 
     const processedTxs = [];
 
+    // console.log(this.state.prevTxs,txsIndexes);
+
     txsIndexes.forEach((tx, i) => {
       const selectedToken = tx.token;
       const tokenConfig = this.props.availableTokens[selectedToken];
       const decimals = Math.min(tokenConfig.decimals,8);
       
       const date = new Date(tx.timeStamp*1000);
-      let action = tx.action ? tx.action : this.functionsUtil.getTxAction(tx,tokenConfig);
+      const action = tx.action ? tx.action : this.functionsUtil.getTxAction(tx,tokenConfig);
 
       const parsedValue = parseFloat(tx.value);
 
       const amount = parsedValue ? (this.props.isMobile ? parsedValue.toFixed(4) : parsedValue.toFixed(decimals)) : '-';
       const momentDate = this.functionsUtil.strToMoment(date);
-      let interest = null;
-      switch (action) {
-        case 'Deposit':
-          depositedSinceLastRedeem+=parsedValue;
-        break;
-        case 'Redeem':
-          totalRedeemed += Math.abs(parsedValue);
-          if (totalRedeemed<depositedSinceLastRedeem){
-            interest = null;
-          } else {
-            interest = totalRedeemed-depositedSinceLastRedeem;
-            interest = interest>0 ? '+'+(this.props.isMobile ? parseFloat(interest).toFixed(4) : parseFloat(interest).toFixed(decimals))+' '+selectedToken : null;
-            depositedSinceLastRedeem -= totalRedeemed;
-            depositedSinceLastRedeem = Math.max(0,depositedSinceLastRedeem);
-            totalRedeemed = 0;
-          }
-        break;
-        default:
-        break;
-      }
 
       // Save new params
       tx.status = tx.status ? tx.status : 'Completed';
       tx.action = action;
       tx.momentDate = momentDate;
       tx.amount = amount;
-      tx.interest = interest;
 
-      if (i>=((this.state.page-1)*this.state.txsPerPage) && i<((this.state.page-1)*this.state.txsPerPage)+this.state.txsPerPage){
+      if (i>=((page-1)*this.state.txsPerPage) && i<((page-1)*this.state.txsPerPage)+this.state.txsPerPage) {
         processedTxs.push(tx);
       }
     });
+
+    // console.log('processedTxs',this.state.page,txsIndexes,processedTxs);
+
+    const loading = false;
   
     this.setState({
+      loading,
       totalTxs,
       totalPages,
-      processedTxs,
-      loading:false
+      processedTxs
     });
   }
 
   render() {
 
     const hasActiveFilters = Object.values(this.state.activeFilters).filter( v => (v !== null) ).length>0;
+
+    // console.log('processedTxs',this.state.processedTxs);
+    const processedTxs = this.state.processedTxs ? Object.values(this.state.processedTxs) : null;
 
     return (
       <Flex flexDirection={'column'} width={1} m={'0 auto'}>
@@ -283,10 +285,10 @@ class TransactionsList extends Component {
           ) : (
             <Flex
               width={1}
-              pt={[0, hasActiveFilters ? '116px' : 5]}
               position={'relative'}
               flexDirection={'column'}
-              id={"transactions-list-container"}
+              id={'transactions-list-container'}
+              pt={[0, hasActiveFilters ? '116px' : 5]}
             >
               <TransactionListFilters
                 {...this.props}
@@ -296,7 +298,7 @@ class TransactionsList extends Component {
                 applyFilters={this.applyFilters.bind(this)}
               />
               {
-                this.state.processedTxs && this.state.processedTxs.length ? (
+                processedTxs && processedTxs.length ? (
                   <Flex
                     width={1}
                     flexDirection={'column'}
@@ -305,26 +307,31 @@ class TransactionsList extends Component {
                       cols={this.props.cols}
                       isMobile={this.props.isMobile}
                     />
-                    <Flex id="transactions-list" flexDirection={'column'}>
+                    <Flex
+                      id={'transactions-list'}
+                      flexDirection={'column'}
+                    >
                       {
-                        this.state.processedTxs.map(transaction => {
-                          const transactionHash = transaction.hash;
+                        processedTxs.map( (tx,index) => {
+                          const txHash = tx.hash;
+                          const txHashKey = tx.hashKey;
                           const handleClick = (e) => {
-                            return (transactionHash ? window.open(`https://etherscan.io/tx/${transactionHash}`) : null);
+                            return (txHash ? window.open(`https://etherscan.io/tx/${txHash}`) : null);
                           };
+
                           return (
                             <TableRow
                               {...this.props}
                               rowProps={{
                                 isInteractive:true
                               }}
-                              hash={transactionHash}
-                              transaction={transaction}
+                              hash={txHash}
+                              transaction={tx}
+                              key={`tx-${txHashKey}`}
                               handleClick={handleClick}
-                              key={`tx-${transactionHash}`}
+                              rowId={`tx-col-${txHashKey}`}
+                              cardId={`tx-card-${txHashKey}`}
                               fieldComponent={TransactionField}
-                              rowId={`tx-col-${transactionHash}`}
-                              cardId={`tx-card-${transactionHash}`}
                             />
                           );
                         })
@@ -332,10 +339,10 @@ class TransactionsList extends Component {
                     </Flex>
                     <Flex
                       height={'50px'}
-                      flexDirection={'row'}
                       alignItems={'center'}
+                      flexDirection={'row'}
                       justifyContent={'flex-end'}
-                      id="transactions-list-pagination"
+                      id={'transactions-list-pagination'}
                     >
                       <Flex mr={3}>
                         <Link mr={1} onClick={ e => this.prevPage(e) }>

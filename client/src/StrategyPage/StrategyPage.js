@@ -77,9 +77,7 @@ class StrategyPage extends Component {
       const portfolio = await this.functionsUtil.getAccountPortfolio(this.props.availableTokens,this.props.account);
 
       if (portfolio){
-        const depositedTokens = Object.keys(portfolio.tokensBalance).filter(token => {
-          return this.functionsUtil.BNify(portfolio.tokensBalance[token].idleTokenBalance).gt(0);
-        });
+        const depositedTokens = Object.keys(portfolio.tokensBalance).filter(token => ( this.functionsUtil.BNify(portfolio.tokensBalance[token].idleTokenBalance).gt(0) ));
 
         newState.depositedTokens = depositedTokens;
 
@@ -221,7 +219,7 @@ class StrategyPage extends Component {
     }
   }
 
-  render() {
+  render(){
     /*
     const govTokens = this.functionsUtil.getGlobalConfig(['govTokens']);
     const availableGovTokens = Object.keys(govTokens).reduce((enabledTokens,token) => {

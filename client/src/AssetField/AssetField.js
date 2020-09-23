@@ -64,6 +64,8 @@ class AssetField extends Component {
 
   loadField = async(fieldName=null) => {
     // Exit if component unmounted
+    // console.log('loadField',this.props.fieldInfo.name,this.props.account,this.props.token,this.props.tokenConfig);
+
     if (this.componentUnmounted || !this.props.token || !this.props.tokenConfig){
       return false;
     }
@@ -78,12 +80,14 @@ class AssetField extends Component {
 
     const fieldProps = fieldInfo.props;
     const decimals = fieldProps && fieldProps.decimals ? fieldProps.decimals : ( this.props.isMobile ? 2 : 3 );
+    // const addCurveApy = typeof this.props.addCurveApy !== 'undefined' ? this.props.addCurveApy : false;
+    const addGovTokens = typeof this.props.addGovTokens !== 'undefined' ? this.props.addGovTokens : true;
 
     let output = null;
     if (this.props.token){
       switch (fieldName){
         case 'tokenBalance':
-          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account);
+          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account,addGovTokens);
           if (output && setState){
             this.setStateSafe({
               tokenBalance:output.toString()
@@ -91,7 +95,7 @@ class AssetField extends Component {
           }
         break;
         case 'tokenPrice':
-          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account);
+          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account,addGovTokens);
           if (output && setState){
             this.setStateSafe({
               tokenPrice:output.toString()
@@ -99,7 +103,7 @@ class AssetField extends Component {
           }
         break;
         case 'fee':
-          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account);
+          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account,addGovTokens);
           if (output && setState){
             this.setStateSafe({
               fee:output.toString()
@@ -109,7 +113,7 @@ class AssetField extends Component {
         case 'amountToMigrate':
           const {
             oldContractBalanceFormatted
-          } = await this.functionsUtil.checkMigration(this.props.tokenConfig,this.props.account);
+          } = await this.functionsUtil.checkMigration(this.props.tokenConfig,this.props.account,addGovTokens);
 
           if (setState){
             this.setStateSafe({
@@ -119,7 +123,7 @@ class AssetField extends Component {
           output = oldContractBalanceFormatted;
         break;
         case 'amountLent':
-          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account);
+          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account,addGovTokens);
           if (output && setState){
             this.setStateSafe({
               amountLent:output.toString()
@@ -127,18 +131,38 @@ class AssetField extends Component {
           }
         break;
         case 'idleTokenBalance':
-          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account);
+          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account,addGovTokens);
           if (output && setState){
             this.setStateSafe({
               idleTokenBalance:output.toString()
             })
           }
         break;
+        case 'redeemableBalanceCounterCurve':
+          const {
+            redeemableBalanceCurveEnd,
+            redeemableBalanceCurveStart
+          } = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account,addGovTokens);
+
+          if (redeemableBalanceCurveStart && redeemableBalanceCurveEnd){
+            if (setState){
+              this.setStateSafe({
+                redeemableBalanceCurveEnd,
+                redeemableBalanceCurveStart
+              });
+            }
+
+            output = {
+              redeemableBalanceCurveEnd,
+              redeemableBalanceCurveStart
+            };
+          }
+        break;
         case 'redeemableBalanceCounter':
           const {
             redeemableBalanceEnd,
             redeemableBalanceStart
-          } = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account);
+          } = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account,addGovTokens);
 
           if (redeemableBalanceStart && redeemableBalanceEnd){
             if (setState){
@@ -155,7 +179,7 @@ class AssetField extends Component {
           }
         break;
         case 'earnings':
-          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account);
+          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account,addGovTokens);
           if (output && setState){
             this.setStateSafe({
               earnings:output.toString()
@@ -186,11 +210,34 @@ class AssetField extends Component {
             };
           }
         break;
+        case 'earningsCounterCurve':
+          const [curveApy,earningsCurveStart,amountLentCurve] = await Promise.all([
+            this.functionsUtil.getCurveAPY(),
+            this.functionsUtil.loadAssetField('earningsCurve',this.props.token,this.props.tokenConfig,this.props.account,addGovTokens),
+            this.functionsUtil.loadAssetField('amountLentCurve',this.props.token,this.props.tokenConfig,this.props.account,addGovTokens)
+          ]);
+
+          if (amountLentCurve && earningsCurveStart && curveApy){
+            const earningsCurveEnd = amountLentCurve.gt(0) ? amountLentCurve.times(curveApy.div(100)).plus(earningsCurveStart) : 0;
+
+            if (setState){
+              this.setStateSafe({
+                earningsCurveEnd,
+                earningsCurveStart
+              });
+            }
+
+            output = {
+              earningsCurveEnd,
+              earningsCurveStart
+            };
+          }
+        break;
         case 'earningsCounter':
           const [tokenAPY2,earningsStart,amountLent2] = await Promise.all([
-            this.functionsUtil.loadAssetField('apy',this.props.token,this.props.tokenConfig,this.props.account),
-            this.functionsUtil.loadAssetField('earnings',this.props.token,this.props.tokenConfig,this.props.account),
-            this.functionsUtil.loadAssetField('amountLent',this.props.token,this.props.tokenConfig,this.props.account)
+            this.functionsUtil.loadAssetField('apy',this.props.token,this.props.tokenConfig,this.props.account,addGovTokens),
+            this.functionsUtil.loadAssetField('earnings',this.props.token,this.props.tokenConfig,this.props.account,addGovTokens),
+            this.functionsUtil.loadAssetField('amountLent',this.props.token,this.props.tokenConfig,this.props.account,addGovTokens)
           ]);
 
           if (amountLent2 && earningsStart && tokenAPY2){
@@ -210,7 +257,7 @@ class AssetField extends Component {
           }
         break;
         case 'redeemableBalance':
-          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account);
+          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account,addGovTokens);
           if (output && setState){
             this.setStateSafe({
               redeemableBalance:output.toString()
@@ -227,15 +274,24 @@ class AssetField extends Component {
           output = tokenScore;
         break;
         case 'pool':
-          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account);
+          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account,addGovTokens);
           if (output && setState){
             this.setStateSafe({
               poolSize:output.toString()
             })
           }
         break;
+        case 'earningsPercCurve':
+          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account,addGovTokens);
+          if (output && setState){
+            this.setStateSafe({
+              earningsPercCurveDirection:parseFloat(output)>0 ? 'up' : 'down',
+              earningsPercCurve:parseFloat(output).toFixed(decimals)
+            })
+          }
+        break;
         case 'earningsPerc':
-          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account);
+          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account,addGovTokens);
           if (output && setState){
             this.setStateSafe({
               earningsPercDirection:parseFloat(output)>0 ? 'up' : 'down',
@@ -244,7 +300,7 @@ class AssetField extends Component {
           }
         break;
         case 'apr':
-          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account);
+          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account,addGovTokens);
           if (output && setState){
             this.setStateSafe({
               tokenAPR:parseFloat(output).toFixed(decimals)
@@ -304,8 +360,39 @@ class AssetField extends Component {
             }
           }
         break;
+        case 'curveApy':
+          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account,addGovTokens);
+          // debugger;
+          if (output && setState){
+            if (!output.isNaN()){
+              this.setStateSafe({
+                curveApy:parseFloat(output).toFixed(decimals)
+              });
+            } else {
+              this.setStateSafe({
+                curveApy:false
+              });
+            }
+          }
+        break;
+        case 'curveAvgSlippage':
+          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account,addGovTokens);
+          // debugger;
+          if (output && setState){
+            if (!output.isNaN()){
+              this.setStateSafe({
+                curveAvgSlippage:(parseFloat(output)*100).toFixed(decimals)
+              });
+            } else {
+              this.setStateSafe({
+                curveAvgSlippage:false
+              });
+            }
+          }
+        break;
+
         case 'apy':
-          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account);
+          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account,addGovTokens);
           // debugger;
           if (output && setState){
             if (!output.isNaN()){
@@ -610,6 +697,12 @@ class AssetField extends Component {
           output = performanceChartData;
         break;
         default:
+          output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account,addGovTokens);
+          if (output && setState){
+            this.setStateSafe({
+              [fieldName]:output
+            });
+          }
         break;
       }
     }
@@ -689,6 +782,25 @@ class AssetField extends Component {
           <SmartNumber {...fieldProps} minPrecision={minPrecision} number={this.state.idleTokenBalance} />
         ) : loader
       break;
+      case 'redeemableBalanceCounterCurve':
+        output = this.state.redeemableBalanceCurveStart && this.state.redeemableBalanceCurveEnd ? (
+          <CountUp
+            delay={0}
+            decimal={'.'}
+            separator={''}
+            useEasing={false}
+            duration={31536000}
+            decimals={decimals}
+            end={parseFloat(this.state.redeemableBalanceCurveEnd)}
+            start={parseFloat(this.state.redeemableBalanceCurveStart)}
+            formattingFn={ n => this.functionsUtil.abbreviateNumber(n,decimals,maxPrecision,minPrecision) }
+          >
+            {({ countUpRef, start }) => (
+              <span style={fieldProps.style} ref={countUpRef} />
+            )}
+          </CountUp>
+        ) : loader
+      break;
       case 'redeemableBalanceCounter':
         output = this.state.redeemableBalanceStart && this.state.redeemableBalanceEnd ? (
           <CountUp
@@ -727,6 +839,25 @@ class AssetField extends Component {
           </CountUp>
         ) : loader
       break;
+      case 'earningsCounterCurve':
+        output = this.state.earningsCurveStart && this.state.earningsCurveEnd ? (
+          <CountUp
+            delay={0}
+            decimal={'.'}
+            separator={''}
+            useEasing={false}
+            duration={31536000}
+            decimals={decimals}
+            end={parseFloat(this.state.earningsCurveEnd)}
+            start={parseFloat(this.state.earningsCurveStart)}
+            formattingFn={ n => this.functionsUtil.abbreviateNumber(n,decimals,maxPrecision,minPrecision) }
+          >
+            {({ countUpRef, start }) => (
+              <span style={fieldProps.style} ref={countUpRef} />
+            )}
+          </CountUp>
+        ) : loader
+      break;
       case 'earningsCounter':
         output = this.state.earningsStart && this.state.earningsEnd ? (
           <CountUp
@@ -749,6 +880,11 @@ class AssetField extends Component {
       case 'redeemableBalance':
         output = this.state.redeemableBalance ? (
           <SmartNumber {...fieldProps} decimals={decimals} minPrecision={minPrecision} maxPrecision={maxPrecision} number={this.state.redeemableBalance} />
+        ) : loader
+      break;
+      case 'amountLentCurve':
+        output = this.state.amountLentCurve ? (
+          <SmartNumber {...fieldProps} decimals={decimals} minPrecision={minPrecision} maxPrecision={maxPrecision} number={this.state.amountLentCurve} />
         ) : loader
       break;
       case 'amountLent':
@@ -780,6 +916,35 @@ class AssetField extends Component {
           )
         : loader
       break;
+      case 'earningsPercCurve':
+        output = this.state.earningsPercCurve ?
+          (typeof fieldInfo.showDirection === 'undefined' || fieldInfo.showDirection) ? (
+            <VariationNumber
+              isMobile={this.props.isMobile}
+              direction={this.state.earningsPercCurveDirection}
+            >
+              <Text {...fieldProps}>{this.state.earningsPercCurve}%</Text>
+            </VariationNumber>
+          ) : (
+            <Text {...fieldProps}>{this.state.earningsPercCurve}%</Text>
+          )
+        : loader
+      break;
+      case 'earningsCurve':
+        output = this.state.earningsCurve ? (
+          <VariationNumber
+            direction={'up'}
+            isMobile={this.props.isMobile}
+          >
+            <SmartNumber
+              {...fieldProps}
+              decimals={decimals}
+              minPrecision={minPrecision}
+              number={this.state.earningsCurve}
+            />
+          </VariationNumber>
+        ) : loader
+      break;
       case 'earnings':
         output = this.state.earnings ? (
           <VariationNumber
@@ -808,6 +973,16 @@ class AssetField extends Component {
       case 'apyNoGov':
         output = this.state.tokenAPYNoGov !== undefined ? (
           <Text {...fieldProps}>{this.state.tokenAPYNoGov !== false ? this.state.tokenAPYNoGov : '-' }<small>%</small></Text>
+        ) : loader
+      break;
+      case 'curveApy':
+        output = this.state.curveApy !== undefined ? (
+          <Text {...fieldProps}>{this.state.curveApy !== false ? this.state.curveApy : '-' }<small>%</small></Text>
+        ) : loader
+      break;
+      case 'curveAvgSlippage':
+        output = this.state.curveAvgSlippage !== undefined ? (
+          <Text {...fieldProps}>{this.state.curveAvgSlippage !== false ? this.state.curveAvgSlippage : '-' }<small>%</small></Text>
         ) : loader
       break;
       case 'apy':

@@ -31,6 +31,7 @@ class DepositRedeem extends Component {
     showBuyFlow:false,
     unlentBalance:null,
     tokenApproved:false,
+    skipMigration:false,
     showRedeemFlow:false,
     contractPaused:false,
     buttonDisabled:false,
@@ -79,6 +80,12 @@ class DepositRedeem extends Component {
     });
   }
 
+  toggleSkipMigration = (skipMigration) => {
+    this.setState({
+      skipMigration
+    });
+  }
+
   toggleRedeemCurve = (redeemCurveEnabled) => {
     this.setState({
       redeemCurveEnabled
@@ -87,8 +94,7 @@ class DepositRedeem extends Component {
 
   toggleDepositCurve = (depositCurveEnabled) => {
     this.setState({
-      depositCurveEnabled,
-      action: depositCurveEnabled ? 'boost' : 'deposit'
+      depositCurveEnabled
     });
   }
 
@@ -111,7 +117,7 @@ class DepositRedeem extends Component {
   }
 
   async loadProxyContracts(){
-    const actions = ['deposit','redeem','boost'];
+    const actions = ['deposit','redeem'];
     const newState = {
       actionProxyContract:{}
     };
@@ -150,6 +156,7 @@ class DepositRedeem extends Component {
       let curveAPY = null;
       if (this.state.canDepositCurve){
         curveAPY = await this.functionsUtil.getCurveAPY();
+        // console.log('curveAPY',curveAPY);
         if (curveAPY){
           curveAPY = curveAPY.plus(tokenAPY);
         }
@@ -328,7 +335,7 @@ class DepositRedeem extends Component {
     const redeemCurveEnabled = canRedeemCurve;
 
     const newState = {...this.state};
-
+    
     newState.canRedeem = canRedeem;
     newState.canDeposit = canDeposit;
     newState.unlentBalance = unlentBalance;
@@ -409,12 +416,6 @@ class DepositRedeem extends Component {
 
     switch (this.state.action){
       // Handle deposit in curve
-      case 'boost':
-        if (!this.state.canDepositCurve || this.functionsUtil.BNify(this.props.idleTokenBalance).lte(0)){
-          return false;
-        }
-
-      break;
       case 'deposit':
 
         if (this.state.buttonDisabled || !inputValue || this.functionsUtil.BNify(inputValue).lte(0)){
@@ -747,9 +748,6 @@ class DepositRedeem extends Component {
     let buttonDisabled = false;
 
     switch (this.state.action){
-      case 'boost':
-        buttonDisabled = this.props.idleTokenBalance.lte(0);
-      break;
       case 'deposit':
         buttonDisabled = buttonDisabled || (amount && amount.gt(this.props.tokenBalance));
       break;
@@ -774,9 +772,6 @@ class DepositRedeem extends Component {
     let amount = null;
 
     switch(this.state.action){
-      case 'boost':
-        amount = this.props.idleTokenBalance ? this.functionsUtil.BNify(this.props.idleTokenBalance).times(selectedPercentage) : null;
-      break;
       case 'deposit':
         amount = this.props.tokenBalance ? this.functionsUtil.BNify(this.props.tokenBalance).times(selectedPercentage) : null;
       break;
@@ -845,9 +840,6 @@ class DepositRedeem extends Component {
           action = null;
         }
       break;
-      case 'boost':
-
-      break;
       default:
         action = null;
       break;
@@ -874,7 +866,7 @@ class DepositRedeem extends Component {
     const redeemGovTokenEnabled = this.functionsUtil.getGlobalConfig(['contract','methods','redeemGovTokens','enabled']) && !govTokensDisabled && govTokensEnabled;
     const redeemGovTokens = redeemGovTokenEnabled && this.state.redeemGovTokens && this.state.action === 'redeem';
 
-    const depositCurve = this.state.depositCurveEnabled && this.state.action === 'boost';
+    const depositCurve = this.state.depositCurveEnabled && this.state.action === 'deposit';
 
     const metaTransactionsAvailable = this.props.biconomy && this.state.actionProxyContract[this.state.action];
     const useMetaTx = metaTransactionsAvailable && this.state.metaTransactionsEnabled;
@@ -882,12 +874,19 @@ class DepositRedeem extends Component {
     const migrateText = this.state.migrationEnabled && this.props.tokenConfig.migration.message !== undefined ? this.props.tokenConfig.migration.message : null;
 
     const curveConfig = this.functionsUtil.getGlobalConfig(['curve']);
-    const canPerformAction = !depositCurve && !this.state.redeemCurveEnabled && ((this.state.action === 'deposit' && this.state.canDeposit) || (this.state.action === 'redeem' && this.state.canRedeem) || redeemGovTokens);
-    const showDepositCurve = this.state.canDepositCurve && ['deposit','boost'].includes(this.state.action);
-    const showRedeemCurve = this.state.canRedeemCurve && this.state.action === 'redeem';
+    const curveTokenEnabled = curveConfig.enabled && this.functionsUtil.getGlobalConfig(['curve','availableTokens',this.props.tokenConfig.idle.token,'enabled']);
 
-    const showBuyFlow = (!showDepositCurve || this.state.showBuyFlow) && !this.state.depositCurveEnabled && this.state.tokenApproved && !this.state.contractPaused && !this.state.migrationEnabled && this.state.action === 'deposit' && this.state.componentMounted && !this.state.canDeposit;
+    const canPerformAction = !depositCurve && !this.state.redeemCurveEnabled && ((this.state.action === 'deposit' && this.state.canDeposit) || (this.state.action === 'redeem' && this.state.canRedeem) || redeemGovTokens);
+    const showDepositCurve = this.state.componentMounted && (!this.state.migrationEnabled || this.state.skipMigration) && this.state.canDepositCurve && this.state.action === 'deposit';
+    const showRedeemCurve = this.state.componentMounted && (!this.state.migrationEnabled || this.state.skipMigration) && this.state.canRedeemCurve && this.state.action === 'redeem';
+
+    const showActionFlow = !redeemGovTokens && canPerformAction;
+    const showBuyFlow = this.state.componentMounted && (!showDepositCurve || this.state.showBuyFlow) && !this.state.depositCurveEnabled && this.state.tokenApproved && !this.state.contractPaused && (!this.state.migrationEnabled || this.state.skipMigration) && this.state.action === 'deposit' && !this.state.canDeposit;
     const showRedeemFlow = this.state.canRedeem && (!this.state.redeemCurveEnabled || this.state.showRedeemFlow);
+
+    const showDepositCurveOption = curveTokenEnabled && this.state.canDeposit && this.state.action === 'deposit';
+    const showRebalanceOption = this.state.canDeposit && skipMintCheckboxEnabled && this.state.action === 'deposit';
+    const showAdvancesDepositOptions = false && showDepositCurveOption && showRebalanceOption;
     return (
       <Flex
         width={1}
@@ -913,8 +912,9 @@ class DepositRedeem extends Component {
           </Box>
           <Migrate
             {...this.props}
-            migrateText={migrateText !== null ? '' : null}
             migrateTextBefore={migrateText}
+            migrateText={migrateText !== null ? '' : null}
+            toggleSkipMigration={this.toggleSkipMigration.bind(this)}
           >
             {
               !this.props.account ? (
@@ -973,12 +973,11 @@ class DepositRedeem extends Component {
                             p:3,
                             width:0.48,
                             onMouseDown:() => {
-                              const action = this.state.depositCurveEnabled ? 'boost' : 'deposit';
-                              this.setAction(action);
+                              this.setAction('deposit');
                             }
                           }}
                           isInteractive={true}
-                          isActive={ ['deposit','boost'].includes(this.state.action) }
+                          isActive={ this.state.action === 'deposit' }
                         >
                           <Flex
                             my={1}
@@ -1139,7 +1138,7 @@ class DepositRedeem extends Component {
                               display:'flex',
                               alignItems:'center',
                               flexDirection:'column',
-                              mb:showBuyFlow ? 0 : 3,
+                              mb:(showBuyFlow || showActionFlow) ? 0 : 3,
                               justifyContent:'center',
                             }}
                           >
@@ -1151,7 +1150,7 @@ class DepositRedeem extends Component {
                             >
                               <Image
                                 height={'1.8em'}
-                                src={curveConfig.icon}
+                                src={curveConfig.params.image}
                               />
                               <Text
                                 mt={2}
@@ -1441,7 +1440,7 @@ class DepositRedeem extends Component {
                             flexDirection={'column'}
                           >
                             {
-                              (this.state.canDeposit && skipMintCheckboxEnabled && this.state.action === 'deposit') && (
+                              showAdvancesDepositOptions ? (
                                 <DashboardCard
                                   cardProps={{
                                     py:3,
@@ -1460,9 +1459,9 @@ class DepositRedeem extends Component {
                                     justifyContent={'center'}
                                   >
                                     <Icon
+                                      name={'Tune'}
                                       size={'1.8em'}
                                       color={'cellText'}
-                                      name={'InfoOutline'}
                                     />
                                     <Text
                                       mt={1}
@@ -1471,21 +1470,81 @@ class DepositRedeem extends Component {
                                       color={'cellText'}
                                       textAlign={'center'}
                                     >
-                                      By checking this flag you can rebalance the pool and help all users gain an additional APR
+                                      Advanced deposit options
                                     </Text>
                                   </Flex>
-                                  <Checkbox
+                                  <Flex
                                     mt={2}
-                                    required={false}
-                                    label={`Rebalance the pool`}
-                                    checked={this.state.directMint}
-                                    onChange={ e => this.toggleSkipMint(e.target.checked) }
-                                  />
+                                    flexDirection={'column'}
+                                  >
+                                    <Checkbox
+                                      required={false}
+                                      label={`Deposit in the Curve Pool`}
+                                      checked={this.state.depositCurveEnabled}
+                                      onChange={ e => this.toggleDepositCurve(e.target.checked) }
+                                    />
+                                    <Checkbox
+                                      required={false}
+                                      label={`Rebalance the pool`}
+                                      checked={this.state.directMint}
+                                      onChange={ e => this.toggleSkipMint(e.target.checked) }
+                                    />
+                                  </Flex>
                                 </DashboardCard>
+                              ) : (
+                                <Flex
+                                  width={1}
+                                  flexDirection={'column'}
+                                >
+                                  {
+                                    showRebalanceOption && (
+                                      <DashboardCard
+                                        cardProps={{
+                                          py:3,
+                                          px:2,
+                                          mb:3,
+                                          display:'flex',
+                                          alignItems:'center',
+                                          flexDirection:'column',
+                                          justifyContent:'center',
+                                        }}
+                                      >
+                                        <Flex
+                                          width={1}
+                                          alignItems={'center'}
+                                          flexDirection={'column'}
+                                          justifyContent={'center'}
+                                        >
+                                          <Icon
+                                            size={'1.8em'}
+                                            color={'cellText'}
+                                            name={'InfoOutline'}
+                                          />
+                                          <Text
+                                            mt={1}
+                                            px={2}
+                                            fontSize={1}
+                                            color={'cellText'}
+                                            textAlign={'center'}
+                                          >
+                                            By checking this flag you can rebalance the pool and help all users gain an additional APR
+                                          </Text>
+                                        </Flex>
+                                        <Checkbox
+                                          mt={2}
+                                          required={false}
+                                          label={`Rebalance the pool`}
+                                          checked={this.state.directMint}
+                                          onChange={ e => this.toggleSkipMint(e.target.checked) }
+                                        />
+                                      </DashboardCard>
+                                    )
+                                  }
+                                </Flex>
                               )
                             }
                             {
-                              (!redeemGovTokens && canPerformAction) && (
+                              showActionFlow && (
                                 <Flex
                                   mb={3}
                                   width={1}
@@ -1497,77 +1556,56 @@ class DepositRedeem extends Component {
                                         mb={1}
                                         width={1}
                                       >
+                                        <Flex
+                                          width={1}
+                                          alignItems={'center'}
+                                          flexDirection={'row'}
+                                          justifyContent={'space-between'}
+                                        >
                                         {
-                                          this.state.action === 'boost' ? (
+                                          this.props.tokenFeesPercentage && (
                                             <Flex
-                                              width={1}
                                               alignItems={'center'}
-                                              justifyContent={'flex-end'}
+                                              flexDirection={'row'}
                                             >
-                                              <Link
+                                              <Text
                                                 fontSize={1}
                                                 fontWeight={3}
                                                 color={'dark-gray'}
                                                 textAlign={'right'}
                                                 hoverColor={'copyColor'}
-                                                onClick={ (e) => this.setFastBalanceSelector(100) }
                                               >
-                                                {this.props.idleTokenBalance.toFixed(6)} {this.props.tokenConfig.idle.token}
-                                              </Link>
-                                            </Flex>
-                                          ) : (
-                                            <Flex
-                                              width={1}
-                                              alignItems={'center'}
-                                              flexDirection={'row'}
-                                              justifyContent={'space-between'}
-                                            >
-                                            {
-                                              this.props.tokenFeesPercentage && (
-                                                <Flex
-                                                  alignItems={'center'}
-                                                  flexDirection={'row'}
-                                                >
-                                                  <Text
-                                                    fontSize={1}
-                                                    fontWeight={3}
-                                                    color={'dark-gray'}
-                                                    textAlign={'right'}
-                                                    hoverColor={'copyColor'}
-                                                  >
-                                                    Performance fee: {this.props.tokenFeesPercentage.times(100).toFixed(2)}%
-                                                  </Text>
-                                                  <Tooltip
-                                                    placement={'top'}
-                                                    message={`This fee is charged on positive returns generated by Idle`}
-                                                  >
-                                                    <Icon
-                                                      ml={1}
-                                                      name={"Info"}
-                                                      size={'1em'}
-                                                      color={'cellTitle'}
-                                                    />
-                                                  </Tooltip>
-                                                </Flex>
-                                              )
-                                            }
-                                            {
-                                              totalBalance && (
-                                                <Link
-                                                  fontSize={1}
-                                                  fontWeight={3}
-                                                  color={'dark-gray'}
-                                                  textAlign={'right'}
-                                                  hoverColor={'copyColor'}
-                                                  onClick={ (e) => this.setFastBalanceSelector(100) }
-                                                >
-                                                  {totalBalance.toFixed(6)} {this.props.selectedToken}
-                                                </Link>
-                                              )
-                                            }
+                                                Performance fee: {this.props.tokenFeesPercentage.times(100).toFixed(2)}%
+                                              </Text>
+                                              <Tooltip
+                                                placement={'top'}
+                                                message={`This fee is charged on positive returns generated by Idle`}
+                                              >
+                                                <Icon
+                                                  ml={1}
+                                                  name={"Info"}
+                                                  size={'1em'}
+                                                  color={'cellTitle'}
+                                                />
+                                              </Tooltip>
                                             </Flex>
                                           )
                                         }
+                                        {
+                                          totalBalance && (
+                                            <Link
+                                              fontSize={1}
+                                              fontWeight={3}
+                                              color={'dark-gray'}
+                                              textAlign={'right'}
+                                              hoverColor={'copyColor'}
+                                              onClick={ (e) => this.setFastBalanceSelector(100) }
+                                            >
+                                              {totalBalance.toFixed(6)} {this.props.selectedToken}
+                                            </Link>
+                                          )
+                                        }
+                                        </Flex>
                                       </Box>
                                     )
                                   }

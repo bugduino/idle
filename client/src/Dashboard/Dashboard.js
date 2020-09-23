@@ -10,6 +10,7 @@ import Utils from '../Utils/Utils';
 import AssetPage from '../AssetPage/AssetPage';
 import RoundButton from '../RoundButton/RoundButton';
 import DashboardCard from '../DashboardCard/DashboardCard';
+import CurveStrategy from '../CurveStrategy/CurveStrategy';
 import WelcomeModal from "../utilities/components/WelcomeModal";
 import TooltipModal from "../utilities/components/TooltipModal";
 import MigrateModal from "../utilities/components/MigrateModal";
@@ -59,6 +60,20 @@ class Dashboard extends Component {
         component:strategies[strategy].component
       })
     );
+
+
+    const curveConfig = this.functionsUtil.getGlobalConfig(['curve']);
+
+    // Add Curve
+    if (curveConfig.enabled){
+      const curveParams = Object.assign({
+        submenu:[],
+        selected:false,
+        component:CurveStrategy,
+      },curveConfig.params);
+
+      menu.push(curveParams);
+    }
 
     // Add Stats
     menu.push(

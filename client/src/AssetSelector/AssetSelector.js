@@ -202,7 +202,7 @@ class AssetSelector extends Component {
     this.loadUtils();
 
     const selectedTokenChanged = prevProps.selectedToken !== this.props.selectedToken;
-    const availableTokensChanged = JSON.stringify(prevProps.availableTokens) !== JSON.stringify(this.props.availableTokens);
+    const availableTokensChanged = JSON.stringify(Object.keys(prevProps.availableTokens)) !== JSON.stringify(Object.keys(this.props.availableTokens));
 
     if (availableTokensChanged || selectedTokenChanged){
       this.loadComponents();
@@ -210,9 +210,11 @@ class AssetSelector extends Component {
   }
 
   render() {
-    if (!this.state.options || !this.state.CustomOptionValue || !this.state.CustomValueContainer){
+    if (!this.state.options || !this.state.defaultValue || !this.state.CustomOptionValue || !this.state.CustomValueContainer || !this.props.availableTokens || !Object.keys(this.props.availableTokens).length){
       return null;
     }
+
+    // console.log('AssetSelector',this.props.selectedToken,this.state.defaultValue);
 
     return (
       <GenericSelector

@@ -138,7 +138,6 @@ class FunctionsUtil {
     return action;
   }
   getAccountPortfolio = async (availableTokens=null,account=null) => {
-
     const portfolio = {
       tokensBalance:{},
       totalBalance:this.BNify(0)
@@ -154,6 +153,7 @@ class FunctionsUtil {
     await this.asyncForEach(Object.keys(availableTokens),async (token) => {
       const tokenConfig = availableTokens[token];
       const idleTokenBalance = await this.getTokenBalance(tokenConfig.idle.token,account);
+
       if (idleTokenBalance){
         const tokenPrice = await this.getIdleTokenPrice(tokenConfig);
         const tokenBalance = idleTokenBalance.times(tokenPrice);
@@ -182,6 +182,186 @@ class FunctionsUtil {
 
     return portfolio;
   }
+  getCurveAvgSlippage = async (enabledTokens=[],account=null,fixDecimals=true) => {
+    account = account ? account : this.props.account;
+
+    if (!account){
+      return [];
+    }
+
+    const availableTokens = this.getCurveAvailableTokens();
+
+    if (!enabledTokens || !enabledTokens.length){
+      enabledTokens = Object.keys(availableTokens);
+    }
+
+    let processedTxs = {};
+    const processedHashes = {};
+    let curveTokensBalance = this.BNify(0);
+    const curveTxs = await this.getCurveTxs(account,0,'latest',enabledTokens);
+
+    if (curveTxs && curveTxs.length){
+
+      curveTxs.forEach((tx,index) => {
+
+        // Skip transactions with no hash
+        if (!tx.hash || !tx.curveTokens || !tx.curveTokenPrice){
+          return false;
+        }
+
+        const tokenAmount = this.BNify(tx.tokenAmount);
+        let curveTokens = this.BNify(tx.curveTokens);
+        const curveTokenPrice = this.BNify(tx.curveTokenPrice);
+
+        switch (tx.action){
+          case 'CurveIn':
+          case 'CurveZapIn':
+          case 'CurveDepositIn':
+          case 'CurveTransferIn':
+            if (tx.action === 'CurveTransferIn'){
+              if (index>0 && curveTokensBalance.gt(0)){
+                return;
+              }
+            }
+
+            if (!processedTxs[tx.hash]){
+              processedTxs[tx.hash] = {
+                price:null,
+                received:null,
+                slippage:null,
+                deposited:this.BNify(0),
+              };
+            }
+
+            processedTxs[tx.hash].deposited = processedTxs[tx.hash].deposited.plus(tokenAmount);
+            if (processedTxs[tx.hash].received === null){
+              processedTxs[tx.hash].price = curveTokenPrice;
+              processedTxs[tx.hash].received = curveTokens.times(curveTokenPrice);
+            }
+
+            // console.log('getCurveAvgSlippage',tx.action,tx.hash,tx.blockNumber,curveTokens.toFixed(6),curveTokenPrice.toFixed(6),processedTxs[tx.hash].deposited.toFixed(6),processedTxs[tx.hash].received.toFixed(6));
+          break;
+          case 'CurveOut':
+          case 'CurveZapOut':
+          case 'CurveDepositOut':
+            curveTokens = curveTokens.times(this.BNify(-1));
+          break;
+          default:
+          break;
+        }
+
+        // Update curveTokens balance
+        if (!processedHashes[tx.hash]){
+          curveTokensBalance = curveTokensBalance.plus(curveTokens);
+          if (curveTokensBalance.lte(0)){
+            curveTokensBalance = this.BNify(0);
+
+            // Reset processed transactions
+            // processedTxs = {};
+          }
+          processedHashes[tx.hash] = true;
+        }
+      });
+    }
+
+    // console.log('processedTxs',processedTxs);
+
+    let avgSlippage = this.BNify(0);
+    let totalDeposited = this.BNify(0);
+    Object.values(processedTxs).forEach( tx => {
+      const slippage = tx.received.div(tx.deposited).minus(1);
+      avgSlippage = avgSlippage.plus(slippage.times(tx.deposited));
+      totalDeposited = totalDeposited.plus(tx.deposited);
+    });
+
+    avgSlippage = avgSlippage.div(totalDeposited).times(-1);
+
+    // debugger;
+    // console.log('avgSlippage',avgSlippage.toString());
+
+    return avgSlippage;
+  }
+  getCurveAvgBuyPrice = async (enabledTokens=[],account=null) => {
+    account = account ? account : this.props.account;
+
+    if (!account){
+      return [];
+    }
+
+    const availableTokens = this.getCurveAvailableTokens();
+
+    if (!enabledTokens || !enabledTokens.length){
+      enabledTokens = Object.keys(availableTokens);
+    }
+
+    const processedTxs = {};
+    let avgBuyPrice = this.BNify(0);
+    let curveTokensBalance = this.BNify(0);
+    const curveTxs = await this.getCurveTxs(account,0,'latest',enabledTokens);
+
+    // console.log('curveTxs',curveTxs);
+
+    if (curveTxs && curveTxs.length){
+
+      curveTxs.forEach((tx,index) => {
+
+        if (!processedTxs[tx.hash]){
+          processedTxs[tx.hash] = [];
+        }
+
+        if (processedTxs[tx.hash].includes(tx.action)){
+          return;
+        }
+
+        // Skip transactions with no hash
+        if (!tx.hash || !tx.curveTokens || !tx.curveTokenPrice){
+          return false;
+        }
+
+        const prevAvgBuyPrice = avgBuyPrice;
+        let curveTokens = this.BNify(tx.curveTokens);
+        const curveTokenPrice = this.BNify(tx.curveTokenPrice);
+
+        // Deposited
+        switch (tx.action){
+          case 'CurveIn':
+          case 'CurveZapIn':
+          case 'CurveDepositIn':
+          case 'CurveTransferIn':
+            if (tx.action === 'CurveTransferIn'){
+              if (index>0 && curveTokensBalance.gt(0)){
+                return;
+              }
+            }
+            avgBuyPrice = curveTokens.times(curveTokenPrice).plus(prevAvgBuyPrice.times(curveTokensBalance)).div(curveTokensBalance.plus(curveTokens));
+          break;
+          case 'CurveOut':
+          case 'CurveZapOut':
+          case 'CurveDepositOut':
+          // case 'CurveTransferOut':
+            curveTokens = curveTokens.times(this.BNify(-1));
+          break;
+          default:
+          break;
+        }
+        
+        // Update curveTokens balance
+        curveTokensBalance = curveTokensBalance.plus(curveTokens);
+        if (curveTokensBalance.lte(0)){
+          avgBuyPrice = this.BNify(0);
+          curveTokensBalance = this.BNify(0);
+        }
+
+        processedTxs[tx.hash].push(tx.action);
+
+        // console.log('getCurveAvgBuyPrice',tx.action,tx.hash,tx.blockNumber,curveTokens.toString(),curveTokenPrice.toString(),curveTokensBalance.toString(),avgBuyPrice.toString());
+      });
+    }
+
+    // console.log('avgCurveBuyPrice',avgBuyPrice.toString());
+
+    return avgBuyPrice;
+  }
   getAvgBuyPrice = async (enabledTokens=[],account) => {
     account = account ? account : this.props.account;
 
@@ -197,56 +377,48 @@ class FunctionsUtil {
       output[selectedToken] = [];
       let avgBuyPrice = this.BNify(0);
 
-      // Try to get the avgBuyPrice with using the new method
-      // const tokenConfig = this.props.availableTokens[selectedToken];
-      // const userAvgPrice = await this.genericContractCall(tokenConfig.idle.token, 'userAvgPrices', [account]);
-      // if (userAvgPrice){
-      //   avgBuyPrice = this.fixTokenDecimals(userAvgPrice,tokenConfig.decimals);
-      // } else {
+      let idleTokensBalance= this.BNify(0);
+      const filteredTxs = Object.values(etherscanTxs).filter(tx => (tx.token === selectedToken));
 
-        let idleTokensBalance= this.BNify(0);
-        const filteredTxs = Object.values(etherscanTxs).filter(tx => (tx.token === selectedToken));
+      if (filteredTxs && filteredTxs.length){
 
-        if (filteredTxs && filteredTxs.length){
+        filteredTxs.forEach((tx,index) => {
 
-          filteredTxs.forEach((tx,index) => {
+          // Skip transactions with no hash or pending
+          if (!tx.hash || (tx.status && tx.status === 'Pending') || !tx.idleTokens || !tx.tokenPrice){
+            return false;
+          }
 
-            // Skip transactions with no hash or pending
-            if (!tx.hash || (tx.status && tx.status === 'Pending') || !tx.idleTokens || !tx.tokenPrice){
-              return false;
-            }
+          const prevAvgBuyPrice = avgBuyPrice;
+          let idleTokens = this.BNify(tx.idleTokens);
+          const tokenPrice = this.BNify(tx.tokenPrice);
 
-            const prevAvgBuyPrice = avgBuyPrice;
-            let idleTokens = this.BNify(tx.idleTokens);
-            const tokenPrice = this.BNify(tx.tokenPrice);
+          // Deposited
+          switch (tx.action){
+            case 'Deposit':
+            case 'Receive':
+            case 'Swap':
+            case 'Migrate':
+              avgBuyPrice = idleTokens.times(tokenPrice).plus(prevAvgBuyPrice.times(idleTokensBalance)).div(idleTokensBalance.plus(idleTokens));
+            break;
+            case 'Withdraw':
+            case 'Send':
+            case 'Redeem':
+            case 'SwapOut':
+              idleTokens = idleTokens.times(this.BNify(-1));
+            break;
+            default:
+            break;
+          }
 
-            // Deposited
-            switch (tx.action){
-              case 'Deposit':
-              case 'Receive':
-              case 'Swap':
-              case 'Migrate':
-                avgBuyPrice = idleTokens.times(tokenPrice).plus(prevAvgBuyPrice.times(idleTokensBalance)).div(idleTokensBalance.plus(idleTokens));
-              break;
-              case 'Withdraw':
-              case 'Send':
-              case 'Redeem':
-              case 'SwapOut':
-                idleTokens = idleTokens.times(this.BNify(-1));
-              break;
-              default:
-              break;
-            }
-
-            // Update idleTokens balance
-            idleTokensBalance = idleTokensBalance.plus(idleTokens);
-            if (idleTokensBalance.lte(0)){
-              avgBuyPrice = this.BNify(0);
-              idleTokensBalance = this.BNify(0);
-            }
-          });
-        }
-      // }
+          // Update idleTokens balance
+          idleTokensBalance = idleTokensBalance.plus(idleTokens);
+          if (idleTokensBalance.lte(0)){
+            avgBuyPrice = this.BNify(0);
+            idleTokensBalance = this.BNify(0);
+          }
+        });
+      }
 
       // Add token Data
       output[selectedToken] = avgBuyPrice;
@@ -381,21 +553,20 @@ class FunctionsUtil {
 
     return amountLents;
   }
-  getEtherscanTxs = async (account=false,firstBlockNumber=0,endBlockNumber='latest',enabledTokens=[],count=0) => {
-    account = account ? account.toLowerCase() : (this.props.account ? this.props.account.toLowerCase() : null);
+  getEtherscanBaseTxs = async (account=false,firstBlockNumber=0,endBlockNumber='latest',enabledTokens=[]) => {
+    account = account ? account : this.props.account;
 
     if (!account || !enabledTokens || !enabledTokens.length){
       return [];
     }
 
+    account = account.toLowerCase();
+
     const selectedStrategy = this.props.selectedStrategy;
-    const allAvailableTokens = Object.keys(this.props.availableTokens);
 
     // Check if firstBlockNumber is less that firstIdleBlockNumber
     const firstIdleBlockNumber = this.getGlobalConfig(['network','firstBlockNumber']);
     firstBlockNumber = Math.max(firstIdleBlockNumber,firstBlockNumber);
-
-    count = count ? count : 0;
 
     const requiredNetwork = globalConfigs.network.requiredNetwork;
     const etherscanInfo = globalConfigs.network.providers.etherscan;
@@ -463,6 +634,24 @@ class FunctionsUtil {
       }
     }
 
+    return {
+      results,
+      etherscanBaseTxs,
+      etherscanBaseEndpoint
+    };
+  }
+  getCurveTxs = async (account=false,firstBlockNumber=0,endBlockNumber='latest',enabledTokens=[]) => {
+    const results = await this.getEtherscanTxs(account,firstBlockNumber,endBlockNumber,enabledTokens);
+    // results = results ? Object.values(results) : [];
+    return this.filterCurveTxs(results,enabledTokens);
+  }
+  getEtherscanTxs = async (account=false,firstBlockNumber=0,endBlockNumber='latest',enabledTokens=[]) => {
+    const {
+      results,
+      etherscanBaseTxs,
+      etherscanBaseEndpoint
+    } = await this.getEtherscanBaseTxs(account,firstBlockNumber,endBlockNumber,enabledTokens);
+
     // Initialize prevTxs
     let etherscanTxs = {};
 
@@ -470,6 +659,7 @@ class FunctionsUtil {
       // Filter txs for token
       etherscanTxs = await this.processStoredTxs(results,enabledTokens);
     } else {
+      const allAvailableTokens = Object.keys(this.props.availableTokens);
       // Save base endpoint with all available tokens
       etherscanTxs = await this.filterEtherscanTxs(results,allAvailableTokens);
 
@@ -495,12 +685,32 @@ class FunctionsUtil {
       }
     }
 
-    etherscanTxs = Object.values(etherscanTxs).filter(tx => (enabledTokens.includes(tx.token.toUpperCase())) );
+    // console.log('etherscanTxs',etherscanTxs);
 
-    const orderedTxsTimestamps = etherscanTxs.map( tx => (parseInt(tx.timeStamp)) ).sort();
-    const orderedEtherscanTxs = orderedTxsTimestamps.map( timeStamp => ( etherscanTxs.find( tx => (parseInt(tx.timeStamp) === timeStamp) ) ) );
+    return Object
+            .values(etherscanTxs)
+            .filter(tx => (enabledTokens.includes(tx.token.toUpperCase())) )
+            .sort((a,b) => (a.timeStamp < b.timeStamp ? -1 : 1));
+  }
+  filterCurveTxs = async (results,enabledTokens=[]) => {
 
-    return orderedEtherscanTxs;
+    if (!results || !results.length || typeof results.forEach !== 'function'){
+      return [];
+    }
+
+    const availableTokens = this.props.availableTokens ? this.props.availableTokens : this.getCurveAvailableTokens();
+
+    if (!enabledTokens || !enabledTokens.length){
+      enabledTokens = Object.keys(availableTokens);
+    }
+
+    const curveTxs = results.filter( tx => (enabledTokens.includes(tx.token) && ['CurveIn','CurveOut','CurveZapIn','CurveZapOut','CurveTransferIn','CurveTransferOut','CurveDepositIn','CurveDepositOut'].includes(tx.action)) );
+
+    if (curveTxs.length){
+      curveTxs.sort((a,b) => (a.timeStamp < b.timeStamp ? -1 : 1));
+    }
+
+    return curveTxs;
   }
   filterEtherscanTxs = async (results,enabledTokens=[],processTxs=true) => {
     if (!results || !results.length || typeof results.forEach !== 'function'){
@@ -512,6 +722,16 @@ class FunctionsUtil {
     }
 
     let etherscanTxs = {};
+    let curveTransfersTxs = [];
+    let curveTransfersTxsToDelete = [];
+
+    // const idleTokensAddresses = Object.values(this.props.availableTokens).map( tokenConfig => (tokenConfig.idle.address) );
+    const curveZapContract = this.getGlobalConfig(['curve','zapContract']);
+    const curvePoolContract = this.getGlobalConfig(['curve','poolContract']);
+    const curveSwapContract = this.getGlobalConfig(['curve','migrationContract']);
+    const curveDepositContract = this.getGlobalConfig(['curve','depositContract']);
+
+    // console.log('filterEtherscanTxs',enabledTokens,results);
 
     enabledTokens.forEach(token => {
       const tokenConfig = this.props.availableTokens[token];
@@ -523,84 +743,160 @@ class FunctionsUtil {
       const batchMigration = this.getGlobalConfig(['tools','batchMigration','props','availableTokens',tokenConfig.idle.token]);
       const batchMigrationContractAddr = batchMigration && batchMigration.migrationContract ? batchMigration.migrationContract.address : null;
 
-      results.forEach(
-        tx => {
+      const curveTokenConfig = this.getGlobalConfig(['curve','availableTokens',tokenConfig.idle.token]);
 
-          let tokenDecimals = tokenConfig.decimals;
-          const internalTxs = results.filter(r => r.hash === tx.hash);
-          const isRightToken = internalTxs.length>1 && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === tokenConfig.address.toLowerCase()).length>0;
-          const isSendTransferTx = internalTxs.length === 1 && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
-          const isReceiveTransferTx = internalTxs.length === 1 && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
-          const isBatchMigrationTx = batchMigrationContractAddr && tx.from.toLowerCase() === batchMigrationContractAddr.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase();
+      results.forEach( tx => {
+        let tokenDecimals = tokenConfig.decimals;
+        const idleToken = tokenConfig.idle.token;
+        const internalTxs = results.filter(r => r.hash === tx.hash);
+        const isRightToken = internalTxs.length>1 && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === tokenConfig.address.toLowerCase()).length>0;
+        const isSendTransferTx = internalTxs.length === 1 && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
+        const isReceiveTransferTx = internalTxs.length === 1 && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
+        const isBatchMigrationTx = batchMigrationContractAddr && tx.from.toLowerCase() === batchMigrationContractAddr.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase();
 
-          const isMigrationTx = isBatchMigrationTx || (migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).includes(tx.from.toLowerCase()) ) && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase());
-          const isConversionTx = tokenMigrationToolParams && (tx.from.toLowerCase() === tokenMigrationToolParams.address.toLowerCase() || tokenMigrationToolParams.oldAddresses.map((v) => { return v.toLowerCase(); }).includes(tx.from.toLowerCase())) && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
-          const isDepositTx = isRightToken && !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && (tx.to.toLowerCase() === tokenConfig.idle.address.toLowerCase() || (depositProxyContractInfo && tx.to.toLowerCase() === depositProxyContractInfo.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase()).length>0 ));
-          const isRedeemTx = isRightToken && !isMigrationTx && tx.contractAddress.toLowerCase() === tokenConfig.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase()).length && tx.to.toLowerCase() === this.props.account.toLowerCase();
-          const isWithdrawTx = internalTxs.length>1 && internalTxs.filter(iTx => tokenConfig.protocols.map(p => p.address.toLowerCase()).includes(iTx.contractAddress.toLowerCase()) ).length>0 && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
-          const isSwapTx = !isReceiveTransferTx && !isConversionTx && !etherscanTxs[tx.hash] && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
-          const isSwapOutTx = !isSendTransferTx && !isWithdrawTx && !etherscanTxs[tx.hash] && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
+        const isMigrationTx = isBatchMigrationTx || (migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).includes(tx.from.toLowerCase()) ) && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase());
+        const isConversionTx = tokenMigrationToolParams && (tx.from.toLowerCase() === tokenMigrationToolParams.address.toLowerCase() || tokenMigrationToolParams.oldAddresses.map((v) => { return v.toLowerCase(); }).includes(tx.from.toLowerCase())) && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
+        const isDepositTx = isRightToken && !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && (tx.to.toLowerCase() === tokenConfig.idle.address.toLowerCase() || (depositProxyContractInfo && tx.to.toLowerCase() === depositProxyContractInfo.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase()).length>0 ));
+        const isRedeemTx = isRightToken && !isMigrationTx && tx.contractAddress.toLowerCase() === tokenConfig.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase()).length && tx.to.toLowerCase() === this.props.account.toLowerCase();
+        const isWithdrawTx = internalTxs.length>1 && internalTxs.filter(iTx => tokenConfig.protocols.map(p => p.address.toLowerCase()).includes(iTx.contractAddress.toLowerCase()) ).length>0 && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
+        const isSwapTx = !isReceiveTransferTx && !isConversionTx && !etherscanTxs[tx.hash] && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
+        const isSwapOutTx = !isSendTransferTx && !isWithdrawTx && !etherscanTxs[tx.hash] && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
 
-          if (isSendTransferTx || isReceiveTransferTx || isMigrationTx || isDepositTx || isRedeemTx || isSwapTx || isSwapOutTx || isWithdrawTx || isConversionTx){
-            
-            let action = null;
+        // const curveDepositTx = internalTxs.find( iTx => (iTx.contractAddress.toLowerCase() === tokenConfig.address.toLowerCase() && iTx.from.toLowerCase() === this.props.account.toLowerCase()) );
+        const idleTokenAddress = curveTokenConfig && curveTokenConfig.address ? curveTokenConfig.address : tokenConfig.idle.address;
 
-            if (isDepositTx){
-              action = 'Deposit';
-            } else if (isRedeemTx){
-              action = 'Redeem';
-            } else if (isMigrationTx || isConversionTx){
-              action = 'Migrate';
-            } else if (isSendTransferTx){
-              action = 'Send';
-            } else if (isReceiveTransferTx){
-              action = 'Receive';
-            } else if (isSwapTx){
-              action = 'Swap';
-            } else if (isSwapOutTx){
-              action = 'SwapOut';
-            } else if (isWithdrawTx){
-              action = 'Withdraw';
+        // Check Curve
+        const curveTx = internalTxs.find( tx => (tx.contractAddress.toLowerCase() === curvePoolContract.address.toLowerCase() && (tx.to.toLowerCase() === this.props.account.toLowerCase() || tx.from.toLowerCase() === this.props.account.toLowerCase()) ) );
+        const isCurveTx = curveTx !== undefined;
+
+        const isCurveDepositTx = isCurveTx && tx.contractAddress.toLowerCase() === idleTokenAddress.toLowerCase() && tx.to.toLowerCase() === curveSwapContract.address.toLowerCase() && tx.from.toLowerCase() === this.props.account.toLowerCase() && this.BNify(tx.value).gt(0);
+        const isCurveRedeemTx = isCurveTx && tx.contractAddress.toLowerCase() === idleTokenAddress.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.from.toLowerCase() === curveSwapContract.address.toLowerCase() && this.BNify(tx.value).gt(0);
+
+        const isCurveDepositIn = isCurveTx && tx.contractAddress.toLowerCase() === tokenConfig.address.toLowerCase() && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.to.toLowerCase() === curveDepositContract.address.toLowerCase() && this.BNify(tx.value).gt(0);
+        const isCurveDepositOut = isCurveTx && tx.contractAddress.toLowerCase() === tokenConfig.address.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.from.toLowerCase() === curveDepositContract.address.toLowerCase() && this.BNify(tx.value).gt(0);
+
+        const isCurveZapIn = isCurveTx && tx.contractAddress.toLowerCase() === curvePoolContract.address.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.from.toLowerCase() === curveZapContract.address.toLowerCase() && this.BNify(tx.value).gt(0);
+        const isCurveZapOut = isCurveTx && tx.contractAddress.toLowerCase() === curvePoolContract.address.toLowerCase() && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.to.toLowerCase() === curveZapContract.address.toLowerCase() && this.BNify(tx.value).gt(0);
+
+        const isCurveTransferOut = tx.contractAddress.toLowerCase() === curvePoolContract.address.toLowerCase() && !isCurveZapOut && !isCurveRedeemTx && /*internalTxs[internalTxs.length-1] === tx &&*/ tx.from.toLowerCase() === this.props.account.toLowerCase();
+        const isCurveTransferIn = tx.contractAddress.toLowerCase() === curvePoolContract.address.toLowerCase() && !isCurveZapIn && !isCurveDepositTx && /*internalTxs[internalTxs.length-1] === tx &&*/ tx.to.toLowerCase() === this.props.account.toLowerCase();
+
+        // if (token === 'TUSD' && tx.hash.toLowerCase() === '0x6a35b72cec89984a9962c14dc7d1ab54ea7372b9e9badc1ae702e6e46be85faf'.toLowerCase()){
+        //   debugger;
+        // }
+
+        if (isSendTransferTx || isReceiveTransferTx || isMigrationTx || isDepositTx || isRedeemTx || isSwapTx || isSwapOutTx || isWithdrawTx || isConversionTx || isCurveDepositTx || isCurveRedeemTx || isCurveZapIn || isCurveZapOut || isCurveTransferOut || isCurveTransferIn || isCurveDepositIn || isCurveDepositOut){
+
+          let action = null;
+          let hashKey = tx.hash;
+
+          if (isDepositTx){
+            action = 'Deposit';
+          } else if (isRedeemTx){
+            action = 'Redeem';
+          } else if (isMigrationTx || isConversionTx){
+            action = 'Migrate';
+          } else if (isSendTransferTx){
+            action = 'Send';
+          } else if (isReceiveTransferTx){
+            action = 'Receive';
+          } else if (isSwapTx){
+            action = 'Swap';
+          } else if (isSwapOutTx){
+            action = 'SwapOut';
+          } else if (isWithdrawTx){
+            action = 'Withdraw';
+          } else if (isCurveDepositTx){
+            action = 'CurveIn';
+          } else if (isCurveRedeemTx){
+            action = 'CurveOut';
+          } else if (isCurveZapIn){
+            action = 'CurveZapIn';
+          } else if (isCurveZapOut){
+            action = 'CurveZapOut';
+          } else if (isCurveDepositIn){
+            action = 'CurveDepositIn';
+          } else if (isCurveDepositOut){
+            action = 'CurveDepositOut';
+          } else if (isCurveTransferIn){
+            action = 'CurveTransferIn';
+          } else if (isCurveTransferOut){
+            action = 'CurveTransferOut';
+          }
+
+          let curveTokens = null;
+          if (isCurveTx){
+            hashKey += '_'+tx.tokenSymbol;
+            curveTokens = this.fixTokenDecimals(curveTx.value,curvePoolContract.decimals);
+
+            // Add action for curve tokens transfers
+            if ((isCurveTransferIn || isCurveTransferOut)){
+              hashKey+='_'+action;
             }
+          }
 
-            if (tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase()){
-              tokenDecimals = 18;
+          // console.log('SAVE!',action);
+
+          if (tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase()){
+            tokenDecimals = 18;
+          } else if (isCurveTx){
+            tokenDecimals = parseInt(tx.tokenDecimal);
+          }
+
+          // Sum the value if already processed
+          if (etherscanTxs[hashKey]){
+            // Prevent second internal tx to sum SwapOut original value
+            switch (etherscanTxs[hashKey].action){
+              case 'SwapOut':
+                if (etherscanTxs[hashKey].action !== action && isRedeemTx){
+                  etherscanTxs[hashKey].tokenValue = this.fixTokenDecimals(tx.value,tokenDecimals);
+                }
+              break;
+              default:
+                if (!curveTx){
+                  const newValue = etherscanTxs[hashKey].value.plus(this.fixTokenDecimals(tx.value,tokenDecimals));
+                  etherscanTxs[hashKey].value = newValue;
+                }
+              break;
             }
-
-            // Sum the value if already processed
-            if (etherscanTxs[tx.hash]){
-              // Prevent second internal tx to sum SwapOut original value
-              switch (etherscanTxs[tx.hash].action){
-                case 'SwapOut':
-                  if (etherscanTxs[tx.hash].action !== action && isRedeemTx){
-                    etherscanTxs[tx.hash].tokenValue = this.fixTokenDecimals(tx.value,tokenDecimals);
-                  }
-                break;
-                default:
-                  const newValue = etherscanTxs[tx.hash].value.plus(this.fixTokenDecimals(tx.value,tokenDecimals));
-                  etherscanTxs[tx.hash].value = newValue;
-                break;
+          } else {
+            // Insert tx in curve transfers buffer
+            if (isCurveTransferIn || isCurveTransferOut){
+              if (!curveTransfersTxsToDelete.includes(tx.hash.toLowerCase())){
+                curveTokens = this.fixTokenDecimals(tx.value,curvePoolContract.decimals);
+                curveTransfersTxs.push({...tx, hashKey, token, idleToken, curveTokens, action, value: this.fixTokenDecimals(tx.value,tokenDecimals)});
               }
             } else {
-              etherscanTxs[tx.hash] = ({...tx, token, action, value: this.fixTokenDecimals(tx.value,tokenDecimals)});
-                
+              etherscanTxs[hashKey] = ({...tx, hashKey, token, idleToken, curveTokens, action, value: this.fixTokenDecimals(tx.value,tokenDecimals)});
+
+              // Delete curveTransfers
+              if (!curveTransfersTxsToDelete.includes(tx.hash.toLowerCase())){
+                curveTransfersTxsToDelete.push(tx.hash.toLowerCase());
+              }
+
               // Take right tokenSymbol
               switch (action){
                 case 'Withdraw':
                   const iTxs = internalTxs.filter(iTx => (iTx !== tx));
                   if (iTxs.length>0){
                     const iTx = iTxs[0];
-                    etherscanTxs[tx.hash].withdrawnValue = this.fixTokenDecimals(iTx.value,iTx.tokenDecimal);
-                    etherscanTxs[tx.hash].tokenSymbol = iTx.tokenSymbol;
+                    etherscanTxs[hashKey].withdrawnValue = this.fixTokenDecimals(iTx.value,iTx.tokenDecimal);
+                    etherscanTxs[hashKey].tokenSymbol = iTx.tokenSymbol;
                   }
                 break;
                 default:
                 break;
               }
-            }
+            }   
           }
         }
-      )
+      });
+    });
+    
+    curveTransfersTxs.forEach( tx => {
+      if (!curveTransfersTxsToDelete.includes(tx.hash.toLowerCase())){
+        etherscanTxs[tx.hashKey] = tx;
+      }
     });
   
     if (processTxs){
@@ -666,13 +962,13 @@ class FunctionsUtil {
 
     return output;
   }
-
   processEtherscanTransactions = async (etherscanTxs,enabledTokens=[]) => {
 
     if (!enabledTokens || !enabledTokens.length){
       enabledTokens = Object.keys(this.props.availableTokens);
     }
 
+    let txReceipts = {};
     let storedTxs = this.getStoredTransactions();
 
     // Init storedTxs for pair account-token if empty
@@ -680,10 +976,29 @@ class FunctionsUtil {
       storedTxs[this.props.account] = {};
     }
 
+    // Take base tokens addresses and configs
+    const baseTokensConfigs = {};
+    const baseTokensAddresses = [];
+    const curveAvailableTokens = this.getGlobalConfig(['curve','availableTokens']);
+    Object.keys(curveAvailableTokens).forEach( token => {
+      const curveTokenConfig = curveAvailableTokens[token];
+      const baseTokenConfig = this.getGlobalConfig(['stats','tokens',curveTokenConfig.baseToken]);
+      const baseTokenAddress = baseTokenConfig.address.toLowerCase();
+      baseTokensConfigs[baseTokenAddress] = baseTokenConfig;
+      baseTokensConfigs[baseTokenAddress].token = curveTokenConfig.baseToken;
+      baseTokensAddresses.push(baseTokenAddress);
+    });
+
+    const curveZapContract = this.getGlobalConfig(['curve','zapContract']);
+    // const curvePoolContract = this.getGlobalConfig(['curve','poolContract']);
+    // const curveSwapContract = this.getGlobalConfig(['curve','migrationContract']);
+    // const curveDepositContract = this.getGlobalConfig(['curve','depositContract']);
+
     await this.asyncForEach(enabledTokens,async (selectedToken) => {
 
       const tokenConfig = this.props.availableTokens[selectedToken];
       const tokenKey = tokenConfig.idle.token;
+      const idleToken = tokenConfig.idle.token;
 
       // Init storedTxs for pair account-token if empty
       if (typeof storedTxs[this.props.account][tokenKey] !== 'object'){
@@ -708,7 +1023,7 @@ class FunctionsUtil {
             storedTx.tokenPrice = tokenPrice;
           }
 
-          const idleTokens = this.BNify(tx.value);
+          let idleTokens = this.BNify(tx.value);
           let tokensTransfered = tokenPrice.times(idleTokens);
 
           // Add transactionHash to storedTx
@@ -745,6 +1060,109 @@ class FunctionsUtil {
                 storedTx.value = storedTx.withdrawnValue;
               }
             break;
+            case 'CurveIn':
+            case 'CurveOut':
+              if (!storedTx.tokenAmount){
+                const curveTokenPrice = await this.getCurveTokenPrice(tx.blockNumber);
+                storedTx.idleTokens = idleTokens;
+                storedTx.tokenAmount = tokensTransfered;
+                storedTx.curveTokenPrice = curveTokenPrice;
+              }
+            break;
+            case 'CurveTransferIn':
+            case 'CurveTransferOut':
+              if (!storedTx.curveTokenPrice){
+                const curveTokenPrice = await this.getCurveTokenPrice(tx.blockNumber);
+                storedTx.curveTokenPrice = curveTokenPrice;
+                storedTx.tokenAmount = this.BNify(storedTx.curveTokens).times(storedTx.curveTokenPrice);
+              }
+
+              storedTx.idleTokens = this.BNify(0);
+            break;
+            case 'CurveZapIn':
+            case 'CurveZapOut':
+              if (!storedTx.curveTokenPrice){
+                const curveTokenPrice = await this.getCurveTokenPrice(tx.blockNumber);
+                storedTx.curveTokenPrice = curveTokenPrice;
+              }
+
+              if (!storedTx.tokenAmount){
+
+                storedTx.tokenAmount = this.BNify(0);
+                storedTx.idleTokens = this.BNify(0);
+
+                const curveTxReceipt = txReceipts[tx.hashKey] ? txReceipts[tx.hashKey] : await (new Promise( async (resolve, reject) => {
+                  this.props.web3.eth.getTransactionReceipt(tx.hash,(err,tx)=>{
+                    if (err){
+                      reject(err);
+                    }
+                    resolve(tx);
+                  });
+                }));
+
+                if (curveTxReceipt){
+
+                  // Save receipt
+                  if (!txReceipts[tx.hashKey]){
+                    txReceipts[tx.hashKey] = curveTxReceipt;
+                  }
+
+                  const filteredLogs = curveTxReceipt.logs.filter( log => (baseTokensAddresses.includes(log.address.toLowerCase()) && log.topics[log.topics.length-1].toLowerCase() === `0x00000000000000000000000${curveZapContract.address.replace('x','').toLowerCase()}` ) );
+
+                  console.log('filteredLogs',filteredLogs);
+
+                  if (filteredLogs && filteredLogs.length){
+                    filteredLogs.forEach( log => {
+                      let tokenAmount = parseInt(log.data,16);
+                      const baseTokensConfig = baseTokensConfigs[log.address.toLowerCase()];
+                      const tokenDecimals = baseTokensConfig.decimals;
+                      tokenAmount = this.fixTokenDecimals(tokenAmount,tokenDecimals);
+                      storedTx.tokenAmount = storedTx.tokenAmount.plus(tokenAmount);
+                      console.log('Add tokenAmount ('+tx.hash+')',baseTokensConfig.token,tokenAmount.toFixed(5),storedTx.tokenAmount.toFixed(5));
+                    });
+                  }
+                }
+              }
+            break;
+            case 'CurveDepositIn':
+            case 'CurveDepositOut':
+              if (!storedTx.curveTokenPrice){
+                const curveTokenPrice = await this.getCurveTokenPrice(tx.blockNumber);
+                storedTx.curveTokenPrice = curveTokenPrice;
+              }
+
+              storedTx.tokenAmount = this.BNify(storedTx.value);
+
+              if (!storedTx.idleTokens){
+
+                const curveTxReceipt = txReceipts[tx.hashKey] ? txReceipts[tx.hashKey] : await (new Promise( async (resolve, reject) => {
+                  this.props.web3.eth.getTransactionReceipt(tx.hash,(err,tx)=>{
+                    if (err){
+                      reject(err);
+                    }
+                    resolve(tx);
+                  });
+                }));
+
+                if (curveTxReceipt){
+                  const curveTokenConfig = this.getGlobalConfig(['curve','availableTokens',idleToken]);
+                  const idleTokenDecimals = curveTokenConfig && curveTokenConfig.decimals ? curveTokenConfig.decimals : 18;
+                  const idleTokenAddress = curveTokenConfig && curveTokenConfig.address ? curveTokenConfig.address : tokenConfig.idle.address;
+
+                  // Save receipt
+                  if (!txReceipts[tx.hashKey]){
+                    txReceipts[tx.hashKey] = curveTxReceipt;
+                  }
+
+                  const filteredLogs = curveTxReceipt.logs.filter( log => (log.address.toLowerCase()===idleTokenAddress ) );
+                  if (filteredLogs && filteredLogs.length){
+                    idleTokens = parseInt(filteredLogs[0].data,16);
+                    idleTokens = this.fixTokenDecimals(idleTokens,idleTokenDecimals);
+                    storedTx.idleTokens = idleTokens;
+                  }
+                }
+              }
+            break;
             default:
             break;
           }
@@ -753,7 +1171,7 @@ class FunctionsUtil {
           storedTx.token = selectedToken;
 
           // Save processed tx
-          etherscanTxs[tx.hash] = storedTx;
+          etherscanTxs[tx.hashKey] = storedTx;
 
           // Store processed Tx
           storedTxs[this.props.account][tokenKey][txKey] = storedTx;
@@ -1906,7 +2324,7 @@ class FunctionsUtil {
       }
     });
   }
-  loadAssetField = async (field,token,tokenConfig,account,addGovTokens=true) => {
+  loadAssetField = async (field,token,tokenConfig,account,addGovTokens=true,addCurveApy=false) => {
 
     let output = null;
     const govTokens = this.getGlobalConfig(['govTokens']);
@@ -1931,13 +2349,77 @@ class FunctionsUtil {
     }
 
     switch (field){
+      case 'amountLentCurve':
+        const [
+          curveAvgSlippage,
+          curveAvgBuyPrice,
+          curveTokenBalance,
+        ] = await Promise.all([
+          this.getCurveAvgSlippage(),
+          this.getCurveAvgBuyPrice([],account),
+          this.getCurveTokenBalance(account,true),
+        ]);
+
+        if (curveAvgBuyPrice && curveTokenBalance){
+          output = this.BNify(curveTokenBalance).times(curveAvgBuyPrice);
+          if (curveAvgSlippage){
+            output = output.minus(output.times(curveAvgSlippage));
+          }
+          // console.log('amountLentCurve',curveTokenBalance.toFixed(6),curveAvgBuyPrice.toFixed(6),curveAvgSlippage.toString(),output.toFixed(6));
+        }
+      break;
+      case 'earningsPercCurve':
+        let [amountLentCurve1,redeemableBalanceCurve] = await Promise.all([
+          this.loadAssetField('amountLentCurve',token,tokenConfig,account),
+          this.loadAssetField('redeemableBalanceCurve',token,tokenConfig,account)
+        ]);
+
+        if (amountLentCurve1 && redeemableBalanceCurve && amountLentCurve1.gt(0) && redeemableBalanceCurve.gt(0)){
+          output = redeemableBalanceCurve.div(amountLentCurve1).minus(1).times(100);
+          // console.log('earningsPercCurve',redeemableBalanceCurve.toFixed(6),amountLentCurve1.toFixed(6),output.toFixed(6));
+        }
+      break;
+      case 'curveApy':
+        output = await this.getCurveAPY();
+      break;
+      case 'curveAvgSlippage':
+        output = await this.getCurveAvgSlippage();
+      break;
+      case 'redeemableBalanceCurve':
+        output = await this.getCurveRedeemableIdleTokens(account);
+        // console.log('earningsPercCurve',output.toFixed(6));
+      break;
+      case 'redeemableBalanceCounterCurve':
+        let [
+          curveApy,
+          amountLentCurve,
+          redeemableBalanceCurveStart
+        ] = await Promise.all([
+          this.loadAssetField('curveApy',token,tokenConfig,account),
+          this.loadAssetField('amountLentCurve',token,tokenConfig,account),
+          this.loadAssetField('redeemableBalanceCurve',token,tokenConfig,account),
+        ]);
+
+        let redeemableBalanceCurveEnd = null;
+
+        if (redeemableBalanceCurveStart && curveApy && amountLentCurve){
+          const earningPerYear = amountLentCurve.times(curveApy.div(100));
+          redeemableBalanceCurveEnd = redeemableBalanceCurveStart.plus(earningPerYear);
+          // console.log('redeemableBalanceCounterCurve',amountLentCurve.toFixed(6),redeemableBalanceCurveStart.toFixed(6),redeemableBalanceCurveEnd.toFixed(6));
+        }
+
+        output = {
+          redeemableBalanceCurveEnd,
+          redeemableBalanceCurveStart
+        };
+      break;
       case 'earningsPerc':
         let [amountLent1,redeemableBalance1] = await Promise.all([
           this.loadAssetField('amountLent',token,tokenConfig,account),
           this.loadAssetField('redeemableBalance',token,tokenConfig,account)
         ]);
 
-        if (amountLent1 && redeemableBalance1){
+        if (amountLent1 && redeemableBalance1 && amountLent1.gt(0)){
           output = redeemableBalance1.div(amountLent1).minus(1).times(100);
         }
       break;
@@ -1978,6 +2460,13 @@ class FunctionsUtil {
 
         if (tokenApys && tokenApys.avgApy !== null){
           output = tokenApys.avgApy;
+
+          if (addCurveApy){
+            const curveAPY = await this.getCurveAPY();
+            if (curveAPY){
+              output = output.plus(curveAPY);
+            }
+          }
         }
       break;
       case 'avgAPY':
@@ -2078,6 +2567,22 @@ class FunctionsUtil {
             // console.log('redeemableBalance',idleTokenBalance2.toFixed(4),idleTokenPrice1.toFixed(4),tokenBalance.toFixed(4),govTokensBalance.toFixed(4),output.toFixed(4));
           }
         }
+      break;
+      case 'earningsCurve':
+        let [amountLentCurve2,redeemableBalanceCurve1] = await Promise.all([
+          this.loadAssetField('amountLentCurve',token,tokenConfig,account),
+          this.loadAssetField('redeemableBalanceCurve',token,tokenConfig,account)
+        ]);
+
+        if (!amountLentCurve2){
+          amountLentCurve2 = this.BNify(0);
+        }
+
+        if (!redeemableBalanceCurve1){
+          redeemableBalanceCurve1 = this.BNify(0);
+        }
+
+        output = redeemableBalanceCurve1.minus(amountLentCurve2);
       break;
       case 'earnings':
         let [amountLent,redeemableBalance2] = await Promise.all([
@@ -2221,15 +2726,16 @@ class FunctionsUtil {
     }
 
     let [
-      tokenBalance,
-      tokenDecimals
+      tokenDecimals,
+      tokenBalance
     ] = await Promise.all([
-      this.getContractBalance(contractName,walletAddr),
-      this.getTokenDecimals(contractName)
+      this.getTokenDecimals(contractName),
+      this.getContractBalance(contractName,walletAddr)
     ]);
 
     if (tokenBalance){
       if (fixDecimals){
+        // console.log('getTokenBalance',contractName,tokenBalance.toString(),tokenDecimals);
         tokenBalance = this.fixTokenDecimals(tokenBalance,tokenDecimals);
       }
 
@@ -2532,18 +3038,119 @@ class FunctionsUtil {
     return output;
   }
   */
+  getCurveDepositedTokens = async (account,enabledTokens=[]) => {
+    account = account ? account : this.props.account;
+
+    if (!enabledTokens || !enabledTokens.length){
+      enabledTokens = Object.keys(this.props.availableTokens);
+    }
+
+    if (!account || !enabledTokens || !enabledTokens.length){
+      return [];
+    }
+
+    const curveTxs = await this.getCurveTxs(account,0,'latest',enabledTokens);
+
+    const idleTokensBalances = {};
+    let remainingCurveTokens = this.BNify(0);
+
+    // console.log('getCurveDepositedTokens',curveTxs);
+
+    curveTxs.forEach( tx => {
+
+      const idleToken = tx.idleToken;
+      const idleTokens = this.BNify(tx.idleTokens);
+
+      if (!idleTokensBalances[idleToken]){
+        idleTokensBalances[idleToken] = this.BNify(0);
+      }
+
+      switch (tx.action){
+        case 'CurveIn':
+        case 'CurveZapIn':
+          idleTokensBalances[idleToken] = idleTokensBalances[idleToken].plus(idleTokens);
+        break;
+        case 'CurveOut':
+        case 'CurveZapOut':
+          if (idleTokens.gt(idleTokensBalances[idleToken])){
+            remainingCurveTokens = remainingCurveTokens.plus(idleTokens.minus(idleTokensBalances[idleToken]));
+          }
+          idleTokensBalances[idleToken] = idleTokensBalances[idleToken].minus(idleTokens);
+          if (idleTokensBalances[idleToken].lt(0)){
+            idleTokensBalances[idleToken] = this.BNify(0);
+          }
+        break;
+        default:
+        break;
+      }
+
+      // console.log(this.strToMoment(tx.timeStamp*1000).format('DD-MM-YYYY HH:mm:ss'),tx.blockNumber,idleToken,tx.action,idleTokens.toFixed(6),idleTokensBalances[idleToken].toFixed(6),remainingCurveTokens.toFixed(6));
+
+      // Scalo il remaining tokens
+      if (remainingCurveTokens.gt(0)){
+        Object.keys(idleTokensBalances).forEach( token => {
+          const tokenBalance = idleTokensBalances[token];
+          if (tokenBalance && tokenBalance.gt(0)){
+            if (tokenBalance.gt(remainingCurveTokens)){
+              idleTokensBalances[token] = idleTokensBalances[token].minus(remainingCurveTokens);
+            } else {
+              remainingCurveTokens = remainingCurveTokens.minus(idleTokensBalances[token]);
+              idleTokensBalances[token] = 0;
+            }
+          }
+        });
+      }
+    });
+
+    // console.log('idleTokensBalances',idleTokensBalances);
+  }
+  getCurveUnevenTokenAmounts = async (amounts,max_burn_amount) => {
+    const curveSwapContract = await this.getCurveSwapContract();
+    if (curveSwapContract){
+      const unevenAmounts = await this.genericContractCall(curveSwapContract.name, 'remove_liquidity_imbalance', [amounts, max_burn_amount]);
+      // console.log('getCurveUnevenTokenAmounts',amounts,max_burn_amount,unevenAmounts);
+      return unevenAmounts;
+    }
+    return null;
+  }
   getCurveAPY = async () => {
+
+    // Check for cached data
+    const cachedDataKey = `getCurveAPY`;
+    const cachedData = this.getCachedData(cachedDataKey);
+    if (cachedData !== null){
+      return cachedData;
+    }
+
     const curveRatesInfo = this.getGlobalConfig(['curve','rates']);
     if (curveRatesInfo){
       const results = await this.makeRequest(curveRatesInfo.endpoint);
       if (results && results.data){
-        const apy = this.getArrayPath(curveRatesInfo.path,results.data);
-        if (apy){
-          return this.BNify(apy).times(100);
+        const path = Object.values(curveRatesInfo.path);
+        let curveApy = this.getArrayPath(path,results.data);
+        if (curveApy){
+          curveApy = this.BNify(curveApy).times(100);
+          return this.setCachedData(cachedDataKey,curveApy);
         }
       }
     }
     return null;
+  }
+  getCurveAvailableTokens = () => {
+    if (!this.props.availableStrategies){
+      return false;
+    }
+    const curveTokens = this.getGlobalConfig(['curve','availableTokens']);
+    const strategyTokens = this.props.availableStrategies['best'];
+    const availableTokens = Object.keys(strategyTokens).reduce( (availableTokens,token) => {
+      const tokenConfig = strategyTokens[token];
+      if (Object.keys(curveTokens).includes(tokenConfig.idle.token) && curveTokens[tokenConfig.idle.token].enabled){
+        availableTokens[token] = tokenConfig;
+      }
+      return availableTokens;
+    },{});
+
+    return availableTokens;
   }
   getCurveAPYContract = async () => {
     const curveSwapContract = await this.getCurveSwapContract();
@@ -2574,16 +3181,48 @@ class FunctionsUtil {
     }
     return null;
   }
-  getCurveRedeemableIdleTokens = async (account) => {
+  getCurveTokenPrice = async (blockNumber='latest',fixDecimals=true) => {
     const migrationContract = await this.getCurveSwapContract();
-    let [curveTokenBalance,curveTokenPrice] = await Promise.all([
-      this.getCurveTokenBalance(account),
-      this.genericContractCall(migrationContract.name,'get_virtual_price'),
-    ]);
-    if (curveTokenBalance && curveTokenPrice){
-      return this.BNify(curveTokenBalance).times(this.fixTokenDecimals(curveTokenPrice,18));
+    let curveTokenPrice = await this.genericContractCall(migrationContract.name,'get_virtual_price',[],{},blockNumber);
+    if (curveTokenPrice){
+      curveTokenPrice = this.BNify(curveTokenPrice);
+      if (fixDecimals){
+        const curvePoolContract = this.getGlobalConfig(['curve','poolContract']);
+        curveTokenPrice = this.fixTokenDecimals(curveTokenPrice,curvePoolContract.decimals);
+      }
+      return curveTokenPrice;
     }
     return null;
+  }
+  getCurveRedeemableIdleTokens = async (account) => {
+    let [curveTokenPrice,curveTokenBalance] = await Promise.all([
+      this.getCurveTokenPrice('latest'),
+      this.getCurveTokenBalance(account),
+    ]);
+    if (curveTokenBalance && curveTokenPrice){
+      return this.BNify(curveTokenBalance).times(curveTokenPrice);
+    }
+    return null;
+  }
+  getCurveDepositContract = async () => {
+    const depositContractInfo = this.getGlobalConfig(['curve','depositContract']);
+    if (depositContractInfo){
+      let curveDepositContract = this.getContractByName(depositContractInfo.name);
+      if (!curveDepositContract && depositContractInfo.abi){
+        curveDepositContract = await this.props.initContract(depositContractInfo.name,depositContractInfo.address,depositContractInfo.abi);
+      }
+    }
+    return depositContractInfo;
+  }
+  getCurveZapContract = async () => {
+    const zapContractInfo = this.getGlobalConfig(['curve','zapContract']);
+    if (zapContractInfo){
+      let curveZapContract = this.getContractByName(zapContractInfo.name);
+      if (!curveZapContract && zapContractInfo.abi){
+        curveZapContract = await this.props.initContract(zapContractInfo.name,zapContractInfo.address,zapContractInfo.abi);
+      }
+    }
+    return zapContractInfo;
   }
   getCurvePoolContract = async () => {
     const poolContractInfo = this.getGlobalConfig(['curve','poolContract']);
@@ -2605,7 +3244,7 @@ class FunctionsUtil {
     }
     return migrationContractInfo;
   }
-  getCurveAmounts = async (token,amount) => {
+  getCurveAmounts = (token,amount) => {
     const curveTokenConfig = this.getGlobalConfig(['curve','availableTokens',token]);
     if (curveTokenConfig){
       const migrationParams = curveTokenConfig.migrationParams;
@@ -2613,7 +3252,8 @@ class FunctionsUtil {
         const amounts = [];
         for (var i = 0; i < migrationParams.n_coins; i++) {
           if (migrationParams.coinIndex === i){
-            amounts.push(this.integerValue(amount));
+            amount = this.normalizeTokenAmount(this.fixTokenDecimals(amount,18),curveTokenConfig.decimals);
+            amounts.push(amount);
           } else {
             amounts.push(0);
           }
@@ -2627,25 +3267,31 @@ class FunctionsUtil {
     let slippage = null;
     const migrationContract = await this.getCurveSwapContract();
     if (migrationContract){
-      const amounts = await this.getCurveAmounts(token,amount);
+
+      amount = this.BNify(amount);
+      if (amount.lte(0)){
+        return null;
+      }
+
+      const amounts = this.getCurveAmounts(token,amount);
       let [virtualPrice,tokenAmount] = await Promise.all([
         this.genericContractCall(migrationContract.name,'get_virtual_price'),
         this.genericContractCall(migrationContract.name,'calc_token_amount',[amounts,deposit]),
       ]);
 
+      // console.log('getCurveSlippage',token,amount.toString(),amounts,virtualPrice,tokenAmount);
+
       if (virtualPrice && tokenAmount){
-        amount = this.BNify(amount);
         virtualPrice = this.BNify(virtualPrice);
-        tokenAmount = this.BNify(tokenAmount).times(virtualPrice);
+        tokenAmount = this.BNify(tokenAmount);
+        const Sv = tokenAmount.times(virtualPrice);
         if (deposit){
-          slippage = tokenAmount.div(amount);
+          slippage = this.fixTokenDecimals(Sv.div(amount),18).minus(1).times(-1);
         } else {
-          slippage = amount.div(tokenAmount);
+          slippage = this.fixTokenDecimals(amount.div(Sv),18);
         }
 
-        slippage = this.fixTokenDecimals(slippage,18);
-
-        // console.log('getCurveSlippage',tokenAmount.toString(),amount.toString(),slippage.toString());
+        // console.log('getCurveSlippage',deposit,amounts,tokenAmount.toFixed(6),virtualPrice.toFixed(6),Sv.toFixed(6),amount.toFixed(6),slippage.toFixed(6));
 
         return slippage;
       }
@@ -2875,9 +3521,11 @@ class FunctionsUtil {
     if (!account){
       account = this.props.account;
     }
-    if (!availableTokens){
+    if (!availableTokens && this.props.availableStrategies && this.props.selectedStrategy){
       availableTokens = this.props.availableStrategies[this.props.selectedStrategy];
     }
+
+    // console.log('getGovTokensUserBalances',account,availableTokens);
 
     const output = {};
 

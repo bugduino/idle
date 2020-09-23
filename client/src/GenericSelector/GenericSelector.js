@@ -32,7 +32,9 @@ class GenericSelector extends Component {
     const selectedTokenChanged = prevProps.selectedToken !== this.props.selectedToken;
     const optionsChanged = JSON.stringify(prevProps.options) !== JSON.stringify(this.props.options);
     const defaultValueChanged = JSON.stringify(prevProps.defaultValue) !== JSON.stringify(this.props.defaultValue);
-    if (optionsChanged || selectedTokenChanged || defaultValueChanged){
+    const componentsChanged = prevProps.CustomOptionValue !== this.props.CustomOptionValue || prevProps.CustomValueContainer !== this.props.CustomValueContainer;
+
+    if (optionsChanged || selectedTokenChanged || defaultValueChanged || componentsChanged){
       this.loadComponents();
     }
   }
