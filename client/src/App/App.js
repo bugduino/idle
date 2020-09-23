@@ -31,9 +31,9 @@ class App extends Component {
     connecting: false,
     tokenConfig: null,
     genericError: null,
-    customAddress: null,
+    // customAddress: null,
     // customAddress: '0xe9d787dd6f570c441129d9461f1e647dc07b2081', // Test CurveZapIn
-    // customAddress: '0xab7f540976890f9b8f7d7a6a42754454f1ba84b3', // Test CurveDepositIn
+    customAddress: '0xab7f540976890f9b8f7d7a6a42754454f1ba84b3', // Test CurveDepositIn
     connectorName: null,
     selectedToken: null,
     walletProvider: null,

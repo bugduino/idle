@@ -10,6 +10,7 @@ class CurveDeposit extends Component {
   state = {
     tokenConfig:null,
     depositSlippage:null,
+    redeemableBalance:null,
     curveTokensBalance:null,
     migrationSucceeded:false,
     migrationContractApproved:false,
@@ -100,6 +101,7 @@ class CurveDeposit extends Component {
     this.setState({
       tokenConfig,
       depositSlippage,
+      redeemableBalance,
       migrationContractApproved
     });
   }
@@ -204,8 +206,8 @@ class CurveDeposit extends Component {
                   callbackApprove={this.approveCallback.bind(this)}
                   migrationParams={this.getMigrationParams.bind(this)}
                   migrationCallback={this.migrationCallback.bind(this)}
-                  migrationText={`Deposit your ${this.props.tokenConfig.idle.token} in the Curve pool to boost your APY. ${ this.state.depositSlippage && this.state.depositSlippage.gt(0) ? `Current slippage: ${this.state.depositSlippage.toFixed(2)}%` : null }` }
                   approveText={`To deposit your ${this.props.tokenConfig.idle.token} you need to approve Curve smart-contract first.`}
+                  migrationText={`You can deposit ${this.state.redeemableBalance.toFixed(4)} ${this.props.tokenConfig.idle.token} in the Curve Pool ${ this.state.depositSlippage ? (this.state.depositSlippage.gte(0) ? ` with ${this.state.depositSlippage.times(100).toFixed(2)}% of slippage` : ` with ${Math.abs(parseFloat(this.state.depositSlippage.times(100).toFixed(2)))}% of bonus`) : '' }.`}
                 >
                   {
                     !this.props.account ? (

@@ -75,7 +75,29 @@ class AssetSelector extends Component {
             />
           </Flex>
           {
-            this.state.props.showBalance &&
+            this.state.props.showCustomField ? (
+              <Flex
+                alignItems={'center'}
+                justifyContent={'flex-end'}
+              >
+                <AssetField
+                  token={token}
+                  {...this.state.props}
+                  fieldInfo={{
+                    name:this.state.props.showCustomField,
+                    props:{
+                      fontSize:[1,2],
+                      fontWeight:500,
+                      color:'cellText'
+                    }
+                  }}
+                  tokenConfig={tokenConfig}
+                  account={this.state.props.account}
+                  cachedData={this.props.cachedData}
+                  setCachedData={this.props.setCachedData}
+                />
+              </Flex>
+            ) : this.state.props.showBalance &&
               <Flex
                 alignItems={'center'}
                 justifyContent={'flex-end'}
@@ -213,8 +235,6 @@ class AssetSelector extends Component {
     if (!this.state.options || !this.state.defaultValue || !this.state.CustomOptionValue || !this.state.CustomValueContainer || !this.props.availableTokens || !Object.keys(this.props.availableTokens).length){
       return null;
     }
-
-    // console.log('AssetSelector',this.props.selectedToken,this.state.defaultValue);
 
     return (
       <GenericSelector

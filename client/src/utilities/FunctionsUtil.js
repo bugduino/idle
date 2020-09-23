@@ -3244,26 +3244,36 @@ class FunctionsUtil {
     }
     return migrationContractInfo;
   }
-  getCurveAmounts = (token,amount) => {
-    const curveTokenConfig = this.getGlobalConfig(['curve','availableTokens',token]);
-    if (curveTokenConfig){
-      const migrationParams = curveTokenConfig.migrationParams;
-      if (migrationParams.n_coins){
-        const amounts = [];
-        for (var i = 0; i < migrationParams.n_coins; i++) {
-          if (migrationParams.coinIndex === i){
-            amount = this.normalizeTokenAmount(this.fixTokenDecimals(amount,18),curveTokenConfig.decimals);
-            amounts.push(amount);
-          } else {
-            amounts.push(0);
+  getCurveAmounts = (token,amount,uneven_amounts=false) => {
+    const amounts = [];
+
+    if (uneven_amounts){
+      const availableTokens = this.getGlobalConfig(['curve','availableTokens']);
+      const n_coins = Object.values(availableTokens).length;
+      Object.values(availableTokens).forEach( curveTokenConfig => {
+        const amountUneven = this.normalizeTokenAmount(this.fixTokenDecimals(amount,18).div(n_coins),curveTokenConfig.decimals);
+        amounts.push(amountUneven);
+      });
+    } else {
+      const curveTokenConfig = this.getGlobalConfig(['curve','availableTokens',token]);
+      if (curveTokenConfig){
+        const migrationParams = curveTokenConfig.migrationParams;
+        if (migrationParams.n_coins){
+          for (var i = 0; i < migrationParams.n_coins; i++) {
+            if (migrationParams.coinIndex === i){
+              amount = this.normalizeTokenAmount(this.fixTokenDecimals(amount,18),curveTokenConfig.decimals);
+              amounts.push(amount);
+            } else {
+              amounts.push(0);
+            }
           }
         }
-        return amounts;
       }
     }
-    return null;
+
+    return amounts;
   }
-  getCurveSlippage = async (token,amount,deposit=true) => {
+  getCurveSlippage = async (token,amount,deposit=true,uneven_amounts=false) => {
     let slippage = null;
     const migrationContract = await this.getCurveSwapContract();
     if (migrationContract){
@@ -3273,25 +3283,28 @@ class FunctionsUtil {
         return null;
       }
 
-      const amounts = this.getCurveAmounts(token,amount);
+      const amounts = this.getCurveAmounts(token,amount,uneven_amounts);
+
+
       let [virtualPrice,tokenAmount] = await Promise.all([
         this.genericContractCall(migrationContract.name,'get_virtual_price'),
         this.genericContractCall(migrationContract.name,'calc_token_amount',[amounts,deposit]),
       ]);
 
-      // console.log('getCurveSlippage',token,amount.toString(),amounts,virtualPrice,tokenAmount);
+      // console.log('getCurveSlippage',amounts,virtualPrice,tokenAmount);
 
       if (virtualPrice && tokenAmount){
-        virtualPrice = this.BNify(virtualPrice);
-        tokenAmount = this.BNify(tokenAmount);
+        amount = this.fixTokenDecimals(amount,18);
+        virtualPrice = this.fixTokenDecimals(virtualPrice,18);
+        tokenAmount = this.fixTokenDecimals(tokenAmount,18);
         const Sv = tokenAmount.times(virtualPrice);
         if (deposit){
-          slippage = this.fixTokenDecimals(Sv.div(amount),18).minus(1).times(-1);
+          slippage = Sv.div(amount).minus(1).times(-1);
         } else {
-          slippage = this.fixTokenDecimals(amount.div(Sv),18);
+          slippage = amount.div(Sv).minus(1).times(-1);
         }
 
-        // console.log('getCurveSlippage',deposit,amounts,tokenAmount.toFixed(6),virtualPrice.toFixed(6),Sv.toFixed(6),amount.toFixed(6),slippage.toFixed(6));
+        // console.log('getCurveSlippage',token,deposit,amounts,tokenAmount.toFixed(6),virtualPrice.toFixed(6),Sv.toFixed(6),amount.toFixed(6),slippage.toFixed(6));
 
         return slippage;
       }

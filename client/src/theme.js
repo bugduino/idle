@@ -107,7 +107,7 @@ export default {
       status:{
         completed:'#00b84a',
         pending:'#a5a5a5',
-        failed:'#fa6400'
+        failed:'#fa0000'
       }
     },
     blacks: [

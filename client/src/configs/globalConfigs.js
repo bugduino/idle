@@ -159,8 +159,8 @@ const globalConfigs = {
     poolContract:{
       decimals:18,
       abi:CurvePool,
-      token:'CurveFi',
-      name:'idleCurvePool',
+      name:'YDAI+YUSDC+YUSDT+YTUSD',
+      token:'YDAI+YUSDC+YUSDT+YTUSD',
       address:'0xdf5e0e81dff6faf3a7e52ba697820c5e32d806a8'
     },
     depositContract:{
@@ -189,6 +189,7 @@ const globalConfigs = {
         decimals:18,
         enabled:true,
         baseToken:'DAI',
+        token:'idleDAIYield',
         address:'0x16de59092dae5ccf4a1e6439d611fd0653f0bd01',
         migrationParams:{
           n_coins:4,
@@ -199,6 +200,7 @@ const globalConfigs = {
         decimals:6,
         enabled:true,
         baseToken:'USDC',
+        token:'idleUSDCYield',
         address:'0xd6ad7a6750a7593e092a9b218d66c0a814a3436e',
         migrationParams:{
           n_coins:4,
@@ -209,6 +211,7 @@ const globalConfigs = {
         decimals:6,
         enabled:true,
         baseToken:'USDT',
+        token:'idleUSDTYield',
         address:'0x83f798e925bcd4017eb265844fddabb448f1707d',
         migrationParams:{
           n_coins:4,
@@ -219,6 +222,7 @@ const globalConfigs = {
         decimals:18,
         enabled:true,
         baseToken:'TUSD',
+        token:'idleTUSDYield',
         address:'0x73a052500105205d34daf004eab301916da8190f',
         migrationParams:{
           n_coins:4,
@@ -497,7 +501,7 @@ const globalConfigs = {
         },
         address:'0xc00e94cb662c3520282e6f5717214004a7f26888',
       },
-      CurveFi:{
+      'YDAI+YUSDC+YUSDT+YTUSD':{
         decimals:18,
         enabled:false,
         name:'Curve.fi',
