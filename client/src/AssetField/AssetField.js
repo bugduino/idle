@@ -91,7 +91,7 @@ class AssetField extends Component {
           if (output && setState){
             this.setStateSafe({
               tokenBalance:output.toString()
-            })
+            });
           }
         break;
         case 'tokenPrice':
@@ -99,7 +99,7 @@ class AssetField extends Component {
           if (output && setState){
             this.setStateSafe({
               tokenPrice:output.toString()
-            })
+            });
           }
         break;
         case 'fee':
@@ -107,7 +107,7 @@ class AssetField extends Component {
           if (output && setState){
             this.setStateSafe({
               fee:output.toString()
-            })
+            });
           }
         break;
         case 'amountToMigrate':
@@ -127,7 +127,7 @@ class AssetField extends Component {
           if (output && setState){
             this.setStateSafe({
               amountLent:output.toString()
-            })
+            });
           }
         break;
         case 'idleTokenBalance':
@@ -135,7 +135,7 @@ class AssetField extends Component {
           if (output && setState){
             this.setStateSafe({
               idleTokenBalance:output.toString()
-            })
+            });
           }
         break;
         case 'redeemableBalanceCounterCurve':
@@ -183,7 +183,7 @@ class AssetField extends Component {
           if (output && setState){
             this.setStateSafe({
               earnings:output.toString()
-            })
+            });
           }
         break;
         case 'feesCounter':
@@ -261,7 +261,7 @@ class AssetField extends Component {
           if (output && setState){
             this.setStateSafe({
               redeemableBalance:output.toString()
-            })
+            });
           }
         break;
         case 'score':
@@ -269,7 +269,7 @@ class AssetField extends Component {
           if (setState){
             this.setStateSafe({
               score:tokenScore ? tokenScore : false
-            })
+            });
           }
           output = tokenScore;
         break;
@@ -278,7 +278,7 @@ class AssetField extends Component {
           if (output && setState){
             this.setStateSafe({
               poolSize:output.toString()
-            })
+            });
           }
         break;
         case 'earningsPercCurve':
@@ -287,7 +287,7 @@ class AssetField extends Component {
             this.setStateSafe({
               earningsPercCurveDirection:parseFloat(output)>0 ? 'up' : 'down',
               earningsPercCurve:parseFloat(output).toFixed(decimals)
-            })
+            });
           }
         break;
         case 'earningsPerc':
@@ -296,7 +296,7 @@ class AssetField extends Component {
             this.setStateSafe({
               earningsPercDirection:parseFloat(output)>0 ? 'up' : 'down',
               earningsPerc:parseFloat(output).toFixed(decimals)
-            })
+            });
           }
         break;
         case 'apr':
@@ -304,7 +304,7 @@ class AssetField extends Component {
           if (output && setState){
             this.setStateSafe({
               tokenAPR:parseFloat(output).toFixed(decimals)
-            })
+            });
           }
         break;
         case 'oldApy':

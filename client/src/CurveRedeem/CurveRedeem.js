@@ -2,9 +2,11 @@ import React, { Component } from 'react';
 import FlexLoader from '../FlexLoader/FlexLoader';
 import RoundButton from '../RoundButton/RoundButton';
 import FunctionsUtil from '../utilities/FunctionsUtil';
-import { Flex, Text, Icon, Checkbox } from "rimble-ui";
+import AssetSelector from '../AssetSelector/AssetSelector';
 import TxProgressBar from '../TxProgressBar/TxProgressBar';
 import DashboardCard from '../DashboardCard/DashboardCard';
+import FastBalanceSelector from '../FastBalanceSelector/FastBalanceSelector';
+import { Flex, Text, Icon, Checkbox, Box, Link, Input, Tooltip } from "rimble-ui";
 
 class CurveRedeem extends Component {
 
@@ -13,11 +15,17 @@ class CurveRedeem extends Component {
       txHash:null,
       loading:false
     },
+    inputValue:null,
+    tokenConfig:null,
     unevenAmounts:null,
+    selectedToken:null,
+    availableTokens:null,
+    buttonDisabled:false,
     curveTokenConfig:null,
     curvePoolContract:null,
     curveSwapContract:null,
     curveTokenBalance:null,
+    fastBalanceSelector:null,
     redeemUnevenAmounts:false,
     curveRedeemableIdleTokens:null
   };
@@ -44,6 +52,21 @@ class CurveRedeem extends Component {
     });
   }
 
+  async calculateSlippage(){
+    const amount = this.state.inputValue ? this.functionsUtil.BNify(this.state.inputValue) : null;
+
+    if (!amount || amount.lte(0)){
+      return false;
+    }
+
+    const normalizedAmount = this.functionsUtil.normalizeTokenAmount(amount,this.state.curvePoolContract.decimals);
+    const withdrawSlippage = await this.functionsUtil.getCurveSlippage(this.state.tokenConfig.idle.token,normalizedAmount,false,this.state.redeemUnevenAmounts);
+
+    this.setState({
+      withdrawSlippage
+    });
+  }
+
   async componentDidUpdate(prevProps,prevState){
     this.loadUtils();
 
@@ -51,6 +74,66 @@ class CurveRedeem extends Component {
     if (tokenChanged){
       await this.initToken();
     }
+
+    const redeemUnevenAmountsChanged = prevState.redeemUnevenAmounts !== this.state.redeemUnevenAmounts;
+    const fastBalanceSelectorChanged = this.state.fastBalanceSelector !== prevState.fastBalanceSelector;
+    if (fastBalanceSelectorChanged || redeemUnevenAmountsChanged){
+      this.setInputValue();
+    }
+
+    const selectedTokenChanged = prevState.selectedToken !== this.state.selectedToken;
+    const inputChanged = prevState.inputValue !== this.state.inputValue;
+    if (inputChanged || selectedTokenChanged){
+      this.calculateSlippage();
+    }
+  }
+
+  checkButtonDisabled = (amount=null) => {
+
+    if (!amount){
+      amount = this.state.inputValue;
+    }
+
+    let buttonDisabled = false;
+
+    if (this.state.redeemUnevenAmounts){
+      buttonDisabled = !amount || amount.gt(this.state.curveTokenBalance);
+    } else {
+      buttonDisabled = !amount || amount.gt(this.state.redeemableBalance);
+    }
+
+    this.setState({
+      buttonDisabled
+    });
+  }
+
+  setInputValue = () => {
+    if (this.state.fastBalanceSelector === null){
+      return false;
+    }
+
+    const selectedPercentage = this.functionsUtil.BNify(this.state.fastBalanceSelector).div(100);
+    let inputValue = null;
+
+    if (this.state.redeemUnevenAmounts){
+      inputValue = this.state.curveTokenBalance ? this.functionsUtil.BNify(this.state.curveTokenBalance).times(selectedPercentage) : null;
+    } else {
+      inputValue = this.state.redeemableBalance ? this.functionsUtil.BNify(this.state.redeemableBalance).times(selectedPercentage) : null;
+    }
+
+    this.checkButtonDisabled(inputValue);
+
+    this.setState({
+      inputValue
+    });
+  }
+
+  changeToken = selectedToken => {
+    const tokenConfig = this.state.availableTokens[selectedToken];
+    this.setState({
+      tokenConfig,
+      selectedToken
+    });
   }
 
   initToken = async () => {
@@ -63,31 +146,44 @@ class CurveRedeem extends Component {
     ]);
 
     const [
+      curveTokenPrice,
       curveTokenBalance,
       curveRedeemableIdleTokens,
     ] = await Promise.all([
+      this.functionsUtil.getCurveTokenPrice(),
       this.functionsUtil.getCurveTokenBalance(this.props.account),
       this.functionsUtil.getCurveRedeemableIdleTokens(this.props.account)
     ]);
 
-    const normalizedCurveBalance = this.functionsUtil.normalizeTokenAmount(curveTokenBalance,curvePoolContract.decimals);
-    const withdrawSlippage = await this.functionsUtil.getCurveSlippage(this.props.tokenConfig.idle.token,normalizedCurveBalance,false);
+    const redeemableBalance = curveTokenBalance ? curveTokenBalance.times(curveTokenPrice) : this.functionsUtil.BNify(0);
 
     // const max_burn_amount = this.functionsUtil.normalizeTokenAmount(curveTokenBalance,curvePoolContract.decimals).toString();
     // const amounts = this.functionsUtil.getCurveAmounts(this.props.tokenConfig.idle.token,0);
     // let redeemUnevenAmounts = await this.functionsUtil.getCurveUnevenTokenAmounts(amounts,max_burn_amount);
-    
+
     const unevenAmounts = [];
-    // redeemUnevenAmounts
-    // console.log('curveTokenBalance',curveTokenBalance.toFixed(4),'withdrawSlippage',withdrawSlippage.toFixed(4));
+
+    let tokenConfig = this.state.tokenConfig;
+    let selectedToken = this.state.selectedToken;
+    let availableTokens = this.state.availableTokens;
+
+    if (!availableTokens){
+      availableTokens = this.functionsUtil.getCurveAvailableTokens();
+      selectedToken = Object.keys(availableTokens)[0];
+      tokenConfig = availableTokens[selectedToken];
+    }
 
     this.setState({
+      tokenConfig,
+      selectedToken,
       unevenAmounts,
-      withdrawSlippage,
+      curveTokenPrice,
+      availableTokens,
       curveTokenConfig,
       curvePoolContract,
       curveSwapContract,
       curveTokenBalance,
+      redeemableBalance,
       curveRedeemableIdleTokens
     });
   }
@@ -158,7 +254,34 @@ class CurveRedeem extends Component {
     }));
   }
 
+  changeInputValue = (e) => {
+    const inputValue = e.target.value.length && !isNaN(e.target.value) ? this.functionsUtil.BNify(e.target.value) : this.functionsUtil.BNify(0);
+    this.checkButtonDisabled(inputValue);
+
+    const fastBalanceSelector = null;
+
+    this.setState((prevState) => ({
+      inputValue,
+      fastBalanceSelector,
+    }));
+  }
+
+  getFastBalanceSelector = () => {
+    if (this.state.fastBalanceSelector === null){
+      return false;
+    }
+    return this.functionsUtil.BNify(this.state.fastBalanceSelector).div(100);
+  }
+
+  setFastBalanceSelector = (fastBalanceSelector) => {
+    this.setState((prevState) => ({
+      fastBalanceSelector
+    }));
+  }
+
   render() {
+
+    const curveTokenName = this.functionsUtil.getGlobalConfig(['curve','poolContract','token']);
 
     return (
       <Flex
@@ -200,65 +323,224 @@ class CurveRedeem extends Component {
                   text={'Checking Curve Pool...'}
                 />
               </DashboardCard>
-            ) : (
+            ) : this.state.processing.loading ? (
               <DashboardCard
                 cardProps={{
                   p:3,
                   mt:3
                 }}
               >
+                <Flex
+                  flexDirection={'column'}
+                >
+                  <TxProgressBar
+                    web3={this.props.web3}
+                    hash={this.state.processing.txHash}
+                    endMessage={`Finalizing redeem request...`}
+                    waitText={ this.props.waitText ? this.props.waitText : 'Redeem estimated in'}
+                  />
+                </Flex>
+              </DashboardCard>
+            ) : (
+              <Flex
+                width={1}
+                flexDirection={'column'}
+              >
+                <DashboardCard
+                  cardProps={{
+                    p:3,
+                    mb:2
+                  }}
+                >
+                  <Flex
+                    alignItems={'center'}
+                    flexDirection={'column'}
+                  >
+                    <Icon
+                      size={'1.8em'}
+                      color={'cellText'}
+                      name={'FileUpload'}
+                    />
+                    <Text
+                      mt={1}
+                      fontSize={2}
+                      color={'cellText'}
+                      textAlign={'center'}
+                    >
+                      You can decide to withdraw from the Curve Pool in a specific token or in uneven amounts.
+                    </Text>
+                    <Checkbox
+                      mt={2}
+                      required={false}
+                      label={`Redeem in uneven amounts`}
+                      checked={this.state.redeemUnevenAmounts}
+                      onChange={ e => this.toggleUnevenAmounts(e.target.checked) }
+                    />
+                  </Flex>
+                </DashboardCard>
                 {
-                  this.state.processing.loading ? (
-                    <Flex
-                      flexDirection={'column'}
+                  !this.state.redeemUnevenAmounts && 
+                    <Box
+                      mb={3}
+                      width={1}
                     >
-                      <TxProgressBar
-                        web3={this.props.web3}
-                        hash={this.state.processing.txHash}
-                        endMessage={`Finalizing redeem request...`}
-                        waitText={ this.props.waitText ? this.props.waitText : 'Redeem estimated in'}
-                      />
-                    </Flex>
-                  ) : (
-                    <Flex
-                      alignItems={'center'}
-                      flexDirection={'column'}
-                    >
-                      <Icon
-                        size={'1.8em'}
-                        color={'cellText'}
-                        name={'FileUpload'}
-                      />
                       <Text
-                        mt={2}
-                        fontSize={2}
-                        color={'cellText'}
-                        textAlign={'center'}
+                        mb={1}
+                      >
+                        Select destination token:
+                      </Text>
+                      <AssetSelector
+                        {...this.props}
+                        id={'token-from'}
+                        showBalance={false}
+                        onChange={this.changeToken}
+                        tokenConfig={this.state.tokenConfig}
+                        selectedToken={this.state.selectedToken}
+                        availableTokens={this.state.availableTokens}
+                      />
+                    </Box>
+                }
+                {
+                  /*
+                  this.state.inputValue && this.state.inputValue.gt(0) && 
+                    <DashboardCard
+                      cardProps={{
+                        p:3,
+                        mb:2
+                      }}
+                    >
+                      <Flex
+                        alignItems={'center'}
+                        flexDirection={'column'}
+                      >
+                        <Text
+                          mt={2}
+                          fontSize={2}
+                          color={'cellText'}
+                          textAlign={'center'}
+                        >
+                          {
+                            this.state.redeemUnevenAmounts ? `You can redeem ${this.state.curveTokenBalance.toFixed(4)} Curve tokens in uneven amounts ${ this.state.withdrawSlippage ? (this.state.withdrawSlippage.gte(0) ? ` with ${this.state.withdrawSlippage.times(100).toFixed(2)}% of slippage` : ` with ${Math.abs(parseFloat(this.state.withdrawSlippage.times(100).toFixed(2)))}% of bonus` ) : '' }.` : `You can redeem ~${this.state.inputValue.toFixed(4)} ${this.state.selectedToken} from the Curve Pool${ this.state.withdrawSlippage ? (this.state.withdrawSlippage.gte(0) ? ` with ${this.state.withdrawSlippage.times(100).toFixed(2)}% of slippage` : ` with ${Math.abs(parseFloat(this.state.withdrawSlippage.times(100).toFixed(2)))}% of bonus` ) : '' }.`
+                          }
+                        </Text>
+                      </Flex>
+                    </DashboardCard>
+                  */
+                }
+                <Flex
+                  mb={3}
+                  width={1}
+                  flexDirection={'column'}
+                >
+                  <Flex
+                    mb={1}
+                    alignItems={'center'}
+                    flexDirection={'row'}
+                    justifyContent={'flex-end'}
+                  >
+                    {
+                      this.state.inputValue && this.state.inputValue.gt(0) && this.state.withdrawSlippage && (
+                        <Flex
+                          width={1}
+                          maxWidth={'50%'}
+                          alignItems={'center'}
+                          flexDirection={'row'}
+                        >
+                          <Text
+                            fontSize={1}
+                            fontWeight={3}
+                            textAlign={'right'}
+                            color={ this.state.withdrawSlippage.gt(0) ? this.props.theme.colors.transactions.status.failed : this.props.theme.colors.transactions.status.completed }
+                          >
+                            {this.state.withdrawSlippage.gt(0) ? 'Slippage: ' : 'Bonus: '}{this.state.withdrawSlippage.times(100).toFixed(2)}%
+                          </Text>
+                          <Tooltip
+                            placement={'top'}
+                            message={`Bonus or Slippage for withdraw`}
+                          >
+                            <Icon
+                              ml={1}
+                              name={"Info"}
+                              size={'1em'}
+                              color={'cellTitle'}
+                            />
+                          </Tooltip>
+                        </Flex>
+                      )
+                    }
+                    <Flex
+                      width={1}
+                      maxWidth={'50%'}
+                      alignItems={'center'}
+                      flexDirection={'row'}
+                      justifyContent={'flex-end'}
+                    >
+                      <Link
+                        fontSize={1}
+                        fontWeight={3}
+                        color={'dark-gray'}
+                        textAlign={'right'}
+                        hoverColor={'copyColor'}
+                        onClick={ (e) => this.setFastBalanceSelector(100) }
+                        style={{
+                          maxWidth:'100%',
+                          overflow:'hidden',
+                          whiteSpace:'nowrap',
+                          textOverflow:'ellipsis'
+                        }}
                       >
                         {
-                          this.state.redeemUnevenAmounts ? `You can redeem ${this.state.curveTokenBalance.toFixed(4)} Curve tokens in uneven amounts ${ this.state.unevenAmounts ? `: ${this.state.unevenAmounts.join(', ')}` : `` }.` : `You can redeem ${this.state.curveRedeemableIdleTokens.toFixed(4)} ${this.props.tokenConfig.idle.token} from the Curve Pool${ this.state.withdrawSlippage ? ` with ${this.state.withdrawSlippage.toFixed(2)}% slippage` : '' }.`
+                          this.state.redeemUnevenAmounts ? `${this.state.curveTokenBalance.toFixed(6)} ${curveTokenName}` : `${this.state.redeemableBalance.toFixed(6)} ${this.state.selectedToken}`
                         }
-                      </Text>
-                      <Checkbox
-                        mt={2}
-                        required={false}
-                        label={`Redeem in uneven amounts`}
-                        checked={this.state.redeemUnevenAmounts}
-                        onChange={ e => this.toggleUnevenAmounts(e.target.checked) }
-                      />
-                      <RoundButton
-                        buttonProps={{
-                          mt:2,
-                          width:[1,1/2]
-                        }}
-                        handleClick={this.redeem}
-                      >
-                        Redeem
-                      </RoundButton>
+                      </Link>
                     </Flex>
-                  )
-                }
-              </DashboardCard>
+                  </Flex>
+                  <Input
+                    min={0}
+                    type={"number"}
+                    required={true}
+                    height={'3.4em'}
+                    borderRadius={2}
+                    fontWeight={500}
+                    boxShadow={'none !important'}
+                    placeholder={`Insert amount`}
+                    onChange={this.changeInputValue.bind(this)}
+                    border={`1px solid ${this.props.theme.colors.divider}`}
+                    value={this.state.inputValue !== null ? this.functionsUtil.BNify(this.state.inputValue).toFixed() : ''}
+                  />
+                  <Flex
+                    mt={2}
+                    alignItems={'center'}
+                    flexDirection={'row'}
+                    justifyContent={'space-between'}
+                  >
+                    {
+                      [25,50,75,100].map( percentage => (
+                        <FastBalanceSelector
+                          percentage={percentage}
+                          key={`selector_${percentage}`}
+                          onMouseDown={()=>this.setFastBalanceSelector(percentage)}
+                          isActive={this.state.fastBalanceSelector === parseInt(percentage)}
+                        />
+                      ))
+                    }
+                  </Flex>
+                </Flex>
+                <Flex
+                  justifyContent={'center'}
+                >
+                  <RoundButton
+                    buttonProps={{
+                      mt:2,
+                      width:[1,1/2]
+                    }}
+                    handleClick={this.redeem}
+                    disabled={this.state.buttonDisabled}
+                  >
+                    Redeem
+                  </RoundButton>
+                </Flex>
+              </Flex>
             )
           }
         </Flex>

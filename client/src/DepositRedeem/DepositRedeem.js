@@ -2,11 +2,9 @@ import theme from '../theme';
 import Migrate from '../Migrate/Migrate';
 import React, { Component } from 'react';
 import FlexLoader from '../FlexLoader/FlexLoader';
-import CurveRedeem from '../CurveRedeem/CurveRedeem';
 import RoundButton from '../RoundButton/RoundButton';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import BuyModal from '../utilities/components/BuyModal';
-import CurveDeposit from '../CurveDeposit/CurveDeposit';
 import DashboardCard from '../DashboardCard/DashboardCard';
 import AssetSelector from '../AssetSelector/AssetSelector';
 import TxProgressBar from '../TxProgressBar/TxProgressBar';
@@ -44,7 +42,9 @@ class DepositRedeem extends Component {
     componentMounted:false,
     curveTokenBalance:null,
     redeemCurveEnabled:false,
+    depositCurveBalance:null,
     depositCurveEnabled:false,
+    depositCurveSlippage:null,
     metaTransactionsEnabled:true
   };
 
@@ -196,32 +196,76 @@ class DepositRedeem extends Component {
       this.checkButtonDisabled();
     }
 
+    const depositCurveChanged = prevState.depositCurveEnabled !== this.state.depositCurveEnabled;
     const metaTransactionsChanged = prevState.metaTransactionsEnabled !== this.state.metaTransactionsEnabled;
-    if (metaTransactionsChanged){
+    if (metaTransactionsChanged || depositCurveChanged){
       const tokenApproved = await this.checkTokenApproved();
       this.setState({
         tokenApproved
       });
     }
+
+    const inputChanged = prevState.inputValue[this.state.action] !== this.state.inputValue[this.state.action];
+    if (inputChanged){
+      this.calculateCurveSlippage();
+    }
+  }
+
+  async calculateCurveSlippage(){
+    const amount = this.state.inputValue[this.state.action] ? this.functionsUtil.BNify(this.state.inputValue[this.state.action]) : null;
+
+    if (!amount || amount.lte(0)){
+      return false;
+    }
+
+    const curvePoolContractInfo = this.functionsUtil.getGlobalConfig(['curve','poolContract']);
+
+    const normalizedAmount = this.functionsUtil.normalizeTokenAmount(amount,curvePoolContractInfo.decimals);
+    const newState = {};
+
+    switch (this.state.action){
+      case 'deposit':
+        newState.depositCurveBalance = amount;
+        newState.depositCurveSlippage = await this.functionsUtil.getCurveSlippage(this.props.tokenConfig.idle.token,normalizedAmount,true);
+      break;
+      case 'redeem':
+        // newState.redeemBalance = amount;
+        // newState.withdrawSlippage = await this.functionsUtil.getCurveSlippage(this.props.tokenConfig.idle.token,normalizedAmount,true);
+      break;
+      default:
+      break;
+    }
+    // console.log('calculateCurveSlippage',newState);
+
+    this.setState(newState);
   }
 
   approveContract = async (callbackApprove,callbackReceiptApprove) => {
-    const proxyContract = this.state.actionProxyContract[this.state.action];
-    if (proxyContract && this.state.metaTransactionsEnabled && this.props.biconomy){
-      this.functionsUtil.enableERC20(this.props.selectedToken,proxyContract.address,callbackApprove,callbackReceiptApprove);
+    if (this.state.depositCurveEnabled){
+      this.functionsUtil.enableERC20(this.props.selectedToken,this.state.curveDepositContract.address,callbackApprove,callbackReceiptApprove);
     } else {
-      this.functionsUtil.enableERC20(this.props.selectedToken,this.props.tokenConfig.idle.address,callbackApprove,callbackReceiptApprove);
+      const proxyContract = this.state.actionProxyContract[this.state.action];
+      if (proxyContract && this.state.metaTransactionsEnabled && this.props.biconomy){
+        this.functionsUtil.enableERC20(this.props.selectedToken,proxyContract.address,callbackApprove,callbackReceiptApprove);
+      } else {
+        this.functionsUtil.enableERC20(this.props.selectedToken,this.props.tokenConfig.idle.address,callbackApprove,callbackReceiptApprove);
+      }
     }
   }
 
   checkTokenApproved = async () => {
 
     let tokenApproved = false;
-    const proxyContract = this.state.actionProxyContract[this.state.action];
-    if (proxyContract && this.state.metaTransactionsEnabled && this.props.biconomy){
-      tokenApproved = await this.functionsUtil.checkTokenApproved(this.props.selectedToken,proxyContract.address,this.props.account);
+
+    if (this.state.depositCurveEnabled){
+      tokenApproved = await this.functionsUtil.checkTokenApproved(this.props.selectedToken,this.state.curveDepositContract.address,this.props.account);
     } else {
-      tokenApproved = await this.functionsUtil.checkTokenApproved(this.props.selectedToken,this.props.tokenConfig.idle.address,this.props.account);
+      const proxyContract = this.state.actionProxyContract[this.state.action];
+      if (proxyContract && this.state.metaTransactionsEnabled && this.props.biconomy){
+        tokenApproved = await this.functionsUtil.checkTokenApproved(this.props.selectedToken,proxyContract.address,this.props.account);
+      } else {
+        tokenApproved = await this.functionsUtil.checkTokenApproved(this.props.selectedToken,this.props.tokenConfig.idle.address,this.props.account);
+      }
     }
     return tokenApproved;
   }
@@ -314,12 +358,16 @@ class DepositRedeem extends Component {
     const [
       tokenApproved,
       contractPaused,
+      curveSwapContract,
+      curveDepositContract,
       unlentBalance,
       {migrationEnabled},
-      curveTokenBalance
+      curveTokenBalance,
     ] = await Promise.all([
       this.checkTokenApproved(),
       this.functionsUtil.checkContractPaused(),
+      this.functionsUtil.getCurveSwapContract(),
+      this.functionsUtil.getCurveDepositContract(),
       this.functionsUtil.getUnlentBalance(this.props.tokenConfig),
       this.functionsUtil.checkMigration(this.props.tokenConfig,this.props.account),
       curveTokenEnabled ? this.functionsUtil.getCurveTokenBalance(this.props.account) : null
@@ -328,7 +376,7 @@ class DepositRedeem extends Component {
     const canDeposit = this.props.tokenBalance && this.functionsUtil.BNify(this.props.tokenBalance).gt(0);
     const canRedeem = this.props.idleTokenBalance && this.functionsUtil.BNify(this.props.idleTokenBalance).gt(0);
 
-    const canDepositCurve = curveTokenEnabled && canRedeem;
+    const canDepositCurve = curveTokenEnabled && canDeposit;
     const depositCurveEnabled = canDepositCurve;
 
     const canRedeemCurve = curveTokenEnabled && curveTokenBalance && curveTokenBalance.gt(0);
@@ -345,8 +393,10 @@ class DepositRedeem extends Component {
     newState.canDepositCurve = canDepositCurve;
     newState.migrationEnabled = migrationEnabled;
     newState.curveTokenBalance = curveTokenBalance;
+    newState.curveSwapContract = curveSwapContract;
     newState.redeemCurveEnabled = redeemCurveEnabled;
     newState.depositCurveEnabled = depositCurveEnabled;
+    newState.curveDepositContract = curveDepositContract;
 
     newState.txError = {
       redeem:false,
@@ -415,7 +465,6 @@ class DepositRedeem extends Component {
     let loading = true;
 
     switch (this.state.action){
-      // Handle deposit in curve
       case 'deposit':
 
         if (this.state.buttonDisabled || !inputValue || this.functionsUtil.BNify(inputValue).lte(0)){
@@ -425,8 +474,6 @@ class DepositRedeem extends Component {
         if (!this.state.tokenApproved){
           return this.approveToken();
         }
-
-        const tokensToDeposit = this.functionsUtil.normalizeTokenAmount(inputValue,this.props.tokenConfig.decimals);
 
         if (localStorage){
           this.functionsUtil.setLocalStorage('redirectToFundsAfterLogged',0);
@@ -505,53 +552,67 @@ class DepositRedeem extends Component {
           }));
         };
 
-        const depositMetaTransactionsEnabled = this.functionsUtil.getGlobalConfig(['contract','methods','deposit','metaTransactionsEnabled']);
-        // const gasLimitDeposit = this.functionsUtil.BNify(1000000);
-        let depositParams = [];
+        // Handle Curve Deposit
+        if (this.state.depositCurveEnabled){
+          const curvePoolContractInfo = this.functionsUtil.getGlobalConfig(['curve','poolContract']);
+          const tokensToDeposit = this.functionsUtil.normalizeTokenAmount(inputValue,curvePoolContractInfo.decimals);
+          const amounts = this.functionsUtil.getCurveAmounts(this.props.tokenConfig.idle.token,tokensToDeposit);
+          const minMintAmount = await this.functionsUtil.genericContractCall(this.state.curveSwapContract.name,'calc_token_amount',[amounts,true]);
+          const depositParams = [amounts,minMintAmount];
 
-        // Use Proxy Contract if enabled
-        const mintProxyContractInfo = this.state.actionProxyContract[this.state.action];
-        if (depositMetaTransactionsEnabled && mintProxyContractInfo && this.props.biconomy && this.state.metaTransactionsEnabled){
-          const mintProxyContract = this.state.actionProxyContract[this.state.action].contract;
-          depositParams = [tokensToDeposit, this.props.tokenConfig.idle.address];
-          // console.log('mintProxyContract',mintProxyContractInfo.function,depositParams);
-          if (this.state.metaTransactionsEnabled){
-            const functionSignature = mintProxyContract.methods[mintProxyContractInfo.function](...depositParams).encodeABI();
-            contractSendResult = await this.functionsUtil.sendBiconomyTxWithPersonalSign(mintProxyContractInfo.name, functionSignature, callbackDeposit, callbackReceiptDeposit);
-          } else {
-            contractSendResult = await this.props.contractMethodSendWrapper(mintProxyContractInfo.name, mintProxyContractInfo.function, depositParams, null, callbackDeposit, callbackReceiptDeposit);
-          }
-        // Use main contract if no proxy contract exists
-        } else {
-
-          let _skipMint = !this.state.directMint && this.functionsUtil.getGlobalConfig(['contract','methods','deposit','skipMint']);
-          _skipMint = typeof this.props.tokenConfig.skipMintForDeposit !== 'undefined' ? this.props.tokenConfig.skipMintForDeposit : _skipMint;
-
-          // Mint if someone mint over X amount
-          if (_skipMint){
-            let [
-              maxUnlentPerc,
-              totalAUM
-            ] = await Promise.all([
-              this.functionsUtil.genericContractCall('idleDAIYield', 'maxUnlentPerc'),
-              this.functionsUtil.loadAssetField('pool',this.props.selectedToken,this.props.tokenConfig,this.props.account)
-            ]);
-
-            if (maxUnlentPerc && totalAUM){
-              const depositPerc = inputValue.div(totalAUM).times(100);
-              maxUnlentPerc = this.functionsUtil.BNify(maxUnlentPerc).div(1e3);
-              if (depositPerc.gte(maxUnlentPerc.times(2))){
-                _skipMint = false;
-              }
-              // console.log(maxUnlentPerc.toFixed(5),inputValue.toFixed(5),totalAUM.toFixed(5),depositPerc.toFixed(5),depositPerc.gte(maxUnlentPerc.times(2)),_skipMint);
-            }
-          }
-
-          depositParams = [tokensToDeposit, _skipMint, '0x0000000000000000000000000000000000000000'];
-          
           // No need for callback atm
-          contractSendResult = await this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'mintIdleToken', depositParams, null, callbackDeposit, callbackReceiptDeposit);
+          contractSendResult = await this.props.contractMethodSendWrapper(this.state.curveDepositContract.name, 'add_liquidity', depositParams, null, callbackDeposit, callbackReceiptDeposit);
+        } else {
+          const tokensToDeposit = this.functionsUtil.normalizeTokenAmount(inputValue,this.props.tokenConfig.decimals);
+
+          const depositMetaTransactionsEnabled = this.functionsUtil.getGlobalConfig(['contract','methods','deposit','metaTransactionsEnabled']);
+          // const gasLimitDeposit = this.functionsUtil.BNify(1000000);
+          let depositParams = [];
+
+          // Use Proxy Contract if enabled
+          const mintProxyContractInfo = this.state.actionProxyContract[this.state.action];
+          if (depositMetaTransactionsEnabled && mintProxyContractInfo && this.props.biconomy && this.state.metaTransactionsEnabled){
+            const mintProxyContract = this.state.actionProxyContract[this.state.action].contract;
+            depositParams = [tokensToDeposit, this.props.tokenConfig.idle.address];
+            // console.log('mintProxyContract',mintProxyContractInfo.function,depositParams);
+            if (this.state.metaTransactionsEnabled){
+              const functionSignature = mintProxyContract.methods[mintProxyContractInfo.function](...depositParams).encodeABI();
+              contractSendResult = await this.functionsUtil.sendBiconomyTxWithPersonalSign(mintProxyContractInfo.name, functionSignature, callbackDeposit, callbackReceiptDeposit);
+            } else {
+              contractSendResult = await this.props.contractMethodSendWrapper(mintProxyContractInfo.name, mintProxyContractInfo.function, depositParams, null, callbackDeposit, callbackReceiptDeposit);
+            }
+          // Use main contract if no proxy contract exists
+          } else {
+            let _skipMint = !this.state.directMint && this.functionsUtil.getGlobalConfig(['contract','methods','deposit','skipMint']);
+            _skipMint = typeof this.props.tokenConfig.skipMintForDeposit !== 'undefined' ? this.props.tokenConfig.skipMintForDeposit : _skipMint;
+
+            // Mint if someone mint over X amount
+            if (_skipMint){
+              let [
+                maxUnlentPerc,
+                totalAUM
+              ] = await Promise.all([
+                this.functionsUtil.genericContractCall('idleDAIYield', 'maxUnlentPerc'),
+                this.functionsUtil.loadAssetField('pool',this.props.selectedToken,this.props.tokenConfig,this.props.account)
+              ]);
+
+              if (maxUnlentPerc && totalAUM){
+                const depositPerc = inputValue.div(totalAUM).times(100);
+                maxUnlentPerc = this.functionsUtil.BNify(maxUnlentPerc).div(1e3);
+                if (depositPerc.gte(maxUnlentPerc.times(2))){
+                  _skipMint = false;
+                }
+                // console.log(maxUnlentPerc.toFixed(5),inputValue.toFixed(5),totalAUM.toFixed(5),depositPerc.toFixed(5),depositPerc.gte(maxUnlentPerc.times(2)),_skipMint);
+              }
+            }
+
+            depositParams = [tokensToDeposit, _skipMint, '0x0000000000000000000000000000000000000000'];
+            
+            // No need for callback atm
+            contractSendResult = await this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'mintIdleToken', depositParams, null, callbackDeposit, callbackReceiptDeposit);
+          }
         }
+
       break;
       case 'redeem':
 
@@ -876,13 +937,15 @@ class DepositRedeem extends Component {
     const curveConfig = this.functionsUtil.getGlobalConfig(['curve']);
     const curveTokenEnabled = curveConfig.enabled && this.functionsUtil.getGlobalConfig(['curve','availableTokens',this.props.tokenConfig.idle.token,'enabled']);
 
-    const canPerformAction = !depositCurve && !this.state.redeemCurveEnabled && ((this.state.action === 'deposit' && this.state.canDeposit) || (this.state.action === 'redeem' && this.state.canRedeem) || redeemGovTokens);
+    const canPerformAction = /*!depositCurve && !this.state.redeemCurveEnabled && */((this.state.action === 'deposit' && this.state.canDeposit) || (this.state.action === 'redeem' && this.state.canRedeem) || redeemGovTokens);
     const showDepositCurve = this.state.componentMounted && (!this.state.migrationEnabled || this.state.skipMigration) && this.state.canDepositCurve && this.state.action === 'deposit';
     const showRedeemCurve = this.state.componentMounted && (!this.state.migrationEnabled || this.state.skipMigration) && this.state.canRedeemCurve && this.state.action === 'redeem';
 
     const showActionFlow = !redeemGovTokens && canPerformAction;
     const showBuyFlow = this.state.componentMounted && (!showDepositCurve || this.state.showBuyFlow) && !this.state.depositCurveEnabled && this.state.tokenApproved && !this.state.contractPaused && (!this.state.migrationEnabled || this.state.skipMigration) && this.state.action === 'deposit' && !this.state.canDeposit;
     const showRedeemFlow = this.state.canRedeem && (!this.state.redeemCurveEnabled || this.state.showRedeemFlow);
+
+    const showCurveSlippage = depositCurve && this.state.depositCurveSlippage && this.state.depositCurveBalance && !this.state.buttonDisabled;
 
     const showDepositCurveOption = curveTokenEnabled && this.state.canDeposit && this.state.action === 'deposit';
     const showRebalanceOption = this.state.canDeposit && skipMintCheckboxEnabled && this.state.action === 'deposit';
@@ -1414,7 +1477,9 @@ class DepositRedeem extends Component {
                                   textAlign={'center'}
                                 >
                                   {
-                                    useMetaTx ?
+                                    this.state.depositCurveEnabled ? 
+                                      `To ${this.functionsUtil.capitalize(this.state.action)} your ${this.props.selectedToken} in the Curve Pool you need to approve the Smart-Contract first.`
+                                    : useMetaTx ?
                                       `To ${this.functionsUtil.capitalize(this.state.action)} your ${this.props.selectedToken} into Idle using Meta-Transaction you need to approve our Smart-Contract first.`
                                     :
                                       `To ${this.functionsUtil.capitalize(this.state.action)} your ${this.props.selectedToken} into Idle you need to approve our Smart-Contract first.`
@@ -1550,6 +1615,34 @@ class DepositRedeem extends Component {
                                   width={1}
                                   flexDirection={'column'}
                                 >
+                                  {
+                                    showCurveSlippage &&
+                                      <DashboardCard
+                                        cardProps={{
+                                          p:3,
+                                          mb:2
+                                        }}
+                                      >
+                                        <Flex
+                                          alignItems={'center'}
+                                          flexDirection={'column'}
+                                        >
+                                          <Icon
+                                            size={'1.8em'}
+                                            color={'cellText'}
+                                            name={'FileUpload'}
+                                          />
+                                          <Text
+                                            mt={2}
+                                            fontSize={2}
+                                            color={'cellText'}
+                                            textAlign={'center'}
+                                          >
+                                            You can deposit {this.state.depositCurveBalance.toFixed(4)} {this.props.selectedToken} in the Curve Pool{ this.state.depositCurveSlippage ? (this.state.depositCurveSlippage.gt(0) ? ` with ${this.state.depositCurveSlippage.times(100).toFixed(2)}% of slippage` : ` with ${Math.abs(parseFloat(this.state.depositCurveSlippage.times(100).toFixed(2)))}% of bonus`) : '' }.
+                                          </Text>
+                                        </Flex>
+                                      </DashboardCard>
+                                  }
                                   {
                                     (totalBalance || this.props.tokenFeesPercentage) && (
                                       <Box
@@ -1704,6 +1797,7 @@ class DepositRedeem extends Component {
           </Migrate>
         </Flex>
         {
+          /*
           showDepositCurve && this.state.depositCurveEnabled ? (
             <CurveDeposit
               {...this.props}
@@ -1713,6 +1807,7 @@ class DepositRedeem extends Component {
               {...this.props}
             />
           )
+          */
         }
         {
           showBuyFlow &&

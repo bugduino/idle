@@ -1,17 +1,19 @@
 import Title from '../Title/Title';
 import React, { Component } from 'react';
-import RoundButton from '../RoundButton/RoundButton';
+import { Box, Flex, Text, Icon } from "rimble-ui";
+// import RoundButton from '../RoundButton/RoundButton';
+import CurveRedeem from '../CurveRedeem/CurveRedeem';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import BuyModal from '../utilities/components/BuyModal';
-import TxProgressBar from '../TxProgressBar/TxProgressBar';
+import CurveDeposit from '../CurveDeposit/CurveDeposit';
+// import TxProgressBar from '../TxProgressBar/TxProgressBar';
 import AssetSelector from '../AssetSelector/AssetSelector';
 import DashboardCard from '../DashboardCard/DashboardCard';
 import CardIconButton from '../CardIconButton/CardIconButton';
 import TransactionField from '../TransactionField/TransactionField';
 import TransactionsList from '../TransactionsList/TransactionsList';
-import { Box, Flex, Text, Icon, Link, Input, Checkbox } from "rimble-ui";
 import FundsOverviewCurve from '../FundsOverviewCurve/FundsOverviewCurve';
-import FastBalanceSelector from '../FastBalanceSelector/FastBalanceSelector';
+// import FastBalanceSelector from '../FastBalanceSelector/FastBalanceSelector';
 
 class AssetPage extends Component {
 
@@ -20,9 +22,11 @@ class AssetPage extends Component {
     processing:{},
     tokenFees:null,
     canRedeem:null,
+    canDeposit:null,
     action:'deposit',
     activeModal:null,
     unevenAmounts:[],
+    tokenConfig:null,
     tokenBalance:null,
     tokenApproved:null,
     selectedToken:null,
@@ -32,9 +36,11 @@ class AssetPage extends Component {
     buttonDisabled:false,
     curveTokenPrice:null,
     depositSlippage:null,
+    idleTokenBalance:null,
     withdrawSlippage:null,
     govTokensBalance:null,
     curveZapContract:null,
+    curveTokenConfig:null,
     govTokensDisabled:null,
     componentMounted:false,
     curvePoolContract:null,
@@ -42,6 +48,7 @@ class AssetPage extends Component {
     curveTokenBalance:null,
     redeemableBalance:null,
     fastBalanceSelector:{},
+    curveAvailableTokens:{},
     tokenFeesPercentage:null,
     redeemUnevenAmounts:false,
     curveDepositContract:null
@@ -81,31 +88,33 @@ class AssetPage extends Component {
     this.props.goToSection(`${curveConfig.params.route}/${selectedToken}`);
   }
 
-  getSelectedToken = () => {
-    const availableTokens = this.functionsUtil.getCurveAvailableTokens();
-    return this.props.urlParams.param1 && availableTokens[this.props.urlParams.param1] ? this.props.urlParams.param1 : Object.keys(availableTokens)[0];
+  getSelectedToken(){
+    const curveAvailableTokens = this.functionsUtil.getGlobalConfig(['curve','availableTokens']);
+    return this.props.urlParams.param1 && curveAvailableTokens[this.props.urlParams.param1] ? this.props.urlParams.param1 : Object.keys(curveAvailableTokens)[0];
   }
 
-  setSelectedToken = async (selectedToken,availableTokens={}) => {
-    const tokenConfig = availableTokens[selectedToken];
+  setSelectedToken = async (selectedToken) => {
+    const availableTokens = this.functionsUtil.getCurveAvailableTokens();
+    const curveAvailableTokens = this.functionsUtil.getGlobalConfig(['curve','availableTokens']);
+    const curveTokenConfig = curveAvailableTokens[selectedToken];
+    const tokenConfig = availableTokens[curveTokenConfig.baseToken];
     this.setState({
       tokenConfig,
       selectedToken,
-      availableTokens
+      availableTokens,
+      curveTokenConfig
     });
   }
 
-  async loadTokensInfo(){
-
-    const availableTokens = this.functionsUtil.getCurveAvailableTokens();
+  loadTokensInfo = async () => {
 
     const selectedToken = this.getSelectedToken();
     // Check if token is set i query params
     if (selectedToken && selectedToken !== this.props.urlParams.param1){
       this.changeFromToken(selectedToken);
-      return await this.setSelectedToken(selectedToken,availableTokens);
+      return await this.setSelectedToken(selectedToken);
     } else if (selectedToken !== this.state.selectedToken){
-      await this.setSelectedToken(selectedToken,availableTokens);
+      await this.setSelectedToken(selectedToken);
     }
 
     window.getCurveSlippage = this.functionsUtil.getCurveSlippage;
@@ -113,6 +122,16 @@ class AssetPage extends Component {
     if (this.props.account){
 
       const newState = {...this.state};
+
+      const availableTokens = this.functionsUtil.getCurveAvailableTokens();
+      const curveAvailableTokens = this.functionsUtil.getGlobalConfig(['curve','availableTokens']);
+
+      if (newState.selectedToken !== selectedToken){
+        newState.selectedToken = selectedToken;
+      }
+
+      const curveTokenConfig = curveAvailableTokens[selectedToken];
+      const tokenConfig = availableTokens[curveTokenConfig.baseToken];
 
       const [
         curveZapContract,
@@ -131,40 +150,32 @@ class AssetPage extends Component {
       newState.curveSwapContract = curveSwapContract;
       newState.curveDepositContract = curveDepositContract;
 
-      [
-        newState.curveTokenPrice,
-        newState.curveTokenBalance,
-        newState.tokenBalance
-      ]  = await Promise.all([
-        this.functionsUtil.getCurveTokenPrice(),
-        this.functionsUtil.getCurveTokenBalance(),
-        this.functionsUtil.getTokenBalance(selectedToken,this.props.account)
-      ]);
-
-      if (newState.selectedToken !== selectedToken){
-        newState.selectedToken = selectedToken;
-      }
-
-      newState.redeemableBalance = newState.curveTokenBalance ? newState.curveTokenBalance.times(newState.curveTokenPrice) : this.functionsUtil.BNify(0);
       newState.availableTokens = availableTokens;
+      newState.curveAvailableTokens = curveAvailableTokens;
 
       // console.log('curveTokenPrice',newState.curveTokenPrice.toFixed(6),'curveTokenBalance',newState.curveTokenBalance.toFixed(6),'redeemableBalance',newState.redeemableBalance.toFixed(20),'tokenBalance',newState.tokenBalance.toFixed(20));
 
-      const tokenConfig = availableTokens[selectedToken];
       const govTokenAvailableTokens = {};
       govTokenAvailableTokens[selectedToken] = tokenConfig;
 
-      const [
-        tokenFeesPercentage,
-        tokenFees,
-        tokenApproved,
-        // govTokensBalance
+      [
+        newState.curveTokenPrice,
+        newState.curveTokenBalance,
+        newState.tokenFeesPercentage,
+        newState.tokenFees,
+        newState.tokenBalance,
+        newState.idleTokenBalance,
+        newState.tokenApproved,
       ] = await Promise.all([
+        this.functionsUtil.getCurveTokenPrice(),
+        this.functionsUtil.getCurveTokenBalance(),
         this.functionsUtil.getTokenFees(tokenConfig),
         this.functionsUtil.getUserTokenFees(tokenConfig,this.props.account),
-        this.functionsUtil.checkTokenApproved(selectedToken,curveZapContract.address,this.props.account),
-        // this.functionsUtil.getGovTokensUserTotalBalance(this.props.account,govTokenAvailableTokens,'DAI')
+        this.functionsUtil.getTokenBalance(selectedToken,this.props.account),
+        this.functionsUtil.getTokenBalance(tokenConfig.idle.token,this.props.account),
+        this.functionsUtil.checkTokenApproved(selectedToken,curveDepositContract.address,this.props.account),
       ]);
+
 
       newState.processing = {
         redeem:{
@@ -189,19 +200,14 @@ class AssetPage extends Component {
         deposit:null
       };
 
-      newState.tokenFees = tokenFees;
       newState.componentMounted = true;
       newState.tokenConfig = tokenConfig;
-      newState.tokenApproved = tokenApproved || true;
-      newState.curveZapContract = curveZapContract;
-      newState.curvePoolContract = curvePoolContract;
-      newState.curveSwapContract = curveSwapContract;
       newState.depositBalance = newState.tokenBalance;
-      // newState.govTokensBalance = govTokensBalance;
-      newState.tokenFeesPercentage = tokenFeesPercentage;
       newState.redeemBalance = newState.redeemableBalance;
       newState.govTokensDisabled = tokenConfig.govTokensDisabled;
       newState.canRedeem = newState.curveTokenBalance && newState.curveTokenBalance.gt(0);
+      newState.canDeposit = newState.idleTokenBalance && newState.idleTokenBalance.gt(0);
+      newState.redeemableBalance = newState.curveTokenBalance ? newState.curveTokenBalance.times(newState.curveTokenPrice) : this.functionsUtil.BNify(0);
 
       this.setState(newState);
     }
@@ -251,15 +257,38 @@ class AssetPage extends Component {
     const actionChanged = this.state.action !== prevState.action;
     const redeemUnevenAmountsChanged = this.state.redeemUnevenAmounts !== prevState.redeemUnevenAmounts;
     const fastBalanceSelectorChanged = this.state.fastBalanceSelector[this.state.action] !== prevState.fastBalanceSelector[this.state.action];
-
     if (actionChanged || fastBalanceSelectorChanged || redeemUnevenAmountsChanged){
       this.setInputValue();
+    }
+
+    if (actionChanged){
+      this.updateAssetSelector();
     }
 
     const inputChanged = prevState.inputValue[this.state.action] !== this.state.inputValue[this.state.action];
     if (inputChanged){
       this.calculateSlippage();
     }
+  }
+
+  updateAssetSelector = async () => {
+    const newState = {};
+    switch (this.state.action){
+      case 'deposit':
+        this.loadTokensInfo();
+      break;
+      case 'redeem':
+        const tokenConfig = this.functionsUtil.getGlobalConfig(['curve','poolContract']);
+        newState.curveAvailableTokens = {};
+        newState.curveTokenConfig = tokenConfig;
+        newState.selectedToken = tokenConfig.token;
+        newState.curveAvailableTokens[tokenConfig.token] = tokenConfig;
+      break;
+      default:
+      break;
+    }
+
+    this.setState(newState);
   }
 
   getFastBalanceSelector = () => {
@@ -442,7 +471,7 @@ class AssetPage extends Component {
       }));
     };
 
-    this.functionsUtil.enableERC20(this.state.selectedToken,this.state.curveZapContract.address,callbackApprove,callbackReceiptApprove);
+    this.functionsUtil.enableERC20(this.state.selectedToken,this.state.curveDepositContract.address,callbackApprove,callbackReceiptApprove);
 
     this.setState((prevState) => ({
       processing: {
@@ -682,21 +711,8 @@ class AssetPage extends Component {
       return null;
     }
 
-    // const govTokens = this.functionsUtil.getGlobalConfig(['govTokens']);
-    // const availableGovTokens = Object.keys(govTokens).reduce((enabledTokens,token) => {
-    //   if (govTokens[token].enabled){
-    //     enabledTokens[token] = govTokens[token];
-    //   }
-    //   return enabledTokens;
-    // },{});
-
     const userHasFunds = this.props.account && this.state.curveTokenBalance && this.functionsUtil.BNify(this.state.curveTokenBalance).gt(0);
-    const totalBalance = this.state.action === 'deposit' ? this.state.tokenBalance : this.state.redeemableBalance;
-
-    const curveTokenInfo = this.functionsUtil.getGlobalConfig(['stats','tokens',this.state.curvePoolContract.token]);
-    const curveTokenName = curveTokenInfo.name ? curveTokenInfo.name : this.state.curvePoolContract.token;
-
-    const showBuyFlow = this.state.action === 'deposit' && (!totalBalance || parseFloat(totalBalance)<=0);
+    const canPerformAction = true;
 
     return (
       <Box
@@ -758,112 +774,138 @@ class AssetPage extends Component {
               <Box
                 width={1}
               >
-                <Text mb={1}>
+                <Text
+                  mb={1}
+                >
                   Select your asset:
                 </Text>
                 <AssetSelector
                   {...this.props}
                   id={'token-from'}
-                  showBalance={true}
-                  isSearchable={false}
                   onChange={this.changeFromToken}
                   selectedToken={this.state.selectedToken}
-                  availableTokens={this.state.availableTokens}
+                  tokenConfig={this.state.curveTokenConfig}
+                  showBalance={this.state.action === 'deposit'}
+                  availableTokens={this.state.curveAvailableTokens}
                 />
               </Box>
               <Box
                 width={1}
               >
-                <Flex
-                  mt={2}
-                  flexDirection={'column'}
-                >
-                  <Text
-                    mb={2}
-                  >
-                    Choose the action:
-                  </Text>
-                  <Flex
-                    alignItems={'center'}
-                    flexDirection={'row'}
-                    justifyContent={'space-between'}
-                  >
-                    <DashboardCard
-                      cardProps={{
-                        p:3,
-                        width:0.48,
-                        onMouseDown:() => {
-                          this.setAction('deposit');
-                        }
-                      }}
-                      isInteractive={true}
-                      isActive={ this.state.action === 'deposit' }
-                    >
-                      <Flex
-                        my={1}
-                        alignItems={'center'}
-                        flexDirection={'row'}
-                        justifyContent={'center'}
-                      >
-                        <TransactionField
-                          transaction={{
-                            action:'deposit'
-                          }}
-                          fieldInfo={{
-                            name:'icon',
-                            props:{
-                              mr:3
-                            }
-                          }}
-                        />
-                        <Text
-                          fontSize={3}
-                          fontWeight={3}
-                        >
-                          Deposit
-                        </Text>
-                      </Flex>
-                    </DashboardCard>
-                    <DashboardCard
-                      cardProps={{
-                        p:3,
-                        width:0.48,
-                        onMouseDown:() => {
-                          this.setAction('redeem');
-                        }
-                      }}
-                      isInteractive={true}
-                      isDisabled={ !this.state.canRedeem }
-                      isActive={ this.state.action === 'redeem' }
-                    >
-                      <Flex
-                        my={1}
-                        alignItems={'center'}
-                        flexDirection={'row'}
-                        justifyContent={'center'}
-                      >
-                        <TransactionField
-                          transaction={{
-                            action:'redeem'
-                          }}
-                          fieldInfo={{
-                            name:'icon',
-                            props:{
-                              mr:3
-                            }
-                          }}
-                        />
-                        <Text
-                          fontSize={3}
-                          fontWeight={3}
-                        >
-                          Redeem
-                        </Text>
-                      </Flex>
-                    </DashboardCard>
-                  </Flex>
-                </Flex>
                 {
+                  canPerformAction ? (
+                    <Flex
+                      mt={2}
+                      flexDirection={'column'}
+                    >
+                      <Text
+                        mb={2}
+                      >
+                        Choose the action:
+                      </Text>
+                      <Flex
+                        alignItems={'center'}
+                        flexDirection={'row'}
+                        justifyContent={'space-between'}
+                      >
+                        <DashboardCard
+                          cardProps={{
+                            p:3,
+                            width:0.48,
+                            onMouseDown:() => {
+                              this.setAction('deposit');
+                            }
+                          }}
+                          isInteractive={true}
+                          isActive={ this.state.action === 'deposit' }
+                        >
+                          <Flex
+                            my={1}
+                            alignItems={'center'}
+                            flexDirection={'row'}
+                            justifyContent={'center'}
+                          >
+                            <TransactionField
+                              transaction={{
+                                action:'deposit'
+                              }}
+                              fieldInfo={{
+                                name:'icon',
+                                props:{
+                                  mr:3
+                                }
+                              }}
+                            />
+                            <Text
+                              fontSize={3}
+                              fontWeight={3}
+                            >
+                              Deposit
+                            </Text>
+                          </Flex>
+                        </DashboardCard>
+                        <DashboardCard
+                          cardProps={{
+                            p:3,
+                            width:0.48,
+                            onMouseDown:() => {
+                              this.setAction('redeem');
+                            }
+                          }}
+                          isInteractive={true}
+                          isDisabled={ !this.state.canRedeem }
+                          isActive={ this.state.action === 'redeem' }
+                        >
+                          <Flex
+                            my={1}
+                            alignItems={'center'}
+                            flexDirection={'row'}
+                            justifyContent={'center'}
+                          >
+                            <TransactionField
+                              transaction={{
+                                action:'redeem'
+                              }}
+                              fieldInfo={{
+                                name:'icon',
+                                props:{
+                                  mr:3
+                                }
+                              }}
+                            />
+                            <Text
+                              fontSize={3}
+                              fontWeight={3}
+                            >
+                              Redeem
+                            </Text>
+                          </Flex>
+                        </DashboardCard>
+                      </Flex>
+                    </Flex>
+                  ) : (
+                    <Flex
+                      alignItems={'center'}
+                      flexDirection={'column'}
+                    >
+                      <Icon
+                        size={'2.3em'}
+                        name={'MoneyOff'}
+                        color={'cellText'}
+                      />
+                      <Text
+                        mt={2}
+                        fontSize={2}
+                        color={'cellText'}
+                        textAlign={'center'}
+                      >
+                        You don't have any {this.state.tokenConfig.idle.token} in your wallet.
+                      </Text>
+                    </Flex>
+                  )
+                }
+                {
+                  /*
                   (!this.state.tokenApproved && this.state.action === 'deposit') ? (
                     <DashboardCard
                       cardProps={{
@@ -1087,10 +1129,30 @@ class AssetPage extends Component {
                       </Flex>
                     )
                   )
+                  */
                 }
               </Box>
             </Flex>
+            <Flex
+              mt={3}
+              width={1}
+            >
             {
+              this.state.action === 'deposit' ? (
+                <CurveDeposit
+                  {...this.props}
+                  {...this.state}
+                />
+              ) : this.state.action === 'redeem' && (
+                <CurveRedeem
+                  {...this.props}
+                  {...this.state}
+                />
+              )
+            }
+            </Flex>
+            {
+              /*
               showBuyFlow &&
                 <Flex
                   mt={3}
@@ -1106,6 +1168,7 @@ class AssetPage extends Component {
                     buyToken={this.state.selectedToken}
                   />
                 </Flex>
+              */
             }
           </Flex>
         </Flex>
