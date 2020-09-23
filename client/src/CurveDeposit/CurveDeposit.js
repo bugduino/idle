@@ -31,7 +31,7 @@ class CurveDeposit extends Component {
     await this.initToken();
   }
 
-  async getMigrationParams(toMigrate) {
+  async getMigrationParams(toMigrate){
     const migrationParams = [];
     const curveTokenConfig = this.functionsUtil.getGlobalConfig(['curve','availableTokens',this.props.tokenConfig.idle.token]);
 
@@ -204,7 +204,7 @@ class CurveDeposit extends Component {
                   callbackApprove={this.approveCallback.bind(this)}
                   migrationParams={this.getMigrationParams.bind(this)}
                   migrationCallback={this.migrationCallback.bind(this)}
-                  migrationText={`Deposit your ${this.props.tokenConfig.idle.token} in the Curve pool to boost your APY. Current slipppage: ${this.state.depositSlippage.toFixed(2)}%`}
+                  migrationText={`Deposit your ${this.props.tokenConfig.idle.token} in the Curve pool to boost your APY. ${ this.state.depositSlippage && this.state.depositSlippage.gt(0) ? `Current slippage: ${this.state.depositSlippage.toFixed(2)}%` : null }` }
                   approveText={`To deposit your ${this.props.tokenConfig.idle.token} you need to approve Curve smart-contract first.`}
                 >
                   {

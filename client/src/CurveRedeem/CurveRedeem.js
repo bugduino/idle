@@ -13,6 +13,7 @@ class CurveRedeem extends Component {
       txHash:null,
       loading:false
     },
+    unevenAmounts:null,
     curveTokenConfig:null,
     curvePoolContract:null,
     curveSwapContract:null,
@@ -72,9 +73,16 @@ class CurveRedeem extends Component {
     const normalizedCurveBalance = this.functionsUtil.normalizeTokenAmount(curveTokenBalance,curvePoolContract.decimals);
     const withdrawSlippage = await this.functionsUtil.getCurveSlippage(this.props.tokenConfig.idle.token,normalizedCurveBalance,false);
 
-    console.log('curveTokenBalance',curveTokenBalance.toFixed(4),'withdrawSlippage',withdrawSlippage.toFixed(4));
+    // const max_burn_amount = this.functionsUtil.normalizeTokenAmount(curveTokenBalance,curvePoolContract.decimals).toString();
+    // const amounts = this.functionsUtil.getCurveAmounts(this.props.tokenConfig.idle.token,0);
+    // let redeemUnevenAmounts = await this.functionsUtil.getCurveUnevenTokenAmounts(amounts,max_burn_amount);
+    
+    const unevenAmounts = [];
+    // redeemUnevenAmounts
+    // console.log('curveTokenBalance',curveTokenBalance.toFixed(4),'withdrawSlippage',withdrawSlippage.toFixed(4));
 
     this.setState({
+      unevenAmounts,
       withdrawSlippage,
       curveTokenConfig,
       curvePoolContract,
@@ -134,7 +142,7 @@ class CurveRedeem extends Component {
 
     const contractName = this.state.curveSwapContract.name;
     const _amount = this.functionsUtil.normalizeTokenAmount(this.state.curveTokenBalance,this.state.curvePoolContract.decimals).toString();
-    const min_amounts = await this.functionsUtil.getCurveAmounts(this.props.tokenConfig.idle.token,_amount);
+    const min_amounts = this.functionsUtil.getCurveAmounts(this.props.tokenConfig.idle.token,_amount);
 
     if (this.state.redeemUnevenAmounts){
       this.props.contractMethodSendWrapper(contractName, 'remove_liquidity_imbalance', [min_amounts, _amount], null, callbackRedeem, callbackReceiptRedeem);
@@ -228,7 +236,7 @@ class CurveRedeem extends Component {
                         textAlign={'center'}
                       >
                         {
-                          this.state.redeemUnevenAmounts ? `You can redeem ${this.state.curveTokenBalance.toFixed(4)} Curve tokens in uneven amounts. You may incure in a slippage or bonus.` : `You can redeem ${this.state.curveRedeemableIdleTokens.toFixed(4)} ${this.props.tokenConfig.idle.token} from the Curve Pool with ${this.state.withdrawSlippage.toFixed(2)}% slippage.`
+                          this.state.redeemUnevenAmounts ? `You can redeem ${this.state.curveTokenBalance.toFixed(4)} Curve tokens in uneven amounts ${ this.state.unevenAmounts ? `: ${this.state.unevenAmounts.join(', ')}` : `` }.` : `You can redeem ${this.state.curveRedeemableIdleTokens.toFixed(4)} ${this.props.tokenConfig.idle.token} from the Curve Pool${ this.state.withdrawSlippage ? ` with ${this.state.withdrawSlippage.toFixed(2)}% slippage` : '' }.`
                         }
                       </Text>
                       <Checkbox

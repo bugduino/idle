@@ -49,8 +49,11 @@ class TableRow extends Component {
                             flexDirection={'column'}
                             alignItems={'flex-start'}
                             justifyContent={'center'}
-                            width={colInfo.fields.length>1 ? 'auto' : 1}
                             {...fieldInfo.parentProps}
+                            style={{
+                              overflow:'hidden'
+                            }}
+                            width={colInfo.fields.length>1 ? 'auto' : 1}
                             id={`field-${colIndex}-${fieldIndex}-${fieldInfo.name}`}
                             key={`field-${colIndex}-${fieldIndex}-${fieldInfo.name}`}
                           >

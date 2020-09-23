@@ -74,6 +74,11 @@ class TransactionField extends Component {
       fontWeight:3,
       fontSize:[0,2],
       color:'cellText',
+      style:{
+        maxWidth:'100%',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis'
+      },
       flexProps:{
         justifyContent:'flex-start'
       }

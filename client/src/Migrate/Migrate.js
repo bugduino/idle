@@ -64,6 +64,10 @@ class Migrate extends Component {
     this.setState({
       skipMigration
     });
+
+    if (typeof this.props.toggleSkipMigration === 'function'){
+      this.props.toggleSkipMigration(skipMigration);
+    }
   }
 
   changeInputValue = (e) => {
@@ -687,11 +691,12 @@ class Migrate extends Component {
         cardProps={{
           py:3,
           px:2,
-          my:2,
+          mb:2,
           display:'flex',
           alignItems:'center',
           flexDirection:'column',
           justifyContent:'center',
+          mt:this.state.skipMigration ? 3 : 2,
         }}
       >
         <Flex
