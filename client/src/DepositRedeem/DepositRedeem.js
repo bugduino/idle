@@ -249,7 +249,8 @@ class DepositRedeem extends Component {
 
   approveContract = async (callbackApprove,callbackReceiptApprove) => {
     if (this.state.depositCurveEnabled){
-      this.functionsUtil.enableERC20(this.props.selectedToken,this.state.curveDepositContract.address,callbackApprove,callbackReceiptApprove);
+      const curveDepositContract = this.functionsUtil.getGlobalConfig(['curve','depositContract']);
+      this.functionsUtil.enableERC20(this.props.selectedToken,curveDepositContract.address,callbackApprove,callbackReceiptApprove);
     } else {
       const proxyContract = this.state.actionProxyContract[this.state.action];
       if (proxyContract && this.state.metaTransactionsEnabled && this.props.biconomy){
@@ -265,7 +266,8 @@ class DepositRedeem extends Component {
     let tokenApproved = false;
 
     if (this.state.depositCurveEnabled){
-      tokenApproved = await this.functionsUtil.checkTokenApproved(this.props.selectedToken,this.state.curveDepositContract.address,this.props.account);
+      const curveDepositContract = this.functionsUtil.getGlobalConfig(['curve','depositContract']);
+      tokenApproved = await this.functionsUtil.checkTokenApproved(this.props.selectedToken,curveDepositContract.address,this.props.account);
     } else {
       const proxyContract = this.state.actionProxyContract[this.state.action];
       if (proxyContract && this.state.metaTransactionsEnabled && this.props.biconomy){
@@ -390,6 +392,11 @@ class DepositRedeem extends Component {
     const redeemCurveEnabled = canRedeemCurve;
 
     const newState = {...this.state};
+
+    // Check curve deposit enabled
+    if (newState.depositCurveEnabled && !curveTokenEnabled){
+      newState.depositCurveEnabled = false;
+    }
     
     newState.canRedeem = canRedeem;
     newState.canDeposit = canDeposit;
@@ -948,8 +955,10 @@ class DepositRedeem extends Component {
 
     const depositCurve = curveTokenEnabled && this.state.depositCurveEnabled && this.state.action === 'deposit';
 
+    const showDepositOptions = this.state.action === 'deposit' && !this.state.contractPaused && (curveTokenEnabled || this.state.tokenApproved);
+
     const canPerformAction = /*!depositCurve && !this.state.redeemCurveEnabled && */((this.state.action === 'deposit' && this.state.canDeposit) || (this.state.action === 'redeem' && this.state.canRedeem) || redeemGovTokens);
-    const showDepositCurve = curveTokenEnabled && this.state.componentMounted && (!this.state.migrationEnabled || this.state.skipMigration) && this.state.canDepositCurve && this.state.action === 'deposit';
+    const showDepositCurve = showDepositOptions && curveTokenEnabled && this.state.componentMounted && (!this.state.migrationEnabled || this.state.skipMigration) && this.state.canDepositCurve && this.state.action === 'deposit';
     const showRedeemCurve = curveTokenEnabled && this.state.componentMounted && (!this.state.migrationEnabled || this.state.skipMigration) && this.state.canRedeemCurve && this.state.action === 'redeem';
 
     const showActionFlow = !redeemGovTokens && canPerformAction;
@@ -958,8 +967,9 @@ class DepositRedeem extends Component {
 
     const showCurveSlippage = depositCurve && this.state.depositCurveSlippage && this.state.depositCurveBalance && !this.state.buttonDisabled;
 
-    const showRebalanceOption = this.state.canDeposit && skipMintCheckboxEnabled && this.state.action === 'deposit';
-    const showAdvancesDepositOptions = showDepositCurve && showRebalanceOption;
+    const showRebalanceOption = showDepositOptions && this.state.canDeposit && skipMintCheckboxEnabled && this.state.action === 'deposit';
+    const showAdvancedDepositOptions = showDepositCurve && showRebalanceOption;
+
     return (
       <Flex
         width={1}
@@ -1116,6 +1126,210 @@ class DepositRedeem extends Component {
                         </DashboardCard>
                       </Flex>
                     </Flex>
+                    {
+                      showAdvancedDepositOptions ? (
+                        <DashboardCard
+                          cardProps={{
+                            pt:2,
+                            px:2,
+                            mt:3,
+                            display:'flex',
+                            alignItems:'center',
+                            flexDirection:'column',
+                            justifyContent:'center',
+                            pb:this.state.showAdvancedOptions ? 3 : 2,
+                          }}
+                        >
+                          <Flex
+                            width={1}
+                            alignItems={'center'}
+                            flexDirection={'row'}
+                            justifyContent={'center'}
+                          >
+                            <Link
+                              ml={1}
+                              mainColor={'primary'}
+                              hoverColor={'primary'}
+                              onClick={this.toggleShowAdvancedOptions}
+                            >
+                              { this.state.showAdvancedOptions ? 'Hide' : 'Show' } advanced options
+                            </Link>
+                            <Icon
+                              size={'1.8em'}
+                              color={'cellText'}
+                              name={this.state.showAdvancedOptions ? 'ArrowDropUp' : 'ArrowDropDown'}
+                            />
+                          </Flex>
+                          {
+                            this.state.showAdvancedOptions &&
+                              <Flex
+                                mt={1}
+                                flexDirection={'column'}
+                              >
+                                <Flex
+                                  alignItems={'center'}
+                                  justifyContent={'row'}
+                                >
+                                  <Checkbox
+                                    required={false}
+                                    disabled={this.state.directMint}
+                                    label={`Deposit in the Curve Pool`}
+                                    checked={this.state.depositCurveEnabled}
+                                    onChange={ e => this.toggleDepositCurve(e.target.checked) }
+                                  />
+                                  <Link
+                                    mainColor={'primary'}
+                                    hoverColor={'primary'}
+                                    onClick={ e => this.props.openTooltipModal('How Curve works',this.functionsUtil.getGlobalConfig(['messages','curveInstructions'])) }
+                                  >
+                                    (read more)
+                                  </Link>
+                                </Flex>
+                                <Flex
+                                  alignItems={'center'}
+                                  justifyContent={'row'}
+                                >
+                                  <Checkbox
+                                    required={false}
+                                    label={`Rebalance the pool`}
+                                    checked={this.state.directMint}
+                                    disabled={this.state.depositCurveEnabled}
+                                    onChange={ e => this.toggleSkipMint(e.target.checked) }
+                                  />
+                                  <Tooltip
+                                    placement={'bottom'}
+                                    message={this.functionsUtil.getGlobalConfig(['messages','directMint'])}
+                                  >
+                                    <Icon
+                                      name={"Info"}
+                                      size={'1em'}
+                                      color={'cellTitle'}
+                                    />
+                                  </Tooltip>
+                                </Flex>
+                              </Flex>
+                          }
+                        </DashboardCard>
+                      ) : (
+                        <Flex
+                          width={1}
+                          flexDirection={'column'}
+                        >
+                          {
+                            showDepositCurve && (
+                              <Flex
+                                width={1}
+                                flexDirection={'column'}
+                                justifyContent={'center'}
+                              >
+                                <DashboardCard
+                                  isRainbow={true}
+                                  cardProps={{
+                                    py:3,
+                                    px:2,
+                                    mt:3,
+                                    display:'flex',
+                                    alignItems:'center',
+                                    flexDirection:'column',
+                                    justifyContent:'center',
+                                  }}
+                                >
+                                  <Flex
+                                    width={1}
+                                    alignItems={'center'}
+                                    flexDirection={'column'}
+                                    justifyContent={'center'}
+                                  >
+                                    <Image
+                                      height={'1.8em'}
+                                      src={curveConfig.params.image}
+                                    />
+                                    <Text
+                                      mt={2}
+                                      px={2}
+                                      fontSize={1}
+                                      color={'dark-gray'}
+                                      textAlign={'center'}
+                                    >
+                                      Deposit your tokens in the Curve Pool and boost your APY up to {this.state.curveAPY ? this.state.curveAPY.toFixed(2) : '-'}%.
+                                      <Link
+                                        ml={1}
+                                        mainColor={'primary'}
+                                        hoverColor={'primary'}
+                                        onClick={ e => this.props.openTooltipModal('How Curve works',this.functionsUtil.getGlobalConfig(['messages','curveInstructions'])) }
+                                      >
+                                        Read More
+                                      </Link>
+                                    </Text>
+                                    <Checkbox
+                                      mt={2}
+                                      required={false}
+                                      label={`Deposit in Curve`}
+                                      checked={this.state.depositCurveEnabled}
+                                      onChange={ e => this.toggleDepositCurve(e.target.checked) }
+                                    />
+                                  </Flex>
+                                </DashboardCard>
+                                {
+                                  (!this.state.showBuyFlow && !this.state.depositCurveEnabled && !this.state.canDeposit) &&
+                                    <Link
+                                      textAlign={'center'}
+                                      hoverColor={'primary'}
+                                      onClick={ e => this.setShowBuyFlow(true) }
+                                    >
+                                      I just want to deposit more {this.props.selectedToken}
+                                    </Link>
+                                }
+                              </Flex>
+                            )
+                          }
+                          {
+                            showRebalanceOption && (
+                              <DashboardCard
+                                cardProps={{
+                                  py:3,
+                                  px:2,
+                                  mt:3,
+                                  display:'flex',
+                                  alignItems:'center',
+                                  flexDirection:'column',
+                                  justifyContent:'center',
+                                }}
+                              >
+                                <Flex
+                                  width={1}
+                                  alignItems={'center'}
+                                  flexDirection={'column'}
+                                  justifyContent={'center'}
+                                >
+                                  <Icon
+                                    size={'1.8em'}
+                                    color={'cellText'}
+                                    name={'InfoOutline'}
+                                  />
+                                  <Text
+                                    mt={1}
+                                    px={2}
+                                    fontSize={1}
+                                    color={'cellText'}
+                                    textAlign={'center'}
+                                  >
+                                    By checking this flag you can rebalance the pool and help all users gain an additional APR
+                                  </Text>
+                                </Flex>
+                                <Checkbox
+                                  mt={2}
+                                  required={false}
+                                  label={`Rebalance the pool`}
+                                  checked={this.state.directMint}
+                                  onChange={ e => this.toggleSkipMint(e.target.checked) }
+                                />
+                              </DashboardCard>
+                            )
+                          }
+                        </Flex>
+                      )
+                    }
                     {
                       (metaTransactionsAvailable && !showBuyFlow && !this.state.contractPaused) && 
                       <DashboardCard
@@ -1445,210 +1659,6 @@ class DepositRedeem extends Component {
                             mt={3}
                             flexDirection={'column'}
                           >
-                            {
-                              showAdvancesDepositOptions ? (
-                                <DashboardCard
-                                  cardProps={{
-                                    pt:2,
-                                    px:2,
-                                    mb:3,
-                                    display:'flex',
-                                    alignItems:'center',
-                                    flexDirection:'column',
-                                    justifyContent:'center',
-                                    pb:this.state.showAdvancedOptions ? 3 : 2,
-                                  }}
-                                >
-                                  <Flex
-                                    width={1}
-                                    alignItems={'center'}
-                                    flexDirection={'row'}
-                                    justifyContent={'center'}
-                                  >
-                                    <Link
-                                      ml={1}
-                                      mainColor={'primary'}
-                                      hoverColor={'primary'}
-                                      onClick={this.toggleShowAdvancedOptions}
-                                    >
-                                      { this.state.showAdvancedOptions ? 'Hide' : 'Show' } advanced options
-                                    </Link>
-                                    <Icon
-                                      size={'1.8em'}
-                                      color={'cellText'}
-                                      name={this.state.showAdvancedOptions ? 'ArrowDropUp' : 'ArrowDropDown'}
-                                    />
-                                  </Flex>
-                                  {
-                                    this.state.showAdvancedOptions &&
-                                      <Flex
-                                        mt={1}
-                                        flexDirection={'column'}
-                                      >
-                                        <Flex
-                                          alignItems={'center'}
-                                          justifyContent={'row'}
-                                        >
-                                          <Checkbox
-                                            required={false}
-                                            disabled={this.state.directMint}
-                                            label={`Deposit in the Curve Pool`}
-                                            checked={this.state.depositCurveEnabled}
-                                            onChange={ e => this.toggleDepositCurve(e.target.checked) }
-                                          />
-                                          <Link
-                                            mainColor={'primary'}
-                                            hoverColor={'primary'}
-                                            onClick={ e => this.props.openTooltipModal('How Curve works',this.functionsUtil.getGlobalConfig(['messages','curveInstructions'])) }
-                                          >
-                                            (read more)
-                                          </Link>
-                                        </Flex>
-                                        <Flex
-                                          alignItems={'center'}
-                                          justifyContent={'row'}
-                                        >
-                                          <Checkbox
-                                            required={false}
-                                            label={`Rebalance the pool`}
-                                            checked={this.state.directMint}
-                                            disabled={this.state.depositCurveEnabled}
-                                            onChange={ e => this.toggleSkipMint(e.target.checked) }
-                                          />
-                                          <Tooltip
-                                            placement={'bottom'}
-                                            message={this.functionsUtil.getGlobalConfig(['messages','directMint'])}
-                                          >
-                                            <Icon
-                                              name={"Info"}
-                                              size={'1em'}
-                                              color={'cellTitle'}
-                                            />
-                                          </Tooltip>
-                                        </Flex>
-                                      </Flex>
-                                  }
-                                </DashboardCard>
-                              ) : (
-                                <Flex
-                                  width={1}
-                                  flexDirection={'column'}
-                                >
-                                  {
-                                    showDepositCurve && (
-                                      <Flex
-                                        width={1}
-                                        flexDirection={'column'}
-                                        justifyContent={'center'}
-                                      >
-                                        <DashboardCard
-                                          isRainbow={true}
-                                          cardProps={{
-                                            py:3,
-                                            px:2,
-                                            mb:3,
-                                            display:'flex',
-                                            alignItems:'center',
-                                            flexDirection:'column',
-                                            justifyContent:'center',
-                                          }}
-                                        >
-                                          <Flex
-                                            width={1}
-                                            alignItems={'center'}
-                                            flexDirection={'column'}
-                                            justifyContent={'center'}
-                                          >
-                                            <Image
-                                              height={'1.8em'}
-                                              src={curveConfig.params.image}
-                                            />
-                                            <Text
-                                              mt={2}
-                                              px={2}
-                                              fontSize={1}
-                                              color={'dark-gray'}
-                                              textAlign={'center'}
-                                            >
-                                              Deposit your tokens in the Curve Pool and boost your APY up to {this.state.curveAPY ? this.state.curveAPY.toFixed(2) : '-'}%.
-                                              <Link
-                                                ml={1}
-                                                mainColor={'primary'}
-                                                hoverColor={'primary'}
-                                                onClick={ e => this.props.openTooltipModal('How Curve works',this.functionsUtil.getGlobalConfig(['messages','curveInstructions'])) }
-                                              >
-                                                Read More
-                                              </Link>
-                                            </Text>
-                                            <Checkbox
-                                              mt={2}
-                                              required={false}
-                                              label={`Deposit in Curve`}
-                                              checked={this.state.depositCurveEnabled}
-                                              onChange={ e => this.toggleDepositCurve(e.target.checked) }
-                                            />
-                                          </Flex>
-                                        </DashboardCard>
-                                        {
-                                          (!this.state.showBuyFlow && !this.state.depositCurveEnabled && !this.state.canDeposit) &&
-                                            <Link
-                                              textAlign={'center'}
-                                              hoverColor={'primary'}
-                                              onClick={ e => this.setShowBuyFlow(true) }
-                                            >
-                                              I just want to deposit more {this.props.selectedToken}
-                                            </Link>
-                                        }
-                                      </Flex>
-                                    )
-                                  }
-                                  {
-                                    showRebalanceOption && (
-                                      <DashboardCard
-                                        cardProps={{
-                                          py:3,
-                                          px:2,
-                                          mb:3,
-                                          display:'flex',
-                                          alignItems:'center',
-                                          flexDirection:'column',
-                                          justifyContent:'center',
-                                        }}
-                                      >
-                                        <Flex
-                                          width={1}
-                                          alignItems={'center'}
-                                          flexDirection={'column'}
-                                          justifyContent={'center'}
-                                        >
-                                          <Icon
-                                            size={'1.8em'}
-                                            color={'cellText'}
-                                            name={'InfoOutline'}
-                                          />
-                                          <Text
-                                            mt={1}
-                                            px={2}
-                                            fontSize={1}
-                                            color={'cellText'}
-                                            textAlign={'center'}
-                                          >
-                                            By checking this flag you can rebalance the pool and help all users gain an additional APR
-                                          </Text>
-                                        </Flex>
-                                        <Checkbox
-                                          mt={2}
-                                          required={false}
-                                          label={`Rebalance the pool`}
-                                          checked={this.state.directMint}
-                                          onChange={ e => this.toggleSkipMint(e.target.checked) }
-                                        />
-                                      </DashboardCard>
-                                    )
-                                  }
-                                </Flex>
-                              )
-                            }
                             {
                               showActionFlow && (
                                 <Flex
