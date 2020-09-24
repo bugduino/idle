@@ -118,6 +118,8 @@ const globalConfigs = {
   messages:{
     apyShort:'Annual Percentage Yield',
     scoreShort:'Protocol Risk Score',
+    directMint:'Rebalance the pool and help all users gain an additional APR',
+    curveBonusSlippage:'Slippage or bonus depending on if the coin is low or high in the Curve Pool',
     riskScore:`It's a single, consistently, comparable value for measuring protocol risk, based on factors including smart contract risk, collateralization and liquidity.<br /><br />The model outputs a 0-10 score, where <strong>0 is the most risky and 10 is the most safe.</strong> Visit <a target="_blank" rel="nofollow noopener noreferrer" href="https://defiscore.io/overview">https://defiscore.io/overview</a> for further information.`,
     curveInstructions:`<strong>Depositing into the pool:</strong><br />By depositing your funds into the Curve Pool you may incur in slippage.<br /><br /><strong>Withdrawing share from the pool:</strong><br />When you redeem your tokens previously deposited in the Curve Pool you get back an uneven amounts of tokens, that can give slippage or bonus depending on if the coin is low or high in the pool.`
   },
