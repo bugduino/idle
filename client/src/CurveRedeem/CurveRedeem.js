@@ -452,7 +452,7 @@ class CurveRedeem extends Component {
                             textAlign={'right'}
                             color={ this.state.withdrawSlippage.gt(0) ? this.props.theme.colors.transactions.status.failed : this.props.theme.colors.transactions.status.completed }
                           >
-                            {this.state.withdrawSlippage.gt(0) ? 'Slippage: ' : 'Bonus: '}{this.state.withdrawSlippage.times(100).toFixed(2)}%
+                            {this.state.withdrawSlippage.gt(0) ? 'Slippage: ' : 'Bonus: '}{this.state.withdrawSlippage.times(100).abs().toFixed(2)}%
                           </Text>
                           <Tooltip
                             placement={'top'}

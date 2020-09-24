@@ -43,7 +43,8 @@ class DepositRedeem extends Component {
     curveTokenBalance:null,
     redeemCurveEnabled:false,
     depositCurveBalance:null,
-    depositCurveEnabled:false,
+    depositCurveEnabled:true,
+    showAdvancedOptions:false,
     depositCurveSlippage:null,
     metaTransactionsEnabled:true
   };
@@ -80,19 +81,25 @@ class DepositRedeem extends Component {
     });
   }
 
-  toggleSkipMigration = (skipMigration) => {
+  toggleShowAdvancedOptions = showAdvancedOptions => {
+    this.setState((prevState) => ({
+      showAdvancedOptions:!prevState.showAdvancedOptions
+    }));
+  }
+
+  toggleSkipMigration = skipMigration => {
     this.setState({
       skipMigration
     });
   }
 
-  toggleRedeemCurve = (redeemCurveEnabled) => {
+  toggleRedeemCurve = redeemCurveEnabled => {
     this.setState({
       redeemCurveEnabled
     });
   }
 
-  toggleDepositCurve = (depositCurveEnabled) => {
+  toggleDepositCurve = depositCurveEnabled => {
     this.setState({
       depositCurveEnabled
     });
@@ -552,8 +559,12 @@ class DepositRedeem extends Component {
           }));
         };
 
+        const curveConfig = this.functionsUtil.getGlobalConfig(['curve']);
+        const curveTokenEnabled = curveConfig.enabled && this.functionsUtil.getGlobalConfig(['curve','availableTokens',this.props.tokenConfig.idle.token,'enabled']);
+
         // Handle Curve Deposit
-        if (this.state.depositCurveEnabled){
+        if (curveTokenEnabled && this.state.depositCurveEnabled){
+
           const curvePoolContractInfo = this.functionsUtil.getGlobalConfig(['curve','poolContract']);
           const tokensToDeposit = this.functionsUtil.normalizeTokenAmount(inputValue,curvePoolContractInfo.decimals);
           const amounts = this.functionsUtil.getCurveAmounts(this.props.tokenConfig.idle.token,tokensToDeposit);
@@ -927,8 +938,6 @@ class DepositRedeem extends Component {
     const redeemGovTokenEnabled = this.functionsUtil.getGlobalConfig(['contract','methods','redeemGovTokens','enabled']) && !govTokensDisabled && govTokensEnabled;
     const redeemGovTokens = redeemGovTokenEnabled && this.state.redeemGovTokens && this.state.action === 'redeem';
 
-    const depositCurve = this.state.depositCurveEnabled && this.state.action === 'deposit';
-
     const metaTransactionsAvailable = this.props.biconomy && this.state.actionProxyContract[this.state.action];
     const useMetaTx = metaTransactionsAvailable && this.state.metaTransactionsEnabled;
     const totalBalance = this.state.action === 'deposit' ? this.props.tokenBalance : this.props.redeemableBalance;
@@ -937,9 +946,11 @@ class DepositRedeem extends Component {
     const curveConfig = this.functionsUtil.getGlobalConfig(['curve']);
     const curveTokenEnabled = curveConfig.enabled && this.functionsUtil.getGlobalConfig(['curve','availableTokens',this.props.tokenConfig.idle.token,'enabled']);
 
+    const depositCurve = curveTokenEnabled && this.state.depositCurveEnabled && this.state.action === 'deposit';
+
     const canPerformAction = /*!depositCurve && !this.state.redeemCurveEnabled && */((this.state.action === 'deposit' && this.state.canDeposit) || (this.state.action === 'redeem' && this.state.canRedeem) || redeemGovTokens);
-    const showDepositCurve = this.state.componentMounted && (!this.state.migrationEnabled || this.state.skipMigration) && this.state.canDepositCurve && this.state.action === 'deposit';
-    const showRedeemCurve = this.state.componentMounted && (!this.state.migrationEnabled || this.state.skipMigration) && this.state.canRedeemCurve && this.state.action === 'redeem';
+    const showDepositCurve = curveTokenEnabled && this.state.componentMounted && (!this.state.migrationEnabled || this.state.skipMigration) && this.state.canDepositCurve && this.state.action === 'deposit';
+    const showRedeemCurve = curveTokenEnabled && this.state.componentMounted && (!this.state.migrationEnabled || this.state.skipMigration) && this.state.canRedeemCurve && this.state.action === 'redeem';
 
     const showActionFlow = !redeemGovTokens && canPerformAction;
     const showBuyFlow = this.state.componentMounted && (!showDepositCurve || this.state.showBuyFlow) && !this.state.depositCurveEnabled && this.state.tokenApproved && !this.state.contractPaused && (!this.state.migrationEnabled || this.state.skipMigration) && this.state.action === 'deposit' && !this.state.canDeposit;
@@ -947,9 +958,8 @@ class DepositRedeem extends Component {
 
     const showCurveSlippage = depositCurve && this.state.depositCurveSlippage && this.state.depositCurveBalance && !this.state.buttonDisabled;
 
-    const showDepositCurveOption = curveTokenEnabled && this.state.canDeposit && this.state.action === 'deposit';
     const showRebalanceOption = this.state.canDeposit && skipMintCheckboxEnabled && this.state.action === 'deposit';
-    const showAdvancesDepositOptions = false && showDepositCurveOption && showRebalanceOption;
+    const showAdvancesDepositOptions = showDepositCurve && showRebalanceOption;
     return (
       <Flex
         width={1}
@@ -1184,75 +1194,6 @@ class DepositRedeem extends Component {
                           label={`${this.functionsUtil.capitalize(this.state.action)} with Meta-Transaction`}
                         />
                       </DashboardCard>
-                    }
-                    {
-                      showDepositCurve && (
-                        <Flex
-                          width={1}
-                          flexDirection={'column'}
-                          justifyContent={'center'}
-                        >
-                          <DashboardCard
-                            isRainbow={true}
-                            cardProps={{
-                              py:3,
-                              px:2,
-                              mt:3,
-                              display:'flex',
-                              alignItems:'center',
-                              flexDirection:'column',
-                              mb:(showBuyFlow || showActionFlow) ? 0 : 3,
-                              justifyContent:'center',
-                            }}
-                          >
-                            <Flex
-                              width={1}
-                              alignItems={'center'}
-                              flexDirection={'column'}
-                              justifyContent={'center'}
-                            >
-                              <Image
-                                height={'1.8em'}
-                                src={curveConfig.params.image}
-                              />
-                              <Text
-                                mt={2}
-                                px={2}
-                                fontSize={1}
-                                color={'dark-gray'}
-                                textAlign={'center'}
-                              >
-                                Deposit your tokens in the Curve Pool and boost your APY up to {this.state.curveAPY ? this.state.curveAPY.toFixed(2) : '-'}%.
-                                <Link
-                                  ml={1}
-                                  mainColor={'primary'}
-                                  hoverColor={'primary'}
-                                  onClick={ e => this.props.openTooltipModal('How Curve works',this.functionsUtil.getGlobalConfig(['messages','curveInstructions'])) }
-                                >
-                                  Read More
-                                </Link>
-                              </Text>
-                              <Checkbox
-                                mt={2}
-                                required={false}
-                                label={`Deposit in Curve`}
-                                checked={this.state.depositCurveEnabled}
-                                onChange={ e => this.toggleDepositCurve(e.target.checked) }
-                              />
-                            </Flex>
-                          </DashboardCard>
-                          {
-                            (!this.state.showBuyFlow && !this.state.depositCurveEnabled && !this.state.canDeposit) &&
-                              <Link
-                                textAlign={'center'}
-                                hoverColor={'primary'}
-                                onClick={ e => this.setShowBuyFlow(true) }
-                              >
-                                I just want to deposit more {this.props.selectedToken}
-                              </Link>
-                          }
-                        </Flex>
-                      )
                     }
                     {
                       showRedeemCurve && (
@@ -1508,59 +1449,159 @@ class DepositRedeem extends Component {
                               showAdvancesDepositOptions ? (
                                 <DashboardCard
                                   cardProps={{
-                                    py:3,
+                                    pt:2,
                                     px:2,
                                     mb:3,
                                     display:'flex',
                                     alignItems:'center',
                                     flexDirection:'column',
                                     justifyContent:'center',
+                                    pb:this.state.showAdvancedOptions ? 3 : 2,
                                   }}
                                 >
                                   <Flex
                                     width={1}
                                     alignItems={'center'}
-                                    flexDirection={'column'}
+                                    flexDirection={'row'}
                                     justifyContent={'center'}
                                   >
+                                    <Link
+                                      ml={1}
+                                      mainColor={'primary'}
+                                      hoverColor={'primary'}
+                                      onClick={this.toggleShowAdvancedOptions}
+                                    >
+                                      { this.state.showAdvancedOptions ? 'Hide' : 'Show' } advanced options
+                                    </Link>
                                     <Icon
-                                      name={'Tune'}
                                       size={'1.8em'}
                                       color={'cellText'}
-                                    />
-                                    <Text
-                                      mt={1}
-                                      px={2}
-                                      fontSize={1}
-                                      color={'cellText'}
-                                      textAlign={'center'}
-                                    >
-                                      Advanced deposit options
-                                    </Text>
-                                  </Flex>
-                                  <Flex
-                                    mt={2}
-                                    flexDirection={'column'}
-                                  >
-                                    <Checkbox
-                                      required={false}
-                                      label={`Deposit in the Curve Pool`}
-                                      checked={this.state.depositCurveEnabled}
-                                      onChange={ e => this.toggleDepositCurve(e.target.checked) }
-                                    />
-                                    <Checkbox
-                                      required={false}
-                                      label={`Rebalance the pool`}
-                                      checked={this.state.directMint}
-                                      onChange={ e => this.toggleSkipMint(e.target.checked) }
+                                      name={this.state.showAdvancedOptions ? 'ArrowDropUp' : 'ArrowDropDown'}
                                     />
                                   </Flex>
+                                  {
+                                    this.state.showAdvancedOptions &&
+                                      <Flex
+                                        mt={1}
+                                        flexDirection={'column'}
+                                      >
+                                        <Flex
+                                          alignItems={'center'}
+                                          justifyContent={'row'}
+                                        >
+                                          <Checkbox
+                                            required={false}
+                                            disabled={this.state.directMint}
+                                            label={`Deposit in the Curve Pool`}
+                                            checked={this.state.depositCurveEnabled}
+                                            onChange={ e => this.toggleDepositCurve(e.target.checked) }
+                                          />
+                                          <Link
+                                            mainColor={'primary'}
+                                            hoverColor={'primary'}
+                                            onClick={ e => this.props.openTooltipModal('How Curve works',this.functionsUtil.getGlobalConfig(['messages','curveInstructions'])) }
+                                          >
+                                            (read more)
+                                          </Link>
+                                        </Flex>
+                                        <Flex
+                                          alignItems={'center'}
+                                          justifyContent={'row'}
+                                        >
+                                          <Checkbox
+                                            required={false}
+                                            label={`Rebalance the pool`}
+                                            checked={this.state.directMint}
+                                            disabled={this.state.depositCurveEnabled}
+                                            onChange={ e => this.toggleSkipMint(e.target.checked) }
+                                          />
+                                          <Tooltip
+                                            placement={'bottom'}
+                                            message={this.functionsUtil.getGlobalConfig(['messages','directMint'])}
+                                          >
+                                            <Icon
+                                              name={"Info"}
+                                              size={'1em'}
+                                              color={'cellTitle'}
+                                            />
+                                          </Tooltip>
+                                        </Flex>
+                                      </Flex>
+                                  }
                                 </DashboardCard>
                               ) : (
                                 <Flex
                                   width={1}
                                   flexDirection={'column'}
                                 >
+                                  {
+                                    showDepositCurve && (
+                                      <Flex
+                                        width={1}
+                                        flexDirection={'column'}
+                                        justifyContent={'center'}
+                                      >
+                                        <DashboardCard
+                                          isRainbow={true}
+                                          cardProps={{
+                                            py:3,
+                                            px:2,
+                                            mb:3,
+                                            display:'flex',
+                                            alignItems:'center',
+                                            flexDirection:'column',
+                                            justifyContent:'center',
+                                          }}
+                                        >
+                                          <Flex
+                                            width={1}
+                                            alignItems={'center'}
+                                            flexDirection={'column'}
+                                            justifyContent={'center'}
+                                          >
+                                            <Image
+                                              height={'1.8em'}
+                                              src={curveConfig.params.image}
+                                            />
+                                            <Text
+                                              mt={2}
+                                              px={2}
+                                              fontSize={1}
+                                              color={'dark-gray'}
+                                              textAlign={'center'}
+                                            >
+                                              Deposit your tokens in the Curve Pool and boost your APY up to {this.state.curveAPY ? this.state.curveAPY.toFixed(2) : '-'}%.
+                                              <Link
+                                                ml={1}
+                                                mainColor={'primary'}
+                                                hoverColor={'primary'}
+                                                onClick={ e => this.props.openTooltipModal('How Curve works',this.functionsUtil.getGlobalConfig(['messages','curveInstructions'])) }
+                                              >
+                                                Read More
+                                              </Link>
+                                            </Text>
+                                            <Checkbox
+                                              mt={2}
+                                              required={false}
+                                              label={`Deposit in Curve`}
+                                              checked={this.state.depositCurveEnabled}
+                                              onChange={ e => this.toggleDepositCurve(e.target.checked) }
+                                            />
+                                          </Flex>
+                                        </DashboardCard>
+                                        {
+                                          (!this.state.showBuyFlow && !this.state.depositCurveEnabled && !this.state.canDeposit) &&
+                                            <Link
+                                              textAlign={'center'}
+                                              hoverColor={'primary'}
+                                              onClick={ e => this.setShowBuyFlow(true) }
+                                            >
+                                              I just want to deposit more {this.props.selectedToken}
+                                            </Link>
+                                        }
+                                      </Flex>
+                                    )
+                                  }
                                   {
                                     showRebalanceOption && (
                                       <DashboardCard
@@ -1616,6 +1657,7 @@ class DepositRedeem extends Component {
                                   flexDirection={'column'}
                                 >
                                   {
+                                    /*
                                     showCurveSlippage &&
                                       <DashboardCard
                                         cardProps={{
@@ -1642,6 +1684,7 @@ class DepositRedeem extends Component {
                                           </Text>
                                         </Flex>
                                       </DashboardCard>
+                                    */
                                   }
                                   {
                                     (totalBalance || this.props.tokenFeesPercentage) && (
@@ -1656,7 +1699,34 @@ class DepositRedeem extends Component {
                                           justifyContent={'space-between'}
                                         >
                                         {
-                                          this.props.tokenFeesPercentage && (
+                                          showCurveSlippage ? (
+                                            <Flex
+                                              width={1}
+                                              maxWidth={'50%'}
+                                              alignItems={'center'}
+                                              flexDirection={'row'}
+                                            >
+                                              <Text
+                                                fontSize={1}
+                                                fontWeight={3}
+                                                textAlign={'right'}
+                                                color={ this.state.depositCurveSlippage.gt(0) ? this.props.theme.colors.transactions.status.failed : this.props.theme.colors.transactions.status.completed }
+                                              >
+                                                {this.state.depositCurveSlippage.gt(0) ? 'Slippage: ' : 'Bonus: '}{this.state.depositCurveSlippage.times(100).abs().toFixed(2)}%
+                                              </Text>
+                                              <Tooltip
+                                                placement={'top'}
+                                                message={this.functionsUtil.getGlobalConfig(['messages','curveBonusSlippage'])}
+                                              >
+                                                <Icon
+                                                  ml={1}
+                                                  name={"Info"}
+                                                  size={'1em'}
+                                                  color={'cellTitle'}
+                                                />
+                                              </Tooltip>
+                                            </Flex>
+                                          ) : this.props.tokenFeesPercentage && (
                                             <Flex
                                               alignItems={'center'}
                                               flexDirection={'row'}
@@ -1751,7 +1821,7 @@ class DepositRedeem extends Component {
                                     }}
                                     handleClick={this.state.buttonDisabled ? null : this.executeAction.bind(this) }
                                   >
-                                    {this.state.action}{ redeemGovTokens ? ' Gov Tokens' : (depositCurve ? ' in Curve' : '') }
+                                    {this.state.action}{ redeemGovTokens ? ' Gov Tokens' : '' /*(depositCurve ? ' in Curve' : '')*/ }
                                   </RoundButton>
                                 </Flex>
                             }

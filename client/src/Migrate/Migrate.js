@@ -290,7 +290,6 @@ class Migrate extends Component {
   }
 
   checkMigrationContractApproved = async () => {
-
     if (this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract){
       const migrationContractInfo = this.props.tokenConfig.migration.migrationContract;
       const migrationContractName = migrationContractInfo.name;
@@ -689,7 +688,8 @@ class Migrate extends Component {
     const SkipMigrationComponent = (props) => (
       <DashboardCard
         cardProps={{
-          py:3,
+          pt:2,
+          pb:3,
           px:2,
           mb:2,
           display:'flex',
@@ -706,7 +706,7 @@ class Migrate extends Component {
           justifyContent={'center'}
         >
           <Icon
-            size={'2.3em'}
+            size={'1.8em'}
             color={'cellText'}
             name={'FastForward'}
           />
