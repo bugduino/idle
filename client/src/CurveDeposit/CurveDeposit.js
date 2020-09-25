@@ -141,57 +141,60 @@ class CurveDeposit extends Component {
           flexDirection={'column'}
           justifyContent={'center'}
         >
-          <DashboardCard
-            cardProps={{
-              p:3,
-              px:[2,4]
-            }}
-          >
-            <Flex
-              alignItems={'center'}
-              flexDirection={'column'}
-            > 
-              <Flex
-                width={1}
-                alignItems={'center'}
-                flexDirection={'row'}
-              >
-                <Icon
-                  size={'1.5em'}
-                  name={ this.state.migrationContractApproved ? 'CheckBox' : 'LooksOne'}
-                  color={ this.state.migrationContractApproved ? this.props.theme.colors.transactions.status.completed : 'cellText'}
-                />
-                <Text
-                  ml={2}
-                  fontSize={2}
-                  color={'cellText'}
-                  textAlign={'left'}
+            {
+              this.props.idleTokenBalance && this.props.idleTokenBalance.gt(0) &&
+                <DashboardCard
+                  cardProps={{
+                    p:3,
+                    px:[2,4]
+                  }}
                 >
-                  Approve the Curve contract
-                </Text>
-              </Flex>
-              <Flex
-                mt={2}
-                width={1}
-                alignItems={'center'}
-                flexDirection={'row'}
-              >
-                <Icon
-                  size={'1.5em'}
-                  name={ hasCurveTokens ? 'CheckBox' : 'LooksTwo'}
-                  color={ hasCurveTokens ? this.props.theme.colors.transactions.status.completed : 'cellText'}
-                />
-                <Text
-                  ml={2}
-                  fontSize={2}
-                  color={'cellText'}
-                  textAlign={'left'}
-                >
-                  Deposit your {this.props.tokenConfig.idle.token}
-                </Text>
-              </Flex>
-            </Flex>
-          </DashboardCard>
+                  <Flex
+                    alignItems={'center'}
+                    flexDirection={'column'}
+                  > 
+                    <Flex
+                      width={1}
+                      alignItems={'center'}
+                      flexDirection={'row'}
+                    >
+                      <Icon
+                        size={'1.5em'}
+                        name={ this.state.migrationContractApproved ? 'CheckBox' : 'LooksOne'}
+                        color={ this.state.migrationContractApproved ? this.props.theme.colors.transactions.status.completed : 'cellText'}
+                      />
+                      <Text
+                        ml={2}
+                        fontSize={2}
+                        color={'cellText'}
+                        textAlign={'left'}
+                      >
+                        Approve the Curve contract
+                      </Text>
+                    </Flex>
+                    <Flex
+                      mt={2}
+                      width={1}
+                      alignItems={'center'}
+                      flexDirection={'row'}
+                    >
+                      <Icon
+                        size={'1.5em'}
+                        name={ hasCurveTokens ? 'CheckBox' : 'LooksTwo'}
+                        color={ hasCurveTokens ? this.props.theme.colors.transactions.status.completed : 'cellText'}
+                      />
+                      <Text
+                        ml={2}
+                        fontSize={2}
+                        color={'cellText'}
+                        textAlign={'left'}
+                      >
+                        Deposit your {this.props.tokenConfig.idle.token}
+                      </Text>
+                    </Flex>
+                  </Flex>
+                </DashboardCard>
+            }
           {
             this.state.tokenConfig ? (
               <Box width={1}>
@@ -248,8 +251,7 @@ class CurveDeposit extends Component {
                     ) : (
                       <DashboardCard
                         cardProps={{
-                          p:3,
-                          my:3
+                          p:3
                         }}
                       >
                         {
