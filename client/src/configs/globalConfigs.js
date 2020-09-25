@@ -494,7 +494,7 @@ const globalConfigs = {
       },
       migrate:{
         skipRebalance:true,
-        minAmountForRebalance:5000,
+        minAmountForRebalance:10000,
         minAmountForRebalanceMetaTx:10000
       },
       redeemGovTokens:{
