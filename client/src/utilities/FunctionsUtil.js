@@ -2719,7 +2719,7 @@ class FunctionsUtil {
     }
 
     // Check for cached data
-    const cachedDataKey = `tokenBalance_${contractName}_${walletAddr}`;
+    const cachedDataKey = `tokenBalance_${contractName}_${walletAddr}_${fixDecimals}`;
     const cachedData = this.getCachedData(cachedDataKey);
     if (cachedData !== null){
       return cachedData;
@@ -2735,7 +2735,6 @@ class FunctionsUtil {
 
     if (tokenBalance){
       if (fixDecimals){
-        // console.log('getTokenBalance',contractName,tokenBalance.toString(),tokenDecimals);
         tokenBalance = this.fixTokenDecimals(tokenBalance,tokenDecimals);
       }
 
@@ -3173,6 +3172,13 @@ class FunctionsUtil {
     }
     return null;
   }
+  getCurveTokenSupply = async () => {
+    const curvePoolContract = await this.getCurvePoolContract();
+    if (curvePoolContract){
+      return await this.genericContractCall(curvePoolContract.name,'totalSupply');
+    }
+    return null;
+  }
   getCurveTokenBalance = async (account=null,fixDecimals=true) => {
     const curvePoolContract = await this.getCurvePoolContract();
     if (curvePoolContract){
@@ -3244,60 +3250,149 @@ class FunctionsUtil {
     }
     return migrationContractInfo;
   }
-  getCurveAmounts = (token,amount,uneven_amounts=false) => {
-    const amounts = [];
 
-    if (uneven_amounts){
-      const availableTokens = this.getGlobalConfig(['curve','availableTokens']);
-      const n_coins = Object.values(availableTokens).length;
-      Object.values(availableTokens).forEach( curveTokenConfig => {
-        const amountUneven = this.normalizeTokenAmount(this.fixTokenDecimals(amount,18).div(n_coins),curveTokenConfig.decimals);
-        amounts.push(amountUneven);
-      });
-    } else {
-      const curveTokenConfig = this.getGlobalConfig(['curve','availableTokens',token]);
-      if (curveTokenConfig){
-        const migrationParams = curveTokenConfig.migrationParams;
-        if (migrationParams.n_coins){
-          for (var i = 0; i < migrationParams.n_coins; i++) {
-            if (migrationParams.coinIndex === i){
-              amount = this.normalizeTokenAmount(this.fixTokenDecimals(amount,18),curveTokenConfig.decimals);
-              amounts.push(amount);
-            } else {
-              amounts.push(0);
-            }
-          }
-        }
-      }
+  getCurveIdleTokensAmounts = async (account=null,curveTokenBalance=null) => {
+    if (!account && this.props.account){
+      account = this.props.account;
     }
 
-    return amounts;
+    if (!account){
+      return null;
+    }
+
+    const tokensBalances = {};
+    const curveSwapContract = await this.getCurveSwapContract();
+    const curveAvailableTokens = this.getGlobalConfig(['curve','availableTokens']);
+
+    const curveTokenSupply = await this.getCurveTokenSupply();
+    if (!curveTokenBalance){
+      curveTokenBalance = await this.getCurveTokenBalance(account,false);
+    }
+
+    if (curveTokenBalance && curveTokenSupply){
+      const curveTokenShare = this.BNify(curveTokenBalance).div(this.BNify(curveTokenSupply));
+
+      // console.log('curveTokenShare',this.BNify(curveTokenBalance).toString(),this.BNify(curveTokenSupply).toString(),curveTokenShare.toString());
+
+      await this.asyncForEach(Object.keys(curveAvailableTokens), async (token) => {
+        const curveTokenConfig = curveAvailableTokens[token];
+        const coinIndex = curveTokenConfig.migrationParams.coinIndex;
+        const curveIdleTokens = await this.genericContractCall(curveSwapContract.name,'balances',[coinIndex]);
+        if (curveIdleTokens){
+          const idleTokenBalance = this.BNify(curveIdleTokens).times(curveTokenShare);
+          tokensBalances[coinIndex] = this.integerValue(idleTokenBalance);
+        }
+      });
+    }
+
+    return Object.values(tokensBalances);
   }
-  getCurveSlippage = async (token,amount,deposit=true,uneven_amounts=false) => {
+
+  // Get amounts of underlying tokens in the curve pool
+  getCurveTokensAmounts = async (account=null,curveTokenBalance=null,fixDecimals=false) => {
+
+    if (!account && this.props.account){
+      account = this.props.account;
+    }
+
+    if (!account){
+      return null;
+    }
+
+    const tokensBalances = {};
+    const availableTokens = this.getCurveAvailableTokens();
+    const curveSwapContract = await this.getCurveSwapContract();
+    const curveAvailableTokens = this.getGlobalConfig(['curve','availableTokens']);
+
+    const curveTokenSupply = await this.getCurveTokenSupply();
+    if (!curveTokenBalance){
+      curveTokenBalance = await this.getCurveTokenBalance(account,false);
+    }
+
+    if (curveTokenBalance && curveTokenSupply){
+      const curveTokenShare = this.BNify(curveTokenBalance).div(this.BNify(curveTokenSupply));
+
+      await this.asyncForEach(Object.keys(curveAvailableTokens), async (token) => {
+        const curveTokenConfig = curveAvailableTokens[token];
+        const coinIndex = curveTokenConfig.migrationParams.coinIndex;
+        const tokenConfig = availableTokens[curveTokenConfig.baseToken];
+        const [
+          idleTokenPrice,
+          idleTokenBalance
+        ] = await Promise.all([
+          this.getIdleTokenPrice(tokenConfig),
+          this.genericContractCall(curveSwapContract.name,'balances',[coinIndex]),
+        ]);
+
+        const totalTokenSupply = this.BNify(idleTokenBalance).times(this.BNify(idleTokenPrice));
+        let tokenBalance = totalTokenSupply.times(curveTokenShare);
+        if (fixDecimals){
+          tokenBalance = this.fixTokenDecimals(tokenBalance,tokenConfig.decimals);
+        }
+
+        tokensBalances[curveTokenConfig.baseToken] = tokenBalance;
+      });
+    }
+
+    return tokensBalances;
+  }
+
+  // Compile amounts array for Curve
+  getCurveAmounts = async (token,amount,deposit=false) => {
+    const amounts = {};
+    const availableTokens = this.getCurveAvailableTokens();
+    const curveAvailableTokens = this.getGlobalConfig(['curve','availableTokens']);
+
+    await this.asyncForEach(Object.keys(curveAvailableTokens), async (idleToken) => {
+      const curveTokenConfig = curveAvailableTokens[idleToken];
+      const migrationParams = curveTokenConfig.migrationParams;
+      const coinIndex = migrationParams.coinIndex;
+      if (idleToken === token && parseFloat(amount)>0){
+        const tokenConfig = availableTokens[curveTokenConfig.baseToken];
+        const idleTokenPrice = await this.getIdleTokenPrice(tokenConfig);
+        amount = this.fixTokenDecimals(amount,18).div(idleTokenPrice);
+        amount = this.normalizeTokenAmount(amount,curveTokenConfig.decimals);
+        amounts[coinIndex] = amount;
+      } else {
+        amounts[coinIndex] = 0;
+      }
+    });
+
+    return Object.values(amounts);
+  }
+  getCurveSlippage = async (token,amount,deposit=true,uneven_amounts=null) => {
     let slippage = null;
     const migrationContract = await this.getCurveSwapContract();
     if (migrationContract){
 
-      amount = this.BNify(amount);
-      if (amount.lte(0)){
+      const n_coins = this.getGlobalConfig(['curve','params','n_coins']);
+
+      amount = this.BNify(amount)
+      if (!amount || amount.isNaN() || amount.lte(0)){
         return null;
       }
 
-      const amounts = this.getCurveAmounts(token,amount,uneven_amounts);
-
+      let amounts = uneven_amounts;
+      if (!amounts || amounts.length !== n_coins){
+        amounts = await this.getCurveAmounts(token,amount);
+      }
 
       let [virtualPrice,tokenAmount] = await Promise.all([
         this.genericContractCall(migrationContract.name,'get_virtual_price'),
         this.genericContractCall(migrationContract.name,'calc_token_amount',[amounts,deposit]),
       ]);
 
-      // console.log('getCurveSlippage',amounts,virtualPrice,tokenAmount);
-
       if (virtualPrice && tokenAmount){
         amount = this.fixTokenDecimals(amount,18);
         virtualPrice = this.fixTokenDecimals(virtualPrice,18);
         tokenAmount = this.fixTokenDecimals(tokenAmount,18);
         const Sv = tokenAmount.times(virtualPrice);
+
+        // Handle redeem in uneven amounts (Slippage 0%)
+        if (uneven_amounts && !deposit){
+          amount = amount.times(virtualPrice);
+        }
+
         if (deposit){
           slippage = Sv.div(amount).minus(1).times(-1);
         } else {

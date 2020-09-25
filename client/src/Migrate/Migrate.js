@@ -290,6 +290,7 @@ class Migrate extends Component {
   }
 
   checkMigrationContractApproved = async () => {
+
     if (this.props.tokenConfig.migration && this.props.tokenConfig.migration.migrationContract){
       const migrationContractInfo = this.props.tokenConfig.migration.migrationContract;
       const migrationContractName = migrationContractInfo.name;

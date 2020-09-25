@@ -25,7 +25,6 @@ class AssetPage extends Component {
     canDeposit:null,
     action:'deposit',
     activeModal:null,
-    unevenAmounts:[],
     tokenConfig:null,
     tokenBalance:null,
     tokenApproved:null,
@@ -41,6 +40,7 @@ class AssetPage extends Component {
     govTokensBalance:null,
     curveZapContract:null,
     curveTokenConfig:null,
+    curveTokensAmounts:{},
     govTokensDisabled:null,
     componentMounted:false,
     curvePoolContract:null,
@@ -569,7 +569,7 @@ class AssetPage extends Component {
           }));
         };
 
-        const amounts = this.functionsUtil.getCurveAmounts(this.state.tokenConfig.idle.token,tokensToDeposit);
+        const amounts = await this.functionsUtil.getCurveAmounts(this.state.tokenConfig.idle.token,tokensToDeposit);
         const minMintAmount = await this.functionsUtil.genericContractCall(this.state.curveSwapContract.name,'calc_token_amount',[amounts,true]);
         const depositParams = [amounts,minMintAmount];
 
@@ -651,14 +651,14 @@ class AssetPage extends Component {
         };
 
         const _amount = this.functionsUtil.normalizeTokenAmount(curveTokensToRedeem,this.state.curvePoolContract.decimals).toString();
-        let min_amounts = this.functionsUtil.getCurveAmounts(this.state.tokenConfig.idle.token,0);
+        let min_amounts = await this.functionsUtil.getCurveAmounts(this.state.tokenConfig.idle.token,0);
 
         const contractName = this.state.curveDepositContract.name;
         if (this.state.redeemUnevenAmounts){
           console.log('remove_liquidity_imbalance',this.functionsUtil.BNify(inputValue).toString(),_amount.toString(),min_amounts);
           this.props.contractMethodSendWrapper(contractName, 'remove_liquidity_imbalance', [min_amounts, _amount], null, callbackRedeem, callbackReceiptRedeem);
         } else {
-          min_amounts = this.functionsUtil.getCurveAmounts(this.state.tokenConfig.idle.token,_amount);
+          min_amounts = await this.functionsUtil.getCurveAmounts(this.state.tokenConfig.idle.token,_amount);
           console.log('remove_liquidity',this.functionsUtil.BNify(inputValue).toString(),_amount.toString(),min_amounts);
           this.props.contractMethodSendWrapper(contractName, 'remove_liquidity', [_amount, min_amounts], null, callbackRedeem, callbackReceiptRedeem);
         }

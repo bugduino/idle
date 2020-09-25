@@ -149,6 +149,7 @@ const globalConfigs = {
   curve:{
     enabled:true,
     params:{
+      n_coins:4,
       label:'Curve',
       route:'/dashboard/curve',
       image:'images/protocols/curve.svg',
