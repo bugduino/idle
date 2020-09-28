@@ -25,21 +25,31 @@ class FastBalanceSelector extends Component {
   }
 
   render() {
+
+    let cardProps = {
+      p:2,
+      width:0.23,
+      onMouseDown:this.props.onMouseDown
+    };
+
+    let textProps = {
+      fontSize:2,
+      fontWeight:3,
+      textAlign:'center',
+      color:this.props.isActive ? 'copyColor' : 'legend'
+    }
+
+    cardProps = this.functionsUtil.replaceArrayProps(cardProps,this.props.cardProps);
+    textProps = this.functionsUtil.replaceArrayProps(textProps,this.props.textProps);
+
     return (
       <DashboardCard
-        cardProps={{
-          p:2,
-          width:0.23,
-          onMouseDown:this.props.onMouseDown
-        }}
         isInteractive={true}
+        cardProps={cardProps}
         isActive={this.props.isActive}
       >
         <Text 
-          fontSize={2}
-          fontWeight={3}
-          textAlign={'center'}
-          color={this.props.isActive ? 'copyColor' : 'legend'}
+          {...textProps}
         >
           {this.props.percentage}%
         </Text>

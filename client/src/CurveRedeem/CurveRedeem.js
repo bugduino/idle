@@ -18,11 +18,13 @@ class CurveRedeem extends Component {
       loading:false
     },
     inputValue:null,
+    maxSlippage:0.2,
     tokenConfig:null,
     unevenAmounts:null,
     selectedToken:null,
     availableTokens:null,
     buttonDisabled:false,
+    showMaxSlippage:false,
     curveTokenConfig:null,
     curvePoolContract:null,
     curveSwapContract:null,
@@ -49,13 +51,19 @@ class CurveRedeem extends Component {
     await this.initToken();
   }
 
+  showMaxSlippage = () => {
+    this.setState({
+      showMaxSlippage:true
+    });
+  }
+
   toggleUnevenAmounts = (redeemUnevenAmounts) => {
     this.setState({
       redeemUnevenAmounts
     });
   }
 
-  async calculateSlippage(){
+  async calculateSlippage(max_slippage=null){
     const inputValue = this.state.inputValue ? this.functionsUtil.BNify(this.state.inputValue) : null;
 
     if (!inputValue || inputValue.lte(0)){
@@ -67,15 +75,26 @@ class CurveRedeem extends Component {
       this.functionsUtil.getCurveTokensAmounts(this.props.account,normalizedAmount,true),
       this.functionsUtil.getCurveIdleTokensAmounts(this.props.account,normalizedAmount)
     ])
+
     const amounts = this.state.redeemUnevenAmounts ? curveIdleTokensAmounts : null;
 
-    const withdrawSlippage = await this.functionsUtil.getCurveSlippage(this.state.tokenConfig.idle.token,normalizedAmount,false,amounts);
+    let withdrawSlippage = await this.functionsUtil.getCurveSlippage(this.state.tokenConfig.idle.token,normalizedAmount,false,amounts);
+    if (withdrawSlippage){
+      withdrawSlippage = withdrawSlippage.times(100);
+    }
 
     this.setState({
       withdrawSlippage,
       curveTokensAmounts,
       curveIdleTokensAmounts
     });
+
+    // Add max slippage but don't save in state
+    if (withdrawSlippage && max_slippage){
+      withdrawSlippage = withdrawSlippage.plus(max_slippage);
+    }
+
+    return withdrawSlippage;
   }
 
   async componentDidUpdate(prevProps,prevState){
@@ -92,9 +111,10 @@ class CurveRedeem extends Component {
       this.setInputValue();
     }
 
-    const selectedTokenChanged = prevState.selectedToken !== this.state.selectedToken;
     const inputChanged = prevState.inputValue !== this.state.inputValue;
-    if (inputChanged || selectedTokenChanged){
+    const selectedTokenChanged = prevState.selectedToken !== this.state.selectedToken;
+    const maxSlippageChanged = parseFloat(prevState.maxSlippage) !== parseFloat(this.state.maxSlippage);
+    if (inputChanged || selectedTokenChanged || maxSlippageChanged){
       this.calculateSlippage();
     }
   }
@@ -248,13 +268,27 @@ class CurveRedeem extends Component {
     };
 
     const contractName = this.state.curveSwapContract.name;
-    const _amount = this.functionsUtil.normalizeTokenAmount(this.state.curveTokenBalance,this.state.curvePoolContract.decimals).toString();
-    const min_amounts = await this.functionsUtil.getCurveAmounts(this.props.tokenConfig.idle.token,_amount);
+    const withdrawSlippage = await this.calculateSlippage(this.state.maxSlippage);
+    const max_slippage = this.functionsUtil.BNify(this.state.maxSlippage).div(100);
+    const inputValue = this.state.inputValue ? this.functionsUtil.BNify(this.state.inputValue) : null;
+    const _amount = this.functionsUtil.normalizeTokenAmount(inputValue,this.state.curvePoolContract.decimals);
+    const curveTokenBalance = this.functionsUtil.normalizeTokenAmount(this.state.curveTokenBalance,this.state.curvePoolContract.decimals);
 
     if (this.state.redeemUnevenAmounts){
-      this.props.contractMethodSendWrapper(contractName, 'remove_liquidity_imbalance', [min_amounts, _amount], null, callbackRedeem, callbackReceiptRedeem);
-    } else {
+      const min_amounts = await this.functionsUtil.getCurveIdleTokensAmounts(this.props.account,_amount,max_slippage);
+      console.log('remove_liquidity',_amount.toString(),min_amounts);
       this.props.contractMethodSendWrapper(contractName, 'remove_liquidity', [_amount, min_amounts], null, callbackRedeem, callbackReceiptRedeem);
+    } else {
+      const coin_index = this.state.curveTokenConfig.migrationParams.coinIndex;
+      const amounts = await this.functionsUtil.getCurveAmounts(this.props.tokenConfig.idle.token,_amount,false);
+      const min_amount = this.functionsUtil.normalizeTokenAmount(inputValue.minus(inputValue.times(withdrawSlippage.div(100))),this.state.curveTokenConfig.decimals);
+      let _token_amount = await this.functionsUtil.getCurveTokenAmount(amounts,false);
+      _token_amount = this.functionsUtil.BNify(_token_amount).isGreaterThan(curveTokenBalance) ? curveTokenBalance : this.functionsUtil.BNify(_token_amount);
+
+      console.log('remove_liquidity_one_coin',_amount,amounts,coin_index,_token_amount.toFixed(),min_amount);
+
+      // debugger;
+      this.props.contractMethodSendWrapper(contractName, 'remove_liquidity_one_coin', [_token_amount, coin_index, min_amount], null, callbackRedeem, callbackReceiptRedeem);
     }
 
     this.setState((prevState) => ({
@@ -263,6 +297,15 @@ class CurveRedeem extends Component {
         loading:true
       }
     }));
+  }
+
+  cancelTransaction = async () => {
+    this.setState({
+      processing: {
+        txHash:null,
+        loading:false
+      }
+    });
   }
 
   changeInputValue = (e) => {
@@ -284,14 +327,21 @@ class CurveRedeem extends Component {
     return this.functionsUtil.BNify(this.state.fastBalanceSelector).div(100);
   }
 
+  setMaxSlippage = (maxSlippage) => {
+    this.setState({
+      maxSlippage
+    });
+  }
+
   setFastBalanceSelector = (fastBalanceSelector) => {
-    this.setState((prevState) => ({
+    this.setState({
       fastBalanceSelector
-    }));
+    });
   }
 
   render() {
 
+    const showSlippage = !this.state.buttonDisabled && this.state.withdrawSlippage;
     const curveTokenName = this.functionsUtil.getGlobalConfig(['curve','poolContract','token']);
 
     return (
@@ -348,6 +398,7 @@ class CurveRedeem extends Component {
                     web3={this.props.web3}
                     hash={this.state.processing.txHash}
                     endMessage={`Finalizing redeem request...`}
+                    cancelTransaction={this.cancelTransaction.bind(this)}
                     waitText={ this.props.waitText ? this.props.waitText : 'Redeem estimated in'}
                   />
                 </Flex>
@@ -378,7 +429,7 @@ class CurveRedeem extends Component {
                       color={'cellText'}
                       textAlign={'center'}
                     >
-                      You can withdraw from the Curve Pool in a specific token (with a bonus or slippage) or in uneven amounts of tokens (with no slippage).
+                      Withdraw from the Curve Pool in a specific token or in uneven amounts of tokens (with no slippage).
                     </Text>
                     <Flex
                       mt={2}
@@ -393,12 +444,12 @@ class CurveRedeem extends Component {
                       />
                       <Tooltip
                         placement={'top'}
-                        message={`You will receive an uneven amounts of ${Object.keys(this.state.availableTokens).join(', ')} depending on the token availailability in the Curve pool.`}
+                        message={`You will receive an uneven amounts of ${Object.keys(this.state.availableTokens).join(', ')} proportional to the token availailability in the Curve pool.`}
                       >
                         <Icon
-                          name={"Info"}
                           size={'1em'}
                           color={'cellTitle'}
+                          name={"InfoOutline"}
                         />
                       </Tooltip>
                     </Flex>
@@ -424,6 +475,57 @@ class CurveRedeem extends Component {
                         selectedToken={this.state.selectedToken}
                         availableTokens={this.state.availableTokens}
                       />
+                      {
+                        this.state.showMaxSlippage && showSlippage && (
+                          <Box
+                            mt={2}
+                            width={1}
+                          >
+                            <Flex
+                              alignItems={'center'}
+                              flexDirection={'row'}
+                            >
+                              <Text>
+                                Choose max slippage:
+                              </Text>
+                              <Tooltip
+                                placement={'top'}
+                                message={`Max additional slippage on top of the one shown below`}
+                              >
+                                <Icon
+                                  ml={1}
+                                  size={'1em'}
+                                  color={'cellTitle'}
+                                  name={"InfoOutline"}
+                                />
+                              </Tooltip>
+                            </Flex>
+                            <Flex
+                              mt={2}
+                              alignItems={'center'}
+                              flexDirection={'row'}
+                              justifyContent={'space-between'}
+                            >
+                              {
+                                [0.2,0.5,1,5].map( slippage => (
+                                  <FastBalanceSelector
+                                    cardProps={{
+                                      p:1
+                                    }}
+                                    textProps={{
+                                      fontSize:1
+                                    }}
+                                    percentage={slippage}
+                                    key={`selector_${slippage}`}
+                                    onMouseDown={()=>this.setMaxSlippage(slippage)}
+                                    isActive={this.state.maxSlippage === parseFloat(slippage)}
+                                  />
+                                ))
+                              }
+                            </Flex>
+                          </Box>
+                        )
+                      }
                     </Box>
                   ) : this.state.curveTokensAmounts && !this.state.buttonDisabled && (
                     <DashboardCard
@@ -444,7 +546,7 @@ class CurveRedeem extends Component {
                           color={'cellText'}
                           textAlign={'center'}
                         >
-                          You will receive these tokens:
+                          You will receive:
                         </Text>
                         <Flex
                           mt={2}
@@ -498,33 +600,6 @@ class CurveRedeem extends Component {
                     </DashboardCard>
                   )
                 }
-                {
-                  /*
-                  this.state.inputValue && this.state.inputValue.gt(0) && 
-                    <DashboardCard
-                      cardProps={{
-                        p:3,
-                        mb:2
-                      }}
-                    >
-                      <Flex
-                        alignItems={'center'}
-                        flexDirection={'column'}
-                      >
-                        <Text
-                          mt={2}
-                          fontSize={2}
-                          color={'cellText'}
-                          textAlign={'center'}
-                        >
-                          {
-                            this.state.redeemUnevenAmounts ? `You can redeem ${this.state.curveTokenBalance.toFixed(4)} Curve tokens in uneven amounts ${ this.state.withdrawSlippage ? (this.state.withdrawSlippage.gte(0) ? ` with ${this.state.withdrawSlippage.times(100).toFixed(2)}% of slippage` : ` with ${Math.abs(parseFloat(this.state.withdrawSlippage.times(100).toFixed(2)))}% of bonus` ) : '' }.` : `You can redeem ~${this.state.inputValue.toFixed(4)} ${this.state.selectedToken} from the Curve Pool${ this.state.withdrawSlippage ? (this.state.withdrawSlippage.gte(0) ? ` with ${this.state.withdrawSlippage.times(100).toFixed(2)}% of slippage` : ` with ${Math.abs(parseFloat(this.state.withdrawSlippage.times(100).toFixed(2)))}% of bonus` ) : '' }.`
-                          }
-                        </Text>
-                      </Flex>
-                    </DashboardCard>
-                  */
-                }
                 <Flex
                   mb={3}
                   width={1}
@@ -537,7 +612,7 @@ class CurveRedeem extends Component {
                     justifyContent={'flex-end'}
                   >
                     {
-                      !this.state.buttonDisabled && this.state.withdrawSlippage && (
+                      showSlippage && (
                         <Flex
                           width={1}
                           maxWidth={'50%'}
@@ -548,25 +623,39 @@ class CurveRedeem extends Component {
                             fontSize={1}
                             fontWeight={3}
                             textAlign={'right'}
+                            style={{
+                              whiteSpace:'nowrap'
+                            }}
                             color={ this.state.withdrawSlippage.gt(0) ? this.props.theme.colors.transactions.status.failed : this.props.theme.colors.transactions.status.completed }
                           >
                             {
-                              parseFloat(this.state.withdrawSlippage.times(100).toFixed(2)) === 0 ?
+                              parseFloat(this.state.withdrawSlippage.toFixed(2)) === 0 ?
                                 'No Slippage'
-                              : `${ this.state.withdrawSlippage.gt(0) ? 'Slippage: ' : 'Bonus: ' } ${this.state.withdrawSlippage.times(100).abs().toFixed(2)}%`
+                              : `${ this.state.withdrawSlippage.gt(0) ? 'Slippage: ' : 'Bonus: ' } ${this.state.withdrawSlippage.abs().toFixed(2)}%`
                             }
                           </Text>
                           <Tooltip
                             placement={'top'}
-                            message={`Bonus or Slippage for withdraw`}
+                            message={ this.state.redeemUnevenAmounts ? `You will receive an uneven amounts of ${Object.keys(this.state.availableTokens).join(', ')} proportional to the token availailability in the Curve pool.` : this.state.withdrawSlippage.gt(0) ? 'Slippage comes from depositing too many coins not in balance, and current coin prices are additionally accounted for' : 'Bonus comes as an advantage from current coin prices which usually appears for coins which are high in balance'}
                           >
                             <Icon
                               ml={1}
-                              name={"Info"}
                               size={'1em'}
                               color={'cellTitle'}
+                              name={"InfoOutline"}
                             />
                           </Tooltip>
+                          {
+                            !this.state.redeemUnevenAmounts &&
+                              <Link
+                                ml={1}
+                                color={'copyColor'}
+                                hoverColor={'primary'}
+                                onClick={this.showMaxSlippage}
+                              >
+                                change
+                              </Link>
+                          }
                         </Flex>
                       )
                     }
@@ -592,7 +681,7 @@ class CurveRedeem extends Component {
                         }}
                       >
                         {
-                          this.state.redeemUnevenAmounts ? `${this.state.curveTokenBalance.toFixed(6)} ${curveTokenName}` : `${this.state.redeemableBalance.toFixed(6)} ${this.state.selectedToken}`
+                          this.state.redeemUnevenAmounts ? `${this.state.curveTokenBalance.toFixed(this.props.isMobile ? 2 : 4)} ${curveTokenName}` : `${this.state.redeemableBalance.toFixed(this.props.isMobile ? 2 : 4)} ${this.state.selectedToken}`
                         }
                       </Link>
                     </Flex>

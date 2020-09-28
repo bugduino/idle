@@ -97,7 +97,7 @@ class AssetSelector extends Component {
                   setCachedData={this.props.setCachedData}
                 />
               </Flex>
-            ) : this.state.props.showBalance &&
+            ) : this.props.showBalance &&
               <Flex
                 alignItems={'center'}
                 justifyContent={'flex-end'}
@@ -176,7 +176,7 @@ class AssetSelector extends Component {
           </Flex>
 
           {
-            this.state.props.showBalance &&
+            this.props.showBalance &&
               <Flex
                 alignItems={'center'}
                 justifyContent={'flex-end'}
@@ -225,7 +225,6 @@ class AssetSelector extends Component {
 
     const selectedTokenChanged = prevProps.selectedToken !== this.props.selectedToken;
     const availableTokensChanged = JSON.stringify(Object.keys(prevProps.availableTokens)) !== JSON.stringify(Object.keys(this.props.availableTokens));
-
     if (availableTokensChanged || selectedTokenChanged){
       this.loadComponents();
     }
