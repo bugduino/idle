@@ -70,6 +70,15 @@ class FunctionsUtil {
   strToMoment = (date,format=null) => {
     return moment(date,format);
   }
+  replaceArrayProps = (arr1,arr2) => {
+    if (arr2 && Object.keys(arr2).length){
+      Object.keys(arr2).forEach(p => {
+        arr1[p] = arr2[p];
+      });
+    }
+
+    return arr1;
+  }
   stripHtml = (html) => {
      var tmp = document.createElement("DIV");
      tmp.innerHTML = html;
@@ -2509,6 +2518,9 @@ class FunctionsUtil {
           output = await this.getTokenBalance(token,account);
         } else {
           let tokenBalance = account ? await this.getTokenBalance(tokenConfig.token,account) : false;
+          if (tokenConfig.token === 'idleUSDCOld'){
+            console.log('tokenBalance',account,tokenBalance);
+          }
           if (!tokenBalance || tokenBalance.isNaN()){
             tokenBalance = '-';
           }
@@ -3251,7 +3263,7 @@ class FunctionsUtil {
     return migrationContractInfo;
   }
 
-  getCurveIdleTokensAmounts = async (account=null,curveTokenBalance=null) => {
+  getCurveIdleTokensAmounts = async (account=null,curveTokenBalance=null,max_slippage=null) => {
     if (!account && this.props.account){
       account = this.props.account;
     }
@@ -3271,6 +3283,11 @@ class FunctionsUtil {
 
     if (curveTokenBalance && curveTokenSupply){
       const curveTokenShare = this.BNify(curveTokenBalance).div(this.BNify(curveTokenSupply));
+      const n_coins = Object.keys(curveAvailableTokens).length;
+
+      if (max_slippage){
+        max_slippage = this.BNify(max_slippage).div(n_coins);
+      }
 
       // console.log('curveTokenShare',this.BNify(curveTokenBalance).toString(),this.BNify(curveTokenSupply).toString(),curveTokenShare.toString());
 
@@ -3279,7 +3296,11 @@ class FunctionsUtil {
         const coinIndex = curveTokenConfig.migrationParams.coinIndex;
         const curveIdleTokens = await this.genericContractCall(curveSwapContract.name,'balances',[coinIndex]);
         if (curveIdleTokens){
-          const idleTokenBalance = this.BNify(curveIdleTokens).times(curveTokenShare);
+          let idleTokenBalance = this.BNify(curveIdleTokens).times(curveTokenShare);
+          if (max_slippage){
+            // console.log('getCurveIdleTokensAmounts',idleTokenBalance.toFixed());
+            idleTokenBalance = idleTokenBalance.minus(idleTokenBalance.times(max_slippage));
+          }
           tokensBalances[coinIndex] = this.integerValue(idleTokenBalance);
         }
       });
@@ -3359,6 +3380,13 @@ class FunctionsUtil {
     });
 
     return Object.values(amounts);
+  }
+  getCurveTokenAmount = async (amounts,deposit=true) => {
+    const migrationContract = await this.getCurveSwapContract();
+    if (migrationContract){
+      return await this.genericContractCall(migrationContract.name,'calc_token_amount',[amounts,deposit]);
+    }
+    return null;
   }
   getCurveSlippage = async (token,amount,deposit=true,uneven_amounts=null) => {
     let slippage = null;

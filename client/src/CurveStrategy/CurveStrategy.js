@@ -810,7 +810,7 @@ class AssetPage extends Component {
                       >
                         <DashboardCard
                           cardProps={{
-                            p:3,
+                            p:[2,3],
                             width:0.48,
                             onMouseDown:() => {
                               this.setAction('deposit');
@@ -832,7 +832,7 @@ class AssetPage extends Component {
                               fieldInfo={{
                                 name:'icon',
                                 props:{
-                                  mr:3
+                                  mr:[1,3]
                                 }
                               }}
                             />
@@ -846,7 +846,7 @@ class AssetPage extends Component {
                         </DashboardCard>
                         <DashboardCard
                           cardProps={{
-                            p:3,
+                            p:[2,3],
                             width:0.48,
                             onMouseDown:() => {
                               this.setAction('redeem');
@@ -869,7 +869,7 @@ class AssetPage extends Component {
                               fieldInfo={{
                                 name:'icon',
                                 props:{
-                                  mr:3
+                                  mr:[1,3]
                                 }
                               }}
                             />
