@@ -5,8 +5,8 @@ import FunctionsUtil from '../utilities/FunctionsUtil';
 import DashboardCard from '../DashboardCard/DashboardCard';
 import TxProgressBar from '../TxProgressBar/TxProgressBar';
 import TransactionField from '../TransactionField/TransactionField';
-import { Box, Flex, Text, Icon, Checkbox, Input, Link } from "rimble-ui";
 import FastBalanceSelector from '../FastBalanceSelector/FastBalanceSelector';
+import { Box, Flex, Text, Icon, Checkbox, Input, Link, Image } from "rimble-ui";
 
 class Migrate extends Component {
 
@@ -427,6 +427,25 @@ class Migrate extends Component {
     if (migrationContract){
       this.disableERC20(null,this.props.tokenConfig.migration.oldContract.name,migrationContractInfo.address);
     }
+  }
+
+  cancelTransaction = async () => {
+    this.setState({
+      processing: {
+        approve:{
+          txHash:null,
+          loading:false
+        },
+        migrate:{
+          txHash:null,
+          loading:false
+        },
+        redeem:{
+          txHash:null,
+          loading:false
+        }
+      },
+    });
   }
 
   approveMigration = async (e) => {
@@ -928,6 +947,7 @@ class Migrate extends Component {
                               web3={this.props.web3}
                               hash={this.state.processing.migrate.txHash}
                               endMessage={`Finalizing migration request...`}
+                              cancelTransaction={this.cancelTransaction.bind(this)}
                               waitText={ this.props.waitText ? this.props.waitText : 'Migration estimated in'}
                               sendingMessage={ this.props.biconomy && this.state.metaTransactionsEnabled ? 'Sending meta-transaction...' : 'Sending transaction...' }
                             />
@@ -937,11 +957,19 @@ class Migrate extends Component {
                             alignItems={'center'}
                             flexDirection={'column'}
                           >
-                            <Icon
-                              size={'2.3em'}
-                              color={'cellText'}
-                              name={ this.props.migrationIcon ? this.props.migrationIcon : (this.props.isMigrationTool ? 'SwapHoriz' : 'Repeat') }
-                            />
+                            {
+                              this.props.migrationIcon ? (
+                                <Icon
+                                  size={'2.3em'}
+                                  color={'cellText'}
+                                  name={ this.props.migrationIcon ? this.props.migrationIcon : (this.props.isMigrationTool ? 'SwapHoriz' : 'Repeat') }
+                                />
+                              ) : this.props.migrationImage ? (
+                                <Image
+                                  {...this.props.migrationImage}
+                                />
+                              ) : null
+                            }
                             <Text
                               mt={1}
                               fontSize={2}
@@ -949,7 +977,15 @@ class Migrate extends Component {
                               textAlign={'center'}
                             >
                               {
-                                this.props.migrationText ? this.props.migrationText : (
+                                this.props.migrationText ? (
+                                  <Text.span
+                                    migrationTextProps={this.props.migrationTextProps}
+                                    dangerouslySetInnerHTML={{
+                                      __html:this.props.migrationText
+                                    }}
+                                  >
+                                  </Text.span>
+                                ) : (
                                   <Text.span
                                     color={'cellText'}
                                   >
@@ -1029,7 +1065,13 @@ class Migrate extends Component {
                           <Flex
                             flexDirection={'column'}
                           >
-                            <TxProgressBar web3={this.props.web3} waitText={`Approve estimated in`} endMessage={`Finalizing approve request...`} hash={this.state.processing.approve.txHash} />
+                            <TxProgressBar
+                              web3={this.props.web3}
+                              waitText={`Approve estimated in`}
+                              hash={this.state.processing.approve.txHash}
+                              endMessage={`Finalizing approve request...`}
+                              cancelTransaction={this.cancelTransaction.bind(this)}
+                            />
                           </Flex>
                         ) : (
                           <Flex
@@ -1137,7 +1179,13 @@ class Migrate extends Component {
                     mt={4}
                     flexDirection={'column'}
                   >
-                    <TxProgressBar web3={this.props.web3} waitText={`${this.functionsUtil.capitalize(this.state.action)} estimated in`} endMessage={`Finalizing ${this.state.action} request...`} hash={this.state.processing[this.state.action].txHash} />
+                    <TxProgressBar
+                      web3={this.props.web3}
+                      cancelTransaction={this.cancelTransaction.bind(this)}
+                      hash={this.state.processing[this.state.action].txHash}
+                      endMessage={`Finalizing ${this.state.action} request...`}
+                      waitText={`${this.functionsUtil.capitalize(this.state.action)} estimated in`}
+                    />
                   </Flex>
                 )
               )

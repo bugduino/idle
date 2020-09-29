@@ -1,13 +1,15 @@
 import Migrate from '../Migrate/Migrate';
 import React, { Component } from 'react';
-import { Flex, Box, Text, Icon } from "rimble-ui";
+import { Flex, Box, Text, Icon, Tooltip } from "rimble-ui";
 import RoundButton from '../RoundButton/RoundButton';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import DashboardCard from '../DashboardCard/DashboardCard';
+import FastBalanceSelector from '../FastBalanceSelector/FastBalanceSelector';
 
 class CurveDeposit extends Component {
 
   state = {
+    maxSlippage:0.2,
     tokenConfig:null,
     depositSlippage:null,
     redeemableBalance:null,
@@ -32,6 +34,12 @@ class CurveDeposit extends Component {
     await this.initToken();
   }
 
+  setMaxSlippage = (maxSlippage) => {
+    this.setState({
+      maxSlippage
+    });
+  }
+
   async getMigrationParams(toMigrate){
     const migrationParams = [];
     const curveTokenConfig = this.functionsUtil.getGlobalConfig(['curve','availableTokens',this.props.tokenConfig.idle.token]);
@@ -43,19 +51,18 @@ class CurveDeposit extends Component {
     const migrationContract = this.state.tokenConfig.migration.migrationContract;
     const migrationContractParams = curveTokenConfig.migrationParams;
     if (migrationContractParams.n_coins){
-      const amounts = [];
-      for (var i = 0; i < migrationContractParams.n_coins; i++) {
-        if (migrationContractParams.coinIndex === i){
-          amounts.push(toMigrate);
-        } else {
-          amounts.push(0);
-        }
+      const amounts = await this.functionsUtil.getCurveAmounts(this.state.tokenConfig.idle.token,toMigrate,true);
+      let minMintAmount = await this.functionsUtil.getCurveTokenAmount(amounts);
+      if (this.state.maxSlippage){
+        minMintAmount = this.functionsUtil.BNify(minMintAmount);
+        minMintAmount = minMintAmount.minus(minMintAmount.times(this.functionsUtil.BNify(this.state.maxSlippage).div(100)));
+        minMintAmount = this.functionsUtil.integerValue(minMintAmount);
       }
-
-      const minMintAmount = await this.functionsUtil.genericContractCall(migrationContract.name,'calc_token_amount',[amounts,true]);
 
       migrationParams.push(amounts);
       migrationParams.push(minMintAmount);
+
+      console.log(this.state.tokenConfig.idle.token,toMigrate,migrationParams);
     }
 
     return migrationParams;
@@ -126,6 +133,7 @@ class CurveDeposit extends Component {
       return null;
     }
 
+    const curveConfig = this.functionsUtil.getGlobalConfig(['curve']);
     const hasCurveTokens = this.state.curveTokensBalance && this.state.curveTokensBalance.gt(0);
 
     return (
@@ -142,58 +150,114 @@ class CurveDeposit extends Component {
           justifyContent={'center'}
         >
             {
-              this.props.idleTokenBalance && this.props.idleTokenBalance.gt(0) &&
-                <DashboardCard
-                  cardProps={{
-                    p:3,
-                    px:[2,4]
-                  }}
+              this.props.idleTokenBalance && this.props.idleTokenBalance.gt(0) && (
+                <Box
+                  width={1}
                 >
-                  <Flex
-                    alignItems={'center'}
-                    flexDirection={'column'}
-                  > 
+                  <DashboardCard
+                    cardProps={{
+                      p:3,
+                      px:[2,4]
+                    }}
+                  >
                     <Flex
-                      width={1}
                       alignItems={'center'}
-                      flexDirection={'row'}
-                    >
-                      <Icon
-                        size={'1.5em'}
-                        name={ this.state.migrationContractApproved ? 'CheckBox' : 'LooksOne'}
-                        color={ this.state.migrationContractApproved ? this.props.theme.colors.transactions.status.completed : 'cellText'}
-                      />
-                      <Text
-                        ml={2}
-                        fontSize={2}
-                        color={'cellText'}
-                        textAlign={'left'}
+                      flexDirection={'column'}
+                    > 
+                      <Flex
+                        width={1}
+                        alignItems={'center'}
+                        flexDirection={'row'}
                       >
-                        Approve the Curve contract
-                      </Text>
-                    </Flex>
-                    <Flex
-                      mt={2}
-                      width={1}
-                      alignItems={'center'}
-                      flexDirection={'row'}
-                    >
-                      <Icon
-                        size={'1.5em'}
-                        name={ hasCurveTokens ? 'CheckBox' : 'LooksTwo'}
-                        color={ hasCurveTokens ? this.props.theme.colors.transactions.status.completed : 'cellText'}
-                      />
-                      <Text
-                        ml={2}
-                        fontSize={2}
-                        color={'cellText'}
-                        textAlign={'left'}
+                        <Icon
+                          size={'1.5em'}
+                          name={ this.state.migrationContractApproved ? 'CheckBox' : 'LooksOne'}
+                          color={ this.state.migrationContractApproved ? this.props.theme.colors.transactions.status.completed : 'cellText'}
+                        />
+                        <Text
+                          ml={2}
+                          fontSize={2}
+                          color={'cellText'}
+                          textAlign={'left'}
+                        >
+                          Approve the Curve contract
+                        </Text>
+                      </Flex>
+                      <Flex
+                        mt={2}
+                        width={1}
+                        alignItems={'center'}
+                        flexDirection={'row'}
                       >
-                        Deposit your {this.props.tokenConfig.idle.token}
-                      </Text>
+                        <Icon
+                          size={'1.5em'}
+                          name={ hasCurveTokens ? 'CheckBox' : 'LooksTwo'}
+                          color={ hasCurveTokens ? this.props.theme.colors.transactions.status.completed : 'cellText'}
+                        />
+                        <Text
+                          ml={2}
+                          fontSize={2}
+                          color={'cellText'}
+                          textAlign={'left'}
+                        >
+                          Deposit your {this.props.tokenConfig.idle.token}
+                        </Text>
+                      </Flex>
                     </Flex>
-                  </Flex>
-                </DashboardCard>
+                  </DashboardCard>
+                  {
+                    this.state.migrationContractApproved && (
+                      <Box
+                        mt={2}
+                        width={1}
+                      >
+                        <Flex
+                          alignItems={'center'}
+                          flexDirection={'row'}
+                        >
+                          <Text>
+                            Choose max slippage:
+                          </Text>
+                          <Tooltip
+                            placement={'top'}
+                            message={`Max additional slippage on top of the one shown below`}
+                          >
+                            <Icon
+                              ml={1}
+                              size={'1em'}
+                              color={'cellTitle'}
+                              name={"InfoOutline"}
+                            />
+                          </Tooltip>
+                        </Flex>
+                        <Flex
+                          mt={2}
+                          alignItems={'center'}
+                          flexDirection={'row'}
+                          justifyContent={'space-between'}
+                        >
+                          {
+                            [0.2,0.5,1,5].map( slippage => (
+                              <FastBalanceSelector
+                                cardProps={{
+                                  p:1
+                                }}
+                                textProps={{
+                                  fontSize:1
+                                }}
+                                percentage={slippage}
+                                key={`selector_${slippage}`}
+                                onMouseDown={()=>this.setMaxSlippage(slippage)}
+                                isActive={this.state.maxSlippage === parseFloat(slippage)}
+                              />
+                            ))
+                          }
+                        </Flex>
+                      </Box>
+                    )
+                  }
+                </Box>
+              )
             }
           {
             this.state.tokenConfig ? (
@@ -202,6 +266,13 @@ class CurveDeposit extends Component {
                   {...this.props}
                   showActions={false}
                   getTokenPrice={false}
+                  migrationTextProps={{
+                    fontWeight:500
+                  }}
+                  migrationImage={{
+                    height:'1.8em',
+                    src:curveConfig.params.image
+                  }}
                   isMigrationTool={true}
                   migrationIcon={'FileDownload'}
                   waitText={'Deposit estimated in'}
@@ -210,7 +281,7 @@ class CurveDeposit extends Component {
                   migrationParams={this.getMigrationParams.bind(this)}
                   migrationCallback={this.migrationCallback.bind(this)}
                   approveText={`To deposit your ${this.props.tokenConfig.idle.token} you need to approve Curve smart-contract first.`}
-                  migrationText={`You can deposit ${this.state.redeemableBalance.toFixed(4)} ${this.props.tokenConfig.idle.token} in the Curve Pool ${ this.state.depositSlippage ? (this.state.depositSlippage.gte(0) ? ` with ${this.state.depositSlippage.times(100).toFixed(2)}% of slippage` : ` with ${Math.abs(parseFloat(this.state.depositSlippage.times(100).toFixed(2)))}% of bonus`) : '' }.`}
+                  migrationText={`You can deposit ${this.state.redeemableBalance.toFixed(4)} ${this.props.tokenConfig.idle.token} in the Curve Pool ${ this.state.depositSlippage ? (this.state.depositSlippage.gte(0) ? ` with <span style="color:${this.props.theme.colors.transactions.status.failed}">${this.state.depositSlippage.times(100).toFixed(2)}% of slippage</span>` : ` with <span style="color:${this.props.theme.colors.transactions.status.completed}">${Math.abs(parseFloat(this.state.depositSlippage.times(100).toFixed(2)))}% of bonus</span>`) : '' }.`}
                 >
                   {
                     !this.props.account ? (
