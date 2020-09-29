@@ -3370,8 +3370,11 @@ class FunctionsUtil {
       const coinIndex = migrationParams.coinIndex;
       if (idleToken === token && parseFloat(amount)>0){
         const tokenConfig = availableTokens[curveTokenConfig.baseToken];
-        const idleTokenPrice = await this.getIdleTokenPrice(tokenConfig);
-        amount = this.fixTokenDecimals(amount,18).div(idleTokenPrice);
+        amount = this.fixTokenDecimals(amount,18)
+        if (!deposit){
+          const idleTokenPrice = await this.getIdleTokenPrice(tokenConfig);
+          amount = amount.div(idleTokenPrice);
+        }
         amount = this.normalizeTokenAmount(amount,curveTokenConfig.decimals);
         amounts[coinIndex] = amount;
       } else {
