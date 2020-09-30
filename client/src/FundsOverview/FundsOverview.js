@@ -1,18 +1,22 @@
 import theme from '../theme';
 import Title from '../Title/Title';
 import React, { Component } from 'react';
-import { Flex, Heading, Text } from "rimble-ui";
 import AssetField from '../AssetField/AssetField';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import DashboardCard from '../DashboardCard/DashboardCard';
+import { Flex, Heading, Text, Icon, Tooltip } from "rimble-ui";
 import PortfolioEquity from '../PortfolioEquity/PortfolioEquity';
 
 class FundsOverview extends Component {
 
   state = {
-    compAPR:null,
+    govTokensAprs:null,
     aggregatedValues:[],
-    govTokensUserBalance:null
+    govTokensTotalApr:null,
+    govTokensUserBalance:null,
+    govTokensTotalBalance:null,
+    govTokensTotalAprTooltip:null,
+    govTokensTotalBalanceTooltip:null,
   };
 
   // Utils
@@ -35,11 +39,42 @@ class FundsOverview extends Component {
     const govTokenAvailableTokens = {};
     govTokenAvailableTokens[this.props.selectedToken] = this.props.tokenConfig;
 
-    const [govTokensUserBalance,avgAPY,days] = await Promise.all([
+    const [
+      govTokensAprs,
+      govTokensUserBalance,
+      avgAPY,
+      days
+    ] = await Promise.all([
+      this.functionsUtil.getGovTokensAprs(this.props.selectedToken,this.props.tokenConfig),
       this.functionsUtil.getGovTokensUserBalances(this.props.account,govTokenAvailableTokens,'DAI'),
       this.functionsUtil.loadAssetField('avgAPY',this.props.selectedToken,this.props.tokenConfig,this.props.account),
       this.functionsUtil.loadAssetField('daysFirstDeposit',this.props.selectedToken,this.props.tokenConfig,this.props.account),
     ]);
+
+    const govTokensTotalBalance = govTokensUserBalance ? Object.values(govTokensUserBalance).reduce( (totBalance,govTokenBalance) => {
+      return totBalance.plus(this.functionsUtil.BNify(govTokenBalance));
+    },this.functionsUtil.BNify(0)) : null;
+
+    const govTokensTotalBalanceTooltip = govTokensUserBalance ? Object.keys(govTokensUserBalance).map( govToken => {
+      const balance = govTokensUserBalance[govToken];
+      if (balance.gt(0)){
+        return `${govToken}: $${balance.toFixed(2)}`;
+      } else {
+        return null;
+      }
+    }).filter(v => (v !== null)) : null;
+
+    const govTokensTotalApr = govTokensAprs ? Object.values(govTokensAprs).reduce( (totApr,govTokenApr) => {
+      return totApr.plus(this.functionsUtil.BNify(govTokenApr));
+    },this.functionsUtil.BNify(0)) : null;
+
+    const govTokensTotalAprTooltip = govTokensAprs ? Object.keys(govTokensAprs).map( govToken => {
+      const apr = govTokensAprs[govToken];
+      if (apr.gt(0)){
+        return `${govToken}: ${apr.toFixed(2)}%`;
+      }
+      return null;
+    }).filter(v => (v !== null)) : null;
 
     const aggregatedValues = [
       {
@@ -124,25 +159,14 @@ class FundsOverview extends Component {
       }
     ];
 
-    let [tokenAllocation,compAPR] = await Promise.all([
-      this.functionsUtil.getTokenAllocation(this.props.tokenConfig,false,false),
-      this.functionsUtil.getCompAPR(this.props.selectedToken,this.props.tokenConfig)
-    ]);
-
-    if (tokenAllocation){
-      const compoundInfo = this.props.tokenConfig.protocols.find( p => (p.name === 'compound') );
-      if (compoundInfo){
-        if (tokenAllocation.protocolsAllocationsPerc[compoundInfo.address.toLowerCase()]){
-          const compoundAllocationPerc = tokenAllocation.protocolsAllocationsPerc[compoundInfo.address.toLowerCase()];
-          compAPR = compAPR.times(compoundAllocationPerc);
-        }
-      }
-    }
-
     this.setState({
-      compAPR,
+      govTokensAprs,
       aggregatedValues,
-      govTokensUserBalance
+      govTokensTotalApr,
+      govTokensUserBalance,
+      govTokensTotalBalance,
+      govTokensTotalAprTooltip,
+      govTokensTotalBalanceTooltip
     });
   }
 
@@ -151,6 +175,7 @@ class FundsOverview extends Component {
   }
 
   render() {
+
     return (
       <Flex
         width={1}
@@ -357,7 +382,7 @@ class FundsOverview extends Component {
                 }}
               />
               {
-                this.state.govTokensUserBalance && Object.keys(this.state.govTokensUserBalance).length>0 && (
+                this.state.govTokensUserBalance && Object.keys(this.state.govTokensUserBalance).length==1 ? (
                   <Flex
                     width={1}
                     alignItems={'center'}
@@ -380,7 +405,35 @@ class FundsOverview extends Component {
                       ))
                     }
                   </Flex>
-                )
+                ) : this.state.govTokensUserBalance && Object.keys(this.state.govTokensUserBalance).length>1 ? (
+                  <Flex
+                    width={1}
+                    alignItems={'center'}
+                    flexDirection={'row'}
+                    justifyContent={'center'}
+                  >
+                    <Text
+                      fontSize={1}
+                      lineHeight={1}
+                      fontWeight={2}
+                      color={'cellText'}
+                      textAlign={'center'}
+                    >
+                      + ${this.state.govTokensTotalBalance.toFixed(4)}
+                    </Text>
+                    <Tooltip
+                      placement={'top'}
+                      message={this.state.govTokensTotalBalanceTooltip.join('; ')}
+                    >
+                      <Icon
+                        ml={1}
+                        size={'1em'}
+                        color={'cellTitle'}
+                        name={"InfoOutline"}
+                      />
+                    </Tooltip>
+                  </Flex>
+                ) : null
               }
             </Flex>
             <Flex
@@ -448,7 +501,30 @@ class FundsOverview extends Component {
                 }}
               />
               {
-                this.state.compAPR && (
+                this.state.govTokensAprs && Object.keys(this.state.govTokensAprs).length==1 ? (
+                  <Flex
+                    width={1}
+                    alignItems={'center'}
+                    flexDirection={'row'}
+                    justifyContent={'center'}
+                  >
+                    {
+                      Object.keys(this.state.govTokensAprs).map((govToken,govTokenIndex) => (
+                        <Text
+                          fontSize={1}
+                          lineHeight={1}
+                          fontWeight={2}
+                          color={'cellText'}
+                          textAlign={'center'}
+                          ml={govTokenIndex ? 2 : 0}
+                          key={`govToken_${govToken}`}
+                        >
+                          {this.state.govTokensAprs[govToken].toFixed(2)}% {govToken}
+                        </Text>
+                      ))
+                    }
+                  </Flex>
+                ) : this.state.govTokensAprs && Object.keys(this.state.govTokensAprs).length>1 ? (
                   <Flex
                     width={1}
                     alignItems={'center'}
@@ -462,10 +538,21 @@ class FundsOverview extends Component {
                       color={'cellText'}
                       textAlign={'center'}
                     >
-                      {this.state.compAPR.toFixed(2)}% COMP
+                      + {this.state.govTokensTotalApr.toFixed(2)}%
                     </Text>
+                    <Tooltip
+                      placement={'top'}
+                      message={this.state.govTokensTotalAprTooltip.join('; ')}
+                    >
+                      <Icon
+                        ml={1}
+                        size={'1em'}
+                        color={'cellTitle'}
+                        name={"InfoOutline"}
+                      />
+                    </Tooltip>
                   </Flex>
-                )
+                ) : null
               }
             </Flex>
             <Flex
