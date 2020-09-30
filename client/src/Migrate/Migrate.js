@@ -957,17 +957,17 @@ class Migrate extends Component {
                             flexDirection={'column'}
                           >
                             {
-                              this.props.migrationIcon ? (
+                              this.props.migrationImage ? (
+                                <Image
+                                  {...this.props.migrationImage}
+                                />
+                              ) : (
                                 <Icon
                                   size={'2.3em'}
                                   color={'cellText'}
                                   name={ this.props.migrationIcon ? this.props.migrationIcon : (this.props.isMigrationTool ? 'SwapHoriz' : 'Repeat') }
                                 />
-                              ) : this.props.migrationImage ? (
-                                <Image
-                                  {...this.props.migrationImage}
-                                />
-                              ) : null
+                              )
                             }
                             <Text
                               mt={1}
