@@ -3437,6 +3437,9 @@ class FunctionsUtil {
     }
     return null;
   }
+  getIdleAPR = async (token,tokenConfig) => {
+    return this.BNify(5); // Fake 5%
+  }
   getCompAPR = async (token,tokenConfig,cTokenIdleSupply=null,compConversionRate=null) => {
     const COMPTokenConfig = this.getGlobalConfig(['govTokens','COMP']);
     if (!COMPTokenConfig.enabled){
@@ -3452,8 +3455,6 @@ class FunctionsUtil {
     let compAPR = this.BNify(0);
 
     const compDistribution = await this.getCompDistribution(tokenConfig,cTokenIdleSupply);
-
-    // console.log('getCompAPR',token,compDistribution ? compDistribution.toString() : null);
 
     if (compDistribution){
       const cTokenInfo = tokenConfig.protocols.find( p => (p.name === 'compound') );
@@ -3591,6 +3592,55 @@ class FunctionsUtil {
     });
     return output;
   }
+  getGovTokensAprs = async (token,tokenConfig,enabledTokens=null) => {
+    const govTokens = this.getGlobalConfig(['govTokens']);
+    const govTokensAprs = {}
+
+    await this.asyncForEach(Object.keys(govTokens),async (govToken) => {
+
+      if (enabledTokens && !enabledTokens.includes(govToken)){
+        return;
+      }
+
+      const govTokenConfig = govTokens[govToken];
+
+      if (!govTokenConfig.enabled){
+        return;
+      }
+
+      let govTokenApr = null;
+      let tokenAllocation = null;
+
+      switch (govToken){
+        case 'COMP':
+          [govTokenApr,tokenAllocation] = await Promise.all([
+            this.getCompAPR(token,tokenConfig),
+            this.getTokenAllocation(tokenConfig,false,false)
+          ]);
+
+          // Cut the COMP token proportionally on Idle funds allocation in compound
+          if (tokenAllocation){
+            const compoundInfo = tokenConfig.protocols.find( p => (p.name === 'compound') );
+            if (compoundInfo){
+              if (tokenAllocation.protocolsAllocationsPerc[compoundInfo.address.toLowerCase()]){
+                const compoundAllocationPerc = tokenAllocation.protocolsAllocationsPerc[compoundInfo.address.toLowerCase()];
+                govTokenApr = govTokenApr.times(compoundAllocationPerc);
+              }
+            }
+          }
+        break;
+        case 'IDLE':
+          govTokenApr = await this.getIdleAPR(token,tokenConfig);
+        break;
+      }
+
+      if (govTokenApr !== null){
+        govTokensAprs[govToken] = govTokenApr;
+      }
+    });
+
+    return govTokensAprs;
+  }
   getGovTokensBalances = async (address=null,convertToken='DAI',enabledTokens=null) => {
     if (!address){
       address = this.props.tokenConfig.idle.address;
@@ -3705,6 +3755,9 @@ class FunctionsUtil {
         });
       }
     });
+
+    // Test multiple gov tokens
+    // output['IDLE'] = this.BNify(10);
 
     return output;
   }
