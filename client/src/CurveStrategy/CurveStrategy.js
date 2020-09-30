@@ -1,19 +1,16 @@
 import Title from '../Title/Title';
 import React, { Component } from 'react';
+import Breadcrumb from '../Breadcrumb/Breadcrumb';
 import { Box, Flex, Text, Icon } from "rimble-ui";
-// import RoundButton from '../RoundButton/RoundButton';
 import CurveRedeem from '../CurveRedeem/CurveRedeem';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import BuyModal from '../utilities/components/BuyModal';
 import CurveDeposit from '../CurveDeposit/CurveDeposit';
-// import TxProgressBar from '../TxProgressBar/TxProgressBar';
 import AssetSelector from '../AssetSelector/AssetSelector';
 import DashboardCard from '../DashboardCard/DashboardCard';
-import CardIconButton from '../CardIconButton/CardIconButton';
 import TransactionField from '../TransactionField/TransactionField';
 import TransactionsList from '../TransactionsList/TransactionsList';
 import FundsOverviewCurve from '../FundsOverviewCurve/FundsOverviewCurve';
-// import FastBalanceSelector from '../FastBalanceSelector/FastBalanceSelector';
 
 class AssetPage extends Component {
 
@@ -117,47 +114,46 @@ class AssetPage extends Component {
       await this.setSelectedToken(selectedToken);
     }
 
-    window.getCurveSlippage = this.functionsUtil.getCurveSlippage;
+    const newState = {...this.state};
+
+    const availableTokens = this.functionsUtil.getCurveAvailableTokens();
+    const curveAvailableTokens = this.functionsUtil.getGlobalConfig(['curve','availableTokens']);
+
+    if (newState.selectedToken !== selectedToken){
+      newState.selectedToken = selectedToken;
+    }
+
+    const curveTokenConfig = curveAvailableTokens[selectedToken];
+    const tokenConfig = availableTokens[curveTokenConfig.baseToken];
+
+    const [
+      curveZapContract,
+      curvePoolContract,
+      curveSwapContract,
+      curveDepositContract
+    ] = await Promise.all([
+      this.functionsUtil.getCurveZapContract(),
+      this.functionsUtil.getCurvePoolContract(),
+      this.functionsUtil.getCurveSwapContract(),
+      this.functionsUtil.getCurveDepositContract()
+    ]);
+
+    newState.curveZapContract = curveZapContract;
+    newState.curvePoolContract = curvePoolContract;
+    newState.curveSwapContract = curveSwapContract;
+    newState.curveDepositContract = curveDepositContract;
+
+    newState.availableTokens = availableTokens;
+    newState.curveAvailableTokens = curveAvailableTokens;
+
+    // console.log('curveTokenPrice',newState.curveTokenPrice.toFixed(6),'curveTokenBalance',newState.curveTokenBalance.toFixed(6),'redeemableBalance',newState.redeemableBalance.toFixed(20),'tokenBalance',newState.tokenBalance.toFixed(20));
+    const govTokenAvailableTokens = {};
+    govTokenAvailableTokens[selectedToken] = tokenConfig;
+
+    newState.tokenConfig = tokenConfig;
+    newState.curveTokenConfig = curveTokenConfig;
 
     if (this.props.account){
-
-      const newState = {...this.state};
-
-      const availableTokens = this.functionsUtil.getCurveAvailableTokens();
-      const curveAvailableTokens = this.functionsUtil.getGlobalConfig(['curve','availableTokens']);
-
-      if (newState.selectedToken !== selectedToken){
-        newState.selectedToken = selectedToken;
-      }
-
-      const curveTokenConfig = curveAvailableTokens[selectedToken];
-      const tokenConfig = availableTokens[curveTokenConfig.baseToken];
-
-      const [
-        curveZapContract,
-        curvePoolContract,
-        curveSwapContract,
-        curveDepositContract
-      ] = await Promise.all([
-        this.functionsUtil.getCurveZapContract(),
-        this.functionsUtil.getCurvePoolContract(),
-        this.functionsUtil.getCurveSwapContract(),
-        this.functionsUtil.getCurveDepositContract()
-      ]);
-
-      newState.curveZapContract = curveZapContract;
-      newState.curvePoolContract = curvePoolContract;
-      newState.curveSwapContract = curveSwapContract;
-      newState.curveDepositContract = curveDepositContract;
-
-      newState.availableTokens = availableTokens;
-      newState.curveAvailableTokens = curveAvailableTokens;
-
-      // console.log('curveTokenPrice',newState.curveTokenPrice.toFixed(6),'curveTokenBalance',newState.curveTokenBalance.toFixed(6),'redeemableBalance',newState.redeemableBalance.toFixed(20),'tokenBalance',newState.tokenBalance.toFixed(20));
-
-      const govTokenAvailableTokens = {};
-      govTokenAvailableTokens[selectedToken] = tokenConfig;
-
       [
         newState.curveTokenPrice,
         newState.curveTokenBalance,
@@ -201,16 +197,15 @@ class AssetPage extends Component {
       };
 
       newState.componentMounted = true;
-      newState.tokenConfig = tokenConfig;
       newState.depositBalance = newState.tokenBalance;
       newState.redeemBalance = newState.redeemableBalance;
       newState.govTokensDisabled = tokenConfig.govTokensDisabled;
       newState.canRedeem = newState.curveTokenBalance && newState.curveTokenBalance.gt(0);
       newState.canDeposit = newState.idleTokenBalance && newState.idleTokenBalance.gt(0);
       newState.redeemableBalance = newState.curveTokenBalance ? newState.curveTokenBalance.times(newState.curveTokenPrice) : this.functionsUtil.BNify(0);
-
-      this.setState(newState);
     }
+
+    this.setState(newState);
   }
 
   async componentWillMount(){
@@ -247,9 +242,10 @@ class AssetPage extends Component {
 
   async componentDidUpdate(prevProps, prevState) {
     this.loadUtils();
-    const transactionsChanged = prevProps.transactions && this.props.transactions && Object.values(prevProps.transactions).filter(tx => (tx.status==='success')).length !== Object.values(this.props.transactions).filter(tx => (tx.status==='success')).length;
     const accountChanged = prevProps.account !== this.props.account;
     const tokenChanged = prevProps.urlParams.param1 !== this.props.urlParams.param1;
+    const transactionsChanged = prevProps.transactions && this.props.transactions && Object.values(prevProps.transactions).filter(tx => (tx.status==='success')).length !== Object.values(this.props.transactions).filter(tx => (tx.status==='success')).length;
+
     if (accountChanged || transactionsChanged || tokenChanged){
       await this.loadTokensInfo();
     }
@@ -707,10 +703,6 @@ class AssetPage extends Component {
 
   render(){
 
-    if (!this.state.selectedToken || !this.state.curvePoolContract){
-      return null;
-    }
-
     const userHasFunds = this.props.account && this.state.curveTokenBalance && this.functionsUtil.BNify(this.state.curveTokenBalance).gt(0);
     const canPerformAction = true;
 
@@ -729,26 +721,13 @@ class AssetPage extends Component {
             width={0.5}
           >
             {
-              /*
               <Breadcrumb
                 isMobile={this.props.isMobile}
-                path={[this.state.selectedToken]}
-                handleClick={ e => this.props.goToSection(this.props.selectedStrategy) }
-                text={this.functionsUtil.getGlobalConfig(['strategies',this.props.selectedStrategy,'title'])}
+                path={['Boost',this.state.selectedToken]}
+                handleClick={ e => this.props.goToSection('best') }
+                text={this.functionsUtil.getGlobalConfig(['strategies','best','title'])}
               />
-              */
             }
-          </Flex>
-          <Flex
-            width={0.5}
-            justifyContent={'flex-end'}
-          >
-            <CardIconButton
-              icon={'Add'}
-              {...this.props}
-              text={'Add funds'}
-              handleClick={ e => this.setActiveModal('buy') }
-            />
           </Flex>
         </Flex>
         <Title
@@ -904,238 +883,11 @@ class AssetPage extends Component {
                     </Flex>
                   )
                 }
-                {
-                  /*
-                  (!this.state.tokenApproved && this.state.action === 'deposit') ? (
-                    <DashboardCard
-                      cardProps={{
-                        p:3,
-                        mt:3
-                      }}
-                    >
-                      {
-                        this.state.processing['approve'] && this.state.processing['approve'].loading ? (
-                          <Flex
-                            flexDirection={'column'}
-                          >
-                            <TxProgressBar
-                              web3={this.props.web3}
-                              waitText={`Approve estimated in`}
-                              endMessage={`Finalizing approve request...`}
-                              hash={this.state.processing['approve'].txHash}
-                              cancelTransaction={this.cancelTransaction.bind(this)}
-                            />
-                          </Flex>
-                        ) : (
-                          <Flex
-                            alignItems={'center'}
-                            flexDirection={'column'}
-                          >
-                            <Icon
-                              size={'1.8em'}
-                              name={'LockOpen'}
-                              color={'cellText'}
-                            />
-                            <Text
-                              mt={3}
-                              fontSize={2}
-                              color={'cellText'}
-                              textAlign={'center'}
-                            >
-                              To {this.functionsUtil.capitalize(this.state.action)} your {this.state.selectedToken} in the Curve Pool you need to approve the Smart-Contract first.
-                            </Text>
-                            <RoundButton
-                              buttonProps={{
-                                mt:3,
-                                width:[1,1/2]
-                              }}
-                              handleClick={this.approveToken.bind(this)}
-                            >
-                              Approve
-                            </RoundButton>
-                          </Flex>
-                        )
-                      }
-                    </DashboardCard>
-                  ) : (
-                    (!this.state.processing[this.state.action].loading && parseFloat(totalBalance)>0) ? (
-                      <Flex
-                        mt={3}
-                        flexDirection={'column'}
-                      >
-                        {
-                          this.state.action === 'deposit' && this.state.depositSlippage && !this.state.buttonDisabled &&
-                            <DashboardCard
-                              cardProps={{
-                                p:3,
-                                mb:2
-                              }}
-                            >
-                              <Flex
-                                alignItems={'center'}
-                                flexDirection={'column'}
-                              >
-                                <Icon
-                                  size={'1.8em'}
-                                  color={'cellText'}
-                                  name={'FileUpload'}
-                                />
-                                <Text
-                                  mt={2}
-                                  fontSize={2}
-                                  color={'cellText'}
-                                  textAlign={'center'}
-                                >
-                                  You can deposit {this.state.depositBalance.toFixed(4)} {this.state.selectedToken} in the Curve Pool{ this.state.depositSlippage ? (this.state.depositSlippage.gt(0) ? ` with ${this.state.depositSlippage.times(100).toFixed(2)}% of slippage` : ` with ${Math.abs(parseFloat(this.state.depositSlippage.times(100).toFixed(2)))}% of bonus`) : '' }.
-                                </Text>
-                              </Flex>
-                            </DashboardCard>
-                        }
-                        {
-                          this.state.action === 'redeem' && !this.state.buttonDisabled &&
-                            <DashboardCard
-                              cardProps={{
-                                p:3,
-                                mb:2
-                              }}
-                            >
-                              <Flex
-                                alignItems={'center'}
-                                flexDirection={'column'}
-                              >
-                                <Icon
-                                  size={'1.8em'}
-                                  color={'cellText'}
-                                  name={'FileUpload'}
-                                />
-                                <Text
-                                  mt={2}
-                                  fontSize={2}
-                                  color={'cellText'}
-                                  textAlign={'center'}
-                                >
-                                  {
-                                    this.state.redeemUnevenAmounts ? `You can redeem ${this.state.curveTokenBalance.toFixed(4)} Curve tokens in uneven amounts ${ this.state.unevenAmounts ? `: ${this.state.unevenAmounts.join(', ')}` : `` }.` : `You can redeem ~${this.state.redeemBalance.toFixed(4)} ${this.state.selectedToken} from the Curve Pool${ this.state.withdrawSlippage ? (this.state.withdrawSlippage.gt(0) ? ` with ${this.state.withdrawSlippage.times(100).toFixed(2)}% of slippage` : ` with ${Math.abs(parseFloat(this.state.withdrawSlippage.times(100).toFixed(2)))}% of bonus` ) : '' }.`
-                                  }
-                                </Text>
-                                <Checkbox
-                                  mt={2}
-                                  required={false}
-                                  label={`Redeem in uneven amounts`}
-                                  checked={this.state.redeemUnevenAmounts}
-                                  onChange={ e => this.toggleUnevenAmounts(e.target.checked) }
-                                />
-                              </Flex>
-                            </DashboardCard>
-                        }
-                        <Flex
-                          mb={3}
-                          width={1}
-                          flexDirection={'column'}
-                        >
-                          {
-                            totalBalance && (
-                              <Box
-                                mb={1}
-                                width={1}
-                              >
-                                <Flex
-                                  width={1}
-                                  alignItems={'center'}
-                                  flexDirection={'row'}
-                                  justifyContent={'flex-end'}
-                                >
-                                {
-                                  totalBalance && (
-                                    <Link
-                                      fontSize={1}
-                                      fontWeight={3}
-                                      color={'dark-gray'}
-                                      textAlign={'right'}
-                                      hoverColor={'copyColor'}
-                                      onClick={ (e) => this.setFastBalanceSelector(100) }
-                                    >
-                                      {
-                                        this.state.redeemUnevenAmounts ? `${this.state.curveTokenBalance.toFixed(6)} ${curveTokenName}` : `${totalBalance.toFixed(6)} ${this.state.selectedToken}`
-                                      }
-                                    </Link>
-                                  )
-                                }
-                                </Flex>
-                              </Box>
-                            )
-                          }
-                          <Input
-                            min={0}
-                            type={"number"}
-                            required={true}
-                            height={'3.4em'}
-                            borderRadius={2}
-                            fontWeight={500}
-                            boxShadow={'none !important'}
-                            placeholder={`Insert amount`}
-                            onChange={this.changeInputValue.bind(this)}
-                            border={`1px solid ${this.props.theme.colors.divider}`}
-                            value={this.state.inputValue[this.state.action] !== null ? this.functionsUtil.BNify(this.state.inputValue[this.state.action]).toFixed() : ''}
-                          />
-                          <Flex
-                            mt={2}
-                            alignItems={'center'}
-                            flexDirection={'row'}
-                            justifyContent={'space-between'}
-                          >
-                            {
-                              [25,50,75,100].map( percentage => (
-                                <FastBalanceSelector
-                                  percentage={percentage}
-                                  key={`selector_${percentage}`}
-                                  onMouseDown={()=>this.setFastBalanceSelector(percentage)}
-                                  isActive={this.state.fastBalanceSelector[this.state.action] === parseInt(percentage)}
-                                />
-                              ))
-                            }
-                          </Flex>
-                        </Flex>
-                        <Flex
-                          justifyContent={'center'}
-                        >
-                          <RoundButton
-                            buttonProps={{
-                              width:'auto',
-                              minWidth:[1,1/2],
-                              style:{
-                                textTransform:'capitalize'
-                              },
-                              disabled:this.state.buttonDisabled
-                            }}
-                            handleClick={this.state.buttonDisabled ? null : this.executeAction.bind(this) }
-                          >
-                            {this.state.action}
-                          </RoundButton>
-                        </Flex>
-                      </Flex>
-                    ) : this.state.processing[this.state.action].loading && (
-                      <Flex
-                        mt={4}
-                        flexDirection={'column'}
-                      >
-                        <TxProgressBar
-                          web3={this.props.web3}
-                          cancelTransaction={this.cancelTransaction.bind(this)}
-                          hash={this.state.processing[this.state.action].txHash}
-                          endMessage={`Finalizing ${this.state.action} request...`}
-                          waitText={`${this.functionsUtil.capitalize(this.state.action)} estimated in`}
-                        />
-                      </Flex>
-                    )
-                  )
-                  */
-                }
               </Box>
             </Flex>
             <Flex
-              mt={3}
               width={1}
+              mt={ this.props.account ? 3 : 0 }
             >
             {
               this.state.action === 'deposit' ? (
@@ -1151,25 +903,6 @@ class AssetPage extends Component {
               )
             }
             </Flex>
-            {
-              /*
-              showBuyFlow &&
-                <Flex
-                  mt={3}
-                  width={[1,0.5]}
-                  alignItems={'stretch'}
-                  flexDirection={'column'}
-                  justifyContent={'center'}
-                >
-                  <BuyModal
-                    {...this.props}
-                    showInline={true}
-                    availableMethods={[]}
-                    buyToken={this.state.selectedToken}
-                  />
-                </Flex>
-              */
-            }
           </Flex>
         </Flex>
         {

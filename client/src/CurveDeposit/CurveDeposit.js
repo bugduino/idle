@@ -47,8 +47,7 @@ class CurveDeposit extends Component {
     if (!curveTokenConfig){
       return false;
     }
-
-    const migrationContract = this.state.tokenConfig.migration.migrationContract;
+    
     const migrationContractParams = curveTokenConfig.migrationParams;
     if (migrationContractParams.n_coins){
       const amounts = await this.functionsUtil.getCurveAmounts(this.state.tokenConfig.idle.token,toMigrate,true);
@@ -62,7 +61,7 @@ class CurveDeposit extends Component {
       migrationParams.push(amounts);
       migrationParams.push(minMintAmount);
 
-      console.log(this.state.tokenConfig.idle.token,toMigrate,migrationParams);
+      // console.log(this.state.tokenConfig.idle.token,toMigrate,migrationParams);
     }
 
     return migrationParams;
@@ -80,9 +79,13 @@ class CurveDeposit extends Component {
     }
 
     let redeemableBalance = this.functionsUtil.BNify(this.props.idleTokenBalance);
-    const idleTokenPrice = await this.functionsUtil.getIdleTokenPrice(this.props.tokenConfig);
-    if (idleTokenPrice){
-      redeemableBalance = redeemableBalance.times(idleTokenPrice);
+    if (redeemableBalance){
+      const idleTokenPrice = await this.functionsUtil.getIdleTokenPrice(this.props.tokenConfig);
+      if (idleTokenPrice){
+        redeemableBalance = redeemableBalance.times(idleTokenPrice);
+      }
+    } else {
+      redeemableBalance = this.functionsUtil.BNify(0);
     }
 
     const normalizeIdleTokenBalance = this.functionsUtil.normalizeTokenAmount(redeemableBalance,18);
@@ -115,6 +118,12 @@ class CurveDeposit extends Component {
 
   async componentDidUpdate(prevProps,prevState){
     this.loadUtils();
+
+    const accountChanged = prevProps.account !== this.props.account;
+    const idleTokenBalanceChanged = prevProps.idleTokenBalance !== this.props.idleTokenBalance;
+    if (accountChanged || idleTokenBalanceChanged){
+      await this.initToken();
+    }
   }
 
   approveCallback = () => {
@@ -270,11 +279,11 @@ class CurveDeposit extends Component {
                     fontWeight:500
                   }}
                   migrationImage={{
+                    mb:1,
                     height:'1.8em',
                     src:curveConfig.params.image
                   }}
                   isMigrationTool={true}
-                  migrationIcon={'FileDownload'}
                   waitText={'Deposit estimated in'}
                   tokenConfig={this.state.tokenConfig}
                   callbackApprove={this.approveCallback.bind(this)}
