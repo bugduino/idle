@@ -2,6 +2,7 @@ import theme from '../theme';
 import Migrate from '../Migrate/Migrate';
 import React, { Component } from 'react';
 import FlexLoader from '../FlexLoader/FlexLoader';
+import CurveRedeem from '../CurveRedeem/CurveRedeem';
 import RoundButton from '../RoundButton/RoundButton';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import BuyModal from '../utilities/components/BuyModal';
@@ -22,6 +23,7 @@ class DepositRedeem extends Component {
     processing:{},
     curveAPY:null,
     canRedeem:false,
+    maxSlippage:0.2,
     canDeposit:false,
     action:'deposit',
     directMint:false,
@@ -34,6 +36,7 @@ class DepositRedeem extends Component {
     contractPaused:false,
     buttonDisabled:false,
     canRedeemCurve:false,
+    showMaxSlippage:false,
     redeemGovTokens:false,
     canDepositCurve:false,
     fastBalanceSelector:{},
@@ -574,11 +577,17 @@ class DepositRedeem extends Component {
 
           const curvePoolContractInfo = this.functionsUtil.getGlobalConfig(['curve','poolContract']);
           const tokensToDeposit = this.functionsUtil.normalizeTokenAmount(inputValue,curvePoolContractInfo.decimals);
-          const amounts = this.functionsUtil.getCurveAmounts(this.props.tokenConfig.idle.token,tokensToDeposit);
-          const minMintAmount = await this.functionsUtil.genericContractCall(this.state.curveSwapContract.name,'calc_token_amount',[amounts,true]);
+
+          const amounts = await this.functionsUtil.getCurveAmounts(this.props.tokenConfig.idle.token,tokensToDeposit);
+          let minMintAmount = await this.functionsUtil.getCurveTokenAmount(amounts);
+          if (this.state.maxSlippage){
+            minMintAmount = this.functionsUtil.BNify(minMintAmount);
+            minMintAmount = minMintAmount.minus(minMintAmount.times(this.functionsUtil.BNify(this.state.maxSlippage).div(100)));
+            minMintAmount = this.functionsUtil.integerValue(minMintAmount);
+          }
+          
           const depositParams = [amounts,minMintAmount];
 
-          // No need for callback atm
           contractSendResult = await this.props.contractMethodSendWrapper(this.state.curveDepositContract.name, 'add_liquidity', depositParams, null, callbackDeposit, callbackReceiptDeposit);
         } else {
           const tokensToDeposit = this.functionsUtil.normalizeTokenAmount(inputValue,this.props.tokenConfig.decimals);
@@ -625,8 +634,6 @@ class DepositRedeem extends Component {
             }
 
             depositParams = [tokensToDeposit, _skipMint, '0x0000000000000000000000000000000000000000'];
-            
-            // No need for callback atm
             contractSendResult = await this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'mintIdleToken', depositParams, null, callbackDeposit, callbackReceiptDeposit);
           }
         }
@@ -788,6 +795,18 @@ class DepositRedeem extends Component {
         }
       }));
     }
+  }
+
+  setMaxSlippage = (maxSlippage) => {
+    this.setState({
+      maxSlippage
+    });
+  }
+
+  showMaxSlippage = () => {
+    this.setState({
+      showMaxSlippage:true
+    });
   }
 
   checkAction = () => {
@@ -968,7 +987,7 @@ class DepositRedeem extends Component {
     const showCurveSlippage = depositCurve && this.state.depositCurveSlippage && this.state.depositCurveBalance && !this.state.buttonDisabled;
 
     const showRebalanceOption = showDepositOptions && this.state.canDeposit && skipMintCheckboxEnabled && this.state.action === 'deposit';
-    const showAdvancedDepositOptions = showDepositCurve && showRebalanceOption;
+    const showAdvancedDepositOptions = showDepositCurve || showRebalanceOption;
 
     return (
       <Flex
@@ -1166,47 +1185,53 @@ class DepositRedeem extends Component {
                                 mt={1}
                                 flexDirection={'column'}
                               >
-                                <Flex
-                                  alignItems={'center'}
-                                  justifyContent={'row'}
-                                >
-                                  <Checkbox
-                                    required={false}
-                                    disabled={this.state.directMint}
-                                    label={`Deposit in the Curve Pool`}
-                                    checked={this.state.depositCurveEnabled}
-                                    onChange={ e => this.toggleDepositCurve(e.target.checked) }
-                                  />
-                                  <Link
-                                    mainColor={'primary'}
-                                    hoverColor={'primary'}
-                                    onClick={ e => this.props.openTooltipModal('How Curve works',this.functionsUtil.getGlobalConfig(['messages','curveInstructions'])) }
-                                  >
-                                    (read more)
-                                  </Link>
-                                </Flex>
-                                <Flex
-                                  alignItems={'center'}
-                                  justifyContent={'row'}
-                                >
-                                  <Checkbox
-                                    required={false}
-                                    label={`Rebalance the pool`}
-                                    checked={this.state.directMint}
-                                    disabled={this.state.depositCurveEnabled}
-                                    onChange={ e => this.toggleSkipMint(e.target.checked) }
-                                  />
-                                  <Tooltip
-                                    placement={'bottom'}
-                                    message={this.functionsUtil.getGlobalConfig(['messages','directMint'])}
-                                  >
-                                    <Icon
-                                      name={"Info"}
-                                      size={'1em'}
-                                      color={'cellTitle'}
-                                    />
-                                  </Tooltip>
-                                </Flex>
+                                {
+                                  showDepositCurve && 
+                                    <Flex
+                                      alignItems={'center'}
+                                      justifyContent={'row'}
+                                    >
+                                      <Checkbox
+                                        required={false}
+                                        disabled={this.state.directMint}
+                                        label={`Deposit in the Curve Pool`}
+                                        checked={this.state.depositCurveEnabled}
+                                        onChange={ e => this.toggleDepositCurve(e.target.checked) }
+                                      />
+                                      <Link
+                                        mainColor={'primary'}
+                                        hoverColor={'primary'}
+                                        onClick={ e => this.props.openTooltipModal('How Curve works',this.functionsUtil.getGlobalConfig(['messages','curveInstructions'])) }
+                                      >
+                                        (read more)
+                                      </Link>
+                                    </Flex>
+                                }
+                                {
+                                  showRebalanceOption && 
+                                    <Flex
+                                      alignItems={'center'}
+                                      justifyContent={'row'}
+                                    >
+                                      <Checkbox
+                                        required={false}
+                                        label={`Rebalance the pool`}
+                                        checked={this.state.directMint}
+                                        disabled={this.state.depositCurveEnabled}
+                                        onChange={ e => this.toggleSkipMint(e.target.checked) }
+                                      />
+                                      <Tooltip
+                                        placement={'bottom'}
+                                        message={this.functionsUtil.getGlobalConfig(['messages','directMint'])}
+                                      >
+                                        <Icon
+                                          size={'1em'}
+                                          color={'cellTitle'}
+                                          name={"InfoOutline"}
+                                        />
+                                      </Tooltip>
+                                    </Flex>
+                                }
                               </Flex>
                           }
                         </DashboardCard>
@@ -1410,7 +1435,7 @@ class DepositRedeem extends Component {
                       </DashboardCard>
                     }
                     {
-                      showRedeemCurve && (
+                      showRedeemCurve && this.state.canRedeem && (
                         <Flex
                           width={1}
                           flexDirection={'column'}
@@ -1436,7 +1461,7 @@ class DepositRedeem extends Component {
                             >
                               <Image
                                 height={'1.8em'}
-                                src={curveConfig.icon}
+                                src={curveConfig.params.image}
                               />
                               <Text
                                 mt={2}
@@ -1512,15 +1537,31 @@ class DepositRedeem extends Component {
                             >
                               Available balance for Cheap Redeem
                             </Text>
-                            <Text
-                              fontSize={1}
-                              fontWeight={3}
-                              color={'dark-gray'}
-                              textAlign={'center'}
-                              hoverColor={'copyColor'}
+                            <Flex
+                              alignItems={'center'}
+                              flexDirection={'row'}
                             >
-                              {this.state.unlentBalance.toFixed(4)} {this.props.selectedToken}
-                            </Text>
+                              <Text
+                                fontSize={1}
+                                fontWeight={3}
+                                color={'dark-gray'}
+                                textAlign={'center'}
+                                hoverColor={'copyColor'}
+                              >
+                                {this.state.unlentBalance.toFixed(4)} {this.props.selectedToken}
+                              </Text>
+                              <Tooltip
+                                placement={'top'}
+                                message={this.functionsUtil.getGlobalConfig(['messages','cheapRedeem'])}
+                              >
+                                <Icon
+                                  ml={1}
+                                  size={'1em'}
+                                  color={'cellTitle'}
+                                  name={"InfoOutline"}
+                                />
+                              </Tooltip>
+                            </Flex>
                           </Flex>
                         </DashboardCard>
                     }
@@ -1656,7 +1697,7 @@ class DepositRedeem extends Component {
                       ) : (!showBuyFlow && canPerformAction) && (
                         !this.state.processing[this.state.action].loading ? (
                           <Flex
-                            mt={3}
+                            mt={2}
                             flexDirection={'column'}
                           >
                             {
@@ -1702,6 +1743,57 @@ class DepositRedeem extends Component {
                                         mb={1}
                                         width={1}
                                       >
+                                        {
+                                          this.state.showMaxSlippage && showCurveSlippage && (
+                                            <Box
+                                              mb={2}
+                                              width={1}
+                                            >
+                                              <Flex
+                                                alignItems={'center'}
+                                                flexDirection={'row'}
+                                              >
+                                                <Text>
+                                                  Choose max slippage:
+                                                </Text>
+                                                <Tooltip
+                                                  placement={'top'}
+                                                  message={`Max additional slippage on top of the one shown below`}
+                                                >
+                                                  <Icon
+                                                    ml={1}
+                                                    size={'1em'}
+                                                    color={'cellTitle'}
+                                                    name={"InfoOutline"}
+                                                  />
+                                                </Tooltip>
+                                              </Flex>
+                                              <Flex
+                                                mt={2}
+                                                alignItems={'center'}
+                                                flexDirection={'row'}
+                                                justifyContent={'space-between'}
+                                              >
+                                                {
+                                                  [0.2,0.5,1,5].map( slippage => (
+                                                    <FastBalanceSelector
+                                                      cardProps={{
+                                                        p:1
+                                                      }}
+                                                      textProps={{
+                                                        fontSize:1
+                                                      }}
+                                                      percentage={slippage}
+                                                      key={`selector_${slippage}`}
+                                                      onMouseDown={()=>this.setMaxSlippage(slippage)}
+                                                      isActive={this.state.maxSlippage === parseFloat(slippage)}
+                                                    />
+                                                  ))
+                                                }
+                                              </Flex>
+                                            </Box>
+                                          )
+                                        }
                                         <Flex
                                           width={1}
                                           alignItems={'center'}
@@ -1720,9 +1812,16 @@ class DepositRedeem extends Component {
                                                 fontSize={1}
                                                 fontWeight={3}
                                                 textAlign={'right'}
+                                                style={{
+                                                  whiteSpace:'nowrap'
+                                                }}
                                                 color={ this.state.depositCurveSlippage.gt(0) ? this.props.theme.colors.transactions.status.failed : this.props.theme.colors.transactions.status.completed }
                                               >
-                                                {this.state.depositCurveSlippage.gt(0) ? 'Slippage: ' : 'Bonus: '}{this.state.depositCurveSlippage.times(100).abs().toFixed(2)}%
+                                                {
+                                                  parseFloat(this.state.depositCurveSlippage.times(100).toFixed(2)) === 0 ?
+                                                    'No Slippage'
+                                                  : `${ this.state.depositCurveSlippage.gt(0) ? 'Slippage: ' : 'Bonus: ' } ${this.state.depositCurveSlippage.times(100).abs().toFixed(2)}%`
+                                                }
                                               </Text>
                                               <Tooltip
                                                 placement={'top'}
@@ -1730,11 +1829,19 @@ class DepositRedeem extends Component {
                                               >
                                                 <Icon
                                                   ml={1}
-                                                  name={"Info"}
                                                   size={'1em'}
                                                   color={'cellTitle'}
+                                                  name={"InfoOutline"}
                                                 />
                                               </Tooltip>
+                                              <Link
+                                                ml={1}
+                                                color={'copyColor'}
+                                                hoverColor={'primary'}
+                                                onClick={this.showMaxSlippage}
+                                              >
+                                                change
+                                              </Link>
                                             </Flex>
                                           ) : this.props.tokenFeesPercentage && (
                                             <Flex
@@ -1756,9 +1863,9 @@ class DepositRedeem extends Component {
                                               >
                                                 <Icon
                                                   ml={1}
-                                                  name={"Info"}
                                                   size={'1em'}
                                                   color={'cellTitle'}
+                                                  name={"InfoOutline"}
                                                 />
                                               </Tooltip>
                                             </Flex>
@@ -1882,12 +1989,18 @@ class DepositRedeem extends Component {
             <CurveDeposit
               {...this.props}
             />
-          ) : showRedeemCurve && this.state.redeemCurveEnabled && (
-            <CurveRedeem
-              {...this.props}
-            />
-          )
+          ) :
           */
+          showRedeemCurve && this.state.redeemCurveEnabled && (
+            <Box
+              mt={3}
+              width={1}
+            >
+              <CurveRedeem
+                {...this.props}
+              />
+            </Box>
+          )
         }
         {
           showBuyFlow &&

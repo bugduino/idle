@@ -194,14 +194,16 @@ class CurveRedeem extends Component {
 
     const unevenAmounts = [];
 
-    let tokenConfig = this.state.tokenConfig;
-    let selectedToken = this.state.selectedToken;
+    let tokenConfig = this.props.tokenConfig ? this.props.tokenConfig : this.state.tokenConfig;
+    let selectedToken = this.props.selectedToken ? this.props.selectedToken : this.state.selectedToken;
     let availableTokens = this.state.availableTokens;
 
     if (!availableTokens){
       availableTokens = this.functionsUtil.getCurveAvailableTokens();
-      selectedToken = Object.keys(availableTokens)[0];
-      tokenConfig = availableTokens[selectedToken];
+      if (!selectedToken){
+        selectedToken = Object.keys(availableTokens)[0];
+        tokenConfig = availableTokens[selectedToken];
+      }
     }
 
     this.setState({
@@ -456,30 +458,37 @@ class CurveRedeem extends Component {
                   </Flex>
                 </DashboardCard>
                 {
-                  !this.state.redeemUnevenAmounts ? (
+                  !this.state.redeemUnevenAmounts && (!this.props.selectedToken || (this.state.showMaxSlippage && showSlippage)) ? (
                     <Box
                       mb={3}
                       width={1}
                     >
-                      <Text
-                        mb={1}
-                      >
-                        Select destination token:
-                      </Text>
-                      <AssetSelector
-                        {...this.props}
-                        id={'token-from'}
-                        showBalance={false}
-                        onChange={this.changeToken}
-                        tokenConfig={this.state.tokenConfig}
-                        selectedToken={this.state.selectedToken}
-                        availableTokens={this.state.availableTokens}
-                      />
+                      {
+                        !this.props.selectedToken && 
+                          <Box
+                            width={1}
+                          >
+                            <Text
+                              mb={1}
+                            >
+                              Select destination token:
+                            </Text>
+                            <AssetSelector
+                              {...this.props}
+                              id={'token-from'}
+                              showBalance={false}
+                              onChange={this.changeToken}
+                              tokenConfig={this.state.tokenConfig}
+                              selectedToken={this.state.selectedToken}
+                              availableTokens={this.state.availableTokens}
+                            />
+                          </Box>
+                      }
                       {
                         this.state.showMaxSlippage && showSlippage && (
                           <Box
-                            mt={2}
                             width={1}
+                            mt={ !this.props.selectedToken ? 2 : 0 }
                           >
                             <Flex
                               alignItems={'center'}
@@ -527,7 +536,7 @@ class CurveRedeem extends Component {
                         )
                       }
                     </Box>
-                  ) : this.state.curveTokensAmounts && !this.state.buttonDisabled && (
+                  ) : this.state.redeemUnevenAmounts && this.state.curveTokensAmounts && !this.state.buttonDisabled && (
                     <DashboardCard
                       cardProps={{
                         mt:1,
