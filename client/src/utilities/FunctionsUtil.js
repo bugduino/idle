@@ -2621,7 +2621,7 @@ class FunctionsUtil {
 
     return output;
   }
-  getIdleTokensRewards = async () => {
+  getIdleTokensUnclaimed = async () => {
     return this.BNify(1234);
     // return await this.genericContractCall('IDLE','rewards',[this.props.account]);
   }
