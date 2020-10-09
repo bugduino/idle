@@ -41,7 +41,12 @@ class MenuAccount extends Component {
   async loadIdleTokenBalance(){
     const idleGovTokenEnabled = this.functionsUtil.getGlobalConfig(['govTokens','IDLE','enabled']);
     if (idleGovTokenEnabled){
-      const idleTokenBalance = await this.functionsUtil.getIdleTokensUnclaimed(this.props.account);
+      const [balance,unclaimed] = await Promise.all([
+          this.functionsUtil.getTokenBalance('IDLE',this.props.account),
+          this.functionsUtil.getIdleTokensUnclaimed(this.props.account)
+      ]);
+
+      const idleTokenBalance = this.functionsUtil.BNify(balance).plus(unclaimed);
       return this.setState({
         idleTokenBalance
       });
