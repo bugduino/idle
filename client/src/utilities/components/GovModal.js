@@ -27,7 +27,7 @@ class GovModal extends React.Component {
       unclaimed,
       balance
     ] = await Promise.all([
-        this.functionsUtil.getIdleTokensRewards(this.props.account),
+        this.functionsUtil.getIdleTokensUnclaimed(this.props.account),
         this.functionsUtil.getTokenBalance('IDLE',this.props.account),
     ]);
 
@@ -99,7 +99,7 @@ class GovModal extends React.Component {
                 color={'white'}
                 fontWeight={500}
               >
-                {this.state.balance ? this.state.balance.toFixed(4) : '-'}
+                {this.state.unclaimed ? this.state.unclaimed.toFixed(4) : '-'}
               </Text>
               <Text
                 mb={2}
