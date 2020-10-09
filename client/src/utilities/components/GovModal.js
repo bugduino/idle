@@ -8,6 +8,7 @@ import FunctionsUtil from '../../utilities/FunctionsUtil';
 class GovModal extends React.Component {
 
   state = {
+    total:null,
     balance:null,
     unclaimed:null
   }
@@ -31,7 +32,10 @@ class GovModal extends React.Component {
         this.functionsUtil.getTokenBalance('IDLE',this.props.account),
     ]);
 
+    const total = this.functionsUtil.BNify(balance).plus(unclaimed);
+
     this.setState({
+      total,
       balance,
       unclaimed
     });
@@ -99,7 +103,7 @@ class GovModal extends React.Component {
                 color={'white'}
                 fontWeight={500}
               >
-                {this.state.unclaimed ? this.state.unclaimed.toFixed(4) : '-'}
+                {this.state.total ? this.state.total.toFixed(4) : '-'}
               </Text>
               <Text
                 mb={2}
@@ -107,7 +111,9 @@ class GovModal extends React.Component {
                 color={'white'}
                 fontWeight={400}
               >
-                You can now claim your IDLE tokens!
+                {
+                  this.state.unclaimed && this.state.unclaimed.gt(0) ? 'You can now claim your IDLE tokens!' : 'You don\'t have any IDLE to claim'
+                }
               </Text>
               <Flex
                 mb={3}
@@ -165,7 +171,8 @@ class GovModal extends React.Component {
                     color:'blue',
                     width:[1,'45%'],
                     mainColor:'white',
-                    contrastColor:'blue'
+                    contrastColor:'blue',
+                    disabled:!this.state.unclaimed || this.state.unclaimed.lte(0)
                   }}
                   handleClick={this.claim.bind(this)}
                 >

@@ -2622,7 +2622,7 @@ class FunctionsUtil {
     return output;
   }
   getIdleTokensUnclaimed = async () => {
-    return this.BNify(1234);
+    return this.BNify(0);
     // return await this.genericContractCall('IDLE','rewards',[this.props.account]);
   }
   getIdleTokenPrice = async (tokenConfig,blockNumber='latest',timestamp=false) => {

@@ -36,8 +36,8 @@ const ModalCard = ({children, closeFunc, ...props}) => (
       className={[ props.bgLayer ? styles.bg : null]}
       style={{
         overflow: 'auto',
-        backgroundSize:'65%',
         background: props.background ? props.background : 'url(images/bg-bottom-right.png) no-repeat bottom right',
+        backgroundSize: !props.background ? '65%' : null
       }}
     >
       {children}
