@@ -15,6 +15,7 @@ class TableRow extends Component {
         }}
         id={this.props.cardId}
         {...this.props.rowProps}
+        className={this.props.token}
         handleClick={ e => this.props.handleClick(this.props) }
         isInteractive={typeof this.props.handleClick === 'function'}
       >

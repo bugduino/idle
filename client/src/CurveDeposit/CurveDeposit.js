@@ -1,8 +1,8 @@
 import Migrate from '../Migrate/Migrate';
 import React, { Component } from 'react';
-import { Flex, Box, Text, Icon, Tooltip } from "rimble-ui";
 import RoundButton from '../RoundButton/RoundButton';
 import FunctionsUtil from '../utilities/FunctionsUtil';
+import { Flex, Box, Text, Icon, Tooltip } from "rimble-ui";
 import DashboardCard from '../DashboardCard/DashboardCard';
 import FastBalanceSelector from '../FastBalanceSelector/FastBalanceSelector';
 

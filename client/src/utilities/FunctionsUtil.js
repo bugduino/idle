@@ -2621,6 +2621,10 @@ class FunctionsUtil {
 
     return output;
   }
+  getIdleTokensRewards = async () => {
+    return this.BNify(1234);
+    // return await this.genericContractCall('IDLE','rewards',[this.props.account]);
+  }
   getIdleTokenPrice = async (tokenConfig,blockNumber='latest',timestamp=false) => {
 
     const cachedDataKey = `idleTokenPrice_${tokenConfig.idle.token}_${blockNumber}`;
@@ -3631,6 +3635,8 @@ class FunctionsUtil {
         break;
         case 'IDLE':
           govTokenApr = await this.getIdleAPR(token,tokenConfig);
+        break;
+        default:
         break;
       }
 
