@@ -51,6 +51,7 @@ class FundsOverview extends Component {
       this.functionsUtil.loadAssetField('daysFirstDeposit',this.props.selectedToken,this.props.tokenConfig,this.props.account),
     ]);
 
+
     const govTokensTotalBalance = govTokensUserBalance ? Object.values(govTokensUserBalance).reduce( (totBalance,govTokenBalance) => {
       return totBalance.plus(this.functionsUtil.BNify(govTokenBalance));
     },this.functionsUtil.BNify(0)) : null;
@@ -63,6 +64,8 @@ class FundsOverview extends Component {
         return null;
       }
     }).filter(v => (v !== null)) : null;
+
+    // console.log(govTokenAvailableTokens,govTokensUserBalance,govTokensTotalBalanceTooltip);
 
     const govTokensTotalApr = govTokensAprs ? Object.values(govTokensAprs).reduce( (totApr,govTokenApr) => {
       return totApr.plus(this.functionsUtil.BNify(govTokenApr));
@@ -382,7 +385,7 @@ class FundsOverview extends Component {
                 }}
               />
               {
-                this.state.govTokensUserBalance && Object.keys(this.state.govTokensUserBalance).length==1 ? (
+                this.state.govTokensUserBalance && Object.keys(this.state.govTokensUserBalance).length===1 ? (
                   <Flex
                     width={1}
                     alignItems={'center'}
@@ -501,7 +504,7 @@ class FundsOverview extends Component {
                 }}
               />
               {
-                this.state.govTokensAprs && Object.keys(this.state.govTokensAprs).length==1 ? (
+                this.state.govTokensAprs && Object.keys(this.state.govTokensAprs).length===1 ? (
                   <Flex
                     width={1}
                     alignItems={'center'}

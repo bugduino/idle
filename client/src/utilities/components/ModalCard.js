@@ -1,12 +1,6 @@
 import React from "react";
-import {
-  Box,
-  Flex,
-  Card,
-  Button,
-  Heading,
-  Image
-} from "rimble-ui";
+import styles from './ModalCard.module.scss';
+import { Box, Flex, Card, Button, Heading, Image } from "rimble-ui";
 
 const ModalCard = ({children, closeFunc, ...props}) => (
   <Card
@@ -15,40 +9,78 @@ const ModalCard = ({children, closeFunc, ...props}) => (
     mx={'auto'}
     my={'auto'}
     borderRadius={2}
-    width={['auto']}
     overflow={'auto'}
     height={['100vh', 'auto']}
+    width={ props.width ? props.width : 'auto' }
+    minWidth={ props.minWidth ? props.minWidth : 'auto' }
     maxWidth={ props.maxWidth ? props.maxWidth : '960px'}
   >
     <Box
       top={'0'}
+      zIndex={1}
       right={'0'}
       position={"absolute"}
     >
       <Button.Text
         icononly
         icon={"Close"}
-        mainColor={"copyColor"}
         size={'2.5em'}
         onClick={closeFunc}
+        mainColor={ props.mainColor ? props.mainColor :  'copyColor' }
       />
     </Box>
-    <Flex flex={'1 1 auto'} style={{ overflow: 'auto',background: 'url(images/bg-bottom-right.png) no-repeat bottom right',backgroundSize:'65%' }} flexDirection={'column'} height={'100%'}>
+    <Flex
+      height={'100%'}
+      flex={'1 1 auto'}
+      flexDirection={'column'}
+      className={[ props.bgLayer ? styles.bg : null]}
+      style={{
+        overflow: 'auto',
+        backgroundSize:'65%',
+        background: props.background ? props.background : 'url(images/bg-bottom-right.png) no-repeat bottom right',
+      }}
+    >
       {children}
     </Flex>
   </Card>
 );
 
 ModalCard.Header = (props) => (
-  <Box width={1} borderBottom={'1px solid #eee'} pt={props.icon ? 3 : [5,3]} mb={[2,3]} pb={[2,2]}>
-    <Flex flexDirection={'column'} alignItems={'center'} px={[1,2]}>
+  <Box
+    width={1}
+    mb={[2,3]}
+    pb={[2,2]}
+    pt={props.icon ? 3 : [5,3]}
+    borderBottom={ props.borderBottom ? props.borderBottom : '1px solid #eee' }
+  >
+    <Flex
+      px={[1,2]}
+      alignItems={'center'}
+      flexDirection={'column'}
+    >
       { props.icon && <Image width={ props.iconHeight ? props.iconHeight : '50px' } src={props.icon} /> }
-      <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mt={props.icon ? 2 : 0} mb={0} color={'copyColor'}>
+      <Heading.h3
+        mb={0}
+        fontSize={[3,3]}
+        color={'copyColor'}
+        textAlign={'center'}
+        mt={props.icon ? 2 : 0}
+        fontFamily={'sansSerif'}
+        {...props.titleProps}
+      >
         {props.title}
       </Heading.h3>
       {
         props.subtitle &&
-        <Heading.h4 pt={[1,2]} fontSize={[2,2]} textAlign={'center'} fontWeight={2} lineHeight={1.5} color={'dark-gray'}>
+        <Heading.h4
+          pt={[1,2]}
+          fontWeight={2}
+          fontSize={[2,2]}
+          lineHeight={1.5}
+          color={'dark-gray'}
+          textAlign={'center'}
+          {...props.subtitleProps}
+        >
           {props.subtitle}
         </Heading.h4>
       }
@@ -63,7 +95,11 @@ ModalCard.Header = (props) => (
 );
 
 ModalCard.Body = ({children, ...props}) => (
-  <Box width={1} px={[3,5]}>
+  <Box
+    width={1}
+    px={[3,5]}
+    {...props}
+  >
     {children}
   </Box>
 );

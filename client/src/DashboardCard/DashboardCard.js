@@ -25,20 +25,25 @@ class DashboardCard extends Component {
         cardProps[p] = this.props.cardProps[p];
       });
     }
+
+    const className = [
+      styles.defaultOpacity,
+      isActive ? styles.active : null,
+      !isVisible ? styles.hidden : null,
+      isRainbow ? styles.rainbow : null,
+      isDisabled ? styles.disabled : null,
+      isInteractive ? styles.interactive : null,
+    ];
+
+    if (this.props.className && styles[this.props.className]){
+      className.push(styles[this.props.className]);
+    }
+
     return (
       <Card
         {...cardProps}
+        className={className}
         onClick={this.props.handleClick}
-        className={
-          [
-            styles.defaultOpacity,
-            isActive ? styles.active : null,
-            !isVisible ? styles.hidden : null,
-            isRainbow ? styles.rainbow : null,
-            isDisabled ? styles.disabled : null,
-            isInteractive ? styles.interactive : null,
-          ]
-        }
       >
         {
           this.props.title && this.props.title.length>0 &&

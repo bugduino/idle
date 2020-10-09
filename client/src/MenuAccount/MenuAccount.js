@@ -1,15 +1,17 @@
 import React, { Component } from 'react';
-import { Flex, Icon, Image, Box } from "rimble-ui";
+import styles from './MenuAccount.module.scss';
 import FunctionsUtil from '../utilities/FunctionsUtil';
-// import RoundButton from '../RoundButton/RoundButton';
+import GovModal from "../utilities/components/GovModal";
 import ShortHash from "../utilities/components/ShortHash";
+import { Flex, Icon, Image, Link, Text } from "rimble-ui";
 import CardIconButton from '../CardIconButton/CardIconButton';
 import AccountModal from "../utilities/components/AccountModal";
 
 class MenuAccount extends Component {
 
   state = {
-    isModalOpen: null
+    isModalOpen: null,
+    idleTokenBalance: null
   };
 
   // Utils
@@ -25,10 +27,26 @@ class MenuAccount extends Component {
 
   async componentWillMount(){
     this.loadUtils();
+    this.loadIdleTokenBalance();
   }
 
   async componentDidUpdate(prevProps,prevState){
     this.loadUtils();
+    const accountChanged = prevProps.account !== this.props.account;
+    if (accountChanged){
+      this.loadIdleTokenBalance();
+    }
+  }
+
+  async loadIdleTokenBalance(){
+    const idleGovTokenEnabled = this.functionsUtil.getGlobalConfig(['govTokens','IDLE','enabled']);
+    if (idleGovTokenEnabled){
+      const idleTokenBalance = await this.functionsUtil.getTokenBalance('IDLE',this.props.account);
+      return this.setState({
+        idleTokenBalance
+      });
+    }
+    return null;
   }
 
   toggleModal = (modalName) => {
@@ -39,9 +57,14 @@ class MenuAccount extends Component {
     const walletProvider = this.functionsUtil.getStoredItem('walletProvider',false,null);
     const connectorInfo = walletProvider ? this.functionsUtil.getGlobalConfig(['connectors',walletProvider.toLowerCase()]) : null;
     const walletIcon = connectorInfo && connectorInfo.icon ? connectorInfo.icon : walletProvider ? `${walletProvider.toLowerCase()}.svg` : null;
+
     return (
       this.props.account ? (
-        <Box width={1}>
+        <Flex
+          width={1}
+          alignItems={'center'}
+          flexDirection={'row'}
+        >
           <Flex
             p={0}
             alignItems={'center'}
@@ -76,12 +99,51 @@ class MenuAccount extends Component {
               hash={this.props.account}
             />
           </Flex>
+          
+          {
+            this.state.idleTokenBalance && 
+              <>
+                <Link
+                  ml={3}
+                  style={{
+                    textDecoration:'none'
+                  }}
+                  className={styles.balanceButton}
+                  onClick={ e => this.toggleModal('gov') }
+                >
+                  <Flex
+                    alignItems={'center'}
+                    justifyContent={'center'}
+                  >
+                    <Image
+                      mr={1}
+                      width={'1.7em'}
+                      height={'1.7em'}
+                      display={'inline-flex'}
+                      src={`images/tokens/IDLE.png`}
+                    />
+                    <Text
+                      fontSize={2}
+                      color={'white'}
+                      fontWeight={500}
+                    >
+                      {this.state.idleTokenBalance.toFixed(2)} IDLE
+                    </Text>
+                  </Flex>
+                </Link>
+                <GovModal
+                  {...this.props}
+                  isOpen={this.state.isModalOpen==='gov'}
+                  closeModal={e => this.toggleModal('gov') }
+                />
+              </>
+          }
           <AccountModal
             {...this.props}
             isOpen={this.state.isModalOpen==='account'}
             closeModal={e => this.toggleModal('account') }
           />
-        </Box>
+        </Flex>
       ) : (
         <Flex
           width={1}
