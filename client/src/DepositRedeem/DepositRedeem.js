@@ -164,6 +164,7 @@ class DepositRedeem extends Component {
   }
 
   checkTokenApproved = async () => {
+
     let tokenApproved = false;
     const proxyContract = this.state.actionProxyContract[this.state.action];
     if (proxyContract && this.state.metaTransactionsEnabled && this.props.biconomy){
@@ -447,11 +448,22 @@ class DepositRedeem extends Component {
           _skipMint = typeof this.props.tokenConfig.skipMintForDeposit !== 'undefined' ? this.props.tokenConfig.skipMintForDeposit : _skipMint;
 
           // Mint if someone mint over X amount
-          const minAmountForMint = this.props.tokenConfig.deposit && this.props.tokenConfig.deposit.minAmountForMint ? this.props.tokenConfig.deposit.minAmountForMint : this.functionsUtil.getGlobalConfig(['contract','methods','deposit','minAmountForMint']);
-          if (minAmountForMint){
-            const amountToDeposit = await this.functionsUtil.convertTokenBalance(inputValue,this.props.selectedToken,this.props.tokenConfig,false);
-            if (amountToDeposit.gte(this.functionsUtil.BNify(minAmountForMint))){
-              _skipMint = false;
+          if (_skipMint){
+            let [
+              maxUnlentPerc,
+              totalAUM
+            ] = await Promise.all([
+              this.functionsUtil.genericContractCall('idleDAIYield', 'maxUnlentPerc'),
+              this.functionsUtil.loadAssetField('pool',this.props.selectedToken,this.props.tokenConfig,this.props.account)
+            ]);
+
+            if (maxUnlentPerc && totalAUM){
+              const depositPerc = inputValue.div(totalAUM).times(100);
+              maxUnlentPerc = this.functionsUtil.BNify(maxUnlentPerc).div(1e3);
+              if (depositPerc.gte(maxUnlentPerc.times(2))){
+                _skipMint = false;
+              }
+              // console.log(maxUnlentPerc.toFixed(5),inputValue.toFixed(5),totalAUM.toFixed(5),depositPerc.toFixed(5),depositPerc.gte(maxUnlentPerc.times(2)),_skipMint);
             }
           }
 
