@@ -418,8 +418,9 @@ class AssetField extends Component {
               allocationChartHeight = $allocationChartRowElement.innerHeight();
 
               // Make it a square
-              allocationChartWidth = Math.min(allocationChartWidth,allocationChartHeight);
+              allocationChartWidth = Math.max(allocationChartWidth,allocationChartHeight);
               allocationChartHeight = allocationChartWidth;
+
 
               if (allocationChartWidth !== this.state.allocationChartWidth){
                 if (setState){

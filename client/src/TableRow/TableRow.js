@@ -51,7 +51,7 @@ class TableRow extends Component {
                             alignItems={'flex-start'}
                             justifyContent={'center'}
                             {...fieldInfo.parentProps}
-                            style={{
+                            style={ fieldInfo.style ? fieldInfo.style : {
                               overflow:'hidden'
                             }}
                             width={colInfo.fields.length>1 ? 'auto' : 1}

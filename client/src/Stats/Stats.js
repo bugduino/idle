@@ -610,6 +610,9 @@ class Stats extends Component {
                             parentProps:{
                               width:0.3
                             },
+                            style:{
+                              overflow:'visible'
+                            },
                             showLoader:false,
                           },
                           {
