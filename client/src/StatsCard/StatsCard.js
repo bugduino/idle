@@ -29,7 +29,7 @@ class StatsCard extends Component {
       <DashboardCard
         cardProps={{
           p:3,
-          minHeight:['130px','153px']
+          minHeight:this.props.minHeight ? this.props.minHeight : ['130px','153px']
         }}
       >
         <Flex
@@ -40,7 +40,7 @@ class StatsCard extends Component {
         >
           <Flex
             alignItems={'flex-start'}
-            minHeight={['auto','60px']}
+            minHeight={ this.props.titleMinHeight ? this.props.titleMinHeight : ['auto','60px'] }
           >
             <Heading.h4
               mb={[3,0]}
@@ -60,6 +60,7 @@ class StatsCard extends Component {
                 fontSize={[4,5]}
                 fontWeight={[3,4]}
                 color={'statValue'}
+                {...this.props.valueProps}
               >
                 {this.props.value}
               </Text>

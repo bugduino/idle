@@ -10,6 +10,7 @@ import CurveSwap from '../abis/curve/CurveSwap.json';
 import CurvePool from '../abis/curve/CurvePool.json';
 import NexusMutual from '../NexusMutual/NexusMutual';
 import { Web3Versions } from '@terminal-packages/sdk';
+import Governance from '../contracts/Governance.json';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import IdleTokenV2 from '../contracts/IdleTokenV2.json';
 import StrategyPage from '../StrategyPage/StrategyPage';
@@ -147,6 +148,9 @@ const globalConfigs = {
   dashboard:{
     baseRoute:'/dashboard',
   },
+  governance:{
+    baseRoute:'/governance'
+  },
   curve:{
     enabled:true,
     params:{
@@ -265,6 +269,10 @@ const globalConfigs = {
       abi:UniswapV2Router02,
       address:'0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
     },
+    Governance:{
+      abi:Governance,
+      address:'0xc0da01a04c3f3e0be433606045bb7017a7323e38'
+    }
   },
   tokens:{
     DAI:{

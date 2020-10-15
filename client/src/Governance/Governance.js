@@ -5,16 +5,12 @@ import FunctionsUtil from '../utilities/FunctionsUtil';
 import DashboardMenu from '../DashboardMenu/DashboardMenu';
 
 // Import page components
-import Stats from '../Stats/Stats';
-import Utils from '../Utils/Utils';
-import AssetPage from '../AssetPage/AssetPage';
+import Overview from '../Governance/Overview';
+import Proposals from '../Governance/Proposals';
+import Leaderboard from '../Governance/Leaderboard';
 import RoundButton from '../RoundButton/RoundButton';
 import DashboardCard from '../DashboardCard/DashboardCard';
-import CurveStrategy from '../CurveStrategy/CurveStrategy';
-import WelcomeModal from "../utilities/components/WelcomeModal";
 import TooltipModal from "../utilities/components/TooltipModal";
-import MigrateModal from "../utilities/components/MigrateModal";
-import UpgradeModal from "../utilities/components/UpgradeModal";
 import DashboardHeader from '../DashboardHeader/DashboardHeader';
 
 class Dashboard extends Component {
@@ -26,11 +22,7 @@ class Dashboard extends Component {
     pageComponent:null,
     currentSection:null,
     selectedSection:null,
-    tokensToMigrate:null,
-    showResetButton:false,
     selectedSubsection:null,
-    oldIdleTokensToMigrate:null,
-    protocolsTokensBalances:null,
   };
 
   timeoutId = null;
@@ -46,45 +38,33 @@ class Dashboard extends Component {
   }
 
   async loadMenu() {
-    const baseRoute = this.functionsUtil.getGlobalConfig(['dashboard','baseRoute']);
-    const strategies = this.functionsUtil.getGlobalConfig(['strategies']);
-    const menu = Object.keys(strategies).filter( s => ( !strategies[s].comingSoon ) ).map(strategy => ({
-        submenu:[],
-        color:'#fff',
-        selected:false,
-        route:baseRoute+'/'+strategy,
-        label:strategies[strategy].title,
-        image:strategies[strategy].icon,
-        imageInactive:strategies[strategy].iconInactive,
-        bgColor:strategies[strategy].color,
-        component:strategies[strategy].component
-      })
-    );
+    const menu = [];
+    const baseRoute = this.functionsUtil.getGlobalConfig(['governance','baseRoute']);
 
-
-    const curveConfig = this.functionsUtil.getGlobalConfig(['curve']);
-
-    // Add Curve
-    if (curveConfig.enabled){
-      const curveParams = Object.assign({
-        submenu:[],
-        selected:false,
-        component:CurveStrategy,
-      },curveConfig.params);
-
-      menu.push(curveParams);
-    }
-
-    // Add Stats
+    // Add Proposals
     menu.push(
       {
-        icon:'Equalizer',
-        label:'Stats',
-        bgColor:'#21f36b',
+        selected:true,
+        route:baseRoute,
+        icon:'Dashboard',
+        label:'Overview',
         color:'dark-gray',
-        component:Stats,
+        component:Overview,
+        bgColor:this.props.theme.colors.primary,
+        submenu:[]
+      }
+    );
+
+    // Add Proposals
+    menu.push(
+      {
         selected:false,
-        route:'/dashboard/stats',
+        label:'Proposals',
+        bgColor:'#00acff',
+        color:'dark-gray',
+        icon:'LightbulbOutline',
+        component:Proposals,
+        route:`${baseRoute}/proposals`,
         submenu:[]
       }
     );
@@ -92,19 +72,20 @@ class Dashboard extends Component {
     // Add tools
     menu.push(
       {
-        icon:'Build',
-        label:'Tools',
-        color:'dark-gray',
-        component:Utils,
         selected:false,
-        route:'/dashboard/tools',
-        bgColor:this.props.theme.colors.primary,
-        submenu:Object.values(this.functionsUtil.getGlobalConfig(['tools'])).filter( u => (u.enabled) )
+        bgColor:'#ff0000',
+        color:'dark-gray',
+        label:'Leaderboard',
+        component:Leaderboard,
+        icon:'FormatListNumbered',
+        route:`${baseRoute}/leaderboard`,
+        submenu:[]
       }
     );
 
     await this.setState({
-      menu
+      menu,
+      baseRoute
     });
   }
 
@@ -115,7 +96,6 @@ class Dashboard extends Component {
   }
 
   openTooltipModal = (modalTitle,modalContent) => {
-
     this.functionsUtil.sendGoogleAnalyticsEvent({
       eventCategory: 'UI',
       eventAction: modalTitle,
@@ -139,57 +119,18 @@ class Dashboard extends Component {
   async loadParams() {
     const { match: { params } } = this.props;
 
-    const baseRoute = this.functionsUtil.getGlobalConfig(['dashboard','baseRoute']);
-    let currentRoute = baseRoute;
+    const baseRoute = this.state.baseRoute;
+    const currentRoute = window.location.hash.substr(1);
 
     let pageComponent = null;
-    let selectedToken = null;
     let currentSection = null;
-    let selectedStrategy = null;
-
-    // Set strategy
-    if (params.section){
-      currentSection = params.section;
-      const param1 = params.param1;
-      const param2 = params.param2;
-
-      const section_is_strategy = Object.keys(this.props.availableStrategies).includes(currentSection.toLowerCase());
-      const param1_is_strategy = param1 && Object.keys(this.props.availableStrategies).includes(param1.toLowerCase());
-
-      if (section_is_strategy || param1_is_strategy){
-        selectedStrategy = section_is_strategy ? currentSection : param1;
-        currentRoute += '/'+selectedStrategy;
-
-        // Set token
-        const param1_is_token = param1 && Object.keys(this.props.availableStrategies[selectedStrategy]).includes(param1.toUpperCase());
-        const param2_is_token = param2 && Object.keys(this.props.availableStrategies[selectedStrategy]).includes(param2.toUpperCase());
-        if (param1_is_token || param2_is_token){
-          selectedToken = param1_is_token ? param1.toUpperCase() : param2.toUpperCase();
-          currentRoute += '/'+selectedToken;
-
-          if (section_is_strategy){
-            pageComponent = AssetPage;
-          }
-        }
-      } else {
-        currentRoute += '/'+params.section;
-
-        if (params.param1 && params.param1.length){
-          currentRoute += '/'+params.param1;
-        }
-
-        // if (params.param2 && params.param2.length){
-        //   currentRoute += '/'+params.param2;
-        // }
-      }
-    }
 
     const menu = this.state.menu;
 
     let selectedSection = null;
     let selectedSubsection = null;
 
-    menu.forEach(m => {
+    menu.forEach( m => {
       m.selected = false;
       const sectionRoute = baseRoute+'/'+params.section;
       if (currentRoute.toLowerCase() === m.route.toLowerCase() || ( !m.submenu.length && m.route.toLowerCase() === sectionRoute.toLowerCase() )){
@@ -236,9 +177,6 @@ class Dashboard extends Component {
       return this.goToSection('/',false);
     }
 
-    // console.log('loadParams',selectedStrategy,selectedToken);
-    await this.props.setStrategyToken(selectedStrategy,selectedToken);
-
     await this.setState({
       menu,
       params,
@@ -258,14 +196,12 @@ class Dashboard extends Component {
   }
 
   async componentWillMount() {
-
     this.loadUtils();
     await this.loadMenu();
     this.loadParams();
   }
 
   async componentDidMount() {
-
     this.timeoutId = window.setTimeout(() => {
       if (!this.props.accountInizialized || !this.props.contractsInitialized){
         this.setState({
@@ -285,7 +221,6 @@ class Dashboard extends Component {
     this.loadUtils();
     await this.loadMenu();
     this.loadParams();
-    this.checkModals();
   }
 
   async componentDidUpdate(prevProps,prevState) {
@@ -309,133 +244,19 @@ class Dashboard extends Component {
     const contractsInitialized = this.props.contractsInitialized && prevProps.contractsInitialized !== this.props.contractsInitialized;
 
     if (accountChanged || accountInizialized || contractsInitialized || strategyChanged){
-      this.checkModals();
+      // this.checkModals();
     }
   }
 
-  async checkModals(){
-
-    if (this.props.selectedToken || !this.props.accountInizialized || !this.props.contractsInitialized || !this.props.availableStrategies || !this.props.availableTokens){
-      return null;
-    }
-
-    await this.checkTokensToMigrate();
-    await this.checkWelcomeModal();
-    await this.checkProtocolsTokensBalances();
-  }
-
-  async checkTokensToMigrate(){
-
-    const showUpgradeModal = this.functionsUtil.getStoredItem('dontShowUpgradeModal',false,null) !== null ? false : true;
-    if (this.props.selectedToken || !showUpgradeModal || !this.props.availableTokens){
-      return null;
-    }
-
-    const tokensToMigrate = await this.functionsUtil.getTokensToMigrate();
-    const oldIdleTokensToMigrate = await this.functionsUtil.getProtocolsTokensBalances('idle');
-
-    // console.log('tokensToMigrate',tokensToMigrate);
-    
-    if ((tokensToMigrate && Object.keys(tokensToMigrate).length>0) || (oldIdleTokensToMigrate && Object.keys(oldIdleTokensToMigrate).length>0)){
-      const activeModal = 'upgrade';
-      if (activeModal !== this.state.activeModal){
-        this.setState({
-          activeModal,
-          tokensToMigrate,
-          oldIdleTokensToMigrate
-        });
-
-        return activeModal;
-      }
-    }
-
-    return null;
-  }
-
-  async checkWelcomeModal(){
-    if (!this.props.account || !this.props.accountInizialized || !this.props.contractsInitialized){
-      return null;
-    }
-
-    // Show welcome modal
-    if (this.props.account && this.state.activeModal === null){
-      let welcomeIsOpen = false;
-
-      const welcomeModalProps = this.functionsUtil.getGlobalConfig(['modals','welcome']);
-
-      if (welcomeModalProps.enabled && localStorage){
-
-        // Check the last login of the wallet
-        const currTime = new Date().getTime();
-        const walletAddress = this.props.account.toLowerCase();
-        let lastLogin = localStorage.getItem('lastLogin') ? JSON.parse(localStorage.getItem('lastLogin')) : {};
-
-        // First login
-        if (!lastLogin[walletAddress]){
-          lastLogin[walletAddress] = {
-            'signedUp':false,
-            'lastTime':currTime
-          };
-          welcomeIsOpen = true;
-        // User didn't sign up
-        } else if (!lastLogin[walletAddress].signedUp) {
-          const lastTime = parseInt(lastLogin[walletAddress].lastTime);
-          const timeFromLastLogin = (currTime-lastTime)/1000;
-          welcomeIsOpen = timeFromLastLogin>=welcomeModalProps.frequency; // 1 day since last login
-        }
-
-        if (welcomeIsOpen){
-          lastLogin[walletAddress].lastTime = currTime;
-          this.functionsUtil.setLocalStorage('lastLogin',JSON.stringify(lastLogin));
-        }
-      }
-
-      const activeModal = welcomeIsOpen ? 'welcome' : this.state.activeModal;
-      if (this.state.activeModal !== activeModal){
-        this.setState({
-          activeModal
-        });
-
-        return activeModal;
-      }
-    }
-
-    return null;
-  }
-
-  async checkProtocolsTokensBalances() {
-
-    if (!this.props.account || !this.props.accountInizialized || !this.props.contractsInitialized){
-      return null;
-    }
-
-    // Show migration modal if no other modals are opened
-    const migrateModalEnabled = this.functionsUtil.getGlobalConfig(['modals','migrate','enabled']);
-    const showMigrateModal = this.functionsUtil.getStoredItem('dontShowMigrateModal',false,null) !== null ? false : true;
-
-    if (this.state.activeModal === null && migrateModalEnabled && showMigrateModal && !this.state.protocolsTokensBalances){
-      const protocolsTokensBalances = await this.functionsUtil.getProtocolsTokensBalances();
-      const activeModal = protocolsTokensBalances && Object.keys(protocolsTokensBalances).length>0 ? 'migrate' : null;
-      const newState = {
-        activeModal,
-        protocolsTokensBalances
-      };
-      this.setState(newState);
-      return activeModal;
-    }
-
-    return null;
-  }
-
-  goToSection(section,isDashboard=true){
+  goToSection(section,isGovernance=true){
 
     // Remove dashboard route
-    if (isDashboard){
+    if (isGovernance){
       section = section.replace(this.state.baseRoute +'/','');
     }
 
-    const newRoute = isDashboard ? this.state.baseRoute +'/' + section : section;
-    window.location.hash=newRoute;
+    const newRoute = isGovernance ? this.state.baseRoute +'/' + section : section;
+    window.location.hash = newRoute;
 
     // Send GA event
     this.functionsUtil.sendGoogleAnalyticsEvent({
@@ -450,26 +271,6 @@ class Dashboard extends Component {
   logout = async () => {
     this.props.setConnector('Infura','Infura');
     await this.props.initWeb3('Infura');
-  }
-
-  changeToken(selectedToken){
-    selectedToken = selectedToken.toUpperCase();
-    if (Object.keys(this.props.availableTokens).includes(selectedToken)){
-      const routeParts = [];
-
-      // Add section
-      if (this.state.currentSection.toLowerCase() !== this.props.selectedStrategy.toLowerCase()){
-        routeParts.push(this.state.currentSection);
-      }
-
-      // Add strategy
-      routeParts.push(this.props.selectedStrategy); 
-
-      // Add token
-      routeParts.push(selectedToken);
-
-      this.goToSection(routeParts.join('/'));
-    }
   }
 
   render() {
@@ -590,9 +391,7 @@ class Dashboard extends Component {
                   PageComponent &&
                     <PageComponent
                       {...this.props}
-                      match={{ params:{} }}
                       urlParams={this.state.params}
-                      changeToken={this.changeToken.bind(this)}
                       goToSection={this.goToSection.bind(this)}
                       selectedSection={this.state.selectedSection}
                       selectedSubsection={this.state.selectedSubsection}
@@ -603,38 +402,6 @@ class Dashboard extends Component {
             )
           }
         </Flex>
-        <UpgradeModal
-          {...this.props}
-          closeModal={this.resetModal}
-          goToSection={this.goToSection.bind(this)}
-          tokensToMigrate={this.state.tokensToMigrate}
-          isOpen={this.state.activeModal === 'upgrade'}
-          oldIdleTokensToMigrate={this.state.oldIdleTokensToMigrate}
-        />
-        <MigrateModal
-          {...this.props}
-          closeModal={this.resetModal}
-          goToSection={this.goToSection.bind(this)}
-          isOpen={this.state.activeModal === 'migrate'}
-          protocolsTokensBalances={this.state.protocolsTokensBalances}
-        />
-        <TooltipModal
-          closeModal={this.resetModal}
-          title={this.state.modalTitle}
-          content={this.state.modalContent}
-          isOpen={this.state.activeModal === 'tooltip'}
-        >
-        </TooltipModal>
-        <WelcomeModal
-          closeModal={this.resetModal}
-          account={this.props.account}
-          simpleID={this.props.simpleID}
-          network={this.props.network.current}
-          tokenName={this.props.selectedToken}
-          initSimpleID={this.props.initSimpleID}
-          baseTokenName={this.props.selectedToken}
-          isOpen={this.state.activeModal === 'welcome'}
-        />
       </Flex>
     );
   }

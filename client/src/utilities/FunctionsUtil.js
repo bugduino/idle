@@ -1737,6 +1737,12 @@ class FunctionsUtil {
     }
     return false;
   }
+  getEtherscanTransactionUrl = (tx_address) => {
+    return 'https://etherscan.io/tx/'+tx_address;
+  }
+  getEtherscanAddressUrl = (address) => {
+    return 'https://etherscan.io/address/'+address;
+  }
   formatMoney = (amount, decimalCount = 2, decimal = ".", thousands = ",") => {
     try {
       decimalCount = Math.abs(decimalCount);
@@ -1752,7 +1758,6 @@ class FunctionsUtil {
       return null;
     }
   }
-
   getTokenApiData = async (address,isRisk=null,startTimestamp=null,endTimestamp=null,forceStartTimestamp=false,frequency=null,order=null,limit=null) => {
     if (globalConfigs.network.requiredNetwork!==1 || !globalConfigs.stats.enabled){
       return [];
@@ -2862,6 +2867,20 @@ class FunctionsUtil {
   }
   getBlockNumber = async () => {
     return await this.props.web3.eth.getBlockNumber();
+  }
+  getContractPastEvents = async (contractName,methodName,params = {}) => {
+    if (!contractName){
+      return null;
+    }
+
+    const contract = this.getContractByName(contractName);
+
+    if (!contract) {
+      this.customLogError('Wrong contract name', contractName);
+      return null;
+    }
+
+    return await contract.getPastEvents(methodName, params);
   }
   genericContractCall = async (contractName, methodName, params = [], callParams = {}, blockNumber = 'latest') => {
 
