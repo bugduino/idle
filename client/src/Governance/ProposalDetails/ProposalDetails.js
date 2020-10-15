@@ -501,7 +501,7 @@ class ProposalDetails extends Component {
           </Flex>
         </DashboardCard>
         <Flex
-          mb={2}
+          mb={4}
           width={1}
           id={'votes-addresses-container'}
           justifyContent={'space-between'}
