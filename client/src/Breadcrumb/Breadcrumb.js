@@ -42,12 +42,18 @@ class Breadcrumb extends Component {
         {
           (!this.props.isMobile || showPathMobile) && this.props.path && this.props.path.length>0 &&
             this.props.path.map((path,index) => (
-                <Text
+              <Text
                 pl={[1,3]}
                 ml={[1,3]}
                 fontWeight={3}
                 fontSize={[1,2]}
                 color={'statValue'}
+                style={ !this.props.isMobile ? {
+                  maxWidth:'30%',
+                  overflow: 'hidden',
+                  whiteSpace: 'nowrap',
+                  textOverflow: 'ellipsis'
+                } : null }
                 key={`breadcrumb_path_${index}`}
                 borderLeft={`1px solid ${theme.colors.divider}`}
               >
