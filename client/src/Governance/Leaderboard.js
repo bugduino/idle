@@ -1,31 +1,186 @@
-// import {  } from "rimble-ui";
+import Title from '../Title/Title';
+import { Box, Flex } from "rimble-ui";
 import React, { Component } from 'react';
-import FunctionsUtil from '../utilities/FunctionsUtil';
+import Breadcrumb from '../Breadcrumb/Breadcrumb';
+import GovernanceUtil from '../utilities/GovernanceUtil';
+import DelegatesList from './DelegatesList/DelegatesList';
+import DelegateDetails from './DelegateDetails/DelegateDetails';
 
 class Leaderboard extends Component {
+  state = {
+    maxRows:100,
+    delegates:null,
+    selectedDelegate:null
+  };
 
   // Utils
-  functionsUtil = null;
+  governanceUtil = null;
 
   loadUtils(){
-    if (this.functionsUtil){
-      this.functionsUtil.setProps(this.props);
+    if (this.governanceUtil){
+      this.governanceUtil.setProps(this.props);
     } else {
-      this.functionsUtil = new FunctionsUtil(this.props);
+      this.governanceUtil = new GovernanceUtil(this.props);
     }
   }
 
   async componentWillMount(){
     this.loadUtils();
+    this.loadData();
   }
 
   async componentDidUpdate(prevProps,prevState){
     this.loadUtils();
   }
 
+  async loadData(){
+    const delegates = await this.governanceUtil.getDelegates(this.state.maxRows);
+
+    const { match: { params } } = this.props;
+
+    // Select delegate
+    let selectedDelegate = null;
+    if (params.item_id){
+      const delegateId = params.item_id;
+      const foundProposal = delegates.find( d => d.delegate === delegateId );
+      if (foundProposal){
+        selectedDelegate = foundProposal;
+      }
+    }
+
+    this.setState({
+      delegates,
+      selectedDelegate
+    });
+  }
+
   render() {
+
     return (
-      <></>
+      <Box
+        width={1}
+      >
+        {
+          this.state.selectedDelegate ? (
+            <Box
+              width={1}
+            >
+              <Flex
+                mb={3}
+                width={1}
+                alignItems={'center'}
+                flexDirection={'row'}
+                justifyContent={'flex-start'}
+              >
+                <Flex
+                  width={1}
+                >
+                  <Breadcrumb
+                    text={'Leaderboard'}
+                    isMobile={this.props.isMobile}
+                    path={[this.state.selectedDelegate.title]}
+                    handleClick={ e => this.props.goToSection('leaderboard') }
+                  />
+                </Flex>
+              </Flex>
+              <DelegateDetails
+                {...this.props}
+                proposal={this.state.selectedDelegate}
+              />
+            </Box>
+          ) : (
+            <Box
+              width={1}
+            >
+              <Title
+                mb={[3,4]}
+              >
+                Governance Leaderboard
+              </Title>
+              <Flex
+                mb={[3,4]}
+                width={1}
+                id={'transactions'}
+                flexDirection={'column'}
+              >
+                <DelegatesList
+                  {...this.props}
+                  delegates={this.state.delegates}
+                  cols={[
+                    {
+                      title: 'RANK',
+                      props:{
+                        width:[0.08,0.08]
+                      },
+                      fields:[
+                        {
+                          name:'rank'
+                        },
+                      ]
+                    },
+                    {
+                      title:'ADDRESS',
+                      props:{
+                        width:[0.50,0.50],
+                      },
+                      fields:[
+                        {
+                          name:'avatar',
+                          props:{
+                            mr:2
+                          }
+                        },
+                        {
+                          name:'delegate'
+                        }
+                      ]
+                    },
+                    {
+                      title:'VOTES',
+                      props:{
+                        width:[0.12,0.12],
+                      },
+                      fields:[
+                        {
+                          name:'votes'
+                        }
+                      ]
+                    },
+                    {
+                      title:'VOTE WEIGHT',
+                      props:{
+                        width:[0.15,0.15],
+                      },
+                      fields:[
+                        {
+                          name:'vote_weight',
+                          parentProps:{
+                            alignItems:'center'
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      title:'PROPOSALS VOTED',
+                      props:{
+                        width:[0.15,0.15],
+                      },
+                      fields:[
+                        {
+                          name:'proposals',
+                          parentProps:{
+                            alignItems:'center'
+                          }
+                        }
+                      ]
+                    },
+                  ]}
+                />
+              </Flex>
+            </Box>
+          )
+        }
+      </Box>
     );
   }
 }

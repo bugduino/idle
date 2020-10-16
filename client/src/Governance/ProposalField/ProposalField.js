@@ -125,6 +125,14 @@ class ProposalField extends Component {
           <Text {...fieldProps}>{proposal.title}</Text>
         );
       break;
+      case 'votes':
+        const forVotes = this.functionsUtil.BNify(proposal.forVotes).div(1e18);
+        const againstVotes = this.functionsUtil.BNify(proposal.againstVotes).div(1e18);
+        const totalVotes = forVotes.plus(againstVotes);
+        output = (
+          <Text {...fieldProps}>{this.functionsUtil.formatMoney(totalVotes.toFixed(0,1),0)}</Text>
+        );
+      break;
       case 'status':
         output = (
           <Text {...fieldProps}>{proposal.state}</Text>

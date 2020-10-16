@@ -122,7 +122,7 @@ class Proposals extends Component {
                     {
                       title:'DATE',
                       props:{
-                        width:0.15,
+                        width:0.12,
                       },
                       fields:[
                         {
@@ -133,7 +133,7 @@ class Proposals extends Component {
                     {
                       title:'TITLE',
                       props:{
-                        width:[0.65,0.65],
+                        width:[0.60,0.60],
                       },
                       fields:[
                         {
@@ -142,9 +142,20 @@ class Proposals extends Component {
                       ]
                     },
                     {
+                      title:'VOTES',
+                      props:{
+                        width:[0.11,0.11],
+                      },
+                      fields:[
+                        {
+                          name:'votes'
+                        }
+                      ]
+                    },
+                    {
                       title:'STATUS',
                       props:{
-                        width:[0.15,0.15],
+                        width:[0.12,0.12],
                         justifyContent:['center','flex-start']
                       },
                       fields:[

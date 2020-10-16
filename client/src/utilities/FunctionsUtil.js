@@ -1738,10 +1738,10 @@ class FunctionsUtil {
     return false;
   }
   getEtherscanTransactionUrl = (tx_address) => {
-    return 'https://etherscan.io/tx/'+tx_address;
+    return tx_address ? 'https://etherscan.io/tx/'+tx_address : null;
   }
   getEtherscanAddressUrl = (address) => {
-    return 'https://etherscan.io/address/'+address;
+    return address ? 'https://etherscan.io/address/'+address : null;
   }
   formatMoney = (amount, decimalCount = 2, decimal = ".", thousands = ",") => {
     try {
