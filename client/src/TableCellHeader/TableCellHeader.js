@@ -7,14 +7,14 @@ class TableCellHeader extends Component {
     const ColTitle = (props) => (
       <Heading.h4
         pb={[2,3]}
-        fontSize={['10px',3]}
         fontWeight={[3,4]}
         color={'cellTitle'}
-        lineHeight={'initial'}
         style={{
           width:'100%',
           whiteSpace:'nowrap'
         }}
+        fontSize={['10px',3]}
+        lineHeight={'initial'}
         {...props}
       >
         {props.children}

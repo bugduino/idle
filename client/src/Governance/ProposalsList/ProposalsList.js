@@ -106,6 +106,8 @@ class ProposalsList extends Component {
 
     page = page ? page : this.state.page;
 
+    const rowsPerPage = this.props.rowsPerPage ? this.props.rowsPerPage : this.state.rowsPerPage;
+
     // Sort Proposals by timeStamp
     const proposals = Object.values(this.props.proposals)
                         .filter(p => (
@@ -115,12 +117,12 @@ class ProposalsList extends Component {
 
     // Calculate max number of pages
     const totalRows = proposals.length;
-    const totalPages = Math.ceil(totalRows/this.state.rowsPerPage);
+    const totalPages = Math.ceil(totalRows/rowsPerPage);
 
     const processedRows = [];
 
     proposals.forEach((p, i) => {
-      if (i>=((page-1)*this.state.rowsPerPage) && i<((page-1)*this.state.rowsPerPage)+this.state.rowsPerPage) {
+      if (i>=((page-1)*rowsPerPage) && i<((page-1)*rowsPerPage)+rowsPerPage) {
         processedRows.push(p);
       }
     });
@@ -137,7 +139,8 @@ class ProposalsList extends Component {
 
   render() {
 
-    const hasActiveFilters = Object.values(this.state.activeFilters).filter( v => (v !== null) ).length>0;
+    const filtersEnabled = typeof this.props.filtersEnabled === 'undefined' || this.props.filtersEnabled;
+    const hasActiveFilters = filtersEnabled && Object.values(this.state.activeFilters).filter( v => (v !== null) ).length>0;
     const processedRows = this.state.processedRows ? Object.values(this.state.processedRows) : null;
 
     return (
@@ -163,15 +166,18 @@ class ProposalsList extends Component {
               position={'relative'}
               flexDirection={'column'}
               id={'proposals-list-container'}
-              pt={[0, hasActiveFilters ? '116px' : 5]}
+              pt={[0, (!filtersEnabled ? 0 : hasActiveFilters ? '116px' : 5) ] }
             >
-              <ProposalListFilters
-                {...this.props}
-                filters={this.state.filters}
-                activeFilters={this.state.activeFilters}
-                resetFilters={this.resetFilters.bind(this)}
-                applyFilters={this.applyFilters.bind(this)}
-              />
+              {
+                filtersEnabled &&
+                  <ProposalListFilters
+                    {...this.props}
+                    filters={this.state.filters}
+                    activeFilters={this.state.activeFilters}
+                    resetFilters={this.resetFilters.bind(this)}
+                    applyFilters={this.applyFilters.bind(this)}
+                  />
+              }
               {
                 processedRows && processedRows.length>0 ? (
                   <Flex

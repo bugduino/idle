@@ -41,8 +41,8 @@ class Leaderboard extends Component {
     // Select delegate
     let selectedDelegate = null;
     if (params.item_id){
-      const delegateId = params.item_id;
-      const foundProposal = delegates.find( d => d.delegate === delegateId );
+      const delegateId = params.item_id.toLowerCase();
+      const foundProposal = delegates.find( d => d.delegate.toLowerCase() === delegateId );
       if (foundProposal){
         selectedDelegate = foundProposal;
       }
@@ -78,14 +78,14 @@ class Leaderboard extends Component {
                   <Breadcrumb
                     text={'Leaderboard'}
                     isMobile={this.props.isMobile}
-                    path={[this.state.selectedDelegate.title]}
+                    path={[this.state.selectedDelegate.delegate]}
                     handleClick={ e => this.props.goToSection('leaderboard') }
                   />
                 </Flex>
               </Flex>
               <DelegateDetails
                 {...this.props}
-                proposal={this.state.selectedDelegate}
+                delegate={this.state.selectedDelegate}
               />
             </Box>
           ) : (

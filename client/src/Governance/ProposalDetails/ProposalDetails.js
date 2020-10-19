@@ -24,7 +24,6 @@ class ProposalDetails extends Component {
 
   async componentWillMount(){
     this.loadUtils();
-    console.log(this.props.proposal);
   }
 
   async componentDidUpdate(prevProps,prevState){

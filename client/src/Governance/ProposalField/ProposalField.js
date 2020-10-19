@@ -138,6 +138,19 @@ class ProposalField extends Component {
           <Text {...fieldProps}>{proposal.state}</Text>
         );
       break;
+      case 'support':
+        let support = null;
+        if (this.props.delegate){
+          const delegate = this.props.delegate.delegate.toLowerCase();
+          const vote = proposal.votes.find( v => (v.voter.toLowerCase() === delegate) );
+          if (vote){
+            support = vote.support;
+          }
+        }
+        output = (
+          <Text {...fieldProps}>{ support === null ? 'NONE' : (support ? 'FOR' : 'AGAINST') }</Text>
+        );
+      break;
       case 'forVotes':
         output = (
           <SmartNumber {...fieldProps} number={proposal.forVotes} />
