@@ -1,9 +1,10 @@
 import Title from '../../Title/Title';
 import React, { Component } from 'react';
+import CastVote from '../CastVote/CastVote';
 import StatsCard from '../../StatsCard/StatsCard';
-import FunctionsUtil from '../../utilities/FunctionsUtil';
 import { Box, Flex, Blockie, Text, Link } from "rimble-ui";
 import ProposalField from '../ProposalField/ProposalField';
+import GovernanceUtil from '../../utilities/GovernanceUtil';
 import ShortHash from "../../utilities/components/ShortHash";
 import DashboardCard from '../../DashboardCard/DashboardCard';
 
@@ -13,13 +14,16 @@ class ProposalDetails extends Component {
 
   // Utils
   functionsUtil = null;
+  governanceUtil = null;
 
   loadUtils(){
-    if (this.functionsUtil){
-      this.functionsUtil.setProps(this.props);
+    if (this.governanceUtil){
+      this.governanceUtil.setProps(this.props);
     } else {
-      this.functionsUtil = new FunctionsUtil(this.props);
+      this.governanceUtil = new GovernanceUtil(this.props);
     }
+
+    this.functionsUtil = this.governanceUtil.functionsUtil;
   }
 
   async componentWillMount(){
@@ -28,13 +32,9 @@ class ProposalDetails extends Component {
 
   async componentDidUpdate(prevProps,prevState){
     this.loadUtils();
-    const proposalChanged = JSON.stringify(prevProps.proposal) !== JSON.stringify(this.props.proposal);
-    if (proposalChanged){
-    }
   }
 
   render() {
-
     const proposal = this.props.proposal;
     const lastState = Object.values(proposal.states).pop();
     const forVotes = this.functionsUtil.BNify(proposal.forVotes).div(1e18);
@@ -172,6 +172,9 @@ class ProposalDetails extends Component {
             />
           </Flex>
         </Flex>
+        <CastVote
+          {...this.props}
+        />
         <Flex
           width={1}
           mb={[2,3]}
@@ -290,18 +293,6 @@ class ProposalDetails extends Component {
                         alignItems={'center'}
                         flexDirection={'row'}
                       >
-                        {
-                          /*
-                          <Text
-                            fontSize={1}
-                            fontWeight={3}
-                            color={'statValue'}
-                            alignItems={'center'}
-                          >
-                            {parseInt(stateIndex)+1}
-                          </Text>
-                          */
-                        }
                         <ProposalField
                           {...this.props}
                           proposal={proposal}
@@ -368,7 +359,6 @@ class ProposalDetails extends Component {
           >
           </Text>
         </DashboardCard>
-
         <DashboardCard
           cardProps={{
             p:3,

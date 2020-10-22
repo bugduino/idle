@@ -17,8 +17,10 @@ class Dashboard extends Component {
   state = {
     menu:[],
     baseRoute:null,
+    modalTitle:null,
     activeModal:null,
     currentRoute:null,
+    modalContent:null,
     pageComponent:null,
     currentSection:null,
     selectedSection:null,
@@ -402,6 +404,13 @@ class Dashboard extends Component {
             )
           }
         </Flex>
+        <TooltipModal
+          closeModal={this.resetModal}
+          title={this.state.modalTitle}
+          content={this.state.modalContent}
+          isOpen={this.state.activeModal === 'tooltip'}
+        >
+        </TooltipModal>
       </Flex>
     );
   }

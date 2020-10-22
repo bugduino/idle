@@ -149,7 +149,14 @@ const globalConfigs = {
     baseRoute:'/dashboard',
   },
   governance:{
-    baseRoute:'/governance'
+    baseRoute:'/governance',
+    props:{
+      tokenName:'IDLE'
+    },
+    contracts:{
+      delegates:'COMP',
+      governance:'Governance'
+    }
   },
   curve:{
     enabled:true,

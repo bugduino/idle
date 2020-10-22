@@ -95,8 +95,12 @@ class DelegatesList extends Component {
     const rowsPerPage = this.props.rowsPerPage ? this.props.rowsPerPage : this.state.rowsPerPage;
 
     // Sort Proposals by timeStamp
-    const delegates = Object.values(this.props.delegates)
+    let delegates = Object.values(this.props.delegates)
                         .sort((a,b) => (a.timestamp > b.timestamp) ? -1 : 1 );
+
+    if (this.props.maxRows !== null && this.props.maxRows>0){
+      delegates = delegates.splice(0,this.props.maxRows);
+    }
 
     // Calculate max number of pages
     const totalRows = delegates.length;

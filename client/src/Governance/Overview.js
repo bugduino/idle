@@ -11,6 +11,7 @@ class Overview extends Component {
   state = {
     delegates:[],
     proposals:[],
+    totalSupply:0,
     votesDelegated:0,
   };
 
@@ -40,10 +41,12 @@ class Overview extends Component {
   async loadData(){
     const [
       delegates,
-      proposals
+      proposals,
+      totalSupply
     ] = await Promise.all([
       this.governanceUtil.getDelegates(),
-      this.governanceUtil.getProposals()
+      this.governanceUtil.getProposals(),
+      this.governanceUtil.getTotalSupply()
     ]);
 
     const votesDelegated = delegates.reduce( (votesDelegated,d) => {
@@ -54,6 +57,7 @@ class Overview extends Component {
     this.setState({
       delegates,
       proposals,
+      totalSupply,
       votesDelegated
     });
   }
@@ -132,12 +136,12 @@ class Overview extends Component {
               flexDirection={'column'}
             >
               <StatsCard
-                value={null}
                 label={null}
                 labelTooltip={null}
-                title={'Votes Delegated'}
+                title={'IDLE Circulating'}
                 minHeight={['130px','143px']}
                 titleMinHeight={['auto','50px']}
+                value={this.functionsUtil.formatMoney(this.state.totalSupply,0)}
               />
             </Flex>
           </Flex>
@@ -246,6 +250,7 @@ class Overview extends Component {
             flexDirection={'column'}
           >
             <DelegatesList
+              maxRows={100}
               {...this.props}
               rowsPerPage={5}
               delegates={this.state.delegates}

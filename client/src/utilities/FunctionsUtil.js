@@ -2804,6 +2804,9 @@ class FunctionsUtil {
       document.body.appendChild(script);
     }
   }
+  checkAddress = (address) => {
+    return address !== null ? address.match(/^0x[a-fA-F0-9]{40}$/) !== null : false;
+  }
   getContractBalance = async (contractName,address) => {
     return await this.getProtocolBalance(contractName,address);
   }
