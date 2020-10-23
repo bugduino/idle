@@ -12,16 +12,13 @@ class CastVote extends Component {
 
   state = {
     vote:null,
-    votes:null,
     loaded:false,
-    balance:null,
     userVote:null,
     processing:{
       txHash:null,
       loading:false
     },
     voteSucceed:false,
-    currentDelegate:null,
     showDelegateBox:false
   };
 
@@ -54,24 +51,10 @@ class CastVote extends Component {
 
   async loadData(){
     if (this.props.account){
-      const [
-        votes,
-        balance,
-        currentDelegate
-      ] = await Promise.all([
-        this.governanceUtil.getCurrentVotes(this.props.account),
-        this.governanceUtil.getTokensBalance(this.props.account),
-        this.governanceUtil.getCurrentDelegate(this.props.account)
-      ]);
-
       const userVote = this.props.proposal.votes.find( v => (v.voter.toLowerCase() === this.props.account.toLowerCase()) );
-
       this.setState({
-        votes,//:this.functionsUtil.BNify(1000000000000000000),
-        balance,//:this.functionsUtil.BNify(1000000000000000000),
         userVote,
-        loaded:true,
-        currentDelegate
+        loaded:true
       });
     }
   }
@@ -171,7 +154,7 @@ class CastVote extends Component {
       if (txSucceeded){
         userVote = {
           voter:this.props.account,
-          votes:this.state.votes.toString(),
+          votes:this.props.votes.toString(),
           support:this.state.vote === 'for',
           proposalId:this.props.proposal.id,
         };
@@ -299,10 +282,9 @@ class CastVote extends Component {
               />
             ) :
             // No votes delegated
-            (!this.state.votes || this.state.votes.lte(0) || this.state.showDelegateBox) ? (
+            (!this.props.votes || this.props.votes.lte(0) || this.state.showDelegateBox) ? (
               <DelegateVote
                 {...this.props}
-                {...this.state}
                 canClose={this.state.showDelegateBox}
                 setDelegate={this.setDelegate.bind(this)}
                 closeFunc={ e => this.toggleDelegateBox(false) }
@@ -428,10 +410,10 @@ class CastVote extends Component {
                         color={'statValue'}
                         textAlign={'center'}
                       >
-                        You have {this.functionsUtil.formatMoney(this.functionsUtil.fixTokenDecimals(this.state.votes,18).toFixed(0,1),0)} votes delegated
+                        You have {this.functionsUtil.formatMoney(this.functionsUtil.fixTokenDecimals(this.props.votes,18).toFixed(0,1),0)} votes delegated
                       </Text>
                       {
-                        this.state.balance && this.state.balance.gt(0) &&
+                        this.props.balance && this.props.balance.gt(0) &&
                           <Link
                             mt={0}
                             mainColor={'primary'}

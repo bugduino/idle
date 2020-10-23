@@ -2,13 +2,16 @@ import Title from '../Title/Title';
 import { Box, Flex } from "rimble-ui";
 import React, { Component } from 'react';
 import Breadcrumb from '../Breadcrumb/Breadcrumb';
+import NewProposal from './NewProposal/NewProposal';
 import GovernanceUtil from '../utilities/GovernanceUtil';
 import ProposalsList from './ProposalsList/ProposalsList';
+import CardIconButton from '../CardIconButton/CardIconButton';
 import ProposalDetails from './ProposalDetails/ProposalDetails';
 
 class Proposals extends Component {
   state = {
     proposals:null,
+    addProposal:false,
     selectedProposal:null
   };
 
@@ -38,6 +41,7 @@ class Proposals extends Component {
     const { match: { params } } = this.props;
       
     // Look if proposalId exists
+    let addProposal = false;
     let selectedProposal = null;
     if (params.item_id && parseInt(params.item_id)){
       const proposalId = parseInt(params.item_id);
@@ -46,10 +50,13 @@ class Proposals extends Component {
       if (foundProposal){
         selectedProposal = foundProposal;
       }
+    } else if (params.item_id && params.item_id.toLowerCase() === 'new'){
+      addProposal = true;
     }
 
     this.setState({
       proposals,
+      addProposal,
       selectedProposal
     });
   }
@@ -59,32 +66,72 @@ class Proposals extends Component {
       <Box
         width={1}
       >
+        <Flex
+          mb={3}
+          width={1}
+          alignItems={'center'}
+          flexDirection={'row'}
+          justifyContent={(this.state.selectedProposal || this.state.addProposal) ? 'space-between' : 'flex-end'}
+        >
+          {
+            this.state.selectedProposal ? (
+              <Flex
+                alignItems={'center'}
+                width={0.5}
+              >
+                <Breadcrumb
+                  text={'Proposals'}
+                  isMobile={this.props.isMobile}
+                  path={[this.state.selectedProposal.title]}
+                  handleClick={ e => this.props.goToSection('proposals') }
+                />
+              </Flex>
+            ) : this.state.addProposal && (
+              <Flex
+                alignItems={'center'}
+                width={0.5}
+              >
+                <Breadcrumb
+                  text={'Proposals'}
+                  path={['Add proposal']}
+                  isMobile={this.props.isMobile}
+                  handleClick={ e => this.props.goToSection('proposals') }
+                />
+              </Flex>
+            )
+          }
+          {
+            !this.state.addProposal && 
+              <Flex
+                width={0.5}
+                alignItems={'center'}
+                justifyContent={'flex-end'}
+              >
+                <CardIconButton
+                  icon={'Add'}
+                  {...this.props}
+                  text={'New Proposal'}
+                  handleClick={ e => this.props.goToSection(`proposals/new`) }
+                />
+              </Flex>
+          }
+        </Flex>
         {
           this.state.selectedProposal ? (
             <Box
               width={1}
             >
-              <Flex
-                mb={3}
-                width={1}
-                alignItems={'center'}
-                flexDirection={'row'}
-                justifyContent={'flex-start'}
-              >
-                <Flex
-                  width={1}
-                >
-                  <Breadcrumb
-                    text={'Proposals'}
-                    isMobile={this.props.isMobile}
-                    path={[this.state.selectedProposal.title]}
-                    handleClick={ e => this.props.goToSection('proposals') }
-                  />
-                </Flex>
-              </Flex>
               <ProposalDetails
                 {...this.props}
                 proposal={this.state.selectedProposal}
+              />
+            </Box>
+          ) : this.state.addProposal ? (
+            <Box
+              width={1}
+            >
+              <NewProposal
+                {...this.props}
               />
             </Box>
           ) : (

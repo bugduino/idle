@@ -33,6 +33,7 @@ class App extends Component {
     tokenConfig: null,
     genericError: null,
     customAddress: null,
+    // customAddress: '0x9AA835Bc7b8cE13B9B0C9764A52FbF71AC62cCF1', // Test New Proposal
     // customAddress: '0xe9d787dd6f570c441129d9461f1e647dc07b2081', // Test CurveZapIn
     // customAddress: '0x6cd68e8f04490cd1a5a21cc97cc8bc15b47dc9eb', // Test CurveDepositIn
     connectorName: null,

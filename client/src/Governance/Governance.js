@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import FlexLoader from '../FlexLoader/FlexLoader';
 import { Flex, Card, Icon, Text } from 'rimble-ui';
-import FunctionsUtil from '../utilities/FunctionsUtil';
+import GovernanceUtil from '../utilities/GovernanceUtil';
 import DashboardMenu from '../DashboardMenu/DashboardMenu';
 
 // Import page components
@@ -16,6 +16,8 @@ import DashboardHeader from '../DashboardHeader/DashboardHeader';
 class Dashboard extends Component {
   state = {
     menu:[],
+    votes:null,
+    balance:null,
     baseRoute:null,
     modalTitle:null,
     activeModal:null,
@@ -24,19 +26,26 @@ class Dashboard extends Component {
     pageComponent:null,
     currentSection:null,
     selectedSection:null,
+    currentDelegate:null,
+    proposalThreshold:null,
     selectedSubsection:null,
+    proposalMaxOperations:null
   };
 
   timeoutId = null;
 
   // Utils
   functionsUtil = null;
+  governanceUtil = null;
+
   loadUtils(){
-    if (this.functionsUtil){
-      this.functionsUtil.setProps(this.props);
+    if (this.governanceUtil){
+      this.governanceUtil.setProps(this.props);
     } else {
-      this.functionsUtil = new FunctionsUtil(this.props);
+      this.governanceUtil = new GovernanceUtil(this.props);
     }
+
+    this.functionsUtil = this.governanceUtil.functionsUtil;
   }
 
   async loadMenu() {
@@ -223,6 +232,7 @@ class Dashboard extends Component {
     this.loadUtils();
     await this.loadMenu();
     this.loadParams();
+    this.loadData();
   }
 
   async componentDidUpdate(prevProps,prevState) {
@@ -241,12 +251,11 @@ class Dashboard extends Component {
     }
 
     const accountChanged = prevProps.account !== this.props.account;
-    const strategyChanged = this.props.selectedStrategy && prevProps.selectedStrategy !== this.props.selectedStrategy;
     const accountInizialized = this.props.accountInizialized && prevProps.accountInizialized !== this.props.accountInizialized;
     const contractsInitialized = this.props.contractsInitialized && prevProps.contractsInitialized !== this.props.contractsInitialized;
 
-    if (accountChanged || accountInizialized || contractsInitialized || strategyChanged){
-      // this.checkModals();
+    if (accountChanged || accountInizialized || contractsInitialized){
+      this.loadData();
     }
   }
 
@@ -268,6 +277,34 @@ class Dashboard extends Component {
     });
 
     window.scrollTo(0, 0);
+  }
+
+  async loadData(){
+    if (this.props.account){
+      const [
+        {
+          proposalThreshold, proposalMaxOperations
+        },
+        votes,
+        balance,
+        currentDelegate
+      ] = await Promise.all([
+        this.governanceUtil.getProposalParams(),
+        this.governanceUtil.getCurrentVotes(this.props.account),
+        this.governanceUtil.getTokensBalance(this.props.account),
+        this.governanceUtil.getCurrentDelegate(this.props.account)
+      ]);
+
+      // console.log(votes,balance,proposalThreshold,proposalMaxOperations);
+
+      this.setState({
+        votes,
+        balance,
+        currentDelegate,
+        proposalThreshold,
+        proposalMaxOperations
+      });
+    }
   }
 
   logout = async () => {
@@ -393,11 +430,16 @@ class Dashboard extends Component {
                   PageComponent &&
                     <PageComponent
                       {...this.props}
+                      votes={this.state.votes}
+                      balance={this.state.balance}
                       urlParams={this.state.params}
                       goToSection={this.goToSection.bind(this)}
+                      currentDelegate={this.state.currentDelegate}
                       selectedSection={this.state.selectedSection}
+                      proposalThreshold={this.state.proposalThreshold}
                       selectedSubsection={this.state.selectedSubsection}
                       openTooltipModal={this.openTooltipModal.bind(this)}
+                      proposalMaxOperations={this.state.proposalMaxOperations}
                       />
                 }
               </Flex>

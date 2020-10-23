@@ -151,7 +151,11 @@ const globalConfigs = {
   governance:{
     baseRoute:'/governance',
     props:{
-      tokenName:'IDLE'
+      tokenName:'IDLE',
+      availableContracts:{
+        COMP,
+        Comptroller
+      }
     },
     contracts:{
       delegates:'COMP',
