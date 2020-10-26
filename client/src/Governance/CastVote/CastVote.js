@@ -135,9 +135,9 @@ class CastVote extends Component {
     const callback = (tx,error) => {
       // Send Google Analytics event
       const eventData = {
-        eventCategory: 'CastVote',
-        eventAction: this.state.vote,
-        eventLabel: tx.status
+        eventCategory: 'Proposal',
+        eventAction: 'CastVote',
+        eventLabel: this.state.vote
       };
 
       if (error){

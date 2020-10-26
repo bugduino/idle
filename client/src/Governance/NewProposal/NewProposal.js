@@ -2,9 +2,10 @@ import Title from '../../Title/Title';
 import React, { Component } from 'react';
 import styles from './NewProposal.module.scss';
 import RoundButton from '../../RoundButton/RoundButton';
-import FunctionsUtil from '../../utilities/FunctionsUtil';
+import GovernanceUtil from '../../utilities/GovernanceUtil';
 import DashboardCard from '../../DashboardCard/DashboardCard';
-import { Flex, Text, Heading, Input, Form, Field, Textarea, Icon, Select } from "rimble-ui";
+import TxProgressBar from '../../TxProgressBar/TxProgressBar';
+import { Flex, Text, Heading, Input, Form, Field, Textarea, Icon, Select, Link } from "rimble-ui";
 
 class NewProposal extends Component {
 
@@ -12,24 +13,38 @@ class NewProposal extends Component {
     title:'',
     actions:[],
     description:'',
+    processing: {
+      txHash:null,
+      loading:false
+    },
+    actionValue:0,
+    txError:false,
     validated:false,
     newAction:false,
+    editAction:null,
+    actionInputs:null,
+    actionValid:false,
     contractOptions:[],
-    newActionInputs:null,
+    proposalCreated:false,
     functionsOptions:null,
     selectedContract:null,
+    selectedFunction:null,
+    selectedSignature:null,
     availableContracts:null,
   }
 
   // Utils
   functionsUtil = null;
+  governanceUtil = null;
 
   loadUtils(){
-    if (this.functionsUtil){
-      this.functionsUtil.setProps(this.props);
+    if (this.governanceUtil){
+      this.governanceUtil.setProps(this.props);
     } else {
-      this.functionsUtil = new FunctionsUtil(this.props);
+      this.governanceUtil = new GovernanceUtil(this.props);
     }
+
+    this.functionsUtil = this.governanceUtil.functionsUtil;
   }
 
   async componentWillMount(){
@@ -40,6 +55,7 @@ class NewProposal extends Component {
   async componentDidUpdate(prevProps,prevState){
     this.loadUtils();
     this.validateForm();
+    this.checkInputs();
   }
 
   loadData(){
@@ -68,7 +84,7 @@ class NewProposal extends Component {
   }
 
   validateForm(){
-    const validated = this.state.title.length>0 && this.state.description.length>0 && this.state.actions.length>0;
+    const validated = this.state.title.length>0 && this.state.description.length>0 && Object.values(this.state.actions).length>0;
     if (validated !== this.state.validated){
       this.setState({
         validated
@@ -78,60 +94,351 @@ class NewProposal extends Component {
 
   changeContract(e){
     const selectedContract = e.target.value;
+    let functionsOptions = this.state.functionsOptions;
+    let selectedFunction = this.state.selectedFunction;
+    let selectedSignature = this.state.selectedSignature;
 
-    let functionsOptions = null;
-    const selectedFunction = null;
+    const selectedContractChanged = selectedContract !== this.state.selectedContract;
 
-    const contractABI = this.state.availableContracts[selectedContract];
-    if (selectedContract && contractABI){
-      functionsOptions = contractABI
-                          .filter( f => (!f.constant && f.type === 'function' && f.inputs.length>0) )
-                          .map( f => ({
-                            label:f.name,
-                            value:f.signature,
-                          }));
+    if (selectedContract !== null && selectedContractChanged){
+      selectedFunction = null;
+      selectedSignature = null;
 
-      // Add default option
-      functionsOptions.unshift({label:'Select a Function',value:null});
+      const contractABI = this.state.availableContracts[selectedContract];
+      if (contractABI){
+        functionsOptions = contractABI
+                            .filter( f => (!f.constant && f.type === 'function' && f.inputs.length>0) )
+                            .map( f => ({
+                              label:f.name,
+                              value:f.signature,
+                            }));
+
+        // Add default option
+        functionsOptions.unshift({label:'Select a Function',value:null});
+      }
     }
 
-    this.setState({
-      selectedContract,
-      selectedFunction,
-      functionsOptions
-    });
+    if (selectedContractChanged){
+      this.setState({
+        selectedFunction,
+        selectedContract,
+        functionsOptions,
+        selectedSignature
+      });
+    }
   }
 
   changeFunction(e){
-    const functionSignature = e.target.value;
+    const actionValue = 0;
+    const selectedSignature = e.target.value;
     const contractABI = this.state.availableContracts[this.state.selectedContract];
-    const selectedFunction = contractABI.find( f => (f.signature === functionSignature) );
-    const newActionInputs = new Array(selectedFunction.inputs.length);
+    const selectedFunction = contractABI.find( f => (f.signature === selectedSignature) );
+    const actionInputs = new Array(selectedFunction.inputs.length);
     this.setState({
-      newActionInputs,
-      selectedFunction
+      actionValue,
+      actionInputs,
+      selectedFunction,
+      selectedSignature
     })
   }
 
+  getPatternByFieldType(type,returnString=false){
+    let fieldPattern = null;
+    switch (type){
+      case 'address':
+      case 'address[]':
+        fieldPattern = '^0x[a-fA-F0-9]{40}$';
+      break;
+      case 'string':
+        fieldPattern = '[\\w]+';
+      break;
+      case 'bool':
+        fieldPattern = '(0|1)';
+      break;
+      case 'uint256':
+      case 'uint8':
+        fieldPattern = '[\\d]+';
+      break;
+      default:
+        fieldPattern = null;
+      break;
+    }
+
+    if (!returnString && fieldPattern){
+      fieldPattern = new RegExp(fieldPattern);
+    }
+
+    return fieldPattern;
+  }
+
+  checkInputs(){
+
+    if (!this.state.actionInputs || !this.state.selectedFunction){
+      return false;
+    }
+
+    const inputs = this.state.selectedFunction.inputs;
+    let actionValid = Object.values(this.state.actionInputs).length === inputs.length;
+
+
+    if (actionValid){
+      Object.values(this.state.actionInputs).forEach( (inputValue,inputIndex) => {
+        const inputInfo = inputs[inputIndex];
+        const fieldPattern = this.getPatternByFieldType(inputInfo.type);
+        const inputValid = fieldPattern ? inputValue.match(fieldPattern) !== null : true;
+        actionValid = actionValid && inputValid;
+
+        // console.log(inputValue,fieldPattern,inputValid,actionValid);
+      });
+    }
+
+    if (actionValid !== this.state.actionValid){
+      this.setState({
+        actionValid
+      });
+    }
+  }
+
+  valueChange(e,inputIndex){
+    let actionValue = e.target.value;
+    this.setState({
+      actionValue
+    });
+  }
+
   inputChange(e,inputIndex){
-    const inputValue = e.target.value;
+    let inputValue = e.target.value;
 
     this.setState((prevState) => ({
-      newActionInputs:{
-        ...prevState.newActionInputs,
+      actionInputs:{
+        ...prevState.actionInputs,
         [inputIndex]:inputValue
       }
     }));
   }
 
-  setNewAction(newAction){
+  deleteAction(){
+    if (this.state.editAction !== null){
+      let actions = this.state.actions;
+      if (actions[this.state.editAction]){
+        delete actions[this.state.editAction];
+        actions = Object.values(actions);
+        const editAction = null;
+        const actionInputs = null;
+        const selectedContract = null;
+        const selectedFunction = null;
+        const selectedSignature = null;
+        this.setState({
+          actions,
+          editAction,
+          actionInputs,
+          selectedContract,
+          selectedFunction,
+          selectedSignature
+        });
+      }
+    }
+  }
+
+  addAction(){
+
+    // Check inputs number
+    const inputs = Object
+                    .values(this.state.actionInputs).filter( v => v.length>0 )
+                    .map( (inputValue,inputIndex) => {
+                      const inputInfo = this.state.selectedFunction.inputs[inputIndex];
+                      switch (inputInfo.type){
+                        case 'address[]':
+                          inputValue = [inputValue];
+                        break;
+                        default:
+                        break;
+                      }
+
+                      return inputValue;
+                    });
+
+    if (inputs.length<this.state.selectedFunction.inputs.length){
+      return false;
+    }
+
+    const contract = this.functionsUtil.getContractByName(this.state.selectedContract);
+
+    if (!contract){
+      return false;
+    }
+
+    const target = contract._address;
+    const inputTypes = this.state.selectedFunction.inputs.map( i => (i.type) );
+    const signature = this.state.selectedFunction.name+'('+inputTypes.join(',')+')';
+    const calldata = this.props.web3.eth.abi.encodeParameters(inputTypes,inputs);
+    const value = this.state.actionValue ? this.functionsUtil.BNify(this.state.actionValue).toFixed(0) : this.functionsUtil.BNify(0).toFixed(0);
+
+    const action = {
+      params:{
+        value,
+        target,
+        calldata,
+        signature
+      },
+      inputs:this.state.actionInputs,
+      function:this.state.selectedFunction,
+      contract:this.state.selectedContract,
+      signature:this.state.selectedSignature
+    };
+
+    const newAction = false;
+    const actions = Object.values(this.state.actions);
+
+    if (this.state.editAction === null){
+      actions.push(action);
+    } else {
+      actions[this.state.editAction] = action;
+    }
+
+    const editAction = null;
+
     this.setState({
-      newAction
+      actions,
+      newAction,
+      editAction
     });
   }
 
-  handleSubmit(){
+  setEditAction(editAction){
 
+    if (!this.state.actions[editAction]){
+      return false;
+    }
+
+    if (editAction === this.state.editAction){
+      return false;
+    }
+
+    const action = this.state.actions[editAction];
+
+    const newAction = false;
+    const actionInputs = action.inputs;
+    const actionValue = action.params.value;
+    const selectedContract = action.contract;
+    const selectedFunction = action.function;
+    const selectedSignature = action.signature;
+
+    this.setState({
+      newAction,
+      editAction,
+      actionValue,
+      actionInputs,
+      selectedContract,
+      selectedFunction,
+      selectedSignature
+    });
+  }
+
+  setNewAction(newAction){
+    if (newAction === this.state.newAction){
+      return false;
+    }
+
+    const editAction = null;
+    const selectedContract = null;
+    const selectedFunction = null;
+    this.setState({
+      newAction,
+      editAction,
+      selectedContract,
+      selectedFunction
+    });
+  }
+
+  async cancelTransaction(){
+    this.setState({
+      processing: {
+        txHash:null,
+        loading:false
+      }
+    });
+  }
+
+  handleSubmit(e){
+    e.preventDefault();
+
+    const callback = (tx,error) => {
+      // Send Google Analytics event
+      const eventData = {
+        eventLabel: tx.status,
+        eventAction: 'propose',
+        eventCategory: 'Proposal',
+      };
+
+      if (error){
+        eventData.eventLabel = this.functionsUtil.getTransactionError(error);
+      }
+
+      // Send Google Analytics event
+      if (error || eventData.status !== 'error'){
+        this.functionsUtil.sendGoogleAnalyticsEvent(eventData);
+      }
+
+      const txSucceeded = tx.status === 'success';
+
+      const newState = {
+        processing: {
+          txHash:null,
+          loading:false
+        }
+      };
+      
+      if (txSucceeded){
+        newState.newAction = null;
+        newState.editAction = null;
+        newState.actionInputs = null;
+        newState.proposalCreated = true;
+        newState.selectedContract = null;
+        newState.selectedFunction = null;
+        newState.selectedSignature = null;
+      } else {
+        newState.txError = true;
+      }
+
+      this.setState(newState);
+    };
+
+    const callbackReceipt = (tx) => {
+      const txHash = tx.transactionHash;
+      this.setState((prevState) => ({
+        processing: {
+          ...prevState.processing,
+          txHash
+        }
+      }));
+    };
+
+    const targets = [];
+    const values = [];
+    const signatures = [];
+    const calldatas = [];
+    const description = '#'+this.state.title+"\n"+this.state.description;
+
+    Object.values(this.state.actions).forEach( action => {
+      values.push(action.params.value);
+      targets.push(action.params.target);
+      calldatas.push(action.params.calldata);
+      signatures.push(action.params.signature);
+    });
+
+    console.log('Propose',targets, values, signatures, calldatas, description);
+
+    this.governanceUtil.propose(targets, values, signatures, calldatas, description, callback, callbackReceipt);
+
+    this.setState((prevState) => ({
+      processing: {
+        ...prevState.processing,
+        loading:true
+      }
+    }));
+
+    return false;
   }
 
   formValidated(){
@@ -153,12 +460,43 @@ class NewProposal extends Component {
           Create Proposal
         </Title>
         {
+        this.state.proposalCreated ? (
+          <DashboardCard
+            cardProps={{
+              py:3,
+              px:4,
+              width:[1,'auto']
+            }}
+          >
+            <Flex
+              alignItems={'center'}
+              flexDirection={'column'}
+              justifyContent={'center'}
+            >
+              <Icon
+                name={'Done'}
+                align={'center'}
+                size={ this.props.isMobile ? '1.4em' : '2.2em' }
+                color={this.props.theme.colors.transactions.status.completed}
+              />
+              <Text
+                mt={1}
+                fontWeight={3}
+                fontSize={[2,3]}
+                color={'dark-gray'}
+                textAlign={'center'}
+              >
+                The proposal has been successfully created
+              </Text>
+            </Flex>
+          </DashboardCard>
+        ) : 
         // Has balance
         this.props.votes && this.props.votes.gte(this.props.proposalThreshold) ? (
           <Form
             width={1}
-            onSubmit={this.handleSubmit}
             validated={this.state.validated}
+            onSubmit={this.handleSubmit.bind(this)}
           >
             <Flex
               mb={2}
@@ -245,75 +583,38 @@ class NewProposal extends Component {
                 <Flex
                   flexDirection={'column'}
                 >
-                  <DashboardCard
-                    cardProps={{
-                      py:2,
-                      px:3,
-                      width:1
-                    }}
-                    titleParentProps={{
-                      ml:0,
-                      my:1,
-                      justifyContent:'center'
-                    }}
-                    titleProps={{
-                      fontSize:2,
-                      fontWeight:3
-                    }}
-                    isInteractive={true}
-                    handleClick={ e => this.setNewAction(true) }
-                    title={ this.state.newAction ? 'Add Action' : null }
-                  >
-                    {
-                      this.state.newAction ? (
-                        <Flex
-                          width={1}
-                          alignItems={'center'}
-                          flexDirection={'column'}
-                          justifyContent={'center'}
+                  {
+                    Object.values(this.state.actions).map( (action,actionIndex) => {
+                      return (
+                        <DashboardCard
+                          cardProps={{
+                            py:2,
+                            px:3,
+                            mb:3,
+                            width:1
+                          }}
+                          titleParentProps={{
+                            ml:0,
+                            my:1,
+                            justifyContent:'center'
+                          }}
+                          titleProps={{
+                            fontSize:2,
+                            fontWeight:3
+                          }}
+                          isInteractive={true}
+                          key={`action_${actionIndex}`}
+                          handleClick={ e => this.setEditAction(actionIndex) }
+                          title={ this.state.editAction === actionIndex ? 'Edit Action' : null }
                         >
-                          <Field
-                            style={{
-                              width:'100%',
-                              display:'flex',
-                              alignItems:'stretch',
-                              flexDirection:'column'
-                            }}
-                            label={"Select Contract"}
-                          >
-                            <Select
-                              style={{
-                                width:'100%'
-                              }}
-                              required={true}
-                              options={this.state.contractOptions}
-                              onChange={this.changeContract.bind(this)}
-                            />
-                          </Field>
                           {
-                            this.state.selectedContract && 
-                              <Field
-                                style={{
-                                  width:'100%',
-                                  display:'flex',
-                                  alignItems:'stretch',
-                                  flexDirection:'column'
-                                }}
-                                label={"Select Function"}
+                            this.state.editAction === actionIndex ? (
+                              <Flex
+                                width={1}
+                                alignItems={'center'}
+                                flexDirection={'column'}
+                                justifyContent={'center'}
                               >
-                                <Select
-                                  style={{
-                                    width:'100%'
-                                  }}
-                                  required={true}
-                                  options={this.state.functionsOptions}
-                                  onChange={this.changeFunction.bind(this)}
-                                />
-                              </Field>
-                          }
-                          {
-                            this.state.selectedFunction &&
-                              this.state.selectedFunction.inputs.map( (input,inputIndex) => (
                                 <Field
                                   style={{
                                     width:'100%',
@@ -321,89 +622,365 @@ class NewProposal extends Component {
                                     alignItems:'stretch',
                                     flexDirection:'column'
                                   }}
-                                  key={`input_${inputIndex}`}
-                                  label={`${input.name} (${input.type})`}
+                                  label={"Select Contract"}
                                 >
-                                  <Input
-                                    required
-                                    width={1}
-                                    type={'text'}
-                                    className={styles.input}
-                                    placeholder={`${input.name} (${input.type})`}
-                                    onChange={ e => this.inputChange(e,inputIndex) }
-                                    value={this.state.newActionInputs[inputIndex] ? this.state.newActionInputs[inputIndex] : ''}
+                                  <Select
+                                    style={{
+                                      width:'100%'
+                                    }}
+                                    required={true}
+                                    value={this.state.selectedContract}
+                                    options={this.state.contractOptions}
+                                    onChange={this.changeContract.bind(this)}
                                   />
                                 </Field>
-                              ))
-                          }
-                          {
-                            this.state.selectedContract && this.state.selectedFunction &&
+                                {
+                                  this.state.selectedContract && 
+                                    <Field
+                                      style={{
+                                        width:'100%',
+                                        display:'flex',
+                                        alignItems:'stretch',
+                                        flexDirection:'column'
+                                      }}
+                                      label={"Select Function"}
+                                    >
+                                      <Select
+                                        style={{
+                                          width:'100%'
+                                        }}
+                                        required={true}
+                                        value={this.state.selectedSignature}
+                                        options={this.state.functionsOptions}
+                                        onChange={this.changeFunction.bind(this)}
+                                      />
+                                    </Field>
+                                }
+                                {
+                                  this.state.selectedFunction && this.state.selectedFunction.payable && (
+                                    <Field
+                                      label={`Value`}
+                                      style={{
+                                        width:'100%',
+                                        display:'flex',
+                                        alignItems:'stretch',
+                                        flexDirection:'column'
+                                      }}
+                                    >
+                                      <Input
+                                        required
+                                        width={1}
+                                        type={'number'}
+                                        className={styles.input}
+                                        placeholder={`Enter ETH value`}
+                                        onChange={ e => this.valueChange(e) }
+                                        value={this.state.actionValue ? this.state.actionValue : 0}
+                                      />
+                                    </Field>
+                                  )
+                                }
+                                {
+                                  this.state.selectedFunction &&
+                                    this.state.selectedFunction.inputs.map( (input,inputIndex) => {
+                                      const fieldType = ['uint256','bool'].includes(input.type) ? 'number' : 'text';
+                                      const fieldPattern = this.getPatternByFieldType(input.type,true);
+                                      return (
+                                        <Field
+                                          style={{
+                                            width:'100%',
+                                            display:'flex',
+                                            alignItems:'stretch',
+                                            flexDirection:'column'
+                                          }}
+                                          key={`input_${inputIndex}`}
+                                          label={`${input.name} (${input.type})`}
+                                        >
+                                          <Input
+                                            required
+                                            width={1}
+                                            type={fieldType}
+                                            pattern={fieldPattern}
+                                            className={styles.input}
+                                            placeholder={`${input.name} (${input.type})`}
+                                            onChange={ e => this.inputChange(e,inputIndex) }
+                                            value={this.state.actionInputs[inputIndex] ? this.state.actionInputs[inputIndex] : ''}
+                                          />
+                                        </Field>
+                                      )
+                                    })
+                                }
+                                {
+                                  this.state.selectedContract && this.state.selectedFunction &&
+                                    <Flex
+                                      mb={2}
+                                      width={1}
+                                      alignItems={'center'}
+                                      flexDirection={'column'}
+                                      justifyContent={'center'}
+                                    >
+                                      <RoundButton
+                                        buttonProps={{
+                                          px:[0,4],
+                                          width:[1,'auto'],
+                                          type:'button',
+                                          disabled:!this.state.actionValid
+                                        }}
+                                        handleClick={this.addAction.bind(this)}
+                                      >
+                                        Save Action
+                                      </RoundButton>
+                                      <Link
+                                        mt={2}
+                                        color={'red'}
+                                        hoverColor={'red'}
+                                        onClick={this.deleteAction.bind(this)}
+                                      >
+                                        Delete Action
+                                      </Link>
+                                    </Flex>
+                                }
+                              </Flex>
+                            ) : (
                               <Flex
                                 width={1}
                                 alignItems={'center'}
-                                justifyContent={'center'}
+                                flexDirection={'row'}
+                                justifyContent={'space-between'}
                               >
-                                <RoundButton
-                                  buttonProps={{
-                                    px:3,
-                                    width:[1,'auto']
-                                  }}
+                                <Text>
+                                  {action.contract} - {action.params.signature}
+                                </Text>
+                                <Flex
+                                  p={['4px','7px']}
+                                  borderRadius={'50%'}
+                                  alignItems={'center'}
+                                  justifyContent={'center'}
+                                  backgroundColor={ this.props.theme.colors.transactions.actionBg.redeem }
                                 >
-                                  Add Action
-                                </RoundButton>
+                                  <Icon
+                                    name={'Edit'}
+                                    align={'center'}
+                                    color={'redeem'}
+                                    size={ this.props.isMobile ? '1.2em' : '1.4em' }
+                                  />
+                                </Flex>
                               </Flex>
+                            )
                           }
-                        </Flex>
-                      ) : (
-                        <Flex
-                          width={1}
-                          alignItems={'center'}
-                          flexDirection={'row'}
-                          justifyContent={'space-between'}
-                        >
-                          <Text>
-                            Add Action
-                          </Text>
-                          <Flex
-                            p={['4px','7px']}
-                            borderRadius={'50%'}
-                            alignItems={'center'}
-                            justifyContent={'center'}
-                            backgroundColor={ this.props.theme.colors.transactions.actionBg.redeem }
-                          >
-                            <Icon
-                              name={'Add'}
-                              align={'center'}
-                              color={'redeem'}
-                              size={ this.props.isMobile ? '1.2em' : '1.4em' }
-                            />
-                          </Flex>
-                        </Flex>
-                      )
-                    }
-                  </DashboardCard>
+                        </DashboardCard>
+                      );
+                    })
+                  }
+                  {
+                    (!this.state.actions || Object.values(this.state.actions).length<this.props.proposalMaxOperations) && (
+                      <DashboardCard
+                        cardProps={{
+                          py:2,
+                          px:3,
+                          mb:3,
+                          width:1
+                        }}
+                        titleParentProps={{
+                          ml:0,
+                          my:1,
+                          justifyContent:'center'
+                        }}
+                        titleProps={{
+                          fontSize:2,
+                          fontWeight:3
+                        }}
+                        isInteractive={true}
+                        handleClick={ e => this.setNewAction(true) }
+                        title={ this.state.newAction ? 'Add Action' : null }
+                      >
+                        {
+                          this.state.newAction ? (
+                            <Flex
+                              width={1}
+                              alignItems={'center'}
+                              flexDirection={'column'}
+                              justifyContent={'center'}
+                            >
+                              <Field
+                                style={{
+                                  width:'100%',
+                                  display:'flex',
+                                  alignItems:'stretch',
+                                  flexDirection:'column'
+                                }}
+                                label={"Select Contract"}
+                              >
+                                <Select
+                                  style={{
+                                    width:'100%'
+                                  }}
+                                  required={true}
+                                  options={this.state.contractOptions}
+                                  onChange={this.changeContract.bind(this)}
+                                />
+                              </Field>
+                              {
+                                this.state.selectedContract && 
+                                  <Field
+                                    style={{
+                                      width:'100%',
+                                      display:'flex',
+                                      alignItems:'stretch',
+                                      flexDirection:'column'
+                                    }}
+                                    label={"Select Function"}
+                                  >
+                                    <Select
+                                      style={{
+                                        width:'100%'
+                                      }}
+                                      required={true}
+                                      options={this.state.functionsOptions}
+                                      onChange={this.changeFunction.bind(this)}
+                                    />
+                                  </Field>
+                              }
+                              {
+                                this.state.selectedFunction && this.state.selectedFunction.payable && (
+                                  <Field
+                                    label={`Value`}
+                                    style={{
+                                      width:'100%',
+                                      display:'flex',
+                                      alignItems:'stretch',
+                                      flexDirection:'column'
+                                    }}
+                                  >
+                                    <Input
+                                      required
+                                      width={1}
+                                      type={'number'}
+                                      className={styles.input}
+                                      placeholder={`Enter ETH value`}
+                                      onChange={ e => this.valueChange(e) }
+                                      value={this.state.actionValue ? this.state.actionValue : 0}
+                                    />
+                                  </Field>
+                                )
+                              }
+                              {
+                                this.state.selectedFunction &&
+                                  this.state.selectedFunction.inputs.map( (input,inputIndex) => {
+                                    const fieldType = ['uint256','bool'].includes(input.type) ? 'number' : 'text';
+                                    const fieldPattern = this.getPatternByFieldType(input.type,true);
+                                    return (
+                                      <Field
+                                        style={{
+                                          width:'100%',
+                                          display:'flex',
+                                          alignItems:'stretch',
+                                          flexDirection:'column'
+                                        }}
+                                        key={`input_${inputIndex}`}
+                                        label={`${input.name} (${input.type})`}
+                                      >
+                                        <Input
+                                          required
+                                          width={1}
+                                          type={fieldType}
+                                          pattern={fieldPattern}
+                                          className={styles.input}
+                                          placeholder={`${input.name} (${input.type})`}
+                                          onChange={ e => this.inputChange(e,inputIndex) }
+                                          value={this.state.actionInputs[inputIndex] ? this.state.actionInputs[inputIndex] : ''}
+                                        />
+                                      </Field>
+                                    )
+                                  })
+                              }
+                              {
+                                this.state.selectedContract && this.state.selectedFunction &&
+                                  <Flex
+                                    width={1}
+                                    alignItems={'center'}
+                                    justifyContent={'center'}
+                                  >
+                                    <RoundButton
+                                      buttonProps={{
+                                        px:[0,4],
+                                        type:'button',
+                                        width:[1,'auto'],
+                                        disabled:!this.state.actionValid
+                                      }}
+                                      handleClick={this.addAction.bind(this)}
+                                    >
+                                      Add Action
+                                    </RoundButton>
+                                  </Flex>
+                              }
+                            </Flex>
+                          ) : (
+                            <Flex
+                              width={1}
+                              alignItems={'center'}
+                              flexDirection={'row'}
+                              justifyContent={'space-between'}
+                            >
+                              <Text>
+                                Add Action
+                              </Text>
+                              <Flex
+                                p={['4px','7px']}
+                                borderRadius={'50%'}
+                                alignItems={'center'}
+                                justifyContent={'center'}
+                                backgroundColor={ this.props.theme.colors.transactions.actionBg.redeem }
+                              >
+                                <Icon
+                                  name={'Add'}
+                                  align={'center'}
+                                  color={'redeem'}
+                                  size={ this.props.isMobile ? '1.2em' : '1.4em' }
+                                />
+                              </Flex>
+                            </Flex>
+                          )
+                        }
+                      </DashboardCard>
+                    )
+                  }
+
                 </Flex>
               </Flex>
             </Flex>
             <Flex
+              mb={3}
               width={1}
               alignItems={'center'}
               justifyContent={'center'}
             >
-              <RoundButton
-                buttonProps={{
-                  type:'submit',
-                  width:[1,'15em'],
-                  disabled:!this.state.validated
-                }}
-              >
-                Submit Proposal
-              </RoundButton>
+              {
+                // Sending transaction
+                this.state.processing && this.state.processing.loading ? (
+                  <TxProgressBar
+                    web3={this.props.web3}
+                    hash={this.state.processing.txHash}
+                    waitText={`Proposal creation estimated in`}
+                    endMessage={`Finalizing proposal creation request...`}
+                    cancelTransaction={this.cancelTransaction.bind(this)}
+                  />
+                ) : (
+                  <RoundButton
+                    buttonProps={{
+                      type:'submit',
+                      width:[1,'15em'],
+                      disabled:!this.state.validated
+                    }}
+                  >
+                    Submit Proposal
+                  </RoundButton>
+                )
+              }
             </Flex>
           </Form>
         ) : (
           <Text
-            fontWeight={4}
+            fontWeight={3}
             fontSize={[2,3]}
             color={'dark-gray'}
             textAlign={'center'}

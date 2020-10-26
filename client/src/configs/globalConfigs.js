@@ -154,6 +154,7 @@ const globalConfigs = {
       tokenName:'IDLE',
       availableContracts:{
         COMP,
+        Governance,
         Comptroller
       }
     },

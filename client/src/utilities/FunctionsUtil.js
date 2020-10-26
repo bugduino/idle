@@ -28,6 +28,7 @@ class FunctionsUtil {
   trimEth = eth => {
     return this.BNify(eth).toFixed(6);
   }
+  toBN = n => new this.props.web3.utils.BN(n)
   toEth = wei => {
     if (!this.props.web3){
       return null;

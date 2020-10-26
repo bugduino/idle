@@ -65,6 +65,11 @@ class GovernanceUtil {
     return null;
   }
 
+  propose = async (targets, values, signatures, calldatas, description, callback=null,callbackReceipt=null) => {
+    const contractName = this.functionsUtil.getGlobalConfig(['governance','contracts','governance']);
+    return await this.props.contractMethodSendWrapper(contractName, 'propose', [targets, values, signatures, calldatas, description], null, callback, callbackReceipt);
+  }
+
   castVote = async (proposalId,support,callback=null,callbackReceipt=null) => {
     const contractName = this.functionsUtil.getGlobalConfig(['governance','contracts','governance']);
     return await this.props.contractMethodSendWrapper(contractName, 'castVote', [proposalId,support], null, callback, callbackReceipt);
