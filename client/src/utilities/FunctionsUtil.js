@@ -2805,6 +2805,14 @@ class FunctionsUtil {
       document.body.appendChild(script);
     }
   }
+  isValidJSON = str => {
+    try {
+      JSON.parse(str);
+    } catch (e) {
+      return false;
+    }
+    return true;
+  }
   checkAddress = (address) => {
     return address !== null ? address.match(/^0x[a-fA-F0-9]{40}$/) !== null : false;
   }

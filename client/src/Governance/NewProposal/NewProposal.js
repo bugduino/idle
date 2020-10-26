@@ -19,18 +19,21 @@ class NewProposal extends Component {
     },
     actionValue:0,
     txError:false,
+    customABI:null,
     validated:false,
     newAction:false,
     editAction:null,
     actionInputs:null,
     actionValid:false,
+    customAddress:null,
     contractOptions:[],
     proposalCreated:false,
     functionsOptions:null,
     selectedContract:null,
     selectedFunction:null,
     selectedSignature:null,
-    availableContracts:null,
+    availableFunctions:null,
+    availableContracts:null
   }
 
   // Utils
@@ -56,6 +59,12 @@ class NewProposal extends Component {
     this.loadUtils();
     this.validateForm();
     this.checkInputs();
+
+    const customABIChanged = prevState.customABI !== this.state.customABI;
+    console.log('customABIChanged',customABIChanged,this.state.selectedContract);
+    if (customABIChanged && this.state.selectedContract === 'custom'){
+      this.loadFunctionsOptions();
+    }
   }
 
   loadData(){
@@ -68,18 +77,18 @@ class NewProposal extends Component {
       contractOptions.push({label:contractName,value:contractName});
     });
 
+    contractOptions.push({label:'Custom',value:'custom'});
+
     this.setState({
       contractOptions,
       availableContracts
     });
   }
 
-  handleInput(field,e){
-    const value = e.target.value;
-    const curState = this.state;
-    curState[field] = value;
+  handleInput(field,e,type=null){
+    let value = e.target.value;
     this.setState({
-      curState
+      [field]:value
     });
   }
 
@@ -92,48 +101,92 @@ class NewProposal extends Component {
     }
   }
 
-  changeContract(e){
-    const selectedContract = e.target.value;
-    let functionsOptions = this.state.functionsOptions;
-    let selectedFunction = this.state.selectedFunction;
-    let selectedSignature = this.state.selectedSignature;
+  getContractABI(selectedContract=null){
+    selectedContract = selectedContract ? selectedContract : this.state.selectedContract;
 
-    const selectedContractChanged = selectedContract !== this.state.selectedContract;
+    let contractABI = null;
+    try {
+      contractABI = selectedContract === 'custom' ? JSON.parse(this.state.customABI) : this.state.availableContracts[selectedContract];
+    } catch (err) {
+      
+    }
+    return contractABI;
+  }
 
-    if (selectedContract !== null && selectedContractChanged){
-      selectedFunction = null;
-      selectedSignature = null;
+  loadFunctionsOptions(selectedContract=null){
+    let actionInputs = null;
+    let functionsOptions = null;
+    let selectedFunction = null;
+    let selectedSignature = null;
+    let availableFunctions = null;
 
-      const contractABI = this.state.availableContracts[selectedContract];
-      if (contractABI){
-        functionsOptions = contractABI
-                            .filter( f => (!f.constant && f.type === 'function' && f.inputs.length>0) )
-                            .map( f => ({
-                              label:f.name,
-                              value:f.signature,
-                            }));
+    const contractABI = this.getContractABI(selectedContract);
+    if (contractABI){
+      availableFunctions = contractABI.filter( f => (!f.constant && f.type === 'function' && f.inputs.length>0) )
+      functionsOptions = availableFunctions.map( (f,index) => ({
+                          label:f.name,
+                          value:index
+                        }));
 
-        // Add default option
-        functionsOptions.unshift({label:'Select a Function',value:null});
-      }
+      // Add default option
+      functionsOptions.unshift({label:'Select a Function',value:null});
     }
 
+    // console.log('loadFunctionsOptions',contractABI,functionsOptions);
+
+    this.setState({
+      actionInputs,
+      functionsOptions,
+      selectedFunction,
+      selectedSignature,
+      availableFunctions
+    });
+  }
+
+  changeContract(e){
+    const selectedContract = e.target.value;
+    const selectedContractChanged = selectedContract !== this.state.selectedContract;
+
     if (selectedContractChanged){
-      this.setState({
-        selectedFunction,
+
+      // Reset function
+      let selectedFunction = null;
+      let selectedSignature = null;
+
+      const newState = {
         selectedContract,
-        functionsOptions,
+        selectedFunction,
         selectedSignature
-      });
+      };
+
+      // Load contract functions
+      if (selectedContract !== null){
+        const contractABI = this.getContractABI(selectedContract);
+        if (contractABI){
+          this.loadFunctionsOptions(selectedContract);
+        } else {
+          newState.functionsOptions = null;
+        }
+      }
+
+      console.log('changeContract',newState);
+
+      this.setState(newState);
     }
   }
 
   changeFunction(e){
     const actionValue = 0;
+    let actionInputs = null;
     const selectedSignature = e.target.value;
-    const contractABI = this.state.availableContracts[this.state.selectedContract];
-    const selectedFunction = contractABI.find( f => (f.signature === selectedSignature) );
-    const actionInputs = new Array(selectedFunction.inputs.length);
+    let selectedFunction = this.state.availableFunctions.find( (f,index) => (index === parseInt(selectedSignature)) );
+
+    if (selectedFunction){
+      actionInputs = new Array(selectedFunction.inputs.length);
+    } else {
+      selectedFunction  = null;
+    }
+
     this.setState({
       actionValue,
       actionInputs,
@@ -141,7 +194,21 @@ class NewProposal extends Component {
       selectedSignature
     })
   }
-
+  validateField(value,type){
+    if (value===null){
+      return false;
+    }
+    let valid = true;
+    if (type === 'json'){
+      valid = this.functionsUtil.isValidJSON(value);
+    } else {
+      const fieldPattern = this.getPatternByFieldType(type);
+      if (fieldPattern){
+        valid = value.toString().match(fieldPattern) !== null;
+      }
+    }
+    return valid;
+  }
   getPatternByFieldType(type,returnString=false){
     let fieldPattern = null;
     switch (type){
@@ -187,10 +254,16 @@ class NewProposal extends Component {
         const fieldPattern = this.getPatternByFieldType(inputInfo.type);
         const inputValid = fieldPattern ? inputValue.match(fieldPattern) !== null : true;
         actionValid = actionValid && inputValid;
-
-        // console.log(inputValue,fieldPattern,inputValid,actionValid);
+        console.log('checkInputs',inputInfo.name,inputInfo.type,inputValue,inputValid,actionValid);
       });
     }
+
+    // Check custom token
+    if (actionValid && this.state.selectedContract === 'custom'){
+      actionValid = actionValid && this.validateField(this.state.customABI,'json') && this.validateField(this.state.customAddress,'address');
+    }
+
+    console.log('actionValid',this.state.selectedContract,this.validateField(this.state.customABI,'json'),this.state.customAddress,this.validateField(this.state.customAddress,'address'),actionValid);
 
     if (actionValid !== this.state.actionValid){
       this.setState({
@@ -228,6 +301,7 @@ class NewProposal extends Component {
         const selectedContract = null;
         const selectedFunction = null;
         const selectedSignature = null;
+
         this.setState({
           actions,
           editAction,
@@ -262,16 +336,29 @@ class NewProposal extends Component {
       return false;
     }
 
-    const contract = this.functionsUtil.getContractByName(this.state.selectedContract);
-
-    if (!contract){
-      return false;
+    // Check contract
+    let target = null;
+    if (this.state.selectedContract !== 'custom'){
+      const contract = this.functionsUtil.getContractByName(this.state.selectedContract);
+      if (!contract){
+        return false;
+      } else {
+        target = contract._address;
+      }
+    } else {
+      const contractABIValid = this.functionsUtil.isValidJSON(this.state.customABI);
+      if (!contractABIValid){
+        return false;
+      } else {
+        target = this.state.customAddress;
+      }
     }
-
-    const target = contract._address;
+    
+    const customABI = this.state.customABI;
+    const customAddress = this.state.customAddress;
     const inputTypes = this.state.selectedFunction.inputs.map( i => (i.type) );
-    const signature = this.state.selectedFunction.name+'('+inputTypes.join(',')+')';
     const calldata = this.props.web3.eth.abi.encodeParameters(inputTypes,inputs);
+    const signature = this.state.selectedFunction.name+'('+inputTypes.join(',')+')';
     const value = this.state.actionValue ? this.functionsUtil.BNify(this.state.actionValue).toFixed(0) : this.functionsUtil.BNify(0).toFixed(0);
 
     const action = {
@@ -281,6 +368,8 @@ class NewProposal extends Component {
         calldata,
         signature
       },
+      customABI,
+      customAddress,
       inputs:this.state.actionInputs,
       function:this.state.selectedFunction,
       contract:this.state.selectedContract,
@@ -319,9 +408,11 @@ class NewProposal extends Component {
 
     const newAction = false;
     const actionInputs = action.inputs;
+    const customABI = action.customABI;
     const actionValue = action.params.value;
     const selectedContract = action.contract;
     const selectedFunction = action.function;
+    const customAddress = action.customAddress;
     const selectedSignature = action.signature;
 
     this.setState({
@@ -635,7 +726,48 @@ class NewProposal extends Component {
                                   />
                                 </Field>
                                 {
-                                  this.state.selectedContract && 
+                                  this.state.selectedContract && this.state.selectedContract === 'custom' &&
+                                  (
+                                    <Flex
+                                      width={1}
+                                      flexDirection={'column'}
+                                    >
+                                      <Field
+                                        width={1}
+                                        label={"Contract Address"}
+                                        validated={this.state.validated}
+                                      >
+                                        <Input
+                                          required
+                                          width={1}
+                                          type={'text'}
+                                          className={styles.input}
+                                          placeholder={'Custom contract address'}
+                                          pattern={this.getPatternByFieldType('address',true)}
+                                          onChange={ e => this.handleInput('customAddress',e,'address') }
+                                          value={this.state.customAddress ? this.state.customAddress : ''}
+                                        />
+                                      </Field>
+                                      <Field
+                                        width={1}
+                                        label={'Custom ABI'}
+                                        validated={this.state.validated}
+                                      >
+                                        <Textarea
+                                          required
+                                          rows={8}
+                                          width={1}
+                                          className={styles.input}
+                                          placeholder={'Insert the ABI of your contract'}
+                                          onChange={ e => this.handleInput('customABI',e,'json') }
+                                          value={this.state.customABI ? this.state.customABI : ''}
+                                        />
+                                      </Field>
+                                    </Flex>
+                                  )
+                                }
+                                {
+                                  this.state.selectedContract && this.state.functionsOptions &&
                                     <Field
                                       style={{
                                         width:'100%',
@@ -650,9 +782,9 @@ class NewProposal extends Component {
                                           width:'100%'
                                         }}
                                         required={true}
-                                        value={this.state.selectedSignature}
                                         options={this.state.functionsOptions}
                                         onChange={this.changeFunction.bind(this)}
+                                        value={this.state.selectedSignature ? this.state.selectedSignature : ''}
                                       />
                                     </Field>
                                 }
@@ -820,7 +952,48 @@ class NewProposal extends Component {
                                 />
                               </Field>
                               {
-                                this.state.selectedContract && 
+                                this.state.selectedContract && this.state.selectedContract === 'custom' &&
+                                (
+                                  <Flex
+                                    width={1}
+                                    flexDirection={'column'}
+                                  >
+                                    <Field
+                                      width={1}
+                                      label={"Contract Address"}
+                                      validated={this.state.validated}
+                                    >
+                                      <Input
+                                        required
+                                        width={1}
+                                        type={'text'}
+                                        className={styles.input}
+                                        placeholder={'Custom contract address'}
+                                        pattern={this.getPatternByFieldType('address',true)}
+                                        onChange={ e => this.handleInput('customAddress',e,'address') }
+                                        value={this.state.customAddress ? this.state.customAddress : ''}
+                                      />
+                                    </Field>
+                                    <Field
+                                      width={1}
+                                      label={'Custom ABI'}
+                                      validated={this.state.validated}
+                                    >
+                                      <Textarea
+                                        required
+                                        rows={8}
+                                        width={1}
+                                        className={styles.input}
+                                        placeholder={'Insert the ABI of your contract'}
+                                        onChange={ e => this.handleInput('customABI',e,'json') }
+                                        value={this.state.customABI ? this.state.customABI : ''}
+                                      />
+                                    </Field>
+                                  </Flex>
+                                )
+                              }
+                              {
+                                this.state.selectedContract && this.state.functionsOptions && 
                                   <Field
                                     style={{
                                       width:'100%',
@@ -837,6 +1010,7 @@ class NewProposal extends Component {
                                       required={true}
                                       options={this.state.functionsOptions}
                                       onChange={this.changeFunction.bind(this)}
+                                      value={this.state.selectedSignature ? this.state.selectedSignature : ''}
                                     />
                                   </Field>
                               }
