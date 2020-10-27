@@ -61,7 +61,7 @@ class NewProposal extends Component {
     this.checkInputs();
 
     const customABIChanged = prevState.customABI !== this.state.customABI;
-    console.log('customABIChanged',customABIChanged,this.state.selectedContract);
+    // console.log('customABIChanged',customABIChanged,this.state.selectedContract);
     if (customABIChanged && this.state.selectedContract === 'custom'){
       this.loadFunctionsOptions();
     }
@@ -122,7 +122,7 @@ class NewProposal extends Component {
 
     const contractABI = this.getContractABI(selectedContract);
     if (contractABI){
-      availableFunctions = contractABI.filter( f => (!f.constant && f.type === 'function' && f.inputs.length>0) )
+      availableFunctions = contractABI.filter( f => (!f.constant && f.type === 'function' && f.inputs.length>0 && ['nonpayable','payable'].includes(f.stateMutability)) )
       functionsOptions = availableFunctions.map( (f,index) => ({
                           label:f.name,
                           value:index
@@ -169,7 +169,7 @@ class NewProposal extends Component {
         }
       }
 
-      console.log('changeContract',newState);
+      // console.log('changeContract',newState);
 
       this.setState(newState);
     }
@@ -254,7 +254,7 @@ class NewProposal extends Component {
         const fieldPattern = this.getPatternByFieldType(inputInfo.type);
         const inputValid = fieldPattern ? inputValue.match(fieldPattern) !== null : true;
         actionValid = actionValid && inputValid;
-        console.log('checkInputs',inputInfo.name,inputInfo.type,inputValue,inputValid,actionValid);
+        // console.log('checkInputs',inputInfo.name,inputInfo.type,inputValue,inputValid,actionValid);
       });
     }
 
@@ -263,7 +263,7 @@ class NewProposal extends Component {
       actionValid = actionValid && this.validateField(this.state.customABI,'json') && this.validateField(this.state.customAddress,'address');
     }
 
-    console.log('actionValid',this.state.selectedContract,this.validateField(this.state.customABI,'json'),this.state.customAddress,this.validateField(this.state.customAddress,'address'),actionValid);
+    // console.log('actionValid',this.state.selectedContract,this.validateField(this.state.customABI,'json'),this.state.customAddress,this.validateField(this.state.customAddress,'address'),actionValid);
 
     if (actionValid !== this.state.actionValid){
       this.setState({
@@ -481,11 +481,15 @@ class NewProposal extends Component {
       };
       
       if (txSucceeded){
+        newState.actionValue = 0;
+        newState.customABI = null;
         newState.newAction = null;
         newState.editAction = null;
         newState.actionInputs = null;
+        newState.customAddress = null;
         newState.proposalCreated = true;
         newState.selectedContract = null;
+        newState.functionsOptions = null;
         newState.selectedFunction = null;
         newState.selectedSignature = null;
       } else {
@@ -518,7 +522,7 @@ class NewProposal extends Component {
       signatures.push(action.params.signature);
     });
 
-    console.log('Propose',targets, values, signatures, calldatas, description);
+    // console.log('Propose',targets, values, signatures, calldatas, description);
 
     this.governanceUtil.propose(targets, values, signatures, calldatas, description, callback, callbackReceipt);
 

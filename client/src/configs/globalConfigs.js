@@ -255,8 +255,8 @@ const globalConfigs = {
     IDLE:{
       abi:COMP,
       decimals:18,
-      enabled:true,
       token:'IDLE',
+      enabled:false,
       protocol:'idle',
       color:'hsl(162, 100%, 41%)',
       icon:'images/tokens/IDLE.png',
@@ -265,8 +265,8 @@ const globalConfigs = {
     COMP:{
       abi:COMP,
       decimals:18,
-      enabled:true,
       token:'COMP',
+      enabled:true,
       protocol:'compound',
       color:'hsl(162, 100%, 41%)',
       address:'0xc00e94cb662c3520282e6f5717214004a7f26888',

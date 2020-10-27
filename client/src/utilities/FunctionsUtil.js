@@ -3728,7 +3728,7 @@ class FunctionsUtil {
       return false;
     }
     const govTokens = this.getGlobalConfig(['govTokens']);
-    return Object.values(govTokens).find( tokenConfig => tokenConfig.address.toLowerCase() === address.toLowerCase() );
+    return Object.values(govTokens).find( tokenConfig => (tokenConfig.enabled && tokenConfig.address.toLowerCase() === address.toLowerCase()) );
   }
   getGovTokensUserTotalBalance = async (account=null,availableTokens=null,convertToken=null) => {
     const govTokensUserBalances = await this.getGovTokensUserBalances(account,availableTokens,convertToken);
