@@ -160,7 +160,7 @@ const globalConfigs = {
     },
     contracts:{
       delegates:'COMP',
-      governance:'Governance'
+      governance:'Governance',
     }
   },
   curve:{
@@ -256,7 +256,7 @@ const globalConfigs = {
       abi:COMP,
       decimals:18,
       token:'IDLE',
-      enabled:false,
+      enabled:true,
       protocol:'idle',
       color:'hsl(162, 100%, 41%)',
       icon:'images/tokens/IDLE.png',

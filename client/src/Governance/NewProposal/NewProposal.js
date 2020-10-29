@@ -416,10 +416,12 @@ class NewProposal extends Component {
     const selectedSignature = action.signature;
 
     this.setState({
+      customABI,
       newAction,
       editAction,
       actionValue,
       actionInputs,
+      customAddress,
       selectedContract,
       selectedFunction,
       selectedSignature
@@ -523,7 +525,6 @@ class NewProposal extends Component {
     });
 
     // console.log('Propose',targets, values, signatures, calldatas, description);
-
     this.governanceUtil.propose(targets, values, signatures, calldatas, description, callback, callbackReceipt);
 
     this.setState((prevState) => ({
