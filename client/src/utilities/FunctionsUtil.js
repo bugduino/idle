@@ -3000,12 +3000,57 @@ class FunctionsUtil {
 
     return null;
   }
-  /*
-  Get idleToken score
-  */
+
   getTokenScore = async (tokenConfig,isRisk) => {
     // Check for cached data
     const cachedDataKey = `tokenScore_${tokenConfig.address}_${isRisk}`;
+    const cachedData = this.getCachedData(cachedDataKey);
+    if (cachedData !== null){
+      return cachedData;
+    }
+
+    const apiInfo = globalConfigs.stats.rates;
+    const endpoint = `${apiInfo.endpoint}${tokenConfig.address}?isRisk=${isRisk}&limit=1&order=DESC`;
+    const [
+      tokenData,
+      tokenAllocation
+    ] = await Promise.all([
+      this.makeCachedRequest(endpoint,apiInfo.TTL,true),
+      this.getTokenAllocation(tokenConfig,false,false)
+    ]);
+
+    let tokenScore = this.BNify(0);
+
+    if (tokenData && tokenAllocation){
+      Object.keys(tokenAllocation.protocolsAllocationsPerc).forEach( protocolAddr => {
+        const protocolAllocationPerc = this.BNify(tokenAllocation.protocolsAllocationsPerc[protocolAddr]);
+        if (protocolAllocationPerc.gt(0.001)){
+          const protocolInfo = tokenData[0].protocolsData.find( p => (p.protocolAddr.toLowerCase() === protocolAddr.toLowerCase()) );
+          if (protocolInfo){
+            const protocolScore = this.BNify(protocolInfo.defiScore);
+            if (!protocolScore.isNaN()){
+              tokenScore = tokenScore.plus(protocolScore.times(protocolAllocationPerc));
+              // console.log(protocolAddr,tokenAllocation.protocolsAllocationsPerc[protocolAddr].toFixed(6),protocolScore.toFixed(6),tokenScore.toFixed(6));
+            }
+          }
+        }
+      });
+    }
+
+    // Fallback
+    if (!tokenScore || tokenScore.isNaN() || tokenScore.lte(0)){
+      tokenScore = this.getTokenScoreApi(tokenConfig,isRisk);
+    }
+
+    return this.setCachedData(cachedDataKey,tokenScore);
+  }
+
+  /*
+  Get idleToken score
+  */
+  getTokenScoreApi = async (tokenConfig,isRisk) => {
+    // Check for cached data
+    const cachedDataKey = `tokenScoreApi_${tokenConfig.address}_${isRisk}`;
     const cachedData = this.getCachedData(cachedDataKey);
     if (cachedData !== null){
       return cachedData;
