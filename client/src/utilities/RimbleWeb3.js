@@ -1181,14 +1181,19 @@ class RimbleTransaction extends React.Component {
 
     // Is a wallet connected and verified?
     if (!this.state.account) {
-    // if (!this.state.account || !this.state.accountValidated) {
       this.openConnectionModal();
+      if (typeof callback === 'function') {
+        callback(null,'account_not_connected');
+      }
       return false;
     }
 
     // Are there a minimum amount of funds?
     if (this.state.accountBalanceLow) {
       this.openLowFundsModal();
+      if (typeof callback === 'function') {
+        callback(null,'account_balance_low');
+      }
       return false;
     }
 
@@ -1212,6 +1217,9 @@ class RimbleTransaction extends React.Component {
     const { account, contracts } = this.state;
     let contract = contracts.find(c => c.name === contractName);
     if (!contract) {
+      if (typeof callback === 'function') {
+        callback(null,'contract_not_found');
+      }
       return this.functionsUtil.customLog(`No contract with name ${contractName}`);
     }
 
