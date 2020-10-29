@@ -427,10 +427,10 @@ class TxProgressBar extends Component {
           ) : typeof this.props.cancelTransaction === 'function' ? (
               <Link
                 mt={0}
-                color={'cellText'}
-                hoverColor={'dark-gray'}
                 href={`javascript:void(0)`}
                 onClick={ e => this.props.cancelTransaction() }
+                color={this.props.cancelTextColor ? this.props.cancelTextColor : 'cellText'}
+                hoverColor={this.props.cancelTextHoverColor ? this.props.cancelTextHoverColor : 'dark-gray'}
               >
                 <Flex
                   alignItems={'center'}
@@ -439,8 +439,8 @@ class TxProgressBar extends Component {
                 >
                   <Text
                     fontSize={0}
-                    color={'cellText'}
                     textAlign={'center'}
+                    color={this.props.cancelTextColor ? this.props.cancelTextColor : 'cellText'}
                   >
                     Cancel transaction
                   </Text>
@@ -448,7 +448,7 @@ class TxProgressBar extends Component {
                     ml={1}
                     size={'0.85em'}
                     name={'Cancel'}
-                    color={'cellText'}
+                    color={this.props.cancelTextColor ? this.props.cancelTextColor : 'cellText'}
                   />
                 </Flex>
               </Link>

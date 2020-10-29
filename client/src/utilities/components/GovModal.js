@@ -2,15 +2,20 @@ import React from "react";
 import ModalCard from './ModalCard';
 import { Text, Modal, Flex, Image } from "rimble-ui";
 import RoundButton from '../../RoundButton/RoundButton';
-// import Confetti from 'react-confetti/dist/react-confetti';
 import FunctionsUtil from '../../utilities/FunctionsUtil';
+import TxProgressBar from '../../TxProgressBar/TxProgressBar';
 
 class GovModal extends React.Component {
 
   state = {
     total:null,
     balance:null,
-    unclaimed:null
+    txStatus:null,
+    unclaimed:null,
+    processing: {
+      txHash:null,
+      loading:false
+    }
   }
 
   // Utils
@@ -24,12 +29,13 @@ class GovModal extends React.Component {
   }
 
   loadTokenInfo = async () => {
+    const contractName = this.functionsUtil.getGlobalConfig(['governance','props','tokenName']);
     const [
       unclaimed,
       balance
     ] = await Promise.all([
-        this.functionsUtil.getIdleTokensUnclaimed(this.props.account),
-        this.functionsUtil.getTokenBalance('IDLE',this.props.account),
+      this.functionsUtil.getIdleTokensUnclaimed(this.props.account),
+      this.functionsUtil.getTokenBalance(contractName,this.props.account),
     ]);
 
     const total = this.functionsUtil.BNify(balance).plus(unclaimed);
@@ -50,12 +56,72 @@ class GovModal extends React.Component {
     this.loadUtils();
   }
 
-  componentDidUpdate() {
+  componentDidUpdate(prevProps,prevState){
     this.loadUtils();
+    const txStatusChanged = prevState.txStatus !== this.state.txStatus;
+    if (txStatusChanged && this.state.txStatus === 'success'){
+      this.loadTokenInfo();
+    }
+  }
+
+  async cancelTransaction(){
+    this.setState({
+      txStatus:null,
+      processing: {
+        txHash:null,
+        loading:false
+      }
+    });
   }
 
   claim = async () => {
+    const callback = (tx,error) => {
+      // Send Google Analytics event
+      const eventData = {
+        eventAction: 'claim',
+        eventCategory: 'Governance',
+        eventLabel: tx.status ? tx.status : error
+      };
 
+      if (error){
+        eventData.eventLabel = this.functionsUtil.getTransactionError(error);
+      }
+
+      // Send Google Analytics event
+      if (error || eventData.status !== 'error'){
+        this.functionsUtil.sendGoogleAnalyticsEvent(eventData);
+      }
+
+      const newState = {
+        processing: {
+          txHash:null,
+          loading:false
+        },
+        txStatus:tx.status ? tx.status : 'error',
+      };
+
+      this.setState(newState);
+    };
+
+    const callbackReceipt = (tx) => {
+      const txHash = tx.transactionHash;
+      this.setState((prevState) => ({
+        processing: {
+          ...prevState.processing,
+          txHash
+        }
+      }));
+    };
+
+    const contractName = this.functionsUtil.getGlobalConfig(['governance','props','tokenName']);
+    this.functionsUtil.contractMethodSendWrapper(contractName, 'claimIdle', [this.props.account], callback, callbackReceipt);
+
+    this.setState((prevState) => ({
+      processing: {
+        ...prevState.processing,
+        loading:true
+      }
+    }));
   }
 
   closeModal = async (action) => {
@@ -163,21 +229,39 @@ class GovModal extends React.Component {
               <Flex
                 mb={3}
                 width={1}
+                zIndex={10}
+                position={'relative'}
                 alignItems={'center'}
                 justifyContent={'center'}
               >
-                <RoundButton
-                  buttonProps={{
-                    color:'blue',
-                    width:[1,'45%'],
-                    mainColor:'white',
-                    contrastColor:'blue',
-                    disabled:!this.state.unclaimed || this.state.unclaimed.lte(0)
-                  }}
-                  handleClick={this.claim.bind(this)}
-                >
-                  Claim
-                </RoundButton>
+                {
+                  // Sending transaction
+                  this.state.processing && this.state.processing.loading ? (
+                    <TxProgressBar
+                      textColor={'white'}
+                      web3={this.props.web3}
+                      cancelTextColor={'moon-gray'}
+                      cancelTextHoverColor={'white'}
+                      waitText={`Claim estimated in`}
+                      hash={this.state.processing.txHash}
+                      endMessage={`Finalizing Claim request...`}
+                      cancelTransaction={this.cancelTransaction.bind(this)}
+                    />
+                  ) : (
+                    <RoundButton
+                      buttonProps={{
+                        color:'blue',
+                        width:[1,'45%'],
+                        mainColor:'white',
+                        contrastColor:'blue',
+                        // disabled:!this.state.unclaimed || this.state.unclaimed.lte(0)
+                      }}
+                      handleClick={this.claim.bind(this)}
+                    >
+                      Claim
+                    </RoundButton>
+                  )
+                }
               </Flex>
             </Flex>
           </ModalCard.Body>
