@@ -47,7 +47,8 @@ class PortfolioDonut extends Component {
         const token = Object.keys(this.props.availableTokens)[parseInt(label.innerHTML)];
         const $g = window.jQuery(label).parent('g');
         if (token && $g.length){
-          $g.get(0).innerHTML = `<image href="images/tokens/${token}.svg" x="-${iconSize/2}" y="-${iconSize/2}" width="${iconSize}" height="${iconSize}" />`;
+          const tokenImage = token.icon ? token.icon : `images/tokens/${token}.svg`;
+          $g.get(0).innerHTML = `<image href="${tokenImage}" x="-${iconSize/2}" y="-${iconSize/2}" width="${iconSize}" height="${iconSize}" />`;
         }
       });
     }
