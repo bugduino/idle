@@ -1,8 +1,10 @@
 import Faq from '../Faq/Faq';
+import Title from '../Title/Title';
 import Footer from '../Footer/Footer';
 import React, { Component } from 'react';
 import styles from './Landing.module.scss';
-import Partners from '../Partners/Partners';
+import FlexCards from '../FlexCards/FlexCards';
+import HowItWorks from '../HowItWorks/HowItWorks';
 import RoundButton from '../RoundButton/RoundButton';
 import globalConfigs from '../configs/globalConfigs';
 import StrategyBox from '../StrategyBox/StrategyBox';
@@ -11,10 +13,9 @@ import NewsletterForm from '../NewsletterForm/NewsletterForm';
 import RoundIconButton from '../RoundIconButton/RoundIconButton';
 import { Image, Flex, Box, Heading, Link, Text } from 'rimble-ui';
 import FloatingToastMessage from '../FloatingToastMessage/FloatingToastMessage';
+import AssetsUnderManagement from '../AssetsUnderManagement/AssetsUnderManagement';
 
 let scrolling = false;
-let scrollTimeoutID;
-let componentUnmounted;
 
 class Landing extends Component {
   state = {
@@ -25,7 +26,6 @@ class Landing extends Component {
     runConfetti:false,
     activeBullet:null,
     protocolsAprs:null,
-    startCarousel:null,
     testPerformed:false,
     totalAllocation:null,
     carouselOffsetLeft:0,
@@ -37,7 +37,6 @@ class Landing extends Component {
 
   // Clear all the timeouts
   async componentWillUnmount(){
-    componentUnmounted = true;
     // console.log('Landing.js componentWillUnmount');
     var id = window.setTimeout(function() {}, 0);
 
@@ -61,27 +60,6 @@ class Landing extends Component {
     this.loadUtils();
   }
 
-  startCarousel = async () => {
-    /*
-    if (!this.props.isMobile){
-      if (this.state.carouselIntervalID){
-        window.clearTimeout(this.state.carouselIntervalID);
-      }
-      const carouselIntervalID = window.setTimeout( async () => setActiveCarousel(this.state.activeCarousel+1) ,6500);
-      this.setState({
-        carouselIntervalID
-      });
-    }
-    */
-    if (this.state.carouselIntervalID){
-      window.clearInterval(this.state.carouselIntervalID);
-    }
-    const carouselIntervalID = window.setInterval(() => { !componentUnmounted && this.setActiveCarousel(this.state.activeCarousel+1) },9000);
-    this.setState({
-      carouselIntervalID
-    });
-  }
-
   setActiveCarousel = (activeCarousel) => {
     activeCarousel = activeCarousel<=3 ? activeCarousel : 1;
     this.setState({activeCarousel});
@@ -89,28 +67,6 @@ class Landing extends Component {
 
   async componentDidMount(){
     this.props.processCustomParam(this.props);
-
-    componentUnmounted = false;
-    scrollTimeoutID = null;
-
-    window.onscroll = async () => {
-      if (componentUnmounted){
-        return false;
-      }
-      if (scrollTimeoutID){
-        window.clearTimeout(scrollTimeoutID);
-      }
-      scrollTimeoutID = window.setTimeout( async () => {
-        scrolling = true;
-        this.processScrolling();
-      },150);
-    };
-
-    if (!this.props.isMobile && !this.state.carouselIntervalID){
-      this.startCarousel();
-    }
-
-    this.loadCarousel();
 
     if (this.props.contractsInitialized){
       // await Promise.all([
@@ -138,13 +94,6 @@ class Landing extends Component {
     });
   }
 
-  loadCarousel(){
-    const carouselMax = this.props.isMobile ? 2 : 1;
-    this.setState({
-      carouselMax
-    });
-  }
-
   async componentDidUpdate(prevProps, prevState) {
 
     this.loadUtils();
@@ -157,11 +106,6 @@ class Landing extends Component {
       //   this.getAprs(),
       //   this.getAllocations()
       // ]);
-    }
-
-    const mobileChanged = prevProps.isMobile !== this.props.isMobile;
-    if (mobileChanged){
-      this.loadCarousel();
     }
   }
 
@@ -507,568 +451,10 @@ class Landing extends Component {
                 </Flex>
               </Flex>
             </Flex>
-            {
-              /*
-              <Flex
-                py={[3,4]}
-                mb={[3,5]}
-                alignItems={'center'}
-                flexDirection={'column'}
-              >
-                <Link
-                  fontSize={2}
-                  fontWeight={3}
-                  color={'dark-gray'}
-                  textAlign={'center'}
-                  hoverColor={'dark-gray'}
-                  onClick={(e) => {this.functionsUtil.scrollTo(document.getElementById('how-it-works').offsetTop,300)}}
-                >
-                  <Flex flexDirection={'column'} py={[2,1]} alignItems={'center'}>
-                    <Box>
-                      <Icon
-                        size={"2.5em"}
-                        align={'center'}
-                        color={'dark-gray'}
-                        name={'KeyboardArrowDown'}
-                        className={styles.bounceArrow}
-                      />
-                    </Box>
-                  </Flex>
-                </Link>
-              </Flex>
-              */
-            }
           </Box>
         </Box>
 
-        <Box
-          p={[3,4]}
-          id={'how-it-works'}
-        >
-          <Flex flexDirection={['column','column']} alignItems={'center'} justifyContent={'center'}>
-            <Box
-              mb={[3,5]}
-            >
-              <Heading.h4
-                fontWeight={5}
-                fontSize={[5,6]}
-                color={'dark-gray'}
-                textAlign={'center'}
-                lineHeight={'initial'}
-              >
-                How it works
-              </Heading.h4>
-            </Box>
-            <Flex alignItems={'center'} flexDirection={'column'} width={1} maxWidth={['24em','90em']}>
-              <Flex flexDirection={['column','row']} height={['auto','275px']}>
-                <Flex width={[1,1/2]} justifyContent={['center','flex-end']} alignItems={['center','start']}>
-                  <Flex flexDirection={['column','row']} position={'relative'} className={['bulletCard',styles.bulletCard,styles.bulletCardFirst,this.state.activeBullet>=1 ? styles.bulletCardActive :null]} width={[1,5/7]} p={[3,4]}>
-                    {
-                      !this.props.isMobile && (
-                        <Flex width={1/4} p={[2,2]} alignItems={'center'} justifyContent={'center'}>
-                          <Image width={1} src={'images/how-it-works/choose-strategy.svg'} />
-                        </Flex>
-                      )
-                    }
-                    <Box width={[1,3/4]} pl={[0,2]}>
-                      <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
-                        Choose your strategy
-                      </Heading.h3>
-                      {
-                        this.props.isMobile && (
-                          <Flex width={1} p={[2,2]} alignItems={'center'} justifyContent={'center'}>
-                            <Image width={1/5} src={'images/how-it-works/choose-strategy.svg'} />
-                          </Flex>
-                        )
-                      }
-                      <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5}>
-                        Build your portfolio with different allocation strategies that aim to maximize your returns and keeping you in your risk comfort zone
-                      </Heading.h4>
-                    </Box>
-                  </Flex>
-                </Flex>
-                <Flex position={'relative'} width={[1,1/2]} zIndex={'-1'}>
-                  <Flex width={[1,6/8]} alignItems={['center','flex-end']}>
-                    <Box className={[styles.bentTube,styles.bentTubeRight,this.state.activeBullet>=2 ? styles.bentTubeActive : null]} position={'relative'} width={1/2} height={['120px','175px']} borderRadius={[0,'0 50px 0 0']} borderTop={[0,'15px solid rgba(0,54,255,0.1)']} borderRight={['10px solid rgba(0,54,255,0.1)','15px solid rgba(0,54,255,0.1)']}>
-                      <Text position={'absolute'} display={'block'} className={[styles.bulletPoint,!this.props.isMobile ? styles.bulletLeft : styles.bulletTop]}></Text>
-                      <Text position={'absolute'} display={'block'} className={[styles.bulletPoint,styles.bulletBottom]}></Text>
-                    </Box>
-                  </Flex>
-                </Flex>
-              </Flex>
-
-              <Flex flexDirection={['column','row']} justifyContent={'flex-end'} height={['auto','275px']}>
-                {
-                  !this.props.isMobile && (
-                    <Flex width={[1,1/2]} justifyContent={['center','flex-end']} zIndex={'-1'}>
-                      <Flex width={[1,6/8]} justifyContent={['center','flex-end']} alignItems={['center','flex-end']}>
-                        <Box className={[styles.bentTube,styles.bentTubeLeft,this.state.activeBullet>=3 ? styles.bentTubeActive : null]} position={'relative'} width={1/2} height={['120px','175px']} borderRadius={'50px 0 0 0'} borderTop={'15px solid rgba(0,54,255,0.1)'} borderLeft={'15px solid rgba(0,54,255,0.1)'}>
-                          <Text position={'absolute'} display={'block'} className={[styles.bulletPoint,!this.props.isMobile ? styles.bulletRight : styles.bulletTop]}></Text>
-                          <Text position={'absolute'} display={'block'} className={[styles.bulletPoint,styles.bulletBottomLeft]}></Text>
-                        </Box>
-                      </Flex>
-                    </Flex>
-                  )
-                }
-                <Flex width={[1,1/2]} justifyContent={'flex-start'} alignItems={'start'}>
-                  <Flex flexDirection={['column','row']} position={'relative'} className={['bulletCard',styles.bulletCard,this.state.activeBullet>=2 ? styles.bulletCardActive :null]} width={[1,5/7]} p={[3,4]}>
-                    <Box width={[1,3/4]} pl={[0,2]}>
-                      <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
-                        Deposit your stablecoin
-                      </Heading.h3>
-                      {
-                        this.props.isMobile && (
-                          <Flex width={1} p={[2,2]} alignItems={'center'} justifyContent={'center'}>
-                            <Image width={1/5} src={'images/how-it-works/deposit-stablecoins.svg'} />
-                          </Flex>
-                        )
-                      }
-                      <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5}>
-                        Just deposit and relax. Your funds will be automatically allocated among DeFi protocols and you will immediately start earning interest.
-                      </Heading.h4>
-                    </Box>
-                    {
-                      !this.props.isMobile && (
-                        <Flex width={1/4} p={[2,2]} alignItems={'center'} justifyContent={'center'}>
-                          <Image width={1} src={'images/how-it-works/deposit-stablecoins.svg'} />
-                        </Flex>
-                      )
-                    }
-                  </Flex>
-                </Flex>
-                {
-                  this.props.isMobile && (
-                    <Flex width={[1,1/2]}>
-                      <Flex width={[1,6/8]} alignItems={['center','flex-end']}>
-                        <Box className={[styles.bentTube,this.state.activeBullet>=3 ? styles.bentTubeActive : null]} position={'relative'} width={1/2} height={['120px','175px']} borderRadius={[0,'0 50px 0 0']} borderTop={[0,'15px solid rgba(0,54,255,0.1)']} borderRight={['10px solid rgba(0,54,255,0.1)','15px solid rgba(0,54,255,0.1)']}>
-                          <Text position={'absolute'} display={'block'} className={[styles.bulletPoint,!this.props.isMobile ? styles.bulletLeft : styles.bulletTop]}></Text>
-                          <Text position={'absolute'} display={'block'} className={[styles.bulletPoint,styles.bulletBottom]}></Text>
-                        </Box>
-                      </Flex>
-                    </Flex>
-                  )
-                }
-              </Flex>
-
-              <Flex flexDirection={['column','row']} height={['auto','275px']}>
-                <Flex width={[1,1/2]} justifyContent={['center','flex-end']} alignItems={['center','start']}>
-                  <Flex flexDirection={['column','row']} position={'relative'} className={['bulletCard',styles.bulletCard,this.state.activeBullet>=3 ? styles.bulletCardActive :null]} width={[1,5/7]} p={[3,4]}>
-                    {
-                      !this.props.isMobile && (
-                        <Flex width={1/4} p={[2,2]} alignItems={'center'} justifyContent={'center'}>
-                          <Image width={1} src={'images/how-it-works/rebalance.svg'} />
-                        </Flex>
-                      )
-                    }
-                    <Box width={[1,3/4]} pl={[0,2]}>
-                      <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
-                        Automated Rebalancing
-                      </Heading.h3>
-                      {
-                        this.props.isMobile && (
-                          <Flex width={1} p={[2,2]} alignItems={'center'} justifyContent={'center'}>
-                            <Image width={1/5} src={'images/how-it-works/rebalance.svg'} />
-                          </Flex>
-                        )
-                      }
-                      <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5}>
-                        Idle automatically keeps the appropriate allocation mix, depending on the strategy. Idle consistently checks for better opportunities.
-                      </Heading.h4>
-                    </Box>
-                  </Flex>
-                </Flex>
-                <Flex width={[1,1/2]} zIndex={'-1'}>
-                  <Flex width={[1,6/8]} alignItems={['center','flex-end']}>
-                    <Box className={[styles.bentTube,styles.bentTubeRight,this.state.activeBullet>=4 ? styles.bentTubeActive : null]} position={'relative'} width={1/2} height={['120px','175px']} borderRadius={[0,'0 50px 0 0']} borderTop={[0,'15px solid rgba(0,54,255,0.1)']} borderRight={['10px solid rgba(0,54,255,0.1)','15px solid rgba(0,54,255,0.1)']}>
-                      <Text position={'absolute'} display={'block'} className={[styles.bulletPoint,!this.props.isMobile ? styles.bulletLeft : styles.bulletTop]}></Text>
-                      <Text position={'absolute'} display={'block'} className={[styles.bulletPoint,styles.bulletBottom]}></Text>
-                    </Box>
-                  </Flex>
-                </Flex>
-              </Flex>
-
-              <Flex flexDirection={['column','row']} justifyContent={'flex-end'} height={['auto','275px']}>
-                <Flex width={[1,1/2]} justifyContent={'flex-end'}>
-
-                </Flex>
-                <Flex width={[1,1/2]} justifyContent={['center','flex-start']} alignItems={['center','start']}>
-                  <Flex flexDirection={['column','row']} position={'relative'} className={['bulletCard',styles.bulletCard,this.state.activeBullet>=4 ? styles.bulletCardActive :null]} width={[1,5/7]} p={[3,4]}>
-                    <Box width={[1,3/4]} pl={[0,2]}>
-                      <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} mb={[2,2]} color={'blue'}>
-                        Easy insights and redeem
-                      </Heading.h3>
-                      {
-                        this.props.isMobile && (
-                          <Flex width={1} p={2} alignItems={'center'} justifyContent={'center'}>
-                            <Image width={1/5} src={'images/how-it-works/insights-redeem.svg'} />
-                          </Flex>
-                        )
-                      }
-                      <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5}>
-                        Monitor your funds’ performance and rebalance events, see your estimated earnings and easlily redeem back your funds + interest.
-                      </Heading.h4>
-                    </Box>
-                    {
-                      !this.props.isMobile && (
-                        <Flex width={1/4} p={2} alignItems={'center'} justifyContent={'center'}>
-                          <Image width={1} src={'images/how-it-works/insights-redeem.svg'} />
-                        </Flex>
-                      )
-                    }
-                  </Flex>
-                </Flex>
-              </Flex>
-            </Flex>
-          </Flex>
-        </Box>
-
-        {
-          /*
-          <Flex position={'relative'} justifyContent={'center'} alignItems={'center'} height={['auto','850px']} pt={0} pb={[4,6]}>
-            <Flex id={'chart-container'} width={1} flexDirection={'column'} maxWidth={['35em','70em']}>
-              <Heading.h4 color={'dark-gray'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]} textAlign={'center'} alignItems={'center'}>
-                Maximize interest return
-              </Heading.h4>
-              <Flex width={1} alignItems={'center'} justifyContent={'center'} px={[3,0]}>
-                <DefiPrimeEquityChart
-                  tokenConfig={this.props.tokenConfig}
-                  selectedToken={'SAI'}
-                  isMobile={this.props.isMobile}
-                  account={this.props.account}
-                  web3={this.props.web3}
-                />
-              </Flex>
-            </Flex>
-          </Flex>
-          */
-        }
-
-        <Flex className={styles.gradientBackground} position={'relative'} justifyContent={'center'} alignItems={'center'} height={['auto','600px']} mt={[4,3]} p={[4,6]}>
-          <Flex width={1} flexDirection={['column','row']} maxWidth={['35em','70em']}>
-            <Flex width={[1,1/2]} justifyContent={'center'} flexDirection={'column'}>
-              <Box>
-                <Heading.h4
-                  fontWeight={5}
-                  fontSize={[4,6]}
-                  color={'dark-gray'}
-                  textAlign={['center','left']}
-                >
-                  We believe money
-                </Heading.h4>
-              </Box>
-              <Box>
-                <Heading.h4 color={'blue'} fontWeight={5} lineHeight={'initial'} fontSize={[4,6]} textAlign={['center','left']}>
-                  should never sit still
-                </Heading.h4>
-              </Box>
-              <Box position={'relative'}>
-                <Box className={[styles.carouselDesc,this.state.activeCarousel===1 || this.props.isMobile ? styles.selected : '']} py={[3,0]} my={[3,0]}>
-                  {
-                    this.props.isMobile && (
-                      <Flex justifyContent={'center'}>
-                        <Image src={'images/values/non-custodial.svg'} pb={2} width={1/4} />
-                      </Flex>
-                    )
-                  }
-                  <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} my={[3,4]} color={'dark-gray'}>
-                    100% non-custodial, and secured by audit.
-                  </Heading.h3>
-                  <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5} color={'dark-gray'}>
-                    Audited by Quantstamp (<Link href="https://certificate.quantstamp.com/full/idle-finance" hoverColor={'blue'} target="_blank" rel="nofollow noopener noreferrer">view the report</Link>) and reviewed ConsenSys Diligence, our set of smart contracts allows our users to remain in control of their funds all the time.
-                  </Heading.h4>
-                </Box>
-                <Box className={[styles.carouselDesc,this.state.activeCarousel===2 || this.props.isMobile ? styles.selected : '']} py={[3,0]} my={[3,0]}>
-                  {
-                    this.props.isMobile && (
-                      <Flex justifyContent={'center'}>
-                        <Image src={'images/values/no-stress.svg'} pb={2} width={1/4} />
-                      </Flex>
-                    )
-                  }
-                  <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} my={[3,4]} color={'dark-gray'}>
-                    Just relax and watch your interest grow
-                  </Heading.h3>
-                  <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5} color={'dark-gray'}>
-                    Don't lose your mind checking all the rates on different DeFi protocols, let Idle do the dirty work and save your time.
-                  </Heading.h4>
-                </Box>
-                <Box className={[styles.carouselDesc,this.state.activeCarousel===3 || this.props.isMobile ? styles.selected : '']} py={[3,0]} my={[3,0]}>
-                  {
-                    this.props.isMobile && (
-                      <Flex justifyContent={'center'}>
-                        <Image src={'images/values/cost-efficent.svg'} pb={2} width={1/4} />
-                      </Flex>
-                    )
-                  }
-                  <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} my={[3,4]} color={'dark-gray'}>
-                    Save money while optimizing your interest rate returns
-                  </Heading.h3>
-                  <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={['center','left']} fontWeight={2} lineHeight={1.5} color={'dark-gray'}>
-                    Save money without burning gas on every transfer, optimize your rates and automatically get your money on the best possible allocation.
-                  </Heading.h4>
-                </Box>
-              </Box>
-            </Flex>
-            {
-              !this.props.isMobile && (
-                <Flex flexDirection={'column'} width={[1,1/2]} justifyContent={'flex-end'} alignItems={'flex-end'}>
-                  <Box width={'550px'} position={'relative'} minHeight={'500px'}>
-                    <Flex flexDirection={'column'} textAlign={'center'} alignItems={'center'} justifyContent={'center'} className={[styles.carouselItem,this.state.activeCarousel===1?  styles.pos1 : (this.state.activeCarousel===2 ? styles.pos3 : styles.pos2) ]} boxShadow={ this.state.activeCarousel===1 ? 4 : 1} m={[2,3]} onClick={e => this.setActiveCarousel(1)}>
-                      <Image src={'images/values/non-custodial.svg'} pb={2} />
-                      <Text fontSize={3} fontWeight={3} color={'dark-gray'}>Non Custodial</Text>
-                    </Flex>
-                    <Flex flexDirection={'column'} textAlign={'center'} alignItems={'center'} justifyContent={'center'} className={[styles.carouselItem,this.state.activeCarousel===2 ? styles.pos1 : (this.state.activeCarousel===1 ? styles.pos2 : styles.pos3)]} boxShadow={ this.state.activeCarousel===2 ? 4 : 1} m={[2,3]} onClick={e => this.setActiveCarousel(2)}>
-                      <Image src={'images/values/no-stress.svg'} pb={2} />
-                      <Text fontSize={3} fontWeight={3} color={'dark-gray'}>No Stress</Text>
-                    </Flex>
-                    <Flex flexDirection={'column'} textAlign={'center'} alignItems={'center'} justifyContent={'center'} className={[styles.carouselItem,this.state.activeCarousel===3 ? styles.pos1 : (this.state.activeCarousel===2 ? styles.pos2 : styles.pos3)]} boxShadow={ this.state.activeCarousel===3 ? 4 : 1} m={[2,3]} onClick={e => this.setActiveCarousel(3)}>
-                      <Image src={'images/values/cost-efficent.svg'} pb={2} />
-                      <Text fontSize={3} fontWeight={3} color={'dark-gray'}>Cost Efficent</Text>
-                    </Flex>
-                  </Box>
-                  <Flex width={1} alignItems={'center'} justifyContent={'center'} position={'relative'} zIndex={'10'}>
-                    <Link className={[styles.carouselNav,this.state.activeCarousel===1 ? styles.selected : '']} onClick={e => this.setActiveCarousel(1)}></Link>
-                    <Link className={[styles.carouselNav,this.state.activeCarousel===2 ? styles.selected : '']} onClick={e => this.setActiveCarousel(2)}></Link>
-                    <Link className={[styles.carouselNav,this.state.activeCarousel===3 ? styles.selected : '']} onClick={e => this.setActiveCarousel(3)}></Link>
-                  </Flex>
-                </Flex>
-              )
-            }
-          </Flex>
-        </Flex>
-
-        {
-        /*
-        <Flex className={styles.gradientBackground} flexDirection={'column'} position={'relative'} justifyContent={'center'} alignItems={'center'} p={[3,6]} pb={[4,6]}>
-          {
-            this.props.isMobile ? (
-              <Flex position={'relative'} zIndex={'10'} flexDirection={'column'} justifyContent={'center'} alignItems={'center'} width={1} maxWidth={['35em','70em']}>
-                <Flex width={1} flexDirection={'column'} alignItems={'center'} justifyContent={'center'}>
-                  <Heading.h3 color={'dark-gray'} textAlign={'center'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]}>
-                    Underlying protocol allocation
-                  </Heading.h3>
-                  <AllocationChart width={ Math.min(this.props.innerWidth*0.85,500) } height={Math.min(this.props.innerWidth*0.85,500)} tokenConfig={this.props.tokenConfig} protocolsAllocations={this.state.protocolsAllocations} totalAllocation={this.state.totalAllocation} />
-                </Flex>
-              </Flex>
-            ) : (
-              <Flex position={'relative'} zIndex={'10'} flexDirection={'column'} justifyContent={'flex-start'} alignItems={'flex-start'} width={1} maxWidth={['35em','70em']}>
-                <Flex width={1} flexDirection={['column','row']} alignItems={'center'}>
-                  {
-                    !this.props.isMobile && (
-                    <Box width={1/2}>
-                      <Heading.h3 color={'dark-gray'} textAlign={'left'} fontWeight={4} lineHeight={'initial'} fontSize={[4,4]}>
-                        Underlying protocol allocation
-                      </Heading.h3>
-                    </Box>
-                    )
-                  }
-                  <Flex width={[1,1/2]} flexDirection={'column'}>
-                    <Heading.h3 color={'dark-gray'} textAlign={'center'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]}>
-                      Get the best APR, always.
-                    </Heading.h3>
-                  </Flex>
-                </Flex>
-                <Flex flexDirection={['column','row']} width={[1,7/8]} mt={4}>
-                  <Flex width={[1,1/2]} flexDirection={['row','column']}>
-                    {
-                      this.props.tokenConfig.protocols.map((protocolInfo,i)=>{
-                        const protocolAddr = protocolInfo.address.toLowerCase();
-                        const protocolName = protocolInfo.name;
-                        const protocolToken = protocolInfo.token;
-                        const protocolEnabled = protocolInfo.enabled;
-
-                        const protocolApr = this.state.protocolsAprs && this.state.protocolsAprs[protocolAddr] ? this.state.protocolsAprs[protocolAddr].toFixed(2) : null;
-                        const protocolLoaded = this.state.totalAllocation && this.state.protocolsAllocations && this.state.protocolsAllocations[protocolAddr];
-                        const protocolAllocation = protocolLoaded ? parseFloat(this.state.protocolsAllocations[protocolAddr]) : null;
-                        const protocolAllocationPerc = protocolAllocation !== null ? parseFloat(protocolAllocation)/parseFloat(this.state.totalAllocation.toString()) : null;
-                        const protocolOpacity = !protocolEnabled ? 0.3 : (protocolAllocationPerc ? maxOpacity : minOpacity);
-                        const protocolAllocationPercParsed = !protocolEnabled ? 'paused' : (protocolAllocationPerc === null ? '-' : (protocolAllocationPerc*100).toFixed(2));
-
-                        let output = null;
-                        const protocolColor = protocolEnabled ? globalConfigs.stats.protocols[protocolName].color.rgb.join(',') : '200,200,200';
-                        const boxShadow = `0px 0px 16px 2px rgba(${protocolColor},${protocolOpacity})`;
-
-                        switch (protocolLen){
-                          case 2:
-                            output = (
-                              <Flex key={`allocation_${protocolName}`} width={[1/2,1]} flexDirection={['column','row']} mr={ !i ? [1,0] : null} mt={ i ? [0,4] : null} ml={ i ? [1,0] : null}>
-                                <Flex width={[1,1/2]} flexDirection={'column'}>
-                                  <Flex flexDirection={'row'} justifyContent={'center'} alignItems={'center'}>
-                                    <Image src={`images/tokens/${protocolToken}.svg`} height={['1.3em', '2em']} mr={[1,2]} my={[2,0]} verticalAlign={['middle','bottom']} />
-                                    <Text.span fontSize={[2,3]} textAlign={['center','left']} fontWeight={3} color={'dark-gray'}>
-                                      {protocolToken}
-                                    </Text.span>
-                                  </Flex>
-                                  <Box>
-                                    <Card my={[2,2]} pt={protocolEnabled ? '10px' : 3} pb={protocolEnabled ? '21px' : 3} px={3} borderRadius={'10px'} boxShadow={protocolAllocationPerc>0 ? boxShadow : 1}>
-                                      <Flex flexDirection={'column'}>
-                                        <Text color={protocolEnabled ? 'copyColor' : 'darkGray' } fontSize={[4,5]} fontWeight={4} textAlign={'center'}>{protocolAllocationPercParsed}{ protocolEnabled ? <Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span> : null }</Text>
-                                        {
-                                          protocolEnabled &&
-                                            <Text position={'absolute'} color={'#777'} fontSize={'14px'} fontWeight={2} textAlign={'center'} style={{left:0,bottom:'5px',width:'100%'}}>{protocolApr ? protocolApr : '-'}<Text.span color={'#777'} fontWeight={2} fontSize={'80%'}>% APR</Text.span></Text>
-                                        }
-                                      </Flex>
-                                    </Card>
-                                  </Box>
-                                </Flex>
-
-                                {
-                                  !i ? (
-                                    <Box width={1/2} zIndex={'-1'} position={'relative'} height={'80px'} borderRadius={['0 0 0 30px','0 50px 0 0']} borderBottom={[`10px solid rgba(${protocolColor},${protocolOpacity})`,0]} borderLeft={[`10px solid rgba(${protocolColor},${protocolOpacity})`,0]}  borderTop={[0,`15px solid rgba(${protocolColor},${protocolOpacity})`]} borderRight={[0,`15px solid rgba(${protocolColor},${protocolOpacity})`]} top={['-10px','75px']} left={['48%',0]}>
-                                      <Box position={'absolute'} display={'block'} borderColor={`rgb(${protocolColor}) !important`} className={[styles.bulletPoint,styles.bulletLeft,this.props.isMobile ? styles.bulletMobile : '']}></Box>
-                                    </Box>
-                                  ) : (
-                                    <Box width={1/2} zIndex={'-1'} position={'relative'} height={['80px','72px']} borderRadius={['0 0 30px 0','0 0 50px 0']} borderBottom={[`10px solid rgba(${protocolColor},${protocolOpacity})`,`15px solid rgba(${protocolColor},${protocolOpacity})`]} borderRight={[`10px solid rgba(${protocolColor},${protocolOpacity})`,`15px solid rgba(${protocolColor},${protocolOpacity})`]} top={['-10px','18px']} left={['0%',0]}>
-                                      <Box position={'absolute'} display={'block'} borderColor={`rgb(${protocolColor}) !important`} className={[styles.bulletPoint,styles.bulletBottomBottom,this.props.isMobile ? styles.bulletMobile : '']}></Box>
-                                    </Box>
-                                  )
-                                }
-                              </Flex>
-                            );
-                          break;
-                          case 3:
-                            switch (i){
-                              case 0:
-                                output = (
-                                  <Flex key={`allocation_${protocolName}`} width={[1/2,1]} flexDirection={['column','row']} mr={[1,0]} position={'relative'}>
-                                    <Flex width={[1,1/2]} flexDirection={'column'}>
-                                      <Flex flexDirection={'row'} justifyContent={'center'} alignItems={'center'}>
-                                        <Image src={`images/tokens/${protocolToken}.svg`} height={['1.3em', '2em']} mr={[1,2]} my={[2,0]} verticalAlign={['middle','bottom']} />
-                                        <Text.span fontSize={[2,3]} textAlign={['center','left']} fontWeight={3} color={'dark-gray'}>
-                                          {protocolToken}
-                                        </Text.span>
-                                      </Flex>
-                                      <Box>
-                                        <Card my={[2,2]} pt={protocolEnabled ? '10px' : 3} pb={protocolEnabled ? '21px' : 3} px={3} borderRadius={'10px'} boxShadow={protocolAllocationPerc>0 ? boxShadow : 1}>
-                                          <Flex flexDirection={'column'}>
-                                            <Text color={protocolEnabled ? 'copyColor' : 'darkGray' } fontSize={[4,5]} fontWeight={4} textAlign={'center'}>{protocolAllocationPercParsed}{ protocolEnabled ? <Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span> : null }</Text>
-                                            {
-                                              protocolEnabled &&
-                                                <Text position={'absolute'} color={'#777'} fontSize={'14px'} fontWeight={2} textAlign={'center'} style={{left:0,bottom:'5px',width:'100%'}}>{protocolApr ? protocolApr : '-'}<Text.span color={'#777'} fontWeight={2} fontSize={'80%'}>% APR</Text.span></Text>
-                                            }
-                                          </Flex>
-                                        </Card>
-                                      </Box>
-                                    </Flex>
-                                    <Box width={1/2} zIndex={'-1'} position={['relative','absolute']} height={['80px','150px']} borderRadius={['0 0 0 30px','0 50px 0 0']} borderBottom={[`10px solid rgba(${protocolColor},${protocolOpacity})`,0]} borderLeft={[`10px solid rgba(${protocolColor},${protocolOpacity})`,0]}  borderTop={[0,`15px solid rgba(${protocolColor},${protocolOpacity})`]} borderRight={[0,`15px solid rgba(${protocolColor},${protocolOpacity})`]} top={['-10px','75px']} left={['48%','50%']}>
-                                      <Box position={'absolute'} display={'block'} borderColor={`rgb(${protocolColor}) !important`} className={[styles.bulletPoint,styles.bulletLeft,this.props.isMobile ? styles.bulletMobile : '']}></Box>
-                                    </Box>
-                                  </Flex>
-                                );
-                              break;
-                              case 1:
-                                output = (
-                                  <Flex key={`allocation_${protocolName}`} width={[1/2,1]} flexDirection={['column','row']} mt={[0,4]} ml={[1,0]}>
-                                    <Flex width={[1,1/2]} flexDirection={'column'}>
-                                      <Flex flexDirection={'row'} justifyContent={'center'} alignItems={'center'}>
-                                        <Image src={`images/tokens/${protocolToken}.svg`} height={['1.3em', '2em']} mr={[1,2]} my={[2,0]} verticalAlign={['middle','bottom']} />
-                                        <Text.span fontSize={[2,3]} textAlign={['center','left']} fontWeight={3} color={'dark-gray'}>
-                                          {protocolToken}
-                                        </Text.span>
-                                      </Flex>
-                                      <Box>
-                                        <Card my={[2,2]} pt={protocolEnabled ? '10px' : 3} pb={protocolEnabled ? '21px' : 3} px={3} borderRadius={'10px'} boxShadow={protocolAllocationPerc>0 ? boxShadow : 1}>
-                                          <Text color={protocolEnabled ? 'copyColor' : 'darkGray' } fontSize={[4,5]} fontWeight={4} textAlign={'center'}>{protocolAllocationPercParsed}{ protocolEnabled ? <Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span> : null }</Text>
-                                          {
-                                            protocolEnabled &&
-                                              <Text position={'absolute'} color={'#777'} fontSize={'14px'} fontWeight={2} textAlign={'center'} style={{left:0,bottom:'5px',width:'100%'}}>{protocolApr ? protocolApr : '-'}<Text.span color={'#777'} fontWeight={2} fontSize={'80%'}>% APR</Text.span></Text>
-                                          }
-                                        </Card>
-                                      </Box>
-                                    </Flex>
-                                    <Box width={1/2} zIndex={'-1'} position={'relative'} height={['80px','72px']} borderRadius={0} borderBottom={[`10px solid rgba(${protocolColor},${protocolOpacity})`,`15px solid rgba(${protocolColor},${protocolOpacity})`]} top={['-10px','18px']} left={['0%',0]}>
-                                      <Box position={'absolute'} display={'block'} borderColor={`rgb(${protocolColor}) !important`} className={[styles.bulletPoint,styles.bulletBottomBottom,this.props.isMobile ? styles.bulletMobile : '']}></Box>
-                                    </Box>
-                                  </Flex>
-                                );
-                              break;
-                              case 2:
-                                output = (
-                                  <Flex key={`allocation_${protocolName}`} width={[1/2,1]} flexDirection={['column','row']} mt={[0,4]} ml={[1,0]} position={'relative'}>
-                                    <Flex width={[1,1/2]} flexDirection={'column'}>
-                                      <Flex flexDirection={'row'} justifyContent={'center'} alignItems={'center'}>
-                                        <Image src={`images/tokens/${protocolToken}.svg`} height={['1.3em', '2em']} mr={[1,2]} my={[2,0]} verticalAlign={['middle','bottom']} />
-                                        <Text.span fontSize={[2,3]} textAlign={['center','left']} fontWeight={3} color={'dark-gray'}>
-                                          {protocolToken}
-                                        </Text.span>
-                                      </Flex>
-                                      <Box>
-                                        <Card my={[2,2]} pt={protocolEnabled ? '10px' : 3} pb={protocolEnabled ? '21px' : 3} px={3} borderRadius={'10px'} boxShadow={protocolAllocationPerc>0 ? boxShadow : 1}>
-                                          <Text color={protocolEnabled ? 'copyColor' : 'darkGray' } fontSize={[4,5]} fontWeight={4} textAlign={'center'}>{protocolAllocationPercParsed}{ protocolEnabled ? <Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span> : null }</Text>
-                                          {
-                                            protocolEnabled &&
-                                              <Text position={'absolute'} color={'#777'} fontSize={'14px'} fontWeight={2} textAlign={'center'} style={{left:0,bottom:'5px',width:'100%'}}>{protocolApr ? protocolApr : '-'}<Text.span color={'#777'} fontWeight={2} fontSize={'80%'}>% APR</Text.span></Text>
-                                          }
-                                        </Card>
-                                      </Box>
-                                    </Flex>
-                                    <Box width={1/2} zIndex={'-1'} position={['relative','absolute']} height={['80px','150px']} borderRadius={['0 0 30px 0','0 0 50px 0']} borderBottom={[`10px solid rgba(${protocolColor},${protocolOpacity})`,`15px solid rgba(${protocolColor},${protocolOpacity})`]} borderRight={[`10px solid rgba(${protocolColor},${protocolOpacity})`,`15px solid rgba(${protocolColor},${protocolOpacity})`]} top={['-10px','-60px']} left={['0%','50%']}>
-                                      <Box position={'absolute'} display={'block'} borderColor={`rgb(${protocolColor}) !important`} className={[styles.bulletPoint,styles.bulletBottomBottom,this.props.isMobile ? styles.bulletMobile : '']}></Box>
-                                    </Box>
-                                  </Flex>
-                                );
-                              break;
-                              default:
-                                output = null;
-                              break;
-                            }
-                          break;
-                          default:
-                            output = null;
-                          break;
-                        }
-
-                        return output;
-                      })
-                    }
-                  </Flex>
-
-                  <Flex width={[1,1/2]} flexDirection={['column','row']}>
-                    <Flex zIndex={'-1'} width={[1,2/5]} flexDirection={['column','row']} position={'relative'} height={['50px','100%']}>
-                      <Box className={styles.rebalanceCircle} position={'absolute'} zIndex={'2'} width={['50px','72px']} height={['50px','72px']} backgroundColor={'white'} borderRadius={'50%'} boxShadow={2} left={['50%','-44px']} top={['0','49%']} mt={['-41px','-14px']} ml={['-25px',0]}></Box>
-                      <Box position={'absolute'} zIndex={'1'} width={['20%','100%']} height={['100px','auto']} top={[0, protocolLen === 3 ? '52%' : '54%' ]} left={['50%',0]} ml={['-5px',0]} borderLeft={[`10px solid rgba(0,54,255,${idleOpacity})`,'0']} borderTop={[0,`15px solid rgba(0,54,255,${idleOpacity})`]}></Box>
-                      <Box position={'absolute'} display={['none','block']} className={styles.bulletPoint} borderLeft={'15px solid #0036ff'} top={ protocolLen === 3 ? '50%' : '51%' } right={'-15px'}></Box>
-                    </Flex>
-                    <Flex width={[1,3/5]} flexDirection={'column'} position={'relative'}>
-                      <Flex width={1} flexDirection={'column'} height={'100%'} justifyContent={'center'}>
-                        <Flex justifyContent={'center'} alignItems={'center'} mt={0}>
-                          <Image src={`images/tokens/${this.props.tokenConfig.idle.token}.png`} height={['1.3em', '2em']} mr={[1,2]} verticalAlign={'middle'} />
-                          <Text.span fontSize={[4,5]} textAlign={'center'} fontWeight={3} color={'dark-gray'}>
-                            {this.props.tokenConfig.idle.token}
-                          </Text.span>
-                        </Flex>
-                        <Box>
-                          <Card my={[2,2]} p={4} borderRadius={'10px'} boxShadow={avgApr ? `0px 0px 16px 2px rgba(0,54,255,${maxOpacity})` : 0}>
-                            <Text fontSize={[5,7]} fontWeight={4} textAlign={'center'}>
-                              {avgApr ? avgApr : '-' }<Text.span fontWeight={3} fontSize={['90%','70%']}>%</Text.span>
-                            </Text>
-                          </Card>
-                        </Box>
-                      </Flex>
-                    </Flex>
-                  </Flex>
-                </Flex>
-              </Flex>
-            )
-          }
-        </Flex>
-        */
-        }
-        {
-        /*
-        <Flex flexDirection={'column'} position={'relative'} justifyContent={'center'} alignItems={'center'} p={[3,5]} pb={[4,5]}>
-          <Flex position={'relative'} zIndex={'10'} flexDirection={'column'} justifyContent={'center'} alignItems={'center'} width={1} maxWidth={['35em','70em']}>
-            <Heading.h4 color={'dark-gray'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]} textAlign={'center'} alignItems={'center'}>
-              We just rely on the Best
-            </Heading.h4>
-            <Box width={1} mt={[3,4]}>
-              <DefiScoreTable tokenConfig={this.props.tokenConfig} />
-            </Box>
-          </Flex>
-        </Flex>
-
-        */
-        }
+        <HowItWorks />
 
         <Box
           pt={[4,5]}
@@ -1079,7 +465,285 @@ class Landing extends Component {
             mx={'auto'}
             maxWidth={['50em','70em']}
           >
-            <Partners
+            <Title
+              mb={3}
+              fontWeight={5}
+              fontSize={[5,6]}
+              component={Heading.h4}
+            >
+              Audited and Battle-tested
+            </Title>
+            <Text
+              fontSize={[2,3]}
+              fontWeight={500}
+              color={'cellTitle'}
+              textAlign={'center'}
+            >
+              We take security very seriusly, that's why our Smart-Contracts are fully Audited and battle-tested.
+            </Text>
+            <Flex
+              width={1}
+              alignItems={'center'}
+              flexDirection={'column'}
+              justifyContent={'center'}
+            >
+              <AssetsUnderManagement
+                {...this.props}
+                counterStyle={{
+                  display:'block',
+                  color:'dark-gray',
+                  textAlign: 'center',
+                  fontFamily:this.props.theme.fonts.counter,
+                  fontWeight:this.props.theme.fontWeights[5],
+                  fontSize: this.props.isMobile ? this.props.theme.fontSizes[6] : this.props.theme.fontSizes[8],
+                }}
+                subtitle={null}
+                subtitleProps={{
+                  textAlign:'center'
+                }}
+              />
+              <Link
+                target={'_blank'}
+                textAlign={'center'}
+                rel={'nofollow noopener noreferrer'}
+                href={'https://certificate.quantstamp.com/view/idle-finance'}
+              >
+                <Image
+                  width={'15em'}
+                  src={'images/quantstamp-badge.svg'}
+                />
+              </Link>
+            </Flex>
+          </Box>
+        </Box>
+
+        <Box
+          pt={[4,5]}
+          pb={[4,4]}
+          id={'integrators'}
+        >
+          <Box
+            mx={'auto'}
+            maxWidth={['50em','90em']}
+          >
+            <Title
+              mb={3}
+              fontWeight={5}
+              fontSize={[5,6]}
+              component={Heading.h4}
+            >
+              Integrators & Partners
+            </Title>
+            <Text
+              mb={3}
+              fontSize={[2,3]}
+              fontWeight={500}
+              color={'cellTitle'}
+              textAlign={'center'}
+            >
+              
+            </Text>
+            <Flex
+              width={1}
+              alignItems={'flex-start'}
+              flexDirection={['column','row']}
+              justifyContent={['center','space-between']}
+            >
+              <Flex
+                mb={[3,0]}
+                pr={[0,4]}
+                width={[1,0.45]}
+                flexDirection={'column'}
+                justifyContent={'center'}
+                alignItems={['center','flex-start']}
+              >
+                <FlexCards
+                  itemsPerRow={2}
+                  cards={[
+                    {
+                      link:'https://app.compound.finance',
+                      image:'images/integrators/cryptolocally.png'
+                    },
+                    {
+                      link:'https://zerion.io',
+                      image:'images/integrators/zerion.svg'
+                    },
+                    {
+                      link:'https://gnosis.io',
+                      image:'images/integrators/gnosis.png'
+                    },
+                    {
+                      link:'https://www.peepsdemocracy.com',
+                      image:'images/integrators/peeps.png'
+                    }
+                  ]}
+                  {...this.props}
+                />
+                <Flex
+                  px={[2,0]}
+                  flexDirection={'column'}
+                >
+                  <Text
+                    mt={3}
+                    mb={2}
+                    fontSize={[3,4]}
+                    fontWeight={500}
+                  >
+                    Boost your Dapp with Idle now:
+                  </Text>
+                  <RoundButton
+                    buttonProps={{
+                      width:[1,'auto']
+                    }}
+                    handleClick={ (e) => {
+                      window.open('https://developers.idle.finance')
+                    }}
+                  >
+                    Read the Documentation
+                  </RoundButton>
+                </Flex>
+              </Flex>
+              <Flex
+                width={[1,0.55]}
+                alignItems={'center'}
+                flexDirection={'column'}
+                justifyContent={'center'}
+              >
+                <iframe height="400" scrolling="no" title="Transak On/Off Ramp Widget (Website)" src="https://codepen.io/transak/embed/bGdNxBa?height=251&amp;theme-id=dark&amp;default-tab=html&amp;editable=true" frameborder="no" allowtransparency="true" allowFullScreen="false" style={{width:'100%'}}>See the Pen <a href='https://codepen.io/transak/pen/bGdNxBa'>Transak On/Off Ramp Widget (Website)</a> by Transak (<a href='https://codepen.io/transak'>@transak</a>) on <a href='https://codepen.io'>CodePen</a>.</iframe>
+              </Flex>
+            </Flex>
+          </Box>
+        </Box>
+
+        <Box
+          pt={[4,5]}
+          pb={[4,4]}
+          id={'investors'}
+        >
+          <Box
+            mx={'auto'}
+            maxWidth={['50em','70em']}
+          >
+            <Title
+              mb={3}
+              fontWeight={5}
+              fontSize={[5,6]}
+              component={Heading.h4}
+            >
+              Backed By
+            </Title>
+            <Text
+              mb={3}
+              fontSize={[2,3]}
+              fontWeight={500}
+              color={'cellTitle'}
+              textAlign={'center'}
+            >
+              Idle has been funded by word-class investors
+            </Text>
+            <FlexCards
+              justifyContent={'center'}
+              itemsPerRow={4}
+              cards={[
+                {
+                  link:'https://consensys.net',
+                  image:'images/investors/consensys.png'
+                },
+                {
+                  link:'https://www.gumi-cryptos.com',
+                  image:'images/investors/gumi.png'
+                },
+                {
+                  link:'https://quantstamp.com',
+                  image:'images/investors/quantstamp.png'
+                },
+                {
+                  link:'https://www.linkedin.com/company/brcapital',
+                  image:'images/investors/br-capital.png'
+                },
+                {
+                  link:'https://www.volt.capital',
+                  image:'images/investors/volt-capital.png'
+                },
+                {
+                  link:'https://cmt.digital',
+                  image:'images/investors/cmt-digital.png'
+                },
+                {
+                  link:'https://www.thelao.io/',
+                  image:'images/investors/the-lao.png'
+                },
+                /*
+                {
+                  link:'https://dydx.exchange',
+                  image:'images/investors/ryan-zurrer.svg'
+                },
+                {
+                  link:'https://oasis.app',
+                  image:'images/investors/hannan.png'
+                },
+                {
+                  link:'https://oasis.app',
+                  image:'images/investors/herrick.png'
+                },
+                */
+              ]}
+              {...this.props}
+            />
+          </Box>
+        </Box>
+
+        <Box
+          pt={[4,5]}
+          pb={[4,4]}
+          id={'protocols'}
+        >
+          <Box
+            mx={'auto'}
+            maxWidth={['50em','70em']}
+          >
+            <Title
+              mb={3}
+              fontWeight={5}
+              fontSize={[5,6]}
+              component={Heading.h4}
+            >
+              Built with the best
+            </Title>
+            <Text
+              mb={3}
+              fontSize={[2,3]}
+              fontWeight={500}
+              color={'cellTitle'}
+              textAlign={'center'}
+            >
+              Idle infrastructure draw energy from the most powerful DeFi protocols
+            </Text>
+            <FlexCards
+              cards={[
+                {
+                  link:'https://app.compound.finance',
+                  image:'images/partners/compound.svg'
+                },
+                /*
+                {
+                  link:'https://fulcrum.trade',
+                  image:'images/partners/fulcrum.svg'
+                },
+                */
+                {
+                  link:'https://aave.com',
+                  image:'images/partners/aave.svg'
+                },
+                {
+                  link:'https://dydx.exchange',
+                  image:'images/partners/dydx.svg'
+                },
+                {
+                  link:'https://oasis.app/',
+                  image:'images/partners/oasis.png'
+                },
+              ]}
               {...this.props}
             />
           </Box>

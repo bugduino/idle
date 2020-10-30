@@ -63,12 +63,12 @@
   /*margin:0 auto 10px auto;*/
 }
 .bulletCard{
+  z-index:1;
   /*height:225px;*/
   position:relative;
+  border-radius:10px;
   background-color:#fff;
   box-shadow:0 7px 14px rgba(50,50,93,.1);
-  border-radius:10px;
-  z-index:1;
   transition:box-shadow 0.75s ease-in-out 0.75s;
 }
 .bulletCardFirst{
@@ -291,9 +291,6 @@
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e4ebfe', endColorstr='#e4ebfe', GradientType=1 );
 }
 @media (min-width: 32em) {
-  .bulletCard{
-    min-width: 480px;
-  }
   .bentTube:before{
     top: -15px;
     width: 0%;

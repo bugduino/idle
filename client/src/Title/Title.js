@@ -6,7 +6,7 @@ class Title extends Component {
     const props = {
       fontWeight:4,
       fontSize:[4,6],
-      color:'dark-gray',
+      color:'copyColor',
       textAlign:'center',
       lineHeight:'initial',
     };

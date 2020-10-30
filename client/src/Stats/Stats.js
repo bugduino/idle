@@ -1,6 +1,5 @@
 import moment from 'moment';
 import Title from '../Title/Title';
-import CountUp from 'react-countup';
 import StatsChart from './StatsChart';
 import React, { Component } from 'react';
 // import Toggler from '../Toggler/Toggler';
@@ -19,6 +18,7 @@ import RoundIconButton from '../RoundIconButton/RoundIconButton';
 import VariationNumber from '../VariationNumber/VariationNumber';
 import AllocationChart from '../AllocationChart/AllocationChart';
 import DateRangeModal from '../utilities/components/DateRangeModal';
+import AssetsUnderManagement from '../AssetsUnderManagement/AssetsUnderManagement';
 
 class Stats extends Component {
   state = {
@@ -30,7 +30,6 @@ class Stats extends Component {
     minDate:null,
     maxDate:null,
     carouselMax:1,
-    totalAUM:null,
     rebalances:'-',
     buttonGroups:[],
     apiResults:null,
@@ -261,24 +260,6 @@ class Stats extends Component {
     await this.loadParams();
     this.loadApiData();
     this.loadCarousel();
-
-    if (!this.props.selectedToken){
-      this.loadTotalAUM();
-    }
-  }
-
-  loadTotalAUM = async () => {
-    const {
-      avgAPY,
-      totalAUM
-    } = await this.functionsUtil.getAggregatedStats();
-
-    const totalAUMEndOfYear = totalAUM.plus(totalAUM.times(avgAPY.div(100)));
-
-    this.setStateSafe({
-      totalAUM,
-      totalAUMEndOfYear
-    });
   }
 
   loadCarousel(){
@@ -554,46 +535,9 @@ class Stats extends Component {
           width={1}
           flexDirection={'column'}
         >
-          {
-            this.state.totalAUM && this.state.totalAUMEndOfYear && 
-              <Box
-                width={1}
-              >
-                <CountUp
-                  delay={0}
-                  decimals={4}
-                  decimal={'.'}
-                  separator={''}
-                  useEasing={false}
-                  duration={31536000}
-                  start={parseFloat(this.state.totalAUM)}
-                  end={parseFloat(this.state.totalAUMEndOfYear)}
-                  formattingFn={ n => '$ '+this.functionsUtil.formatMoney(n,4) }
-                >
-                  {({ countUpRef, start }) => (
-                    <span
-                      style={{
-                        display:'block',
-                        color:'dark-gray',
-                        fontFamily:this.props.theme.fonts.counter,
-                        fontWeight:this.props.theme.fontWeights[5],
-                        textAlign: this.props.isMobile ? 'center' : 'right',
-                        fontSize: this.props.isMobile ? '1.6em' : this.props.theme.fontSizes[6]
-                      }}
-                      ref={countUpRef}
-                    />
-                  )}
-                </CountUp>
-                <Title
-                  fontWeight={3}
-                  fontSize={[2,2]}
-                  color={'cellTitle'}
-                  textAlign={['center','right']}
-                >
-                  Assets Under Management <Text.span color={'cellTitle'} fontWeight={3} fontSize={'70%'}>(V3 + V4)</Text.span>
-                </Title>
-              </Box>
-          }
+          <AssetsUnderManagement
+            {...this.props}
+          />
           {
             Object.keys(strategies).map(strategy => {
               const strategyInfo = strategies[strategy];

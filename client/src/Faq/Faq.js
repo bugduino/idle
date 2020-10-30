@@ -1,5 +1,5 @@
+import Title from '../Title/Title';
 import React, { Component } from 'react';
-// import styles from './Faq.module.scss';
 import Faquestion from '../Faquestion/Faquestion';
 import { Box, Flex, Text, Heading } from 'rimble-ui'
 
@@ -75,10 +75,15 @@ class Faq extends Component {
     const isRatesSelected = selectedSection === 'rates';
     return (
       <Flex
-        flexDirection={['column']}>
-        <Heading.h4 color={'dark-gray'} fontWeight={4} lineHeight={'initial'} fontSize={[4,5]} textAlign={'center'} pb={[4,5]} alignItems={'center'}>
+        flexDirection={'column'}
+      >
+        <Title
+          mb={[4,5]}
+          fontWeight={5}
+          component={Heading.h4}
+        >
           Frequently asked questions
-        </Heading.h4>
+        </Title>
 
         <Flex
           flexDirection={'column'}
