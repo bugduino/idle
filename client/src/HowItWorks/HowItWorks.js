@@ -20,18 +20,14 @@ class HowItWorks extends Component {
         id={'how-it-works'}
       >
         <Flex flexDirection={['column','column']} alignItems={'center'} justifyContent={'center'}>
-          <Box
-            mb={[3,5]}
+          <Title
+            mb={[3,4]}
+            fontWeight={5}
+            fontSize={[5,6]}
+            component={Heading.h4}
           >
-            <Title
-              mb={[3,4]}
-              fontWeight={5}
-              fontSize={[5,6]}
-              component={Heading.h4}
-            >
-              How it works
-            </Title>
-          </Box>
+            How it works
+          </Title>
           <Flex
             width={1}
             alignItems={'center'}

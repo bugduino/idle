@@ -518,6 +518,7 @@ class Landing extends Component {
         </Box>
 
         <Box
+          px={[3,4]}
           pt={[4,5]}
           pb={[4,4]}
           id={'integrators'}
@@ -527,7 +528,7 @@ class Landing extends Component {
             maxWidth={['50em','90em']}
           >
             <Title
-              mb={3}
+              mb={[3,4]}
               fontWeight={5}
               fontSize={[5,6]}
               component={Heading.h4}
