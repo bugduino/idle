@@ -1,9 +1,10 @@
-import React, { Component } from 'react';
-import { Flex, Text, Heading, Image, Link } from 'rimble-ui'
-import styles from './Footer.module.scss';
 import {
   Link as RouterLink,
 } from "react-router-dom";
+import ExtLink from '../ExtLink/ExtLink';
+import React, { Component } from 'react';
+import styles from './Footer.module.scss';
+import { Flex, Text, Heading, Image, Link } from 'rimble-ui'
 
 class Footer extends Component {
   state = {};
@@ -17,15 +18,15 @@ class Footer extends Component {
               Resources
             </Heading.h3>
             <Flex width={1} flexDirection={'column'}>
-              <Link pb={[3,2]} href={'https://developers.idle.finance'} target={'_blank'} rel="nofollow noopener noreferrer" textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} color={'blue'} hoverColor={'blue'}>Developers</Link>
+              <ExtLink pb={[3,2]} href={'https://developers.idle.finance'} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} color={'blue'} hoverColor={'blue'}>Developers</ExtLink>
               <Flex pb={[3,2]} width={1} justifyContent={['center','flex-start']}>
                 <RouterLink to="/terms-of-service" style={{textDecoration:'none'}}>
                   <Text href={'#'} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} fontWeight={3} color={'blue'} hoverColor={'blue'}>Terms of Service</Text>
                 </RouterLink>
               </Flex>
-              <Link pb={[3,2]} href={'https://www.iubenda.com/privacy-policy/61211749'} target={'_blank'} rel="nofollow noopener noreferrer" textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} color={'blue'} hoverColor={'blue'}>Privacy Policy</Link>
-              <Link pb={[3,2]} href={'https://www.iubenda.com/privacy-policy/61211749/cookie-policy'} target={'_blank'} rel="nofollow noopener noreferrer" textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} color={'blue'} hoverColor={'blue'}>Cookie Policy</Link>
-              <Link pb={[3,2]} href={'https://www.notion.so/idlelabs/Idle-Finance-Brand-Assets-fd63e4161cb64c999531646c7549bc4b'} target={'_blank'} rel="nofollow noopener noreferrer" textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} color={'blue'} hoverColor={'blue'}>Brand Assets</Link>
+              <ExtLink pb={[3,2]} href={'https://www.iubenda.com/privacy-policy/61211749'} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} color={'blue'} hoverColor={'blue'}>Privacy Policy</ExtLink>
+              <ExtLink pb={[3,2]} href={'https://www.iubenda.com/privacy-policy/61211749/cookie-policy'} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} color={'blue'} hoverColor={'blue'}>Cookie Policy</ExtLink>
+              <ExtLink pb={[3,2]} href={'https://www.notion.so/idlelabs/Idle-Finance-Brand-Assets-fd63e4161cb64c999531646c7549bc4b'} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} color={'blue'} hoverColor={'blue'}>Brand Assets</ExtLink>
             </Flex>
           </Flex>
           {
@@ -65,24 +66,24 @@ class Footer extends Component {
               Explore
             </Heading.h3>
             <Flex flexDirection={'row'} justifyContent={['space-evenly','flex-start']}>
-              <Link href="https://twitter.com/idlefinance" target="_blank" rel="nofollow noopener noreferrer">
+              <ExtLink href="https://twitter.com/idlefinance">
                 <Image src="images/social/twitter.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} boxShadow={1} borderRadius={'7px'} />
-              </Link>
-              <Link href="https://t.me/idlefinance" target="_blank" rel="nofollow noopener noreferrer">
+              </ExtLink>
+              <ExtLink href="https://t.me/idlefinance">
                 <Image src="images/social/telegram.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} boxShadow={1} borderRadius={'7px'} />
-              </Link>
-              <Link href="https://discord.gg/mpySAJp" target="_blank" rel="nofollow noopener noreferrer">
+              </ExtLink>
+              <ExtLink href="https://discord.gg/mpySAJp">
                 <Image src="images/social/discord.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} boxShadow={1} borderRadius={'7px'} />
-              </Link>
-              <Link href="https://medium.com/@idlefinance" target="_blank" rel="nofollow noopener noreferrer">
+              </ExtLink>
+              <ExtLink href="https://medium.com/@idlefinance">
                 <Image src="images/social/medium.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} boxShadow={1} borderRadius={'7px'} />
-              </Link>
-              <Link href="https://github.com/bugduino/idle-contracts" target="_blank" rel="nofollow noopener noreferrer">
+              </ExtLink>
+              <ExtLink href="https://github.com/bugduino/idle-contracts">
                 <Image src="images/social/github.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} boxShadow={1} borderRadius={'7px'} />
-              </Link>
-              <Link href="https://www.linkedin.com/company/idlefinance" target="_blank" rel="nofollow noopener noreferrer">
+              </ExtLink>
+              <ExtLink href="https://www.linkedin.com/company/idlefinance">
                 <Image src="images/social/linkedin.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} boxShadow={1} borderRadius={'7px'} />
-              </Link>
+              </ExtLink>
               {
               /*
               }
