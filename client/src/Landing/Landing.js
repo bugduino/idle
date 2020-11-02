@@ -305,7 +305,7 @@ class Landing extends Component {
           pr={[3,0]}
           pt={['2.5em', '3em']}
           className={styles.headerContainer}
-          minHeight={ Math.max((window.innerHeight+window.innerHeight*0.02),768) }
+          minHeight={ Math.max((window.innerHeight+window.innerHeight*0.025),768) }
         >
           <Box position={'relative'} zIndex={10}>
             <Flex
