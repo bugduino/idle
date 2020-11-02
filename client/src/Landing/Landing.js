@@ -626,7 +626,7 @@ class Landing extends Component {
                       image:'images/integrators/gnosis.png'
                     },
                     {
-                      link:'https://app.compound.finance',
+                      link:'https://cryptolocally.com',
                       image:'images/integrators/cryptolocally.png'
                     },
                     {
