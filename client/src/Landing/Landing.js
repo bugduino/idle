@@ -309,7 +309,7 @@ class Landing extends Component {
         >
           <Box position={'relative'} zIndex={10}>
             <Flex
-              mt={[0,'6vh']}
+              mt={'6vh'}
               alignItems={'flex-start'}
               flexDirection={['column','row']}
             >
@@ -562,16 +562,16 @@ class Landing extends Component {
                   itemsPerRow={2}
                   cards={[
                     {
-                      link:'https://app.compound.finance',
-                      image:'images/integrators/cryptolocally.png'
-                    },
-                    {
                       link:'https://zerion.io',
                       image:'images/integrators/zerion.svg'
                     },
                     {
                       link:'https://gnosis.io',
                       image:'images/integrators/gnosis.png'
+                    },
+                    {
+                      link:'https://app.compound.finance',
+                      image:'images/integrators/cryptolocally.png'
                     },
                     {
                       link:'https://www.peepsdemocracy.com',
@@ -589,6 +589,7 @@ class Landing extends Component {
                     mb={2}
                     fontSize={[3,4]}
                     fontWeight={500}
+                    color={'dark-gray'}
                   >
                     Boost your Dapp with Idle now:
                   </Text>
@@ -610,7 +611,7 @@ class Landing extends Component {
                 flexDirection={'column'}
                 justifyContent={'center'}
               >
-                <iframe height="400" scrolling="no" title="Transak On/Off Ramp Widget (Website)" src="https://codepen.io/transak/embed/bGdNxBa?height=251&amp;theme-id=dark&amp;default-tab=html&amp;editable=true" frameborder="no" allowtransparency="true" allowFullScreen="false" style={{width:'100%'}}>See the Pen <a href='https://codepen.io/transak/pen/bGdNxBa'>Transak On/Off Ramp Widget (Website)</a> by Transak (<a href='https://codepen.io/transak'>@transak</a>) on <a href='https://codepen.io'>CodePen</a>.</iframe>
+                <iframe height="400" scrolling="no" title="Transak On/Off Ramp Widget (Website)" src="https://codepen.io/transak/embed/bGdNxBa?height=251&amp;theme-id=dark&amp;default-tab=html&amp;editable=true" frameBorder="no" allowtransparency="true" allowFullScreen={false} style={{width:'100%'}}>See the Pen <a href='https://codepen.io/transak/pen/bGdNxBa'>Transak On/Off Ramp Widget (Website)</a> by Transak (<a href='https://codepen.io/transak'>@transak</a>) on <a href='https://codepen.io'>CodePen</a>.</iframe>
               </Flex>
             </Flex>
           </Box>

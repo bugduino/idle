@@ -1,6 +1,7 @@
 import React from "react";
+import ExtLink from '../../ExtLink/ExtLink';
 import FunctionsUtil from '../FunctionsUtil';
-import { Box, Flex, Image, Link } from "rimble-ui";
+import { Box, Flex, Image, Text, Link, Icon } from "rimble-ui";
 
 import {
   Link as RouterLink
@@ -49,6 +50,45 @@ class Header extends React.Component {
           position: 'absolute',
         }}
       >
+        <Flex
+          p={2}
+          alignItems={'center'}
+          justifyContent={'center'}
+          backgroundColor={'#00219a'}
+          flexDirection={['column','row']}
+        >
+          <Text
+            color={'white'}
+            textAlign={'center'}
+          >
+            Idle Governance Token is coming out soon! 
+          </Text>
+          <ExtLink
+            pr={2}
+            py={1}
+            mt={[1,0]}
+            ml={[0,2]}
+            pl={'12px'}
+            color={'white'}
+            style={{
+              display:'flex',
+              borderRadius:'8px',
+              flexDirection:'row',
+              alignItems:'flex-end'
+            }}
+            backgroundColor={'#0037ff'}
+            href={'https://idlefinance.medium.com/unveiling-idle-governance-d7d63e4cc602'}
+          >
+            Learn More
+            <Icon
+              ml={1}
+              size={'1.3em'}
+              color={'white'}
+              name={'KeyboardArrowRight'}
+            >
+            </Icon>
+          </ExtLink>
+        </Flex>
         <Flex
           pt={[3,4]}
           mx={'auto'}

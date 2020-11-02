@@ -76,6 +76,9 @@ class Footer extends Component {
               <Link href="https://github.com/bugduino/idle-contracts" target="_blank" rel="nofollow noopener noreferrer">
                 <Image src="images/social/github.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} boxShadow={1} borderRadius={'7px'} />
               </Link>
+              <Link href="https://www.linkedin.com/company/idlefinance" target="_blank" rel="nofollow noopener noreferrer">
+                <Image src="images/social/linkedin.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} boxShadow={1} borderRadius={'7px'} />
+              </Link>
               {
               /*
               }
