@@ -12,7 +12,7 @@ class Footer extends Component {
     return (
       <Flex id="footer" flexDirection={'column'} className={styles.footer} backgroundColor={'white'} alignItems={'center'} justifyContent={'flex-start'} pl={0} px={[3,6]}>
         <Flex flexDirection={['column','row']} justifyContent={'flex-start'} alignItems={'flex-start'} width={1} maxWidth={['35em','70em']} height={['auto','100%']}>
-          <Flex width={[1,1/4]} flexDirection={'column'} height={['auto','100%']}>
+          <Flex width={[1,1/3]} flexDirection={'column'} height={['auto','100%']}>
             <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} my={3} color={'dark-gray'}>
               Resources
             </Heading.h3>
@@ -28,35 +28,39 @@ class Footer extends Component {
               <Link pb={[3,2]} href={'https://www.notion.so/idlelabs/Idle-Finance-Brand-Assets-fd63e4161cb64c999531646c7549bc4b'} target={'_blank'} rel="nofollow noopener noreferrer" textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} color={'blue'} hoverColor={'blue'}>Brand Assets</Link>
             </Flex>
           </Flex>
-          <Flex width={[1,1/4]} flexDirection={'column'} height={['auto','100%']}>
-            <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} my={3} color={'dark-gray'}>
-              Governance
-            </Heading.h3>
-            <Flex width={1} flexDirection={'column'}>
-              <Flex pb={[3,2]} width={1} justifyContent={['center','flex-start']}>
-                <RouterLink to="/governance" style={{textDecoration:'none'}}>
-                  <Text href={'#'} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} fontWeight={3} color={'blue'} hoverColor={'blue'}>Overview</Text>
-                </RouterLink>
-              </Flex>
-              <Flex pb={[3,2]} width={1} justifyContent={['center','flex-start']}>
-                <RouterLink to="/governance/proposals" style={{textDecoration:'none'}}>
-                  <Text href={'#'} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} fontWeight={3} color={'blue'} hoverColor={'blue'}>Proposals</Text>
-                </RouterLink>
-              </Flex>
-              <Flex pb={[3,2]} width={1} justifyContent={['center','flex-start']}>
-                <RouterLink to="/governance/leaderboard" style={{textDecoration:'none'}}>
-                  <Text href={'#'} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} fontWeight={3} color={'blue'} hoverColor={'blue'}>Leaderboard</Text>
-                </RouterLink>
+          {
+            /*
+            <Flex width={[1,1/3]} flexDirection={'column'} height={['auto','100%']}>
+              <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} my={3} color={'dark-gray'}>
+                Governance
+              </Heading.h3>
+              <Flex width={1} flexDirection={'column'}>
+                <Flex pb={[3,2]} width={1} justifyContent={['center','flex-start']}>
+                  <RouterLink to="/governance" style={{textDecoration:'none'}}>
+                    <Text href={'#'} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} fontWeight={3} color={'blue'} hoverColor={'blue'}>Overview</Text>
+                  </RouterLink>
+                </Flex>
+                <Flex pb={[3,2]} width={1} justifyContent={['center','flex-start']}>
+                  <RouterLink to="/governance/proposals" style={{textDecoration:'none'}}>
+                    <Text href={'#'} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} fontWeight={3} color={'blue'} hoverColor={'blue'}>Proposals</Text>
+                  </RouterLink>
+                </Flex>
+                <Flex pb={[3,2]} width={1} justifyContent={['center','flex-start']}>
+                  <RouterLink to="/governance/leaderboard" style={{textDecoration:'none'}}>
+                    <Text href={'#'} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} fontWeight={3} color={'blue'} hoverColor={'blue'}>Leaderboard</Text>
+                  </RouterLink>
+                </Flex>
               </Flex>
             </Flex>
-          </Flex>
-          <Flex width={[1,1/4]} flexDirection={'column'} height={['auto','100%']}>
+            */
+          }
+          <Flex width={[1,1/3]} flexDirection={'column'} height={['auto','100%']}>
             <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} my={3} color={'dark-gray'}>
               Start a Conversation
             </Heading.h3>
             <Link textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} color={'blue'} hoverColor={'blue'}>info@idle.finance</Link>
           </Flex>
-          <Flex width={[1,1/4]} flexDirection={'column'}>
+          <Flex width={[1,1/3]} flexDirection={'column'}>
             <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} my={3} color={'dark-gray'}>
               Explore
             </Heading.h3>

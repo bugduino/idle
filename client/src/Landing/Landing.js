@@ -9,9 +9,10 @@ import RoundButton from '../RoundButton/RoundButton';
 import globalConfigs from '../configs/globalConfigs';
 import StrategyBox from '../StrategyBox/StrategyBox';
 import FunctionsUtil from '../utilities/FunctionsUtil';
+import DashboardCard from '../DashboardCard/DashboardCard';
 import NewsletterForm from '../NewsletterForm/NewsletterForm';
 import RoundIconButton from '../RoundIconButton/RoundIconButton';
-import { Image, Flex, Box, Heading, Link, Text } from 'rimble-ui';
+import { Image, Flex, Box, Heading, Link, Text, Icon } from 'rimble-ui';
 import FloatingToastMessage from '../FloatingToastMessage/FloatingToastMessage';
 import AssetsUnderManagement from '../AssetsUnderManagement/AssetsUnderManagement';
 
@@ -513,6 +514,61 @@ class Landing extends Component {
                   src={'images/quantstamp-badge.svg'}
                 />
               </Link>
+              <Title
+                my={2}
+                fontWeight={3}
+                fontSize={[3,4]}
+                color={'dark-gray'}
+                component={Heading.h4}
+              >
+                Report History:
+              </Title>
+              <DashboardCard
+                cardProps={{
+                  p:3,
+                  width:'auto'
+                }}
+                isInteractive={true}
+                handleClick={ e => window.open('https://certificate.quantstamp.com/full/idle-finance') }
+              >
+                <Flex
+                  flexDirection={'column'}
+                >
+                  <Text
+                    mb={2}
+                    color={'blue'}
+                  >
+                    August 12th 2020 — Quantstamp Verified
+                  </Text>
+                  <Text
+                    mb={2}
+                    fontSize={4}
+                    fontWeight={500}
+                  >
+                    Security Assessment Certificate
+                  </Text>
+                  <Link
+                    hoverColor={'blue'}
+                    style={{
+                      display:'flex',
+                      borderRadius:'8px',
+                      flexDirection:'row',
+                      alignItems:'center'
+                    }}
+                  >
+                    VIEW REPORT
+                    <Icon
+                      ml={1}
+                      size={'1.3em'}
+                      color={'blue'}
+                      style={{
+                        transform:'rotate(180deg)'
+                      }}
+                      name={'KeyboardBackspace'}
+                    />
+                  </Link>
+                </Flex>
+              </DashboardCard>
             </Flex>
           </Box>
         </Box>
