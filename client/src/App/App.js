@@ -42,6 +42,7 @@ class App extends Component {
     callbackAfterLogin: null,
     width: window.innerWidth,
     availableStrategies: null,
+    height: window.innerHeight,
     unsubscribeFromHistory: null,
     enableUnderlyingWithdraw: false,
   };
@@ -318,9 +319,25 @@ class App extends Component {
   }
 
   handleWindowSizeChange = () => {
-    if (window.innerWidth !== this.state.width){
-      return this.setState({ width: window.innerWidth });
+    const newState = {
+      width:this.state.width,
+      height:this.state.height,
+    };
+
+    const widthChanged = window.innerWidth !== this.state.width;
+    const heightChanged = window.innerHeight !== this.state.height;
+
+    if (widthChanged || heightChanged){
+      if (widthChanged){
+        newState.width = window.innerWidth;
+      }
+      if (heightChanged){
+        newState.height = window.innerHeight;
+      }
+      return this.setState(newState);
     }
+
+    return null;
   };
 
   // Optional parameters to pass into RimbleWeb3
@@ -608,6 +625,7 @@ class App extends Component {
                                           contracts={contracts}
                                           innerWidth={this.state.width}
                                           logout={this.logout.bind(this)}
+                                          innerHeight={this.state.height}
                                           accountBalance={accountBalance}
                                           connecting={this.state.connecting}
                                           selectedTab={this.state.selectedTab}

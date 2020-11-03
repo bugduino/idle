@@ -54,7 +54,7 @@ class Header extends React.Component {
           p={2}
           alignItems={'center'}
           justifyContent={'center'}
-          backgroundColor={'#00219a'}
+          backgroundColor={'dark-blue'}
           flexDirection={['column','row']}
         >
           <Text

@@ -217,6 +217,7 @@ const globalConfigs = {
       descLong:'The Risk-Adjusted allocation strategy provides a way to earn the best rate at the lowest risk-level. The risk-management algorithm takes account of the total assets within a pool, incorporates underlying protocol rate functions and levels of supply and demand, skimming protocols with a bad score/rate mix, and finally determining an allocation that achieves the highest risk-return score possible after the rebalance happens.',
       descShort:'The Risk-Adjusted allocation strategy provides a way to earn the best rate at the lowest risk-level.'
     },
+    /*
     new:{
       token:'DAI',
       color:'#2196F3',
@@ -231,6 +232,7 @@ const globalConfigs = {
       descLong:'The Risk-Adjusted allocation strategy provides a way to earn the best rate at the lowest risk-level. The risk-management algorithm takes account of the total assets within a pool, incorporates underlying protocol rate functions and levels of supply and demand, skimming protocols with a bad score/rate mix, and finally determining an allocation that achieves the highest risk-return score possible after the rebalance happens.',
       descShort:'The Risk-Adjusted allocation strategy provides a way to earn the best rate at the lowest risk-level.'
     }
+    */
   },
   stats:{
     enabled:true, // Enable endpoint

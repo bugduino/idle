@@ -21,6 +21,7 @@ class HowItWorks extends Component {
       >
         <Flex flexDirection={['column','column']} alignItems={'center'} justifyContent={'center'}>
           <Title
+            mt={[3,4]}
             mb={[3,4]}
             fontWeight={5}
             fontSize={[5,6]}
@@ -80,7 +81,7 @@ class HowItWorks extends Component {
               </Flex>
               <Box width={1}>
                 <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontSize={[3,3]} mb={1} color={'blue'}>
-                  Deposit your stablecoin
+                  Deposit your crypto-assets
                 </Heading.h3>
                 <Heading.h4 fontSize={[2,2]} px={[3,0]} textAlign={'center'} fontWeight={2} lineHeight={1.5}>
                   Just deposit and relax. Your funds will be automatically allocated among DeFi protocols and you will immediately start earning interest.

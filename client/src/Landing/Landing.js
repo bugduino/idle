@@ -38,12 +38,7 @@ class Landing extends Component {
 
   // Clear all the timeouts
   async componentWillUnmount(){
-    // console.log('Landing.js componentWillUnmount');
-    var id = window.setTimeout(function() {}, 0);
 
-    while (id--) {
-        window.clearTimeout(id); // will do nothing if no timeout with id is present
-    }
   }
 
   // Utils
@@ -271,12 +266,6 @@ class Landing extends Component {
 
   render() {
     const { network } = this.props;
-    // const maxOpacity = 0.6;
-    // const minOpacity = 0.2;
-    // const idleOpacity = maxOpacity;
-    // const protocolLen = this.props.tokenConfig.protocols.length;
-    // const avgApr = this.state.avgApr ? parseFloat(this.state.avgApr).toFixed(2) : null;
-
     return (
       <Box
         height={'100vh'}
@@ -285,32 +274,16 @@ class Landing extends Component {
           paddingBottom: !network.isCorrectNetwork ? "8em" : "0"
         }}
       >
-        {
-          /*
-          <Confetti
-            style={{ position: 'fixed','zIndex':9999 }}
-            run={this.state.runConfetti}
-            recycle={false}
-            numberOfPieces={500}
-            width={window.innerWidth}
-            height={window.innerHeight}
-            onConfettiComplete={confetti => {
-              this.setConfetti(false);
-              confetti.reset()
-            }}
-          />
-          */
-        }
         <Box
           pl={[3,5]}
           pr={[3,0]}
           pt={['2.5em', '3em']}
           className={styles.headerContainer}
-          minHeight={ Math.max((window.innerHeight+window.innerHeight*0.025),768) }
+          minHeight={ Math.max((this.props.innerHeight+this.props.innerHeight*0.025),768) }
         >
           <Box position={'relative'} zIndex={10}>
             <Flex
-              mt={'6vh'}
+              mt={['7em','9em']}
               alignItems={'flex-start'}
               flexDirection={['column','row']}
             >
@@ -321,7 +294,6 @@ class Landing extends Component {
                 <Flex
                   pb={3}
                   width={1}
-                  pt={['8vh', '9vh']}
                   textAlign={'center'}
                   flexDirection={'column'}
                   maxWidth={['50em', '24em']}
@@ -385,7 +357,6 @@ class Landing extends Component {
               </Flex>
               <Flex
                 mr={['auto',0]}
-                mt={[0,'10vh']}
                 width={[1,2/3]}
                 ml={[0,'100px']}
                 textAlign={'center'}
@@ -409,7 +380,7 @@ class Landing extends Component {
                     flexDirection={'row'}
                     position={'absolute'}
                     id={'carousel-cursor'}
-                    width={['300%','140%']}
+                    width={[Object.keys(globalConfigs.strategies).length*100+'%','140%']}
                     height={['auto','400px']}
                     bottom={['5px','initial']}
                     justifyContent={'flex-start'}
@@ -468,6 +439,7 @@ class Landing extends Component {
           >
             <Title
               mb={3}
+              mt={[3,4]}
               fontWeight={5}
               fontSize={[5,6]}
               component={Heading.h4}
@@ -516,12 +488,13 @@ class Landing extends Component {
               </Link>
               <Title
                 my={2}
+                mt={[3,4]}
                 fontWeight={3}
                 fontSize={[3,4]}
                 color={'dark-gray'}
                 component={Heading.h4}
               >
-                Report History:
+                Full Audit Report:
               </Title>
               <DashboardCard
                 cardProps={{
@@ -584,7 +557,8 @@ class Landing extends Component {
             maxWidth={['50em','90em']}
           >
             <Title
-              mb={[3,4]}
+              mb={3}
+              mt={[3,4]}
               fontWeight={5}
               fontSize={[5,6]}
               component={Heading.h4}
@@ -592,13 +566,13 @@ class Landing extends Component {
               Integrators & Partners
             </Title>
             <Text
-              mb={3}
+              mb={4}
               fontSize={[2,3]}
               fontWeight={500}
               color={'cellTitle'}
               textAlign={'center'}
             >
-              
+              Just few lines of code to integrate the power of Idle into your Dapp
             </Text>
             <Flex
               width={1}
@@ -667,7 +641,17 @@ class Landing extends Component {
                 flexDirection={'column'}
                 justifyContent={'center'}
               >
-                <iframe height="400" scrolling="no" title="Transak On/Off Ramp Widget (Website)" src="https://codepen.io/transak/embed/bGdNxBa?height=251&amp;theme-id=dark&amp;default-tab=html&amp;editable=true" frameBorder="no" allowtransparency="true" allowFullScreen={false} style={{width:'100%'}}>See the Pen <a href='https://codepen.io/transak/pen/bGdNxBa'>Transak On/Off Ramp Widget (Website)</a> by Transak (<a href='https://codepen.io/transak'>@transak</a>) on <a href='https://codepen.io'>CodePen</a>.</iframe>
+                <iframe
+                  height={"350"}
+                  scrolling={"no"}
+                  title={"wvWjRXa"}
+                  frameBorder={"no"}
+                  style={{width:'100%'}}
+                  allowFullScreen={false}
+                  allowtransparency={"true"}
+                  src={"https://jsfiddle.net/samster/wd6mcy97/1/embedded/js/dark/"}
+                >
+                </iframe>
               </Flex>
             </Flex>
           </Box>
@@ -684,6 +668,7 @@ class Landing extends Component {
           >
             <Title
               mb={3}
+              mt={[3,4]}
               fontWeight={5}
               fontSize={[5,6]}
               component={Heading.h4}
@@ -762,6 +747,7 @@ class Landing extends Component {
           >
             <Title
               mb={3}
+              mt={[3,4]}
               fontWeight={5}
               fontSize={[5,6]}
               component={Heading.h4}
