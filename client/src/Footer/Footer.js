@@ -11,8 +11,23 @@ class Footer extends Component {
   render() {
     const currYear = new Date().getFullYear();
     return (
-      <Flex id="footer" flexDirection={'column'} className={styles.footer} backgroundColor={'white'} alignItems={'center'} justifyContent={'flex-start'} pl={0} px={[3,6]}>
-        <Flex flexDirection={['column','row']} justifyContent={'flex-start'} alignItems={'flex-start'} width={1} maxWidth={['35em','70em']} height={['auto','100%']}>
+      <Flex
+        pl={0}
+        id={"footer"}
+        alignItems={'center'}
+        flexDirection={'column'}
+        className={styles.footer}
+        backgroundColor={'white'}
+        justifyContent={'flex-start'}
+      >
+        <Flex
+          width={1}
+          height={['auto','100%']}
+          alignItems={'flex-start'}
+          maxWidth={['35em','70em']}
+          justifyContent={'flex-start'}
+          flexDirection={['column','row']}
+        >
           <Flex width={[1,1/3]} flexDirection={'column'} height={['auto','100%']}>
             <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,3]} my={3} color={'dark-gray'}>
               Resources
@@ -95,35 +110,41 @@ class Footer extends Component {
             </Flex>
           </Flex>
         </Flex>
-        <Flex flexDirection={['column','row']} justifyContent={['center','flex-end']} alignItems={['center','flex-end']} width={1} maxWidth={['35em','70em']} height={['auto','100%']}>
-          <Flex flexDirection={['column']} mt={[2, 0]}>
-            {
-              /*
-              <Heading.h3 textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} my={3} color={'white'}>
-                Built on
-              </Heading.h3>
-              <Flex flexDirection={['column','row']} alignItems={['normal','center']} justifyContent={['center','flex-start']}>
-                <Link textAlign={['center','left']} pr={[0,3]} href="https://www.ethereum.org/" target="_blank" rel="nofollow noopener noreferrer">
-                  <Image src="images/ethereum.png" width={[1/2,'auto']} height={['auto','30px']} maxWidth={'initial'} mr={['auto',3]} ml={['auto',0]} my={[3,0]} />
-                </Link>
-                <Link textAlign={['center','left']} pr={[0,3]} href="https://app.compound.finance" target="_blank" rel="nofollow noopener noreferrer">
-                  <Image src="images/compound-light.png" width={[1/2,'auto']} height={['auto','30px']} maxWidth={'initial'} mr={['auto',3]} ml={['auto',0]} my={[3,0]} />
-                </Link>
-                <Link textAlign={['center','left']} href="https://fulcrum.trade" target="_blank" rel="nofollow noopener noreferrer">
-                  <Image src="images/fulcrum.png" width={[1/2,'auto']} height={['auto','30px']} maxWidth={'initial'} mr={['auto',3]} ml={['auto',0]} my={[3,0]} />
-                </Link>
-                <Link textAlign={['center','left']} href="https://aave.com" target="_blank" rel="nofollow noopener noreferrer">
-                  <Image src="images/aave.png" width={[1/2,'auto']} height={['auto','30px']} maxWidth={'initial'} mr={['auto',3]} ml={['auto',0]} my={[3,0]} />
-                </Link>
-              </Flex>
-              */
-            }
-            <Flex width={1} flexDirection={['column','row']} justifyContent={['center','flex-end']} align={['center','flex-end']} py={3}>
-              <Text textAlign={['center','flex-end']} fontSize={[2,1]} py={[2,0]} color={'white'}>&copy; {currYear} - Idle Labs Inc.</Text>
-              <RouterLink to="/terms-of-service" style={{textDecoration:'none'}}>
-                <Text textAlign={['center','flex-end']} pl={2} fontSize={[2,1]} py={[2,0]} color={'#0df'}>Terms of Service</Text>
-              </RouterLink>
-            </Flex>
+        <Flex
+          width={1}
+          height={['auto','100%']}
+          flexDirection={'column'}
+          alignItems={['center','flex-end']}
+          justifyContent={['center','flex-end']}
+        >
+          <Flex
+            p={2}
+            width={1}
+            alignItems={'center'}
+            justifyContent={'center'}
+            backgroundColor={'dark-blue'}
+            flexDirection={['column','row']}
+          >
+            <Text
+              color={'white'}
+              fontSize={[2,1]}
+              textAlign={['center','flex-end']}
+            >
+              &copy; {currYear} - Idle Labs Inc.
+            </Text>
+            <RouterLink
+              to={'/terms-of-service'}
+              style={{textDecoration:'none'}}
+            >
+              <Text
+                pl={2}
+                color={'#0df'}
+                fontSize={[2,1]}
+                textAlign={['center','flex-end']}
+              >
+                Terms of Service
+              </Text>
+            </RouterLink>
           </Flex>
         </Flex>
       </Flex>
