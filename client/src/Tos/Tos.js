@@ -1,7 +1,7 @@
+import Footer from '../Footer/Footer';
+import styles from './Tos.module.scss';
 import React, { Component } from 'react';
 import { Box, Flex, Text, Heading } from 'rimble-ui'
-import styles from './Tos.module.scss';
-import Footer from '../Footer/Footer';
 
 class Tos extends Component {
   state = {};

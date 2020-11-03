@@ -4,7 +4,7 @@ import {
 import ExtLink from '../ExtLink/ExtLink';
 import React, { Component } from 'react';
 import styles from './Footer.module.scss';
-import { Flex, Text, Heading, Image, Link } from 'rimble-ui'
+import { Flex, Text, Heading, Image, Link } from 'rimble-ui';
 
 class Footer extends Component {
   state = {};
@@ -104,14 +104,6 @@ class Footer extends Component {
                 <ExtLink href="https://www.linkedin.com/company/idlefinance">
                   <Image src="images/social/linkedin.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} boxShadow={1} borderRadius={'7px'} />
                 </ExtLink>
-                {
-                /*
-                }
-                <Link href={`https://etherscan.io/address/${this.props.tokenConfig.idle.address}#code`} target="_blank" rel="nofollow noopener noreferrer">
-                  <Image src="images/etherscan.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} className={styles.socialIcon} />
-                </Link>
-                */
-                }
               </Flex>
             </Flex>
           </Flex>
