@@ -149,8 +149,8 @@ class ProposalsList extends Component {
           (this.state.loading || !this.state.processedRows === null) ? (
             <FlexLoader
               flexProps={{
-                flexDirection:'row',
-                minHeight:this.props.height
+                minHeight:'50vh',
+                flexDirection:'row'
               }}
               loaderProps={{
                 size:'30px'
@@ -158,7 +158,7 @@ class ProposalsList extends Component {
               textProps={{
                 ml:2
               }}
-              text={'Loading proposals...'}
+              text={'Loading Proposals...'}
             />
           ) : (
             <Flex
