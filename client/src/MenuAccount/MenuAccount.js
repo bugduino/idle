@@ -16,6 +16,7 @@ class MenuAccount extends Component {
 
   // Utils
   functionsUtil = null;
+  idleGovToken = null;
 
   loadUtils(){
     if (this.functionsUtil){
@@ -23,6 +24,8 @@ class MenuAccount extends Component {
     } else {
       this.functionsUtil = new FunctionsUtil(this.props);
     }
+
+    this.idleGovToken = this.functionsUtil.getIdleGovToken();
   }
 
   async componentWillMount(){
@@ -41,15 +44,20 @@ class MenuAccount extends Component {
   async loadIdleTokenBalance(){
     const idleGovTokenEnabled = this.functionsUtil.getGlobalConfig(['govTokens','IDLE','enabled']);
     if (idleGovTokenEnabled){
-      const [balance,unclaimed] = await Promise.all([
-          this.functionsUtil.getTokenBalance('IDLE',this.props.account),
-          this.functionsUtil.getIdleTokensUnclaimed(this.props.account)
+      const [
+        balance,
+        unclaimed
+      ] = await Promise.all([
+        this.idleGovToken.getBalance(this.props.account),
+        this.idleGovToken.getUnclaimedTokens(this.props.account)
       ]);
 
-      const idleTokenBalance = this.functionsUtil.BNify(balance).plus(unclaimed);
-      return this.setState({
-        idleTokenBalance
-      });
+      if (balance && unclaimed){
+        const idleTokenBalance = this.functionsUtil.BNify(balance).plus(unclaimed);
+        return this.setState({
+          idleTokenBalance
+        });
+      }
     }
     return null;
   }

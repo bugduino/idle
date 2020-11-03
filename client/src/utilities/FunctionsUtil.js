@@ -3,18 +3,18 @@ import axios from 'axios';
 import moment from 'moment';
 import { Text } from "rimble-ui";
 import BigNumber from 'bignumber.js';
+import IdleGovToken from './IdleGovToken';
 import { toBuffer } from "ethereumjs-util";
 import globalConfigs from '../configs/globalConfigs';
-// import availableTokens from '../configs/availableTokens';
-// import { ChainId, Token, Fetcher, Route } from '@uniswap/sdk';
-const ethereumjsABI = require('ethereumjs-abi');
 
+const ethereumjsABI = require('ethereumjs-abi');
 const env = process.env;
 
 class FunctionsUtil {
 
   // Attributes
   props = {};
+  idleGovToken = null;
 
   // Constructor
   constructor(props){
@@ -2627,10 +2627,6 @@ class FunctionsUtil {
 
     return output;
   }
-  getIdleTokensUnclaimed = async () => {
-    return this.BNify(0);
-    // return await this.genericContractCall('IDLE','rewards',[this.props.account]);
-  }
   getIdleTokenPrice = async (tokenConfig,blockNumber='latest',timestamp=false) => {
 
     const cachedDataKey = `idleTokenPrice_${tokenConfig.idle.token}_${blockNumber}`;
@@ -3472,9 +3468,6 @@ class FunctionsUtil {
     }
     return null;
   }
-  getIdleAPR = async (token,tokenConfig) => {
-    return this.BNify(5); // Fake 5%
-  }
   getCompAPR = async (token,tokenConfig,cTokenIdleSupply=null,compConversionRate=null) => {
     const COMPTokenConfig = this.getGlobalConfig(['govTokens','COMP']);
     if (!COMPTokenConfig.enabled){
@@ -3627,6 +3620,12 @@ class FunctionsUtil {
     });
     return output;
   }
+  getIdleGovToken = () => {
+    if (!this.idleGovToken){
+      this.idleGovToken = new IdleGovToken(this.props);
+    }
+    return this.idleGovToken;
+  }
   getGovTokensAprs = async (token,tokenConfig,enabledTokens=null) => {
     const govTokens = this.getGlobalConfig(['govTokens']);
     const govTokensAprs = {}
@@ -3665,7 +3664,8 @@ class FunctionsUtil {
           }
         break;
         case 'IDLE':
-          govTokenApr = await this.getIdleAPR(token,tokenConfig);
+          const idleGovToken = this.getIdleGovToken(this.props);
+          govTokenApr = await idleGovToken.getAPR(token,tokenConfig);
         break;
         default:
         break;

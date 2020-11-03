@@ -20,22 +20,25 @@ class GovModal extends React.Component {
 
   // Utils
   functionsUtil = null;
+  idleGovToken = null;
+
   loadUtils(){
     if (this.functionsUtil){
       this.functionsUtil.setProps(this.props);
     } else {
       this.functionsUtil = new FunctionsUtil(this.props);
     }
+
+    this.idleGovToken = this.functionsUtil.getIdleGovToken();
   }
 
   loadTokenInfo = async () => {
-    const contractName = this.functionsUtil.getGlobalConfig(['governance','props','tokenName']);
     const [
-      unclaimed,
-      balance
+      balance,
+      unclaimed
     ] = await Promise.all([
-      this.functionsUtil.getIdleTokensUnclaimed(this.props.account),
-      this.functionsUtil.getTokenBalance(contractName,this.props.account),
+      this.idleGovToken.getBalance(this.props.account),
+      this.idleGovToken.getUnclaimedTokens(this.props.account)
     ]);
 
     const total = this.functionsUtil.BNify(balance).plus(unclaimed);
@@ -113,8 +116,7 @@ class GovModal extends React.Component {
       }));
     };
 
-    const contractName = this.functionsUtil.getGlobalConfig(['governance','props','tokenName']);
-    this.functionsUtil.contractMethodSendWrapper(contractName, 'claimIdle', [this.props.account], callback, callbackReceipt);
+    this.idleGovToken.claimRewards(callback,callbackReceipt);
 
     this.setState((prevState) => ({
       processing: {
