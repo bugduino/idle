@@ -1,3 +1,4 @@
+import IDLE from '../contracts/IDLE.json';
 import COMP from '../abis/compound/COMP.json';
 import TokenSwap from '../TokenSwap/TokenSwap';
 import yDAIv3 from '../abis/iearn/yDAIv3.json';
@@ -16,8 +17,11 @@ import IdleTokenV2 from '../contracts/IdleTokenV2.json';
 import StrategyPage from '../StrategyPage/StrategyPage';
 import BuyModal from '../utilities/components/BuyModal';
 import IdleTokenV3 from '../contracts/IdleTokenV3.json';
+import EarlyRewards from '../contracts/EarlyRewards.json';
 import CurveDeposit from '../abis/curve/CurveDeposit.json';
+import GovernorAlpha from '../contracts/GovernorAlpha.json';
 import Comptroller from '../abis/compound/Comptroller.json';
+import IdleController from '../contracts/IdleController.json';
 import TokenMigration from '../TokenMigration/TokenMigration';
 import BatchMigration from '../BatchMigration/BatchMigration';
 import { RampInstantSDK } from '@ramp-network/ramp-instant-sdk';
@@ -160,12 +164,12 @@ const globalConfigs = {
       }
     },
     contracts:{
-      delegates:'COMP',
-      governance:'Governance',
+      delegates:'IDLE',
+      governance:'GovernorAlpha',
     }
   },
   curve:{
-    enabled:true,
+    enabled:false,
     params:{
       n_coins:4,
       label:'Curve',

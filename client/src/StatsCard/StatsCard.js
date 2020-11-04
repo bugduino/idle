@@ -54,7 +54,7 @@ class StatsCard extends Component {
             </Heading.h4>
           </Flex>
           {
-            (this.props.value && this.props.value.toString().length>0) &&
+            (typeof this.props.value !== 'undefined' && this.props.value !== null && this.props.value.toString().length>0) &&
               <Text
                 lineHeight={1}
                 fontSize={[4,5]}
@@ -71,7 +71,7 @@ class StatsCard extends Component {
             : null
           }
           {
-            (this.props.label && this.props.label.toString().length>0) && (
+            (typeof this.props.label !== 'undefined' && this.props.label !== null && this.props.label.toString().length>0) && (
               <Flex
                 mt={[3,2]}
                 alignItems={'center'}

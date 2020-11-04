@@ -582,7 +582,7 @@ class ProposalDetails extends Component {
                             lineHeight={'initial'}
                             hoverColor={'primary'}
                             rel={'nofollow noopener noreferrer'}
-                            href={this.functionsUtil.getEtherscanAddressUrl(voteInfo.voter)}
+                            href={`/#/governance/leaderboard/${voteInfo.voter}`}
                           >
                             {
                               this.props.isMobile ? (
@@ -693,7 +693,7 @@ class ProposalDetails extends Component {
                           lineHeight={'initial'}
                           hoverColor={'primary'}
                           rel={'nofollow noopener noreferrer'}
-                          href={this.functionsUtil.getEtherscanAddressUrl(voteInfo.voter)}
+                          href={`/#/governance/leaderboard/${voteInfo.voter}`}
                         >
                           {voteInfo.voter}
                         </Link>

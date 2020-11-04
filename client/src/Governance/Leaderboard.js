@@ -34,7 +34,9 @@ class Leaderboard extends Component {
   }
 
   async loadData(){
-    const delegates = await this.governanceUtil.getDelegates(this.state.maxRows);
+    const delegates = await this.governanceUtil.getDelegates();
+
+    console.log(delegates);
 
     const { match: { params } } = this.props;
 
