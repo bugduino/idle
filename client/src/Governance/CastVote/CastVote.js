@@ -216,7 +216,7 @@ class CastVote extends Component {
             color={'dark-gray'}
             textAlign={'center'}
           >
-            You have already voted for the proposal #{this.props.proposal.id}:
+            You have voted for the proposal #{this.props.proposal.id}:
           </Text>
           <DashboardCard
             cardProps={{
