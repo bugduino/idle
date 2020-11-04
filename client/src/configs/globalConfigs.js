@@ -149,6 +149,7 @@ const globalConfigs = {
     baseRoute:'/dashboard',
   },
   governance:{
+    enabled:true,
     baseRoute:'/governance',
     props:{
       tokenName:'IDLE',

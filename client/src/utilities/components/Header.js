@@ -41,6 +41,9 @@ class Header extends React.Component {
   }
 
   render() {
+
+    const governanceEnabled = this.functionsUtil.getGlobalConfig(['governance','enabled']);
+
     return (
       <Box
         style={{
@@ -119,23 +122,41 @@ class Header extends React.Component {
                 flexDirection={'row'}
                 justifyContent={"flex-end"}
               >
+                {
+                  governanceEnabled && 
+                    <Link
+                      mr={4}
+                      fontSize={3}
+                      color={'white'}
+                      hoverColor={'white'}
+                      fontFamily={'sansSerif'}
+                      textAlign={['center','left']}
+                      onClick={ (e) => window.location.hash='#/governance' }
+                    >
+                      Governance
+                    </Link>
+                }
                 <Link
+                  mr={4}
                   fontSize={3}
                   color={'white'}
                   hoverColor={'white'}
                   fontFamily={'sansSerif'}
                   textAlign={['center','left']}
                   onClick={(e) => {this.functionsUtil.scrollTo(document.getElementById('contacts').offsetTop,300)}}
-                >Contact Us</Link>
+                >
+                  Contact Us
+                </Link>
                 <Link
-                  ml={4}
                   fontSize={3}
                   color={'white'}
                   hoverColor={'white'}
                   fontFamily={'sansSerif'}
                   textAlign={['center','left']}
                   onClick={(e) => {this.functionsUtil.scrollTo(document.getElementById('faq').offsetTop,300)}}
-                >FAQs</Link>
+                >
+                  FAQs
+                </Link>
               </Flex>
           }
         </Flex>

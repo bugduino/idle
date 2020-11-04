@@ -105,8 +105,13 @@ class AssetPage extends Component {
 
   loadTokensInfo = async () => {
 
+    const curveAvailableTokens = this.functionsUtil.getGlobalConfig(['curve','availableTokens']);
+    this.setState({
+      curveAvailableTokens
+    });
+
     const selectedToken = this.getSelectedToken();
-    // Check if token is set i query params
+    // Check if token is set the query params
     if (selectedToken && selectedToken !== this.props.urlParams.param1){
       this.changeFromToken(selectedToken);
       return await this.setSelectedToken(selectedToken);
@@ -117,7 +122,6 @@ class AssetPage extends Component {
     const newState = {...this.state};
 
     const availableTokens = this.functionsUtil.getCurveAvailableTokens();
-    const curveAvailableTokens = this.functionsUtil.getGlobalConfig(['curve','availableTokens']);
 
     if (newState.selectedToken !== selectedToken){
       newState.selectedToken = selectedToken;
@@ -144,7 +148,7 @@ class AssetPage extends Component {
     newState.curveDepositContract = curveDepositContract;
 
     newState.availableTokens = availableTokens;
-    newState.curveAvailableTokens = curveAvailableTokens;
+
 
     // console.log('curveTokenPrice',newState.curveTokenPrice.toFixed(6),'curveTokenBalance',newState.curveTokenBalance.toFixed(6),'redeemableBalance',newState.redeemableBalance.toFixed(20),'tokenBalance',newState.tokenBalance.toFixed(20));
     const govTokenAvailableTokens = {};
