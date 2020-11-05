@@ -124,9 +124,9 @@ class UpgradeModal extends React.Component {
           closeFunc={this.props.closeModal}
         >
           <ModalCard.Header
-            iconHeight={'40px'}
             icon={`images/migrate.svg`}
             title={'Upgrade Available'}
+            iconHeight={['35px','40px']}
           >
           </ModalCard.Header>
           <ModalCard.Body>
@@ -137,7 +137,7 @@ class UpgradeModal extends React.Component {
             >
               <Text
                 my={0}
-                fontSize={3}
+                fontSize={[2,3]}
                 color={'mid-gray'}
                 textAlign={'center'}
               >
@@ -149,43 +149,57 @@ class UpgradeModal extends React.Component {
               flexDirection={'column'}
             >
               <Flex
-                mt={3}
+                mt={[2,3]}
                 alignItems={'center'}
                 flexDirection={'row'}
               >
                 <Flex
-                  width={0.28}
+                  fontSize={[2,3]}
+                  width={[0.5,0.28]}
                   fontWeight={[4,5]}
                   color={'copyColor'}
                 >
-                  ASSET TO MIGRATE
+                  {
+                    this.props.isMobile ? 'ASSET' : 'ASSET TO MIGRATE'
+                  }
                 </Flex>
+                {
+                  !this.props.isMobile && (
+                    <Flex
+                      width={0.19}
+                      fontWeight={[4,5]}
+                      color={'copyColor'}
+                      justifyContent={'center'}
+                    >
+                      BALANCE
+                    </Flex>
+                  )
+                }
+                {
+                  !this.props.isMobile && (
+                    <Flex
+                      width={0.19}
+                      fontWeight={[4,5]}
+                      color={'copyColor'}
+                      justifyContent={'center'}
+                    >
+                      OLD APY
+                    </Flex>
+                  )
+                }
                 <Flex
-                  width={0.19}
+                  fontSize={[2,3]}
                   fontWeight={[4,5]}
+                  width={[0.25,0.19]}
                   color={'copyColor'}
                   justifyContent={'center'}
                 >
-                  BALANCE
+                  {
+                    this.props.isMobile ? 'APY' : 'NEW APY'
+                  }
                 </Flex>
                 <Flex
-                  width={0.19}
-                  fontWeight={[4,5]}
-                  color={'copyColor'}
-                  justifyContent={'center'}
-                >
-                  OLD APY
-                </Flex>
-                <Flex
-                  width={0.19}
-                  fontWeight={[4,5]}
-                  color={'copyColor'}
-                  justifyContent={'center'}
-                >
-                  NEW APY
-                </Flex>
-                <Flex
-                  width={0.15}
+                  width={[0.25,0.15]}
                 >
                   
                 </Flex>
@@ -211,7 +225,7 @@ class UpgradeModal extends React.Component {
                         justifyContent={'space-between'}
                       >
                         <Flex
-                          width={0.28}
+                          width={[0.5,0.28]}
                           alignItems={'center'}
                           flexDirection={'row'}
                         >
@@ -220,7 +234,7 @@ class UpgradeModal extends React.Component {
                               name:'icon',
                               props:{
                                 mr:2,
-                                height:'2.3em'
+                                height:['1.8em','2.3em']
                               }
                             }}
                             tokenConfig={tokenConfig}
@@ -235,37 +249,45 @@ class UpgradeModal extends React.Component {
                             token={tokenConfig.idle.token}
                           />
                         </Flex>
+                        {
+                          !this.props.isMobile && (
+                            <Flex
+                              width={0.19}
+                              alignItems={'center'}
+                              justifyContent={'center'}
+                            >
+                              <SmartNumber
+                                {...fieldProps}
+                                minPrecision={5}
+                                number={balance}
+                                flexProps={{
+                                  justifyContent:'center'
+                                }}
+                              />
+                            </Flex>
+                          )
+                        }
+                        {
+                          !this.props.isMobile && (
+                            <Flex
+                              width={0.19}
+                              alignItems={'center'}
+                              justifyContent={'center'}
+                            >
+                              <AssetField
+                                {...this.props}
+                                fieldInfo={{
+                                  name:'oldApy',
+                                  props:fieldProps
+                                }}
+                                token={token}
+                                tokenConfig={tokenConfig}
+                              />
+                            </Flex>
+                          )
+                        }
                         <Flex
-                          width={0.19}
-                          alignItems={'center'}
-                          justifyContent={'center'}
-                        >
-                          <SmartNumber
-                            {...fieldProps}
-                            minPrecision={5}
-                            number={balance}
-                            flexProps={{
-                              justifyContent:'center'
-                            }}
-                          />
-                        </Flex>
-                        <Flex
-                          width={0.19}
-                          alignItems={'center'}
-                          justifyContent={'center'}
-                        >
-                          <AssetField
-                            {...this.props}
-                            fieldInfo={{
-                              name:'oldApy',
-                              props:fieldProps
-                            }}
-                            token={token}
-                            tokenConfig={tokenConfig}
-                          />
-                        </Flex>
-                        <Flex
-                          width={0.19}
+                          width={[0.25,0.19]}
                           alignItems={'center'}
                           justifyContent={'center'}
                         >
@@ -280,7 +302,7 @@ class UpgradeModal extends React.Component {
                           />
                         </Flex>
                         <Flex
-                          width={0.15}
+                          width={[0.25,0.15]}
                           alignItems={'center'}
                           justifyContent={'center'}
                         >
@@ -429,7 +451,8 @@ class UpgradeModal extends React.Component {
                 <RoundButton
                   handleClick={this.closeModal}
                   buttonProps={{
-                    width:['100%','40%']
+                    fontSize:[2,3],
+                    width:['100%','40%'],
                   }}
                 >
                   MIGRATE LATER
