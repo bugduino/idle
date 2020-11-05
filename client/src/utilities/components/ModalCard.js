@@ -8,9 +8,9 @@ const ModalCard = ({children, closeFunc, ...props}) => (
     border={0}
     mx={'auto'}
     my={'auto'}
+    height={'auto'}
     borderRadius={2}
     overflow={'auto'}
-    height={['100vh', 'auto']}
     width={ props.width ? props.width : 'auto' }
     minWidth={ props.minWidth ? props.minWidth : 'auto' }
     maxWidth={ props.maxWidth ? props.maxWidth : '960px'}
@@ -50,7 +50,7 @@ ModalCard.Header = (props) => (
     width={1}
     mb={[2,3]}
     pb={[2,2]}
-    pt={props.icon ? 3 : [5,3]}
+    pt={ props.pt ? props.pt : (props.icon ? 3 : [5,3]) }
     borderBottom={ props.borderBottom ? props.borderBottom : '1px solid #eee' }
   >
     <Flex

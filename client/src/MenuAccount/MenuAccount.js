@@ -3,8 +3,8 @@ import styles from './MenuAccount.module.scss';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import GovModal from "../utilities/components/GovModal";
 import ShortHash from "../utilities/components/ShortHash";
-import { Flex, Icon, Image, Link, Text } from "rimble-ui";
 import CardIconButton from '../CardIconButton/CardIconButton';
+import { Flex, Icon, Image, Link, Text, Box } from "rimble-ui";
 import AccountModal from "../utilities/components/AccountModal";
 
 class MenuAccount extends Component {
@@ -75,8 +75,8 @@ class MenuAccount extends Component {
       this.props.account ? (
         <Flex
           width={1}
-          alignItems={'center'}
-          flexDirection={'row'}
+          flexDirection={['column','row']}
+          alignItems={['flex-start','center']}
         >
           <Flex
             p={0}
@@ -115,9 +115,11 @@ class MenuAccount extends Component {
           
           {
             this.state.idleTokenBalance && 
-              <>
+              <Flex
+                ml={[0,3]}
+                width={'auto'}
+              >
                 <Link
-                  ml={3}
                   style={{
                     textDecoration:'none'
                   }}
@@ -149,7 +151,7 @@ class MenuAccount extends Component {
                   isOpen={this.state.isModalOpen==='gov'}
                   closeModal={e => this.toggleModal('gov') }
                 />
-              </>
+              </Flex>
           }
           <AccountModal
             {...this.props}

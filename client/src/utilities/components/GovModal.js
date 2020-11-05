@@ -143,6 +143,7 @@ class GovModal extends React.Component {
           background={'radial-gradient(76.02% 75.41% at 1.84% 0%, rgb(162, 196, 246) 0%, rgb(10, 79, 176) 100%)'}
         >
           <ModalCard.Header
+            pt={3}
             titleProps={{
               color:'white'
             }}
