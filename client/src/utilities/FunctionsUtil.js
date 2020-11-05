@@ -2553,7 +2553,7 @@ class FunctionsUtil {
           redeemableBalanceEnd = redeemableBalanceStart.plus(earningPerYear);
         }
 
-        // console.log('redeemableBalanceCounter',redeemableBalanceStart.toString(),redeemableBalanceEnd.toString());
+        // console.log('redeemableBalanceCounter',token,parseFloat(redeemableBalanceStart),parseFloat(redeemableBalanceEnd));
 
         output = {
           redeemableBalanceEnd,
@@ -2582,7 +2582,7 @@ class FunctionsUtil {
 
             output = redeemableBalance;
 
-            // console.log('redeemableBalance',idleTokenBalance2.toFixed(4),idleTokenPrice1.toFixed(4),tokenBalance.toFixed(4),govTokensBalance.toFixed(4),output.toFixed(4));
+            // console.log('redeemableBalance',token,idleTokenBalance2.toFixed(4),idleTokenPrice1.toFixed(4),tokenBalance.toFixed(4),govTokensBalance.toFixed(4),output.toFixed(4));
           }
         }
       break;
@@ -4179,6 +4179,7 @@ class FunctionsUtil {
     return this.setCachedData(cachedDataKey,tokenAprs);
   }
   abbreviateNumber(value,decimals=3,maxPrecision=5,minPrecision=0){
+
     const isNegative = parseFloat(value)<0;
     let newValue = this.BNify(value).abs();
     const suffixes = ["", "K", "M", "B","T"];
@@ -4213,6 +4214,8 @@ class FunctionsUtil {
     }
 
     newValue += suffixes[suffixNum];
+
+    // console.log('abbreviateNumber',value,decimals,maxPrecision,minPrecision,newValue);
 
     return newValue;
   }
