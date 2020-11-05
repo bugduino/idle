@@ -3157,11 +3157,11 @@ class FunctionsUtil {
   }
   abbreviateNumber(value,decimals=3,maxPrecision=5,minPrecision=0){
     const isNegative = parseFloat(value)<0;
-    let newValue = Math.abs(parseFloat(value));
+    let newValue = this.BNify(value).abs();
     const suffixes = ["", "K", "M", "B","T"];
     let suffixNum = 0;
-    while (newValue >= 1000) {
-      newValue /= 1000;
+    while (newValue.gte(1000)) {
+      newValue = newValue.div(1000);
       suffixNum++;
     }
 
@@ -3169,19 +3169,19 @@ class FunctionsUtil {
 
     // Prevent decimals on integer number
     if (value>=1000){
-      const decimalPart = decimals ? (newValue%1).toString().substr(2,decimals) : null;
+      const decimalPart = decimals ? newValue.mod(1).toFixed(maxPrecision).substr(2,decimals) : null;
       newValue = parseFloat(parseInt(newValue)+( decimalPart ? '.'+decimalPart : '' ) );
     } else {
       newValue = newValue.toFixed(decimals);
     }
 
+    // Adjust number precision
     if (newValue>=1 && (newValue.length-1)>maxPrecision){
       newValue = parseFloat(newValue).toPrecision(maxPrecision);
     } else if ((newValue.length-1)<minPrecision) {
       const difference = minPrecision-(newValue.length-1);
       decimals += difference;
-      newValue = Math.abs(parseFloat(value));
-      newValue = newValue.toFixed(decimals);
+      newValue = this.BNify(value).abs().toFixed(decimals);
     }
 
     // Add minus if number is negative
