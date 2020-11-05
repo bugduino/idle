@@ -76,6 +76,7 @@ class AssetsUnderManagement extends Component {
               style={ this.props.counterStyle ? this.props.counterStyle : {
                 display:'block',
                 color:'dark-gray',
+                whiteSpace:'nowrap',
                 fontFamily:this.props.theme.fonts.counter,
                 fontWeight:this.props.theme.fontWeights[5],
                 textAlign: this.props.isMobile ? 'center' : 'right',

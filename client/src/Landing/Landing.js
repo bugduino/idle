@@ -456,6 +456,7 @@ class Landing extends Component {
             </Text>
             <Flex
               width={1}
+              px={[3,4]}
               alignItems={'center'}
               flexDirection={'column'}
               justifyContent={'center'}
@@ -465,10 +466,13 @@ class Landing extends Component {
                 counterStyle={{
                   display:'block',
                   color:'dark-gray',
+                  overflow: 'hidden',
                   textAlign: 'center',
+                  whiteSpace: 'nowrap',
+                  textOverflow: 'ellipsis',
                   fontFamily:this.props.theme.fonts.counter,
                   fontWeight:this.props.theme.fontWeights[5],
-                  fontSize: this.props.isMobile ? this.props.theme.fontSizes[6] : this.props.theme.fontSizes[8],
+                  fontSize: this.props.isMobile ? this.props.theme.fontSizes[5] : this.props.theme.fontSizes[8],
                 }}
                 subtitle={null}
                 subtitleProps={{

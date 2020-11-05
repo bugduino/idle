@@ -256,7 +256,7 @@ class GovModal extends React.Component {
                         width:[1,'45%'],
                         mainColor:'white',
                         contrastColor:'blue',
-                        // disabled:!this.state.unclaimed || this.state.unclaimed.lte(0)
+                        disabled:!this.state.unclaimed || this.state.unclaimed.lte(0)
                       }}
                       handleClick={this.claim.bind(this)}
                     >
