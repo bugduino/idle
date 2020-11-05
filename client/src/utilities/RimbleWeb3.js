@@ -1171,7 +1171,7 @@ class RimbleTransaction extends React.Component {
     this.setState({ network });
   }
 
-  contractMethodSendWrapper = async (contractName, contractMethod, params = [], value = null, callback = null, callback_receipt = null, gasLimit = null) => {
+  contractMethodSendWrapper = async (contractName, contractMethod, params = [], value = null, callback = null, callback_receipt = null, gasLimit = null, txData = null) => {
     // Is it on the correct network?
     if (!this.state.network.isCorrectNetwork) {
       // wrong network modal
@@ -1201,7 +1201,7 @@ class RimbleTransaction extends React.Component {
 
     // Create new tx and add to collection
     // Maybe this needs to get moved out of the wrapper?
-    let transaction = this.createTransaction();
+    let transaction = this.createTransaction(txData);
     transaction.method = contractMethod;
 
     this.addTransaction(transaction);
@@ -1454,15 +1454,16 @@ class RimbleTransaction extends React.Component {
   }
 
   // Create tx
-  createTransaction = () => {
-    let transaction = {};
+  createTransaction = (txData=null) => {
+    let transaction = {
+      ...txData
+    };
     transaction.created = Date.now();
     transaction.lastUpdated = Date.now();
     transaction.status = "initialized";
     transaction.confirmationCount = 0;
     transaction.token = this.props.selectedToken;
     transaction.strategy = this.props.selectedStrategy;
-
     return transaction;
   }
 

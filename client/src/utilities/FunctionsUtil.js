@@ -1291,12 +1291,13 @@ class FunctionsUtil {
           etherscanTxs[`t${tx.created}`] = {
             status:'Pending',
             token:selectedToken,
-            tokenSymbol:isMigrationTx ? tokenConfig.idle.token : selectedToken,
             action:allowedMethods[tx.method],
             timeStamp:parseInt(tx.created/1000),
             hash:txHash ? tx.transactionHash : null,
-            value: this.fixTokenDecimals(tx.params[0],decimals).toString()
+            tokenSymbol:isMigrationTx ? tokenConfig.idle.token : selectedToken,
+            value: tx.value ? tx.value : this.fixTokenDecimals(tx.params[0],decimals).toString()
           };
+
           return false;
         }
 
@@ -2312,7 +2313,7 @@ class FunctionsUtil {
       contractName, 'allowance', [walletAddr, contractAddr]
     );
   }
-  contractMethodSendWrapper = (contractName,methodName,params,callback,callback_receipt) => {
+  contractMethodSendWrapper = (contractName,methodName,params,callback,callback_receipt,txData) => {
     this.props.contractMethodSendWrapper(contractName, methodName, params, null, (tx)=>{
       if (typeof callback === 'function'){
         callback(tx);
@@ -2321,7 +2322,7 @@ class FunctionsUtil {
       if (typeof callback_receipt === 'function'){
         callback_receipt(tx);
       }
-    });
+    }, null, txData);
   }
   enableERC20 = (contractName,address,callback,callback_receipt) => {
     // const contract = this.getContractByName(contractName);

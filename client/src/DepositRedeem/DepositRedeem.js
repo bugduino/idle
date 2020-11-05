@@ -703,6 +703,10 @@ class DepositRedeem extends Component {
             return false;
           }
 
+          const txData = {
+            value:this.functionsUtil.BNify(inputValue)
+          };
+
           let idleTokenToRedeem = null;
           if (selectedPercentage){
             idleTokenToRedeem = this.functionsUtil.BNify(this.props.idleTokenBalance).times(selectedPercentage);
@@ -774,7 +778,7 @@ class DepositRedeem extends Component {
           let redeemParams = [idleTokenToRedeem];
           // console.log(redeemParams,idleTokenToRedeem);
 
-          contractSendResult = await this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'redeemIdleToken', redeemParams, null, callbackRedeem, callbackReceiptRedeem);
+          contractSendResult = await this.functionsUtil.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'redeemIdleToken', redeemParams, callbackRedeem, callbackReceiptRedeem, txData);
         }
       break;
       default: // Reset loading if not handled action
