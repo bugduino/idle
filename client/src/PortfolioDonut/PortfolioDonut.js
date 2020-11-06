@@ -12,7 +12,8 @@ class PortfolioDonut extends Component {
     chartData:null,
     totalFunds:null,
     parentWidth:null,
-    selectedToken:null
+    selectedToken:null,
+    selectedTokenConfig:null
   };
 
   // Utils
@@ -36,22 +37,6 @@ class PortfolioDonut extends Component {
 
   async componentDidMount(){
     this.loadPortfolio();
-  }
-
-  loadIcons(prevState){
-    const iconSize = parseInt(this.state.parentWidth*0.065)
-
-    if (prevState.chartData !== this.state.chartData){
-      const $radialLabels = window.jQuery(`#${this.props.parentId} text`).filter((index,label) => { return !isNaN(label.innerHTML); });
-      $radialLabels.each((index,label) => {
-        const token = Object.keys(this.props.availableTokens)[parseInt(label.innerHTML)];
-        const $g = window.jQuery(label).parent('g');
-        if (token && $g.length){
-          const tokenImage = token.icon ? token.icon : `images/tokens/${token}.svg`;
-          $g.get(0).innerHTML = `<image href="${tokenImage}" x="-${iconSize/2}" y="-${iconSize/2}" width="${iconSize}" height="${iconSize}" />`;
-        }
-      });
-    }
   }
 
   async componentDidUpdate(prevProps, prevState) {
@@ -170,13 +155,18 @@ class PortfolioDonut extends Component {
       radialLabelsLinkColor:{ from: 'color' },
       margin: this.props.isMobile ? { top: 15, right: 25, bottom: 30, left: 25 } : { top: 30, right: 50, bottom: 60, left: 50 },
       onMouseEnter:(data, e) => {
+        const selectedToken = data.id;
+        const selectedTokenConfig = selectedToken ? this.props.availableTokens[selectedToken] || this.functionsUtil.getGlobalConfig(['stats','tokens',selectedToken]) : null;
+        console.log(selectedToken,selectedTokenConfig);
         this.setState({
-          selectedToken:data.id
+          selectedToken,
+          selectedTokenConfig
         });
       },
       onMouseLeave:(data, e) => {
         this.setState({
-          selectedToken:null
+          selectedToken:null,
+          selectedTokenConfig:null
         });
       },
       legends:[
@@ -227,7 +217,6 @@ class PortfolioDonut extends Component {
                 selectedToken ? (
                   <>
                     <AssetField
-                      token={this.state.selectedToken}
                       fieldInfo={{
                         name:'icon',
                         props:{
@@ -235,6 +224,8 @@ class PortfolioDonut extends Component {
                           height:'2.2em'
                         }
                       }}
+                      token={this.state.selectedToken}
+                      tokenConfig={this.state.selectedTokenConfig}
                     />
                     <SmartNumber
                       unitProps={{

@@ -548,6 +548,22 @@ const globalConfigs = {
         },
         address:'0xc00e94cb662c3520282e6f5717214004a7f26888',
       },
+      IDLE:{
+        decimals:18,
+        enabled:true,
+        color:{
+          hex:'#0d55bb',
+          rgb:[13, 85, 187],
+          hsl:['215', '87%', '39%']
+        },
+        startTimestamp:'2020-11-10',
+        icon:'images/tokens/IDLE.png',
+        conversionRateField:'idleDAIPrice',
+        chart:{
+          labelTextColorModifiers:['darker', 4]
+        },
+        address:'0xc00e94cb662c3520282e6f5717214004a7f26888',
+      },
       'YDAI+YUSDC+YUSDT+YTUSD':{
         decimals:18,
         enabled:false,
