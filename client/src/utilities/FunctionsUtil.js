@@ -3050,6 +3050,11 @@ class FunctionsUtil {
 
     return this.setCachedData(cachedDataKey,tokenAllocation);
   }
+  getUniswapConversionRate_path = async (path) => {
+    const one = this.normalizeTokenDecimals(18);
+    const unires = await this.genericContractCall('UniswapRouter','getAmountsIn',[one.toFixed(),path]);
+    return unires;
+  }
   getUniswapConversionRate = async (tokenConfigFrom,tokenConfigDest) => {
     const WETHAddr = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
     const one = this.normalizeTokenDecimals(18);
@@ -3603,6 +3608,85 @@ class FunctionsUtil {
     output = output.div(totalAllocation);
 
     return output;
+  }
+  getTokensCsv = async () => {
+    const csv = [];
+    const availableStrategies = this.props.availableStrategies;
+    await this.asyncForEach(Object.keys(availableStrategies), async (strategy) => {
+      const availableTokens = availableStrategies[strategy];
+      const isRisk = strategy === 'risk';
+      await this.asyncForEach(Object.keys(availableTokens), async (token) => {
+        const tokenConfig = availableTokens[token];
+        const rates = await this.getTokenApiData(tokenConfig.address,isRisk,null,null,false,86400,'ASC');
+        const header = [];
+        let protocols = null;
+        const rows = [];
+
+        const lastRow = rates[rates.length-1];
+
+        rates.forEach( r => {
+          if (!protocols){
+            header.push('Token');
+            header.push('Date');
+
+            // Get protocols
+            protocols = [];
+            lastRow.protocolsData.forEach( p1 => {
+              const foundProtocol = tokenConfig.protocols.find( p2 => ( p2.address.toLowerCase() === p1.protocolAddr.toLowerCase() ) );
+              if (foundProtocol){
+                protocols.push(foundProtocol);
+              }
+            });
+
+            // Add APR columns
+            header.push('APR Idle');
+            header.push('SCORE Idle');
+
+            protocols.forEach( p => {
+              header.push('APR '+p.name);
+              header.push('SCORE '+p.name);
+            });
+
+            rows.push(header.join(','));
+          }
+
+          const date = moment(r.timestamp*1000).format('YYYY-MM-DD');
+          const rate = this.BNify(r.idleRate).div(1e18).toFixed(5);
+          const score = parseFloat(r.idleScore);
+
+          const row = [];
+          row.push(`${token}-${strategy}`);
+          row.push(date);
+          row.push(rate);
+          row.push(score);
+
+          protocols.forEach( pInfo => {
+            const pData = r.protocolsData.find( p => (p.protocolAddr.toLowerCase() === pInfo.address.toLowerCase()) );
+            let pRate = '';
+            let pScore = '';
+            if (pData){
+              pScore = !this.BNify(pData.defiScore).isNaN() ? parseFloat(pData.defiScore) : '0.00000';
+              pRate = !this.BNify(pData.rate).isNaN() ? this.BNify(pData.rate).div(1e18) : '0.00000';
+              if (typeof pData[`${pInfo.name}AdditionalAPR`] !== 'undefined'){
+                const additionalRate = this.BNify(pData[`${pInfo.name}AdditionalAPR`]).div(1e18);
+                if (!additionalRate.isNaN()){
+                  pRate = pRate.plus(additionalRate);
+                }
+              }
+            }
+
+            row.push(pRate);
+            row.push(pScore);
+          });
+
+          rows.push(row.join(','));
+        });
+
+        csv.push(rows.join('\n'));
+      });
+    });
+
+    console.log(csv.join('\n'));
   }
   getGovTokenPool = async (govToken=null,availableTokens=null,convertToken=null) => {
     let output = this.BNify(0);

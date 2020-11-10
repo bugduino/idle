@@ -5,9 +5,10 @@ import React, { Component } from 'react';
 import styles from './Landing.module.scss';
 import FlexCards from '../FlexCards/FlexCards';
 import HowItWorks from '../HowItWorks/HowItWorks';
+import AssetField from '../AssetField/AssetField';
 import RoundButton from '../RoundButton/RoundButton';
-import globalConfigs from '../configs/globalConfigs';
 import StrategyBox from '../StrategyBox/StrategyBox';
+import globalConfigs from '../configs/globalConfigs';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import DashboardCard from '../DashboardCard/DashboardCard';
 import NewsletterForm from '../NewsletterForm/NewsletterForm';
@@ -266,6 +267,14 @@ class Landing extends Component {
 
   render() {
     const { network } = this.props;
+    const availableTokens = [];
+    Object.values(this.props.availableStrategies).reduce( tokens => {
+      Object.keys(tokens).forEach( token => {
+        if (availableTokens.indexOf(token) === -1){
+          availableTokens.push(token);
+        }
+      });
+    });
     return (
       <Box
         height={'100vh'}
@@ -558,7 +567,7 @@ class Landing extends Component {
         >
           <Box
             mx={'auto'}
-            maxWidth={['50em','90em']}
+            maxWidth={['50em','75em']}
           >
             <Title
               mb={3}
@@ -567,10 +576,10 @@ class Landing extends Component {
               fontSize={[5,6]}
               component={Heading.h4}
             >
-              Integrators & Partners
+              Build with Idle
             </Title>
             <Text
-              mb={4}
+              mb={3}
               fontSize={[2,3]}
               fontWeight={500}
               color={'cellTitle'}
@@ -580,82 +589,181 @@ class Landing extends Component {
             </Text>
             <Flex
               width={1}
-              alignItems={'flex-start'}
-              flexDirection={['column','row']}
+              alignItems={'center'}
+              flexDirection={'column'}
               justifyContent={['center','space-between']}
             >
-              <Flex
-                mb={[3,0]}
-                pr={[0,4]}
-                width={[1,0.45]}
-                flexDirection={'column'}
-                justifyContent={'center'}
-                alignItems={['center','flex-start']}
-              >
-                <FlexCards
-                  itemsPerRow={2}
-                  cards={[
-                    {
-                      link:'https://zerion.io',
-                      image:'images/integrators/zerion.svg'
-                    },
-                    {
-                      link:'https://gnosis.io',
-                      image:'images/integrators/gnosis.png'
-                    },
-                    {
-                      link:'https://cryptolocally.com',
-                      image:'images/integrators/cryptolocally.png'
-                    },
-                    {
-                      link:'https://www.peepsdemocracy.com',
-                      image:'images/integrators/peeps.png'
-                    }
-                  ]}
-                  {...this.props}
-                />
+              {
+                /*
                 <Flex
-                  px={[2,0]}
+                  mb={3}
+                  width={1}
                   flexDirection={'column'}
+                  justifyContent={'center'}
+                  alignItems={['center','flex-start']}
                 >
-                  <Text
-                    mt={3}
-                    mb={2}
-                    fontSize={[3,4]}
-                    fontWeight={500}
-                    color={'dark-gray'}
-                  >
-                    Boost your Dapp with Idle now:
-                  </Text>
-                  <RoundButton
-                    buttonProps={{
-                      width:[1,'auto']
-                    }}
-                    handleClick={ (e) => {
-                      window.open('https://developers.idle.finance')
-                    }}
-                  >
-                    Read the Documentation
-                  </RoundButton>
+                  <FlexCards
+                    itemsPerRow={4}
+                    cards={[
+                      {
+                        link:'https://zerion.io',
+                        image:'images/integrators/zerion.svg'
+                      },
+                      {
+                        link:'https://gnosis.io',
+                        image:'images/integrators/gnosis.png'
+                      },
+                      {
+                        link:'https://cryptolocally.com',
+                        image:'images/integrators/cryptolocally.png'
+                      },
+                      {
+                        link:'https://www.peepsdemocracy.com',
+                        image:'images/integrators/peeps.png'
+                      }
+                    ]}
+                    {...this.props}
+                  />
                 </Flex>
-              </Flex>
+                */
+              }
               <Flex
-                width={[1,0.55]}
-                alignItems={'center'}
-                flexDirection={'column'}
-                justifyContent={'center'}
+                mt={2}
+                width={1}
+                flexDirection={['column','row']}
+                alignItems={['center','flex-start']}
+                justifyContent={['center','flex-start']}
               >
-                <iframe
-                  height={"350"}
-                  scrolling={"no"}
-                  title={"wvWjRXa"}
-                  frameBorder={"no"}
-                  style={{width:'100%'}}
-                  allowFullScreen={false}
-                  allowtransparency={"true"}
-                  src={"https://jsfiddle.net/samster/wd6mcy97/1/embedded/js/dark/"}
+                <Flex
+                  mb={[3,0]}
+                  width={[1,0.5]}
+                  flexDirection={'column'}
+                  alignItems={['center','flex-start']}
+                  justifyContent={['center','flex-start']}
                 >
-                </iframe>
+                  <Title
+                    mb={3}
+                    fontWeight={5}
+                    component={Heading.h5}
+                    fontSize={[4,'1.75em']}
+                  >
+                    Designed for Developers
+                  </Title>
+
+                  <Text
+                    mb={3}
+                    pr={[0,5]}
+                    textAlign={['center','justify']}
+                  >
+                    Thanks to our Smart-Contracts and Web3.js framework you can easily integrate Idle into your Dapp with just few lines of code and let your users deposit and earn interests on their assets.
+                  </Text>
+                  <Text
+                    mb={2}
+                    fontWeight={500}
+                  >
+                    Supported Assets:
+                  </Text>
+                  <Flex
+                    mb={3}
+                    flexDirection={'row'}
+                  >
+                    {
+                      availableTokens.map( token => (
+                        <AssetField
+                          token={token}
+                          fieldInfo={{
+                            name:'icon',
+                            props:{
+                              mr:2,
+                              width:'2.2em',
+                              height:'2.2em'
+                            }
+                          }}
+                          key={`asset_${token}`}
+                        />
+                      ))
+                    }
+                  </Flex>
+                  <Flex
+                    mt={2}
+                    width={1}
+                    flexDirection={'row'}
+                    alignItems={['center','flex-start']}
+                    justifyContent={['center','flex-start']}
+                  >
+                    <RoundButton
+                      buttonProps={{
+                        width:[1,'auto']
+                      }}
+                      handleClick={ (e) => {
+                        window.open('https://developers.idle.finance')
+                      }}
+                    >
+                      <Flex
+                        width={1}
+                        alignItems={'flex-end'}
+                        justifyContent={'center'}
+                      >
+                        <Text
+                          color={'white'}
+                          fontWeight={3}
+                        >
+                          Read the docs
+                        </Text>
+                        <Icon
+                          ml={1}
+                          size={'1.2em'}
+                          color={'white'}
+                          name={'KeyboardArrowRight'}
+                        />
+                      </Flex>
+                    </RoundButton>
+                    <RoundButton
+                      buttonProps={{
+                        ml:2,
+                        mainColor:'red',
+                        width:[1,'auto']
+                      }}
+                      handleClick={ (e) => {
+                        
+                      }}
+                    >
+                      <Flex
+                        width={1}
+                        alignItems={'flex-end'}
+                        justifyContent={'center'}
+                      >
+                        <Icon
+                          mr={1}
+                          size={'1.2em'}
+                          color={'white'}
+                          name={'LocalPhone'}
+                        />
+                        <Text
+                          color={'white'}
+                          fontWeight={3}
+                        >
+                          Contact us
+                        </Text>
+                      </Flex>
+                    </RoundButton>
+                  </Flex>
+                </Flex>
+                <Flex
+                  width={[1,0.5]}
+                >
+                  <iframe
+                    height={"350"}
+                    scrolling={"no"}
+                    title={"wvWjRXa"}
+                    frameBorder={"no"}
+                    style={{width:'100%'}}
+                    allowFullScreen={false}
+                    allowtransparency={"true"}
+                    src={"https://jsfiddle.net/samster/wd6mcy97/1/embedded/js/dark/"}
+                  >
+                  </iframe>
+                </Flex>
               </Flex>
             </Flex>
           </Box>

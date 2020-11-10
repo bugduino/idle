@@ -16,7 +16,7 @@ class FundsOverview extends Component {
     govTokensUserBalance:null,
     govTokensTotalBalance:null,
     govTokensTotalAprTooltip:null,
-    govTokensTotalBalanceTooltip:null,
+    govTokensTotalBalanceTooltip:null
   };
 
   // Utils

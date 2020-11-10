@@ -1930,6 +1930,7 @@ class DepositRedeem extends Component {
                               canPerformAction && 
                                 <Flex
                                   justifyContent={'center'}
+                                  mt={ redeemGovTokens ? 2 : 0 }
                                 >
                                   <RoundButton
                                     buttonProps={{

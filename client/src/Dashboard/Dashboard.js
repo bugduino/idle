@@ -43,6 +43,8 @@ class Dashboard extends Component {
     } else {
       this.functionsUtil = new FunctionsUtil(this.props);
     }
+
+    window.functionsUtil = this.functionsUtil;
   }
 
   async loadMenu() {

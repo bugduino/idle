@@ -157,7 +157,6 @@ class PortfolioDonut extends Component {
       onMouseEnter:(data, e) => {
         const selectedToken = data.id;
         const selectedTokenConfig = selectedToken ? this.props.availableTokens[selectedToken] || this.functionsUtil.getGlobalConfig(['stats','tokens',selectedToken]) : null;
-        console.log(selectedToken,selectedTokenConfig);
         this.setState({
           selectedToken,
           selectedTokenConfig

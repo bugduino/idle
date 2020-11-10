@@ -57,8 +57,12 @@ class Footer extends Component {
               <Flex width={1} flexDirection={'column'}>
                 <ExtLink pb={[3,2]} href={'https://developers.idle.finance'} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} color={'blue'} hoverColor={'blue'}>Developers</ExtLink>
                 <Flex pb={[3,2]} width={1} justifyContent={['center','flex-start']}>
-                  <RouterLink to="/terms-of-service" style={{textDecoration:'none'}}>
-                    <Link textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} fontWeight={3} color={'blue'} hoverColor={'blue'}>Terms of Service</Link>
+                  <RouterLink
+                    color={'blue'}
+                    to="/terms-of-service"
+                    className={styles.link}
+                  >
+                    <Text textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} fontWeight={3} color={'blue'} hoverColor={'blue'}>Terms of Service</Text>
                   </RouterLink>
                 </Flex>
                 <ExtLink pb={[3,2]} href={'https://www.iubenda.com/privacy-policy/61211749'} textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} color={'blue'} hoverColor={'blue'}>Privacy Policy</ExtLink>
@@ -74,18 +78,30 @@ class Footer extends Component {
                   </Heading.h3>
                   <Flex width={1} flexDirection={'column'}>
                     <Flex pb={[3,2]} width={1} justifyContent={['center','flex-start']}>
-                      <RouterLink to="/governance" style={{textDecoration:'none'}}>
-                        <Link textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} fontWeight={3} color={'blue'} hoverColor={'blue'}>Overview</Link>
+                      <RouterLink
+                        color={'blue'}
+                        to={"/governance"}
+                        className={styles.link}
+                      >
+                        <Text textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} fontWeight={3} color={'blue'} hoverColor={'blue'}>Overview</Text>
                       </RouterLink>
                     </Flex>
                     <Flex pb={[3,2]} width={1} justifyContent={['center','flex-start']}>
-                      <RouterLink to="/governance/proposals" style={{textDecoration:'none'}}>
-                        <Link textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} fontWeight={3} color={'blue'} hoverColor={'blue'}>Proposals</Link>
+                      <RouterLink
+                        color={'blue'}
+                        className={styles.link}
+                        to={"/governance/proposals"}
+                      >
+                        <Text textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} fontWeight={3} color={'blue'} hoverColor={'blue'}>Proposals</Text>
                       </RouterLink>
                     </Flex>
                     <Flex pb={[3,2]} width={1} justifyContent={['center','flex-start']}>
-                      <RouterLink to="/governance/leaderboard" style={{textDecoration:'none'}}>
-                        <Link textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} fontWeight={3} color={'blue'} hoverColor={'blue'}>Leaderboard</Link>
+                      <RouterLink
+                        color={'blue'}
+                        className={styles.link}
+                        to={"/governance/leaderboard"}
+                      >
+                        <Text textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} fontWeight={3} color={'blue'} hoverColor={'blue'}>Leaderboard</Text>
                       </RouterLink>
                     </Flex>
                   </Flex>
@@ -120,6 +136,9 @@ class Footer extends Component {
                 <ExtLink href="https://www.linkedin.com/company/idlefinance">
                   <Image src="images/social/linkedin.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} boxShadow={1} borderRadius={'7px'} />
                 </ExtLink>
+                <ExtLink href="https://defipulse.com/defi-list">
+                  <Image src="images/social/defi-pulse.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} boxShadow={1} borderRadius={'7px'} />
+                </ExtLink>
               </Flex>
             </Flex>
           </Flex>
@@ -146,6 +165,7 @@ class Footer extends Component {
               &copy; {currYear} - Idle Labs Inc.
             </Text>
             <RouterLink
+              color={'blue'}
               to={'/terms-of-service'}
               style={{textDecoration:'none'}}
             >
