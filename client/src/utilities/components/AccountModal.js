@@ -18,12 +18,12 @@ class AccountModal extends React.Component {
 
   state = {
     logout: false,
-    balances: []
+    balances: null
   }
 
   loadBalances = async () => {
 
-    if (!this.props.availableStrategies || !this.props.contractsInitialized || !this.props.account || this.state.balances.length>0){
+    if (!this.props.availableStrategies || !this.props.contractsInitialized || !this.props.account || this.state.balances !== null){
       return false;
     }
 
@@ -122,7 +122,7 @@ class AccountModal extends React.Component {
       // let renderBalances = null;
 
       const rows = (Object.keys(this.props.availableStrategies).length+1);
-      const renderBalances = this.state.balances.map( (tokens,i) => {
+      const renderBalances = this.state.balances && this.state.balances.map( (tokens,i) => {
         return (
           <Flex
             mt={2}

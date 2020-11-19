@@ -38,8 +38,8 @@ class CardIconButton extends Component {
              />
            </Flex>
            <Text
-             fontSize={[2,3]}
              fontWeight={3}
+             fontSize={[1,3]}
            >
              {this.props.text}
            </Text>

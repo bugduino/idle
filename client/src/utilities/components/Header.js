@@ -82,7 +82,7 @@ class Header extends React.Component {
             backgroundColor={'#0037ff'}
             href={'https://idlefinance.medium.com/unveiling-idle-governance-d7d63e4cc602'}
           >
-            Learn More
+            Read More
             <Icon
               ml={1}
               size={'1.3em'}

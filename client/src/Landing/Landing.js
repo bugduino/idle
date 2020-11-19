@@ -4,13 +4,13 @@ import Footer from '../Footer/Footer';
 import React, { Component } from 'react';
 import styles from './Landing.module.scss';
 import FlexCards from '../FlexCards/FlexCards';
+import AuditCard from '../AuditCard/AuditCard';
 import HowItWorks from '../HowItWorks/HowItWorks';
 import AssetField from '../AssetField/AssetField';
 import RoundButton from '../RoundButton/RoundButton';
 import StrategyBox from '../StrategyBox/StrategyBox';
 import globalConfigs from '../configs/globalConfigs';
 import FunctionsUtil from '../utilities/FunctionsUtil';
-import DashboardCard from '../DashboardCard/DashboardCard';
 import NewsletterForm from '../NewsletterForm/NewsletterForm';
 import RoundIconButton from '../RoundIconButton/RoundIconButton';
 import { Image, Flex, Box, Heading, Link, Text, Icon } from 'rimble-ui';
@@ -268,7 +268,7 @@ class Landing extends Component {
   render() {
     const { network } = this.props;
     const availableTokens = [];
-    Object.values(this.props.availableStrategies).reduce( tokens => {
+    Object.values(this.props.availableStrategies).forEach( tokens => {
       Object.keys(tokens).forEach( token => {
         if (availableTokens.indexOf(token) === -1){
           availableTokens.push(token);
@@ -500,7 +500,7 @@ class Landing extends Component {
                 />
               </Link>
               <Title
-                my={2}
+                my={3}
                 mt={[3,4]}
                 fontWeight={3}
                 fontSize={[3,4]}
@@ -509,52 +509,22 @@ class Landing extends Component {
               >
                 Full Audit Report:
               </Title>
-              <DashboardCard
-                cardProps={{
-                  p:3,
-                  width:'auto'
-                }}
-                isInteractive={true}
-                handleClick={ e => window.open('https://certificate.quantstamp.com/full/idle-finance') }
+              <Flex
+                alignItems={'center'}
+                justifyContent={'center'}
+                flexDirection={['column','row']}
               >
-                <Flex
-                  flexDirection={'column'}
-                >
-                  <Text
-                    mb={2}
-                    color={'blue'}
-                  >
-                    August 12th 2020 — Quantstamp Verified
-                  </Text>
-                  <Text
-                    mb={2}
-                    fontSize={4}
-                    fontWeight={500}
-                  >
-                    Security Assessment Certificate
-                  </Text>
-                  <Link
-                    hoverColor={'blue'}
-                    style={{
-                      display:'flex',
-                      borderRadius:'8px',
-                      flexDirection:'row',
-                      alignItems:'center'
-                    }}
-                  >
-                    VIEW REPORT
-                    <Icon
-                      ml={1}
-                      size={'1.3em'}
-                      color={'blue'}
-                      style={{
-                        transform:'rotate(180deg)'
-                      }}
-                      name={'KeyboardBackspace'}
-                    />
-                  </Link>
-                </Flex>
-              </DashboardCard>
+                <AuditCard
+                  title={'Idle Finance'}
+                  date={'August 12th 2020 — Quantstamp Verified'}
+                  link={'https://certificate.quantstamp.com/full/idle-finance'}
+                />
+                <AuditCard
+                  title={'Idle Goverance'}
+                  date={'November 17th 2020 — Quantstamp Verified'}
+                  link={'https://certificate.quantstamp.com/full/idle-goverance'}
+                />
+              </Flex>
             </Flex>
           </Box>
         </Box>
@@ -705,8 +675,9 @@ class Landing extends Component {
                         justifyContent={'center'}
                       >
                         <Text
-                          color={'white'}
                           fontWeight={3}
+                          color={'white'}
+                          fontSize={[1,2]}
                         >
                           Read the docs
                         </Text>
@@ -725,7 +696,7 @@ class Landing extends Component {
                         width:[1,'auto']
                       }}
                       handleClick={ (e) => {
-                        
+                        window.open('https://idlefinance.typeform.com/to/PUC7nO')
                       }}
                     >
                       <Flex
@@ -740,8 +711,9 @@ class Landing extends Component {
                           name={'LocalPhone'}
                         />
                         <Text
-                          color={'white'}
                           fontWeight={3}
+                          color={'white'}
+                          fontSize={[1,2]}
                         >
                           Contact us
                         </Text>
@@ -754,13 +726,16 @@ class Landing extends Component {
                 >
                   <iframe
                     height={"350"}
-                    scrolling={"no"}
-                    title={"wvWjRXa"}
-                    frameBorder={"no"}
-                    style={{width:'100%'}}
-                    allowFullScreen={false}
-                    allowtransparency={"true"}
-                    src={"https://jsfiddle.net/samster/wd6mcy97/1/embedded/js/dark/"}
+                    title={'integrate'}
+                    style={{
+                      border:'0',
+                      width: '100%',
+                      height: '350px',
+                      overflow:'hidden',
+                      transform: 'scale(1)',
+                    }}
+                    sandbox={"allow-scripts allow-same-origin"}
+                    src={"https://carbon.now.sh/embed?bg=rgba%28255%2C255%2C255%2C0%29&t=cobalt&wt=none&l=auto&ds=false&dsyoff=20px&dsblur=68px&wc=true&wa=true&pv=0px&ph=0px&ln=false&fl=1&fm=Fira+Code&fs=13.5px&lh=143%25&si=false&es=2x&wm=false&code=const%2520idleTokenAbi%2520%253D%2520require%28%27idleToken.json%27%29%253B%2520%252F%252F%2520Include%2520idleToken%2520ABI%250Aconst%2520user%2520%253D%2520%270x...%27%253B%2520%252F%252F%2520set%2520user%2520address%2520%250Aconst%2520idleDAI%2520%253D%2520%270x3fE7940616e5Bc47b0775a0dccf6237893353bB4%27%253B%2520%252F%252F%2520idleDAIYield%2520address%250A%250A%252F%252F%2520Initialize%2520web3%2520contract%250Aconst%2520idleToken%2520%253D%2520new%2520web3.eth.Contract%28idleTokenAbi%252C%2520idleDAI%29%253B%250A%250A%252F%252F%2520Approve%2520contract%250Aconst%2520_amount%2520%253D%2520%271000000000000000000%27%253B%2520%252F%252F%25201%2520DAI%250Aawait%2520idleToken.approve%28idleTokenAddress%252C%2520_amount%252C%2520%257B%2520from%253A%2520user%2520%257D%29%253B%250A%250A%252F%252F%2520Deposit%2520tokens%250Aawait%2520idleToken.mintIdleToken%28_amount%252C%2520true%252C%2520user%252C%2520%257B%2520from%253A%2520user%2520%257D%29%253B"}
                   >
                   </iframe>
                 </Flex>
@@ -809,39 +784,29 @@ class Landing extends Component {
                   image:'images/investors/gumi.png'
                 },
                 {
+                  link:'https://www.greenfield.one',
+                  image:'images/investors/greenfield.png'
+                },
+                {
                   link:'https://quantstamp.com',
                   image:'images/investors/quantstamp.png'
                 },
                 {
-                  link:'https://www.linkedin.com/company/brcapital',
+                  link:'https://dialectic.ch',
+                  image:'images/investors/dialectic.png'
+                },
+                {
+                  link:'https://www.thelao.io',
+                  image:'images/investors/the-lao.png'
+                },
+                {
+                  link:'https://br.capital',
                   image:'images/investors/br-capital.png'
                 },
                 {
-                  link:'https://www.volt.capital',
-                  image:'images/investors/volt-capital.png'
+                  link:'https://www.longhashventures.com',
+                  image:'images/investors/lh-ventures.png'
                 },
-                {
-                  link:'https://cmt.digital',
-                  image:'images/investors/cmt-digital.png'
-                },
-                {
-                  link:'https://www.thelao.io/',
-                  image:'images/investors/the-lao.png'
-                },
-                /*
-                {
-                  link:'https://dydx.exchange',
-                  image:'images/investors/ryan-zurrer.svg'
-                },
-                {
-                  link:'https://oasis.app',
-                  image:'images/investors/hannan.png'
-                },
-                {
-                  link:'https://oasis.app',
-                  image:'images/investors/herrick.png'
-                },
-                */
               ]}
               {...this.props}
             />

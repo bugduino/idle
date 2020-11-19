@@ -74,58 +74,6 @@ class CastVote extends Component {
     });
   }
 
-  setDelegate(address){
-    const addressOk = this.functionsUtil.checkAddress(address);
-
-    if (addressOk){
-
-      const callback = (tx,error) => {
-        // Send Google Analytics event
-        const eventData = {
-          eventCategory: 'Delegate',
-          eventAction: address,
-          eventLabel: tx.status
-        };
-
-        if (error){
-          eventData.eventLabel = this.functionsUtil.getTransactionError(error);
-        }
-
-        // Send Google Analytics event
-        if (error || eventData.status !== 'error'){
-          this.functionsUtil.sendGoogleAnalyticsEvent(eventData);
-        }
-
-        this.setState({
-          processing: {
-            txHash:null,
-            loading:false
-          }
-        });
-      };
-
-      const callbackReceipt = (tx) => {
-        const txHash = tx.transactionHash;
-        this.setState((prevState) => ({
-          processing: {
-            ...prevState.processing,
-            txHash
-          }
-        }));
-      };
-
-      this.governanceUtil.setDelegate(address,callback,callbackReceipt);
-
-      this.setState((prevState) => ({
-        processing: {
-          ...prevState.processing,
-          loading:true
-        }
-      }));
-    }
-    return null;
-  }
-
   castVote(){
 
     if (this.state.vote === null){
@@ -158,7 +106,12 @@ class CastVote extends Component {
           support:this.state.vote === 'for',
           proposalId:this.props.proposal.id,
         };
+
+        if (typeof this.props.callback === 'function'){
+          this.props.callback();
+        }
       }
+
 
       this.setState({
         userVote,
@@ -181,6 +134,8 @@ class CastVote extends Component {
 
     const vote = this.state.vote === 'for';
     const proposalId = this.props.proposal.id;
+
+    console.log(proposalId,vote);
 
     this.governanceUtil.castVote(proposalId,vote,callback,callbackReceipt);
 
@@ -286,9 +241,7 @@ class CastVote extends Component {
               <DelegateVote
                 {...this.props}
                 canClose={this.state.showDelegateBox}
-                setDelegate={this.setDelegate.bind(this)}
                 closeFunc={ e => this.toggleDelegateBox(false) }
-                cancelTransaction={this.cancelTransaction.bind(this)}
               />
             ) : (
               <Flex

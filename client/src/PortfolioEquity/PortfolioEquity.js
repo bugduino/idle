@@ -431,7 +431,7 @@ class PortfolioEquity extends Component {
       ],
       fill:[{ match: '*', id: 'gradientA' }],
       */
-      margin: this.props.isMobile ? { top: 20, right: 25, bottom: 25, left: 20 } : { top: 30, right: 50, bottom: 45, left: 50 },
+      margin: this.props.isMobile ? { top: 20, right: 25, bottom: 25, left: 20 } : { top: 30, right: 50, bottom: 45, left: 60 },
       sliceTooltip:(slideData) => {
         const { slice } = slideData;
         const point = slice.points[0];

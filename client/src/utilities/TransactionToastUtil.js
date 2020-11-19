@@ -143,7 +143,7 @@ class TransactionToastUtil extends React.Component {
       case 'mintIdleToken':
       case 'mintIdleTokensProxy':
         transactionAction = 'Lending';
-        break;
+      break;
       case 'migrateFromToIdle':
       case 'migrateFromCompoundToIdle':
       case 'migrateFromFulcrumToIdle':
@@ -151,19 +151,19 @@ class TransactionToastUtil extends React.Component {
       case 'migrateFromIearnToIdle':
       case 'bridgeIdleV1ToIdleV2':
         transactionAction = 'Migration';
-        break;
+      break;
       case 'executeMetaTransaction':
         transactionAction = 'Meta-Tx';
       break;
       case 'approve':
         transactionAction = 'Approve';
-        break;
+      break;
       case 'rebalance':
         transactionAction = 'Rebalance';
-        break;
+      break;
       default:
-        // do nothing
-        break;
+        transactionAction = transaction.method.charAt(0).toUpperCase() + transaction.method.substr(1);
+      break;
     }
 
     transactionToastMeta = JSON.parse(JSON.stringify(transactionToastMeta));

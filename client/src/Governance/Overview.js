@@ -97,8 +97,8 @@ class Overview extends Component {
               width={1}
             >
               <Flex
-                mb={3}
                 width={1}
+                mb={[3,4]}
                 alignItems={'center'}
                 justifyContent={'center'}
                 flexDirection={['column','row']}
@@ -189,7 +189,7 @@ class Overview extends Component {
                       {
                         title: '#',
                         props:{
-                          width:[0.05,0.05]
+                          width:[0.1,0.05]
                         },
                         fields:[
                           {
@@ -201,8 +201,9 @@ class Overview extends Component {
                       },
                       {
                         title:'DATE',
+                        mobile:false,
                         props:{
-                          width:0.12,
+                          width:[0.15,0.12],
                         },
                         fields:[
                           {
@@ -213,7 +214,7 @@ class Overview extends Component {
                       {
                         title:'TITLE',
                         props:{
-                          width:[0.60,0.60],
+                          width:[0.75,0.60],
                         },
                         fields:[
                           {
@@ -222,6 +223,7 @@ class Overview extends Component {
                         ]
                       },
                       {
+                        mobile:false,
                         title:'VOTES',
                         props:{
                           width:[0.11,0.11],
@@ -235,15 +237,19 @@ class Overview extends Component {
                       {
                         title:'STATUS',
                         props:{
-                          width:[0.12,0.12],
+                          width:[0.15,0.12],
+                          alignItems:['center','flex-start'],
+                          justifyContent:['center','flex-start']
+                        },
+                        parentProps:{
                           justifyContent:['center','flex-start']
                         },
                         fields:[
                           {
                             name:'statusIcon',
                             props:{
-                              mr:[0,2]
-                            }
+                              mr:[0,2],
+                            },
                           },
                           {
                             mobile:false,
@@ -278,7 +284,7 @@ class Overview extends Component {
                       {
                         title: 'RANK',
                         props:{
-                          width:[0.08,0.08]
+                          width:[0.13,0.08]
                         },
                         fields:[
                           {
@@ -289,10 +295,11 @@ class Overview extends Component {
                       {
                         title:'ADDRESS',
                         props:{
-                          width:[0.50,0.50],
+                          width:[0.60,0.50],
                         },
                         fields:[
                           {
+                            mobile:false,
                             name:'avatar',
                             props:{
                               mr:2
@@ -306,7 +313,7 @@ class Overview extends Component {
                       {
                         title:'VOTES',
                         props:{
-                          width:[0.12,0.12],
+                          width:[0.27,0.12],
                         },
                         fields:[
                           {
@@ -315,6 +322,7 @@ class Overview extends Component {
                         ]
                       },
                       {
+                        mobile:false,
                         title:'VOTE WEIGHT',
                         props:{
                           width:[0.15,0.15],
@@ -329,6 +337,7 @@ class Overview extends Component {
                         ]
                       },
                       {
+                        mobile:false,
                         title:'PROPOSALS VOTED',
                         props:{
                           width:[0.15,0.15],

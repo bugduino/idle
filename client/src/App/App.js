@@ -417,6 +417,7 @@ class App extends Component {
 
   render() {
     const isMobile = this.state.width <= 768;
+    const governanceEnabled = this.functionsUtil.getGlobalConfig(['governance','enabled']);
 
     // console.log(this.state.selectedToken,this.state.tokenConfig);
 
@@ -552,68 +553,71 @@ class App extends Component {
                               }
                             >
                             </Route>
-                            <Route
-                              path="/governance/:section?/:item_id?"
-                              render={
-                                (props) => <Governance
-                                              {...props}
-                                              web3={web3}
-                                              theme={theme}
-                                              modals={modals}
-                                              network={network}
-                                              context={context}
-                                              account={account}
-                                              initWeb3={initWeb3}
-                                              biconomy={biconomy}
-                                              isMobile={isMobile}
-                                              simpleID={simpleID}
-                                              contracts={contracts}
-                                              initAccount={initAccount}
-                                              initSimpleID={initSimpleID}
-                                              initContract={initContract}
-                                              transactions={transactions}
-                                              buyToken={this.state.buyToken}
-                                              logout={this.logout.bind(this)}
-                                              accountBalance={accountBalance}
-                                              validateAccount={validateAccount}
-                                              connecting={this.state.connecting}
-                                              cachedData={this.state.cachedData}
-                                              setToken={this.setToken.bind(this)}
-                                              accountValidated={accountValidated}
-                                              getTokenDecimals={getTokenDecimals}
-                                              rejectValidation={rejectValidation}
-                                              tokenConfig={this.state.tokenConfig}
-                                              getAccountBalance={getAccountBalance}
-                                              accountBalanceLow={accountBalanceLow}
-                                              accountInizialized={accountInizialized}
-                                              selectedToken={this.state.selectedToken}
-                                              connectorName={this.state.connectorName}
-                                              setStrategy={this.setStrategy.bind(this)}
-                                              userRejectedConnect={userRejectedConnect}
-                                              accountBalanceToken={accountBalanceToken}
-                                              initializeContracts={initializeContracts}
-                                              walletProvider={this.state.walletProvider}
-                                              buyModalOpened={this.state.buyModalOpened}
-                                              contractsInitialized={contractsInitialized}
-                                              openBuyModal={this.openBuyModal.bind(this)}
-                                              rejectAccountConnect={rejectAccountConnect}
-                                              handleMenuClick={this.selectTab.bind(this)}
-                                              setConnector={this.setConnector.bind(this)}
-                                              availableTokens={this.state.availableTokens}
-                                              closeBuyModal={this.closeBuyModal.bind(this)}
-                                              setCachedData={this.setCachedData.bind(this)}
-                                              selectedStrategy={this.state.selectedStrategy}
-                                              userRejectedValidation={userRejectedValidation}
-                                              setStrategyToken={this.setStrategyToken.bind(this)}
-                                              accountValidationPending={accountValidationPending}
-                                              availableStrategies={this.state.availableStrategies}
-                                              connectAndValidateAccount={connectAndValidateAccount}
-                                              contractMethodSendWrapper={contractMethodSendWrapper}
-                                              setCallbackAfterLogin={this.setCallbackAfterLogin.bind(this)}
-                                            />
-                              }
-                            >
-                            </Route>
+                            {
+                              governanceEnabled && 
+                                <Route
+                                  path="/governance/:section?/:item_id?"
+                                  render={
+                                    (props) => <Governance
+                                                  {...props}
+                                                  web3={web3}
+                                                  theme={theme}
+                                                  modals={modals}
+                                                  network={network}
+                                                  context={context}
+                                                  account={account}
+                                                  initWeb3={initWeb3}
+                                                  biconomy={biconomy}
+                                                  isMobile={isMobile}
+                                                  simpleID={simpleID}
+                                                  contracts={contracts}
+                                                  initAccount={initAccount}
+                                                  initSimpleID={initSimpleID}
+                                                  initContract={initContract}
+                                                  transactions={transactions}
+                                                  buyToken={this.state.buyToken}
+                                                  logout={this.logout.bind(this)}
+                                                  accountBalance={accountBalance}
+                                                  validateAccount={validateAccount}
+                                                  connecting={this.state.connecting}
+                                                  cachedData={this.state.cachedData}
+                                                  setToken={this.setToken.bind(this)}
+                                                  accountValidated={accountValidated}
+                                                  getTokenDecimals={getTokenDecimals}
+                                                  rejectValidation={rejectValidation}
+                                                  tokenConfig={this.state.tokenConfig}
+                                                  getAccountBalance={getAccountBalance}
+                                                  accountBalanceLow={accountBalanceLow}
+                                                  accountInizialized={accountInizialized}
+                                                  selectedToken={this.state.selectedToken}
+                                                  connectorName={this.state.connectorName}
+                                                  setStrategy={this.setStrategy.bind(this)}
+                                                  userRejectedConnect={userRejectedConnect}
+                                                  accountBalanceToken={accountBalanceToken}
+                                                  initializeContracts={initializeContracts}
+                                                  walletProvider={this.state.walletProvider}
+                                                  buyModalOpened={this.state.buyModalOpened}
+                                                  contractsInitialized={contractsInitialized}
+                                                  openBuyModal={this.openBuyModal.bind(this)}
+                                                  rejectAccountConnect={rejectAccountConnect}
+                                                  handleMenuClick={this.selectTab.bind(this)}
+                                                  setConnector={this.setConnector.bind(this)}
+                                                  availableTokens={this.state.availableTokens}
+                                                  closeBuyModal={this.closeBuyModal.bind(this)}
+                                                  setCachedData={this.setCachedData.bind(this)}
+                                                  selectedStrategy={this.state.selectedStrategy}
+                                                  userRejectedValidation={userRejectedValidation}
+                                                  setStrategyToken={this.setStrategyToken.bind(this)}
+                                                  accountValidationPending={accountValidationPending}
+                                                  availableStrategies={this.state.availableStrategies}
+                                                  connectAndValidateAccount={connectAndValidateAccount}
+                                                  contractMethodSendWrapper={contractMethodSendWrapper}
+                                                  setCallbackAfterLogin={this.setCallbackAfterLogin.bind(this)}
+                                                />
+                                  }
+                                >
+                                </Route>
+                            }
                             <Route>
                               <Header
                                 modals={modals}

@@ -6,20 +6,23 @@ import yUSDCv3 from '../abis/iearn/yUSDCv3.json';
 import yUSDTv3 from '../abis/iearn/yUSDTv3.json';
 import ySUSDv3 from '../abis/iearn/ySUSDv3.json';
 import yTUSDv3 from '../abis/iearn/yTUSDv3.json';
+import Timelock from '../contracts/Timelock.json';
 import CurveZap from '../abis/curve/CurveZap.json';
 import CurveSwap from '../abis/curve/CurveSwap.json';
 import CurvePool from '../abis/curve/CurvePool.json';
 import NexusMutual from '../NexusMutual/NexusMutual';
 import { Web3Versions } from '@terminal-packages/sdk';
-import Governance from '../contracts/Governance.json';
 import FunctionsUtil from '../utilities/FunctionsUtil';
+import PriceOracle from '../contracts/PriceOracle.json';
 import IdleTokenV2 from '../contracts/IdleTokenV2.json';
 import StrategyPage from '../StrategyPage/StrategyPage';
 import BuyModal from '../utilities/components/BuyModal';
 import IdleTokenV3 from '../contracts/IdleTokenV3.json';
 import EarlyRewards from '../contracts/EarlyRewards.json';
 import CurveDeposit from '../abis/curve/CurveDeposit.json';
+import VesterFactory from '../contracts/VesterFactory.json';
 import GovernorAlpha from '../contracts/GovernorAlpha.json';
+import EcosystemFund from '../contracts/EcosystemFund.json';
 import Comptroller from '../abis/compound/Comptroller.json';
 import IdleController from '../contracts/IdleController.json';
 import TokenMigration from '../TokenMigration/TokenMigration';
@@ -124,8 +127,8 @@ const globalConfigs = {
     scoreShort:'Protocol Risk Score',
     apyShort:'Annual Percentage Yield',
     cheapRedeem:'Amount of unlent funds available for low gas fees redeem',
-    directMint:'Rebalance the pool and help all users gain an additional APR',
     curveBonusSlippage:'Slippage or bonus depending on if the coin is low or high in the Curve Pool',
+    directMint:'Pay an additional gas fee to rebalance the pool and help all users gain an additional APR',
     riskScore:`It's a single, consistently, comparable value for measuring protocol risk, based on factors including smart contract risk, collateralization and liquidity.<br /><br />The model outputs a 0-10 score, where <strong>0 is the most risky and 10 is the most safe.</strong> Visit <a target="_blank" rel="nofollow noopener noreferrer" href="https://defiscore.io/overview">https://defiscore.io/overview</a> for further information.`,
     curveInstructions:`<strong>Depositing into the pool:</strong><br />By depositing your funds into the Curve Pool you may incur in slippage or bonus depending on if the coin is low or high in the pool.<br /><br /><strong>Withdrawing share from the pool:</strong><br />When you redeem your tokens previously deposited in the Curve Pool you get back an uneven amounts of tokens, that can give slippage or bonus depending on if the coin is low or high in the pool.`
   },
@@ -153,14 +156,18 @@ const globalConfigs = {
     baseRoute:'/dashboard',
   },
   governance:{
-    enabled:true,
+    test:false,
+    enabled:false,
+    startBlock:22134519,
     baseRoute:'/governance',
     props:{
       tokenName:'IDLE',
       availableContracts:{
-        COMP,
-        Governance,
-        Comptroller
+        IDLE,
+        PriceOracle,
+        GovernorAlpha,
+        EcosystemFund,
+        IdleController
       }
     },
     contracts:{
@@ -258,14 +265,14 @@ const globalConfigs = {
   },
   govTokens:{
     IDLE:{
-      abi:COMP,
+      abi:IDLE,
       decimals:18,
       token:'IDLE',
-      enabled:true,
+      enabled:false,
       protocol:'idle',
       color:'hsl(162, 100%, 41%)',
       icon:'images/tokens/IDLE.png',
-      address:'0xc00e94cb662c3520282e6f5717214004a7f26888',
+      address:'0xAB6Bdb5CCF38ECDa7A92d04E86f7c53Eb72833dF',
     },
     COMP:{
       abi:COMP,
@@ -274,18 +281,39 @@ const globalConfigs = {
       enabled:true,
       protocol:'compound',
       color:'hsl(162, 100%, 41%)',
-      address:'0xc00e94cb662c3520282e6f5717214004a7f26888',
+      address:'0xc00e94cb662c3520282e6f5717214004a7f26888', // MAIN
+      // address:'0x61460874a7196d6a22d1ee4922473664b3e95270' // KOVAN
     }
   },
   contracts:{
-    // IdleController:{
-    //   abi:IdleController,
-    //   address:'0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b',
-    // },
-    // EarlyRewards:{
-    //     abi:EarlyRewards,
-    //     address:'0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b',
-    // }
+    PriceOracle:{
+      abi:PriceOracle,
+      address:'0xCab5760688db837Bb453FE1DFBC5eDeE6fa8F0FF'
+    },
+    Timelock:{
+      abi:Timelock,
+      address:'0xfD88D7E737a06Aa9c62B950C1cB5eE63DA379AFd'
+    },
+    EcosystemFund:{
+      abi:EcosystemFund,
+      address:'0x125d3D6A8e546BD13802c309429CBB4db5737d57'
+    },
+    VesterFactory:{
+      abi:VesterFactory,
+      address:'0x9b52f91578c8AfA8e2DF07d4D7726bB6b73Ec1FE'
+    },
+    IdleController:{
+      abi:IdleController,
+      address:'0x8Ad5F0644b17208c81bA5BDBe689c9bcc7143d87',
+    },
+    EarlyRewards:{
+        abi:EarlyRewards,
+        address:'0x07A94A60B54c6b2Da19e23D6E9123180Bf92ED40',
+    },
+    GovernorAlpha:{
+      abi:GovernorAlpha,
+      address:'0x782cB1dbd0bD4df95c2497819be3984EeA5c2c25'
+    },
     Comptroller:{
       abi:Comptroller,
       address:'0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b',
@@ -294,10 +322,6 @@ const globalConfigs = {
       abi:UniswapV2Router02,
       address:'0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
     },
-    Governance:{
-      abi:Governance,
-      address:'0xc0da01a04c3f3e0be433606045bb7017a7323e38'
-    }
   },
   tokens:{
     DAI:{
@@ -688,12 +712,12 @@ const globalConfigs = {
       4:'Rinkeby',
       42:'Kovan'
     },
+    isForked:false, // If TRUE the tx confirmation callback is fired on the receipt
+    requiredNetwork:1, // { 1: Mainnet, 3: Ropsten, 42: Kovan }
     blocksPerYear:2371428,
     firstBlockNumber:8119247,
     requiredConfirmations: 1,
     accountBalanceMinimum: 0, // in ETH for gas fees
-    requiredNetwork: 1, // { 1: Mainnet, 3: Ropsten, 42: Kovan }
-    isForked: false, // If TRUE the tx confirmation callback is fired on the receipt
     providers:{
       infura:{
         1: 'https://mainnet.infura.io/v3/',
@@ -732,7 +756,7 @@ const globalConfigs = {
         }
       },
       simpleID:{
-        enabled:true,
+        enabled:false,
         supportedNetworks:[1],
         getNetwork:(networkId,availableNetworks) => {
           let networkName = null;

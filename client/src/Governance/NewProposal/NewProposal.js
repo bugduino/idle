@@ -213,8 +213,10 @@ class NewProposal extends Component {
     let fieldPattern = null;
     switch (type){
       case 'address':
-      case 'address[]':
         fieldPattern = '^0x[a-fA-F0-9]{40}$';
+      break;
+      case 'address[]':
+        fieldPattern = '^((0x[a-fA-F0-9]{40})[,]?)+$';
       break;
       case 'string':
         fieldPattern = '[\\w]+';
@@ -246,7 +248,6 @@ class NewProposal extends Component {
 
     const inputs = this.state.selectedFunction.inputs;
     let actionValid = Object.values(this.state.actionInputs).length === inputs.length;
-
 
     if (actionValid){
       Object.values(this.state.actionInputs).forEach( (inputValue,inputIndex) => {
@@ -323,9 +324,18 @@ class NewProposal extends Component {
                       const inputInfo = this.state.selectedFunction.inputs[inputIndex];
                       switch (inputInfo.type){
                         case 'address[]':
-                          inputValue = [inputValue];
+                          inputValue = inputValue.split(',');
+                        break;
+                        case 'uint256[]':
+                          inputValue = inputValue.split(',').map( n => this.functionsUtil.BNify(n) );
+                        break;
+                        case 'uint256':
+                          inputValue = this.functionsUtil.BNify(inputValue);
                         break;
                         default:
+                          if (inputInfo.type.substr(-2) === '[]'){
+                            inputValue = inputValue.split(',');
+                          }
                         break;
                       }
 
@@ -375,6 +385,8 @@ class NewProposal extends Component {
       contract:this.state.selectedContract,
       signature:this.state.selectedSignature
     };
+
+    console.log(inputs,action);
 
     const newAction = false;
     const actions = Object.values(this.state.actions);
@@ -436,6 +448,7 @@ class NewProposal extends Component {
     const editAction = null;
     const selectedContract = null;
     const selectedFunction = null;
+
     this.setState({
       newAction,
       editAction,
@@ -524,8 +537,8 @@ class NewProposal extends Component {
       signatures.push(action.params.signature);
     });
 
-    // console.log('Propose',targets, values, signatures, calldatas, description);
     this.governanceUtil.propose(targets, values, signatures, calldatas, description, callback, callbackReceipt);
+    // this.governanceUtil.proposeAndVoteFor(targets, values, signatures, calldatas, description, callback, callbackReceipt);
 
     this.setState((prevState) => ({
       processing: {
@@ -1159,7 +1172,7 @@ class NewProposal extends Component {
           </Form>
         ) : (
           <Text
-            fontWeight={3}
+            fontWeight={2}
             fontSize={[2,3]}
             color={'dark-gray'}
             textAlign={'center'}

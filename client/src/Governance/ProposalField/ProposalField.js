@@ -40,6 +40,7 @@ class ProposalField extends Component {
       style:{
         maxWidth:'100%',
         overflow: 'hidden',
+        whiteSpace: 'nowrap',
         textOverflow: 'ellipsis'
       },
       flexProps:{
@@ -87,7 +88,7 @@ class ProposalField extends Component {
           break;
           case 'Queued':
             icon = "Timelapse";
-            color = '#a5a5a5';
+            color = '#ff9900';
           break;
           case 'Expired':
             icon = "ErrorOutline";

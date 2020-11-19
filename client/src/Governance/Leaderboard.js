@@ -36,8 +36,6 @@ class Leaderboard extends Component {
   async loadData(){
     const delegates = await this.governanceUtil.getDelegates();
 
-    console.log(delegates);
-
     const { match: { params } } = this.props;
 
     // Select delegate
@@ -78,10 +76,12 @@ class Leaderboard extends Component {
                   width={1}
                 >
                   <Breadcrumb
-                    text={'Leaderboard'}
+                    {...this.props}
+                    text={'Governance'}
+                    pathLink={['leaderboard']}
                     isMobile={this.props.isMobile}
-                    path={[this.state.selectedDelegate.delegate]}
-                    handleClick={ e => this.props.goToSection('leaderboard') }
+                    handleClick={ e => this.props.goToSection('') }
+                    path={['Leaderboard',this.state.selectedDelegate.delegate]}
                   />
                 </Flex>
               </Flex>
@@ -94,6 +94,21 @@ class Leaderboard extends Component {
             <Box
               width={1}
             >
+              <Flex
+                mb={3}
+                width={1}
+                alignItems={'center'}
+                flexDirection={'row'}
+                justifyContent={'flex-start'}
+              >
+                <Breadcrumb
+                  {...this.props}
+                  text={'Governance'}
+                  path={['Leaderboard']}
+                  isMobile={this.props.isMobile}
+                  handleClick={ e => this.props.goToSection('') }
+                />
+              </Flex>
               <Title
                 mb={[3,4]}
               >
@@ -112,7 +127,7 @@ class Leaderboard extends Component {
                     {
                       title: 'RANK',
                       props:{
-                        width:[0.08,0.08]
+                        width:[0.13,0.08]
                       },
                       fields:[
                         {
@@ -123,10 +138,11 @@ class Leaderboard extends Component {
                     {
                       title:'ADDRESS',
                       props:{
-                        width:[0.50,0.50],
+                        width:[0.60,0.50],
                       },
                       fields:[
                         {
+                          mobile:false,
                           name:'avatar',
                           props:{
                             mr:2
@@ -140,7 +156,7 @@ class Leaderboard extends Component {
                     {
                       title:'VOTES',
                       props:{
-                        width:[0.12,0.12],
+                        width:[0.27,0.12],
                       },
                       fields:[
                         {
@@ -149,6 +165,7 @@ class Leaderboard extends Component {
                       ]
                     },
                     {
+                      mobile:false,
                       title:'VOTE WEIGHT',
                       props:{
                         width:[0.15,0.15],
@@ -163,6 +180,7 @@ class Leaderboard extends Component {
                       ]
                     },
                     {
+                      mobile:false,
                       title:'PROPOSALS VOTED',
                       props:{
                         width:[0.15,0.15],

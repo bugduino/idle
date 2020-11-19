@@ -10,7 +10,6 @@ import TorusConnector from './connectors/TorusConnector';
 import AuthereumConnector from './connectors/AuthereumConnector';
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import WalletLinkConnector from './connectors/WalletLinkConnector';
-// import WalletConnectProvider from "@walletconnect/web3-subprovider";
 import WalletConnectConnector from './connectors/WalletConnectConnector';
 
 const {
@@ -44,6 +43,7 @@ const Injected = new InjectedConnector({
 const Infura = new NetworkOnlyConnector({
   providerURL: globalConfigs.network.providers.infura[defaultNetwork]+env.REACT_APP_INFURA_KEY
 });
+
 
 const Trezor = new TrezorConnector({
   api: TrezorApi,

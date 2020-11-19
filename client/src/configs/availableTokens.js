@@ -1,14 +1,63 @@
-import cToken from '../abis/compound/cDAI';
 import ERC20 from '../abis/tokens/DAI.js';
 import CHAI from '../abis/chai/CHAI.json';
-import iToken from '../abis/fulcrum/iToken.json';
+import cToken from '../abis/compound/cDAI';
 import aToken from '../abis/aave/AToken.json';
 import yToken from '../abis/dydx/yToken.json';
+import iToken from '../abis/fulcrum/iToken.json';
 import IdleTokenV3 from '../contracts/IdleTokenV3.json';
 import IdleTokenV4 from '../contracts/IdleTokenV4.json';
 import IdleConverterPersonalSignV4 from '../contracts/IdleConverterPersonalSignV4.json';
 
 const availableTokens = {
+  42:{
+    best:{
+      DAI:{
+        token:'DAI',
+        decimals:18,
+        enabled:true,
+        abi:ERC20.abi,
+        govTokensDisabled:false,
+        color:'hsl(40, 95%, 59%)',
+        address:'0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa',
+        deposit:{
+          minAmountForMint:10000,
+        },
+        wyre:{
+          destCurrency:'DAI'
+        },
+        ramp:{
+          swapAsset:'DAI'
+        },
+        defiPrime:{
+          token:'dai'
+        },
+        idle:{
+          abi:IdleTokenV4,
+          token:'idleDAIYield',
+          address:'0x295CA5bC5153698162dDbcE5dF50E436a58BA21e',
+        },
+        protocols:[
+          {
+            name:'compound',
+            enabled:true,
+            abi:cToken.abi,
+            address:'0xf0d0eb522cfa50b716b3b1604c4f0fa6f04376ad',
+            token:'cDAI',
+            decimals:28,
+            functions:{
+              exchangeRate:{
+                name:'exchangeRateStored',
+                params:[]
+              }
+            },
+          }
+        ]
+      },
+    },
+    risk:{
+
+    }
+  },
   1:{ // Mainnet
     best:{
       DAI:{

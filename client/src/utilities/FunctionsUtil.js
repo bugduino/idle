@@ -49,7 +49,7 @@ class FunctionsUtil {
   }
   BNify_obj = s => new BigNumber(s)
   BNify = s => new BigNumber( typeof s === 'object' ? s : String(s) )
-  customLog = (...props) => { if (globalConfigs.logs.messagesEnabled) console.log(moment().format('HH:mm:ss'),...props); }
+  customLog = (...props) => { if (globalConfigs.logs.messagesEnabled) this.customLog(moment().format('HH:mm:ss'),...props); }
   customLogError = (...props) => { if (globalConfigs.logs.errorsEnabled) console.error(moment().format('HH:mm:ss'),...props); }
   getContractByName = (contractName) => {
     const contract = this.props.contracts.find(c => c.name === contractName);
@@ -249,7 +249,7 @@ class FunctionsUtil {
               processedTxs[tx.hash].received = curveTokens.times(curveTokenPrice);
             }
 
-            // console.log('getCurveAvgSlippage',tx.action,tx.hash,tx.blockNumber,curveTokens.toFixed(6),curveTokenPrice.toFixed(6),processedTxs[tx.hash].deposited.toFixed(6),processedTxs[tx.hash].received.toFixed(6));
+            // this.customLog('getCurveAvgSlippage',tx.action,tx.hash,tx.blockNumber,curveTokens.toFixed(6),curveTokenPrice.toFixed(6),processedTxs[tx.hash].deposited.toFixed(6),processedTxs[tx.hash].received.toFixed(6));
           break;
           case 'CurveOut':
           case 'CurveZapOut':
@@ -274,7 +274,7 @@ class FunctionsUtil {
       });
     }
 
-    // console.log('processedTxs',processedTxs);
+    // this.customLog('processedTxs',processedTxs);
 
     let avgSlippage = this.BNify(0);
     let totalDeposited = this.BNify(0);
@@ -287,7 +287,7 @@ class FunctionsUtil {
     avgSlippage = avgSlippage.div(totalDeposited).times(-1);
 
     // debugger;
-    // console.log('avgSlippage',avgSlippage.toString());
+    // this.customLog('avgSlippage',avgSlippage.toString());
 
     return avgSlippage;
   }
@@ -309,7 +309,7 @@ class FunctionsUtil {
     let curveTokensBalance = this.BNify(0);
     const curveTxs = await this.getCurveTxs(account,0,'latest',enabledTokens);
 
-    // console.log('curveTxs',curveTxs);
+    // this.customLog('curveTxs',curveTxs);
 
     if (curveTxs && curveTxs.length){
 
@@ -364,11 +364,11 @@ class FunctionsUtil {
 
         processedTxs[tx.hash].push(tx.action);
 
-        // console.log('getCurveAvgBuyPrice',tx.action,tx.hash,tx.blockNumber,curveTokens.toString(),curveTokenPrice.toString(),curveTokensBalance.toString(),avgBuyPrice.toString());
+        // this.customLog('getCurveAvgBuyPrice',tx.action,tx.hash,tx.blockNumber,curveTokens.toString(),curveTokenPrice.toString(),curveTokensBalance.toString(),avgBuyPrice.toString());
       });
     }
 
-    // console.log('avgCurveBuyPrice',avgBuyPrice.toString());
+    // this.customLog('avgCurveBuyPrice',avgBuyPrice.toString());
 
     return avgBuyPrice;
   }
@@ -695,7 +695,7 @@ class FunctionsUtil {
       }
     }
 
-    // console.log('etherscanTxs',etherscanTxs);
+    // this.customLog('etherscanTxs',etherscanTxs);
 
     return Object
             .values(etherscanTxs)
@@ -741,7 +741,7 @@ class FunctionsUtil {
     const curveSwapContract = this.getGlobalConfig(['curve','migrationContract']);
     const curveDepositContract = this.getGlobalConfig(['curve','depositContract']);
 
-    // console.log('filterEtherscanTxs',enabledTokens,results);
+    // this.customLog('filterEtherscanTxs',enabledTokens,results);
 
     enabledTokens.forEach(token => {
       const tokenConfig = this.props.availableTokens[token];
@@ -769,8 +769,12 @@ class FunctionsUtil {
         const isDepositTx = isRightToken && !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && (tx.to.toLowerCase() === tokenConfig.idle.address.toLowerCase() || (depositProxyContractInfo && tx.to.toLowerCase() === depositProxyContractInfo.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase()).length>0 ));
         const isRedeemTx = isRightToken && !isMigrationTx && tx.contractAddress.toLowerCase() === tokenConfig.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase()).length && tx.to.toLowerCase() === this.props.account.toLowerCase();
         const isWithdrawTx = internalTxs.length>1 && internalTxs.filter(iTx => tokenConfig.protocols.map(p => p.address.toLowerCase()).includes(iTx.contractAddress.toLowerCase()) ).length>0 && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
-        const isSwapTx = !isReceiveTransferTx && !isConversionTx && !etherscanTxs[tx.hash] && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
-        const isSwapOutTx = !isSendTransferTx && !isWithdrawTx && !etherscanTxs[tx.hash] && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
+
+        const isDepositInternalTx = isRightToken && internalTxs.find( iTx => iTx.from.toLowerCase() === this.props.account.toLowerCase() && (iTx.to.toLowerCase() === tokenConfig.idle.address.toLowerCase() || (depositProxyContractInfo && iTx.to.toLowerCase() === depositProxyContractInfo.address.toLowerCase() && internalTxs.filter(iTx2 => iTx2.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase()).length>0 )) );
+        const isSwapTx = !isReceiveTransferTx && !isConversionTx && !isDepositInternalTx && !etherscanTxs[tx.hash] && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
+
+        const isRedeemInternalTx = isRightToken && internalTxs.find( iTx => iTx.contractAddress.toLowerCase() === tokenConfig.address.toLowerCase() && internalTxs.filter(iTx2 => iTx2.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase()).length && iTx.to.toLowerCase() === this.props.account.toLowerCase() );
+        const isSwapOutTx = !isSendTransferTx && !isWithdrawTx && !isRedeemInternalTx && !etherscanTxs[tx.hash] && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
 
         // const curveDepositTx = internalTxs.find( iTx => (iTx.contractAddress.toLowerCase() === tokenConfig.address.toLowerCase() && iTx.from.toLowerCase() === this.props.account.toLowerCase()) );
         const idleTokenAddress = curveTokenConfig && curveTokenConfig.address ? curveTokenConfig.address : tokenConfig.idle.address;
@@ -790,10 +794,6 @@ class FunctionsUtil {
 
         const isCurveTransferOut = tx.contractAddress.toLowerCase() === curvePoolContract.address.toLowerCase() && !isCurveZapOut && !isCurveRedeemTx && /*internalTxs[internalTxs.length-1] === tx &&*/ tx.from.toLowerCase() === this.props.account.toLowerCase();
         const isCurveTransferIn = tx.contractAddress.toLowerCase() === curvePoolContract.address.toLowerCase() && !isCurveZapIn && !isCurveDepositTx && /*internalTxs[internalTxs.length-1] === tx &&*/ tx.to.toLowerCase() === this.props.account.toLowerCase();
-
-        // if (token === 'TUSD' && tx.hash.toLowerCase() === '0x6a35b72cec89984a9962c14dc7d1ab54ea7372b9e9badc1ae702e6e46be85faf'.toLowerCase()){
-        //   debugger;
-        // }
 
         if (isSendTransferTx || isReceiveTransferTx || isMigrationTx || isDepositTx || isRedeemTx || isSwapTx || isSwapOutTx || isWithdrawTx || isConversionTx || isCurveDepositTx || isCurveRedeemTx || isCurveZapIn || isCurveZapOut || isCurveTransferOut || isCurveTransferIn || isCurveDepositIn || isCurveDepositOut){
 
@@ -845,7 +845,7 @@ class FunctionsUtil {
             }
           }
 
-          // console.log('SAVE!',action);
+          // this.customLog('SAVE!',action);
 
           if (tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase()){
             tokenDecimals = 18;
@@ -1119,7 +1119,7 @@ class FunctionsUtil {
 
                   const filteredLogs = curveTxReceipt.logs.filter( log => (baseTokensAddresses.includes(log.address.toLowerCase()) && log.topics[log.topics.length-1].toLowerCase() === `0x00000000000000000000000${curveZapContract.address.replace('x','').toLowerCase()}` ) );
 
-                  console.log('filteredLogs',filteredLogs);
+                  this.customLog('filteredLogs',filteredLogs);
 
                   if (filteredLogs && filteredLogs.length){
                     filteredLogs.forEach( log => {
@@ -1128,7 +1128,7 @@ class FunctionsUtil {
                       const tokenDecimals = baseTokensConfig.decimals;
                       tokenAmount = this.fixTokenDecimals(tokenAmount,tokenDecimals);
                       storedTx.tokenAmount = storedTx.tokenAmount.plus(tokenAmount);
-                      console.log('Add tokenAmount ('+tx.hash+')',baseTokensConfig.token,tokenAmount.toFixed(5),storedTx.tokenAmount.toFixed(5));
+                      this.customLog('Add tokenAmount ('+tx.hash+')',baseTokensConfig.token,tokenAmount.toFixed(5),storedTx.tokenAmount.toFixed(5));
                     });
                   }
                 }
@@ -1215,7 +1215,7 @@ class FunctionsUtil {
       storedTxs[this.props.account] = {};
     }
 
-    // console.log('Processing stored txs',enabledTokens);
+    // this.customLog('Processing stored txs',enabledTokens);
 
     await this.asyncForEach(enabledTokens,async (selectedToken) => {
 
@@ -1229,7 +1229,7 @@ class FunctionsUtil {
 
       txsToProcess = txsToProcess && Object.values(txsToProcess).length ? txsToProcess : this.getStoredTransactions(this.props.account,tokenKey,selectedToken);
       
-      // console.log('txsToProcess',selectedToken,txsToProcess);
+      // this.customLog('txsToProcess',selectedToken,txsToProcess);
 
       // if (!Object.values(txsToProcess).length && selectedToken==='DAI' && Object.values(this.props.transactions).length>0){
       //   debugger;
@@ -1285,7 +1285,7 @@ class FunctionsUtil {
         // }
 
         if (txPending && methodIsAllowed && tx.params.length){
-          // console.log('processStoredTxs',tx.method,tx.status,tx.params);
+          // this.customLog('processStoredTxs',tx.method,tx.status,tx.params);
           const isMigrationTx = allowedMethods[tx.method] === 'Migrate';
           const decimals = isMigrationTx ? 18 : tokenConfig.decimals;
           etherscanTxs[`t${tx.created}`] = {
@@ -1309,7 +1309,7 @@ class FunctionsUtil {
         let realTx = tx.realTx ? tx.realTx : null;
 
         if (!realTx){
-          // console.log('loadTxs - getTransaction',tx.transactionHash);
+          // this.customLog('loadTxs - getTransaction',tx.transactionHash);
           realTx = await (new Promise( async (resolve, reject) => {
             this.props.web3.eth.getTransaction(tx.transactionHash,(err,txReceipt)=>{
               if (err){
@@ -1461,7 +1461,7 @@ class FunctionsUtil {
             realTx.action = action;
             realTx.value = metaTxValueFixed;
             realTx.tokenAmount = metaTxValueFixed;
-            // console.log(metaTxValueFixed.toString());
+            // this.customLog(metaTxValueFixed.toString());
           break;
           case 'migrateFromCompoundToIdle':
           case 'migrateFromFulcrumToIdle':
@@ -1898,7 +1898,7 @@ class FunctionsUtil {
     const contractPaused = await this.genericContractCall(contractName, 'paused', [], {}).catch(err => {
       this.customLogError('Generic Idle call err:', err);
     });
-    // console.log('checkContractPaused',this.props.tokenConfig.idle.token,contractPaused);
+    // this.customLog('checkContractPaused',this.props.tokenConfig.idle.token,contractPaused);
     return contractPaused;
   }
   getStoredItem = (key,parse_json=true,return_default=null) => {
@@ -1950,7 +1950,7 @@ class FunctionsUtil {
         window.localStorage.setItem(key,value);
         return true;
       } catch (error) {
-        // console.log('setLocalStorage',error);
+        // this.customLog('setLocalStorage',error);
         window.localStorage.removeItem(key);
       }
     }
@@ -2059,7 +2059,7 @@ class FunctionsUtil {
         const newProtocolAllocation = newProtocolsAllocations[protocolAddr.toLowerCase()] ? newProtocolsAllocations[protocolAddr.toLowerCase()] : this.BNify(0);
         const newProtocolAllocationPerc = newProtocolAllocation ? parseFloat(newProtocolAllocation.div(newTotalAllocation)).toFixed(3) : this.BNify(0);
 
-        // console.log(protocolAddr,protocolAllocation.toString(),newProtocolAllocation.toString(),newTotalAllocation.toString(),protocolAllocationPerc,newProtocolAllocationPerc);
+        // this.customLog(protocolAddr,protocolAllocation.toString(),newProtocolAllocation.toString(),newTotalAllocation.toString(),protocolAllocationPerc,newProtocolAllocationPerc);
 
         if (protocolAllocationPerc !== newProtocolAllocationPerc){
           shouldRebalance = true;
@@ -2087,18 +2087,18 @@ class FunctionsUtil {
       const oldContract = this.getContractByName(oldContractName);
       const migrationContract = this.getContractByName(tokenConfig.migration.migrationContract.name);
 
-      // console.log(oldContractName,tokenConfig.migration.migrationContract.name);
+      // this.customLog(oldContractName,tokenConfig.migration.migrationContract.name);
 
       if (oldContract && migrationContract){
         // Get old contract token decimals
         oldContractTokenDecimals = await this.getTokenDecimals(oldContractName);
 
-        // console.log('Migration - token decimals',oldContractTokenDecimals ? oldContractTokenDecimals.toString() : null);
+        // this.customLog('Migration - token decimals',oldContractTokenDecimals ? oldContractTokenDecimals.toString() : null);
 
         // Check migration contract approval
         // migrationContractApproved = await this.checkMigrationContractApproved();
 
-        // console.log('Migration - approved',migrationContractApproved ? migrationContractApproved.toString() : null);
+        // this.customLog('Migration - approved',migrationContractApproved ? migrationContractApproved.toString() : null);
 
         // Check old contractBalance
         oldContractBalance = await this.getContractBalance(oldContractName,account);
@@ -2109,7 +2109,7 @@ class FunctionsUtil {
           migrationEnabled = this.BNify(oldContractBalance).gt(0);
         }
 
-        // console.log('Migration - oldContractBalance',oldContractName,account,oldContractBalance,oldContractBalanceFormatted);
+        // this.customLog('Migration - oldContractBalance',oldContractName,account,oldContractBalance,oldContractBalanceFormatted);
       }
     }
 
@@ -2129,7 +2129,7 @@ class FunctionsUtil {
       //   .executeMetaTransaction(userAddress, ...signedParameters)
       //   .estimateGas({ from: userAddress });
 
-      // console.log(gasLimit);
+      // this.customLog(gasLimit);
 
       const gasPrice = await this.props.web3.eth.getGasPrice();
 
@@ -2142,14 +2142,14 @@ class FunctionsUtil {
         });
 
       tx.on("transactionHash", function(hash) {
-        console.log(`Transaction sent by relayer with hash ${hash}`);
+        this.customLog(`Transaction sent by relayer with hash ${hash}`);
         callback_receipt()
       }).once("confirmation", function(confirmationNumber, receipt) {
-        console.log("Transaction confirmed on chain",receipt);
+        this.customLog("Transaction confirmed on chain",receipt);
         callback_receipt(receipt);
       });
     } catch (error) {
-      console.log(error);
+      this.customLog(error);
       callback(null,error);
     }
   }
@@ -2216,7 +2216,7 @@ class FunctionsUtil {
 
       const { r, s, v } = this.getSignatureParameters_v4(signature);
 
-      // console.log('executeMetaTransaction', [userAddress, functionSignature, messageToSign, `${messageToSign.length}`, r, s, v]);
+      // this.customLog('executeMetaTransaction', [userAddress, functionSignature, messageToSign, `${messageToSign.length}`, r, s, v]);
 
       this.contractMethodSendWrapper(contractName, 'executeMetaTransaction', [userAddress, functionSignature, r, s, v], callback, callback_receipt);
 
@@ -2276,7 +2276,7 @@ class FunctionsUtil {
       message
     });
 
-    // console.log('dataToSign',dataToSign);
+    // this.customLog('dataToSign',dataToSign);
 
     this.props.web3.currentProvider.send(
       {
@@ -2381,7 +2381,7 @@ class FunctionsUtil {
           if (curveAvgSlippage){
             output = output.minus(output.times(curveAvgSlippage));
           }
-          // console.log('amountLentCurve',curveTokenBalance.toFixed(6),curveAvgBuyPrice.toFixed(6),curveAvgSlippage.toString(),output.toFixed(6));
+          // this.customLog('amountLentCurve',curveTokenBalance.toFixed(6),curveAvgBuyPrice.toFixed(6),curveAvgSlippage.toString(),output.toFixed(6));
         }
       break;
       case 'earningsPercCurve':
@@ -2392,7 +2392,7 @@ class FunctionsUtil {
 
         if (amountLentCurve1 && redeemableBalanceCurve && amountLentCurve1.gt(0) && redeemableBalanceCurve.gt(0)){
           output = redeemableBalanceCurve.div(amountLentCurve1).minus(1).times(100);
-          // console.log('earningsPercCurve',redeemableBalanceCurve.toFixed(6),amountLentCurve1.toFixed(6),output.toFixed(6));
+          // this.customLog('earningsPercCurve',redeemableBalanceCurve.toFixed(6),amountLentCurve1.toFixed(6),output.toFixed(6));
         }
       break;
       case 'curveApy':
@@ -2403,7 +2403,7 @@ class FunctionsUtil {
       break;
       case 'redeemableBalanceCurve':
         output = await this.getCurveRedeemableIdleTokens(account);
-        // console.log('earningsPercCurve',output.toFixed(6));
+        // this.customLog('earningsPercCurve',output.toFixed(6));
       break;
       case 'redeemableBalanceCounterCurve':
         let [
@@ -2421,7 +2421,7 @@ class FunctionsUtil {
         if (redeemableBalanceCurveStart && curveApy && amountLentCurve){
           const earningPerYear = amountLentCurve.times(curveApy.div(100));
           redeemableBalanceCurveEnd = redeemableBalanceCurveStart.plus(earningPerYear);
-          // console.log('redeemableBalanceCounterCurve',amountLentCurve.toFixed(6),redeemableBalanceCurveStart.toFixed(6),redeemableBalanceCurveEnd.toFixed(6));
+          // this.customLog('redeemableBalanceCounterCurve',amountLentCurve.toFixed(6),redeemableBalanceCurveStart.toFixed(6),redeemableBalanceCurveEnd.toFixed(6));
         }
 
         output = {
@@ -2472,7 +2472,7 @@ class FunctionsUtil {
       case 'apy':
         const tokenApys = await this.getTokenAprs(tokenConfig,false,addGovTokens);
 
-        // console.log('apr',token,tokenApys.avgApr ? tokenApys.avgApr.toString() : null,tokenApys.avgApy ? tokenApys.avgApy.toString() : null);
+        // this.customLog('apr',token,tokenApys.avgApr ? tokenApys.avgApr.toString() : null,tokenApys.avgApy ? tokenApys.avgApy.toString() : null);
 
         if (tokenApys && tokenApys.avgApy !== null){
           output = tokenApys.avgApy;
@@ -2526,7 +2526,7 @@ class FunctionsUtil {
         } else {
           let tokenBalance = account ? await this.getTokenBalance(tokenConfig.token,account) : false;
           if (tokenConfig.token === 'idleUSDCOld'){
-            console.log('tokenBalance',account,tokenBalance);
+            this.customLog('tokenBalance',account,tokenBalance);
           }
           if (!tokenBalance || tokenBalance.isNaN()){
             tokenBalance = '-';
@@ -2554,7 +2554,7 @@ class FunctionsUtil {
           redeemableBalanceEnd = redeemableBalanceStart.plus(earningPerYear);
         }
 
-        // console.log('redeemableBalanceCounter',token,parseFloat(redeemableBalanceStart),parseFloat(redeemableBalanceEnd));
+        // this.customLog('redeemableBalanceCounter',token,parseFloat(redeemableBalanceStart),parseFloat(redeemableBalanceEnd));
 
         output = {
           redeemableBalanceEnd,
@@ -2583,7 +2583,7 @@ class FunctionsUtil {
 
             output = redeemableBalance;
 
-            // console.log('redeemableBalance',token,idleTokenBalance2.toFixed(4),idleTokenPrice1.toFixed(4),tokenBalance.toFixed(4),govTokensBalance.toFixed(4),output.toFixed(4));
+            // this.customLog('redeemableBalance',token,idleTokenBalance2.toFixed(4),idleTokenPrice1.toFixed(4),tokenBalance.toFixed(4),govTokensBalance.toFixed(4),output.toFixed(4));
           }
         }
       break;
@@ -2700,16 +2700,16 @@ class FunctionsUtil {
       this.setCachedData(cachedDataKey,tokenPrice);
     }
 
-    // console.log('getIdleTokenPrice',tokenPrice.toString());
+    // this.customLog('getIdleTokenPrice',tokenPrice.toString());
 
     return tokenPrice;
   }
   clearCachedData = () => {
     if (this.props.clearCachedData && typeof this.props.clearCachedData === 'function'){
-      // console.log('clearCachedData',this.props.clearCachedData,typeof this.props.clearCachedData === 'function');
+      // this.customLog('clearCachedData',this.props.clearCachedData,typeof this.props.clearCachedData === 'function');
       this.props.clearCachedData();
     } else {
-      // console.log('clearCachedData - Function not found!');
+      // this.customLog('clearCachedData - Function not found!');
     }
     return false;
   }
@@ -2718,7 +2718,7 @@ class FunctionsUtil {
   */
   setCachedData = (key,data,TTL=120) => {
     if (this.props.setCachedData && typeof this.props.setCachedData === 'function'){
-      // console.log('setCachedData',key);
+      // this.customLog('setCachedData',key);
       this.props.setCachedData(key,data,TTL);
     }
     return data;
@@ -2900,24 +2900,26 @@ class FunctionsUtil {
     const contract = this.getContractByName(contractName);
 
     if (!contract) {
-      this.customLogError('Wrong contract name', contractName);
+      this.customLog('Wrong contract name', contractName);
       return null;
     }
 
     if (!contract.methods[methodName]) {
-      this.customLogError('Wrong method name', methodName);
+      this.customLog('Wrong method name', methodName);
       return null;
     }
 
     blockNumber = blockNumber !== 'latest' && blockNumber && !isNaN(blockNumber) ? parseInt(blockNumber) : blockNumber;
 
     try{
+      this.customLog(`genericContractCall - ${contractName} - ${methodName}`);
       const value = await contract.methods[methodName](...params).call(callParams,blockNumber).catch(error => {
-        this.customLogError(`${contractName} contract method ${methodName} error: `, error);
+        this.customLog(`${contractName} contract method ${methodName} error: `, error);
       });
+      this.customLog(`genericContractCall - ${contractName} - ${methodName} : ${value}`);
       return value;
     } catch (error) {
-      this.customLogError("genericContractCall error", error);
+      this.customLog("genericContractCall error", error);
     }
   }
   asyncForEach = async (array, callback, async=true) => {
@@ -3006,7 +3008,7 @@ class FunctionsUtil {
       protocolsAllocations[protocolAddr] = protocolAllocation;
       totalAllocation = totalAllocation.plus(protocolAllocation);
 
-      // console.log('getTokenAllocation',contractName,protocolAddr,protocolAllocation.toString(),exchangeRate ? exchangeRate.toString() : null,totalAllocation.toString());
+      // this.customLog('getTokenAllocation',contractName,protocolAddr,protocolAllocation.toString(),exchangeRate ? exchangeRate.toString() : null,totalAllocation.toString());
     });
 
     tokenAllocation.unlentBalance = this.BNify(0);
@@ -3102,7 +3104,7 @@ class FunctionsUtil {
     const idleTokensBalances = {};
     let remainingCurveTokens = this.BNify(0);
 
-    // console.log('getCurveDepositedTokens',curveTxs);
+    // this.customLog('getCurveDepositedTokens',curveTxs);
 
     curveTxs.forEach( tx => {
 
@@ -3132,7 +3134,7 @@ class FunctionsUtil {
         break;
       }
 
-      // console.log(this.strToMoment(tx.timeStamp*1000).format('DD-MM-YYYY HH:mm:ss'),tx.blockNumber,idleToken,tx.action,idleTokens.toFixed(6),idleTokensBalances[idleToken].toFixed(6),remainingCurveTokens.toFixed(6));
+      // this.customLog(this.strToMoment(tx.timeStamp*1000).format('DD-MM-YYYY HH:mm:ss'),tx.blockNumber,idleToken,tx.action,idleTokens.toFixed(6),idleTokensBalances[idleToken].toFixed(6),remainingCurveTokens.toFixed(6));
 
       // Scalo il remaining tokens
       if (remainingCurveTokens.gt(0)){
@@ -3150,13 +3152,13 @@ class FunctionsUtil {
       }
     });
 
-    // console.log('idleTokensBalances',idleTokensBalances);
+    // this.customLog('idleTokensBalances',idleTokensBalances);
   }
   getCurveUnevenTokenAmounts = async (amounts,max_burn_amount) => {
     const curveSwapContract = await this.getCurveSwapContract();
     if (curveSwapContract){
       const unevenAmounts = await this.genericContractCall(curveSwapContract.name, 'remove_liquidity_imbalance', [amounts, max_burn_amount]);
-      // console.log('getCurveUnevenTokenAmounts',amounts,max_burn_amount,unevenAmounts);
+      // this.customLog('getCurveUnevenTokenAmounts',amounts,max_burn_amount,unevenAmounts);
       return unevenAmounts;
     }
     return null;
@@ -3326,7 +3328,7 @@ class FunctionsUtil {
         max_slippage = this.BNify(max_slippage).div(n_coins);
       }
 
-      // console.log('curveTokenShare',this.BNify(curveTokenBalance).toString(),this.BNify(curveTokenSupply).toString(),curveTokenShare.toString());
+      // this.customLog('curveTokenShare',this.BNify(curveTokenBalance).toString(),this.BNify(curveTokenSupply).toString(),curveTokenShare.toString());
 
       await this.asyncForEach(Object.keys(curveAvailableTokens), async (token) => {
         const curveTokenConfig = curveAvailableTokens[token];
@@ -3335,7 +3337,7 @@ class FunctionsUtil {
         if (curveIdleTokens){
           let idleTokenBalance = this.BNify(curveIdleTokens).times(curveTokenShare);
           if (max_slippage){
-            // console.log('getCurveIdleTokensAmounts',idleTokenBalance.toFixed());
+            // this.customLog('getCurveIdleTokensAmounts',idleTokenBalance.toFixed());
             idleTokenBalance = idleTokenBalance.minus(idleTokenBalance.times(max_slippage));
           }
           tokensBalances[coinIndex] = this.integerValue(idleTokenBalance);
@@ -3467,7 +3469,7 @@ class FunctionsUtil {
           slippage = amount.div(Sv).minus(1).times(-1);
         }
 
-        // console.log('getCurveSlippage',token,deposit,amounts,tokenAmount.toFixed(6),virtualPrice.toFixed(6),Sv.toFixed(6),amount.toFixed(6),slippage.toFixed(6));
+        // this.customLog('getCurveSlippage',token,deposit,amounts,tokenAmount.toFixed(6),virtualPrice.toFixed(6),Sv.toFixed(6),amount.toFixed(6),slippage.toFixed(6));
 
         return slippage;
       }
@@ -3509,7 +3511,7 @@ class FunctionsUtil {
 
       cTokenIdleSupply = await this.genericContractCall(cTokenInfo.token,'totalSupply');
 
-      // console.log('getCompAPR',cTokenInfo.token,cTokenIdleSupply ? cTokenIdleSupply.toString() : null);
+      // this.customLog('getCompAPR',cTokenInfo.token,cTokenIdleSupply ? cTokenIdleSupply.toString() : null);
 
       if (cTokenIdleSupply){
         let [tokenDecimals,exchangeRate] = await Promise.all([
@@ -3520,7 +3522,7 @@ class FunctionsUtil {
         if (exchangeRate){
           exchangeRate = this.fixTokenDecimals(exchangeRate,cTokenInfo.decimals);
           compoundAllocation = this.fixTokenDecimals(cTokenIdleSupply,tokenDecimals,exchangeRate);
-          // console.log('getCompAPR',token,compValue.toString(),cTokenIdleSupply.toString(),exchangeRate.toString(),tokenDecimals.toString(),compoundAllocation.toString());
+          // this.customLog('getCompAPR',token,compValue.toString(),cTokenIdleSupply.toString(),exchangeRate.toString(),tokenDecimals.toString(),compoundAllocation.toString());
         }
       }
 
@@ -3528,7 +3530,7 @@ class FunctionsUtil {
         compoundAllocation = await this.convertTokenBalance(compoundAllocation,token,tokenConfig,false);
         compAPR = compValue.div(compoundAllocation).times(100);
 
-        // console.log('getCompAPR',cTokenInfo.token,compConversionRate.toString(),compDistribution.toString(),compValue.toString(),cTokenIdleSupply.toString(),compoundAllocation.toString(),compAPR.toString()+'%');
+        // this.customLog('getCompAPR',cTokenInfo.token,compConversionRate.toString(),compDistribution.toString(),compValue.toString(),cTokenIdleSupply.toString(),compoundAllocation.toString(),compAPR.toString()+'%');
 
         this.setCachedData(cachedDataKey,compAPR);
       }
@@ -3601,7 +3603,7 @@ class FunctionsUtil {
       if (compApr && tokenAllocation){
         output = output.plus(compApr.times(tokenAllocation.totalAllocation));
         totalAllocation = totalAllocation.plus(tokenAllocation.totalAllocation);
-        // console.log(token,compApr.toString(),tokenAllocation.totalAllocation.toString(),output.toString(),totalAllocation.toString());
+        // this.customLog(token,compApr.toString(),tokenAllocation.totalAllocation.toString(),output.toString(),totalAllocation.toString());
       }
     });
 
@@ -3610,6 +3612,17 @@ class FunctionsUtil {
     return output;
   }
   getTokensCsv = async () => {
+
+    Array.prototype.sum = function() {
+      return this.reduce(function(pv, cv) { return pv + cv; }, 0);
+    };
+    Array.prototype.max = function() {
+      return Math.max.apply(null, this);
+    };
+    Array.prototype.avg = function() {
+      return this.sum()/this.length;
+    };
+
     const csv = [];
     const availableStrategies = this.props.availableStrategies;
     await this.asyncForEach(Object.keys(availableStrategies), async (strategy) => {
@@ -3617,10 +3630,12 @@ class FunctionsUtil {
       const isRisk = strategy === 'risk';
       await this.asyncForEach(Object.keys(availableTokens), async (token) => {
         const tokenConfig = availableTokens[token];
-        const rates = await this.getTokenApiData(tokenConfig.address,isRisk,null,null,false,86400,'ASC');
+        const rates = await this.getTokenApiData(tokenConfig.address,isRisk,null,null,false,7200,'ASC');
         const header = [];
         let protocols = null;
         const rows = [];
+        const aprAvg = {};
+        const scoreAvg = {};
 
         const lastRow = rates[rates.length-1];
 
@@ -3642,9 +3657,15 @@ class FunctionsUtil {
             header.push('APR Idle');
             header.push('SCORE Idle');
 
+            aprAvg['idle'] = [];
+            scoreAvg['idle'] = [];
+
             protocols.forEach( p => {
               header.push('APR '+p.name);
               header.push('SCORE '+p.name);
+
+              aprAvg[p.name] = [];
+              scoreAvg[p.name] = [];
             });
 
             rows.push(header.join(','));
@@ -3660,6 +3681,11 @@ class FunctionsUtil {
           row.push(rate);
           row.push(score);
 
+          if (date>='2020-09-15'/* && date<='2020-11-09'*/){
+            aprAvg['idle'].push(parseFloat(rate));
+            scoreAvg['idle'].push(parseFloat(score));
+          }
+
           protocols.forEach( pInfo => {
             const pData = r.protocolsData.find( p => (p.protocolAddr.toLowerCase() === pInfo.address.toLowerCase()) );
             let pRate = '';
@@ -3673,6 +3699,15 @@ class FunctionsUtil {
                   pRate = pRate.plus(additionalRate);
                 }
               }
+
+              if (date>='2020-09-15'/* && date<='2020-11-09'*/){
+                if (!isNaN(parseFloat(pRate))){
+                  aprAvg[pInfo.name].push(parseFloat(pRate));
+                }
+                if (!isNaN(parseFloat(pScore))){
+                  scoreAvg[pInfo.name].push(parseFloat(pScore));
+                }
+              }
             }
 
             row.push(pRate);
@@ -3682,11 +3717,25 @@ class FunctionsUtil {
           rows.push(row.join(','));
         });
 
+        Object.keys(aprAvg).forEach( p => {
+          const avgRate = aprAvg[p].sum()/aprAvg[p].length;
+          this.customLog(`${token}-${strategy}-${p} - Avg Rate: ${avgRate}`);
+        });
+
+        Object.keys(scoreAvg).forEach( p => {
+          const avgScore = scoreAvg[p].sum()/scoreAvg[p].length;
+          this.customLog(`${token}-${strategy}-${p} - Avg Score: ${avgScore}`);
+        });
+
+        // if (token==='DAI' && isRisk){
+        //   debugger;
+        // }
+
         csv.push(rows.join('\n'));
       });
     });
 
-    console.log(csv.join('\n'));
+    this.customLog(csv.join('\n'));
   }
   getGovTokenPool = async (govToken=null,availableTokens=null,convertToken=null) => {
     let output = this.BNify(0);
@@ -3836,8 +3885,6 @@ class FunctionsUtil {
       availableTokens = this.props.availableStrategies[this.props.selectedStrategy];
     }
 
-    // console.log('getGovTokensUserBalances',account,availableTokens);
-
     const output = {};
 
     await this.asyncForEach(Object.keys(availableTokens),async (token) => {
@@ -3851,8 +3898,10 @@ class FunctionsUtil {
           govTokenAmount = this.BNify(govTokenAmount);
           // Get gov Token config by index
           const govTokenAddress = await this.genericContractCall(idleTokenConfig.token,'govTokens',[govTokenIndex]);
+
           if (govTokenAddress){
-            govTokenConfig = govTokenConfig ? govTokenConfig : this.getGovTokenConfigByAddress(govTokenAddress);
+            govTokenConfig = this.getGovTokenConfigByAddress(govTokenAddress);
+
             if (govTokenConfig && govTokenConfig.address && govTokenConfig.address.toLowerCase() === govTokenAddress.toLowerCase()){
 
               // Get gov token conversion rate
@@ -3863,6 +3912,7 @@ class FunctionsUtil {
                   tokenConversionRate = await this.getUniswapConversionRate(fromTokenConfig,govTokenConfig);
                 }
               }
+
               govTokenAmount = this.fixTokenDecimals(govTokenAmount,govTokenConfig.decimals,tokenConversionRate);
 
               // Initialize govToken balance
@@ -3877,9 +3927,6 @@ class FunctionsUtil {
         });
       }
     });
-
-    // Test multiple gov tokens
-    // output['IDLE'] = this.BNify(10);
 
     return output;
   }
@@ -3919,7 +3966,7 @@ class FunctionsUtil {
       const gain = redeemableBalance.minus(amountLent);
       const fees = gain.times(feePercentage);
 
-      // console.log('fees',tokenConfig.token,amountLent.toString(),redeemableBalance.toString(),gain.toString(),fees.toString());
+      // this.customLog('fees',tokenConfig.token,amountLent.toString(),redeemableBalance.toString(),gain.toString(),fees.toString());
 
       return fees;
     }
@@ -3943,7 +3990,7 @@ class FunctionsUtil {
         if (tokenAllocation && tokenAllocation.totalAllocationWithUnlent && !tokenAllocation.totalAllocationWithUnlent.isNaN()){
           const totalAllocation = await this.convertTokenBalance(tokenAllocation.totalAllocationWithUnlent,token,tokenConfig,isRisk);
           totalAUM = totalAUM.plus(totalAllocation);
-          // console.log(strategy,token,totalAllocation.toString(),totalAUM.toString());
+          // this.customLog(strategy,token,totalAllocation.toString(),totalAUM.toString());
           if (tokenAprs && tokenAprs.avgApr && !tokenAprs.avgApr.isNaN()){
             avgAPR = avgAPR.plus(totalAllocation.times(tokenAprs.avgApr))
           }
@@ -3971,7 +4018,7 @@ class FunctionsUtil {
           if (oldTokenAllocation && oldTokenAllocation.totalAllocation && !oldTokenAllocation.totalAllocation.isNaN()){
             const oldTokenTotalAllocation = await this.convertTokenBalance(oldTokenAllocation.totalAllocation,token,oldTokenConfig,isRisk);
             totalAUM = totalAUM.plus(oldTokenTotalAllocation);
-            // console.log(strategy,token,'old',oldTokenTotalAllocation.toString(),totalAUM.toString());
+            // this.customLog(strategy,token,'old',oldTokenTotalAllocation.toString(),totalAUM.toString());
           }
 
           // debugger;
@@ -4132,13 +4179,13 @@ class FunctionsUtil {
     if (tokenData && tokenAllocation){
       Object.keys(tokenAllocation.protocolsAllocationsPerc).forEach( protocolAddr => {
         const protocolAllocationPerc = this.BNify(tokenAllocation.protocolsAllocationsPerc[protocolAddr]);
-        if (protocolAllocationPerc.gt(0.001)){
+        if (protocolAllocationPerc.gt(0.001) && tokenData.length>0){
           const protocolInfo = tokenData[0].protocolsData.find( p => (p.protocolAddr.toLowerCase() === protocolAddr.toLowerCase()) );
           if (protocolInfo){
             const protocolScore = this.BNify(protocolInfo.defiScore);
             if (!protocolScore.isNaN()){
               tokenScore = tokenScore.plus(protocolScore.times(protocolAllocationPerc));
-              // console.log(protocolAddr,tokenAllocation.protocolsAllocationsPerc[protocolAddr].toFixed(6),protocolScore.toFixed(6),tokenScore.toFixed(6));
+              // this.customLog(protocolAddr,tokenAllocation.protocolsAllocationsPerc[protocolAddr].toFixed(6),protocolScore.toFixed(6),tokenScore.toFixed(6));
             }
           }
         }
@@ -4257,7 +4304,7 @@ class FunctionsUtil {
       tokenAprs.avgApr = this.getAvgApr(protocolsAprs,tokenAllocation.protocolsAllocations,tokenAllocation.totalAllocation);
       tokenAprs.avgApy = this.getAvgApr(protocolsApys,tokenAllocation.protocolsAllocations,tokenAllocation.totalAllocation);
       // if (tokenConfig.token === 'DAI'){
-      //   console.log('getTokenAprs',tokenAllocation.totalAllocation.toFixed(6),tokenAllocation.totalAllocationWithUnlent.toFixed(6),tokenConfig.idle.token,tokenAprs.avgApr.toFixed(6),tokenAprs.avgApy.toFixed(6));
+      //   this.customLog('getTokenAprs',tokenAllocation.totalAllocation.toFixed(6),tokenAllocation.totalAllocationWithUnlent.toFixed(6),tokenConfig.idle.token,tokenAprs.avgApr.toFixed(6),tokenAprs.avgApy.toFixed(6));
       // }
     }
 
@@ -4300,7 +4347,7 @@ class FunctionsUtil {
 
     newValue += suffixes[suffixNum];
 
-    // console.log('abbreviateNumber',value,decimals,maxPrecision,minPrecision,newValue);
+    // this.customLog('abbreviateNumber',value,decimals,maxPrecision,minPrecision,newValue);
 
     return newValue;
   }

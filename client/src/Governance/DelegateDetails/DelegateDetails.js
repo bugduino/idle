@@ -87,7 +87,7 @@ class DelegateDetails extends Component {
               title={'Rank'}
               value={delegate.rank}
               labelTooltip={ null }
-              minHeight={['130px','143px']}
+              minHeight={['100px','143px']}
               titleMinHeight={['auto','50px']}
             />
           </Flex>
@@ -100,7 +100,7 @@ class DelegateDetails extends Component {
           >
             <StatsCard
               titleMinHeight={['auto','50px']}
-              minHeight={['130px','143px']}
+              minHeight={['100px','143px']}
               labelTooltip={ null }
               title={'Address'}
               label={null}
@@ -141,7 +141,7 @@ class DelegateDetails extends Component {
               label={null}
               title={'Votes'}
               labelTooltip={null}
-              minHeight={['130px','143px']}
+              minHeight={['100px','143px']}
               titleMinHeight={['auto','50px']}
               value={this.functionsUtil.formatMoney(this.functionsUtil.BNify(delegate.votes).toFixed(2,1),2)}
             />
@@ -157,7 +157,7 @@ class DelegateDetails extends Component {
               labelTooltip={ null }
               title={'Proposals Voted'}
               value={delegate.proposals}
-              minHeight={['130px','143px']}
+              minHeight={['100px','143px']}
               titleMinHeight={['auto','50px']}
             />
           </Flex>
@@ -186,7 +186,7 @@ class DelegateDetails extends Component {
                 {
                   title: '#',
                   props:{
-                    width:[0.05,0.05]
+                    width:[0.08,0.05]
                   },
                   fields:[
                     {
@@ -198,6 +198,7 @@ class DelegateDetails extends Component {
                 },
                 {
                   title:'DATE',
+                  mobile:false,
                   props:{
                     width:0.12,
                   },
@@ -210,7 +211,7 @@ class DelegateDetails extends Component {
                 {
                   title:'TITLE',
                   props:{
-                    width:[0.57,0.57],
+                    width:[0.66,0.57],
                   },
                   fields:[
                     {
@@ -237,6 +238,9 @@ class DelegateDetails extends Component {
                   title:'STATUS',
                   props:{
                     width:[0.12,0.12],
+                    justifyContent:['center','flex-start']
+                  },
+                  parentProps:{
                     justifyContent:['center','flex-start']
                   },
                   fields:[

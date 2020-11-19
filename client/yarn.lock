@@ -9375,6 +9375,13 @@ fstream@^1.0.0, fstream@^1.0.12, fstream@^1.0.8:
     mkdirp ">=0.5 0"
     rimraf "2"
 
+function-batch@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/function-batch/-/function-batch-1.1.2.tgz#8c5a213faff928f3936efcd702bbe3d24db562c0"
+  integrity sha1-jFohP6/5KPOTbvzXArvj0k21YsA=
+  dependencies:
+    lodash "^4.0.8"
+
 function-bind@^1.0.2, function-bind@^1.1.0, function-bind@^1.1.1, function-bind@~1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/function-bind/-/function-bind-1.1.1.tgz#a56899d3ea3c9bab874bb9773b7c5ede92f4895d"
@@ -13556,6 +13563,11 @@ lodash@4.17.11, lodash@=4.17.11, "lodash@>=3.5 <5", lodash@^4.0.0, lodash@^4.13.
 lodash@=4.17.4:
   version "4.17.4"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.4.tgz#78203a4d1c328ae1d86dca6460e369b57f4055ae"
+
+lodash@^4.0.8:
+  version "4.17.20"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.20.tgz#b44a9b6297bcb698f1c51a3545a2b3b368d59c52"
+  integrity sha512-PlhdFcillOINfeV7Ni6oF1TAEayyZBoZ8bcshTHqOYJYlrqzRK5hagpagky5o4HfCzzd1TRkXPMFq6cKk9rGmA==
 
 lodash@^4.17.13, lodash@^4.17.14, lodash@^4.17.15:
   version "4.17.15"
@@ -20442,6 +20454,13 @@ wbuf@^1.1.0, wbuf@^1.7.3:
 web-namespaces@^1.1.2:
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/web-namespaces/-/web-namespaces-1.1.3.tgz#9bbf5c99ff0908d2da031f1d732492a96571a83f"
+
+web3-batched-send@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/web3-batched-send/-/web3-batched-send-1.0.3.tgz#f60a6a39fef3fc7d0340300b6558e20e7d9d9479"
+  integrity sha512-Tt/4rv9+u90Fxg64asdUFcfQEZz/GYF2pl3haY1CtnCrLPIHFS8je8cQFy+DwKr0v//WrhvkBSu43hmP+kwjXA==
+  dependencies:
+    function-batch "^1.1.2"
 
 web3-bzz@1.0.0-beta.35:
   version "1.0.0-beta.35"

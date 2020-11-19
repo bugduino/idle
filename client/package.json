@@ -156,5 +156,8 @@
     "presets": [
       "react-app"
     ]
+  },
+  "devDependencies": {
+    "web3-batched-send": "^1.0.3"
   }
 }

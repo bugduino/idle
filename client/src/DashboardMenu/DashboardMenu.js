@@ -1,10 +1,6 @@
-// import theme from '../theme';
 import React, { Component } from 'react';
-// import styles from './Dashboard.module.scss';
-// import MenuAccount from '../MenuAccount/MenuAccount';
 import { Link as RouterLink } from "react-router-dom";
 import FunctionsUtil from '../utilities/FunctionsUtil';
-// import BuyModal from '../utilities/components/BuyModal';
 import { Flex, Box, Icon, Text, Image } from 'rimble-ui';
 
 class DashboardMenu extends Component {
@@ -113,9 +109,9 @@ class DashboardMenu extends Component {
                   }
                   <Text
                     fontWeight={3}
-                    fontSize={[0,2]}
                     color={'copyColor'}
                     textAlign={'center'}
+                    fontSize={['11px',2]}
                     style={{
                       whiteSpace:'nowrap'
                     }}

@@ -6,15 +6,11 @@ import FunctionsUtil from '../utilities/FunctionsUtil';
 import { Box, Flex, Text, Icon, Link } from "rimble-ui";
 // import ButtonLoader from '../ButtonLoader/ButtonLoader';
 // import DashboardCard from '../DashboardCard/DashboardCard';
-import AccountModal from "../utilities/components/AccountModal";
 // import AccountOverview from "../utilities/components/AccountOverview";
 
 class DashboardHeader extends Component {
 
-  state = {
-    idleTokenBalance: null,
-    isModalOpen: null,
-  }
+  state = {}
 
   // Utils
   functionsUtil = null;
@@ -35,15 +31,11 @@ class DashboardHeader extends Component {
     this.loadUtils();
   }
 
-  toggleModal = (modalName) => {
-    this.setState(state => ({...state, isModalOpen: (state.isModalOpen===modalName ? null : modalName) }));
-  }
-
   setConnector = async (connectorName) => {
     // Send Google Analytics event
     this.functionsUtil.sendGoogleAnalyticsEvent({
-      eventCategory: 'Connect',
-      eventAction: 'logout'
+      eventAction: 'logout',
+      eventCategory: 'Connect'
     });
 
     if (typeof this.props.setConnector === 'function'){
@@ -58,6 +50,7 @@ class DashboardHeader extends Component {
   }
 
   render() {
+
     // const buttonSize = this.props.isMobile ? 'small' : 'medium';
     return (
       <Box
@@ -98,13 +91,6 @@ class DashboardHeader extends Component {
             </Link>
           }
         </Flex>
-        <AccountModal
-          {...this.props}
-          network={this.props.network.current}
-          isOpen={this.state.isModalOpen==='account'}
-          closeModal={e => this.toggleModal('account') }
-          idleTokenBalance={this.state.idleTokenBalance}
-        />
       </Box>
     );
   }

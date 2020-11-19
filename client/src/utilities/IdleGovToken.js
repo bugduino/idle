@@ -1,9 +1,11 @@
 import FunctionsUtil from './FunctionsUtil';
+import VesterABI from '../contracts/Vester.json';
 
 class IdleGovToken{
   // Attributes
   props = {};
   tokenName = null;
+  tokenConfig = null;
   functionsUtil = null;
 
   // Constructor
@@ -22,6 +24,7 @@ class IdleGovToken{
     }
 
     this.tokenName = this.functionsUtil.getGlobalConfig(['governance','props','tokenName']);
+    this.tokenConfig = this.functionsUtil.getGlobalConfig(['govTokens',this.tokenName]);
   }
 
   getBalance = async () => {
@@ -32,14 +35,28 @@ class IdleGovToken{
     return this.functionsUtil.contractMethodSendWrapper('EarlyRewards', 'claim', [], callback, callbackReceipt);
   }
 
+  delegateVesting = async (account=null,delegate=null) => {
+    account = account ? account : this.props.account;
+
+    const founderVesting = await this.functionsUtil.genericContractCall('VesterFactory','vestingContracts',[account]);
+    console.log('founderVesting',account,founderVesting);
+
+    await this.props.initContract('Vester',founderVesting,VesterABI);
+    await this.functionsUtil.contractMethodSendWrapper('IDLE','delegate',[delegate]);
+    await this.functionsUtil.contractMethodSendWrapper('Vester','setDelegate',[delegate]);
+
+    console.log('delegates vesterFounder to founder');
+  }
+
   getUnclaimedTokens = async () => {
-    return this.functionsUtil.BNify(0);
-    // return await this.genericContractCall('EarlyRewards','rewards',[this.props.account]);
+    let rewards =  await this.functionsUtil.genericContractCall('EarlyRewards','rewards',[this.props.account]);
+    if (rewards){
+      return this.functionsUtil.fixTokenDecimals(rewards,this.tokenConfig.decimals);
+    }
+    return null;
   }
 
   getAPR = async (token,tokenConfig,conversionRate=null) => {
-
-    return this.functionsUtil.BNify(5);
 
     const IDLETokenConfig = this.functionsUtil.getGlobalConfig(['govTokens',this.tokenName]);
     if (!IDLETokenConfig.enabled){
@@ -47,10 +64,12 @@ class IdleGovToken{
     }
 
     const cachedDataKey = `getIdleAPR_${tokenConfig.idle.token}_${conversionRate}`;
+    /*
     const cachedData = this.functionsUtil.getCachedData(cachedDataKey);
     if (cachedData !== null && !this.functionsUtil.BNify(cachedData).isNaN()){
       return cachedData;
     }
+    */
 
     let APR = this.functionsUtil.BNify(0);
 
@@ -75,7 +94,8 @@ class IdleGovToken{
       }
 
       const idleDistributedPerYearUSD = this.functionsUtil.BNify(conversionRate).times(idleDistribution);
-      APR = idleDistributedPerYearUSD.div(tokenAllocation.totalAllocation).times(100);
+      APR = idleDistributedPerYearUSD.div(tokenAllocation.totalAllocationWithUnlent).times(100);
+
       return this.functionsUtil.setCachedData(cachedDataKey,APR);
     }
 

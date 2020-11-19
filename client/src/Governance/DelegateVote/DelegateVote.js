@@ -1,25 +1,32 @@
 import React, { Component } from 'react';
 import RoundButton from '../../RoundButton/RoundButton';
-import FunctionsUtil from '../../utilities/FunctionsUtil';
-import { Flex, Text, Input, Button, Box } from "rimble-ui";
+import GovernanceUtil from '../../utilities/GovernanceUtil';
 import DashboardCard from '../../DashboardCard/DashboardCard';
 import TxProgressBar from '../../TxProgressBar/TxProgressBar';
+import { Flex, Text, Input, Button, Box, EthAddress } from "rimble-ui";
 
 class DelegateVote extends Component {
 
   state = {
-    newDelegate:''
+    newDelegate:'',
+    processing:{
+      txHash:null,
+      loading:false
+    }
   }
 
   // Utils
   functionsUtil = null;
+  governanceUtil = null;
 
   loadUtils(){
-    if (this.functionsUtil){
-      this.functionsUtil.setProps(this.props);
+    if (this.governanceUtil){
+      this.governanceUtil.setProps(this.props);
     } else {
-      this.functionsUtil = new FunctionsUtil(this.props);
+      this.governanceUtil = new GovernanceUtil(this.props);
     }
+
+    this.functionsUtil = this.governanceUtil.functionsUtil;
   }
 
   async componentWillMount(){
@@ -32,6 +39,71 @@ class DelegateVote extends Component {
 
   checkNewDelegate = () => {
     return this.functionsUtil.checkAddress(this.state.newDelegate) && this.state.newDelegate.toLowerCase() !== this.props.currentDelegate.toLowerCase();
+  }
+
+  async cancelTransaction(){
+    this.setState({
+      processing: {
+        txHash:null,
+        loading:false
+      }
+    });
+  }
+
+  setDelegate(address){
+    const addressOk = this.functionsUtil.checkAddress(address);
+
+    if (addressOk){
+
+      const callback = (tx,error) => {
+        // Send Google Analytics event
+        const eventData = {
+          eventCategory: 'Delegate',
+          eventAction: address,
+          eventLabel: tx.status
+        };
+
+        if (error){
+          eventData.eventLabel = this.functionsUtil.getTransactionError(error);
+        }
+
+        // Send Google Analytics event
+        if (error || eventData.status !== 'error'){
+          this.functionsUtil.sendGoogleAnalyticsEvent(eventData);
+        }
+
+        if (typeof this.props.loadUserData === 'function' && tx.status === 'success'){
+          this.props.loadUserData();
+        }
+
+        this.setState({
+          processing: {
+            txHash:null,
+            loading:false
+          }
+        });
+      };
+
+      const callbackReceipt = (tx) => {
+        const txHash = tx.transactionHash;
+        this.setState((prevState) => ({
+          processing: {
+            ...prevState.processing,
+            txHash
+          }
+        }));
+      };
+
+      this.governanceUtil.setDelegate(address,callback,callbackReceipt);
+
+      this.setState((prevState) => ({
+        processing: {
+          ...prevState.processing,
+          loading:true
+        }
+      }));
+    }
+    return null;
   }
 
   changeDelegate = (e) => {
@@ -57,8 +129,8 @@ class DelegateVote extends Component {
               mb:2,
               py:[2,3],
               px:[3,4],
-              width:'auto',
-              position:'relative'
+              position:'relative',
+              width:['100%','auto']
             }}
             isInteractive={false}
           >
@@ -102,16 +174,32 @@ class DelegateVote extends Component {
               >
                 Current Delegate:
               </Text>
-              <Text
-                mb={2}
-                fontWeight={3}
-                color={'dark-gray'}
-                textAlign={'center'}
+              <Flex
+                mb={3}
+                width={1}
+                alignItems={'center'}
+                justifyContent={'stretch'}
               >
-                {parseInt(this.props.currentDelegate) === 0 ? 'Undelegated' : this.props.currentDelegate}
-              </Text>
+                {
+                  parseInt(this.props.currentDelegate) === 0 ? (
+                    <Text
+                      fontWeight={3}
+                      fontSize={[1,2]}
+                      color={'dark-gray'}
+                      textAlign={'center'}
+                    >
+                      Undelegated
+                    </Text>
+                  ) : (
+                    <EthAddress
+                      width={1}
+                      address={this.props.account}
+                    />
+                  )
+                }
+              </Flex>
               {
-                this.props.processing && this.props.processing.loading ? (
+                this.state.processing && this.state.processing.loading ? (
                   <Flex
                     width={1}
                     flexDirection={'column'}
@@ -119,7 +207,7 @@ class DelegateVote extends Component {
                     <TxProgressBar
                       web3={this.props.web3}
                       waitText={`Delegate estimated in`}
-                      hash={this.props.processing.txHash}
+                      hash={this.state.processing.txHash}
                       endMessage={`Finalizing delegate request...`}
                       cancelTransaction={this.props.cancelTransaction}
                     />
@@ -155,16 +243,37 @@ class DelegateVote extends Component {
                       onChange={this.changeDelegate.bind(this)}
                       border={`1px solid ${this.props.theme.colors.divider}`}
                     />
-                    <RoundButton
-                      buttonProps={{
-                        mt:2,
-                        width:[1,'10em'],
-                        disabled:!this.checkNewDelegate()
-                      }}
-                      handleClick={ e => this.props.setDelegate(this.state.newDelegate) }
+                    <Flex
+                      mt={3}
+                      width={1}
+                      alignItems={'center'}
+                      flexDirection={'row'}
+                      justifyContent={'center'}
                     >
-                      Delegate
-                    </RoundButton>
+                      <RoundButton
+                        buttonProps={{
+                          mx:1,
+                          fontSize:[1,2],
+                          width:['auto','10em'],
+                          disabled:!this.checkNewDelegate()
+                        }}
+                        handleClick={ e => this.setDelegate(this.state.newDelegate) }
+                      >
+                        Delegate
+                      </RoundButton>
+                      <RoundButton
+                        buttonProps={{
+                          mx:1,
+                          fontSize:[1,2],
+                          width:['auto','10em'],
+                          mainColor:this.props.theme.colors.transactions.status.failed,
+                          disabled:this.props.currentDelegate.toLowerCase() === this.props.account.toLowerCase()
+                        }}
+                        handleClick={ e => this.setDelegate(this.props.account) }
+                      >
+                        Self-delegate
+                      </RoundButton>
+                    </Flex>
                   </Flex>
                 )
               }

@@ -327,7 +327,7 @@ class TransactionsList extends Component {
                               }}
                               hash={txHash}
                               transaction={tx}
-                              key={`tx-${txHashKey}`}
+                              key={`tx-${index}`}
                               handleClick={handleClick}
                               rowId={`tx-col-${txHashKey}`}
                               cardId={`tx-card-${txHashKey}`}

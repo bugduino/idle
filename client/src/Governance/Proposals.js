@@ -33,9 +33,19 @@ class Proposals extends Component {
 
   async componentDidUpdate(prevProps,prevState){
     this.loadUtils();
+
+    const contractsInitialized = this.props.contractsInitialized && prevProps.contractsInitialized !== this.props.contractsInitialized;
+    if (contractsInitialized){
+      this.loadData();
+    }
   }
 
   async loadData(){
+
+    if (!this.props.contractsInitialized){
+      return false;
+    }
+
     const proposals = await this.governanceUtil.getProposals();
 
     const { match: { params } } = this.props;
@@ -80,22 +90,39 @@ class Proposals extends Component {
                 width={0.5}
               >
                 <Breadcrumb
-                  text={'Proposals'}
+                  {...this.props}
+                  text={'Governance'}
+                  pathLink={['proposals']}
                   isMobile={this.props.isMobile}
-                  path={[this.state.selectedProposal.title]}
-                  handleClick={ e => this.props.goToSection('proposals') }
+                  handleClick={ e => this.props.goToSection('/') }
+                  path={['Proposals',this.state.selectedProposal.title]}
                 />
               </Flex>
-            ) : this.state.addProposal && (
+            ) : this.state.addProposal ? (
               <Flex
                 alignItems={'center'}
                 width={0.5}
               >
                 <Breadcrumb
-                  text={'Proposals'}
-                  path={['Add proposal']}
+                  {...this.props}
+                  text={'Governance'}
+                  pathLink={['proposals']}
                   isMobile={this.props.isMobile}
-                  handleClick={ e => this.props.goToSection('proposals') }
+                  path={['Proposals','Add proposal']}
+                  handleClick={ e => this.props.goToSection('/') }
+                />
+              </Flex>
+            ) : (
+              <Flex
+                alignItems={'center'}
+                width={0.5}
+              >
+                <Breadcrumb
+                  {...this.props}
+                  text={'Governance'}
+                  path={['Proposals']}
+                  isMobile={this.props.isMobile}
+                  handleClick={ e => this.props.goToSection('/') }
                 />
               </Flex>
             )
@@ -123,6 +150,7 @@ class Proposals extends Component {
             >
               <ProposalDetails
                 {...this.props}
+                loadData={this.loadData.bind(this)}
                 proposal={this.state.selectedProposal}
               />
             </Box>
@@ -156,7 +184,7 @@ class Proposals extends Component {
                     {
                       title: '#',
                       props:{
-                        width:[0.05,0.05]
+                        width:[0.1,0.05]
                       },
                       fields:[
                         {
@@ -168,8 +196,9 @@ class Proposals extends Component {
                     },
                     {
                       title:'DATE',
+                      mobile:false,
                       props:{
-                        width:0.12,
+                        width:[0.15,0.12],
                       },
                       fields:[
                         {
@@ -180,7 +209,7 @@ class Proposals extends Component {
                     {
                       title:'TITLE',
                       props:{
-                        width:[0.60,0.60],
+                        width:[0.75,0.60],
                       },
                       fields:[
                         {
@@ -189,6 +218,7 @@ class Proposals extends Component {
                       ]
                     },
                     {
+                      mobile:false,
                       title:'VOTES',
                       props:{
                         width:[0.11,0.11],
@@ -202,15 +232,19 @@ class Proposals extends Component {
                     {
                       title:'STATUS',
                       props:{
-                        width:[0.12,0.12],
+                        width:[0.15,0.12],
+                        alignItems:['center','flex-start'],
+                        justifyContent:['center','flex-start']
+                      },
+                      parentProps:{
                         justifyContent:['center','flex-start']
                       },
                       fields:[
                         {
                           name:'statusIcon',
                           props:{
-                            mr:[0,2]
-                          }
+                            mr:[0,2],
+                          },
                         },
                         {
                           mobile:false,

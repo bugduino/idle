@@ -5,9 +5,10 @@ import GovernanceUtil from '../utilities/GovernanceUtil';
 import DashboardMenu from '../DashboardMenu/DashboardMenu';
 
 // Import page components
-import Overview from '../Governance/Overview';
-import Proposals from '../Governance/Proposals';
-import Leaderboard from '../Governance/Leaderboard';
+import Overview from './Overview';
+import Delegate from './Delegate';
+import Proposals from './Proposals';
+import Leaderboard from './Leaderboard';
 import RoundButton from '../RoundButton/RoundButton';
 import DashboardCard from '../DashboardCard/DashboardCard';
 import TooltipModal from "../utilities/components/TooltipModal";
@@ -45,7 +46,8 @@ class Dashboard extends Component {
       this.governanceUtil = new GovernanceUtil(this.props);
     }
 
-    this.functionsUtil = this.governanceUtil.functionsUtil;
+    window.governanceUtil = this.governanceUtil;
+    window.functionsUtil = this.functionsUtil = this.governanceUtil.functionsUtil;
   }
 
   async loadMenu() {
@@ -90,6 +92,20 @@ class Dashboard extends Component {
         component:Leaderboard,
         icon:'FormatListNumbered',
         route:`${baseRoute}/leaderboard`,
+        submenu:[]
+      }
+    );
+
+    // Add tools
+    menu.push(
+      {
+        selected:false,
+        label:'Delegate',
+        color:'dark-gray',
+        bgColor:'#ff0000',
+        component:Delegate,
+        icon:'CompareArrows',
+        route:`${baseRoute}/delegate`,
         submenu:[]
       }
     );
@@ -181,8 +197,6 @@ class Dashboard extends Component {
       }
     });
 
-    // console.log('pageComponent',params,pageComponent);
-
     // Exit if no strategy and token selected
     if (!pageComponent){
       return this.goToSection('/',false);
@@ -208,6 +222,12 @@ class Dashboard extends Component {
 
   async componentWillMount() {
     this.loadUtils();
+
+    // const governanceEnabled = this.functionsUtil.getGlobalConfig(['governance','enabled']);
+    // if (!governanceEnabled){
+    //   this.goToSection('/',false);
+    // }
+
     await this.loadMenu();
     this.loadParams();
   }
@@ -221,6 +241,7 @@ class Dashboard extends Component {
       }
     },20000);
 
+    /*
     if (!this.props.web3){
       return this.props.initWeb3();
     } else if (!this.props.accountInizialized){
@@ -228,6 +249,7 @@ class Dashboard extends Component {
     } else if (!this.props.contractsInitialized){
       return this.props.initializeContracts();
     }
+    */
 
     this.loadUtils();
     await this.loadMenu();
@@ -263,17 +285,17 @@ class Dashboard extends Component {
 
     // Remove dashboard route
     if (isGovernance){
-      section = section.replace(this.state.baseRoute +'/','');
+      section = section.replace(this.state.baseRoute+'/','');
     }
 
-    const newRoute = isGovernance ? this.state.baseRoute +'/' + section : section;
+    const newRoute = (isGovernance ? this.state.baseRoute+(section.length>0 ? '/'+section : '') : section).replace(/[/]+$/,'');
     window.location.hash = newRoute;
 
     // Send GA event
     this.functionsUtil.sendGoogleAnalyticsEvent({
       eventCategory: 'UI',
-      eventAction: 'goToSection',
-      eventLabel: newRoute
+      eventLabel: newRoute,
+      eventAction: 'goToSection'
     });
 
     window.scrollTo(0, 0);
@@ -294,8 +316,6 @@ class Dashboard extends Component {
         this.governanceUtil.getTokensBalance(this.props.account),
         this.governanceUtil.getCurrentDelegate(this.props.account)
       ]);
-
-      // console.log(votes,balance,proposalThreshold,proposalMaxOperations);
 
       this.setState({
         votes,
@@ -433,6 +453,7 @@ class Dashboard extends Component {
                       votes={this.state.votes}
                       balance={this.state.balance}
                       urlParams={this.state.params}
+                      loadUserData={this.loadData.bind(this)}
                       goToSection={this.goToSection.bind(this)}
                       currentDelegate={this.state.currentDelegate}
                       selectedSection={this.state.selectedSection}

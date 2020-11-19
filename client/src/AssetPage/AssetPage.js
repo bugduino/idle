@@ -184,11 +184,11 @@ class AssetPage extends Component {
             </Flex>
         }
         {
-          this.props.account && !this.state.govTokensDisabled[this.props.selectedToken] && Object.keys(availableGovTokens).length>0 && 
+          userHasFunds && this.props.account && !this.state.govTokensDisabled[this.props.selectedToken] && Object.keys(availableGovTokens).length>0 && 
             <Flex
               width={1}
-              id="earnings-estimation"
               flexDirection={'column'}
+              id={"earnings-estimation"}
             >
               <Title my={[3,4]}>Yield Farming</Title>
               <AssetsList

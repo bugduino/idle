@@ -61,10 +61,10 @@ class GovModal extends React.Component {
 
   componentDidUpdate(prevProps,prevState){
     this.loadUtils();
-    const txStatusChanged = prevState.txStatus !== this.state.txStatus;
-    if (txStatusChanged && this.state.txStatus === 'success'){
-      this.loadTokenInfo();
-    }
+    // const txStatusChanged = prevState.txStatus !== this.state.txStatus;
+    // if (txStatusChanged && this.state.txStatus === 'success'){
+    //   this.loadTokenInfo();
+    // }
   }
 
   async cancelTransaction(){
@@ -102,6 +102,10 @@ class GovModal extends React.Component {
         },
         txStatus:tx.status ? tx.status : 'error',
       };
+
+      if (tx.status === 'success'){
+        newState.balance = this.state.unclaimed;
+      }
 
       this.setState(newState);
     };
@@ -172,7 +176,7 @@ class GovModal extends React.Component {
                 color={'white'}
                 fontWeight={500}
               >
-                {this.state.total ? this.state.total.toFixed(4) : '-'}
+                {this.state.total ? this.state.total.toFixed(2) : '-'}
               </Text>
               <Text
                 mb={2}

@@ -126,7 +126,7 @@ class RimbleTransaction extends React.Component {
   componentDidMount = async () => {
     this.initSimpleID();
 
-    // console.log('RimbleWeb3 componentDidMount');
+    // this.functionsUtil.customLog('RimbleWeb3 componentDidMount');
     this.initWeb3();
 
     // TEST - Manually triggers transaction error
@@ -156,7 +156,7 @@ class RimbleTransaction extends React.Component {
 
     this.loadUtils();
 
-    // console.log('componentDidUpdate',prevProps.connectorName,this.props.connectorName,this.props.context.connectorName,this.props.context.active,(this.props.context.error ? this.props.context.error.message : null));
+    // this.functionsUtil.customLog('componentDidUpdate',prevProps.connectorName,this.props.connectorName,this.props.context.connectorName,this.props.context.active,(this.props.context.error ? this.props.context.error.message : null));
 
     if (prevProps.connectorName !== this.props.connectorName && this.props.connectorName){
       this.initWeb3();
@@ -164,7 +164,7 @@ class RimbleTransaction extends React.Component {
       if (this.props.context.error instanceof Error && this.props.context.error.message.length){
         const errorMessage = this.props.context.error.message;
         const isWalletConnectClosedModalError = (errorMessage === 'User closed WalletConnect modal' || errorMessage === 'User closed modal');
-        // console.log('componentDidUpdate',setConnectorName,errorMessage);
+        // this.functionsUtil.customLog('componentDidUpdate',setConnectorName,errorMessage);
         if (setConnectorName === 'WalletConnect' && isWalletConnectClosedModalError){
           // this.functionsUtil.customLog('WalletConnect disconnected! Set Infura connector');
           this.props.setConnector('Infura',null);
@@ -197,7 +197,7 @@ class RimbleTransaction extends React.Component {
       });
     }
 
-    // console.log(prevProps.enableUnderlyingWithdraw,this.props.enableUnderlyingWithdraw,this.state.enableUnderlyingWithdraw);
+    // this.functionsUtil.customLog(prevProps.enableUnderlyingWithdraw,this.props.enableUnderlyingWithdraw,this.state.enableUnderlyingWithdraw);
     if (prevProps.enableUnderlyingWithdraw !== this.props.enableUnderlyingWithdraw){
       this.setState({
         enableUnderlyingWithdraw:this.props.enableUnderlyingWithdraw
@@ -226,6 +226,8 @@ class RimbleTransaction extends React.Component {
 
     const context = this.props.context;
 
+    const web3Infura = new Web3(new Web3.providers.HttpProvider(globalConfigs.network.providers.infura[globalConfigs.network.requiredNetwork]+INFURA_KEY));
+
     let web3 = context.library;
 
     // 0x Instant Wallet Provider Injection
@@ -242,7 +244,7 @@ class RimbleTransaction extends React.Component {
 
     // const last_context = localStorage ? JSON.parse(localStorage.getItem('context')) : null;
 
-    // console.log('initWeb3',context.active,connectorName,context.connectorName,context.connector,(web3 && web3.currentProvider ? web3.currentProvider.disable : null),(context.connector ? context.connector.disable : null));
+    // this.functionsUtil.customLog('initWeb3',context.active,connectorName,context.connectorName,context.connector,(web3 && web3.currentProvider ? web3.currentProvider.disable : null),(context.connector ? context.connector.disable : null));
     if (context && connectorName === 'Infura' && connectorName !== context.connectorName){
       if (web3 && typeof web3.currentProvider.disable === 'function'){
         web3.currentProvider.disable();
@@ -255,12 +257,12 @@ class RimbleTransaction extends React.Component {
 
     const connectorNameChanged = (context.connectorName && context.connectorName !== connectorName) || (connectorName !== 'Infura' && connectorName !== setConnectorName);
 
-    // console.log('initWeb3',context.active,connectorNameChanged,context.connectorName,connectorName,setConnectorName);
+    // this.functionsUtil.customLog('initWeb3',context.active,connectorNameChanged,context.connectorName,connectorName,setConnectorName);
 
     if (!context.active || connectorNameChanged) {
       // Select preferred web3 provider
       if (connectorName && connectorNameChanged){
-        // console.log('initWeb3 set connector',connectorName);
+        // this.functionsUtil.customLog('initWeb3 set connector',connectorName);
         setConnectorName = connectorName;
         await context.setConnector(connectorName);
         // await context.setFirstValidConnector([connectorName, 'Infura']);
@@ -381,8 +383,6 @@ class RimbleTransaction extends React.Component {
       }
     }
 
-    const web3Infura = new Web3(new Web3.providers.HttpProvider(globalConfigs.network.providers.infura[globalConfigs.network.requiredNetwork]+INFURA_KEY));
-
     const web3Callback = async () => {
 
       window.web3Injected = this.state.web3;
@@ -402,7 +402,7 @@ class RimbleTransaction extends React.Component {
             await this.initializeContracts();
           }
 
-          if (context.account) {
+          if (context.account){
 
             // Login with biconomy
             if (this.state.biconomy){
@@ -411,7 +411,7 @@ class RimbleTransaction extends React.Component {
               if (biconomyInfo.enableLogin && !biconomy.isLogin && !biconomyLoginProcessing){
                 biconomyLoginProcessing = true;
                 biconomy.login(context.account, (error, response) => {
-                  // console.log('biconomy login',error,response);
+                  // this.functionsUtil.customLog('biconomy login',error,response);
                   // Failed to login with Biconomy
                   if (error) {
                     return this.setState({
@@ -436,8 +436,8 @@ class RimbleTransaction extends React.Component {
             await this.initAccount(context.account);
           } else {
             await this.setState({
-              account: null,
-              accountInizialized: true
+              accountInizialized: true,
+              account: this.props.customAddress
             });
           }
         }
@@ -474,7 +474,7 @@ class RimbleTransaction extends React.Component {
               this.setState(newState, web3Callback);
             }
           }).onEvent(biconomy.ERROR, (error, message) => {
-            // console.log('Biconomy error',error,message,this.state.biconomy);
+            // this.functionsUtil.customLog('Biconomy error',error,message,this.state.biconomy);
             web3 = originalWeb3;
             // Handle error while initializing mexa
             if (this.state.biconomy !== false){
@@ -562,6 +562,8 @@ class RimbleTransaction extends React.Component {
 
   initAccount = async (account=false) => {
 
+    this.functionsUtil.customLog('initAccount',account);
+
     if (this.props.customAddress){
 
       // Set custom account
@@ -583,8 +585,6 @@ class RimbleTransaction extends React.Component {
           account = wallets[0];
         }
       }
-
-      // console.log('initAccount',account);
 
       if (!account || this.state.account === account){
         this.setState({
@@ -828,7 +828,7 @@ class RimbleTransaction extends React.Component {
         });
         */
 
-        // console.log('initAccount',account);
+        // this.functionsUtil.customLog('initAccount',account);
 
         // Set custom account
         this.setState({
@@ -853,7 +853,7 @@ class RimbleTransaction extends React.Component {
       // User denied account access...
       this.functionsUtil.customLog("User cancelled connect request. Error:", error);
 
-      // console.log(error);
+      // this.functionsUtil.customLog(error);
 
       // Catch ledger error
       if (error && error.message && error.message.includes('MULTIPLE_OPEN_CONNECTIONS_DISALLOWED')) {
@@ -913,7 +913,7 @@ class RimbleTransaction extends React.Component {
         this.functionsUtil.customLog("account balance: ", accountBalance);
       }
 
-      // console.log('accountBalance',res,(accountBalanceToken ? accountBalanceToken.toString() : null),tokenDecimals,increaseAmount);
+      // this.functionsUtil.customLog('accountBalance',res,(accountBalanceToken ? accountBalanceToken.toString() : null),tokenDecimals,increaseAmount);
 
       if (accountBalanceToken) {
 
@@ -926,8 +926,8 @@ class RimbleTransaction extends React.Component {
         
         accountBalanceToken = this.functionsUtil.fixTokenDecimals(accountBalanceToken,tokenDecimals).toString();
 
-        // console.log('increaseAmount',(increaseAmount ? increaseAmount.toString() : '0'),(this.state.accountBalanceToken ? this.state.accountBalanceToken.toString() : '0'),(accountBalanceToken ? accountBalanceToken.toString() : 'ERROR'));
-        // console.log(`account balance ${this.props.selectedToken}: `, accountBalanceToken);
+        // this.functionsUtil.customLog('increaseAmount',(increaseAmount ? increaseAmount.toString() : '0'),(this.state.accountBalanceToken ? this.state.accountBalanceToken.toString() : '0'),(accountBalanceToken ? accountBalanceToken.toString() : 'ERROR'));
+        // this.functionsUtil.customLog(`account balance ${this.props.selectedToken}: `, accountBalanceToken);
 
         this.setState({
           accountBalanceToken,
@@ -944,14 +944,11 @@ class RimbleTransaction extends React.Component {
 
   initializeContracts = async () => {
 
-    if (!this.props.availableStrategies){
-      return false;
-    }
-
     const contracts = this.functionsUtil.getGlobalConfig(['contracts']);
     await this.functionsUtil.asyncForEach(Object.keys(contracts),async (contractName) => {
       const contractInfo = contracts[contractName];
       if (contractInfo.address !== null && contractInfo.abi !== null){
+        this.functionsUtil.customLog('initializeContracts, init contract', contractName, contractInfo.address);
         await this.initContract(contractName, contractInfo.address, contractInfo.abi);
       }
     });
@@ -965,68 +962,71 @@ class RimbleTransaction extends React.Component {
       // Initialize govToken contracts
       let foundGovTokenContract = this.state.contracts.find(c => c.name === token);
       if (!foundGovTokenContract) {
+        this.functionsUtil.customLog('initializeContracts, init contract', token, govTokenConfig.address);
         await this.initContract(token, govTokenConfig.address, govTokenConfig.abi);
       }
     });
 
-    // Initialize Tokens Contracts
-    await this.functionsUtil.asyncForEach(Object.keys(this.props.availableStrategies),async (strategy) => {
-      
-      const availableTokens = this.props.availableStrategies[strategy];
+    if (this.props.availableStrategies){
+      // Initialize Tokens Contracts
+      await this.functionsUtil.asyncForEach(Object.keys(this.props.availableStrategies),async (strategy) => {
+        
+        const availableTokens = this.props.availableStrategies[strategy];
 
-      await this.functionsUtil.asyncForEach(Object.keys(availableTokens),async (token) => {
-        const tokenConfig = availableTokens[token];
+        await this.functionsUtil.asyncForEach(Object.keys(availableTokens),async (token) => {
+          const tokenConfig = availableTokens[token];
 
-        let foundTokenContract = this.state.contracts.find(c => c.name === token);
-        if (!foundTokenContract) {
-          this.functionsUtil.customLog('initializeContracts, init contract',token, tokenConfig.address);
-          await this.initContract(token, tokenConfig.address, tokenConfig.abi);
-        }
-
-        // Initialize idleTokens contracts
-        let foundIdleTokenContract = this.state.contracts.find(c => c.name === tokenConfig.idle.token);
-        if (!foundIdleTokenContract) {
-          this.functionsUtil.customLog('initializeContracts, init contract',tokenConfig.idle.token, tokenConfig.idle.address);
-          await this.initContract(tokenConfig.idle.token, tokenConfig.idle.address, tokenConfig.idle.abi);
-        }
-
-        // Initialize protocols contracts
-        tokenConfig.protocols.forEach(async (p,i) => {
-          let foundProtocolContract = this.state.contracts.find(c => c.name === p.token);
-          if (!foundProtocolContract) {
-            this.functionsUtil.customLog('initializeContracts, init '+p.token+' contract',p);
-            await this.initContract(p.token, p.address, p.abi);
+          let foundTokenContract = this.state.contracts.find(c => c.name === token);
+          if (!foundTokenContract) {
+            this.functionsUtil.customLog('initializeContracts, init contract',token, tokenConfig.address);
+            await this.initContract(token, tokenConfig.address, tokenConfig.abi);
           }
-        });
 
-        // Check migration contract
-        if (tokenConfig.migration){
-
-          if (tokenConfig.migration.oldContract){
-            const oldContract = tokenConfig.migration.oldContract;
-            this.functionsUtil.customLog('initializeContracts, init '+oldContract.name+' contract',oldContract);
-            await this.initContract(oldContract.name, oldContract.address, oldContract.abi);
+          // Initialize idleTokens contracts
+          let foundIdleTokenContract = this.state.contracts.find(c => c.name === tokenConfig.idle.token);
+          if (!foundIdleTokenContract) {
+            this.functionsUtil.customLog('initializeContracts, init contract',tokenConfig.idle.token, tokenConfig.idle.address);
+            await this.initContract(tokenConfig.idle.token, tokenConfig.idle.address, tokenConfig.idle.abi);
           }
 
           // Initialize protocols contracts
-          if (tokenConfig.migration.oldProtocols){
-            tokenConfig.migration.oldProtocols.forEach(async (p,i) => {
-              let foundProtocolContract = this.state.contracts.find(c => c.name === p.token);
-              if (!foundProtocolContract) {
-                this.functionsUtil.customLog('initializeContracts, init '+p.token+' contract',p);
-                await this.initContract(p.token, p.address, p.abi);
-              }
-            });
-          }
+          tokenConfig.protocols.forEach(async (p,i) => {
+            let foundProtocolContract = this.state.contracts.find(c => c.name === p.token);
+            if (!foundProtocolContract) {
+              this.functionsUtil.customLog('initializeContracts, init '+p.token+' contract',p);
+              await this.initContract(p.token, p.address, p.abi);
+            }
+          });
 
-          if (tokenConfig.migration.migrationContract){
-            const migrationContract = tokenConfig.migration.migrationContract;
-            this.functionsUtil.customLog('initializeContracts, init '+migrationContract.name+' contract',migrationContract);
-            await this.initContract(migrationContract.name, migrationContract.address, migrationContract.abi);
+          // Check migration contract
+          if (tokenConfig.migration){
+
+            if (tokenConfig.migration.oldContract){
+              const oldContract = tokenConfig.migration.oldContract;
+              this.functionsUtil.customLog('initializeContracts, init '+oldContract.name+' contract',oldContract);
+              await this.initContract(oldContract.name, oldContract.address, oldContract.abi);
+            }
+
+            // Initialize protocols contracts
+            if (tokenConfig.migration.oldProtocols){
+              tokenConfig.migration.oldProtocols.forEach(async (p,i) => {
+                let foundProtocolContract = this.state.contracts.find(c => c.name === p.token);
+                if (!foundProtocolContract) {
+                  this.functionsUtil.customLog('initializeContracts, init '+p.token+' contract',p);
+                  await this.initContract(p.token, p.address, p.abi);
+                }
+              });
+            }
+
+            if (tokenConfig.migration.migrationContract){
+              const migrationContract = tokenConfig.migration.migrationContract;
+              this.functionsUtil.customLog('initializeContracts, init '+migrationContract.name+' contract',migrationContract);
+              await this.initContract(migrationContract.name, migrationContract.address, migrationContract.abi);
+            }
           }
-        }
-      })
-    });
+        })
+      });
+    }
 
     return this.setState({
       contractsInitialized:true
@@ -1261,7 +1261,7 @@ class RimbleTransaction extends React.Component {
 
       const confirmationCallback = (confirmationNumber, receipt) => {
 
-        // console.log('confirmationCallback', confirmationNumber, receipt);
+        // this.functionsUtil.customLog('confirmationCallback', confirmationNumber, receipt);
 
         if (manualConfirmationTimeoutId){
           window.clearTimeout(manualConfirmationTimeoutId);
@@ -1327,7 +1327,7 @@ class RimbleTransaction extends React.Component {
 
       const receiptCallback = receipt => {
 
-        // console.log('txOnReceipt', receipt);
+        // this.functionsUtil.customLog('txOnReceipt', receipt);
 
         if (manualConfirmationTimeoutId){
           window.clearTimeout(manualConfirmationTimeoutId);
@@ -1352,7 +1352,7 @@ class RimbleTransaction extends React.Component {
         }
       };
 
-      contract.methods[contractMethod](...params)
+      return contract.methods[contractMethod](...params)
         .send(value ? { from: account, value, gas  } : { from: account, gas })
         .on("transactionHash", hash => {
           this.functionsUtil.customLog('txOnTransactionHash', hash);
@@ -1383,7 +1383,7 @@ class RimbleTransaction extends React.Component {
         .on("confirmation", confirmationCallback)
         .on("error", error => {
 
-          // console.log('Tx error',error);
+          // this.functionsUtil.customLog('Tx error',error);
           
           const isDeniedTx = error && error.message && typeof error.message.includes === 'function' ? error.message.includes('User denied transaction signature') : false;
           
@@ -1417,11 +1417,9 @@ class RimbleTransaction extends React.Component {
             callback(transaction,error);
           }
         });
-      
-      return true;
     } catch (error) {
 
-      // console.log('Tx catch error',error);
+      // this.functionsUtil.customLog('Tx catch error',error);
 
       transaction.status = "error";
       this.updateTransaction(transaction);
@@ -1445,7 +1443,7 @@ class RimbleTransaction extends React.Component {
       }
 
       if (typeof callback === 'function') {
-        // console.log('Tx Failed',error,transaction,typeof callback);
+        // this.functionsUtil.customLog('Tx Failed',error,transaction,typeof callback);
         callback(transaction,error);
       }
 
@@ -1481,7 +1479,7 @@ class RimbleTransaction extends React.Component {
     transactions[`tx${updatedTransaction.created}`] = transaction;
     this.setState({ transactions });
 
-    // console.log('updateTransaction',transactions);
+    // this.functionsUtil.customLog('updateTransaction',transactions);
 
     // Save transactions in localStorage only if pending or succeeded
     if (['pending','success','confirmed'].includes(transaction.status.toLowerCase())){
@@ -1583,7 +1581,7 @@ class RimbleTransaction extends React.Component {
       error = 'Unable to access to the wallet.'
     }
 
-    // console.log('openConnectionErrorModal',typeof error,typeof error === 'object' ? JSON.stringify(error) : error);
+    // this.functionsUtil.customLog('openConnectionErrorModal',typeof error,typeof error === 'object' ? JSON.stringify(error) : error);
 
     modals.data.connectionError = error;
 
