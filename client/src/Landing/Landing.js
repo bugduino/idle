@@ -292,7 +292,7 @@ class Landing extends Component {
         >
           <Box position={'relative'} zIndex={10}>
             <Flex
-              mt={['7em','9em']}
+              mt={['7em',Math.max(window.innerHeight*0.225,145)+'px']}
               alignItems={'flex-start'}
               flexDirection={['column','row']}
             >
@@ -438,6 +438,7 @@ class Landing extends Component {
         <HowItWorks />
 
         <Box
+          mb={3}
           pt={[4,5]}
           pb={[4,4]}
           id={'partners'}
@@ -528,12 +529,12 @@ class Landing extends Component {
             </Flex>
           </Box>
         </Box>
-
         <Box
+          mt={4}
           px={[3,4]}
-          pt={[4,5]}
-          pb={[4,4]}
+          py={[4,5]}
           id={'integrators'}
+          className={styles.gradientBackground}
         >
           <Box
             mx={'auto'}
@@ -541,7 +542,6 @@ class Landing extends Component {
           >
             <Title
               mb={3}
-              mt={[3,4]}
               fontWeight={5}
               fontSize={[5,6]}
               component={Heading.h4}
@@ -558,6 +558,7 @@ class Landing extends Component {
               Just few lines of code to integrate the power of Idle into your Dapp
             </Text>
             <Flex
+              mt={2}
               width={1}
               alignItems={'center'}
               flexDirection={'column'}
@@ -682,7 +683,7 @@ class Landing extends Component {
                           Read the docs
                         </Text>
                         <Icon
-                          ml={1}
+                          ml={2}
                           size={'1.2em'}
                           color={'white'}
                           name={'KeyboardArrowRight'}
@@ -704,12 +705,6 @@ class Landing extends Component {
                         alignItems={'flex-end'}
                         justifyContent={'center'}
                       >
-                        <Icon
-                          mr={1}
-                          size={'1.2em'}
-                          color={'white'}
-                          name={'LocalPhone'}
-                        />
                         <Text
                           fontWeight={3}
                           color={'white'}
@@ -717,6 +712,12 @@ class Landing extends Component {
                         >
                           Contact us
                         </Text>
+                        <Icon
+                          ml={2}
+                          name={'Send'}
+                          size={'1.2em'}
+                          color={'white'}
+                        />
                       </Flex>
                     </RoundButton>
                   </Flex>

@@ -281,13 +281,13 @@
   padding:7px;
 }
 .gradientBackground{
-  background: rgba(228,235,254,1);
-  background: -moz-linear-gradient(left, rgba(228,235,254,1) 0%, rgba(255,255,255,1) 45%, rgba(255,255,255,1) 90%, rgba(228,235,254,1) 100%);
-  background: -webkit-gradient(left top, right top, color-stop(0%, rgba(228,235,254,1)), color-stop(45%, rgba(255,255,255,1)), color-stop(90%, rgba(255,255,255,1)), color-stop(100%, rgba(228,235,254,1)));
-  background: -webkit-linear-gradient(left, rgba(228,235,254,1) 0%, rgba(255,255,255,1) 45%, rgba(255,255,255,1) 90%, rgba(228,235,254,1) 100%);
-  background: -o-linear-gradient(left, rgba(228,235,254,1) 0%, rgba(255,255,255,1) 45%, rgba(255,255,255,1) 90%, rgba(228,235,254,1) 100%);
-  background: -ms-linear-gradient(left, rgba(228,235,254,1) 0%, rgba(255,255,255,1) 45%, rgba(255,255,255,1) 90%, rgba(228,235,254,1) 100%);
-  background: linear-gradient(to right, rgba(228,235,254,1) 0%, rgba(255,255,255,1) 45%, rgba(255,255,255,1) 90%, rgba(228,235,254,1) 100%);
+  background: rgba(6,102,216,0.2);
+  background: -moz-linear-gradient(left, rgba(6,102,216,0.2) 0%, rgba(255,255,255,1) 35%, rgba(255,255,255,1) 90%, rgba(6,102,216,0.2) 100%);
+  background: -webkit-gradient(left top, right top, color-stop(0%, rgba(6,102,216,0.2)), color-stop(35%, rgba(255,255,255,1)), color-stop(90%, rgba(255,255,255,1)), color-stop(100%, rgba(6,102,216,0.2)));
+  background: -webkit-linear-gradient(left, rgba(6,102,216,0.2) 0%, rgba(255,255,255,1) 35%, rgba(255,255,255,1) 90%, rgba(6,102,216,0.2) 100%);
+  background: -o-linear-gradient(left, rgba(6,102,216,0.2) 0%, rgba(255,255,255,1) 35%, rgba(255,255,255,1) 90%, rgba(6,102,216,0.2) 100%);
+  background: -ms-linear-gradient(left, rgba(6,102,216,0.2) 0%, rgba(255,255,255,1) 35%, rgba(255,255,255,1) 90%, rgba(6,102,216,0.2) 100%);
+  background: linear-gradient(to right, rgba(6,102,216,0.2) 0%, rgba(255,255,255,1) 35%, rgba(255,255,255,1) 90%, rgba(6,102,216,0.2) 100%);
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e4ebfe', endColorstr='#e4ebfe', GradientType=1 );
 }
 @media (min-width: 32em) {
