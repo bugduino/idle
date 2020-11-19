@@ -4272,6 +4272,9 @@ class FunctionsUtil {
     const protocolsAprs = {};
     const protocolsApys = {};
 
+    const idleGovToken = this.getIdleGovToken();
+    const idleGovTokenEnabled = this.getGlobalConfig(['govTokens','IDLE','enabled']);
+
     await this.asyncForEach(tokenConfig.protocols,async (protocolInfo,i) => {
       const protocolAddr = protocolInfo.address.toString().toLowerCase();
       const addrIndex = addresses.indexOf(protocolAddr);
@@ -4285,6 +4288,15 @@ class FunctionsUtil {
           if (compAPR){
             protocolApr = protocolApr.plus(compAPR);
             protocolApy = protocolApy.plus(compAPR);
+          }
+        }
+
+        // Add $IDLE APR
+        if (idleGovTokenEnabled){
+          const idleAPR = await idleGovToken.getAPR(tokenConfig.token,tokenConfig);
+          if (idleAPR){
+            protocolApr = protocolApr.plus(idleAPR);
+            protocolApy = protocolApy.plus(idleAPR);
           }
         }
 
