@@ -264,6 +264,7 @@ const globalConfigs = {
     }
   },
   govTokens:{
+    /*
     IDLE:{
       abi:IDLE,
       decimals:18,
@@ -274,6 +275,7 @@ const globalConfigs = {
       icon:'images/tokens/IDLE.png',
       address:'0xAB6Bdb5CCF38ECDa7A92d04E86f7c53Eb72833dF',
     },
+    */
     COMP:{
       abi:COMP,
       decimals:18,
@@ -286,6 +288,7 @@ const globalConfigs = {
     }
   },
   contracts:{
+    /*
     PriceOracle:{
       abi:PriceOracle,
       address:'0xCab5760688db837Bb453FE1DFBC5eDeE6fa8F0FF'
@@ -314,6 +317,7 @@ const globalConfigs = {
       abi:GovernorAlpha,
       address:'0x782cB1dbd0bD4df95c2497819be3984EeA5c2c25'
     },
+    */
     Comptroller:{
       abi:Comptroller,
       address:'0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b',

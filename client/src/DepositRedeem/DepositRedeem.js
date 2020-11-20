@@ -588,7 +588,7 @@ class DepositRedeem extends Component {
           
           const depositParams = [amounts,minMintAmount];
 
-          contractSendResult = await this.props.contractMethodSendWrapper(this.state.curveDepositContract.name, 'add_liquidity', depositParams, null, callbackDeposit, callbackReceiptDeposit);
+          contractSendResult = await this.functionsUtil.contractMethodSendWrapper(this.state.curveDepositContract.name, 'add_liquidity', depositParams, callbackDeposit, callbackReceiptDeposit);
         } else {
           const tokensToDeposit = this.functionsUtil.normalizeTokenAmount(inputValue,this.props.tokenConfig.decimals);
 
@@ -606,7 +606,7 @@ class DepositRedeem extends Component {
               const functionSignature = mintProxyContract.methods[mintProxyContractInfo.function](...depositParams).encodeABI();
               contractSendResult = await this.functionsUtil.sendBiconomyTxWithPersonalSign(mintProxyContractInfo.name, functionSignature, callbackDeposit, callbackReceiptDeposit);
             } else {
-              contractSendResult = await this.props.contractMethodSendWrapper(mintProxyContractInfo.name, mintProxyContractInfo.function, depositParams, null, callbackDeposit, callbackReceiptDeposit);
+              contractSendResult = await this.functionsUtil.contractMethodSendWrapper(mintProxyContractInfo.name, mintProxyContractInfo.function, depositParams, callbackDeposit, callbackReceiptDeposit);
             }
           // Use main contract if no proxy contract exists
           } else {
@@ -634,10 +634,9 @@ class DepositRedeem extends Component {
             }
 
             depositParams = [tokensToDeposit, _skipMint, '0x0000000000000000000000000000000000000000'];
-            contractSendResult = await this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'mintIdleToken', depositParams, null, callbackDeposit, callbackReceiptDeposit);
+            contractSendResult = await this.functionsUtil.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'mintIdleToken', depositParams, callbackDeposit, callbackReceiptDeposit);
           }
         }
-
       break;
       case 'redeem':
 
@@ -695,7 +694,7 @@ class DepositRedeem extends Component {
             }));
           };
 
-          contractSendResult = await this.props.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'redeemIdleToken', [0], null, callbackRedeem, callbackReceiptRedeem);
+          contractSendResult = await this.functionsUtil.contractMethodSendWrapper(this.props.tokenConfig.idle.token, 'redeemIdleToken', [0], callbackRedeem, callbackReceiptRedeem);
           
         } else {
 
@@ -785,8 +784,6 @@ class DepositRedeem extends Component {
         loading = false;
       break;
     }
-
-    // console.log('contractSendResult',contractSendResult);
 
     if (contractSendResult !== false){
       this.setState((prevState) => ({
