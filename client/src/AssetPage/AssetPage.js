@@ -193,7 +193,6 @@ class AssetPage extends Component {
               <Title my={[3,4]}>Yield Farming</Title>
               <AssetsList
                 enabledTokens={Object.keys(availableGovTokens)}
-                handleClick={(props) => {}}
                 cols={[
                   {
                     title:'TOKEN',

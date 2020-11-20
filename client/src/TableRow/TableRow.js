@@ -5,6 +5,7 @@ import DashboardCard from '../DashboardCard/DashboardCard';
 class TableRow extends Component {
   render() {
     const FieldComponent = this.props.fieldComponent;
+    const isInteractive = typeof this.props.handleClick === 'function';
     return (
       <DashboardCard
         cardProps={{
@@ -16,8 +17,8 @@ class TableRow extends Component {
         id={this.props.cardId}
         {...this.props.rowProps}
         className={this.props.token}
-        handleClick={ e => this.props.handleClick(this.props) }
-        isInteractive={typeof this.props.handleClick === 'function'}
+        isInteractive={isInteractive}
+        handleClick={ isInteractive ? e => this.props.handleClick(this.props) : null }
       >
         <Flex
           flexDirection={'row'}
