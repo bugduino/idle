@@ -29,9 +29,9 @@ class AuditCard extends Component {
       <DashboardCard
         cardProps={{
           p:3,
-          my:[3,0],
+          my:[2,0],
           mx:[0,3],
-          width:'auto'
+          width:[1,'auto']
         }}
         isInteractive={this.props.link ? true : false}
         handleClick={this.props.link ? e => window.open(this.props.link) : null}

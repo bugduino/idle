@@ -2,6 +2,7 @@ import Faq from '../Faq/Faq';
 import Title from '../Title/Title';
 import Footer from '../Footer/Footer';
 import React, { Component } from 'react';
+import ExtLink from '../ExtLink/ExtLink';
 import styles from './Landing.module.scss';
 import FlexCards from '../FlexCards/FlexCards';
 import AuditCard from '../AuditCard/AuditCard';
@@ -22,7 +23,7 @@ let scrolling = false;
 class Landing extends Component {
   state = {
     avgApr:null,
-    carouselMax:1,
+    carouselMax:2,
     carouselIndex:0,
     activeCarousel:1,
     runConfetti:false,
@@ -462,7 +463,7 @@ class Landing extends Component {
               color={'cellTitle'}
               textAlign={'center'}
             >
-              We take security very seriusly, that's why our Smart-Contracts are fully Audited and battle-tested.
+              We take security very seriously, that's why our Smart-Contracts are fully Audited and battle-tested.
             </Text>
             <Flex
               width={1}
@@ -490,6 +491,7 @@ class Landing extends Component {
                 }}
               />
               <Link
+                mb={3}
                 target={'_blank'}
                 textAlign={'center'}
                 rel={'nofollow noopener noreferrer'}
@@ -501,7 +503,7 @@ class Landing extends Component {
                 />
               </Link>
               <Title
-                my={3}
+                my={[2,3]}
                 mt={[3,4]}
                 fontWeight={3}
                 fontSize={[3,4]}
@@ -626,7 +628,7 @@ class Landing extends Component {
                     pr={[0,5]}
                     textAlign={['center','justify']}
                   >
-                    Thanks to our Smart-Contracts and Web3.js framework you can easily integrate Idle into your Dapp with just few lines of code and let your users deposit and earn interests on their assets.
+                    Thank to our Smart-Contracts and Web3.js framework you can easily integrate Idle into your Dapp with just few lines of code and let your users deposit and earn interests on their assets.
                   </Text>
                   <Text
                     mb={2}
@@ -658,8 +660,8 @@ class Landing extends Component {
                   <Flex
                     mt={2}
                     width={1}
-                    flexDirection={'row'}
-                    alignItems={['center','flex-start']}
+                    alignItems={'center'}
+                    flexDirection={['column','row']}
                     justifyContent={['center','flex-start']}
                   >
                     <RoundButton
@@ -676,9 +678,9 @@ class Landing extends Component {
                         justifyContent={'center'}
                       >
                         <Text
+                          fontSize={2}
                           fontWeight={3}
                           color={'white'}
-                          fontSize={[1,2]}
                         >
                           Read the docs
                         </Text>
@@ -690,36 +692,55 @@ class Landing extends Component {
                         />
                       </Flex>
                     </RoundButton>
-                    <RoundButton
-                      buttonProps={{
-                        ml:2,
-                        mainColor:'red',
-                        width:[1,'auto']
-                      }}
-                      handleClick={ (e) => {
-                        window.open('https://idlefinance.typeform.com/to/PUC7nO')
-                      }}
+                    <Text
+                      mt={[2,0]}
+                      ml={[0,2]}
                     >
-                      <Flex
-                        width={1}
-                        alignItems={'flex-end'}
-                        justifyContent={'center'}
+                      or
+                    </Text>
+                    <ExtLink
+                      mt={[2,0]}
+                      ml={[0,2]}
+                      fontSize={2}
+                      hoverColor={'primary'}
+                      href={'https://idlefinance.typeform.com/to/PUC7nO'}
+                    >
+                      Contact Us
+                    </ExtLink>
+                    {
+                      /*
+                      <RoundButton
+                        buttonProps={{
+                          ml:2,
+                          mainColor:'red',
+                          width:[1,'auto']
+                        }}
+                        handleClick={ (e) => {
+                          window.open('https://idlefinance.typeform.com/to/PUC7nO')
+                        }}
                       >
-                        <Text
-                          fontWeight={3}
-                          color={'white'}
-                          fontSize={[1,2]}
+                        <Flex
+                          width={1}
+                          alignItems={'flex-end'}
+                          justifyContent={'center'}
                         >
-                          Contact us
-                        </Text>
-                        <Icon
-                          ml={2}
-                          name={'Send'}
-                          size={'1.2em'}
-                          color={'white'}
-                        />
-                      </Flex>
-                    </RoundButton>
+                          <Text
+                            fontWeight={3}
+                            color={'white'}
+                            fontSize={[1,2]}
+                          >
+                            Contact us
+                          </Text>
+                          <Icon
+                            ml={2}
+                            name={'Send'}
+                            size={'1.2em'}
+                            color={'white'}
+                          />
+                        </Flex>
+                      </RoundButton>
+                      */
+                    }
                   </Flex>
                 </Flex>
                 <Flex
@@ -770,7 +791,7 @@ class Landing extends Component {
               color={'cellTitle'}
               textAlign={'center'}
             >
-              Idle has been funded by word-class investors
+              Idle has been funded by industry leaders
             </Text>
             <FlexCards
               justifyContent={'center'}

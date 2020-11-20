@@ -78,8 +78,10 @@ class Faq extends Component {
         flexDirection={'column'}
       >
         <Title
-          mb={[4,5]}
+          mb={3}
+          mt={[3,4]}
           fontWeight={5}
+          fontSize={[5,6]}
           component={Heading.h4}
         >
           Frequently asked questions
@@ -93,37 +95,40 @@ class Faq extends Component {
           <Flex width={[1,3/5]} px={[2,0]} flexDirection={'row'} justifyContent={'space-between'}>
             <Flex width={1/3} textAlign={'center'} justifyContent={'center'} borderBottom={ isGeneralSelected ? '3px solid #0036ff' : 'none'}>
               <Text
-                textAlign={'center'}
-                fontSize={[3, 3]}
-                fontWeight={3}
                 mb={1}
-                color={isGeneralSelected ? 'blue' : 'copyColor'}
+                fontWeight={3}
+                fontSize={[2, 3]}
+                textAlign={'center'}
                 onClick={() => this.setSection('general')}
-                className={['pointer', isGeneralSelected ? 'selected' : '']}>
+                color={isGeneralSelected ? 'blue' : 'copyColor'}
+                className={['pointer', isGeneralSelected ? 'selected' : '']}
+              >
                 General
               </Text>
             </Flex>
             <Flex width={1/3} textAlign={'center'} justifyContent={'center'} borderBottom={ isGuidelinesSelected ? '3px solid #0036ff' : 'none'}>
               <Text
-                textAlign={'center'}
-                fontSize={[3, 3]}
-                fontWeight={3}
                 mb={1}
-                color={isGuidelinesSelected ? 'blue' : 'copyColor'}
+                fontWeight={3}
+                fontSize={[2, 3]}
+                textAlign={'center'}
                 onClick={() => this.setSection('guidelines')}
-                className={['pointer', isGuidelinesSelected ? 'selected' : '']}>
+                color={isGuidelinesSelected ? 'blue' : 'copyColor'}
+                className={['pointer', isGuidelinesSelected ? 'selected' : '']}
+              >
                 Liquidity Providers
               </Text>
             </Flex>
             <Flex width={1/3} textAlign={'center'} justifyContent={'center'} borderBottom={ isRatesSelected ? '3px solid #0036ff' : 'none'}>
               <Text
-                textAlign={'center'}
-                fontSize={[3, 3]}
-                fontWeight={3}
                 mb={1}
-                color={isRatesSelected ? 'blue' : 'copyColor'}
+                fontWeight={3}
+                fontSize={[2, 3]}
+                textAlign={'center'}
                 onClick={() => this.setSection('rates')}
-                className={['pointer', isRatesSelected ? 'selected' : '']}>
+                color={isRatesSelected ? 'blue' : 'copyColor'}
+                className={['pointer', isRatesSelected ? 'selected' : '']}
+              >
                 Security
               </Text>
             </Flex>
