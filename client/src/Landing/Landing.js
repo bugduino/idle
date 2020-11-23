@@ -809,10 +809,12 @@ class Landing extends Component {
                   link:'https://www.greenfield.one',
                   image:'images/investors/greenfield.png'
                 },
+                /*
                 {
                   link:'https://quantstamp.com',
                   image:'images/investors/quantstamp.png'
                 },
+                */
                 {
                   link:'https://dialectic.ch',
                   image:'images/investors/dialectic.png'
