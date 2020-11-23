@@ -130,7 +130,7 @@ class Footer extends Component {
                 <ExtLink href="https://medium.com/@idlefinance">
                   <Image src="images/social/medium.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} boxShadow={1} borderRadius={'7px'} />
                 </ExtLink>
-                <ExtLink href="https://github.com/bugduino/idle-contracts">
+                <ExtLink href="https://github.com/Idle-Labs/">
                   <Image src="images/social/github.png" height={'2.4em'} mr={['auto',3]} my={[2,0]} boxShadow={1} borderRadius={'7px'} />
                 </ExtLink>
                 <ExtLink href="https://www.linkedin.com/company/idlefinance">

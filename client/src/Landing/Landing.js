@@ -439,7 +439,7 @@ class Landing extends Component {
         <HowItWorks />
 
         <Box
-          mb={3}
+          mb={[3,4]}
           pt={[4,5]}
           pb={[4,4]}
           id={'partners'}
@@ -532,7 +532,7 @@ class Landing extends Component {
           </Box>
         </Box>
         <Box
-          mt={4}
+          mt={[4,5]}
           px={[3,4]}
           py={[4,5]}
           id={'integrators'}

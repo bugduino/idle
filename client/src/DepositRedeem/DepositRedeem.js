@@ -2,6 +2,7 @@ import theme from '../theme';
 import Migrate from '../Migrate/Migrate';
 import React, { Component } from 'react';
 import FlexLoader from '../FlexLoader/FlexLoader';
+import ConnectBox from '../ConnectBox/ConnectBox';
 import CurveRedeem from '../CurveRedeem/CurveRedeem';
 import RoundButton from '../RoundButton/RoundButton';
 import FunctionsUtil from '../utilities/FunctionsUtil';
@@ -1021,40 +1022,9 @@ class DepositRedeem extends Component {
           >
             {
               !this.props.account ? (
-                <DashboardCard
-                  cardProps={{
-                    p:3,
-                    mt:3
-                  }}
-                >
-                  <Flex
-                    alignItems={'center'}
-                    flexDirection={'column'}
-                  >
-                    <Icon
-                      size={'1.8em'}
-                      name={'Input'}
-                      color={'cellText'}
-                    />
-                    <Text
-                      mt={2}
-                      fontSize={2}
-                      color={'cellText'}
-                      textAlign={'center'}
-                    >
-                      Please connect with your wallet interact with Idle.
-                    </Text>
-                    <RoundButton
-                      buttonProps={{
-                        mt:2,
-                        width:[1,1/2]
-                      }}
-                      handleClick={this.props.connectAndValidateAccount}
-                    >
-                      Connect
-                    </RoundButton>
-                  </Flex>
-                </DashboardCard>
+                <ConnectBox
+                  {...this.props}
+                />
               ) :
               this.state.componentMounted ? (
                 this.state.action ? (

@@ -43,8 +43,6 @@ class DelegateDetails extends Component {
     const delegate = this.props.delegate;
     const proposals = await this.governanceUtil.getProposals(delegate.delegate);
 
-    console.log('loadProposals',proposals);
-
     this.setState({
       proposals
     });

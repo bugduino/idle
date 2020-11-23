@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import ConnectBox from '../../ConnectBox/ConnectBox';
 import RoundButton from '../../RoundButton/RoundButton';
 import GovernanceUtil from '../../utilities/GovernanceUtil';
 import DashboardCard from '../../DashboardCard/DashboardCard';
@@ -122,6 +123,18 @@ class DelegateVote extends Component {
         justifyContent={'center'}
       >
         {
+        !this.props.account ? (
+          <Flex
+            width={[1,0.36]}
+            alignItems={'stretch'}
+            flexDirection={'column'}
+            justifyContent={'center'}
+          >
+            <ConnectBox
+              {...this.props}
+            />
+          </Flex>
+        ) : 
         // Has balance
         this.props.balance && this.props.balance.gt(0) ? (
           <DashboardCard
@@ -159,7 +172,7 @@ class DelegateVote extends Component {
             >
               <Text
                 mb={2}
-                fontWeight={4}
+                fontWeight={3}
                 fontSize={[2,3]}
                 color={'dark-gray'}
                 textAlign={'center'}
@@ -281,12 +294,12 @@ class DelegateVote extends Component {
           </DashboardCard>
         ) : (
           <Text
-            fontWeight={4}
+            fontWeight={2}
             fontSize={[2,3]}
             color={'dark-gray'}
             textAlign={'center'}
           >
-            You don't have any {this.functionsUtil.getGlobalConfig(['governance','props','tokenName'])} token delegated.
+            You don't have any {this.functionsUtil.getGlobalConfig(['governance','props','tokenName'])} token to delegate.
           </Text>
         )
        } 

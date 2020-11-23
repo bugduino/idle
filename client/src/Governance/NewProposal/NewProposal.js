@@ -1,6 +1,7 @@
 import Title from '../../Title/Title';
 import React, { Component } from 'react';
 import styles from './NewProposal.module.scss';
+import DelegateVote from '../DelegateVote/DelegateVote';
 import RoundButton from '../../RoundButton/RoundButton';
 import GovernanceUtil from '../../utilities/GovernanceUtil';
 import DashboardCard from '../../DashboardCard/DashboardCard';
@@ -1170,6 +1171,26 @@ class NewProposal extends Component {
               }
             </Flex>
           </Form>
+        ) : this.props.balance && this.props.balance.gte(this.props.proposalThreshold) ? (
+          <Flex
+            width={1}
+            alignItems={'center'}
+            flexDirection={'column'}
+            justifyContent={'center'}
+          >
+            <Text
+              mb={3}
+              fontWeight={2}
+              fontSize={[2,3]}
+              color={'dark-gray'}
+              textAlign={'center'}
+            >
+              Please delegate your votes to yourself to create a new proposal.
+            </Text>
+            <DelegateVote
+              {...this.props}
+            />
+          </Flex>
         ) : (
           <Text
             fontWeight={2}
