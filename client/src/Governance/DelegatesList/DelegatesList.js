@@ -225,7 +225,13 @@ class DelegatesList extends Component {
                     </Flex>
                   </Flex>
                 ) : (
-                  <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontWeight={2} fontSize={[2]} color={'dark-gray'}>
+                  <Heading.h3
+                    fontWeight={2}
+                    fontSize={[2,3]}
+                    color={'dark-gray'}
+                    textAlign={'center'}
+                    fontFamily={'sansSerif'}
+                  >
                     There are no delegates
                   </Heading.h3>
                 )

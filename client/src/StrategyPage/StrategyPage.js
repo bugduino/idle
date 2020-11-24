@@ -121,7 +121,6 @@ class StrategyPage extends Component {
           if (amountLentToken){
             totalAmountLent = totalAmountLent.plus(amountLentToken);
           }
-
         });
 
         // Add gov tokens to earnings
@@ -231,6 +230,7 @@ class StrategyPage extends Component {
     */
 
     const riskScore = this.functionsUtil.getGlobalConfig(['messages','riskScore']);
+    const yieldFarming = this.functionsUtil.getGlobalConfig(['messages','yieldFarming']);
 
     return (
       <Box width={1}>
@@ -534,7 +534,7 @@ class StrategyPage extends Component {
                             title:'RISK SCORE',
                             desc:riskScore,
                             props:{
-                              width:[0.27,0.17],
+                              width:[0.27,0.15],
                               justifyContent:['center','flex-start']
                             },
                             fields:[
@@ -547,7 +547,7 @@ class StrategyPage extends Component {
                             title:'BALANCE TO MIGRATE',
                             mobile:false,
                             props:{
-                              width: this.state.depositedTokens.length>0 ? 0.28 : 0.25,
+                              width: this.state.depositedTokens.length>0 ? 0.18 : 0.15,
                             },
                             parentProps:{
                               width:1,
@@ -556,6 +556,20 @@ class StrategyPage extends Component {
                             fields:[
                               {
                                 name:'amountToMigrate',
+                              }
+                            ]
+                          },
+                          {
+                            mobile:false,
+                            title:'FARMING',
+                            desc:yieldFarming,
+                            props:{
+                              width:[0.25,0.12],
+                              textAlign:'center'
+                            },
+                            fields:[
+                              {
+                                name:'govTokens'
                               }
                             ]
                           },
@@ -620,7 +634,7 @@ class StrategyPage extends Component {
                           {
                             title:'CURRENCY',
                             props:{
-                              width:[0.3,0.15]
+                              width:[0.3,0.13]
                             },
                             fields:[
                               {
@@ -639,7 +653,7 @@ class StrategyPage extends Component {
                             title:'POOL',
                             mobile:false,
                             props:{
-                              width:0.12,
+                              width:[0.12,0.1],
                             },
                             fields:[
                               {
@@ -653,7 +667,7 @@ class StrategyPage extends Component {
                           {
                             title:'APY',
                             props:{
-                              width:[0.18,0.1],
+                              width:[0.18,0.08],
                             },
                             fields:[
                               {
@@ -665,7 +679,7 @@ class StrategyPage extends Component {
                             title:'RISK SCORE',
                             desc:riskScore,
                             props:{
-                              width:[0.27,0.17],
+                              width:[0.27,0.12],
                               justifyContent:['center','flex-start']
                             },
                             fields:[
@@ -677,7 +691,7 @@ class StrategyPage extends Component {
                           {
                             title:'DEPOSITED',
                             props:{
-                              width:[0.25,0.14],
+                              width:[0.25,0.13],
                               justifyContent:['center','flex-start']
                             },
                             fields:[
@@ -687,8 +701,22 @@ class StrategyPage extends Component {
                             ]
                           },
                           {
-                            title:'EARNINGS',
                             mobile:false,
+                            title:'FARMING',
+                            desc:yieldFarming,
+                            props:{
+                              width:[0.25,0.12],
+                              textAlign:'center'
+                            },
+                            fields:[
+                              {
+                                name:'govTokens'
+                              }
+                            ]
+                          },
+                          {
+                            mobile:false,
+                            title:'EARNINGS',
                             props:{
                               width:0.15,
                               textAlign:'center'

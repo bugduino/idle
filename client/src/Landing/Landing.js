@@ -557,7 +557,7 @@ class Landing extends Component {
               color={'cellTitle'}
               textAlign={'center'}
             >
-              Just few lines of code to integrate the power of Idle into your Dapp
+              Just few lines of code to integrate the power of Idle into your dApp
             </Text>
             <Flex
               mt={2}
@@ -628,7 +628,7 @@ class Landing extends Component {
                     pr={[0,5]}
                     textAlign={['center','justify']}
                   >
-                    Thank to our Smart-Contracts and Web3.js framework you can easily integrate Idle into your Dapp with just few lines of code and let your users deposit and earn interests on their assets.
+                    A fully integrated suite of DeFi yield products easy to integrate into your dApp so your teams don't need to stitch together disparate protocols or spend months integrating and updating yield functionality.<br />One integration to rule them all.
                   </Text>
                   <Text
                     mb={2}
@@ -862,7 +862,7 @@ class Landing extends Component {
               color={'cellTitle'}
               textAlign={'center'}
             >
-              Idle infrastructure draw energy from the most powerful DeFi protocols
+              Idle infrastructure rely on the most powerful DeFi protocols
             </Text>
             <FlexCards
               cards={[

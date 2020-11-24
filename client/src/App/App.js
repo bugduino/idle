@@ -502,6 +502,7 @@ class App extends Component {
                                               network={network}
                                               context={context}
                                               account={account}
+                                              isDashboard={true}
                                               initWeb3={initWeb3}
                                               biconomy={biconomy}
                                               isMobile={isMobile}
@@ -570,6 +571,7 @@ class App extends Component {
                                                   biconomy={biconomy}
                                                   isMobile={isMobile}
                                                   simpleID={simpleID}
+                                                  isGovernance={true}
                                                   contracts={contracts}
                                                   initAccount={initAccount}
                                                   initSimpleID={initSimpleID}

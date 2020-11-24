@@ -142,6 +142,7 @@ class ProposalsList extends Component {
     const filtersEnabled = typeof this.props.filtersEnabled === 'undefined' || this.props.filtersEnabled;
     const hasActiveFilters = filtersEnabled && Object.values(this.state.activeFilters).filter( v => (v !== null) ).length>0;
     const processedRows = this.state.processedRows ? Object.values(this.state.processedRows) : null;
+    const hasRows = processedRows && processedRows.length>0;
 
     return (
       <Flex flexDirection={'column'} width={1} m={'0 auto'}>
@@ -166,24 +167,24 @@ class ProposalsList extends Component {
               position={'relative'}
               flexDirection={'column'}
               id={'proposals-list-container'}
-              pt={[0, (!filtersEnabled ? 0 : hasActiveFilters ? '116px' : 5) ] }
+              pt={[0, (!filtersEnabled || !hasRows ? 0 : hasActiveFilters ? '116px' : 5) ] }
             >
               {
-                filtersEnabled &&
-                  <ProposalListFilters
-                    {...this.props}
-                    filters={this.state.filters}
-                    activeFilters={this.state.activeFilters}
-                    resetFilters={this.resetFilters.bind(this)}
-                    applyFilters={this.applyFilters.bind(this)}
-                  />
-              }
-              {
-                processedRows && processedRows.length>0 ? (
+                hasRows ? (
                   <Flex
                     width={1}
                     flexDirection={'column'}
                   >
+                    {
+                      filtersEnabled &&
+                        <ProposalListFilters
+                          {...this.props}
+                          filters={this.state.filters}
+                          activeFilters={this.state.activeFilters}
+                          resetFilters={this.resetFilters.bind(this)}
+                          applyFilters={this.applyFilters.bind(this)}
+                        />
+                    }
                     <TableHeader
                       cols={this.props.cols}
                       isMobile={this.props.isMobile}
@@ -251,7 +252,13 @@ class ProposalsList extends Component {
                     </Flex>
                   </Flex>
                 ) : (
-                  <Heading.h3 textAlign={'center'} fontFamily={'sansSerif'} fontWeight={2} fontSize={[2]} color={'dark-gray'}>
+                  <Heading.h3
+                    fontWeight={2}
+                    fontSize={[2,3]}
+                    color={'dark-gray'}
+                    textAlign={'center'}
+                    fontFamily={'sansSerif'}
+                  >
                     There are no proposals
                   </Heading.h3>
                 )

@@ -41,7 +41,10 @@ class GovModal extends React.Component {
       this.idleGovToken.getUnclaimedTokens(this.props.account)
     ]);
 
-    const total = this.functionsUtil.BNify(balance).plus(unclaimed);
+    let total = this.functionsUtil.BNify(0);
+    if (balance && unclaimed){
+      total = this.functionsUtil.BNify(balance).plus(unclaimed);
+    }
 
     this.setState({
       total,

@@ -65,36 +65,36 @@ class EstimatedEarnings extends Component {
 
     const chartData = [
       {
+        perc:1/12,
         label:'MONTH',
         value:amountMonth,
-        perc:1/12,
         month:amountMonth,
         color:this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.selectedToken,'color','rgb']).join(','),
-        monthColor:'hsl('+ this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.selectedToken,'color','hsl']).join(',')+')',
+        monthColor:'hsl('+this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.selectedToken,'color','hsl']).join(',')+')',
       },
       {
-        label:'3 MONTHS',
         perc:3/12,
+        label:'3 MONTHS',
         value:amount3Months,
         month3:amount3Months,
         color:this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.selectedToken,'color','rgb']).join(','),
-        month3Color:'hsl('+ this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.selectedToken,'color','hsl']).join(',')+')',
+        month3Color:'hsl('+this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.selectedToken,'color','hsl']).join(',')+')',
       },
       {
-        label:'6 MONTHS',
         perc:6/12,
+        label:'6 MONTHS',
         value:amount6Months,
         month6:amount6Months,
         color:this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.selectedToken,'color','rgb']).join(','),
-        month6Color:'hsl('+ this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.selectedToken,'color','hsl']).join(',')+')',
+        month6Color:'hsl('+this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.selectedToken,'color','hsl']).join(',')+')',
       },
       {
-        label:'YEAR',
         perc:1,
+        label:'YEAR',
         year:amountYear,
         value:amountYear,
         color:this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.selectedToken,'color','rgb']).join(','),
-        yearColor:'hsl('+ this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.selectedToken,'color','hsl']).join(',')+')',
+        yearColor:'hsl('+this.functionsUtil.getGlobalConfig(['stats','tokens',this.props.selectedToken,'color','hsl']).join(',')+')',
       }
     ];
 

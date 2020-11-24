@@ -7,7 +7,7 @@ import FunctionsUtil from '../utilities/FunctionsUtil';
 import GenericChart from '../GenericChart/GenericChart';
 import VariationNumber from '../VariationNumber/VariationNumber';
 import AllocationChart from '../AllocationChart/AllocationChart';
-import { Image, Text, Loader, Button, Tooltip, Icon } from "rimble-ui";
+import { Image, Text, Loader, Button, Tooltip, Icon, Flex } from "rimble-ui";
 
 class AssetField extends Component {
 
@@ -93,6 +93,12 @@ class AssetField extends Component {
               tokenBalance:output.toString()
             });
           }
+        break;
+        case 'govTokens':
+          const govTokens = this.functionsUtil.getTokenGovTokens(this.props.tokenConfig);
+          this.setStateSafe({
+            govTokens
+          });
         break;
         case 'tokenPrice':
           output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account,addGovTokens);
@@ -747,10 +753,21 @@ class AssetField extends Component {
     const minPrecision = fieldProps && fieldProps.minPrecision ? fieldProps.minPrecision : ( this.props.isMobile ? 3 : 4 );
 
     switch (fieldInfo.name){
-      case 'icon':
-        const icon = this.props.tokenConfig && this.props.tokenConfig.icon ? this.props.tokenConfig.icon : `images/tokens/${this.props.token}.svg`;
+      case 'iconTooltip':
+        const icon1 = this.props.tokenConfig && this.props.tokenConfig.icon ? this.props.tokenConfig.icon : `images/tokens/${this.props.token}.svg`;
         output = (
-          <Image src={icon} {...fieldProps} />
+          <Tooltip
+            placement={'top'}
+            message={this.props.token}
+          >
+            <Image src={icon1} {...fieldProps} />
+          </Tooltip>
+        );
+      break;
+      case 'icon':
+        const icon2 = this.props.tokenConfig && this.props.tokenConfig.icon ? this.props.tokenConfig.icon : `images/tokens/${this.props.token}.svg`;
+        output = (
+          <Image src={icon2} {...fieldProps} />
         );
       break;
       case 'tokenName':
@@ -881,6 +898,37 @@ class AssetField extends Component {
       case 'redeemableBalance':
         output = this.state.redeemableBalance ? (
           <SmartNumber {...fieldProps} decimals={decimals} minPrecision={minPrecision} maxPrecision={maxPrecision} number={this.state.redeemableBalance} />
+        ) : loader
+      break;
+      case 'govTokens':
+        output = this.state.govTokens ? (
+          <Flex
+            width={1}
+            alignItems={'center'}
+            flexDirection={'row'}
+            justifyContent={'flex-start'}
+          >
+            {
+              this.state.govTokens.map( (govTokenConfig,govTokenIndex) => (
+                <AssetField
+                  token={govTokenConfig.token}
+                  tokenConfig={govTokenConfig}
+                  key={`asset_${govTokenIndex}`}
+                  fieldInfo={{
+                    name:'iconTooltip',
+                    props:{
+                      borderRadius:'50%',
+                      position:'relative',
+                      height:['1.1em','2em'],
+                      ml:govTokenIndex ? '-10px' : 0,
+                      zIndex:this.state.govTokens.length-govTokenIndex,
+                      boxShadow:['1px 1px 1px 0px rgba(0,0,0,0.1)','1px 2px 3px 0px rgba(0,0,0,0.1)'],
+                    }
+                  }}
+                />
+              ))
+            }
+          </Flex>
         ) : loader
       break;
       case 'amountLentCurve':

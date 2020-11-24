@@ -85,7 +85,7 @@ class IdleGovToken{
 
       const DAITokenConfig = this.functionsUtil.getGlobalConfig(['stats','tokens','DAI']);
         
-      // Get IDLE conversion rate
+      // Get IDLE oconversion rate
       if (!conversionRate){
         conversionRate = await this.functionsUtil.getUniswapConversionRate(DAITokenConfig,IDLETokenConfig);
         if (!conversionRate || conversionRate.isNaN()){

@@ -102,7 +102,7 @@ class Header extends React.Component {
         >
           <Flex
             ml={[3, 5]}
-            width={[1, 3/12]}
+            width={[0.5, 3/12]}
           >
             <RouterLink
               to="/"
@@ -114,16 +114,29 @@ class Header extends React.Component {
               />
             </RouterLink>
           </Flex>
-          {
-            !this.props.isMobile &&
-              <Flex
-                width={[1,8/12]}
-                alignItems={'center'}
-                flexDirection={'row'}
-                justifyContent={"flex-end"}
-              >
-                {
-                  governanceEnabled && 
+            <Flex
+              width={[0.5,8/12]}
+              alignItems={'center'}
+              flexDirection={'row'}
+              justifyContent={"flex-end"}
+            >
+              {
+                governanceEnabled && 
+                  <Link
+                    mr={4}
+                    fontSize={3}
+                    color={'white'}
+                    hoverColor={'white'}
+                    fontFamily={'sansSerif'}
+                    textAlign={['center','left']}
+                    onClick={ (e) => window.location.hash='#/governance' }
+                  >
+                    Governance
+                  </Link>
+              }
+              {
+                !this.props.isMobile &&
+                  <>
                     <Link
                       mr={4}
                       fontSize={3}
@@ -131,34 +144,23 @@ class Header extends React.Component {
                       hoverColor={'white'}
                       fontFamily={'sansSerif'}
                       textAlign={['center','left']}
-                      onClick={ (e) => window.location.hash='#/governance' }
+                      onClick={(e) => {this.functionsUtil.scrollTo(document.getElementById('contacts').offsetTop,300)}}
                     >
-                      Governance
+                      Contact Us
                     </Link>
-                }
-                <Link
-                  mr={4}
-                  fontSize={3}
-                  color={'white'}
-                  hoverColor={'white'}
-                  fontFamily={'sansSerif'}
-                  textAlign={['center','left']}
-                  onClick={(e) => {this.functionsUtil.scrollTo(document.getElementById('contacts').offsetTop,300)}}
-                >
-                  Contact Us
-                </Link>
-                <Link
-                  fontSize={3}
-                  color={'white'}
-                  hoverColor={'white'}
-                  fontFamily={'sansSerif'}
-                  textAlign={['center','left']}
-                  onClick={(e) => {this.functionsUtil.scrollTo(document.getElementById('faq').offsetTop,300)}}
-                >
-                  FAQs
-                </Link>
-              </Flex>
-          }
+                    <Link
+                      fontSize={3}
+                      color={'white'}
+                      hoverColor={'white'}
+                      fontFamily={'sansSerif'}
+                      textAlign={['center','left']}
+                      onClick={(e) => {this.functionsUtil.scrollTo(document.getElementById('faq').offsetTop,300)}}
+                    >
+                      FAQs
+                    </Link>
+                  </>
+              }
+            </Flex>
         </Flex>
       </Box>
     );

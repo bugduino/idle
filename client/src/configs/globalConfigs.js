@@ -129,6 +129,7 @@ const globalConfigs = {
     cheapRedeem:'Amount of unlent funds available for low gas fees redeem',
     curveBonusSlippage:'Slippage or bonus depending on if the coin is low or high in the Curve Pool',
     directMint:'Pay an additional gas fee to rebalance the pool and help all users gain an additional APR',
+    yieldFarming:'Yield Farming allows you to receive additional tokens when you provide liquidity to a pool.',
     riskScore:`It's a single, consistently, comparable value for measuring protocol risk, based on factors including smart contract risk, collateralization and liquidity.<br /><br />The model outputs a 0-10 score, where <strong>0 is the most risky and 10 is the most safe.</strong> Visit <a target="_blank" rel="nofollow noopener noreferrer" href="https://defiscore.io/overview">https://defiscore.io/overview</a> for further information.`,
     curveInstructions:`<strong>Depositing into the pool:</strong><br />By depositing your funds into the Curve Pool you may incur in slippage or bonus depending on if the coin is low or high in the pool.<br /><br /><strong>Withdrawing share from the pool:</strong><br />When you redeem your tokens previously deposited in the Curve Pool you get back an uneven amounts of tokens, that can give slippage or bonus depending on if the coin is low or high in the pool.`
   },
@@ -157,7 +158,7 @@ const globalConfigs = {
   },
   governance:{
     test:false,
-    enabled:false,
+    enabled:true,
     startBlock:22134519,
     baseRoute:'/governance',
     props:{
@@ -264,23 +265,25 @@ const globalConfigs = {
     }
   },
   govTokens:{
-    /*
     IDLE:{
       abi:IDLE,
       decimals:18,
       token:'IDLE',
-      enabled:false,
+      enabled:true,
+      showAPR:false, // Include IDLE Apr
       protocol:'idle',
+      showBalance:false, // Include IDLE balance in earnings
       color:'hsl(162, 100%, 41%)',
       icon:'images/tokens/IDLE.png',
       address:'0xAB6Bdb5CCF38ECDa7A92d04E86f7c53Eb72833dF',
     },
-    */
     COMP:{
       abi:COMP,
       decimals:18,
       token:'COMP',
       enabled:true,
+      showAPR:true, // Include COMP Apr
+      showBalance:true, // Include COMP balance in earnings
       protocol:'compound',
       color:'hsl(162, 100%, 41%)',
       address:'0xc00e94cb662c3520282e6f5717214004a7f26888', // MAIN
@@ -288,7 +291,6 @@ const globalConfigs = {
     }
   },
   contracts:{
-    /*
     PriceOracle:{
       abi:PriceOracle,
       address:'0xCab5760688db837Bb453FE1DFBC5eDeE6fa8F0FF'
@@ -317,10 +319,10 @@ const globalConfigs = {
       abi:GovernorAlpha,
       address:'0x782cB1dbd0bD4df95c2497819be3984EeA5c2c25'
     },
-    */
     Comptroller:{
       abi:Comptroller,
       address:'0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b',
+      // address:'0x5eae89dc1c671724a672ff0630122ee834098657' // Kovan
     },
     UniswapRouter:{
       abi:UniswapV2Router02,

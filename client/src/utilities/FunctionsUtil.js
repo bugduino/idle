@@ -764,17 +764,17 @@ class FunctionsUtil {
         const isReceiveTransferTx = internalTxs.length === 1 && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
         const isBatchMigrationTx = batchMigrationContractAddr && tx.from.toLowerCase() === batchMigrationContractAddr.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase();
 
+        const isDepositInternalTx = isRightToken && internalTxs.find( iTx => iTx.from.toLowerCase() === this.props.account.toLowerCase() && (iTx.to.toLowerCase() === tokenConfig.idle.address.toLowerCase() || (depositProxyContractInfo && iTx.to.toLowerCase() === depositProxyContractInfo.address.toLowerCase() && internalTxs.filter(iTx2 => iTx2.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase()).length>0 )) );
+        const isRedeemInternalTx = isRightToken && internalTxs.find( iTx => iTx.contractAddress.toLowerCase() === tokenConfig.address.toLowerCase() && internalTxs.filter(iTx2 => iTx2.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase()).length && iTx.to.toLowerCase() === this.props.account.toLowerCase() );
+
         const isMigrationTx = isBatchMigrationTx || (migrationContractAddr && (tx.from.toLowerCase() === migrationContractAddr.toLowerCase() || migrationContractOldAddrs.map((v) => { return v.toLowerCase(); }).includes(tx.from.toLowerCase()) ) && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase());
         const isConversionTx = tokenMigrationToolParams && (tx.from.toLowerCase() === tokenMigrationToolParams.address.toLowerCase() || tokenMigrationToolParams.oldAddresses.map((v) => { return v.toLowerCase(); }).includes(tx.from.toLowerCase())) && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
         const isDepositTx = isRightToken && !isMigrationTx && tx.from.toLowerCase() === this.props.account.toLowerCase() && (tx.to.toLowerCase() === tokenConfig.idle.address.toLowerCase() || (depositProxyContractInfo && tx.to.toLowerCase() === depositProxyContractInfo.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase()).length>0 ));
-        const isRedeemTx = isRightToken && !isMigrationTx && tx.contractAddress.toLowerCase() === tokenConfig.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase()).length && tx.to.toLowerCase() === this.props.account.toLowerCase();
+        const isRedeemTx = isRightToken && !isMigrationTx && !isDepositInternalTx && tx.contractAddress.toLowerCase() === tokenConfig.address.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase()).length && tx.to.toLowerCase() === this.props.account.toLowerCase();
         const isWithdrawTx = internalTxs.length>1 && internalTxs.filter(iTx => tokenConfig.protocols.map(p => p.address.toLowerCase()).includes(iTx.contractAddress.toLowerCase()) ).length>0 && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
 
-        const isDepositInternalTx = isRightToken && internalTxs.find( iTx => iTx.from.toLowerCase() === this.props.account.toLowerCase() && (iTx.to.toLowerCase() === tokenConfig.idle.address.toLowerCase() || (depositProxyContractInfo && iTx.to.toLowerCase() === depositProxyContractInfo.address.toLowerCase() && internalTxs.filter(iTx2 => iTx2.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase()).length>0 )) );
-        const isSwapTx = !isReceiveTransferTx && !isConversionTx && !isDepositInternalTx && !etherscanTxs[tx.hash] && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
-
-        const isRedeemInternalTx = isRightToken && internalTxs.find( iTx => iTx.contractAddress.toLowerCase() === tokenConfig.address.toLowerCase() && internalTxs.filter(iTx2 => iTx2.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase()).length && iTx.to.toLowerCase() === this.props.account.toLowerCase() );
         const isSwapOutTx = !isSendTransferTx && !isWithdrawTx && !isRedeemInternalTx && !etherscanTxs[tx.hash] && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
+        const isSwapTx = !isReceiveTransferTx && !isConversionTx && !isDepositInternalTx && !etherscanTxs[tx.hash] && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.contractAddress.toLowerCase() === tokenConfig.idle.address.toLowerCase();
 
         // const curveDepositTx = internalTxs.find( iTx => (iTx.contractAddress.toLowerCase() === tokenConfig.address.toLowerCase() && iTx.from.toLowerCase() === this.props.account.toLowerCase()) );
         const idleTokenAddress = curveTokenConfig && curveTokenConfig.address ? curveTokenConfig.address : tokenConfig.idle.address;
@@ -794,6 +794,10 @@ class FunctionsUtil {
 
         const isCurveTransferOut = tx.contractAddress.toLowerCase() === curvePoolContract.address.toLowerCase() && !isCurveZapOut && !isCurveRedeemTx && /*internalTxs[internalTxs.length-1] === tx &&*/ tx.from.toLowerCase() === this.props.account.toLowerCase();
         const isCurveTransferIn = tx.contractAddress.toLowerCase() === curvePoolContract.address.toLowerCase() && !isCurveZapIn && !isCurveDepositTx && /*internalTxs[internalTxs.length-1] === tx &&*/ tx.to.toLowerCase() === this.props.account.toLowerCase();
+
+        // if (tx.hash.toLowerCase() === '0x2aa8f408dd1d4653ef3c5c38a4c9241e615d94b7208bbbe1d2e19b3053fae8de'.toLowerCase()){
+        //   debugger;
+        // }
 
         if (isSendTransferTx || isReceiveTransferTx || isMigrationTx || isDepositTx || isRedeemTx || isSwapTx || isSwapOutTx || isWithdrawTx || isConversionTx || isCurveDepositTx || isCurveRedeemTx || isCurveZapIn || isCurveZapOut || isCurveTransferOut || isCurveTransferIn || isCurveDepositIn || isCurveDepositOut){
 
@@ -2513,6 +2517,9 @@ class FunctionsUtil {
           const govTokenConfig = govTokens[token];
           const DAITokenConfig = this.getGlobalConfig(['stats','tokens','DAI']);
           output = await this.getUniswapConversionRate(DAITokenConfig,govTokenConfig);
+          if (!output || this.BNify(output).isNaN()){
+            output = '-';
+          }
         } else {
           output = await this.genericContractCall(tokenConfig.idle.token, 'tokenPrice');
         }
@@ -2523,11 +2530,11 @@ class FunctionsUtil {
       case 'tokenBalance':
         if (Object.keys(govTokens).includes(token)){
           output = await this.getTokenBalance(token,account);
+          if (!output || output.isNaN()){
+            output = '-';
+          }
         } else {
           let tokenBalance = account ? await this.getTokenBalance(tokenConfig.token,account) : false;
-          if (tokenConfig.token === 'idleUSDCOld'){
-            this.customLog('tokenBalance',account,tokenBalance);
-          }
           if (!tokenBalance || tokenBalance.isNaN()){
             tokenBalance = '-';
           }
@@ -2953,7 +2960,7 @@ class FunctionsUtil {
     }
 
     // Check for cached data
-    const cachedDataKey = `tokenAllocation_${tokenConfig.idle.address}`;
+    const cachedDataKey = `tokenAllocation_${tokenConfig.idle.address}_${addGovTokens}`;
     const cachedData = this.getCachedData(cachedDataKey);
     if (cachedData !== null) {
       return cachedData;
@@ -3008,7 +3015,7 @@ class FunctionsUtil {
       protocolsAllocations[protocolAddr] = protocolAllocation;
       totalAllocation = totalAllocation.plus(protocolAllocation);
 
-      // this.customLog('getTokenAllocation',contractName,protocolAddr,protocolAllocation.toString(),exchangeRate ? exchangeRate.toString() : null,totalAllocation.toString());
+      // console.log('getTokenAllocation',contractName,protocolAddr,protocolAllocation.toFixed(5),exchangeRate ? exchangeRate.toFixed(5) : null,totalAllocation.toFixed(5));
     });
 
     tokenAllocation.unlentBalance = this.BNify(0);
@@ -3021,6 +3028,8 @@ class FunctionsUtil {
       tokenAllocation.unlentBalance = unlentBalance;
       tokenAllocation.totalAllocationWithUnlent = tokenAllocation.totalAllocationWithUnlent.plus(unlentBalance);
     }
+
+    // console.log('totalAllocationWithUnlent 1',addGovTokens,tokenAllocation.totalAllocationWithUnlent.toFixed(5));
 
     Object.keys(protocolsAllocations).forEach((protocolAddr,i) => {
       const protocolAllocation = protocolsAllocations[protocolAddr];
@@ -3043,6 +3052,8 @@ class FunctionsUtil {
         }
 
         tokenAllocation.totalAllocationWithUnlent = tokenAllocation.totalAllocationWithUnlent.plus(govTokensBalances.total);
+
+        // console.log('totalAllocationWithUnlent 2',govTokensBalances.total.toFixed(5),tokenAllocation.totalAllocationWithUnlent.toFixed(5));
       }
     }
 
@@ -3058,13 +3069,17 @@ class FunctionsUtil {
     return unires;
   }
   getUniswapConversionRate = async (tokenConfigFrom,tokenConfigDest) => {
-    const WETHAddr = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
-    const one = this.normalizeTokenDecimals(18);
-    const unires = await this.genericContractCall('UniswapRouter','getAmountsIn',[one.toFixed(),[tokenConfigFrom.address, WETHAddr, tokenConfigDest.address]]);
-    if (unires){
-      return this.BNify(unires[0]).div(one);
+    try {
+      const WETHAddr = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
+      const one = this.normalizeTokenDecimals(18);
+      const unires = await this.genericContractCall('UniswapRouter','getAmountsIn',[one.toFixed(),[tokenConfigFrom.address, WETHAddr, tokenConfigDest.address]]);
+      if (unires){
+        return this.BNify(unires[0]).div(one);
+      }
+      return null;
+    } catch (error) {
+      return null;
     }
-    return null;
   }
   /*
   getUniswapConversionRate_old = async (tokenConfigFrom,tokenConfigDest) => {
@@ -3760,6 +3775,25 @@ class FunctionsUtil {
     }
     return this.idleGovToken;
   }
+  getTokenGovTokens = (tokenConfig) => {
+    const output = [];
+    const govTokens = this.getGlobalConfig(['govTokens']);
+    Object.keys(govTokens).forEach( govToken => {
+      const govTokenConfig = govTokens[govToken];
+      if (!govTokenConfig.enabled){
+        return;
+      }
+      if (govTokenConfig.protocol === 'idle'){
+        output.push(govTokenConfig);
+      } else {
+        const foundProtocol = tokenConfig.protocols.find( p => (p.name.toLowerCase() === govTokenConfig.protocol.toLowerCase()) )
+        if (foundProtocol){
+          output.push(govTokenConfig);
+        }
+      }
+    });
+    return output;
+  }
   getGovTokensAprs = async (token,tokenConfig,enabledTokens=null) => {
     const govTokens = this.getGlobalConfig(['govTokens']);
     const govTokensAprs = {}
@@ -3772,7 +3806,7 @@ class FunctionsUtil {
 
       const govTokenConfig = govTokens[govToken];
 
-      if (!govTokenConfig.enabled){
+      if (!govTokenConfig.enabled || !govTokenConfig.showAPR){
         return;
       }
 
@@ -3800,6 +3834,7 @@ class FunctionsUtil {
         case 'IDLE':
           const idleGovToken = this.getIdleGovToken(this.props);
           govTokenApr = await idleGovToken.getAPR(token,tokenConfig);
+          // console.log('IDLE APR 2',govTokenApr.toFixed());
         break;
         default:
         break;
@@ -3900,9 +3935,11 @@ class FunctionsUtil {
           const govTokenAddress = await this.genericContractCall(idleTokenConfig.token,'govTokens',[govTokenIndex]);
 
           if (govTokenAddress){
-            govTokenConfig = this.getGovTokenConfigByAddress(govTokenAddress);
+            if (!govTokenConfig){
+              govTokenConfig = this.getGovTokenConfigByAddress(govTokenAddress);
+            }
 
-            if (govTokenConfig && govTokenConfig.address && govTokenConfig.address.toLowerCase() === govTokenAddress.toLowerCase()){
+            if (govTokenConfig && govTokenConfig.showBalance && govTokenConfig.address && govTokenConfig.address.toLowerCase() === govTokenAddress.toLowerCase()){
 
               // Get gov token conversion rate
               let tokenConversionRate = null;
@@ -4273,6 +4310,7 @@ class FunctionsUtil {
     const protocolsApys = {};
 
     const idleGovToken = this.getIdleGovToken();
+    const idleGovTokenShowAPR = this.getGlobalConfig(['govTokens','IDLE','showAPR']);
     const idleGovTokenEnabled = this.getGlobalConfig(['govTokens','IDLE','enabled']);
 
     await this.asyncForEach(tokenConfig.protocols,async (protocolInfo,i) => {
@@ -4292,9 +4330,10 @@ class FunctionsUtil {
         }
 
         // Add $IDLE APR
-        if (idleGovTokenEnabled){
+        if (idleGovTokenEnabled && idleGovTokenShowAPR){
           const idleAPR = await idleGovToken.getAPR(tokenConfig.token,tokenConfig);
           if (idleAPR){
+            // console.log('IDLE APR 1',idleAPR.toFixed());
             protocolApr = protocolApr.plus(idleAPR);
             protocolApy = protocolApy.plus(idleAPR);
           }

@@ -50,7 +50,11 @@ class DashboardHeader extends Component {
   }
 
   render() {
-
+    const isDashboard = this.props.isDashboard;
+    const isGovernance = this.props.isGovernance;
+    const dashboardRoute = this.functionsUtil.getGlobalConfig(['dashboard','baseRoute'])+'/'+Object.keys(this.props.availableStrategies)[0];
+    const governanceRoute = this.functionsUtil.getGlobalConfig(['governance','baseRoute']);
+    const governanceEnabled = this.functionsUtil.getGlobalConfig(['governance','enabled']);
     // const buttonSize = this.props.isMobile ? 'small' : 'medium';
     return (
       <Box
@@ -68,16 +72,77 @@ class DashboardHeader extends Component {
             p={0}
             {...this.props}
           />
-          {
+          <Flex
+            mr={2}
+            flexDirection={['column','row']}
+            alignItems={['flex-end','center']}
+          >
+            {
+              governanceEnabled && isDashboard ? (
+                <Link
+                  mb={[2,0]}
+                  pr={[0,3]}
+                  mr={[0,3]}
+                  display={'flex'}
+                  style={{
+                    alignItems:'center',
+                    justifyContent:['flex-end','space-between']
+                  }}
+                  onClick={ (e) => { this.props.goToSection(governanceRoute,false) } }
+                >
+                  <Icon
+                    mr={2}
+                    size={'1.6em'}
+                    name={'People'}
+                    color={'copyColor'}
+                  />
+                  <Text
+                    fontSize={2}
+                    fontWeight={3}
+                    color={'copyColor'}
+                  >
+                    Governance
+                  </Text>
+                </Link>
+              ) : isGovernance && (
+                <Link
+                  mb={[2,0]}
+                  pr={[0,3]}
+                  mr={[0,3]}
+                  display={'flex'}
+                  style={{
+                    alignItems:'center',
+                    justifyContent:['flex-end','space-between']
+                  }}
+                  onClick={ (e) => { this.props.goToSection(dashboardRoute,false) } }
+                >
+                  <Icon
+                    mr={2}
+                    size={'1.6em'}
+                    name={'Dashboard'}
+                    color={'copyColor'}
+                  />
+                  <Text
+                    fontSize={2}
+                    fontWeight={3}
+                    color={'copyColor'}
+                  >
+                    Dashboard
+                  </Text>
+                </Link>
+              )
+            }
             <Link
-              pr={2}
               display={'flex'}
               onClick={ (e) => { this.exit() } }
-              style={{alignItems:'center',justifyContent:'space-between'}}
+              style={{
+                alignItems:'center',
+                justifyContent:['flex-end','space-between']
+              }}
             >
               <Icon
                 mr={2}
-                size={'1.8em'}
+                size={'1.6em'}
                 name={'ExitToApp'}
                 color={'copyColor'}
               />
@@ -89,7 +154,7 @@ class DashboardHeader extends Component {
                 Exit
               </Text>
             </Link>
-          }
+          </Flex>
         </Flex>
       </Box>
     );
