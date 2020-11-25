@@ -129,6 +129,9 @@ class StrategyPage extends Component {
         const earningsStart = totalEarnings.plus(govTokensTotalBalance);
         const earningsEnd = totalAmountLent.times(avgAPY.div(100)).plus(govTokensTotalBalance);
 
+        const idleTokenEnabled = this.functionsUtil.getGlobalConfig(['govTokens','IDLE','enabled']);
+        const showAPYDisclaimer = idleTokenEnabled && this.functionsUtil.getGlobalConfig(['govTokens','IDLE','showAPR']);
+
         newState.aggregatedValues = [
           {
             flexProps:{
@@ -136,9 +139,10 @@ class StrategyPage extends Component {
               width:[1,1/3],
             },
             props:{
+              label:'',
               title:'Avg APY',
               value:avgAPY.toFixed(2)+'<small>%</small>',
-              label:''
+              description:showAPYDisclaimer ? this.functionsUtil.getGlobalConfig(['messages','apyLong']) : null
             }
           },
           {
@@ -229,6 +233,9 @@ class StrategyPage extends Component {
     },{});
     */
 
+    const idleTokenEnabled = this.functionsUtil.getGlobalConfig(['govTokens','IDLE','enabled']);
+    const showAPYDisclaimer = idleTokenEnabled && this.functionsUtil.getGlobalConfig(['govTokens','IDLE','showAPR']);
+    const apyLong = this.functionsUtil.getGlobalConfig(['messages','apyLong']);
     const riskScore = this.functionsUtil.getGlobalConfig(['messages','riskScore']);
     const yieldFarming = this.functionsUtil.getGlobalConfig(['messages','yieldFarming']);
 
@@ -521,6 +528,7 @@ class StrategyPage extends Component {
                           },
                           {
                             title:'APY',
+                            desc:showAPYDisclaimer ? apyLong : null,
                             props:{
                               width:[0.2,this.state.depositedTokens.length>0 ? 0.10 : 0.13],
                             },
@@ -666,6 +674,7 @@ class StrategyPage extends Component {
                           },
                           {
                             title:'APY',
+                            desc:showAPYDisclaimer ? apyLong : null,
                             props:{
                               width:[0.18,0.08],
                             },
@@ -843,6 +852,7 @@ class StrategyPage extends Component {
                           },
                           {
                             title:'APY',
+                            desc:showAPYDisclaimer ? apyLong : null,
                             props:{
                               width:[0.2,this.state.depositedTokens.length>0 ? 0.10 : 0.13],
                             },

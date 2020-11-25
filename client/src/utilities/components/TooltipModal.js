@@ -42,6 +42,7 @@ class TooltipModal extends React.Component {
           closeFunc={this.props.closeModal}
         >
           <ModalCard.Header
+            pt={3}
             title={this.props.title}
           >
           </ModalCard.Header>

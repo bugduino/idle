@@ -42,8 +42,8 @@ class TableCellHeader extends Component {
                 <Icon
                   ml={1}
                   name={"Info"}
-                  size={'1.2em'}
                   color={'cellTitle'}
+                  size={ this.props.isMobile ? '1em' : '1.2em'}
                 />
               </Link>
             </Flex>

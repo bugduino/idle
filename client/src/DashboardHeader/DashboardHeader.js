@@ -1,18 +1,20 @@
 import theme from '../theme';
+import { tint, shade } from 'polished';
 import React, { Component } from 'react';
-// import styles from './DashboardHeader.module.scss';
 import MenuAccount from '../MenuAccount/MenuAccount';
 import FunctionsUtil from '../utilities/FunctionsUtil';
-import { Box, Flex, Text, Icon, Link } from "rimble-ui";
-// import ButtonLoader from '../ButtonLoader/ButtonLoader';
-// import DashboardCard from '../DashboardCard/DashboardCard';
-// import AccountOverview from "../utilities/components/AccountOverview";
+import GovModal from "../utilities/components/GovModal";
+import { Box, Flex, Text, Icon, Link, Flash, Button } from "rimble-ui";
 
 class DashboardHeader extends Component {
 
-  state = {}
+  state = {
+    unclaimed:null,
+    govModalOpened:false
+  }
 
   // Utils
+  idleGovToken = null;
   functionsUtil = null;
 
   loadUtils(){
@@ -21,14 +23,28 @@ class DashboardHeader extends Component {
     } else {
       this.functionsUtil = new FunctionsUtil(this.props);
     }
+
+    this.idleGovToken = this.functionsUtil.getIdleGovToken();
   }
 
   async componentWillMount(){
     this.loadUtils();
+    this.loadData();
   }
 
   async componentDidUpdate(prevProps,prevState){
     this.loadUtils();
+  }
+
+  async loadData(){
+    const idleGovTokenEnabled = this.functionsUtil.getGlobalConfig(['govTokens','IDLE','enabled']);
+    if (idleGovTokenEnabled && this.props.account){
+      const unclaimed = await this.idleGovToken.getUnclaimedTokens(this.props.account);
+      return this.setState({
+        unclaimed
+      });
+    }
+    return null;
   }
 
   setConnector = async (connectorName) => {
@@ -49,6 +65,12 @@ class DashboardHeader extends Component {
     this.props.goToSection('/',false);
   }
 
+  setGovModal(govModalOpened){
+    this.setState({
+      govModalOpened
+    });
+  }
+
   render() {
     const isDashboard = this.props.isDashboard;
     const isGovernance = this.props.isGovernance;
@@ -58,19 +80,19 @@ class DashboardHeader extends Component {
     // const buttonSize = this.props.isMobile ? 'small' : 'medium';
     return (
       <Box
-        pb={2}
         mb={3}
-        borderBottom={`1px solid ${theme.colors.divider}`}
       >
         <Flex
+          pb={2}
           width={1}
-          alignItems={'center'}
           flexDirection={'row'}
           justifyContent={'space-between'}
+          alignItems={['flex-end','center']}
+          borderBottom={`1px solid ${theme.colors.divider}`}
         >
           <MenuAccount
-            p={0}
             {...this.props}
+            setGovModal={this.setGovModal.bind(this)}
           />
           <Flex
             mr={2}
@@ -80,9 +102,6 @@ class DashboardHeader extends Component {
             {
               governanceEnabled && isDashboard ? (
                 <Link
-                  mb={[2,0]}
-                  pr={[0,3]}
-                  mr={[0,3]}
                   display={'flex'}
                   style={{
                     alignItems:'center',
@@ -93,7 +112,7 @@ class DashboardHeader extends Component {
                   <Icon
                     mr={2}
                     size={'1.6em'}
-                    name={'People'}
+                    name={'ExitToApp'}
                     color={'copyColor'}
                   />
                   <Text
@@ -106,9 +125,6 @@ class DashboardHeader extends Component {
                 </Link>
               ) : isGovernance && (
                 <Link
-                  mb={[2,0]}
-                  pr={[0,3]}
-                  mr={[0,3]}
                   display={'flex'}
                   style={{
                     alignItems:'center',
@@ -119,7 +135,7 @@ class DashboardHeader extends Component {
                   <Icon
                     mr={2}
                     size={'1.6em'}
-                    name={'Dashboard'}
+                    name={'ExitToApp'}
                     color={'copyColor'}
                   />
                   <Text
@@ -132,30 +148,70 @@ class DashboardHeader extends Component {
                 </Link>
               )
             }
-            <Link
-              display={'flex'}
-              onClick={ (e) => { this.exit() } }
-              style={{
-                alignItems:'center',
-                justifyContent:['flex-end','space-between']
-              }}
-            >
-              <Icon
-                mr={2}
-                size={'1.6em'}
-                name={'ExitToApp'}
-                color={'copyColor'}
-              />
-              <Text
-                fontSize={2}
-                fontWeight={3}
-                color={'copyColor'}
+            {
+              /*
+              <Link
+                display={'flex'}
+                onClick={ (e) => { this.exit() } }
+                style={{
+                  alignItems:'center',
+                  justifyContent:['flex-end','space-between']
+                }}
               >
-                Exit
-              </Text>
-            </Link>
+                <Icon
+                  mr={2}
+                  size={'1.6em'}
+                  name={'ExitToApp'}
+                  color={'copyColor'}
+                />
+                <Text
+                  fontSize={2}
+                  fontWeight={3}
+                  color={'copyColor'}
+                >
+                  Exit
+                </Text>
+              </Link>
+              */
+            }
           </Flex>
         </Flex>
+        {
+          this.state.unclaimed && this.state.unclaimed.gt(0) &&
+            <Flex
+              p={2}
+              my={3}
+              width={1}
+              borderRadius={1}
+              alignItems={'center'}
+              justifyContent={'center'}
+              backgroundColor={'#f3f6ff'}
+              flexDirection={['column','row']}
+              boxShadow={'0px 0px 0px 1px rgba(0,54,255,0.3)'}
+            >
+              <Text
+                fontWeight={500}
+                color={'#3f4e9a'}
+                fontSize={'15px'}
+                textAlign={'center'}
+              >
+                Idle Governance Token is now available! You have {this.state.unclaimed.toFixed(4)} IDLE tokens to claim.
+              </Text>
+              <Button
+                ml={[0,2]}
+                mt={[2,0]}
+                size={'small'}
+                onClick={ e => this.setGovModal(true) }
+              >
+                CLAIM NOW
+              </Button>
+            </Flex>
+        }
+        <GovModal
+          {...this.props}
+          isOpen={this.state.govModalOpened}
+          closeModal={e => this.setGovModal(false) }
+        />
       </Box>
     );
   }

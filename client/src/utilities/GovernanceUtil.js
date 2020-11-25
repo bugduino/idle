@@ -180,8 +180,8 @@ class GovernanceUtil {
     const lastBlockNumber = await this.props.web3.eth.getBlockNumber();
 
     const delegationsCalls = [];
-    const fromBlock = this.functionsUtil.getGlobalConfig(['governance','startBlock']);
     const blocksPerCall = 100000;
+    const fromBlock = this.functionsUtil.getGlobalConfig(['governance','startBlock']);
     const delegatesContractName = this.functionsUtil.getGlobalConfig(['governance','contracts','delegates']);
 
     for (var blockNumber = fromBlock; blockNumber < lastBlockNumber; blockNumber+=blocksPerCall) {
@@ -494,10 +494,17 @@ class GovernanceUtil {
 
       const { description, signatures, targets, values, calldatas } = createdEvent.returnValues;
       p.timestamp = createdBlockInfo ? createdBlockInfo.timestamp : null;
+
+      
+      // Idle
       p.title = description.split(/# |\n|↵/g)[0].replace(/^#/,'') || 'Untitled';
       p.description = description.split(/\n|↵/g);
       p.description.shift();
       p.description = p.description.join("\n");
+
+      // Compound
+      // p.title = description.split(/# |\n/g)[1] || 'Untitled';
+      // p.description = description.split(/# |\n/g)[2] || 'No description.';
 
       // Save proposal
       proposals[i] = {

@@ -163,8 +163,7 @@ class ProposalDetails extends Component {
   }
 
   render() {
-    const proposal = this.props.proposal;
-
+    let proposal = this.props.proposal;
     const lastState = Object.values(proposal.states).pop();
     const hasVotes = proposal.votes && proposal.votes.length>0;
     const forVotes = this.functionsUtil.BNify(proposal.forVotes).div(1e18);

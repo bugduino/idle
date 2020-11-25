@@ -380,10 +380,10 @@ class Landing extends Component {
                   right={0}
                   width={'100%'}
                   height={'400px'}
-                  overflow={'hidden'}
                   top={['initial','0']}
                   position={'absolute'}
                   bottom={['0','initial']}
+                  overflow={this.state.carouselIndex === 0 ? 'visible' : 'hidden'}
                 >
                   <Flex
                     top={['initial',0]}

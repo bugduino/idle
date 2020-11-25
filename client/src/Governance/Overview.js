@@ -168,6 +168,7 @@ class Overview extends Component {
               </Flex>
               <Box
                 width={1}
+                mt={[4,5]}
               >
                 <Title
                   mb={[3,4]}

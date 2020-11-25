@@ -3,10 +3,10 @@ import { Bar } from '@nivo/bar';
 import React, { Component } from 'react';
 import AssetField from '../AssetField/AssetField';
 import RoundButton from '../RoundButton/RoundButton';
-import { Flex, Text, Input } from "rimble-ui";
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import GenericChart from '../GenericChart/GenericChart';
 import DashboardCard from '../DashboardCard/DashboardCard';
+import { Flex, Text, Input, Icon, Tooltip } from "rimble-ui";
 
 class EstimatedEarnings extends Component {
 
@@ -116,9 +116,9 @@ class EstimatedEarnings extends Component {
       labelSkipWidth: 16,
       labelSkipHeight: 16,
       keys: ['month','month3','month6','year'],
-      labelTextColor: labelTextColorModifiers ? { from: 'color', modifiers: [ labelTextColorModifiers ] } : null,
-      label: d => this.functionsUtil.abbreviateNumber(d.value,2,4)+' '+this.props.selectedToken,
       colors: ({ id, data }) => data[`${id}Color`],
+      label: d => this.functionsUtil.abbreviateNumber(d.value,2,4)+' '+this.props.selectedToken,
+      labelTextColor: labelTextColorModifiers ? { from: 'color', modifiers: [ labelTextColorModifiers ] } : null,
       isInteractive:false,
       minValue:0,
       gridYValues,
@@ -187,6 +187,9 @@ class EstimatedEarnings extends Component {
       return null;
     }
 
+    const idleTokenEnabled = this.functionsUtil.getGlobalConfig(['govTokens','IDLE','enabled']);
+    const showAPYDisclaimer = idleTokenEnabled && this.functionsUtil.getGlobalConfig(['govTokens','IDLE','showAPR']);
+
     return (
       <DashboardCard
         cardProps={{
@@ -222,7 +225,27 @@ class EstimatedEarnings extends Component {
                 color={'cellText'}
                 textAlign={'center'}
               >
-                Set the amount and see your estimated earnings on time
+                Set the amount and see your estimated earnings on time based on the current APY: { this.state.tokenApy ? `${this.state.tokenApy.times(100).toFixed(2)}%` : null}
+                {
+                  showAPYDisclaimer && 
+                    <Flex
+                      style={{
+                        display:'inline-flex'
+                      }}
+                    >
+                      <Tooltip
+                        placement={'top'}
+                        message={this.functionsUtil.getGlobalConfig(['messages','apyLong'])}
+                      >
+                        <Icon
+                          ml={2}
+                          name={"Info"}
+                          size={'1em'}
+                          color={'cellTitle'}
+                        />
+                      </Tooltip>
+                    </Flex>
+                }
               </Text>
             </Flex>
             <Flex

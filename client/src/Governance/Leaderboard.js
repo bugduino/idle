@@ -115,9 +115,9 @@ class Leaderboard extends Component {
                 Governance Leaderboard
               </Title>
               <Flex
-                mb={[3,4]}
+                mb={3}
                 width={1}
-                id={'transactions'}
+                id={'leaderboard'}
                 flexDirection={'column'}
               >
                 <DelegatesList

@@ -947,7 +947,8 @@ class AssetField extends Component {
         ) : loader
       break;
       case 'score':
-        output = this.state.score !== null ? (
+        // console.log('score',this.state.score);
+        output = this.state.score !== undefined && this.state.score !== null ? (
           <SmartNumber {...fieldProps} decimals={1} number={this.state.score} />
         ) : loader
       break;
@@ -1035,8 +1036,31 @@ class AssetField extends Component {
         ) : loader
       break;
       case 'apy':
+        const idleTokenEnabled = this.functionsUtil.getGlobalConfig(['govTokens','IDLE','enabled']);
+        const apyLong = this.functionsUtil.getGlobalConfig(['messages','apyLong']);
+        const showTooltip = !this.props.isMobile && (fieldInfo.showTooltip !== undefined && fieldInfo.showTooltip);
         output = this.state.tokenAPY !== undefined ? (
-          <Text {...fieldProps}>{this.state.tokenAPY !== false ? this.state.tokenAPY : '-' }<small>%</small></Text>
+          <Flex
+            alignItems={'center'}
+            flexDirection={'row'}
+          >
+            <Text {...fieldProps}>{this.state.tokenAPY !== false ? this.state.tokenAPY : '-' }<small>%</small></Text>
+            {
+              idleTokenEnabled && showTooltip && 
+                <AssetField
+                  fieldInfo={{
+                    name:'tooltip',
+                    props:{
+                      iconProps:{
+                        ml:1
+                      },
+                      message:apyLong,
+                      placement:'top',
+                    }
+                  }}
+                />
+            }
+          </Flex>
         ) : loader
       break;
       case 'button':
@@ -1082,6 +1106,7 @@ class AssetField extends Component {
               name={"Info"}
               size={'1em'}
               color={'cellTitle'}
+              {...fieldProps.iconProps}
             />
           </Tooltip>
         );

@@ -162,6 +162,7 @@ class DelegateDetails extends Component {
         </Flex>
         <Box
           width={1}
+          mt={[4,5]}
         >
           <Title
             mb={[2,3]}

@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import styles from './MenuAccount.module.scss';
 import FunctionsUtil from '../utilities/FunctionsUtil';
-import GovModal from "../utilities/components/GovModal";
 import ShortHash from "../utilities/components/ShortHash";
 import { Flex, Icon, Image, Link, Text } from "rimble-ui";
 import CardIconButton from '../CardIconButton/CardIconButton';
@@ -15,8 +14,8 @@ class MenuAccount extends Component {
   };
 
   // Utils
-  functionsUtil = null;
   idleGovToken = null;
+  functionsUtil = null;
 
   loadUtils(){
     if (this.functionsUtil){
@@ -126,7 +125,7 @@ class MenuAccount extends Component {
                     textDecoration:'none'
                   }}
                   className={styles.balanceButton}
-                  onClick={ e => this.toggleModal('gov') }
+                  onClick={ e => this.props.setGovModal(true) }
                 >
                   <Flex
                     alignItems={'center'}
@@ -148,11 +147,6 @@ class MenuAccount extends Component {
                     </Text>
                   </Flex>
                 </Link>
-                <GovModal
-                  {...this.props}
-                  isOpen={this.state.isModalOpen==='gov'}
-                  closeModal={e => this.toggleModal('gov') }
-                />
               </Flex>
           }
           <AccountModal

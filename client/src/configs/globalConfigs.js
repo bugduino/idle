@@ -27,6 +27,7 @@ import Comptroller from '../abis/compound/Comptroller.json';
 import IdleController from '../contracts/IdleController.json';
 import TokenMigration from '../TokenMigration/TokenMigration';
 import BatchMigration from '../BatchMigration/BatchMigration';
+import GovernorAlphaComp from '../contracts/GovernorAlpha.json';
 import { RampInstantSDK } from '@ramp-network/ramp-instant-sdk';
 import IdleProxyMinter from '../contracts/IdleProxyMinter.json';
 import IdleRebalancerV3 from '../contracts/IdleRebalancerV3.json';
@@ -129,7 +130,9 @@ const globalConfigs = {
     cheapRedeem:'Amount of unlent funds available for low gas fees redeem',
     curveBonusSlippage:'Slippage or bonus depending on if the coin is low or high in the Curve Pool',
     directMint:'Pay an additional gas fee to rebalance the pool and help all users gain an additional APR',
-    yieldFarming:'Yield Farming allows you to receive additional tokens when you provide liquidity to a pool.',
+    govTokenRedeemableBalance:'The redeemable balance is re-calculated on every interaction with the smart-contract so, the shown balance may be lower than the real one.',
+    apyLong:'APY is based on (i) the current yield advertised by the underlying protocol, (ii) the current distribution rate of IDLE based on percentage share of liquidity pool and (iii) the current estimated price of IDLE.',
+    yieldFarming:'Strategies in Idle now will be able to support and distribute a vast range of yield opportunities across multiple protocols. Users will be able to receive their equivalent share of governance token that the protocol is receiving while allocating liquidity to yield farming opportunities. <a target="_blank" rel="nofollow noopener noreferrer" href="https://idlefinance.medium.com/idle-yield-farming-upgrade-18e4bc483c8f">Read more here</a>.',
     riskScore:`It's a single, consistently, comparable value for measuring protocol risk, based on factors including smart contract risk, collateralization and liquidity.<br /><br />The model outputs a 0-10 score, where <strong>0 is the most risky and 10 is the most safe.</strong> Visit <a target="_blank" rel="nofollow noopener noreferrer" href="https://defiscore.io/overview">https://defiscore.io/overview</a> for further information.`,
     curveInstructions:`<strong>Depositing into the pool:</strong><br />By depositing your funds into the Curve Pool you may incur in slippage or bonus depending on if the coin is low or high in the pool.<br /><br /><strong>Withdrawing share from the pool:</strong><br />When you redeem your tokens previously deposited in the Curve Pool you get back an uneven amounts of tokens, that can give slippage or bonus depending on if the coin is low or high in the pool.`
   },
@@ -270,9 +273,9 @@ const globalConfigs = {
       decimals:18,
       token:'IDLE',
       enabled:true,
-      showAPR:false, // Include IDLE Apr
+      showAPR:true, // Include IDLE Apr
       protocol:'idle',
-      showBalance:false, // Include IDLE balance in earnings
+      showBalance:true, // Include IDLE balance in earnings
       color:'hsl(162, 100%, 41%)',
       icon:'images/tokens/IDLE.png',
       address:'0xAB6Bdb5CCF38ECDa7A92d04E86f7c53Eb72833dF',
@@ -319,6 +322,12 @@ const globalConfigs = {
       abi:GovernorAlpha,
       address:'0x782cB1dbd0bD4df95c2497819be3984EeA5c2c25'
     },
+    /*
+    GovernanceCompound:{
+      abi:GovernorAlphaComp,
+      address:'0xc0da01a04c3f3e0be433606045bb7017a7323e38'
+    },
+    */
     Comptroller:{
       abi:Comptroller,
       address:'0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b',

@@ -228,6 +228,7 @@ class AssetPage extends Component {
                   },
                   {
                     title:'REDEEMABLE',
+                    desc:this.functionsUtil.getGlobalConfig(['messages','govTokenRedeemableBalance']),
                     props:{
                       width:[0.33,0.26],
                       justifyContent:['center','flex-start']
@@ -239,6 +240,7 @@ class AssetPage extends Component {
                           decimals: this.props.isMobile ? 6 : 8
                         }
                       },
+                      /*
                       {
                         name:'tooltip',
                         props:{
@@ -246,6 +248,7 @@ class AssetPage extends Component {
                           message:'The shown balance may be lower than the real one.',
                         }
                       }
+                      */
                     ]
                   },/*
                   {

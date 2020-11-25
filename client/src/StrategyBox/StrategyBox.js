@@ -168,6 +168,7 @@ class StrategyBox extends Component {
                 <AssetField
                   fieldInfo={{
                     name:'apy',
+                    showTooltip:false,
                     props:{
                       decimals:2,
                       fontWeight:4,
@@ -199,7 +200,7 @@ class StrategyBox extends Component {
                   </Text>
                   <Tooltip
                     placement={'bottom'}
-                    message={this.functionsUtil.getGlobalConfig(['messages','apyShort'])}
+                    message={this.functionsUtil.getGlobalConfig(['messages','apyLong'])}
                   >
                     <Icon
                       ml={1}
