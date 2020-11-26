@@ -2514,7 +2514,11 @@ class FunctionsUtil {
         if (Object.keys(govTokens).includes(token)){
           const govTokenConfig = govTokens[token];
           const DAITokenConfig = this.getGlobalConfig(['stats','tokens','DAI']);
-          output = await this.getUniswapConversionRate(DAITokenConfig,govTokenConfig);
+          try {
+            output = await this.getUniswapConversionRate(DAITokenConfig,govTokenConfig);
+          } catch (error) {
+            
+          }
           if (!output || this.BNify(output).isNaN()){
             output = '-';
           }
@@ -3512,7 +3516,11 @@ class FunctionsUtil {
         
       // Get COMP conversion rate
       if (!compConversionRate){
-        compConversionRate = await this.getUniswapConversionRate(DAITokenConfig,COMPTokenConfig);
+        try {
+          compConversionRate = await this.getUniswapConversionRate(DAITokenConfig,COMPTokenConfig);
+        } catch (error) {
+
+        }
         if (!compConversionRate || compConversionRate.isNaN()){
           compConversionRate = this.BNify(1);
         }
@@ -3626,12 +3634,15 @@ class FunctionsUtil {
   }
   getTokensCsv = async () => {
 
+    // eslint-disable-next-line
     Array.prototype.sum = function() {
       return this.reduce(function(pv, cv) { return pv + cv; }, 0);
     };
+    // eslint-disable-next-line
     Array.prototype.max = function() {
       return Math.max.apply(null, this);
     };
+    // eslint-disable-next-line
     Array.prototype.avg = function() {
       return this.sum()/this.length;
     };
@@ -3872,7 +3883,11 @@ class FunctionsUtil {
         let tokenConversionRate = null;
         if (convertToken){
           const fromTokenConfig = this.getGlobalConfig(['stats','tokens',convertToken]);
-          tokenConversionRate = await this.getUniswapConversionRate(fromTokenConfig,govTokenConfig);
+          try {
+            tokenConversionRate = await this.getUniswapConversionRate(fromTokenConfig,govTokenConfig);
+          } catch (error) {
+            
+          }
         }
 
         // Fix token decimals and convert
@@ -3944,7 +3959,11 @@ class FunctionsUtil {
               if (convertToken){
                 const fromTokenConfig = this.getGlobalConfig(['stats','tokens',convertToken]);
                 if (fromTokenConfig){
-                  tokenConversionRate = await this.getUniswapConversionRate(fromTokenConfig,govTokenConfig);
+                  try {
+                    tokenConversionRate = await this.getUniswapConversionRate(fromTokenConfig,govTokenConfig);
+                  } catch (error) {
+                    
+                  }
                 }
               }
 

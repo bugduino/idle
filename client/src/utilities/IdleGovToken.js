@@ -95,7 +95,11 @@ class IdleGovToken{
         
       // Get IDLE oconversion rate
       if (!conversionRate){
-        conversionRate = await this.functionsUtil.getUniswapConversionRate(DAITokenConfig,IDLETokenConfig);
+        try {
+          conversionRate = await this.functionsUtil.getUniswapConversionRate(DAITokenConfig,IDLETokenConfig);
+        } catch (error) {
+          
+        }
         if (!conversionRate || conversionRate.isNaN()){
           conversionRate = this.functionsUtil.BNify(0);
         }
@@ -109,8 +113,6 @@ class IdleGovToken{
 
       const idleDistributedPerYearUSD = this.functionsUtil.BNify(conversionRate).times(idleDistribution);
       APR = idleDistributedPerYearUSD.div(tokenPool).times(100);
-
-      console.log('idleDistribution',token,idleDistributedPerYearUSD.toFixed(5),tokenAllocation.totalAllocationWithUnlent.toFixed(5),APR.toFixed(5));
 
       return this.functionsUtil.setCachedData(cachedDataKey,APR);
     }
