@@ -427,7 +427,7 @@ class FunctionsUtil {
             avgBuyPrice = this.BNify(0);
             idleTokensBalance = this.BNify(0);
           }
-          
+
         });
       }
 
@@ -3919,7 +3919,6 @@ class FunctionsUtil {
   getGovTokensUserTotalBalance = async (account=null,availableTokens=null,convertToken=null) => {
     const govTokensUserBalances = await this.getGovTokensUserBalances(account,availableTokens,convertToken);
     if (govTokensUserBalances){
-      // debugger;
       const govTokensEarnings = Object.values(govTokensUserBalances).reduce( (acc, govTokenAmount) => {
         acc = acc.plus(this.BNify(govTokenAmount));
         return acc;
@@ -3929,7 +3928,7 @@ class FunctionsUtil {
     }
     return this.BNify(0);
   }
-  getGovTokensUserBalances = async (account=null,availableTokens=null,convertToken=null,govTokenConfig=null) => {
+  getGovTokensUserBalances = async (account=null,availableTokens=null,convertToken=null,govTokenConfigForced=null) => {
     if (!account){
       account = this.props.account;
     }
@@ -3951,10 +3950,9 @@ class FunctionsUtil {
           // Get gov Token config by index
           const govTokenAddress = await this.genericContractCall(idleTokenConfig.token,'govTokens',[govTokenIndex]);
 
+
           if (govTokenAddress){
-            if (!govTokenConfig){
-              govTokenConfig = this.getGovTokenConfigByAddress(govTokenAddress);
-            }
+            const govTokenConfig = govTokenConfigForced ? govTokenConfigForced : this.getGovTokenConfigByAddress(govTokenAddress);
 
             if (govTokenConfig && govTokenConfig.showBalance && govTokenConfig.address && govTokenConfig.address.toLowerCase() === govTokenAddress.toLowerCase()){
 
