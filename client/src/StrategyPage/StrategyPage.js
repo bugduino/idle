@@ -530,7 +530,7 @@ class StrategyPage extends Component {
                             title:'APY',
                             desc:showAPYDisclaimer ? apyLong : null,
                             props:{
-                              width:[0.2,this.state.depositedTokens.length>0 ? 0.10 : 0.13],
+                              width:[0.2,0.11],
                             },
                             fields:[
                               {
@@ -542,7 +542,7 @@ class StrategyPage extends Component {
                             title:'RISK SCORE',
                             desc:riskScore,
                             props:{
-                              width:[0.27,0.15],
+                              width:[0.27,0.16],
                               justifyContent:['center','flex-start']
                             },
                             fields:[
@@ -552,10 +552,10 @@ class StrategyPage extends Component {
                             ]
                           },
                           {
-                            title:'BALANCE TO MIGRATE',
+                            title:'BALANCE',
                             mobile:false,
                             props:{
-                              width: this.state.depositedTokens.length>0 ? 0.18 : 0.15,
+                              width:0.16,
                             },
                             parentProps:{
                               width:1,
@@ -688,7 +688,7 @@ class StrategyPage extends Component {
                             title:'RISK SCORE',
                             desc:riskScore,
                             props:{
-                              width:[0.27,0.12],
+                              width:[0.27,0.14],
                               justifyContent:['center','flex-start']
                             },
                             fields:[
@@ -727,7 +727,7 @@ class StrategyPage extends Component {
                             mobile:false,
                             title:'EARNINGS',
                             props:{
-                              width:0.15,
+                              width:[0.15,0.13],
                               textAlign:'center'
                             },
                             parentProps:{
