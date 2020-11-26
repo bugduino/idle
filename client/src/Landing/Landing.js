@@ -293,9 +293,10 @@ class Landing extends Component {
         >
           <Box position={'relative'} zIndex={10}>
             <Flex
-              mt={['7em',Math.max(window.innerHeight*0.225,145)+'px']}
+              overflow={'hidden'}
               alignItems={'flex-start'}
               flexDirection={['column','row']}
+              mt={['7em',Math.max(window.innerHeight*0.225,145)+'px']}
             >
               <Flex
                 width={[1,1/3]}
