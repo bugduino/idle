@@ -131,7 +131,7 @@ const globalConfigs = {
     curveBonusSlippage:'Slippage or bonus depending on if the coin is low or high in the Curve Pool',
     directMint:'Pay an additional gas fee to rebalance the pool and help all users gain an additional APR',
     govTokenRedeemableBalance:'The redeemable balance is re-calculated on every interaction with the smart-contract so, the shown balance may be lower than the real one.',
-    apyLong:'APY is based on (i) the current yield advertised by the underlying protocol, (ii) the current distribution rate of IDLE based on percentage share of liquidity pool and (iii) the current estimated price of IDLE.',
+    apyLong:'APY is based on (i) the current yield advertised by the underlying protocol, (ii) the current distribution rate of IDLE based on percentage share of liquidity pool and (iii) the current estimated price of IDLE and other governance tokens.',
     yieldFarming:'Strategies in Idle now will be able to support and distribute a vast range of yield opportunities across multiple protocols. Users will be able to receive their equivalent share of governance token that the protocol is receiving while allocating liquidity to yield farming opportunities. <a target="_blank" rel="nofollow noopener noreferrer" href="https://idlefinance.medium.com/idle-yield-farming-upgrade-18e4bc483c8f">Read more here</a>.',
     riskScore:`It's a single, consistently, comparable value for measuring protocol risk, based on factors including smart contract risk, collateralization and liquidity.<br /><br />The model outputs a 0-10 score, where <strong>0 is the most risky and 10 is the most safe.</strong> Visit <a target="_blank" rel="nofollow noopener noreferrer" href="https://defiscore.io/overview">https://defiscore.io/overview</a> for further information.`,
     curveInstructions:`<strong>Depositing into the pool:</strong><br />By depositing your funds into the Curve Pool you may incur in slippage or bonus depending on if the coin is low or high in the pool.<br /><br /><strong>Withdrawing share from the pool:</strong><br />When you redeem your tokens previously deposited in the Curve Pool you get back an uneven amounts of tokens, that can give slippage or bonus depending on if the coin is low or high in the pool.`
@@ -639,7 +639,7 @@ const globalConfigs = {
         }
       },
       fulcrum:{
-        legend:true,
+        legend:false,
         label:'Fulcrum',
         color:{
           rgb:[2, 138, 192],

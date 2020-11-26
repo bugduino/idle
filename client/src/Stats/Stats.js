@@ -498,6 +498,10 @@ class Stats extends Component {
 
   render() {
 
+    const idleTokenEnabled = this.functionsUtil.getGlobalConfig(['govTokens','IDLE','enabled']);
+    const showAPYDisclaimer = idleTokenEnabled && this.functionsUtil.getGlobalConfig(['govTokens','IDLE','showAPR']);
+    const apyLong = this.functionsUtil.getGlobalConfig(['messages','apyLong']);
+
     if (!this.props.availableStrategies){
       return (
         <FlexLoader
@@ -628,6 +632,7 @@ class Stats extends Component {
                       },
                       {
                         title:'APY',
+                        desc:showAPYDisclaimer ? apyLong : null,
                         props:{
                           width: [0.19,0.11],
                         },

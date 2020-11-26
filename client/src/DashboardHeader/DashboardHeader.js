@@ -2,6 +2,7 @@ import theme from '../theme';
 import ExtLink from '../ExtLink/ExtLink';
 import React, { Component } from 'react';
 import MenuAccount from '../MenuAccount/MenuAccount';
+import RoundButton from '../RoundButton/RoundButton';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import GovModal from "../utilities/components/GovModal";
 import { Box, Flex, Text, Icon, Link, Button } from "rimble-ui";
@@ -101,51 +102,59 @@ class DashboardHeader extends Component {
           >
             {
               governanceEnabled && isDashboard ? (
-                <Link
-                  display={'flex'}
-                  style={{
-                    alignItems:'center',
-                    justifyContent:['flex-end','space-between']
+                <RoundButton
+                  buttonProps={{
+                    mainColor:'redeem',
+                    size:this.props.isMobile ? 'small' : 'medium'
                   }}
-                  onClick={ (e) => { this.props.goToSection(governanceRoute,false) } }
+                  handleClick={ (e) => { this.props.goToSection(governanceRoute,false) } }
                 >
-                  <Icon
-                    mr={[1,2]}
-                    name={'ExitToApp'}
-                    color={'copyColor'}
-                    size={this.props.isMobile ? '1.6em' : '1.8em'}
-                  />
-                  <Text
-                    fontWeight={3}
-                    fontSize={[2,3]}
-                    color={'copyColor'}
+                  <Flex
+                    alignItems={'center'}
+                    flexDirection={'row'}
                   >
-                    Governance
-                  </Text>
-                </Link>
+                    <Icon
+                      mr={[1,2]}
+                      size={'1.6em'}
+                      color={'white'}
+                      name={'ExitToApp'}
+                    />
+                    <Text
+                      fontWeight={3}
+                      color={'white'}
+                      fontSize={[2,3]}
+                    >
+                      Governance
+                    </Text>
+                  </Flex>
+                </RoundButton>
               ) : isGovernance && (
-                <Link
-                  display={'flex'}
-                  style={{
-                    alignItems:'center',
-                    justifyContent:['flex-end','space-between']
+                <RoundButton
+                  buttonProps={{
+                    mainColor:'redeem',
+                    size:this.props.isMobile ? 'small' : 'medium'
                   }}
-                  onClick={ (e) => { this.props.goToSection(dashboardRoute,false) } }
+                  handleClick={ (e) => { this.props.goToSection(dashboardRoute,false) } }
                 >
-                  <Icon
-                    mr={[1,2]}
-                    name={'ExitToApp'}
-                    color={'copyColor'}
-                    size={this.props.isMobile ? '1.6em' : '1.8em'}
-                  />
-                  <Text
-                    fontWeight={3}
-                    fontSize={[2,3]}
-                    color={'copyColor'}
+                  <Flex
+                    alignItems={'center'}
+                    flexDirection={'row'}
                   >
-                    Dashboard
-                  </Text>
-                </Link>
+                    <Icon
+                      mr={[1,2]}
+                      size={'1.6em'}
+                      color={'white'}
+                      name={'ExitToApp'}
+                    />
+                    <Text
+                      fontWeight={3}
+                      color={'white'}
+                      fontSize={[2,3]}
+                    >
+                      Dashboard
+                    </Text>
+                  </Flex>
+                </RoundButton>
               )
             }
             {
