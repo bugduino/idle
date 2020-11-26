@@ -1,9 +1,9 @@
 import React from "react";
 import ModalCard from './ModalCard';
-import { Text, Modal, Flex, Image } from "rimble-ui";
 import RoundButton from '../../RoundButton/RoundButton';
 import FunctionsUtil from '../../utilities/FunctionsUtil';
 import TxProgressBar from '../../TxProgressBar/TxProgressBar';
+import { Text, Modal, Flex, Image, Link, Icon } from "rimble-ui";
 
 class GovModal extends React.Component {
 
@@ -192,8 +192,8 @@ class GovModal extends React.Component {
                 }
               </Text>
               <Flex
+                pb={2}
                 mb={3}
-                pb={3}
                 width={1}
                 flexDirection={'column'}
                 borderBottom={'1px solid rgba(255,255,255,0.2)'}
@@ -235,6 +235,31 @@ class GovModal extends React.Component {
                     {this.state.unclaimed ? this.state.unclaimed.toFixed(4) : '-'}
                   </Text>
                 </Flex>
+                <Link
+                  href={`/#${this.functionsUtil.getGlobalConfig(['governance','baseRoute'])}`}
+                >
+                  <Flex
+                    zIndex={10}
+                    position={'relative'}
+                    alignItems={'center'}
+                    flexDirection={'row'}
+                    justifyContent={'center'}
+                  >
+                    <Text
+                      fontSize={2}
+                      color={'white'}
+                      fontWeight={400}
+                    >
+                      Go to governance
+                    </Text>
+                    <Icon
+                      ml={1}
+                      size={'1em'}
+                      color={'white'}
+                      name={"OpenInNew"}
+                    />
+                  </Flex>
+                </Link>
               </Flex>
               <Flex
                 mb={3}

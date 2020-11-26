@@ -22,6 +22,7 @@ class AssetPage extends Component {
     idleTokenBalance:{},
     redeemableBalance:{},
     govTokensDisabled:{},
+    availableGovTokens:{},
     tokenFeesPercentage:{},
     componentMounted:false
   };
@@ -85,6 +86,12 @@ class AssetPage extends Component {
         newState.redeemableBalance[token] = idleTokenBalance ? this.functionsUtil.fixTokenDecimals(idleTokenBalance.times(idleTokenPrice),tokenConfig.decimals) : this.functionsUtil.BNify(0);
       });
 
+      const govTokens = this.functionsUtil.getTokenGovTokens(this.props.tokenConfig);
+      newState.availableGovTokens = govTokens.reduce((enabledTokens,govTokenConfig) => {
+        enabledTokens[govTokenConfig.token] = govTokenConfig;
+        return enabledTokens;
+      },{});
+
       newState.componentMounted = true;
       this.setState(newState);
     }
@@ -105,14 +112,6 @@ class AssetPage extends Component {
   }
 
   render() {
-
-    const govTokens = this.functionsUtil.getGlobalConfig(['govTokens']);
-    const availableGovTokens = Object.keys(govTokens).reduce((enabledTokens,token) => {
-      if (govTokens[token].enabled){
-        enabledTokens[token] = govTokens[token];
-      }
-      return enabledTokens;
-    },{});
 
     const userHasFunds = this.props.account && this.state.idleTokenBalance[this.props.selectedToken] && this.functionsUtil.BNify(this.state.idleTokenBalance[this.props.selectedToken]).gt(0);
 
@@ -184,7 +183,7 @@ class AssetPage extends Component {
             </Flex>
         }
         {
-          userHasFunds && this.props.account && !this.state.govTokensDisabled[this.props.selectedToken] && Object.keys(availableGovTokens).length>0 && 
+          userHasFunds && this.props.account && !this.state.govTokensDisabled[this.props.selectedToken] && Object.keys(this.state.availableGovTokens).length>0 && 
             <Flex
               width={1}
               flexDirection={'column'}
@@ -192,7 +191,7 @@ class AssetPage extends Component {
             >
               <Title my={[3,4]}>Yield Farming</Title>
               <AssetsList
-                enabledTokens={Object.keys(availableGovTokens)}
+                enabledTokens={Object.keys(this.state.availableGovTokens)}
                 cols={[
                   {
                     title:'TOKEN',
@@ -293,7 +292,7 @@ class AssetPage extends Component {
                   },
                 ]}
                 {...this.props}
-                availableTokens={availableGovTokens}
+                availableTokens={this.state.availableGovTokens}
               />
             </Flex>
         }

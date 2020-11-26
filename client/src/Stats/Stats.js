@@ -944,8 +944,8 @@ class Stats extends Component {
                       <StatsCard
                         value={this.state.aum}
                         title={'Asset Under Management'}
-                        label={ this.state.unlentBalance ? `Swap buffer: ${this.state.unlentBalance} ${this.props.selectedToken}` : this.props.selectedToken }
-                        labelTooltip={ this.state.unlentBalance ? 'Funds available for Cheap Redeem' : null}
+                        label={ this.state.unlentBalance ? `Unlent funds: ${this.state.unlentBalance} ${this.props.selectedToken}` : this.props.selectedToken }
+                        labelTooltip={ this.state.unlentBalance ? this.functionsUtil.getGlobalConfig(['messages','cheapRedeem']) : null}
                       />
                     </Flex>
                     <Flex

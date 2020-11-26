@@ -64,7 +64,7 @@ class Header extends React.Component {
             color={'white'}
             textAlign={'center'}
           >
-            Idle Governance Token is coming out soon! 
+            Idle Governance Token is now live!
           </Text>
           <ExtLink
             pr={2}

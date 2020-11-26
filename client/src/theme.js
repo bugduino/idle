@@ -161,13 +161,11 @@ export default {
       backgroundColor: tint(0.9, red.base),
       borderColor: red.base,
     },
-    /*
     info: {
       color: shade(0.4, blue.base),
       backgroundColor: '#f3f6ff',
       borderColor: '#b6c2ff',
     },
-    */
   },
   buttons: {
     primary: {

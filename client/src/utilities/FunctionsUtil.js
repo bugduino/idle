@@ -1376,9 +1376,7 @@ class FunctionsUtil {
             }
 
             if (!realTx.tokenPrice){
-              const redeemedValue = this.BNify(tx.params[0]).times(tokenPrice);
-              const redeemTokenDecimals = await this.getTokenDecimals(selectedToken);
-              const redeemedValueFixed = this.fixTokenDecimals(redeemedValue,redeemTokenDecimals);
+              const redeemedValueFixed = this.fixTokenDecimals(tx.params[0],18).times(tokenPrice);
               realTx.tokenPrice = tokenPrice;
               realTx.value = redeemedValueFixed;
               realTx.tokenAmount = redeemedValueFixed;
@@ -3840,7 +3838,7 @@ class FunctionsUtil {
         break;
       }
 
-      if (govTokenApr !== null){
+      if (govTokenApr !== null && this.BNify(govTokenApr).gt(0)){
         govTokensAprs[govToken] = govTokenApr;
       }
     });
@@ -4074,8 +4072,8 @@ class FunctionsUtil {
   }
   getTokenApy = async (tokenConfig) => {
     const tokenAprs = await this.getTokenAprs(tokenConfig);
-    if (tokenAprs && tokenAprs.avgApr !== null){
-      return this.apr2apy(tokenAprs.avgApr.div(100));
+    if (tokenAprs && tokenAprs.avgApy !== null){
+      return tokenAprs.avgApy;
     }
     return null;
   }
@@ -4150,7 +4148,7 @@ class FunctionsUtil {
   /*
   Convert token Balance
   */
-  convertTokenBalance = async (tokenBalance,token,tokenConfig,isRisk) => {
+  convertTokenBalance = async (tokenBalance,token,tokenConfig,isRisk=false) => {
     // Check for USD conversion rate
     tokenBalance = this.BNify(tokenBalance);
     if (tokenBalance.gt(0)){
@@ -4309,10 +4307,6 @@ class FunctionsUtil {
     const protocolsAprs = {};
     const protocolsApys = {};
 
-    const idleGovToken = this.getIdleGovToken();
-    const idleGovTokenShowAPR = this.getGlobalConfig(['govTokens','IDLE','showAPR']);
-    const idleGovTokenEnabled = this.getGlobalConfig(['govTokens','IDLE','enabled']);
-
     await this.asyncForEach(tokenConfig.protocols,async (protocolInfo,i) => {
       const protocolAddr = protocolInfo.address.toString().toLowerCase();
       const addrIndex = addresses.indexOf(protocolAddr);
@@ -4326,16 +4320,6 @@ class FunctionsUtil {
           if (compAPR){
             protocolApr = protocolApr.plus(compAPR);
             protocolApy = protocolApy.plus(compAPR);
-          }
-        }
-
-        // Add $IDLE APR
-        if (idleGovTokenEnabled && idleGovTokenShowAPR){
-          const idleAPR = await idleGovToken.getAPR(tokenConfig.token,tokenConfig);
-          if (idleAPR){
-            // console.log('IDLE APR 1',idleAPR.toFixed());
-            protocolApr = protocolApr.plus(idleAPR);
-            protocolApy = protocolApy.plus(idleAPR);
           }
         }
 
@@ -4354,6 +4338,20 @@ class FunctionsUtil {
     if (tokenAllocation){
       tokenAprs.avgApr = this.getAvgApr(protocolsAprs,tokenAllocation.protocolsAllocations,tokenAllocation.totalAllocation);
       tokenAprs.avgApy = this.getAvgApr(protocolsApys,tokenAllocation.protocolsAllocations,tokenAllocation.totalAllocation);
+
+      // Add $IDLE token APR
+      const idleGovTokenShowAPR = this.getGlobalConfig(['govTokens','IDLE','showAPR']);
+      const idleGovTokenEnabled = this.getGlobalConfig(['govTokens','IDLE','enabled']);
+      if (idleGovTokenEnabled && idleGovTokenShowAPR){
+        const idleGovToken = this.getIdleGovToken();
+        const idleAPR = await idleGovToken.getAPR(tokenConfig.token,tokenConfig);
+        if (idleAPR){
+          const idleAPY = this.apr2apy(idleAPR.div(100)).times(100);
+          tokenAprs.avgApr = tokenAprs.avgApr.plus(idleAPR);
+          tokenAprs.avgApy = tokenAprs.avgApy.plus(idleAPY);
+          console.log('getTokenAprs',tokenConfig.token,idleAPR.toFixed(5),idleAPY.toFixed(5),tokenAprs.avgApy.toFixed(5));
+        }
+      }
       // if (tokenConfig.token === 'DAI'){
       //   this.customLog('getTokenAprs',tokenAllocation.totalAllocation.toFixed(6),tokenAllocation.totalAllocationWithUnlent.toFixed(6),tokenConfig.idle.token,tokenAprs.avgApr.toFixed(6),tokenAprs.avgApy.toFixed(6));
       // }

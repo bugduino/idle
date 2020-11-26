@@ -115,6 +115,9 @@ class DelegateVote extends Component {
   }
 
   render() {
+
+    const isUndelegated = parseInt(this.props.currentDelegate) === 0;
+
     return (
       <Flex
         width={1}
@@ -142,8 +145,8 @@ class DelegateVote extends Component {
               mb:2,
               py:[2,3],
               px:[3,4],
+              width:[1,0.5],
               position:'relative',
-              width:['100%','auto']
             }}
             isInteractive={false}
           >
@@ -191,10 +194,10 @@ class DelegateVote extends Component {
                 mb={3}
                 width={1}
                 alignItems={'center'}
-                justifyContent={'stretch'}
+                justifyContent={isUndelegated ? 'center' : 'stretch'}
               >
                 {
-                  parseInt(this.props.currentDelegate) === 0 ? (
+                  isUndelegated ? (
                     <Text
                       fontWeight={3}
                       fontSize={[1,2]}
@@ -222,7 +225,7 @@ class DelegateVote extends Component {
                       waitText={`Delegate estimated in`}
                       hash={this.state.processing.txHash}
                       endMessage={`Finalizing delegate request...`}
-                      cancelTransaction={this.props.cancelTransaction}
+                      cancelTransaction={this.cancelTransaction.bind(this)}
                     />
                   </Flex>
                 ) : (
@@ -243,12 +246,11 @@ class DelegateVote extends Component {
                     <Input
                       min={0}
                       type={'text'}
-                      width={'32em'}
+                      width={'100%'}
                       required={true}
                       height={'3.4em'}
                       borderRadius={2}
                       fontWeight={500}
-                      maxWidth={'100%'}
                       textAlign={'center'}
                       boxShadow={'none !important'}
                       value={this.state.newDelegate}
@@ -279,7 +281,7 @@ class DelegateVote extends Component {
                           mx:1,
                           fontSize:[1,2],
                           width:['auto','10em'],
-                          mainColor:this.props.theme.colors.transactions.status.failed,
+                          mainColor:this.props.theme.colors.redeem,
                           disabled:this.props.currentDelegate.toLowerCase() === this.props.account.toLowerCase()
                         }}
                         handleClick={ e => this.setDelegate(this.props.account) }

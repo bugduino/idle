@@ -80,7 +80,7 @@ class DashboardHeader extends Component {
     // const buttonSize = this.props.isMobile ? 'small' : 'medium';
     return (
       <Box
-        mb={3}
+        mb={0}
       >
         <Flex
           pb={2}

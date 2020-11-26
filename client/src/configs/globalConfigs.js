@@ -162,7 +162,7 @@ const globalConfigs = {
   governance:{
     test:false,
     enabled:true,
-    startBlock:22134519,
+    startBlock:11333729,
     baseRoute:'/governance',
     props:{
       tokenName:'IDLE',
@@ -278,7 +278,8 @@ const globalConfigs = {
       showBalance:true, // Include IDLE balance in earnings
       color:'hsl(162, 100%, 41%)',
       icon:'images/tokens/IDLE.png',
-      address:'0xAB6Bdb5CCF38ECDa7A92d04E86f7c53Eb72833dF',
+      address:'0x875773784Af8135eA0ef43b5a374AaD105c5D39e' // MAIN
+      // address:'0xAB6Bdb5CCF38ECDa7A92d04E86f7c53Eb72833dF', // KOVAN
     },
     COMP:{
       abi:COMP,
@@ -296,31 +297,38 @@ const globalConfigs = {
   contracts:{
     PriceOracle:{
       abi:PriceOracle,
-      address:'0xCab5760688db837Bb453FE1DFBC5eDeE6fa8F0FF'
+      address:'0x972A64d108e250dF98dbeac8170678501f5EF181' // MAIN
+      // address:'0xCab5760688db837Bb453FE1DFBC5eDeE6fa8F0FF' // KOVAN
     },
     Timelock:{
       abi:Timelock,
-      address:'0xfD88D7E737a06Aa9c62B950C1cB5eE63DA379AFd'
+      address:'0xD6dABBc2b275114a2366555d6C481EF08FDC2556' // MAIN
+      // address:'0xfD88D7E737a06Aa9c62B950C1cB5eE63DA379AFd' // KOVAN
     },
     EcosystemFund:{
       abi:EcosystemFund,
-      address:'0x125d3D6A8e546BD13802c309429CBB4db5737d57'
+      address:'0xb0aA1f98523Ec15932dd5fAAC5d86e57115571C7' // MAIN
+      // address:'0x125d3D6A8e546BD13802c309429CBB4db5737d57' // KOVAN
     },
     VesterFactory:{
       abi:VesterFactory,
-      address:'0x9b52f91578c8AfA8e2DF07d4D7726bB6b73Ec1FE'
+      address:'0xbF875f2C6e4Cc1688dfe4ECf79583193B6089972' // MAIN
+      // address:'0x9b52f91578c8AfA8e2DF07d4D7726bB6b73Ec1FE' // KOVAN
     },
     IdleController:{
       abi:IdleController,
-      address:'0x8Ad5F0644b17208c81bA5BDBe689c9bcc7143d87',
+      address:'0x275DA8e61ea8E02d51EDd8d0DC5c0E62b4CDB0BE' // MAIN
+      // address:'0x8Ad5F0644b17208c81bA5BDBe689c9bcc7143d87' // KOVAN
     },
     EarlyRewards:{
         abi:EarlyRewards,
-        address:'0x07A94A60B54c6b2Da19e23D6E9123180Bf92ED40',
+        address:'0xa1F71ED24ABA6c8Da8ca8C046bBc9804625d88Fc' // MAIN
+        // address:'0x07A94A60B54c6b2Da19e23D6E9123180Bf92ED40' // KOVAN
     },
     GovernorAlpha:{
       abi:GovernorAlpha,
-      address:'0x782cB1dbd0bD4df95c2497819be3984EeA5c2c25'
+      address:'0x2256b25CFC8E35c3135664FD03E77595042fe31B' // MAIN
+      // address:'0x782cB1dbd0bD4df95c2497819be3984EeA5c2c25' // KOVAN
     },
     /*
     GovernanceCompound:{
@@ -330,7 +338,7 @@ const globalConfigs = {
     */
     Comptroller:{
       abi:Comptroller,
-      address:'0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b',
+      address:'0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b', // Main
       // address:'0x5eae89dc1c671724a672ff0630122ee834098657' // Kovan
     },
     UniswapRouter:{

@@ -104,6 +104,11 @@ class Footer extends Component {
                         <Text textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} fontWeight={3} color={'blue'} hoverColor={'blue'}>Leaderboard</Text>
                       </RouterLink>
                     </Flex>
+                    <Flex pb={[3,2]} width={1} justifyContent={['center','flex-start']}>
+                      <ExtLink href="https://gov.idle.finance/">
+                        <Text textAlign={['center','left']} fontFamily={'sansSerif'} fontSize={[3,2]} fontWeight={3} color={'blue'} hoverColor={'blue'}>Forum</Text>
+                      </ExtLink>
+                    </Flex>
                   </Flex>
                 </Flex>
             }

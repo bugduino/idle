@@ -28,7 +28,11 @@ class IdleGovToken{
   }
 
   getBalance = async () => {
-    return await this.functionsUtil.getTokenBalance(this.tokenName,this.props.account);
+    let balance = await this.functionsUtil.getTokenBalance(this.tokenName,this.props.account);
+    if (!balance || this.functionsUtil.BNify(balance).isNaN()){
+      balance = this.functionsUtil.BNify(0);
+    }
+    return balance;
   }
 
   claimRewards = async (callback,callbackReceipt) => {
@@ -41,8 +45,12 @@ class IdleGovToken{
     const founderVesting = await this.functionsUtil.genericContractCall('VesterFactory','vestingContracts',[account]);
     console.log('founderVesting',account,founderVesting);
 
+    if (parseInt(founderVesting) === 0){
+      return false;
+    }
+
     await this.props.initContract('Vester',founderVesting,VesterABI);
-    await this.functionsUtil.contractMethodSendWrapper('IDLE','delegate',[delegate]);
+    // await this.functionsUtil.contractMethodSendWrapper('IDLE','delegate',[delegate]);
     await this.functionsUtil.contractMethodSendWrapper('Vester','setDelegate',[delegate]);
 
     console.log('delegates vesterFounder to founder');
@@ -53,7 +61,7 @@ class IdleGovToken{
     if (rewards){
       return this.functionsUtil.fixTokenDecimals(rewards,this.tokenConfig.decimals);
     }
-    return null;
+    return this.functionsUtil.BNify(0);
   }
 
   getAPR = async (token,tokenConfig,conversionRate=null) => {
@@ -89,12 +97,20 @@ class IdleGovToken{
       if (!conversionRate){
         conversionRate = await this.functionsUtil.getUniswapConversionRate(DAITokenConfig,IDLETokenConfig);
         if (!conversionRate || conversionRate.isNaN()){
-          conversionRate = this.functionsUtil.BNify(1);
+          conversionRate = this.functionsUtil.BNify(0);
         }
       }
 
+      if (!conversionRate || this.functionsUtil.BNify(conversionRate).lte(0)){
+        return this.functionsUtil.BNify(0);
+      }
+
+      const tokenPool = await this.functionsUtil.convertTokenBalance(tokenAllocation.totalAllocationWithUnlent,token,tokenConfig);
+
       const idleDistributedPerYearUSD = this.functionsUtil.BNify(conversionRate).times(idleDistribution);
-      APR = idleDistributedPerYearUSD.div(tokenAllocation.totalAllocationWithUnlent).times(100);
+      APR = idleDistributedPerYearUSD.div(tokenPool).times(100);
+
+      console.log('idleDistribution',token,idleDistributedPerYearUSD.toFixed(5),tokenAllocation.totalAllocationWithUnlent.toFixed(5),APR.toFixed(5));
 
       return this.functionsUtil.setCachedData(cachedDataKey,APR);
     }

@@ -225,12 +225,13 @@ class EstimatedEarnings extends Component {
                 color={'cellText'}
                 textAlign={'center'}
               >
-                Set the amount and see your estimated earnings on time based on the current APY: { this.state.tokenApy ? `${this.state.tokenApy.times(100).toFixed(2)}%` : null}
+                Set the amount and see your estimated earnings on time based on the current APY: { this.state.tokenApy ? `${this.state.tokenApy.toFixed(2)}%` : null}
                 {
                   showAPYDisclaimer && 
                     <Flex
                       style={{
-                        display:'inline-flex'
+                        display:'inline-flex',
+                        verticalAlign:'middle'
                       }}
                     >
                       <Tooltip
@@ -238,7 +239,7 @@ class EstimatedEarnings extends Component {
                         message={this.functionsUtil.getGlobalConfig(['messages','apyLong'])}
                       >
                         <Icon
-                          ml={2}
+                          ml={1}
                           name={"Info"}
                           size={'1em'}
                           color={'cellTitle'}
