@@ -80,7 +80,7 @@ class Header extends React.Component {
               alignItems:'flex-end'
             }}
             backgroundColor={'#0037ff'}
-            href={'https://idlefinance.medium.com/introducing-the-new-idle-governance-model-3409371c3fa0'}
+            href={'https://idlefinance.medium.com/idle-governance-is-live-9b55e8f407d7'}
           >
             Read More
             <Icon

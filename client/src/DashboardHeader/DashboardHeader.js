@@ -202,7 +202,7 @@ class DashboardHeader extends Component {
                   color={'primary'}
                   fontSize={'15px'}
                   hoverColor={'primary'}
-                  href={'https://idlefinance.medium.com/introducing-the-new-idle-governance-model-3409371c3fa0'}
+                  href={'https://idlefinance.medium.com/idle-governance-is-live-9b55e8f407d7'}
                 >
                   discover more
                 </ExtLink>! You have {this.state.unclaimed.toFixed(4)} IDLE tokens to claim.
