@@ -4349,12 +4349,8 @@ class FunctionsUtil {
           const idleAPY = this.apr2apy(idleAPR.div(100)).times(100);
           tokenAprs.avgApr = tokenAprs.avgApr.plus(idleAPR);
           tokenAprs.avgApy = tokenAprs.avgApy.plus(idleAPY);
-          console.log('getTokenAprs',tokenConfig.token,idleAPR.toFixed(5),idleAPY.toFixed(5),tokenAprs.avgApy.toFixed(5));
         }
       }
-      // if (tokenConfig.token === 'DAI'){
-      //   this.customLog('getTokenAprs',tokenAllocation.totalAllocation.toFixed(6),tokenAllocation.totalAllocationWithUnlent.toFixed(6),tokenConfig.idle.token,tokenAprs.avgApr.toFixed(6),tokenAprs.avgApy.toFixed(6));
-      // }
     }
 
     return this.setCachedData(cachedDataKey,tokenAprs);

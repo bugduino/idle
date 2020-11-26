@@ -27,7 +27,7 @@ import Comptroller from '../abis/compound/Comptroller.json';
 import IdleController from '../contracts/IdleController.json';
 import TokenMigration from '../TokenMigration/TokenMigration';
 import BatchMigration from '../BatchMigration/BatchMigration';
-import GovernorAlphaComp from '../contracts/GovernorAlpha.json';
+// import GovernorAlphaComp from '../contracts/GovernorAlpha.json';
 import { RampInstantSDK } from '@ramp-network/ramp-instant-sdk';
 import IdleProxyMinter from '../contracts/IdleProxyMinter.json';
 import IdleRebalancerV3 from '../contracts/IdleRebalancerV3.json';
@@ -39,7 +39,7 @@ const env = process.env;
 
 const globalConfigs = {
   appName: 'Idle',
-  version: 'v4.1',
+  version: 'v5.0',
   baseURL: 'https://idle.finance',
   baseToken: 'ETH',
   countries:{

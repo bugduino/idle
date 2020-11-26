@@ -1,10 +1,9 @@
 import theme from '../theme';
-import { tint, shade } from 'polished';
 import React, { Component } from 'react';
 import MenuAccount from '../MenuAccount/MenuAccount';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import GovModal from "../utilities/components/GovModal";
-import { Box, Flex, Text, Icon, Link, Flash, Button } from "rimble-ui";
+import { Box, Flex, Text, Icon, Link, Button } from "rimble-ui";
 
 class DashboardHeader extends Component {
 
@@ -80,7 +79,7 @@ class DashboardHeader extends Component {
     // const buttonSize = this.props.isMobile ? 'small' : 'medium';
     return (
       <Box
-        mb={0}
+        mb={3}
       >
         <Flex
           pb={2}
@@ -180,7 +179,7 @@ class DashboardHeader extends Component {
           this.state.unclaimed && this.state.unclaimed.gt(0) &&
             <Flex
               p={2}
-              my={3}
+              mt={3}
               width={1}
               borderRadius={1}
               alignItems={'center'}
