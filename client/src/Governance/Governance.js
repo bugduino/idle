@@ -57,6 +57,7 @@ class Dashboard extends Component {
     // Add Proposals
     menu.push(
       {
+        submenu:[],
         selected:true,
         route:baseRoute,
         icon:'Dashboard',
@@ -64,13 +65,13 @@ class Dashboard extends Component {
         color:'dark-gray',
         component:Overview,
         bgColor:this.props.theme.colors.primary,
-        submenu:[]
       }
     );
 
     // Add Proposals
     menu.push(
       {
+        submenu:[],
         selected:false,
         label:'Proposals',
         bgColor:'#00acff',
@@ -78,13 +79,13 @@ class Dashboard extends Component {
         icon:'LightbulbOutline',
         component:Proposals,
         route:`${baseRoute}/proposals`,
-        submenu:[]
       }
     );
 
     // Add tools
     menu.push(
       {
+        submenu:[],
         selected:false,
         bgColor:'#ff0000',
         color:'dark-gray',
@@ -92,13 +93,13 @@ class Dashboard extends Component {
         component:Leaderboard,
         icon:'FormatListNumbered',
         route:`${baseRoute}/leaderboard`,
-        submenu:[]
       }
     );
 
     // Add tools
     menu.push(
       {
+        submenu:[],
         selected:false,
         label:'Delegate',
         color:'dark-gray',
@@ -106,7 +107,22 @@ class Dashboard extends Component {
         component:Delegate,
         icon:'CompareArrows',
         route:`${baseRoute}/delegate`,
-        submenu:[]
+      }
+    );
+
+    // Add tools
+    menu.push(
+      {
+        submenu:[],
+        icon:'Forum',
+        mobile:false,
+        label:'Forum',
+        selected:false,
+        component:null,
+        color:'dark-gray',
+        bgColor:'#ff0000',
+        isExternalLink:true,
+        route:`https://gov.idle.finance`,
       }
     );
 
