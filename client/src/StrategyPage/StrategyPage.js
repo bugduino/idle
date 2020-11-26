@@ -106,6 +106,8 @@ class StrategyPage extends Component {
           const tokenEarningsPerc = idleTokenPrice.div(avgBuyPrice[token]).minus(1);
           const tokenEarnings = amountLentToken ? amountLentToken.times(tokenEarningsPerc) : 0;
 
+          // console.log(token,idleTokenPrice.toFixed(5),avgBuyPrice[token].toFixed(5),amountLentToken.toFixed(5),tokenEarningsPerc.toFixed(5),tokenEarnings.toFixed(5));
+
           if (tokenEarnings){
             totalEarnings = totalEarnings.plus(tokenEarnings);
           }
@@ -128,6 +130,8 @@ class StrategyPage extends Component {
 
         const earningsStart = totalEarnings.plus(govTokensTotalBalance);
         const earningsEnd = totalAmountLent.times(avgAPY.div(100)).plus(govTokensTotalBalance);
+
+        // debugger;
 
         const idleTokenEnabled = this.functionsUtil.getGlobalConfig(['govTokens','IDLE','enabled']);
         const showAPYDisclaimer = idleTokenEnabled && this.functionsUtil.getGlobalConfig(['govTokens','IDLE','showAPR']);

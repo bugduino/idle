@@ -410,6 +410,7 @@ class FunctionsUtil {
             case 'Swap':
             case 'Migrate':
               avgBuyPrice = idleTokens.times(tokenPrice).plus(prevAvgBuyPrice.times(idleTokensBalance)).div(idleTokensBalance.plus(idleTokens));
+              // console.log('avgPrice',selectedToken,idleTokens.toFixed(5),tokenPrice.toFixed(5),idleTokensBalance.toFixed(5),prevAvgBuyPrice.toFixed(5),avgBuyPrice.toFixed(5));
             break;
             case 'Withdraw':
             case 'Send':
@@ -2517,7 +2518,7 @@ class FunctionsUtil {
           try {
             output = await this.getUniswapConversionRate(DAITokenConfig,govTokenConfig);
           } catch (error) {
-            
+
           }
           if (!output || this.BNify(output).isNaN()){
             output = '-';
@@ -3076,7 +3077,9 @@ class FunctionsUtil {
       const one = this.normalizeTokenDecimals(18);
       const unires = await this.genericContractCall('UniswapRouter','getAmountsIn',[one.toFixed(),[tokenConfigFrom.address, WETHAddr, tokenConfigDest.address]]);
       if (unires){
-        return this.BNify(unires[0]).div(one);
+        const price = this.BNify(unires[0]).div(one);
+        // console.log('getUniswapConversionRate',tokenConfigDest.address,price);
+        return price;
       }
       return null;
     } catch (error) {
@@ -4365,9 +4368,8 @@ class FunctionsUtil {
         const idleGovToken = this.getIdleGovToken();
         const idleAPR = await idleGovToken.getAPR(tokenConfig.token,tokenConfig);
         if (idleAPR){
-          const idleAPY = this.apr2apy(idleAPR.div(100)).times(100);
           tokenAprs.avgApr = tokenAprs.avgApr.plus(idleAPR);
-          tokenAprs.avgApy = tokenAprs.avgApy.plus(idleAPY);
+          tokenAprs.avgApy = tokenAprs.avgApy.plus(idleAPR);
         }
       }
     }

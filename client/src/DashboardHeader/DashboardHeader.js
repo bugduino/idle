@@ -5,7 +5,7 @@ import MenuAccount from '../MenuAccount/MenuAccount';
 import RoundButton from '../RoundButton/RoundButton';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import GovModal from "../utilities/components/GovModal";
-import { Box, Flex, Text, Icon, Link, Button } from "rimble-ui";
+import { Box, Flex, Text, Icon, Button } from "rimble-ui";
 
 class DashboardHeader extends Component {
 
