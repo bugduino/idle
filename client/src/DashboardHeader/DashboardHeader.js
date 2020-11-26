@@ -209,6 +209,7 @@ class DashboardHeader extends Component {
         <GovModal
           {...this.props}
           isOpen={this.state.govModalOpened}
+          claimCallback={this.loadData.bind(this)}
           closeModal={e => this.setGovModal(false) }
         />
       </Box>

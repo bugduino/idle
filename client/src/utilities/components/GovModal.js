@@ -108,6 +108,10 @@ class GovModal extends React.Component {
 
       if (tx.status === 'success'){
         newState.balance = this.state.unclaimed;
+
+        if (typeof this.props.claimCallback === 'function'){
+          this.props.claimCallback();
+        }
       }
 
       this.setState(newState);
