@@ -56,7 +56,7 @@ class EstimatedEarnings extends Component {
   loadChart(){
 
     const amount = this.functionsUtil.BNify(this.state.inputValue);
-    const earningsYear = amount.times(this.state.tokenApy);
+    const earningsYear = amount.times(this.state.tokenApy.div(100));
 
     const amountMonth = parseFloat(earningsYear.div(12));
     const amount3Months = parseFloat(earningsYear.div(4));
