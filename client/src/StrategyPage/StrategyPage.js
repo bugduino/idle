@@ -99,7 +99,7 @@ class StrategyPage extends Component {
           ]);
 
           const amountLentToken = await this.functionsUtil.convertTokenBalance(amountLent[token],token,tokenConfig,isRisk);
-          
+
           const tokenAPY = this.functionsUtil.BNify(tokenAprs.avgApy);
           const tokenWeight = portfolio.tokensBalance[token].tokenBalance.div(portfolio.totalBalance);
           const tokenEarningsPerc = idleTokenPrice.div(avgBuyPrice[token]).minus(1);
@@ -126,6 +126,16 @@ class StrategyPage extends Component {
 
         // Add gov tokens to earnings
         const govTokensTotalBalance = await this.functionsUtil.getGovTokensUserTotalBalance(this.props.account,this.props.availableTokens,'DAI');
+
+        const govTokensUserBalance = await this.functionsUtil.getGovTokensUserBalances(this.props.account,this.props.availableTokens,'DAI');
+        const govTokensTotalBalanceTooltip = govTokensUserBalance ? Object.keys(govTokensUserBalance).map( govToken => {
+          const balance = govTokensUserBalance[govToken];
+          if (balance.gt(0)){
+            return `${govToken}: $${balance.toFixed(2)}`;
+          } else {
+            return null;
+          }
+        }).filter(v => (v !== null)) : null;
 
         const earningsStart = totalEarnings.plus(govTokensTotalBalance);
         const earningsEnd = totalAmountLent.times(avgAPY.div(100)).plus(govTokensTotalBalance);
@@ -155,7 +165,7 @@ class StrategyPage extends Component {
             },
             props:{
               title:'Total Earnings',
-              description:'Total earnings also include accrued interest and yield from governance tokens'+(govTokensTotalBalance && govTokensTotalBalance.gt(0) ? ` (~ $${govTokensTotalBalance.toFixed(2)})` : ''),
+              description:'Total earnings also include accrued interest and yield from governance tokens'+(govTokensTotalBalance && govTokensTotalBalance.gt(0) ? ` [ ${govTokensTotalBalanceTooltip.join('; ')} ]` : ''),
               children:(
                 <CountUp
                   delay={0}
@@ -546,7 +556,6 @@ class StrategyPage extends Component {
                             desc:riskScore,
                             props:{
                               width:[0.27,0.16],
-                              justifyContent:['center','flex-start']
                             },
                             fields:[
                               {
@@ -692,11 +701,10 @@ class StrategyPage extends Component {
                             desc:riskScore,
                             props:{
                               width:[0.27,0.14],
-                              justifyContent:['center','flex-start']
                             },
                             fields:[
                               {
-                                name:'score'
+                                name:'score',
                               }
                             ]
                           },
@@ -870,7 +878,6 @@ class StrategyPage extends Component {
                             desc:riskScore,
                             props:{
                               width:[0.27,0.17],
-                              justifyContent:['center','flex-start']
                             },
                             fields:[
                               {

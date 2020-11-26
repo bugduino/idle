@@ -64,7 +64,7 @@ class FundsOverview extends Component {
       }
     }).filter(v => (v !== null)) : null;
 
-    // console.log(govTokenAvailableTokens,govTokensUserBalance,govTokensTotalBalanceTooltip);
+    // console.log(govTokensTotalBalance,govTokensUserBalance,govTokensTotalBalanceTooltip);
 
     const govTokensTotalApr = govTokensAprs ? Object.values(govTokensAprs).reduce( (totApr,govTokenApr) => {
       return totApr.plus(this.functionsUtil.BNify(govTokenApr));
