@@ -101,7 +101,7 @@ class StrategyPage extends Component {
           const amountLentToken = await this.functionsUtil.convertTokenBalance(amountLent[token],token,tokenConfig,isRisk);
 
           const tokenAPR = this.functionsUtil.BNify(tokenAprs.avgApr).div(100);
-          const tokenAPY = this.functionsUtil.apr2apy(tokenAPR).times(100);
+          const tokenAPY = this.functionsUtil.apr2apy(tokenAprs.avgApy).times(100);
           const tokenWeight = portfolio.tokensBalance[token].tokenBalance.div(portfolio.totalBalance);
           const tokenEarningsPerc = idleTokenPrice.div(avgBuyPrice[token]).minus(1);
           const tokenEarnings = amountLentToken ? amountLentToken.times(tokenEarningsPerc) : 0;
