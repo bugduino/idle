@@ -109,14 +109,14 @@ class DashboardHeader extends Component {
                   onClick={ (e) => { this.props.goToSection(governanceRoute,false) } }
                 >
                   <Icon
-                    mr={2}
-                    size={'1.6em'}
+                    mr={[1,2]}
                     name={'ExitToApp'}
                     color={'copyColor'}
+                    size={this.props.isMobile ? '1.6em' : '1.8em'}
                   />
                   <Text
-                    fontSize={2}
                     fontWeight={3}
+                    fontSize={[2,3]}
                     color={'copyColor'}
                   >
                     Governance
@@ -132,14 +132,14 @@ class DashboardHeader extends Component {
                   onClick={ (e) => { this.props.goToSection(dashboardRoute,false) } }
                 >
                   <Icon
-                    mr={2}
-                    size={'1.6em'}
+                    mr={[1,2]}
                     name={'ExitToApp'}
                     color={'copyColor'}
+                    size={this.props.isMobile ? '1.6em' : '1.8em'}
                   />
                   <Text
-                    fontSize={2}
                     fontWeight={3}
+                    fontSize={[2,3]}
                     color={'copyColor'}
                   >
                     Dashboard
