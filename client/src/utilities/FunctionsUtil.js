@@ -4036,6 +4036,7 @@ class FunctionsUtil {
   }
   getAggregatedStats = async (addGovTokens=true) => {
     let avgAPR = this.BNify(0);
+    let avgAPY = this.BNify(0);
     let totalAUM = this.BNify(0);
     await this.asyncForEach(Object.keys(this.props.availableStrategies),async (strategy) => {
       const isRisk = strategy === 'risk';
@@ -4049,7 +4050,8 @@ class FunctionsUtil {
           totalAUM = totalAUM.plus(totalAllocation);
           // this.customLog(strategy,token,totalAllocation.toString(),totalAUM.toString());
           if (tokenAprs && tokenAprs.avgApr && !tokenAprs.avgApr.isNaN()){
-            avgAPR = avgAPR.plus(totalAllocation.times(tokenAprs.avgApr))
+            avgAPR = avgAPR.plus(totalAllocation.times(tokenAprs.avgApr));
+            avgAPY = avgAPY.plus(totalAllocation.times(tokenAprs.avgApy));
           }
         }
 
@@ -4084,7 +4086,7 @@ class FunctionsUtil {
     });
 
     avgAPR = avgAPR.div(totalAUM);
-    const avgAPY = this.apr2apy(avgAPR.div(100)).times(100);
+    avgAPY = avgAPY.div(totalAUM);
 
     return {
       avgAPR,

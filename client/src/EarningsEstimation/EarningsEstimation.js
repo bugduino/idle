@@ -112,11 +112,9 @@ class EarningsEstimation extends Component {
       const earnings = amountLent.times(earningsPerc);
 
       let earningsYear = 0;
-      let tokenAPR = 0;
       let tokenAPY = 0;
       const tokenAprs = await this.functionsUtil.getTokenAprs(tokenConfig);
       if (tokenAprs && tokenAprs.avgApr !== null){
-        tokenAPR = tokenAprs.avgApr;
         tokenAPY = tokenAprs.avgApy;
         earningsYear = amountLent.times(tokenAPY.div(100));
       }
