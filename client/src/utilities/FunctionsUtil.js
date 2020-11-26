@@ -410,7 +410,6 @@ class FunctionsUtil {
             case 'Swap':
             case 'Migrate':
               avgBuyPrice = idleTokens.times(tokenPrice).plus(prevAvgBuyPrice.times(idleTokensBalance)).div(idleTokensBalance.plus(idleTokens));
-              // console.log('avgPrice',selectedToken,idleTokens.toFixed(5),tokenPrice.toFixed(5),idleTokensBalance.toFixed(5),prevAvgBuyPrice.toFixed(5),avgBuyPrice.toFixed(5));
             break;
             case 'Withdraw':
             case 'Send':
@@ -428,6 +427,7 @@ class FunctionsUtil {
             avgBuyPrice = this.BNify(0);
             idleTokensBalance = this.BNify(0);
           }
+          
         });
       }
 
@@ -754,6 +754,7 @@ class FunctionsUtil {
       const batchMigration = this.getGlobalConfig(['tools','batchMigration','props','availableTokens',tokenConfig.idle.token]);
       const batchMigrationContractAddr = batchMigration && batchMigration.migrationContract ? batchMigration.migrationContract.address : null;
 
+      const curveEnabled = this.getGlobalConfig(['curve','enabled']);
       const curveTokenConfig = this.getGlobalConfig(['curve','availableTokens',tokenConfig.idle.token]);
 
       results.forEach( tx => {
@@ -782,7 +783,7 @@ class FunctionsUtil {
 
         // Check Curve
         const curveTx = internalTxs.find( tx => (tx.contractAddress.toLowerCase() === curvePoolContract.address.toLowerCase() && (tx.to.toLowerCase() === this.props.account.toLowerCase() || tx.from.toLowerCase() === this.props.account.toLowerCase()) ) );
-        const isCurveTx = curveTx !== undefined;
+        const isCurveTx = curveEnabled && curveTx !== undefined;
 
         const isCurveDepositTx = isCurveTx && tx.contractAddress.toLowerCase() === idleTokenAddress.toLowerCase() && tx.to.toLowerCase() === curveSwapContract.address.toLowerCase() && tx.from.toLowerCase() === this.props.account.toLowerCase() && this.BNify(tx.value).gt(0);
         const isCurveRedeemTx = isCurveTx && tx.contractAddress.toLowerCase() === idleTokenAddress.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.from.toLowerCase() === curveSwapContract.address.toLowerCase() && this.BNify(tx.value).gt(0);
@@ -793,8 +794,8 @@ class FunctionsUtil {
         const isCurveZapIn = isCurveTx && tx.contractAddress.toLowerCase() === curvePoolContract.address.toLowerCase() && tx.to.toLowerCase() === this.props.account.toLowerCase() && tx.from.toLowerCase() === curveZapContract.address.toLowerCase() && this.BNify(tx.value).gt(0);
         const isCurveZapOut = isCurveTx && tx.contractAddress.toLowerCase() === curvePoolContract.address.toLowerCase() && tx.from.toLowerCase() === this.props.account.toLowerCase() && tx.to.toLowerCase() === curveZapContract.address.toLowerCase() && this.BNify(tx.value).gt(0);
 
-        const isCurveTransferOut = tx.contractAddress.toLowerCase() === curvePoolContract.address.toLowerCase() && !isCurveZapOut && !isCurveRedeemTx && /*internalTxs[internalTxs.length-1] === tx &&*/ tx.from.toLowerCase() === this.props.account.toLowerCase();
-        const isCurveTransferIn = tx.contractAddress.toLowerCase() === curvePoolContract.address.toLowerCase() && !isCurveZapIn && !isCurveDepositTx && /*internalTxs[internalTxs.length-1] === tx &&*/ tx.to.toLowerCase() === this.props.account.toLowerCase();
+        const isCurveTransferOut = curveEnabled && tx.contractAddress.toLowerCase() === curvePoolContract.address.toLowerCase() && !isCurveZapOut && !isCurveRedeemTx && /*internalTxs[internalTxs.length-1] === tx &&*/ tx.from.toLowerCase() === this.props.account.toLowerCase();
+        const isCurveTransferIn = curveEnabled && tx.contractAddress.toLowerCase() === curvePoolContract.address.toLowerCase() && !isCurveZapIn && !isCurveDepositTx && /*internalTxs[internalTxs.length-1] === tx &&*/ tx.to.toLowerCase() === this.props.account.toLowerCase();
 
         // if (tx.hash.toLowerCase() === '0x2aa8f408dd1d4653ef3c5c38a4c9241e615d94b7208bbbe1d2e19b3053fae8de'.toLowerCase()){
         //   debugger;
