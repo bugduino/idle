@@ -266,43 +266,46 @@ class GovModal extends React.Component {
                   </Flex>
                 </Link>
               </Flex>
-              <Flex
-                mb={3}
-                width={1}
-                zIndex={10}
-                position={'relative'}
-                alignItems={'center'}
-                justifyContent={'center'}
-              >
-                {
-                  // Sending transaction
-                  this.state.processing && this.state.processing.loading ? (
-                    <TxProgressBar
-                      textColor={'white'}
-                      web3={this.props.web3}
-                      cancelTextColor={'moon-gray'}
-                      cancelTextHoverColor={'white'}
-                      waitText={`Claim estimated in`}
-                      hash={this.state.processing.txHash}
-                      endMessage={`Finalizing Claim request...`}
-                      cancelTransaction={this.cancelTransaction.bind(this)}
-                    />
-                  ) : (
-                    <RoundButton
-                      buttonProps={{
-                        color:'blue',
-                        width:[1,'45%'],
-                        mainColor:'white',
-                        contrastColor:'blue',
-                        disabled:!this.state.unclaimed || this.state.unclaimed.lte(0)
-                      }}
-                      handleClick={this.claim.bind(this)}
-                    >
-                      Claim
-                    </RoundButton>
-                  )
-                }
-              </Flex>
+              {
+                this.state.unclaimed && this.state.unclaimed.gt(0) && 
+                  <Flex
+                    mb={3}
+                    width={1}
+                    zIndex={10}
+                    position={'relative'}
+                    alignItems={'center'}
+                    justifyContent={'center'}
+                  >
+                    {
+                      // Sending transaction
+                      this.state.processing && this.state.processing.loading ? (
+                        <TxProgressBar
+                          textColor={'white'}
+                          web3={this.props.web3}
+                          cancelTextColor={'moon-gray'}
+                          cancelTextHoverColor={'white'}
+                          waitText={`Claim estimated in`}
+                          hash={this.state.processing.txHash}
+                          endMessage={`Finalizing Claim request...`}
+                          cancelTransaction={this.cancelTransaction.bind(this)}
+                        />
+                      ) : (
+                        <RoundButton
+                          buttonProps={{
+                            color:'blue',
+                            width:[1,'45%'],
+                            mainColor:'white',
+                            contrastColor:'blue',
+                            disabled:!this.state.unclaimed || this.state.unclaimed.lte(0)
+                          }}
+                          handleClick={this.claim.bind(this)}
+                        >
+                          Claim
+                        </RoundButton>
+                      )
+                    }
+                  </Flex>
+              }
             </Flex>
           </ModalCard.Body>
         </ModalCard>
