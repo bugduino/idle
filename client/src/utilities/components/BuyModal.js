@@ -491,7 +491,7 @@ class BuyModal extends React.Component {
               }
               <Text textAlign={'center'} fontWeight={500} fontSize={[2, this.props.showInline ? 2 : 3]} my={0}>
                 {
-                  this.props.showInline && this.props.buyToken ? `Ops... you don\'t have any ${this.props.buyToken} in your wallet, how do you prefer do buy some?` : `How do you prefer to buy ${this.state.selectedToken}?`
+                  this.props.showInline && this.props.buyToken ? `Ops... you don't have any ${this.props.buyToken} in your wallet, how do you prefer do buy some?` : `How do you prefer to buy ${this.state.selectedToken}?`
                 }
               </Text>
             </Flex>
