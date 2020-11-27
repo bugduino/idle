@@ -22,6 +22,7 @@ class StrategyPage extends Component {
     depositedTokens:null,
     remainingTokens:null,
     portfolioLoaded:false,
+    availableGovTokens:null,
     portfolioEquityStartDate:null,
     portfolioEquityQuickSelection:'week'
   };
@@ -90,6 +91,7 @@ class StrategyPage extends Component {
 
         await this.functionsUtil.asyncForEach(depositedTokens,async (token) => {
           const tokenConfig = this.props.availableTokens[token];
+
           const [tokenAprs,idleTokenPrice,tokenScore,avgBuyPrice,amountLent] = await Promise.all([
             this.functionsUtil.getTokenAprs(tokenConfig),
             this.functionsUtil.getIdleTokenPrice(tokenConfig),
@@ -165,7 +167,7 @@ class StrategyPage extends Component {
             },
             props:{
               title:'Total Earnings',
-              description:'Total earnings also include accrued interest and yield from governance tokens'+(govTokensTotalBalance && govTokensTotalBalance.gt(0) ? ` [ ${govTokensTotalBalanceTooltip.join('; ')} ]` : ''),
+              description:'Total earnings including accrued governance tokens'+(govTokensTotalBalance && govTokensTotalBalance.gt(0) ? ` [ ${govTokensTotalBalanceTooltip.join('; ')} ], earnings can vary depending on the current token spot price from Uniswap` : ''),
               children:(
                 <CountUp
                   delay={0}
@@ -236,19 +238,9 @@ class StrategyPage extends Component {
   }
 
   render(){
-    /*
     const govTokens = this.functionsUtil.getGlobalConfig(['govTokens']);
-    const availableGovTokens = Object.keys(govTokens).reduce((enabledTokens,token) => {
-      if (govTokens[token].enabled){
-        enabledTokens[token] = govTokens[token];
-      }
-      return enabledTokens;
-    },{});
-    */
-
-    const idleTokenEnabled = this.functionsUtil.getGlobalConfig(['govTokens','IDLE','enabled']);
-    const showAPYDisclaimer = idleTokenEnabled && this.functionsUtil.getGlobalConfig(['govTokens','IDLE','showAPR']);
     const apyLong = this.functionsUtil.getGlobalConfig(['messages','apyLong']);
+    const showAPYDisclaimer = govTokens.IDLE.enabled && govTokens.IDLE.showAPR;
     const riskScore = this.functionsUtil.getGlobalConfig(['messages','riskScore']);
     const yieldFarming = this.functionsUtil.getGlobalConfig(['messages','yieldFarming']);
 
@@ -942,22 +934,20 @@ class StrategyPage extends Component {
                 </Flex>
               </Flex>
               {
-                /*
-                Object.keys(availableGovTokens).length>0 && 
+                this.state.depositedTokens.length>0 &&
                   <Flex
                     width={1}
-                    id="earnings-estimation"
+                    id={"yield-farming"}
                     flexDirection={'column'}
                   >
                     <Title my={[3,4]}>Yield Farming</Title>
                     <AssetsList
-                      enabledTokens={Object.keys(availableGovTokens)}
-                      handleClick={(props) => {}}
+                      enabledTokens={Object.keys(govTokens)}
                       cols={[
                         {
-                          title:'CURRENCY',
+                          title:'TOKEN',
                           props:{
-                            width:[0.3,0.15]
+                            width:[0.34,0.15]
                           },
                           fields:[
                             {
@@ -973,47 +963,70 @@ class StrategyPage extends Component {
                           ]
                         },
                         {
-                          title:'POOL',
+                          mobile:false,
+                          title:'BALANCE',
                           props:{
-                            width:[0.24, 0.19],
+                            width:[0.33, 0.17],
                           },
                           fields:[
                             {
-                              name:'pool',
+                              name:'tokenBalance',
                               props:{
-                                decimals:2
+                                decimals: this.props.isMobile ? 6 : 8
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          title:'REDEEMABLE',
+                          desc:this.functionsUtil.getGlobalConfig(['messages','govTokenRedeemableBalance']),
+                          props:{
+                            width:[0.45,0.17],
+                            justifyContent:['center','flex-start']
+                          },
+                          fields:[
+                            {
+                              name:'redeemableBalance',
+                              props:{
+                                decimals: this.props.isMobile ? 6 : 8
+                              }
+                            },
+                          ]
+                        },
+                        {
+                          mobile:false,
+                          title:'DISTRIBUTION',
+                          desc:this.functionsUtil.getGlobalConfig(['messages','userDistributionSpeed']),
+                          props:{
+                            width:[0.20,0.17],
+                          },
+                          fields:[
+                            {
+                              name:'userDistributionSpeed',
+                              props:{
+                                decimals:6
                               }
                             }
                           ]
                         },
                         {
                           title:'APR',
+                          desc:this.functionsUtil.getGlobalConfig(['messages','govTokenApr']),
                           props:{
-                            width:[0.23,0.19],
+                            width:[0.2,0.17],
                           },
                           fields:[
                             {
-                              name:'apr'
+                              name:'apr',
                             }
                           ]
                         },
                         {
-                          title:'BALANCE',
-                          props:{
-                            width:[0.23,0.19],
-                            justifyContent:['center','flex-start']
-                          },
-                          fields:[
-                            {
-                              name:'balance'
-                            }
-                          ]
-                        },
-                        {
-                          title:'APR LAST WEEK',
+                          title:'TOKEN PRICE',
+                          desc:this.functionsUtil.getGlobalConfig(['messages','tokenPrice']),
                           mobile:false,
                           props:{
-                            width: 0.28,
+                            width: 0.17,
                           },
                           parentProps:{
                             width:1,
@@ -1021,16 +1034,25 @@ class StrategyPage extends Component {
                           },
                           fields:[
                             {
-                              name:'aprChart',
+                              name:'tokenPrice',
+                              props:{
+                                unit:'$',
+                                unitPos:'left',
+                                unitProps:{
+                                  mr:1,
+                                  fontWeight:3,
+                                  fontSize:[0,2],
+                                  color:'cellText'
+                                }
+                              }
                             }
                           ]
                         },
                       ]}
                       {...this.props}
-                      availableTokens={availableGovTokens}
+                      availableTokens={govTokens}
                     />
                   </Flex>
-                */
               }
               {
                 this.state.depositedTokens.length>0 &&

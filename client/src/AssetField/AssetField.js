@@ -96,8 +96,10 @@ class AssetField extends Component {
         break;
         case 'govTokens':
           const govTokens = this.functionsUtil.getTokenGovTokens(this.props.tokenConfig);
+          const getGovTokensDistributionSpeed = await this.functionsUtil.getGovTokensDistributionSpeed(this.props.tokenConfig);
           this.setStateSafe({
-            govTokens
+            govTokens,
+            getGovTokensDistributionSpeed
           });
         break;
         case 'tokenPrice':
@@ -759,6 +761,7 @@ class AssetField extends Component {
           <Tooltip
             placement={'top'}
             message={this.props.token}
+            {...fieldInfo.tooltipProps}
           >
             <Image src={icon1} {...fieldProps} />
           </Tooltip>
@@ -909,19 +912,22 @@ class AssetField extends Component {
             justifyContent={'flex-start'}
           >
             {
-              this.state.govTokens.map( (govTokenConfig,govTokenIndex) => (
+              Object.values(this.state.govTokens).map( (govTokenConfig,govTokenIndex) => (
                 <AssetField
                   token={govTokenConfig.token}
                   tokenConfig={govTokenConfig}
                   key={`asset_${govTokenIndex}`}
                   fieldInfo={{
                     name:'iconTooltip',
+                    tooltipProps:{
+                      message:`${govTokenConfig.token}`+(this.state.getGovTokensDistributionSpeed && this.state.getGovTokensDistributionSpeed[govTokenConfig.token] ? `: ${this.state.getGovTokensDistributionSpeed[govTokenConfig.token].toFixed(3)}/block` : '')
+                    },
                     props:{
                       borderRadius:'50%',
                       position:'relative',
                       height:['1.1em','2em'],
                       ml:govTokenIndex ? '-10px' : 0,
-                      zIndex:this.state.govTokens.length-govTokenIndex,
+                      zIndex:Object.values(this.state.govTokens).length-govTokenIndex,
                       boxShadow:['1px 1px 1px 0px rgba(0,0,0,0.1)','1px 2px 3px 0px rgba(0,0,0,0.1)'],
                     }
                   }}
@@ -1008,6 +1014,11 @@ class AssetField extends Component {
               number={this.state.earnings}
             />
           </VariationNumber>
+        ) : loader
+      break;
+      case 'distributionSpeed':
+        output = this.state.distributionSpeed ? (
+          <Text {...fieldProps}>{this.state.distributionSpeed.toFixed(decimals)}/block</Text>
         ) : loader
       break;
       case 'apr':
@@ -1123,6 +1134,13 @@ class AssetField extends Component {
         ) : loader
       break;
       default:
+        let formattedValue = this.state[fieldInfo.name];
+        if (this.state[fieldInfo.name] && this.state[fieldInfo.name]._isBigNumber){
+          formattedValue = this.state[fieldInfo.name].toFixed(decimals);
+        }
+        output = this.state[fieldInfo.name] ? (
+          <Text {...fieldProps}>{formattedValue}</Text>
+        ) : loader
       break;
     }
     return output;

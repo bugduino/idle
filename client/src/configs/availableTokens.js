@@ -126,9 +126,9 @@ const availableTokens = {
         },
         protocols:[
           {
-            name:'compound',
             enabled:true,
             abi:cToken.abi,
+            name:'compound',
             address:'0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643',
             token:'cDAI',
             decimals:28,
@@ -140,9 +140,9 @@ const availableTokens = {
             },
           },
           {
-            name:'fulcrum',
-            enabled:true,
             abi:iToken,
+            enabled:true,
+            name:'fulcrum',
             address:'0x493c57c4763932315a328269e1adad09653b9081',
             token:'iDAI',
             decimals:18,
@@ -154,9 +154,9 @@ const availableTokens = {
             },
           },
           {
+            abi:aToken,
             name:'aave',
             enabled:true,
-            abi:aToken,
             address:'0xfC1E690f61EFd961294b3e1Ce3313fBD8aa4f85d',
             token:'aDAI',
             decimals:18,
@@ -165,9 +165,9 @@ const availableTokens = {
             }
           },
           {
+            abi:CHAI,
             name:'dsr',
             enabled:true,
-            abi:CHAI,
             address:'0x06AF07097C9Eeb7fD685c692751D5C66dB49c215',
             token:'CHAI',
             decimals:18,
@@ -176,9 +176,9 @@ const availableTokens = {
             }
           },
           {
+            abi:yToken,
             name:'dydx',
             enabled:true,
-            abi:yToken,
             address:'0xb299BCDF056d17Bd1A46185eCA8bCE458B00DC4a',
             token:'yxDAI',
             decimals:18,

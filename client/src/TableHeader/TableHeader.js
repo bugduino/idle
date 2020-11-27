@@ -8,6 +8,7 @@ class TableHeader extends Component {
       <Flex
         width={1}
         px={[2,4]}
+        pb={[2,3]}
         flexDirection={'row'}
       >
         {

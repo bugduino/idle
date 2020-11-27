@@ -2460,10 +2460,46 @@ class FunctionsUtil {
           }
         }
       break;
+      case 'userDistributionSpeed':
+        switch (token){
+          case 'COMP':
+            output = await this.getCompUserDistribution(account,govTokenAvailableTokens);
+          break;
+          case 'IDLE':
+            const idleGovToken = this.getIdleGovToken();
+            output = await idleGovToken.getUserDistribution(account,govTokenAvailableTokens);
+          break;
+        }
+        if (output && !this.BNify(output).isNaN()){
+          output = this.BNify(output).div(1e18);
+        }
+      break;
+      case 'distributionSpeed':
+        const selectedTokenConfig = govTokenAvailableTokens[this.props.selectedToken];
+        switch (token){
+          case 'COMP':
+            const cTokenInfo = selectedTokenConfig.protocols.find( p => (p.name === 'compound') );
+            if (cTokenInfo){
+              output = await this.getCompSpeed(cTokenInfo.address);
+            }
+          break;
+          case 'IDLE':
+            const idleGovToken = this.getIdleGovToken();
+            output = await idleGovToken.getSpeed(selectedTokenConfig.idle.address);
+          break;
+        }
+        if (output && !this.BNify(output).isNaN()){
+          output = this.BNify(output).div(1e18);
+        }
+      break;
       case 'apr':
         switch (token){
           case 'COMP':
             output = await this.getCompAvgApr(govTokenAvailableTokens);
+          break;
+          case 'IDLE':
+            const idleGovToken = this.getIdleGovToken();
+            output = await idleGovToken.getAvgApr(govTokenAvailableTokens);
           break;
           default:
             const tokenAprs = await this.getTokenAprs(tokenConfig,false,addGovTokens);
@@ -2742,6 +2778,22 @@ class FunctionsUtil {
       }
     }
     return defaultValue;
+  }
+  getUserPoolShare = async (walletAddr,tokenConfig) => {
+    const [
+      idleTokensBalance,
+      idleTokensTotalSupply
+    ] = await Promise.all([
+      this.getTokenBalance(tokenConfig.idle.token,walletAddr,false),
+      this.genericContractCall(tokenConfig.idle.token,'totalSupply')
+    ]);
+
+    let userShare = this.BNify(0);
+    if (idleTokensBalance && idleTokensTotalSupply){
+      userShare = this.BNify(idleTokensBalance).div(this.BNify(idleTokensTotalSupply));
+    }
+
+    return userShare;
   }
   getTokenBalance = async (contractName,walletAddr,fixDecimals=true) => {
     if (!walletAddr){
@@ -3563,6 +3615,13 @@ class FunctionsUtil {
 
     return compAPR;
   }
+  getCompSpeed = async (cTokenAddress) => {
+    let compSpeed = await this.genericContractCall('Comptroller','compSpeeds',[cTokenAddress]);
+    if (compSpeed){
+      return this.BNify(compSpeed);
+    }
+    return null;
+  }
   getCompDistribution = async (tokenConfig,cTokenIdleSupply=null) => {
 
     const cachedDataKey = `getCompDistribution_${tokenConfig.idle.token}_${cTokenIdleSupply}`;
@@ -3582,9 +3641,12 @@ class FunctionsUtil {
       if (compoundAllocationPerc && compoundAllocationPerc.gte(0.001)){
 
         // Get COMP distribution speed and Total Supply
-        const [cTokenTotalSupply,compSpeed] = await Promise.all([
+        const [
+          compSpeed,
+          cTokenTotalSupply
+        ] = await Promise.all([
+          this.getCompSpeed(cTokenInfo.address),
           this.genericContractCall(cTokenInfo.token,'totalSupply'),
-          this.genericContractCall('Comptroller','compSpeeds',[cTokenInfo.address])
         ]);
 
         if (compSpeed && cTokenTotalSupply){
@@ -3612,8 +3674,41 @@ class FunctionsUtil {
 
     return null;
   }
+  getCompUserDistribution = async (account=null,availableTokens=null) => {
+    if (!account){
+      account = this.props.account;
+    }
+    if (!availableTokens && this.props.selectedStrategy){
+      availableTokens = this.props.availableStrategies[this.props.selectedStrategy];
+    }
+
+    if (!account || !availableTokens){
+      return false;
+    }
+
+    let output = this.BNify(0);
+    await this.asyncForEach(Object.keys(availableTokens),async (token) => {
+      const tokenConfig = availableTokens[token];
+      const cTokenInfo = tokenConfig.protocols.find( p => (p.name === 'compound') );
+      if (cTokenInfo){
+        const [
+          compSpeed,
+          userPoolShare
+        ] = await Promise.all([
+          this.getCompSpeed(cTokenInfo.address),
+          this.getUserPoolShare(account,tokenConfig)
+        ]);
+
+        if (compSpeed && userPoolShare){
+          output = output.plus(compSpeed.times(userPoolShare));
+        }
+      }
+    });
+
+    return output;
+  }
   getCompAvgApr = async (availableTokens=null) => {
-    if (!availableTokens){
+    if (!availableTokens && this.props.selectedStrategy){
       availableTokens = this.props.availableStrategies[this.props.selectedStrategy];
     }
     let output = this.BNify(0);
@@ -3789,7 +3884,7 @@ class FunctionsUtil {
     return this.idleGovToken;
   }
   getTokenGovTokens = (tokenConfig) => {
-    const output = [];
+    const output = {};
     const govTokens = this.getGlobalConfig(['govTokens']);
     Object.keys(govTokens).forEach( govToken => {
       const govTokenConfig = govTokens[govToken];
@@ -3797,15 +3892,51 @@ class FunctionsUtil {
         return;
       }
       if (govTokenConfig.protocol === 'idle'){
-        output.push(govTokenConfig);
+        output[govToken] = govTokenConfig;
       } else {
-        const foundProtocol = tokenConfig.protocols.find( p => (p.name.toLowerCase() === govTokenConfig.protocol.toLowerCase()) )
+        const foundProtocol = tokenConfig.protocols.find( p => (p.enabled && p.name.toLowerCase() === govTokenConfig.protocol.toLowerCase()) )
         if (foundProtocol){
-          output.push(govTokenConfig);
+          output[govToken] = govTokenConfig;
         }
       }
     });
     return output;
+  }
+  getGovTokensDistributionSpeed = async (tokenConfig,enabledTokens=null) => {
+    const govTokensDistribution = {};
+    const govTokens = this.getGlobalConfig(['govTokens']);
+
+    await this.asyncForEach(Object.keys(govTokens),async (govToken) => {
+      if (enabledTokens && !enabledTokens.includes(govToken)){
+        return;
+      }
+
+      const govTokenConfig = govTokens[govToken];
+
+      if (!govTokenConfig.enabled || !govTokenConfig.showAPR){
+        return;
+      }
+
+      let govSpeed = null;
+      switch (govToken){
+        case 'COMP':
+          const cTokenInfo = tokenConfig.protocols.find( p => (p.name === 'compound') );
+          if (cTokenInfo){
+            govSpeed = await this.getCompSpeed(cTokenInfo.address);
+          }
+        break;
+        case 'IDLE':
+          const idleGovToken = this.getIdleGovToken();
+          govSpeed = await idleGovToken.getSpeed(tokenConfig.idle.address);
+        break;
+      }
+
+      if (govSpeed){
+        govTokensDistribution[govToken] = govSpeed.div(1e18);
+      }
+    });
+
+    return govTokensDistribution;
   }
   getGovTokensAprs = async (token,tokenConfig,enabledTokens=null) => {
     const govTokens = this.getGlobalConfig(['govTokens']);

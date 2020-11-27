@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
-import { Flex, Heading, Icon, Link } from "rimble-ui";
+import styles from './TableCellHeader.module.scss';
+import { Flex, Heading, Icon, Link, Tooltip } from "rimble-ui";
 
 class TableCellHeader extends Component {
   render() {
 
     const ColTitle = (props) => (
       <Heading.h4
-        pb={[2,3]}
         fontWeight={[3,4]}
         color={'cellTitle'}
         style={{
@@ -28,7 +28,7 @@ class TableCellHeader extends Component {
         {
           (this.props.desc && this.props.desc.length>1) ? (
             <Flex
-              alignItems={'flex-start'}
+              alignItems={'center'}
             >
               <ColTitle
                 {...this.props}
@@ -39,12 +39,18 @@ class TableCellHeader extends Component {
                 }}
                 onClick={ e => this.props.openTooltipModal(this.props.title,this.props.desc) }
               >
-                <Icon
-                  ml={1}
-                  name={"Info"}
-                  color={'cellTitle'}
-                  size={ this.props.isMobile ? '1em' : '1.2em'}
-                />
+                <Tooltip
+                  placement={'top'}
+                  message={'Click to read the description'}
+                >
+                  <Icon
+                    ml={1}
+                    name={"Info"}
+                    color={'cellTitle'}
+                    className={styles.tooltip}
+                    size={ this.props.isMobile ? '1em' : '1.2em'}
+                  />
+                </Tooltip>
               </Link>
             </Flex>
           ) : (

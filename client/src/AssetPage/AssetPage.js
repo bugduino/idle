@@ -86,11 +86,7 @@ class AssetPage extends Component {
         newState.redeemableBalance[token] = idleTokenBalance ? this.functionsUtil.fixTokenDecimals(idleTokenBalance.times(idleTokenPrice),tokenConfig.decimals) : this.functionsUtil.BNify(0);
       });
 
-      const govTokens = this.functionsUtil.getTokenGovTokens(this.props.tokenConfig);
-      newState.availableGovTokens = govTokens.reduce((enabledTokens,govTokenConfig) => {
-        enabledTokens[govTokenConfig.token] = govTokenConfig;
-        return enabledTokens;
-      },{});
+      newState.availableGovTokens = this.functionsUtil.getTokenGovTokens(this.props.tokenConfig);
 
       newState.componentMounted = true;
       this.setState(newState);
@@ -186,8 +182,8 @@ class AssetPage extends Component {
           userHasFunds && this.props.account && !this.state.govTokensDisabled[this.props.selectedToken] && Object.keys(this.state.availableGovTokens).length>0 && 
             <Flex
               width={1}
+              id={"yield-farming"}
               flexDirection={'column'}
-              id={"earnings-estimation"}
             >
               <Title my={[3,4]}>Yield Farming</Title>
               <AssetsList
@@ -196,7 +192,7 @@ class AssetPage extends Component {
                   {
                     title:'TOKEN',
                     props:{
-                      width:[0.33,0.22]
+                      width:[0.34,0.15]
                     },
                     fields:[
                       {
@@ -212,9 +208,10 @@ class AssetPage extends Component {
                     ]
                   },
                   {
+                    mobile:false,
                     title:'BALANCE',
                     props:{
-                      width:[0.33, 0.26],
+                      width:[0.33, 0.17],
                     },
                     fields:[
                       {
@@ -229,7 +226,7 @@ class AssetPage extends Component {
                     title:'REDEEMABLE',
                     desc:this.functionsUtil.getGlobalConfig(['messages','govTokenRedeemableBalance']),
                     props:{
-                      width:[0.33,0.26],
+                      width:[0.45,0.17],
                       justifyContent:['center','flex-start']
                     },
                     fields:[
@@ -239,36 +236,42 @@ class AssetPage extends Component {
                           decimals: this.props.isMobile ? 6 : 8
                         }
                       },
-                      /*
+                    ]
+                  },
+                  {
+                    mobile:false,
+                    title:'DISTRIBUTION',
+                    desc:this.functionsUtil.getGlobalConfig(['messages','userDistributionSpeed']),
+                    props:{
+                      width:[0.20,0.17],
+                    },
+                    fields:[
                       {
-                        name:'tooltip',
+                        name:'userDistributionSpeed',
                         props:{
-                          placement:'bottom',
-                          message:'The shown balance may be lower than the real one.',
+                          decimals:6
                         }
                       }
-                      */
                     ]
-                  },/*
+                  },
                   {
                     title:'APR',
+                    desc:this.functionsUtil.getGlobalConfig(['messages','govTokenApr']),
                     props:{
-                      width:[0.20,0.19],
+                      width:[0.2,0.17],
                     },
                     fields:[
                       {
                         name:'apr',
-                        parentProps:{
-                          alignItems:['center','flex-start']
-                        }
                       }
                     ]
-                  },*/
+                  },
                   {
                     title:'TOKEN PRICE',
+                    desc:this.functionsUtil.getGlobalConfig(['messages','tokenPrice']),
                     mobile:false,
                     props:{
-                      width: 0.26,
+                      width: 0.17,
                     },
                     parentProps:{
                       width:1,

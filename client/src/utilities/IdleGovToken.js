@@ -122,6 +122,15 @@ class IdleGovToken{
     return APR;
   }
 
+  // Get IDLE distribution speed
+  getSpeed = async (idleTokenAddress) => {
+    let idleSpeeds = await this.functionsUtil.genericContractCall('IdleController','idleSpeeds',[idleTokenAddress]);
+    if (idleSpeeds){
+      return this.functionsUtil.BNify(idleSpeeds);
+    }
+    return null;
+  }
+
   getDistribution = async (tokenConfig) => {
 
     const cachedDataKey = `getIdleDistribution_${tokenConfig.idle.token}`;
@@ -131,7 +140,7 @@ class IdleGovToken{
     }
 
     // Get IDLE distribution speed and Total Supply
-    const idleSpeeds = await this.functionsUtil.genericContractCall('IdleController','idleSpeeds',[tokenConfig.idle.address]);
+    const idleSpeeds = await this.getSpeed(tokenConfig.idle.address);
 
     if (idleSpeeds){
 
@@ -147,17 +156,49 @@ class IdleGovToken{
     return null;
   }
 
+  getUserDistribution = async (account=null,availableTokens=null) => {
+    if (!account){
+      account = this.props.account;
+    }
+    if (!availableTokens && this.props.selectedStrategy){
+      availableTokens = this.props.availableStrategies[this.props.selectedStrategy];
+    }
+
+    if (!account || !availableTokens){
+      return false;
+    }
+
+    let totalSpeed = this.functionsUtil.BNify(0);
+    await this.functionsUtil.asyncForEach(Object.keys(availableTokens),async (token) => {
+      const tokenConfig = availableTokens[token];
+      const [
+        idleSpeed,
+        userPoolShare
+      ] = await Promise.all([
+        this.getSpeed(tokenConfig.idle.address),
+        this.functionsUtil.getUserPoolShare(account,tokenConfig)
+      ]);
+
+      if (idleSpeed && userPoolShare){
+        const tokenSpeed = idleSpeed.times(userPoolShare);
+        totalSpeed = totalSpeed.plus(tokenSpeed);
+      }
+    });
+
+    return totalSpeed;
+  }
+
   getAvgApr = async (availableTokens=null) => {
     if (!availableTokens){
       availableTokens = this.props.availableStrategies[this.props.selectedStrategy];
     }
     let output = this.functionsUtil.BNify(0);
     let totalAllocation = this.functionsUtil.BNify(0);
-    await this.asyncForEach(Object.keys(availableTokens),async (token) => {
+    await this.functionsUtil.asyncForEach(Object.keys(availableTokens),async (token) => {
       const tokenConfig = availableTokens[token];
       const [idleApr,tokenAllocation] = await Promise.all([
         this.getAPR(token,tokenConfig),
-        this.getTokenAllocation(tokenConfig,false,false)
+        this.functionsUtil.getTokenAllocation(tokenConfig,false,false)
       ]);
       
       if (idleApr && tokenAllocation){

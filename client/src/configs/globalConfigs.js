@@ -127,9 +127,13 @@ const globalConfigs = {
   messages:{
     scoreShort:'Protocol Risk Score',
     apyShort:'Annual Percentage Yield',
+    tokenPrice:'The token price is calculated using Uniswap spot prices.',
     cheapRedeem:'Amount of unlent funds available for low gas fees redeem',
     curveBonusSlippage:'Slippage or bonus depending on if the coin is low or high in the Curve Pool',
     directMint:'Pay an additional gas fee to rebalance the pool and help all users gain an additional APR',
+    distributionSpeed:'The distribution indicates the amount of tokens distributed each block for the entire pool.',
+    govTokenApr:'Governance Token APR is calculated using the spot price from Uniswap and the current distribution speed for the specific pool.',
+    userDistributionSpeed:'The distribution indicates the amount of tokens distributed each block for your account based on your current pool share.',
     govTokenRedeemableBalance:'The redeemable balance is re-calculated on every interaction with the smart-contract so, the shown balance may be lower than the real one.',
     apyLong:'APY is based on (i) the current yield advertised by the underlying protocol, (ii) the current distribution rate of IDLE based on percentage share of liquidity pool and (iii) the current estimated price of IDLE and other governance tokens from Uniswap spot prices.',
     yieldFarming:'Strategies in Idle now will be able to support and distribute a vast range of yield opportunities across multiple protocols. Users will be able to receive their equivalent share of governance token that the protocol is receiving while allocating liquidity to yield farming opportunities. <a target="_blank" rel="nofollow noopener noreferrer" href="https://idlefinance.medium.com/idle-yield-farming-upgrade-18e4bc483c8f">Read more here</a>.',
