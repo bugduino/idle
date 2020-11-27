@@ -4392,23 +4392,19 @@ class FunctionsUtil {
 
     // Prevent decimals on integer number
     if (value>=1000){
-      let decimalPart = decimals ? newValue.mod(1).toFixed(maxPrecision).substr(2,decimals) : null;
-      if (decimalPart.length<maxPrecision){
-        const missingDecimals = maxPrecision-decimalPart.length;
-        decimalPart = decimalPart+"0".repeat(missingDecimals);
-      }
-      newValue = parseFloat(parseInt(newValue)+( decimalPart ? '.'+decimalPart : '' ) );
+      const decimalPart = decimals ? newValue.mod(1).toFixed(maxPrecision).substr(2,decimals) : null;
+      newValue = parseInt(newValue).toString()+( decimalPart ? '.'+decimalPart : '' );
     } else {
       newValue = newValue.toFixed(decimals);
     }
 
     // Adjust number precision
-    if (newValue>=1 && (newValue.toString().length-1)>maxPrecision){
+    if (newValue>=1 && (newValue.length-1)>maxPrecision){
       newValue = parseFloat(newValue).toPrecision(maxPrecision);
     } else if ((newValue.length-1)<minPrecision) {
       const difference = minPrecision-(newValue.length-1);
-      decimals += difference;
-      newValue = this.BNify(value).abs().toFixed(decimals);
+      const append = this.BNify(value).abs().toString().replace('.','').substr((newValue.length-1),difference);
+      newValue += append;
     }
 
     // Add minus if number is negative
@@ -4417,8 +4413,6 @@ class FunctionsUtil {
     }
 
     newValue += suffixes[suffixNum];
-
-    // this.customLog('abbreviateNumber',value,decimals,maxPrecision,minPrecision,newValue);
 
     return newValue;
   }
