@@ -795,6 +795,7 @@ class StrategyPage extends Component {
                               },
                               {
                                 name:'earningsPerc',
+                                showLoader:false,
                                 showDirection:false,
                                 props:{
                                   fontSize:0,
@@ -1009,7 +1010,7 @@ class StrategyPage extends Component {
                         {
                           title:'TOKEN',
                           props:{
-                            width:[0.32,0.15]
+                            width:[0.3,0.15]
                           },
                           fields:[
                             {
@@ -1028,7 +1029,7 @@ class StrategyPage extends Component {
                           mobile:false,
                           title:'BALANCE',
                           props:{
-                            width:[0.33, 0.15],
+                            width:[0.33, 0.25],
                           },
                           fields:[
                             {
@@ -1043,7 +1044,7 @@ class StrategyPage extends Component {
                           title:'REDEEMABLE',
                           desc:this.functionsUtil.getGlobalConfig(['messages','govTokenRedeemableBalance']),
                           props:{
-                            width:[0.33,0.19],
+                            width:[0.35,0.30],
                             justifyContent:['center','flex-start']
                           },
                           fields:[
@@ -1059,7 +1060,7 @@ class StrategyPage extends Component {
                           title:'DISTRIBUTION',
                           desc:this.functionsUtil.getGlobalConfig(['messages','userDistributionSpeed']),
                           props:{
-                            width:[0.35,0.19],
+                            width:[0.35,0.30],
                           },
                           fields:[
                             {
@@ -1070,6 +1071,7 @@ class StrategyPage extends Component {
                             }
                           ]
                         },
+                        /*
                         {
                           mobile:false,
                           title:'APR',
@@ -1110,6 +1112,7 @@ class StrategyPage extends Component {
                             }
                           ]
                         },
+                        */
                       ]}
                       {...this.props}
                       availableTokens={govTokens}

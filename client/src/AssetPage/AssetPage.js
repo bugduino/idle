@@ -192,7 +192,7 @@ class AssetPage extends Component {
                   {
                     title:'TOKEN',
                     props:{
-                      width:[0.34,0.15]
+                      width:[0.30,0.15]
                     },
                     fields:[
                       {
@@ -211,7 +211,7 @@ class AssetPage extends Component {
                     mobile:false,
                     title:'BALANCE',
                     props:{
-                      width:[0.33, 0.17],
+                      width:[0.33, 0.25],
                     },
                     fields:[
                       {
@@ -226,7 +226,7 @@ class AssetPage extends Component {
                     title:'REDEEMABLE',
                     desc:this.functionsUtil.getGlobalConfig(['messages','govTokenRedeemableBalance']),
                     props:{
-                      width:[0.45,0.17],
+                      width:[0.35,0.30],
                       justifyContent:['center','flex-start']
                     },
                     fields:[
@@ -239,11 +239,10 @@ class AssetPage extends Component {
                     ]
                   },
                   {
-                    mobile:false,
                     title:'DISTRIBUTION',
                     desc:this.functionsUtil.getGlobalConfig(['messages','userDistributionSpeed']),
                     props:{
-                      width:[0.20,0.17],
+                      width:[0.35,0.30],
                     },
                     fields:[
                       {
@@ -254,6 +253,7 @@ class AssetPage extends Component {
                       }
                     ]
                   },
+                  /*
                   {
                     title:'APR',
                     desc:this.functionsUtil.getGlobalConfig(['messages','govTokenApr']),
@@ -293,6 +293,7 @@ class AssetPage extends Component {
                       }
                     ]
                   },
+                  */
                 ]}
                 {...this.props}
                 availableTokens={this.state.availableGovTokens}
