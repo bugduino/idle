@@ -146,7 +146,7 @@ class IdleGovToken{
     return null;
   }
 
-  getUserDistribution = async (account=null,availableTokens=null) => {
+  getUserDistribution = async (account=null,availableTokens=null,fixByFrequency=false) => {
     if (!account){
       account = this.props.account;
     }
@@ -174,6 +174,11 @@ class IdleGovToken{
         totalSpeed = totalSpeed.plus(tokenSpeed);
       }
     });
+
+    if (fixByFrequency){
+      totalSpeed = this.functionsUtil.fixTokenDecimals(totalSpeed,this.tokenConfig.decimals);
+      totalSpeed = this.functionsUtil.fixDistributionSpeed(totalSpeed,this.tokenConfig.distributionFrequency)
+    }
 
     return totalSpeed;
   }

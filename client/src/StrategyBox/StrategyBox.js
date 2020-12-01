@@ -156,7 +156,7 @@ class StrategyBox extends Component {
             <Flex
               my={[0,3]}
               flexDirection={'row'}
-              alignItems={'center'}
+              alignItems={'flex-start'}
               justifyContent={'center'}
             >
               <Flex
@@ -166,6 +166,31 @@ class StrategyBox extends Component {
                 justifyContent={'center'}
                 borderRight={`1px solid ${this.props.theme.colors.divider}`}
               >
+                <Flex
+                  width={1}
+                  alignItems={'center'}
+                  justifyContent={'center'}
+                >
+                  <Text
+                    fontSize={2}
+                    fontWeight={4}
+                    color={'cellText'}
+                    textAlign={'center'}
+                  >
+                    APY
+                  </Text>
+                  <Tooltip
+                    placement={'bottom'}
+                    message={this.functionsUtil.getGlobalConfig(['messages','apyLong'])}
+                  >
+                    <Icon
+                      ml={1}
+                      name={"Info"}
+                      size={'1em'}
+                      color={'cellTitle'}
+                    />
+                  </Tooltip>
+                </Flex>
                 <AssetField
                   fieldInfo={{
                     name:'apy',
@@ -205,31 +230,6 @@ class StrategyBox extends Component {
                   token={this.state.selectedToken}
                   selectedStrategy={this.props.strategy}
                 />
-                <Flex
-                  width={1}
-                  alignItems={'center'}
-                  justifyContent={'center'}
-                >
-                  <Text
-                    fontSize={2}
-                    fontWeight={4}
-                    color={'cellText'}
-                    textAlign={'center'}
-                  >
-                    APY
-                  </Text>
-                  <Tooltip
-                    placement={'bottom'}
-                    message={this.functionsUtil.getGlobalConfig(['messages','apyLong'])}
-                  >
-                    <Icon
-                      ml={1}
-                      name={"Info"}
-                      size={'1em'}
-                      color={'cellTitle'}
-                    />
-                  </Tooltip>
-                </Flex>
               </Flex>
               <Flex
                 width={0.5}
@@ -237,25 +237,6 @@ class StrategyBox extends Component {
                 flexDirection={'column'}
                 justifyContent={'center'}
               >
-                <AssetField
-                  fieldInfo={{
-                    name:'score',
-                    props:{
-                      fontWeight:4,
-                      color:'copyColor',
-                      textAlign:'center',
-                      fontSize:[3,'1.8em'],
-                      flexProps:{
-                        justifyContent:'center'
-                      }
-                    },
-                  }}
-                  {...this.props}
-                  tokenConfig={ tokenConfig }
-                  token={this.state.selectedToken}
-                  selectedStrategy={this.props.strategy}
-                />
-
                 <Flex
                   width={1}
                   alignItems={'center'}
@@ -281,6 +262,24 @@ class StrategyBox extends Component {
                     />
                   </Tooltip>
                 </Flex>
+                <AssetField
+                  fieldInfo={{
+                    name:'score',
+                    props:{
+                      fontWeight:4,
+                      color:'copyColor',
+                      textAlign:'center',
+                      fontSize:[3,'1.8em'],
+                      flexProps:{
+                        justifyContent:'center'
+                      }
+                    },
+                  }}
+                  {...this.props}
+                  tokenConfig={ tokenConfig }
+                  token={this.state.selectedToken}
+                  selectedStrategy={this.props.strategy}
+                />
               </Flex>
             </Flex>
           )

@@ -3,7 +3,6 @@ import ExtLink from '../ExtLink/ExtLink';
 import React, { Component } from 'react';
 import MenuAccount from '../MenuAccount/MenuAccount';
 import RoundButton from '../RoundButton/RoundButton';
-import FunctionsUtil from '../utilities/FunctionsUtil';
 import GovModal from "../utilities/components/GovModal";
 import GovernanceUtil from '../utilities/GovernanceUtil';
 import { Box, Flex, Text, Icon, Button } from "rimble-ui";

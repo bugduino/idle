@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { Flex, Text, Button, Icon } from "rimble-ui";
 import GovernanceUtil from '../utilities/GovernanceUtil';
 import TxProgressBar from '../TxProgressBar/TxProgressBar';
-import DashboardCard from '../DashboardCard/DashboardCard';
 
 class DelegateVesting extends Component {
 

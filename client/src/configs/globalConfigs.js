@@ -135,7 +135,7 @@ const globalConfigs = {
     govTokenApr:'Governance Token APR is calculated using the spot price from Uniswap and the current distribution speed for the specific pool.',
     userDistributionSpeed:'The distribution indicates the amount of tokens distributed for your account based on your current pool share.',
     govTokenRedeemableBalance:'The redeemable balance is re-calculated on every interaction with the smart-contract so, the shown balance may be lower than the real one.',
-    apyLong:'APY is based on (i) the current yield advertised by the underlying protocol, (ii) the current distribution rate of IDLE based on percentage share of liquidity pool and (iii) the current estimated price of IDLE and other governance tokens from Uniswap spot prices.',
+    apyLong:'APY is based on (I) the current yield advertised by the underlying protocol, (II) the current distribution rate of governance tokens provided by underlying lending protocols (III) the current estimated price of governance tokens from Uniswap spot prices. (IV) IDLE token distribution is referred to the entire pool',
     yieldFarming:'Strategies in Idle now will be able to support and distribute a vast range of yield opportunities across multiple protocols. Users will be able to receive their equivalent share of governance token that the protocol is receiving while allocating liquidity to yield farming opportunities. <a target="_blank" rel="nofollow noopener noreferrer" href="https://idlefinance.medium.com/idle-yield-farming-upgrade-18e4bc483c8f">Read more here</a>.',
     riskScore:`It's a single, consistently, comparable value for measuring protocol risk, based on factors including smart contract risk, collateralization and liquidity.<br /><br />The model outputs a 0-10 score, where <strong>0 is the most risky and 10 is the most safe.</strong> Visit <a target="_blank" rel="nofollow noopener noreferrer" href="https://defiscore.io/overview">https://defiscore.io/overview</a> for further information.`,
     curveInstructions:`<strong>Depositing into the pool:</strong><br />By depositing your funds into the Curve Pool you may incur in slippage or bonus depending on if the coin is low or high in the pool.<br /><br /><strong>Withdrawing share from the pool:</strong><br />When you redeem your tokens previously deposited in the Curve Pool you get back an uneven amounts of tokens, that can give slippage or bonus depending on if the coin is low or high in the pool.`
@@ -281,9 +281,9 @@ const globalConfigs = {
       showAPR:false, // Include IDLE Apr
       protocol:'idle',
       showBalance:false, // Include IDLE balance in earnings
-      aprTooltipMode:false,
       distributionFrequency:'day', // Multiply distribution per block
       color:'hsl(162, 100%, 41%)',
+      aprTooltipMode:'distribution',
       icon:'images/tokens/IDLE.png',
       address:'0x875773784Af8135eA0ef43b5a374AaD105c5D39e' // MAIN
       // address:'0xAB6Bdb5CCF38ECDa7A92d04E86f7c53Eb72833dF', // KOVAN

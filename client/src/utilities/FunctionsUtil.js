@@ -2469,6 +2469,8 @@ class FunctionsUtil {
             const idleGovToken = this.getIdleGovToken();
             output = await idleGovToken.getUserDistribution(account,govTokenAvailableTokens);
           break;
+          default:
+          break;
         }
         if (output && !this.BNify(output).isNaN()){
           output = this.BNify(output).div(1e18);
@@ -2504,6 +2506,8 @@ class FunctionsUtil {
             case 'year':
               output = output.times(blocksPerYear);
             break;
+            default:
+            break;
           }
         }
       break;
@@ -2519,6 +2523,8 @@ class FunctionsUtil {
           case 'IDLE':
             const idleGovToken = this.getIdleGovToken();
             output = await idleGovToken.getSpeed(selectedTokenConfig.idle.address);
+          break;
+          default:
           break;
         }
         if (output && !this.BNify(output).isNaN()){
@@ -3962,6 +3968,48 @@ class FunctionsUtil {
     }
     return null;
   }
+  getGovTokensUserDistributionSpeed = async (account,tokenConfig=null,enabledTokens=null) => {
+    const govTokensUserDistribution = {};
+    const govTokens = this.getGlobalConfig(['govTokens']);
+
+    await this.asyncForEach(Object.keys(govTokens),async (govToken) => {
+      if (enabledTokens && !enabledTokens.includes(govToken)){
+        return;
+      }
+
+      const govTokenConfig = govTokens[govToken];
+
+      if (!govTokenConfig.enabled){
+        return;
+      }
+
+      const availableTokens = {};
+      availableTokens[tokenConfig.token] = tokenConfig;
+
+      let output = null;
+      switch (govToken){
+        case 'COMP':
+          output = await this.getCompUserDistribution(account,availableTokens);
+        break;
+        case 'IDLE':
+          const idleGovToken = this.getIdleGovToken();
+          output = await idleGovToken.getUserDistribution(account,availableTokens);
+        break;
+        default:
+        break;
+      }
+
+      if (output){
+        output = output.div(1e18);
+        if (govTokenConfig.distributionFrequency){
+          output = this.fixDistributionSpeed(output,govTokenConfig.distributionFrequency);
+        }
+        govTokensUserDistribution[govToken] = output;
+      }
+    });
+
+    return govTokensUserDistribution;
+  }
   getGovTokensDistributionSpeed = async (tokenConfig,enabledTokens=null) => {
     const govTokensDistribution = {};
     const govTokens = this.getGlobalConfig(['govTokens']);
@@ -3988,6 +4036,8 @@ class FunctionsUtil {
         case 'IDLE':
           const idleGovToken = this.getIdleGovToken();
           govSpeed = await idleGovToken.getSpeed(tokenConfig.idle.address);
+        break;
+        default:
         break;
       }
 
@@ -4024,6 +4074,7 @@ class FunctionsUtil {
       switch (govToken){
         case 'COMP':
           switch (govTokenConfig.aprTooltipMode){
+            default:
             case 'apr':
               [output,tokenAllocation] = await Promise.all([
                 this.getCompAPR(token,tokenConfig),
@@ -4052,11 +4103,14 @@ class FunctionsUtil {
             case 'distribution':
               output = await idleGovToken.getSpeed(tokenConfig.idle.address);
               if (output){
+                output = this.fixTokenDecimals(output,18);
                 output = this.fixDistributionSpeed(output,govTokenConfig.distributionFrequency);
               }
             break;
             case 'userDistribution':
               output = await idleGovToken.getUserDistribution(tokenConfig);
+            break;
+            default:
             break;
           }
         break;

@@ -1088,6 +1088,7 @@ class AssetField extends Component {
                         const tooltipMode = this.functionsUtil.getGlobalConfig(['govTokens',govToken,'aprTooltipMode']);
                         let value = this.state.govTokensAprs[govToken].toFixed(decimals);
                         switch (tooltipMode){
+                          default:
                           case 'apr':
                             value += '%';
                           break;

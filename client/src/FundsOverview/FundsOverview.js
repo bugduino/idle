@@ -1,10 +1,10 @@
 import theme from '../theme';
 import Title from '../Title/Title';
 import React, { Component } from 'react';
+import { Flex, Heading, Text } from "rimble-ui";
 import AssetField from '../AssetField/AssetField';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import DashboardCard from '../DashboardCard/DashboardCard';
-import { Flex, Heading, Text, Icon, Tooltip } from "rimble-ui";
 import PortfolioEquity from '../PortfolioEquity/PortfolioEquity';
 
 class FundsOverview extends Component {
@@ -14,13 +14,17 @@ class FundsOverview extends Component {
     aggregatedValues:[],
     govTokensTotalApr:null,
     govTokensUserBalance:null,
+    govTokensDistribution:null,
     govTokensTotalBalance:null,
     govTokensTotalAprTooltip:null,
+    idleTokenUserDistribution:null,
+    govTokensDistributionTooltip:null,
     govTokensTotalBalanceTooltip:null
   };
 
   // Utils
   functionsUtil = null;
+  idleGovToken = null;
 
   loadUtils(){
     if (this.functionsUtil){
@@ -28,6 +32,8 @@ class FundsOverview extends Component {
     } else {
       this.functionsUtil = new FunctionsUtil(this.props);
     }
+
+    this.idleGovToken = this.functionsUtil.getIdleGovToken();
   }
 
   async componentWillMount(){
@@ -41,12 +47,14 @@ class FundsOverview extends Component {
 
     const [
       govTokensAprs,
+      idleTokenUserDistribution,
       govTokensUserBalance,
       avgAPY,
       days
     ] = await Promise.all([
       this.functionsUtil.getGovTokensAprs(this.props.selectedToken,this.props.tokenConfig),
-      this.functionsUtil.getGovTokensUserBalances(this.props.account,govTokenAvailableTokens,'DAI'),
+      this.idleGovToken.getUserDistribution(this.props.account,govTokenAvailableTokens,true),
+      this.functionsUtil.getGovTokensUserBalances(this.props.account,govTokenAvailableTokens,null),
       this.functionsUtil.loadAssetField('avgAPY',this.props.selectedToken,this.props.tokenConfig,this.props.account),
       this.functionsUtil.loadAssetField('daysFirstDeposit',this.props.selectedToken,this.props.tokenConfig,this.props.account),
     ]);
@@ -58,7 +66,7 @@ class FundsOverview extends Component {
     const govTokensTotalBalanceTooltip = govTokensUserBalance ? Object.keys(govTokensUserBalance).map( govToken => {
       const balance = govTokensUserBalance[govToken];
       if (balance.gt(0)){
-        return `${govToken}: $${balance.toFixed(2)}`;
+        return `+${balance.toFixed(2)} ${govToken}`;
       } else {
         return null;
       }
@@ -77,6 +85,17 @@ class FundsOverview extends Component {
       }
       return null;
     }).filter(v => (v !== null)) : null;
+
+    /*
+    const govTokensDistributionTooltip = govTokensUserDistribution ? Object.keys(govTokensUserDistribution).map( govToken => {
+      const speed = govTokensUserDistribution[govToken];
+      if (speed.gt(0)){
+        const distributionFrequency = this.functionsUtil.getGlobalConfig(['govTokens',govToken,'distributionFrequency']);
+        return `+${speed.toFixed(4)} ${govToken}/${distributionFrequency}`;
+      }
+      return null;
+    }).filter(v => (v !== null)) : null;
+    */
 
     const aggregatedValues = [
       {
@@ -168,6 +187,7 @@ class FundsOverview extends Component {
       govTokensUserBalance,
       govTokensTotalBalance,
       govTokensTotalAprTooltip,
+      idleTokenUserDistribution,
       govTokensTotalBalanceTooltip
     });
   }
@@ -384,30 +404,30 @@ class FundsOverview extends Component {
                 }}
               />
               {
-                this.state.govTokensUserBalance && Object.keys(this.state.govTokensUserBalance).length===1 ? (
+                this.state.govTokensTotalBalanceTooltip && this.state.govTokensTotalBalanceTooltip.length>0 && (
                   <Flex
                     width={1}
                     alignItems={'center'}
-                    flexDirection={'row'}
+                    flexDirection={'column'}
                     justifyContent={'center'}
                   >
                     {
-                      Object.keys(this.state.govTokensUserBalance).map((govToken,govTokenIndex) => (
+                      this.state.govTokensTotalBalanceTooltip.map((govTokenBalance,govTokenIndex) => (
                         <Text
                           fontSize={1}
                           lineHeight={1}
                           fontWeight={2}
                           color={'cellText'}
                           textAlign={'center'}
-                          ml={govTokenIndex ? 2 : 0}
-                          key={`govToken_${govToken}`}
+                          mt={govTokenIndex ? 1 : 0}
+                          key={`govToken_${govTokenIndex}`}
                         >
-                          ${this.state.govTokensUserBalance[govToken].toFixed(4)} {govToken}
+                          {govTokenBalance}
                         </Text>
                       ))
                     }
                   </Flex>
-                ) : this.state.govTokensUserBalance && Object.keys(this.state.govTokensUserBalance).length>1 ? (
+                )/* : this.state.govTokensUserBalance && Object.keys(this.state.govTokensUserBalance).length>1 ? (
                   <Flex
                     width={1}
                     alignItems={'center'}
@@ -425,7 +445,7 @@ class FundsOverview extends Component {
                     </Text>
                     <Tooltip
                       placement={'top'}
-                      message={this.state.govTokensTotalBalanceTooltip.join('; ')}
+                      message={this.state.govTokensTotalBalanceTooltip.join(' / ')}
                     >
                       <Icon
                         ml={1}
@@ -436,6 +456,7 @@ class FundsOverview extends Component {
                     </Tooltip>
                   </Flex>
                 ) : null
+                */
               }
             </Flex>
             <Flex
@@ -503,6 +524,26 @@ class FundsOverview extends Component {
                 }}
               />
               {
+                this.state.idleTokenUserDistribution && (
+                  <Flex
+                    width={1}
+                    alignItems={'center'}
+                    flexDirection={'column'}
+                    justifyContent={'center'}
+                  >
+                    <Text
+                      mt={1}
+                      fontSize={1}
+                      lineHeight={1}
+                      fontWeight={2}
+                      color={'cellText'}
+                      textAlign={'center'}
+                    >
+                      {this.state.idleTokenUserDistribution.toFixed(4)} {this.idleGovToken.tokenName}/{this.idleGovToken.tokenConfig.distributionFrequency}
+                    </Text>
+                  </Flex>
+                )
+                /*
                 this.state.govTokensAprs && Object.keys(this.state.govTokensAprs).length===1 ? (
                   <Flex
                     width={1}
@@ -555,6 +596,7 @@ class FundsOverview extends Component {
                     </Tooltip>
                   </Flex>
                 ) : null
+                */
               }
             </Flex>
             <Flex

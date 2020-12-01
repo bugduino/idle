@@ -132,7 +132,7 @@ class StrategyPage extends Component {
         const govTokensTotalBalanceTooltip = govTokensUserBalance ? Object.keys(govTokensUserBalance).map( govToken => {
           const balance = govTokensUserBalance[govToken];
           if (balance.gt(0)){
-            return `${govToken}: ${balance.toFixed(2)}`;
+            return `+${balance.toFixed(2)} ${govToken}`;
           } else {
             return null;
           }
@@ -164,7 +164,7 @@ class StrategyPage extends Component {
             },
             props:{
               title:'Total Earnings',
-              description:'Total earnings including accrued governance tokens'+(govTokensTotalBalance && govTokensTotalBalance.gt(0) ? ` [ ${govTokensTotalBalanceTooltip.join(' / ')} ], earnings can vary depending on the current token spot price from Uniswap` : ''),
+              description:'Total earnings including accrued governance tokens'+(govTokensTotalBalance && govTokensTotalBalance.gt(0) ? ` [ ${govTokensTotalBalanceTooltip.join(' / ')} ];` : ''),
               children:(
                 <Flex
                   alignItems={'center'}
