@@ -280,6 +280,7 @@ const globalConfigs = {
       showAUM:false, // Include IDLE balance in AUM
       showAPR:false, // Include IDLE Apr
       protocol:'idle',
+      showPrice:false, // Show price in Yield Farming section
       showBalance:false, // Include IDLE balance in earnings
       aprTooltipMode:false,
       distributionFrequency:'day', // Multiply distribution per block
@@ -295,9 +296,10 @@ const globalConfigs = {
       enabled:true,
       showAUM:true, // Include IDLE balance in AUM
       showAPR:true, // Include COMP Apr
+      showPrice:true,
       showBalance:true, // Include COMP balance in earnings
       protocol:'compound',
-      aprTooltipMode:'apr',
+      aprTooltipMode:false,
       distributionFrequency:'day',
       color:'hsl(162, 100%, 41%)',
       address:'0xc00e94cb662c3520282e6f5717214004a7f26888', // MAIN

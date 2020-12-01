@@ -213,6 +213,7 @@ class StrategyBox extends Component {
                 />
                 <AssetField
                   fieldInfo={{
+                    showLoader:false,
                     name:'idleDistribution',
                     props:{
                       decimals:2,

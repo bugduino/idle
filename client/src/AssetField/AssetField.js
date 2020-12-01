@@ -105,8 +105,12 @@ class AssetField extends Component {
         case 'tokenPrice':
           output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account,addGovTokens);
           if (output && setState){
+            let tokenPrice = '-';
+            if (typeof this.props.tokenConfig.showPrice === 'undefined' || this.props.tokenConfig.showPrice){
+              tokenPrice = output.toString();
+            }
             this.setStateSafe({
-              tokenPrice:output.toString()
+              tokenPrice
             });
           }
         break;

@@ -478,7 +478,12 @@ class StrategyPage extends Component {
                   </Flex>
                 )
               }
-              <Flex id="available-assets" width={1} flexDirection={'column'}>
+              <Flex
+                width={1}
+                id={'available-assets'}
+                flexDirection={'column'}
+                mb={!this.state.depositedTokens.length ? 4 : 0}
+              >
                 {
                   (this.state.depositedTokens.length>0 || Object.keys(this.state.tokensToMigrate).length>0 || this.state.remainingTokens.length>0 ) &&
                     <Title my={[3,4]}>Available assets</Title>
@@ -547,7 +552,7 @@ class StrategyPage extends Component {
                             title:'APY',
                             desc:apyLong,
                             props:{
-                              width:[0.29,0.11],
+                              width:[0.29,0.15],
                             },
                             parentProps:{
                               flexDirection:'column',
@@ -560,6 +565,7 @@ class StrategyPage extends Component {
                               },
                               {
                                 name:'idleDistribution',
+                                showLoader:false,
                                 props:{
                                   decimals:this.props.isMobile ? 1 : 2,
                                   fontSize:this.props.isMobile ? '9px' : 0
@@ -568,10 +574,10 @@ class StrategyPage extends Component {
                             ]
                           },
                           {
-                            title:this.props.isMobile ? 'SCORE' : 'RISK SCORE',
+                            title:'SCORE',
                             desc:riskScore,
                             props:{
-                              width:[0.21,0.16],
+                              width:[0.21,0.12],
                             },
                             fields:[
                               {
@@ -583,7 +589,7 @@ class StrategyPage extends Component {
                             title:'BALANCE',
                             mobile:false,
                             props:{
-                              width:0.16,
+                              width:[0.16,0.14],
                             },
                             parentProps:{
                               width:1,
@@ -600,7 +606,7 @@ class StrategyPage extends Component {
                             title:'FARMING',
                             desc:yieldFarming,
                             props:{
-                              width:[0.25,0.12],
+                              width:[0.25,0.14],
                               textAlign:'center'
                             },
                             fields:[
@@ -717,6 +723,7 @@ class StrategyPage extends Component {
                               },
                               {
                                 name:'idleDistribution',
+                                showLoader:false,
                                 props:{
                                   decimals:this.props.isMobile ? 1 : 2,
                                   fontSize:this.props.isMobile ? '9px' : 0
@@ -725,10 +732,10 @@ class StrategyPage extends Component {
                             ]
                           },
                           {
-                            title:this.props.isMobile ? 'SCORE' : 'RISK SCORE',
+                            title:'SCORE',
                             desc:riskScore,
                             props:{
-                              width:[0.21,0.12],
+                              width:[0.21,0.10],
                             },
                             parentProps:{
                               alignItems:['center','flex-start'],
@@ -756,7 +763,7 @@ class StrategyPage extends Component {
                             title:'FARMING',
                             desc:yieldFarming,
                             props:{
-                              width:[0.25,0.09],
+                              width:[0.25,0.11],
                               textAlign:'center'
                             },
                             fields:[
@@ -899,7 +906,7 @@ class StrategyPage extends Component {
                             title:'APY',
                             desc:apyLong,
                             props:{
-                              width:[0.31,this.state.depositedTokens.length>0 ? 0.10 : 0.13],
+                              width:[0.31,this.state.depositedTokens.length>0 ? 0.14 : 0.17],
                             },
                             parentProps:{
                               flexDirection:'column',
@@ -912,6 +919,7 @@ class StrategyPage extends Component {
                               },
                               {
                                 name:'idleDistribution',
+                                showLoader:false,
                                 props:{
                                   decimals:this.props.isMobile ? 1 : 2,
                                   fontSize:this.props.isMobile ? '9px' : 0
@@ -920,10 +928,10 @@ class StrategyPage extends Component {
                             ]
                           },
                           {
-                            title:this.props.isMobile ? 'SCORE' : 'RISK SCORE',
+                            title:'SCORE',
                             desc:riskScore,
                             props:{
-                              width:[0.22,0.17],
+                              width:[0.22,0.13],
                             },
                             fields:[
                               {
@@ -935,7 +943,7 @@ class StrategyPage extends Component {
                             title:'APR LAST WEEK',
                             mobile:false,
                             props:{
-                              width: this.state.depositedTokens.length>0 ? 0.28 : 0.25,
+                              width:this.state.depositedTokens.length>0 ? 0.28 : 0.25,
                             },
                             parentProps:{
                               width:1,
@@ -1020,7 +1028,7 @@ class StrategyPage extends Component {
                           mobile:false,
                           title:'BALANCE',
                           props:{
-                            width:[0.33, 0.17],
+                            width:[0.33, 0.15],
                           },
                           fields:[
                             {
@@ -1035,7 +1043,7 @@ class StrategyPage extends Component {
                           title:'REDEEMABLE',
                           desc:this.functionsUtil.getGlobalConfig(['messages','govTokenRedeemableBalance']),
                           props:{
-                            width:[0.33,0.17],
+                            width:[0.33,0.19],
                             justifyContent:['center','flex-start']
                           },
                           fields:[
@@ -1051,7 +1059,7 @@ class StrategyPage extends Component {
                           title:'DISTRIBUTION',
                           desc:this.functionsUtil.getGlobalConfig(['messages','userDistributionSpeed']),
                           props:{
-                            width:[0.35,0.17],
+                            width:[0.35,0.19],
                           },
                           fields:[
                             {
@@ -1067,7 +1075,7 @@ class StrategyPage extends Component {
                           title:'APR',
                           desc:this.functionsUtil.getGlobalConfig(['messages','govTokenApr']),
                           props:{
-                            width:[0.2,0.17],
+                            width:[0.2,0.15],
                           },
                           fields:[
                             {
