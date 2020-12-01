@@ -647,6 +647,7 @@ class Stats extends Component {
                           },
                           {
                             name:'idleDistribution',
+                            showLoader:false,
                             props:{
                               decimals:this.props.isMobile ? 1 : 2,
                               fontSize:this.props.isMobile ? '9px' : 0

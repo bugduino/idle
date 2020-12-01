@@ -2515,10 +2515,7 @@ class FunctionsUtil {
         const selectedTokenConfig = govTokenAvailableTokens[this.props.selectedToken];
         switch (token){
           case 'COMP':
-            const cTokenInfo = selectedTokenConfig.protocols.find( p => (p.name === 'compound') );
-            if (cTokenInfo){
-              output = await this.getCompSpeed(cTokenInfo.address);
-            }
+            output = await this.getCompDistribution(selectedTokenConfig);
           break;
           case 'IDLE':
             const idleGovToken = this.getIdleGovToken();
@@ -3661,9 +3658,9 @@ class FunctionsUtil {
     }
     return null;
   }
-  getCompDistribution = async (tokenConfig,cTokenIdleSupply=null) => {
+  getCompDistribution = async (tokenConfig,cTokenIdleSupply=null,annualize=true) => {
 
-    const cachedDataKey = `getCompDistribution_${tokenConfig.idle.token}_${cTokenIdleSupply}`;
+    const cachedDataKey = `getCompDistribution_${tokenConfig.idle.token}_${cTokenIdleSupply}_${annualize}`;
     const cachedData = this.getCachedData(cachedDataKey);
     if (cachedData !== null && !this.BNify(cachedData).isNaN()){
       return cachedData;
@@ -3701,7 +3698,12 @@ class FunctionsUtil {
             const blocksPerYear = this.getGlobalConfig(['network','blocksPerYear']);
 
             // Take 50% of distrubution for lenders side
-            const compDistribution = this.BNify(compSpeed).times(this.BNify(blocksPerYear)).div(1e18);
+            const compoundPoolShare = this.BNify(cTokenIdleSupply).div(this.BNify(cTokenTotalSupply));
+            let compDistribution = this.BNify(compSpeed).times(compoundPoolShare);
+
+            if (annualize){
+              compDistribution = compDistribution.div(1e18).times(this.BNify(blocksPerYear));
+            }
 
             this.setCachedData(cachedDataKey,compDistribution);
 
@@ -3731,15 +3733,15 @@ class FunctionsUtil {
       const cTokenInfo = tokenConfig.protocols.find( p => (p.name === 'compound') );
       if (cTokenInfo){
         const [
-          compSpeed,
-          userPoolShare
+          userPoolShare,
+          compDistribution,
         ] = await Promise.all([
-          this.getCompSpeed(cTokenInfo.address),
-          this.getUserPoolShare(account,tokenConfig)
+          this.getUserPoolShare(account,tokenConfig,false),
+          this.getCompDistribution(tokenConfig,null,false),
         ]);
 
-        if (compSpeed && userPoolShare){
-          output = output.plus(compSpeed.times(userPoolShare));
+        if (compDistribution && userPoolShare){
+          output = output.plus(compDistribution.times(userPoolShare));
         }
       }
     });
@@ -4030,7 +4032,7 @@ class FunctionsUtil {
         case 'COMP':
           const cTokenInfo = tokenConfig.protocols.find( p => (p.name === 'compound') );
           if (cTokenInfo){
-            govSpeed = await this.getCompSpeed(cTokenInfo.address);
+            govSpeed = await this.getCompDistribution(tokenConfig,null,false);
           }
         break;
         case 'IDLE':
