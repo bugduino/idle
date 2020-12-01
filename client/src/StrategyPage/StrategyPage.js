@@ -873,7 +873,7 @@ class StrategyPage extends Component {
                           {
                             title:'CURRENCY',
                             props:{
-                              width:[0.27,0.15]
+                              width:[0.27,0.13]
                             },
                             fields:[
                               {
@@ -892,7 +892,7 @@ class StrategyPage extends Component {
                             title:'POOL',
                             mobile:this.props.account !== null,
                             props:{
-                              width:[0.21, 0.12],
+                              width:[0.21, 0.10],
                             },
                             fields:[
                               {
@@ -932,7 +932,7 @@ class StrategyPage extends Component {
                             title:'SCORE',
                             desc:riskScore,
                             props:{
-                              width:[0.22,0.13],
+                              width:[0.22,0.10],
                             },
                             fields:[
                               {
@@ -941,10 +941,27 @@ class StrategyPage extends Component {
                             ]
                           },
                           {
+                            mobile:false,
+                            title:'FARMING',
+                            desc:yieldFarming,
+                            props:{
+                              width:[0.25,0.11],
+                              textAlign:'center'
+                            },
+                            fields:[
+                              {
+                                name:'govTokens',
+                                props:{
+                                  decimals:2
+                                }
+                              }
+                            ]
+                          },
+                          {
                             title:'APR LAST WEEK',
                             mobile:false,
                             props:{
-                              width:this.state.depositedTokens.length>0 ? 0.28 : 0.25,
+                              width:this.state.depositedTokens.length>0 ? 0.25 : 0.22,
                             },
                             parentProps:{
                               width:1,
