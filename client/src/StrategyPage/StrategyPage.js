@@ -141,9 +141,6 @@ class StrategyPage extends Component {
         const earningsStart = totalEarnings.plus(govTokensTotalBalance);
         const earningsEnd = totalAmountLent.times(avgAPY.div(100)).plus(govTokensTotalBalance);
 
-        const idleTokenEnabled = this.functionsUtil.getGlobalConfig(['govTokens','IDLE','enabled']);
-        const showAPYDisclaimer = idleTokenEnabled && this.functionsUtil.getGlobalConfig(['govTokens','IDLE','showAPR']);
-
         newState.aggregatedValues = [
           {
             flexProps:{
@@ -154,7 +151,7 @@ class StrategyPage extends Component {
               label:'',
               title:'Avg APY',
               value:avgAPY.toFixed(2)+'<small>%</small>',
-              description:showAPYDisclaimer ? this.functionsUtil.getGlobalConfig(['messages','apyLong']) : null
+              description:this.functionsUtil.getGlobalConfig(['messages','apyLong'])
             }
           },
           {
@@ -164,7 +161,7 @@ class StrategyPage extends Component {
             },
             props:{
               title:'Total Earnings',
-              description:'Total earnings including accrued governance tokens'+(govTokensTotalBalance && govTokensTotalBalance.gt(0) ? ` [ ${govTokensTotalBalanceTooltip.join(' / ')} ];` : ''),
+              description:'Total earnings does not include accrued governance tokens: '+(govTokensTotalBalance && govTokensTotalBalance.gt(0) ? ` (${govTokensTotalBalanceTooltip.join(' / ')})` : ''),
               children:(
                 <Flex
                   alignItems={'center'}
@@ -256,7 +253,6 @@ class StrategyPage extends Component {
   render(){
     const govTokens = this.functionsUtil.getGlobalConfig(['govTokens']);
     const apyLong = this.functionsUtil.getGlobalConfig(['messages','apyLong']);
-    const showAPYDisclaimer = govTokens.IDLE.enabled && govTokens.IDLE.showAPR;
     const riskScore = this.functionsUtil.getGlobalConfig(['messages','riskScore']);
     const yieldFarming = this.functionsUtil.getGlobalConfig(['messages','yieldFarming']);
 
@@ -549,7 +545,7 @@ class StrategyPage extends Component {
                           },
                           {
                             title:'APY',
-                            desc:showAPYDisclaimer ? apyLong : null,
+                            desc:apyLong,
                             props:{
                               width:[0.29,0.11],
                             },
@@ -706,7 +702,7 @@ class StrategyPage extends Component {
                           },
                           {
                             title:'APY',
-                            desc:showAPYDisclaimer ? apyLong : null,
+                            desc:apyLong,
                             props:{
                               width:[0.30,0.14],
                             },
@@ -901,7 +897,7 @@ class StrategyPage extends Component {
                           },
                           {
                             title:'APY',
-                            desc:showAPYDisclaimer ? apyLong : null,
+                            desc:apyLong,
                             props:{
                               width:[0.31,this.state.depositedTokens.length>0 ? 0.10 : 0.13],
                             },
