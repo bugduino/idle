@@ -281,9 +281,9 @@ const globalConfigs = {
       showAPR:false, // Include IDLE Apr
       protocol:'idle',
       showBalance:false, // Include IDLE balance in earnings
+      aprTooltipMode:false,
       distributionFrequency:'day', // Multiply distribution per block
       color:'hsl(162, 100%, 41%)',
-      aprTooltipMode:'distribution',
       icon:'images/tokens/IDLE.png',
       address:'0x875773784Af8135eA0ef43b5a374AaD105c5D39e' // MAIN
       // address:'0xAB6Bdb5CCF38ECDa7A92d04E86f7c53Eb72833dF', // KOVAN
