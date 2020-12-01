@@ -907,7 +907,7 @@ class StrategyPage extends Component {
                             title:'APY',
                             desc:apyLong,
                             props:{
-                              width:[0.31,this.state.depositedTokens.length>0 ? 0.14 : 0.17],
+                              width:[0.31,this.state.depositedTokens.length>0 ? 0.14 : 0.14],
                             },
                             parentProps:{
                               flexDirection:'column',
@@ -961,7 +961,7 @@ class StrategyPage extends Component {
                             title:'APR LAST WEEK',
                             mobile:false,
                             props:{
-                              width:this.state.depositedTokens.length>0 ? 0.25 : 0.22,
+                              width:0.25,
                             },
                             parentProps:{
                               width:1,
