@@ -1,5 +1,4 @@
 import FunctionsUtil from './FunctionsUtil';
-import VesterABI from '../contracts/Vester.json';
 
 class IdleGovToken{
   // Attributes
@@ -39,21 +38,13 @@ class IdleGovToken{
     return this.functionsUtil.contractMethodSendWrapper('EarlyRewards', 'claim', [], callback, callbackReceipt);
   }
 
-  delegateVesting = async (account=null,delegate=null) => {
+  getPriorVotes = async (account=null) => {
     account = account ? account : this.props.account;
-
-    const founderVesting = await this.functionsUtil.genericContractCall('VesterFactory','vestingContracts',[account]);
-    console.log('founderVesting',account,founderVesting);
-
-    if (parseInt(founderVesting) === 0){
-      return false;
+    let priorVotes = await this.functionsUtil.genericContractCall(this.tokenName,'getPriorVotes',[account]);
+    if (priorVotes){
+      return this.functionsUtil.BNify(priorVotes);
     }
-
-    await this.props.initContract('Vester',founderVesting,VesterABI);
-    // await this.functionsUtil.contractMethodSendWrapper('IDLE','delegate',[delegate]);
-    await this.functionsUtil.contractMethodSendWrapper('Vester','setDelegate',[delegate]);
-
-    console.log('delegates vesterFounder to founder');
+    return null;
   }
 
   getUnclaimedTokens = async () => {
@@ -65,7 +56,6 @@ class IdleGovToken{
   }
 
   getAPR = async (token,tokenConfig,conversionRate=null) => {
-
     const IDLETokenConfig = this.functionsUtil.getGlobalConfig(['govTokens',this.tokenName]);
     if (!IDLETokenConfig.enabled){
       return false;

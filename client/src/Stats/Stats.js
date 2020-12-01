@@ -587,7 +587,7 @@ class Stats extends Component {
                       {
                         title:'CURRENCY',
                         props:{
-                          width:[0.3,0.15]
+                          width:[0.26,0.15]
                         },
                         fields:[
                           {
@@ -605,7 +605,7 @@ class Stats extends Component {
                       {
                         title:'POOL',
                         props:{
-                          width:[0.21,0.17],
+                          width:[0.22,0.14],
                         },
                         fields:[
                           {
@@ -634,12 +634,24 @@ class Stats extends Component {
                         title:'APY',
                         desc:showAPYDisclaimer ? apyLong : null,
                         props:{
-                          width: [0.19,0.11],
+                          width: [0.29,0.14],
+                        },
+                        parentProps:{
+                          flexDirection:'column',
+                          alignItems:'flex-start',
                         },
                         fields:[
                           {
-                            name:'apy'
-                          }
+                            name:'apy',
+                            showTooltip:true
+                          },
+                          {
+                            name:'idleDistribution',
+                            props:{
+                              decimals:this.props.isMobile ? 1 : 2,
+                              fontSize:this.props.isMobile ? '9px' : 0
+                            }
+                          },
                         ]
                       },
                       {
@@ -674,7 +686,7 @@ class Stats extends Component {
                       {
                         title:'',
                         props:{
-                          width:[0.3,0.16],
+                          width:[0.23,0.16],
                         },
                         parentProps:{
                           width:1
@@ -682,7 +694,7 @@ class Stats extends Component {
                         fields:[
                           {
                             name:'button',
-                            label:'View stats',
+                            label:this.props.isMobile ? 'View' : 'View stats',
                             props:{
                               width:1,
                               fontSize:3,

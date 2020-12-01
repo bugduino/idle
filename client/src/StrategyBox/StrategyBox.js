@@ -89,7 +89,8 @@ class StrategyBox extends Component {
     return (
       <DashboardCard
         cardProps={{
-          pt:[3,4],
+          pt:[3,3],
+          mt:[3,0],
           ml:['0.35em',0],
           width:[1,'21em'],
           mr:['0.35em','2em'],
@@ -153,7 +154,7 @@ class StrategyBox extends Component {
             </Flex>
           ) : (
             <Flex
-              my={3}
+              my={[0,3]}
               flexDirection={'row'}
               alignItems={'center'}
               justifyContent={'center'}
@@ -175,6 +176,25 @@ class StrategyBox extends Component {
                       color:'copyColor',
                       textAlign:'center',
                       fontSize:[3,'1.8em'],
+                      flexProps:{
+                        justifyContent:'center'
+                      }
+                    },
+                  }}
+                  {...this.props}
+                  tokenConfig={ tokenConfig }
+                  token={this.state.selectedToken}
+                  selectedStrategy={this.props.strategy}
+                />
+                <AssetField
+                  fieldInfo={{
+                    name:'idleDistribution',
+                    props:{
+                      decimals:2,
+                      fontWeight:2,
+                      fontSize:[0,1],
+                      color:'cellText',
+                      textAlign:'center',
                       flexProps:{
                         justifyContent:'center'
                       }

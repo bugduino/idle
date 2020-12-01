@@ -1,5 +1,6 @@
 import Batcher from 'web3-batched-send';
 import FunctionsUtil from './FunctionsUtil';
+import VesterABI from '../contracts/Vester.json';
 
 // const env = process.env;
 
@@ -58,6 +59,40 @@ class GovernanceUtil {
       const balance = await this.functionsUtil.getContractBalance(contractName, account);
       if (balance){
         return this.functionsUtil.setCachedData(cachedDataKey,this.functionsUtil.BNify(balance));
+      }
+    }
+    return null;
+  }
+
+  getVestingContract = async (account=null) => {
+    account = account ? account : this.props.account;
+    const vestingContract = await this.functionsUtil.genericContractCall('VesterFactory','vestingContracts',[account]);
+
+    if (parseInt(vestingContract) === 0){
+      return null;
+    }
+    // Init vesting contract
+    await this.props.initContract('VestingContract',vestingContract,VesterABI);
+    return vestingContract;
+  }
+
+  delegateVesting = async (account=null,delegate=null,callback=null,callbackReceipt=null) => {
+    account = account ? account : this.props.account;
+    const founderVesting = await this.getVestingContract(account);
+    if (founderVesting){
+      // await this.functionsUtil.contractMethodSendWrapper('IDLE','delegate',[delegate]);
+      return await this.functionsUtil.contractMethodSendWrapper('VestingContract','setDelegate',[delegate],callback,callbackReceipt);
+    }
+    return null;
+  }
+
+  getVestingAmount = async (account=null) => {
+    account = account ? account : this.props.account;
+    const founderVesting = await this.getVestingContract(account);
+    if (founderVesting){
+      let vestingAmount = await this.functionsUtil.genericContractCall('VestingContract','vestingAmount');
+      if (vestingAmount){
+        return this.functionsUtil.BNify(vestingAmount);
       }
     }
     return null;

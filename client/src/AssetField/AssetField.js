@@ -310,8 +310,12 @@ class AssetField extends Component {
         case 'apr':
           output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account,addGovTokens);
           if (output && setState){
+            let tokenAPR = '-';
+            if (typeof this.props.tokenConfig.showAPR === 'undefined' || this.props.tokenConfig.showAPR){
+              tokenAPR = parseFloat(output).toFixed(decimals);
+            }
             this.setStateSafe({
-              tokenAPR:parseFloat(output).toFixed(decimals)
+              tokenAPR
             });
           }
         break;
@@ -404,8 +408,12 @@ class AssetField extends Component {
           // debugger;
           if (output && setState){
             if (!output.isNaN()){
+              const tokenAPY = parseFloat(output).toFixed(decimals);
+              const showTooltip = !this.props.isMobile && (fieldInfo.showTooltip !== undefined && fieldInfo.showTooltip);
+              const govTokensAprs = showTooltip ? await this.functionsUtil.getGovTokensAprs(this.props.token,this.props.tokenConfig) : null;
               this.setStateSafe({
-                tokenAPY:parseFloat(output).toFixed(decimals)
+                tokenAPY,
+                govTokensAprs
               });
             } else {
               this.setStateSafe({
@@ -920,7 +928,7 @@ class AssetField extends Component {
                   fieldInfo={{
                     name:'iconTooltip',
                     tooltipProps:{
-                      message:`${govTokenConfig.token}`+(this.state.getGovTokensDistributionSpeed && this.state.getGovTokensDistributionSpeed[govTokenConfig.token] ? `: ${this.state.getGovTokensDistributionSpeed[govTokenConfig.token].toFixed(3)}/block` : '')
+                      message:`${govTokenConfig.token}`+(this.state.getGovTokensDistributionSpeed && this.state.getGovTokensDistributionSpeed[govTokenConfig.token] ? `: ${this.state.getGovTokensDistributionSpeed[govTokenConfig.token].toFixed(decimals)}/${govTokenConfig.distributionFrequency}` : '')
                     },
                     props:{
                       borderRadius:'50%',
@@ -1016,14 +1024,26 @@ class AssetField extends Component {
           </VariationNumber>
         ) : loader
       break;
+      case 'idleDistribution':
+        const governanceTokenName = this.functionsUtil.getGlobalConfig(['governance','props','tokenName']);
+        const idleTokenConfig = this.functionsUtil.getGlobalConfig(['govTokens',governanceTokenName]);
+        output = this.state.idleDistribution ? (
+          <Text {...fieldProps}>+{this.state.idleDistribution.toFixed(decimals)} IDLE/{idleTokenConfig.distributionFrequency}</Text>
+        ) : loader
+      break;
+      case 'userDistributionSpeed':
+        output = this.state.userDistributionSpeed ? (
+          <Text {...fieldProps}>{this.state.userDistributionSpeed.toFixed(decimals)}/{this.props.tokenConfig.distributionFrequency}</Text>
+        ) : loader
+      break;
       case 'distributionSpeed':
         output = this.state.distributionSpeed ? (
-          <Text {...fieldProps}>{this.state.distributionSpeed.toFixed(decimals)}/block</Text>
+          <Text {...fieldProps}>{this.state.distributionSpeed.toFixed(decimals)}</Text>
         ) : loader
       break;
       case 'apr':
         output = this.state.tokenAPR ? (
-          <Text {...fieldProps}>{this.state.tokenAPR}%</Text>
+          <Text {...fieldProps}>{this.state.tokenAPR}{!isNaN(parseFloat(this.state.tokenAPR)) ? '%' : ''}</Text>
         ) : loader
       break;
       case 'oldApy':
@@ -1047,9 +1067,6 @@ class AssetField extends Component {
         ) : loader
       break;
       case 'apy':
-        const idleTokenEnabled = this.functionsUtil.getGlobalConfig(['govTokens','IDLE','enabled']);
-        const apyLong = this.functionsUtil.getGlobalConfig(['messages','apyLong']);
-        const showTooltip = !this.props.isMobile && (fieldInfo.showTooltip !== undefined && fieldInfo.showTooltip);
         output = this.state.tokenAPY !== undefined ? (
           <Flex
             alignItems={'center'}
@@ -1057,7 +1074,7 @@ class AssetField extends Component {
           >
             <Text {...fieldProps}>{this.state.tokenAPY !== false ? this.state.tokenAPY : '-' }<small>%</small></Text>
             {
-              idleTokenEnabled && showTooltip && 
+              this.state.govTokensAprs && Object.keys(this.state.govTokensAprs).length>0 && 
                 <AssetField
                   fieldInfo={{
                     name:'tooltip',
@@ -1065,8 +1082,21 @@ class AssetField extends Component {
                       iconProps:{
                         ml:1
                       },
-                      message:apyLong,
                       placement:'top',
+                      message:Object.keys(this.state.govTokensAprs).map( govToken => {
+                        const distributionFrequency = this.functionsUtil.getGlobalConfig(['govTokens',govToken,'distributionFrequency']);
+                        const tooltipMode = this.functionsUtil.getGlobalConfig(['govTokens',govToken,'aprTooltipMode']);
+                        let value = this.state.govTokensAprs[govToken].toFixed(decimals);
+                        switch (tooltipMode){
+                          case 'apr':
+                            value += '%';
+                          break;
+                          case 'distribution':
+                            value = `${value}/${distributionFrequency}`;
+                          break;
+                        }
+                        return `${govToken}: ${value}`
+                      }).join('; ')
                     }
                   }}
                 />

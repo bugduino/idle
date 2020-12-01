@@ -5,26 +5,31 @@ import MenuAccount from '../MenuAccount/MenuAccount';
 import RoundButton from '../RoundButton/RoundButton';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import GovModal from "../utilities/components/GovModal";
+import GovernanceUtil from '../utilities/GovernanceUtil';
 import { Box, Flex, Text, Icon, Button } from "rimble-ui";
+import DelegateVesting from '../DelegateVesting/DelegateVesting';
 
 class DashboardHeader extends Component {
 
   state = {
     unclaimed:null,
+    vestingAmount:null,
     govModalOpened:false
   }
 
   // Utils
   idleGovToken = null;
   functionsUtil = null;
+  governanceUtil = null;
 
   loadUtils(){
-    if (this.functionsUtil){
-      this.functionsUtil.setProps(this.props);
+    if (this.governanceUtil){
+      this.governanceUtil.setProps(this.props);
     } else {
-      this.functionsUtil = new FunctionsUtil(this.props);
+      this.governanceUtil = new GovernanceUtil(this.props);
     }
 
+    this.functionsUtil = this.governanceUtil.functionsUtil;
     this.idleGovToken = this.functionsUtil.getIdleGovToken();
   }
 
@@ -75,10 +80,9 @@ class DashboardHeader extends Component {
   render() {
     const isDashboard = this.props.isDashboard;
     const isGovernance = this.props.isGovernance;
-    const dashboardRoute = this.functionsUtil.getGlobalConfig(['dashboard','baseRoute'])+'/'+Object.keys(this.props.availableStrategies)[0];
     const governanceRoute = this.functionsUtil.getGlobalConfig(['governance','baseRoute']);
     const governanceEnabled = this.functionsUtil.getGlobalConfig(['governance','enabled']);
-    // const buttonSize = this.props.isMobile ? 'small' : 'medium';
+    const dashboardRoute = this.functionsUtil.getGlobalConfig(['dashboard','baseRoute'])+'/'+Object.keys(this.props.availableStrategies)[0];
     return (
       <Box
         mb={3}
@@ -226,6 +230,9 @@ class DashboardHeader extends Component {
               </Button>
             </Flex>
         }
+        <DelegateVesting
+          {...this.props}
+        />
         <GovModal
           {...this.props}
           isOpen={this.state.govModalOpened}

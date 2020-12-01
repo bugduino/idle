@@ -13,14 +13,14 @@ class NewProposal extends Component {
   state = {
     title:'',
     actions:[],
+    txError:false,
+    actionValue:0,
+    customABI:null,
     description:'',
     processing: {
       txHash:null,
       loading:false
     },
-    actionValue:0,
-    txError:false,
-    customABI:null,
     validated:false,
     newAction:false,
     editAction:null,

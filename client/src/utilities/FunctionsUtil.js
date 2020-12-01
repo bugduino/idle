@@ -2472,6 +2472,39 @@ class FunctionsUtil {
         }
         if (output && !this.BNify(output).isNaN()){
           output = this.BNify(output).div(1e18);
+          if (output){
+            output = this.fixDistributionSpeed(output,tokenConfig.distributionFrequency);
+          }
+        }
+      break;
+      case 'idleDistribution':
+        const idleGovToken = this.getIdleGovToken();
+        const tokenName = this.getGlobalConfig(['governance','props','tokenName']);
+        const govTokenConfig = this.getGlobalConfig(['govTokens',tokenName]);
+        output = await idleGovToken.getSpeed(tokenConfig.idle.address);
+
+        if (output){
+
+          output = this.fixTokenDecimals(output,govTokenConfig.decimals);
+
+          const blocksPerYear = this.BNify(this.getGlobalConfig(['network','blocksPerYear']));
+          switch (govTokenConfig.distributionFrequency){
+            case 'day':
+              const blocksPerDay = blocksPerYear.div(365.242199);
+              output = output.times(blocksPerDay);
+            break;
+            case 'week':
+              const blocksPerWeek = blocksPerYear.div(52.1429);
+              output = output.times(blocksPerWeek);
+            break;
+            case 'month':
+              const blocksPerMonth = blocksPerYear.div(12);
+              output = output.times(blocksPerMonth);
+            break;
+            case 'year':
+              output = output.times(blocksPerYear);
+            break;
+          }
         }
       break;
       case 'distributionSpeed':
@@ -3902,6 +3935,33 @@ class FunctionsUtil {
     });
     return output;
   }
+  fixDistributionSpeed = (speed,unit) => {
+    const blocksPerYear = this.BNify(this.getGlobalConfig(['network','blocksPerYear']));
+    speed = this.BNify(speed);
+    if (speed && !speed.isNaN()){
+      switch (unit){
+        case 'day':
+          const blocksPerDay = blocksPerYear.div(365.242199);
+          speed = speed.times(blocksPerDay);
+        break;
+        case 'week':
+          const blocksPerWeek = blocksPerYear.div(52.1429);
+          speed = speed.times(blocksPerWeek);
+        break;
+        case 'month':
+          const blocksPerMonth = blocksPerYear.div(12);
+          speed = speed.times(blocksPerMonth);
+        break;
+        case 'year':
+          speed = speed.times(blocksPerYear);
+        break;
+        default:
+        break;
+      }
+      return speed;
+    }
+    return null;
+  }
   getGovTokensDistributionSpeed = async (tokenConfig,enabledTokens=null) => {
     const govTokensDistribution = {};
     const govTokens = this.getGlobalConfig(['govTokens']);
@@ -3913,7 +3973,7 @@ class FunctionsUtil {
 
       const govTokenConfig = govTokens[govToken];
 
-      if (!govTokenConfig.enabled || !govTokenConfig.showAPR){
+      if (!govTokenConfig.enabled){
         return;
       }
 
@@ -3932,7 +3992,11 @@ class FunctionsUtil {
       }
 
       if (govSpeed){
-        govTokensDistribution[govToken] = govSpeed.div(1e18);
+        govSpeed = govSpeed.div(1e18);
+        if (govTokenConfig.distributionFrequency){
+          govSpeed = this.fixDistributionSpeed(govSpeed,govTokenConfig.distributionFrequency);
+        }
+        govTokensDistribution[govToken] = govSpeed;
       }
     });
 
@@ -3950,42 +4014,58 @@ class FunctionsUtil {
 
       const govTokenConfig = govTokens[govToken];
 
-      if (!govTokenConfig.enabled || !govTokenConfig.showAPR){
+      if (!govTokenConfig.enabled || govTokenConfig.aprTooltipMode === false){
         return;
       }
 
-      let govTokenApr = null;
+      let output = null;
       let tokenAllocation = null;
 
       switch (govToken){
         case 'COMP':
-          [govTokenApr,tokenAllocation] = await Promise.all([
-            this.getCompAPR(token,tokenConfig),
-            this.getTokenAllocation(tokenConfig,false,false)
-          ]);
+          switch (govTokenConfig.aprTooltipMode){
+            case 'apr':
+              [output,tokenAllocation] = await Promise.all([
+                this.getCompAPR(token,tokenConfig),
+                this.getTokenAllocation(tokenConfig,false,false)
+              ]);
 
-          // Cut the COMP token proportionally on Idle funds allocation in compound
-          if (tokenAllocation){
-            const compoundInfo = tokenConfig.protocols.find( p => (p.name === 'compound') );
-            if (compoundInfo){
-              if (tokenAllocation.protocolsAllocationsPerc[compoundInfo.address.toLowerCase()]){
-                const compoundAllocationPerc = tokenAllocation.protocolsAllocationsPerc[compoundInfo.address.toLowerCase()];
-                govTokenApr = govTokenApr.times(compoundAllocationPerc);
+              // Cut the COMP token proportionally on Idle funds allocation in compound
+              if (tokenAllocation){
+                const compoundInfo = tokenConfig.protocols.find( p => (p.name === 'compound') );
+                if (compoundInfo){
+                  if (tokenAllocation.protocolsAllocationsPerc[compoundInfo.address.toLowerCase()]){
+                    const compoundAllocationPerc = tokenAllocation.protocolsAllocationsPerc[compoundInfo.address.toLowerCase()];
+                    output = output.times(compoundAllocationPerc);
+                  }
+                }
               }
-            }
+            break;
           }
         break;
         case 'IDLE':
-          const idleGovToken = this.getIdleGovToken(this.props);
-          govTokenApr = await idleGovToken.getAPR(token,tokenConfig);
-          // console.log('IDLE APR 2',govTokenApr.toFixed());
+          const idleGovToken = this.getIdleGovToken();
+          switch (govTokenConfig.aprTooltipMode){
+            case 'apr':
+              output = await idleGovToken.getAPR(token,tokenConfig);
+            break;
+            case 'distribution':
+              output = await idleGovToken.getSpeed(tokenConfig.idle.address);
+              if (output){
+                output = this.fixDistributionSpeed(output,govTokenConfig.distributionFrequency);
+              }
+            break;
+            case 'userDistribution':
+              output = await idleGovToken.getUserDistribution(tokenConfig);
+            break;
+          }
         break;
         default:
         break;
       }
 
-      if (govTokenApr !== null && this.BNify(govTokenApr).gt(0)){
-        govTokensAprs[govToken] = govTokenApr;
+      if (output !== null && this.BNify(output).gt(0)){
+        govTokensAprs[govToken] = output;
       }
     });
 
@@ -4047,8 +4127,8 @@ class FunctionsUtil {
     const govTokens = this.getGlobalConfig(['govTokens']);
     return Object.values(govTokens).find( tokenConfig => (tokenConfig.enabled && tokenConfig.address.toLowerCase() === address.toLowerCase()) );
   }
-  getGovTokensUserTotalBalance = async (account=null,availableTokens=null,convertToken=null) => {
-    const govTokensUserBalances = await this.getGovTokensUserBalances(account,availableTokens,convertToken);
+  getGovTokensUserTotalBalance = async (account=null,availableTokens=null,convertToken=null,checkShowBalance=true) => {
+    const govTokensUserBalances = await this.getGovTokensUserBalances(account,availableTokens,convertToken,null,checkShowBalance);
     if (govTokensUserBalances){
       const govTokensEarnings = Object.values(govTokensUserBalances).reduce( (acc, govTokenAmount) => {
         acc = acc.plus(this.BNify(govTokenAmount));
@@ -4059,7 +4139,7 @@ class FunctionsUtil {
     }
     return this.BNify(0);
   }
-  getGovTokensUserBalances = async (account=null,availableTokens=null,convertToken=null,govTokenConfigForced=null) => {
+  getGovTokensUserBalances = async (account=null,availableTokens=null,convertToken=null,govTokenConfigForced=null,checkShowBalance=false) => {
     if (!account){
       account = this.props.account;
     }
@@ -4085,7 +4165,7 @@ class FunctionsUtil {
           if (govTokenAddress){
             const govTokenConfig = govTokenConfigForced ? govTokenConfigForced : this.getGovTokenConfigByAddress(govTokenAddress);
 
-            if (govTokenConfig && govTokenConfig.showBalance && govTokenConfig.address && govTokenConfig.address.toLowerCase() === govTokenAddress.toLowerCase()){
+            if (govTokenConfig && (!checkShowBalance || govTokenConfig.showBalance) && govTokenConfig.address && govTokenConfig.address.toLowerCase() === govTokenAddress.toLowerCase()){
 
               // Get gov token conversion rate
               let tokenConversionRate = null;
@@ -4168,6 +4248,7 @@ class FunctionsUtil {
     let avgAPR = this.BNify(0);
     let avgAPY = this.BNify(0);
     let totalAUM = this.BNify(0);
+    const DAITokenConfig = this.getGlobalConfig(['stats','tokens','DAI']);
     await this.asyncForEach(Object.keys(this.props.availableStrategies),async (strategy) => {
       const isRisk = strategy === 'risk';
       const availableTokens = this.props.availableStrategies[strategy];
@@ -4185,6 +4266,27 @@ class FunctionsUtil {
           }
         }
 
+        // Add Gov Tokens
+        const govTokens = this.getTokenGovTokens(tokenConfig);
+        if (govTokens){
+          await this.asyncForEach(Object.keys(govTokens).filter( govToken => (govTokens[govToken].showAUM) ), async (govToken) => {
+            const govTokenConfig = govTokens[govToken];
+            const [
+              tokenBalance,
+              tokenConversionRate
+            ] = await Promise.all([
+              this.getProtocolBalance(govToken,tokenConfig.idle.address),
+              this.getUniswapConversionRate(DAITokenConfig,govTokenConfig)
+            ]);
+            
+            if (tokenBalance && tokenConversionRate){
+              const tokenBalanceConverted = this.fixTokenDecimals(tokenBalance,govTokenConfig.decimals).times(this.BNify(tokenConversionRate));
+              if (tokenBalanceConverted && !tokenBalanceConverted.isNaN()){
+                totalAUM = totalAUM.plus(tokenBalanceConverted);
+              }
+            }
+          });
+        }
 
         // Get old token allocation
         if (tokenConfig.migration && tokenConfig.migration.oldContract){

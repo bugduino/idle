@@ -128,12 +128,11 @@ class StrategyPage extends Component {
 
         // Add gov tokens to earnings
         const govTokensTotalBalance = await this.functionsUtil.getGovTokensUserTotalBalance(this.props.account,this.props.availableTokens,'DAI');
-
-        const govTokensUserBalance = await this.functionsUtil.getGovTokensUserBalances(this.props.account,this.props.availableTokens,'DAI');
+        const govTokensUserBalance = await this.functionsUtil.getGovTokensUserBalances(this.props.account,this.props.availableTokens,null);
         const govTokensTotalBalanceTooltip = govTokensUserBalance ? Object.keys(govTokensUserBalance).map( govToken => {
           const balance = govTokensUserBalance[govToken];
           if (balance.gt(0)){
-            return `${govToken}: $${balance.toFixed(2)}`;
+            return `${govToken}: ${balance.toFixed(2)}`;
           } else {
             return null;
           }
@@ -141,8 +140,6 @@ class StrategyPage extends Component {
 
         const earningsStart = totalEarnings.plus(govTokensTotalBalance);
         const earningsEnd = totalAmountLent.times(avgAPY.div(100)).plus(govTokensTotalBalance);
-
-        // debugger;
 
         const idleTokenEnabled = this.functionsUtil.getGlobalConfig(['govTokens','IDLE','enabled']);
         const showAPYDisclaimer = idleTokenEnabled && this.functionsUtil.getGlobalConfig(['govTokens','IDLE','showAPR']);
@@ -167,32 +164,51 @@ class StrategyPage extends Component {
             },
             props:{
               title:'Total Earnings',
-              description:'Total earnings including accrued governance tokens'+(govTokensTotalBalance && govTokensTotalBalance.gt(0) ? ` [ ${govTokensTotalBalanceTooltip.join('; ')} ], earnings can vary depending on the current token spot price from Uniswap` : ''),
+              description:'Total earnings including accrued governance tokens'+(govTokensTotalBalance && govTokensTotalBalance.gt(0) ? ` [ ${govTokensTotalBalanceTooltip.join(' / ')} ], earnings can vary depending on the current token spot price from Uniswap` : ''),
               children:(
-                <CountUp
-                  delay={0}
-                  decimals={8}
-                  decimal={'.'}
-                  separator={''}
-                  useEasing={false}
-                  duration={31536000}
-                  end={parseFloat(earningsEnd)}
-                  start={parseFloat(earningsStart)}
-                  formattingFn={ n => '$ '+this.functionsUtil.abbreviateNumber(n,8,12,8) }
+                <Flex
+                  alignItems={'center'}
+                  flexDirection={'column'}
+                  justifyContent={'center'}
                 >
-                  {({ countUpRef, start }) => (
-                    <span
-                      ref={countUpRef}
-                      style={{
-                        lineHeight:1,
-                        color:this.props.theme.colors.copyColor,
-                        fontFamily:this.props.theme.fonts.counter,
-                        fontWeight: this.props.isMobile ? 600 : 700,
-                        fontSize:this.props.isMobile ? '21px' : '1.7em',
-                      }}
-                    />
-                  )}
-                </CountUp>
+                  <CountUp
+                    delay={0}
+                    decimals={8}
+                    decimal={'.'}
+                    separator={''}
+                    useEasing={false}
+                    duration={31536000}
+                    end={parseFloat(earningsEnd)}
+                    start={parseFloat(earningsStart)}
+                    formattingFn={ n => '$ '+this.functionsUtil.abbreviateNumber(n,8,9,8) }
+                  >
+                    {({ countUpRef, start }) => (
+                      <span
+                        ref={countUpRef}
+                        style={{
+                          lineHeight:1,
+                          color:this.props.theme.colors.copyColor,
+                          fontFamily:this.props.theme.fonts.counter,
+                          fontWeight: this.props.isMobile ? 600 : 700,
+                          fontSize:this.props.isMobile ? '21px' : '1.7em',
+                        }}
+                      />
+                    )}
+                  </CountUp>
+                  {
+                    /*
+                    govTokensTotalBalance && govTokensTotalBalance.gt(0) &&
+                      <Text
+                        fontSize={1}
+                        fontWeight={2}
+                        color={'cellText'}
+                        textAlign={'center'}
+                      >
+                        {govTokensTotalBalanceTooltip.join(' / ')}
+                      </Text>
+                    */
+                  }
+                </Flex>
               ),
               label:'',
             }
@@ -501,7 +517,7 @@ class StrategyPage extends Component {
                           {
                             title:'CURRENCY',
                             props:{
-                              width:[0.3,0.15]
+                              width:[0.27,0.15]
                             },
                             fields:[
                               {
@@ -535,19 +551,31 @@ class StrategyPage extends Component {
                             title:'APY',
                             desc:showAPYDisclaimer ? apyLong : null,
                             props:{
-                              width:[0.2,0.11],
+                              width:[0.29,0.11],
+                            },
+                            parentProps:{
+                              flexDirection:'column',
+                              alignItems:'flex-start',
                             },
                             fields:[
                               {
-                                name:'apy'
-                              }
+                                name:'apy',
+                                showTooltip:true
+                              },
+                              {
+                                name:'idleDistribution',
+                                props:{
+                                  decimals:this.props.isMobile ? 1 : 2,
+                                  fontSize:this.props.isMobile ? '9px' : 0
+                                }
+                              },
                             ]
                           },
                           {
-                            title:'RISK SCORE',
+                            title:this.props.isMobile ? 'SCORE' : 'RISK SCORE',
                             desc:riskScore,
                             props:{
-                              width:[0.27,0.16],
+                              width:[0.21,0.16],
                             },
                             fields:[
                               {
@@ -646,7 +674,7 @@ class StrategyPage extends Component {
                           {
                             title:'CURRENCY',
                             props:{
-                              width:[0.3,0.13]
+                              width:[0.27,0.13]
                             },
                             fields:[
                               {
@@ -665,7 +693,7 @@ class StrategyPage extends Component {
                             title:'POOL',
                             mobile:false,
                             props:{
-                              width:[0.12,0.1],
+                              width:[0.12,0.09],
                             },
                             fields:[
                               {
@@ -680,19 +708,34 @@ class StrategyPage extends Component {
                             title:'APY',
                             desc:showAPYDisclaimer ? apyLong : null,
                             props:{
-                              width:[0.18,0.08],
+                              width:[0.30,0.14],
+                            },
+                            parentProps:{
+                              flexDirection:'column',
+                              alignItems:'flex-start',
                             },
                             fields:[
                               {
-                                name:'apy'
-                              }
+                                name:'apy',
+                                showTooltip:true
+                              },
+                              {
+                                name:'idleDistribution',
+                                props:{
+                                  decimals:this.props.isMobile ? 1 : 2,
+                                  fontSize:this.props.isMobile ? '9px' : 0
+                                }
+                              },
                             ]
                           },
                           {
-                            title:'RISK SCORE',
+                            title:this.props.isMobile ? 'SCORE' : 'RISK SCORE',
                             desc:riskScore,
                             props:{
-                              width:[0.27,0.14],
+                              width:[0.21,0.12],
+                            },
+                            parentProps:{
+                              alignItems:['center','flex-start'],
                             },
                             fields:[
                               {
@@ -703,7 +746,7 @@ class StrategyPage extends Component {
                           {
                             title:'DEPOSITED',
                             props:{
-                              width:[0.25,0.13],
+                              width:[0.22,0.13],
                               justifyContent:['center','flex-start']
                             },
                             fields:[
@@ -717,12 +760,15 @@ class StrategyPage extends Component {
                             title:'FARMING',
                             desc:yieldFarming,
                             props:{
-                              width:[0.25,0.12],
+                              width:[0.25,0.09],
                               textAlign:'center'
                             },
                             fields:[
                               {
-                                name:'govTokens'
+                                name:'govTokens',
+                                props:{
+                                  decimals:2
+                                }
                               }
                             ]
                           },
@@ -823,7 +869,7 @@ class StrategyPage extends Component {
                           {
                             title:'CURRENCY',
                             props:{
-                              width:[0.3,0.15]
+                              width:[0.27,0.15]
                             },
                             fields:[
                               {
@@ -857,19 +903,31 @@ class StrategyPage extends Component {
                             title:'APY',
                             desc:showAPYDisclaimer ? apyLong : null,
                             props:{
-                              width:[0.2,this.state.depositedTokens.length>0 ? 0.10 : 0.13],
+                              width:[0.31,this.state.depositedTokens.length>0 ? 0.10 : 0.13],
+                            },
+                            parentProps:{
+                              flexDirection:'column',
+                              alignItems:'flex-start',
                             },
                             fields:[
                               {
-                                name:'apy'
-                              }
+                                name:'apy',
+                                showTooltip:true
+                              },
+                              {
+                                name:'idleDistribution',
+                                props:{
+                                  decimals:this.props.isMobile ? 1 : 2,
+                                  fontSize:this.props.isMobile ? '9px' : 0
+                                }
+                              },
                             ]
                           },
                           {
-                            title:'RISK SCORE',
+                            title:this.props.isMobile ? 'SCORE' : 'RISK SCORE',
                             desc:riskScore,
                             props:{
-                              width:[0.27,0.17],
+                              width:[0.22,0.17],
                             },
                             fields:[
                               {
@@ -897,7 +955,7 @@ class StrategyPage extends Component {
                             title:'',
                             mobile:this.props.account === null,
                             props:{
-                              width:[ this.props.account === null ? 0.29 : 0 ,0.17],
+                              width:[ this.props.account === null ? 0.26 : 0 , 0.17],
                             },
                             parentProps:{
                               width:1
@@ -947,7 +1005,7 @@ class StrategyPage extends Component {
                         {
                           title:'TOKEN',
                           props:{
-                            width:[0.34,0.15]
+                            width:[0.32,0.15]
                           },
                           fields:[
                             {
@@ -981,7 +1039,7 @@ class StrategyPage extends Component {
                           title:'REDEEMABLE',
                           desc:this.functionsUtil.getGlobalConfig(['messages','govTokenRedeemableBalance']),
                           props:{
-                            width:[0.45,0.17],
+                            width:[0.33,0.17],
                             justifyContent:['center','flex-start']
                           },
                           fields:[
@@ -994,11 +1052,10 @@ class StrategyPage extends Component {
                           ]
                         },
                         {
-                          mobile:false,
                           title:'DISTRIBUTION',
                           desc:this.functionsUtil.getGlobalConfig(['messages','userDistributionSpeed']),
                           props:{
-                            width:[0.20,0.17],
+                            width:[0.35,0.17],
                           },
                           fields:[
                             {
@@ -1010,6 +1067,7 @@ class StrategyPage extends Component {
                           ]
                         },
                         {
+                          mobile:false,
                           title:'APR',
                           desc:this.functionsUtil.getGlobalConfig(['messages','govTokenApr']),
                           props:{
