@@ -10,7 +10,6 @@ class DelegateVesting extends Component {
       txHash:null,
       loading:false
     },
-    priorVotes:null,
     vestingAmount:null,
     currentDelegate:null,
     idleTokenDelegated:false,
@@ -37,13 +36,13 @@ class DelegateVesting extends Component {
     const idleGovTokenEnabled = this.functionsUtil.getGlobalConfig(['govTokens','IDLE','enabled']);
     if (idleGovTokenEnabled && this.props.account){
       const [
-        priorVotes,
+        delegatesChanges,
         currentDelegate,
-        vestingContract
+        vestingContract,
       ] = await Promise.all([
-        this.idleGovToken.getPriorVotes(this.props.account),
+        this.governanceUtil.getDelegatesChanges(),
         this.governanceUtil.getCurrentDelegate(this.props.account),
-        this.governanceUtil.getVestingContract(this.props.account)
+        this.governanceUtil.getVestingContract(this.props.account),
       ]);
 
       let vestingAmount = null;
@@ -52,10 +51,13 @@ class DelegateVesting extends Component {
       }
 
       const idleTokenDelegated = currentDelegate && currentDelegate.toLowerCase() === this.props.account.toLowerCase();
-      const vestingContractDelegated = priorVotes && vestingAmount && priorVotes.eq(vestingAmount);
+
+      const delegateVestingTx = delegatesChanges ? delegatesChanges.filter( d => ( d.returnValues.delegate.toLowerCase() === this.props.account.toLowerCase() && this.functionsUtil.BNify(d.returnValues.newBalance).minus(this.functionsUtil.BNify(d.returnValues.previousBalance)).eq(vestingAmount) )).pop() : null;
+      const undelegateVestingTx = delegatesChanges ? delegatesChanges.filter( d => ( d.returnValues.delegate.toLowerCase() === this.props.account.toLowerCase() && this.functionsUtil.BNify(d.returnValues.previousBalance).minus(this.functionsUtil.BNify(d.returnValues.newBalance)).eq(vestingAmount) )).pop() : null;
+
+      const vestingContractDelegated = vestingAmount && delegateVestingTx && (!undelegateVestingTx || (delegateVestingTx && undelegateVestingTx && delegatesChanges.indexOf(delegateVestingTx)>delegatesChanges.indexOf(undelegateVestingTx)));
 
       return this.setState({
-        priorVotes,
         vestingAmount,
         currentDelegate,
         idleTokenDelegated,
@@ -92,7 +94,7 @@ class DelegateVesting extends Component {
           txHash:null,
           loading:false
         },
-        vestingContractDelegated:txSucceeded ? true : false
+        idleTokenDelegated:txSucceeded ? true : false
       });
     };
 
@@ -116,7 +118,7 @@ class DelegateVesting extends Component {
     }));
   }
 
-  async delegateVesting(){
+  async delegateVesting(revoke=false){
     const callback = (tx,error) => {
       // Send Google Analytics event
       const eventData = {
@@ -143,7 +145,7 @@ class DelegateVesting extends Component {
           txHash:null,
           loading:false
         },
-        idleTokenDelegated:txSucceeded ? true : false
+        vestingContractDelegated:(txSucceeded ? !revoke : false)
       });
     };
 
@@ -157,7 +159,12 @@ class DelegateVesting extends Component {
       }));
     };
 
-    this.governanceUtil.delegateVesting(this.props.account,this.props.account,callback,callbackReceipt);
+    let delegate = this.props.account;
+    if (revoke){
+      delegate = '0x'+'0'.repeat(40);
+    }
+
+    this.governanceUtil.delegateVesting(this.props.account,delegate,callback,callbackReceipt);
 
     this.setState((prevState) => ({
       processing: {
@@ -190,7 +197,7 @@ class DelegateVesting extends Component {
   }
 
   render() {
-    return this.state.vestingAmount && (!this.state.idleTokenDelegated || !this.state.vestingContractDelegated) ? (
+    return this.state.vestingAmount ? (
       <Flex
         p={2}
         mt={3}
@@ -202,73 +209,92 @@ class DelegateVesting extends Component {
         backgroundColor={'#f3f6ff'}
         boxShadow={'0px 0px 0px 1px rgba(0,54,255,0.3)'}
       >
-        <Text
-          mb={1}
-          fontSize={3}
-          fontWeight={500}
-          color={'#3f4e9a'}
-          textAlign={'center'}
-        >
-          You have {this.state.vestingAmount.div(1e18).toFixed(5)} {this.functionsUtil.getGlobalConfig(['governance','props','tokenName'])} in the Vesting Contract!
-        </Text>
-
-        <Text
-          fontWeight={500}
-          color={'#3f4e9a'}
-          fontSize={'15px'}
-          textAlign={'center'}
-        >
-          Follow the next steps to delegate your tokens:
-        </Text>
-
-        <Flex
-          mt={1}
-          mb={2}
-          alignItems={'center'}
-          flexDirection={'column'}
-        > 
-          <Flex
-            width={1}
-            alignItems={'center'}
-            flexDirection={'row'}
-          >
-            <Icon
-              size={'1.5em'}
-              name={ this.state.idleTokenDelegated ? 'CheckBox' : 'LooksOne'}
-              color={ this.state.idleTokenDelegated ? this.props.theme.colors.transactions.status.completed : 'cellText'}
-            />
-            <Text
-              ml={1}
-              fontWeight={500}
-              fontSize={'15px'}
-              color={'#3f4e9a'}
-              textAlign={'left'}
+        {
+          (!this.state.idleTokenDelegated || !this.state.vestingContractDelegated) ? (
+            <Flex
+              width={1}
+              alignItems={'center'}
+              flexDirection={'column'}
+              justifyContent={'center'}
             >
-              Delegate Tokens
-            </Text>
-          </Flex>
-          <Flex
-            mt={2}
-            width={1}
-            alignItems={'center'}
-            flexDirection={'row'}
-          >
-            <Icon
-              size={'1.5em'}
-              name={ this.state.vestingContractDelegated ? 'CheckBox' : 'LooksTwo'}
-              color={ this.state.vestingContractDelegated ? this.props.theme.colors.transactions.status.completed : 'cellText'}
-            />
+              <Text
+                mb={1}
+                fontSize={3}
+                fontWeight={500}
+                color={'#3f4e9a'}
+                textAlign={'center'}
+              >
+                You have {this.state.vestingAmount.div(1e18).toFixed(5)} {this.functionsUtil.getGlobalConfig(['governance','props','tokenName'])} in the Vesting Contract!
+              </Text>
+              <Text
+                fontWeight={500}
+                color={'#3f4e9a'}
+                fontSize={'15px'}
+                textAlign={'center'}
+              >
+                Follow the next steps to delegate your tokens:
+              </Text>
+              <Flex
+                mt={1}
+                mb={2}
+                alignItems={'center'}
+                flexDirection={'column'}
+              > 
+                <Flex
+                  width={1}
+                  alignItems={'center'}
+                  flexDirection={'row'}
+                >
+                  <Icon
+                    size={'1.5em'}
+                    name={ this.state.idleTokenDelegated ? 'CheckBox' : 'LooksOne'}
+                    color={ this.state.idleTokenDelegated ? this.props.theme.colors.transactions.status.completed : 'cellText'}
+                  />
+                  <Text
+                    ml={1}
+                    fontWeight={500}
+                    fontSize={'15px'}
+                    color={'#3f4e9a'}
+                    textAlign={'left'}
+                  >
+                    Delegate Tokens
+                  </Text>
+                </Flex>
+                <Flex
+                  mt={2}
+                  width={1}
+                  alignItems={'center'}
+                  flexDirection={'row'}
+                >
+                  <Icon
+                    size={'1.5em'}
+                    name={ this.state.vestingContractDelegated ? 'CheckBox' : 'LooksTwo'}
+                    color={ this.state.vestingContractDelegated ? this.props.theme.colors.transactions.status.completed : 'cellText'}
+                  />
+                  <Text
+                    ml={1}
+                    fontWeight={500}
+                    fontSize={'15px'}
+                    color={'#3f4e9a'}
+                    textAlign={'left'}
+                  >
+                    Delegate Vesting
+                  </Text>
+                </Flex>
+              </Flex>
+            </Flex>
+          ) : (
             <Text
-              ml={1}
+              mb={1}
+              fontSize={3}
               fontWeight={500}
-              fontSize={'15px'}
               color={'#3f4e9a'}
-              textAlign={'left'}
+              textAlign={'center'}
             >
-              Delegate Vesting
+              You have succesfully delegated {this.state.vestingAmount.div(1e18).toFixed(5)} {this.functionsUtil.getGlobalConfig(['governance','props','tokenName'])} from your Vesting Contract!
             </Text>
-          </Flex>
-        </Flex>
+          )
+        }
         {
           this.state.processing && this.state.processing.loading ? (
             <Flex
@@ -286,16 +312,24 @@ class DelegateVesting extends Component {
           ) : !this.state.idleTokenDelegated ? (
             <Button
               size={'small'}
-              onClick={this.delegateTokens.bind(this)}
+              onClick={ e => this.delegateTokens() }
             >
               DELEGATE TOKENS
             </Button>
-          ) : (!this.state.vestingContractDelegated && this.state.idleTokenDelegated) && (
+          ) : (!this.state.vestingContractDelegated && this.state.idleTokenDelegated) ? (
             <Button
               size={'small'}
-              onClick={this.delegateVesting.bind(this)}
+              onClick={ e => this.delegateVesting(false) }
             >
               DELEGATE VESTING
+            </Button>
+          ) : (this.state.vestingContractDelegated && this.state.idleTokenDelegated) && (
+            <Button
+              size={'small'}
+              mainColor={'red'}
+              onClick={ e => this.delegateVesting(true) }
+            >
+              REVOKE DELEGATE
             </Button>
           )
         }
