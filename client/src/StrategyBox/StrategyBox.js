@@ -154,10 +154,11 @@ class StrategyBox extends Component {
             </Flex>
           ) : (
             <Flex
-              my={[0,3]}
+              mt={[0,3]}
               flexDirection={'row'}
               alignItems={'flex-start'}
               justifyContent={'center'}
+              minHeight={['69px','88px']}
             >
               <Flex
                 width={0.5}
