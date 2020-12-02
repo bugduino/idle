@@ -229,9 +229,12 @@ class DashboardHeader extends Component {
               </Button>
             </Flex>
         }
-        <DelegateVesting
-          {...this.props}
-        />
+        {
+          this.props.isGovernance && 
+            <DelegateVesting
+              {...this.props}
+            />
+        }
         <GovModal
           {...this.props}
           isOpen={this.state.govModalOpened}
