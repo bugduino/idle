@@ -40,7 +40,7 @@ class GovernanceUtil {
       totalSupply = this.functionsUtil.fixTokenDecimals(totalSupply,18);
     }
 
-    return this.functionsUtil.setCachedData(cachedDataKey,totalSupply);
+    return this.functionsUtil.setCachedData(cachedDataKey,totalSupply,null);
   }
 
   getTokensBalance = async (account=null) => {
@@ -188,14 +188,7 @@ class GovernanceUtil {
     return await this.props.contractMethodSendWrapper(contractName, 'delegate', [delegate], null, callback, callbackReceipt);
   }
 
-  getDelegates = async (limit=null) => {
-
-    // Check for cached data
-    const cachedDataKey = `getDelegates`;
-    const cachedData = this.functionsUtil.getCachedData(cachedDataKey);
-    if (cachedData !== null){
-      return cachedData;
-    }
+  getDelegatesChanges = async () => {
 
     const lastBlockNumber = await this.props.web3.eth.getBlockNumber();
 
@@ -211,12 +204,31 @@ class GovernanceUtil {
 
     const all_delegations = await Promise.all(delegationsCalls);
 
-    const delegations = all_delegations.reduce( (delegations,d) => {
+    return all_delegations.reduce( (delegations,d) => {
       delegations = delegations.concat(d);
       return delegations;
     },[]);
+  }
+
+  getDelegates = async (limit=null) => {
+
+    // Check for cached data
+    const cachedDataKey = `getDelegates`;
+    const cachedData = this.functionsUtil.getCachedData(cachedDataKey);
+    if (cachedData !== null){
+      return cachedData;
+    }
+
+    const [
+      totalSupply,
+      lastBlockNumber
+    ] = await Promise.all([  
+      this.getTotalSupply(),
+      this.props.web3.eth.getBlockNumber()
+    ]);
 
     const delegateAccounts = {};
+    const delegations = await this.getDelegatesChanges();
 
     delegations.forEach(e => {
       const { delegate, newBalance } = e.returnValues;
@@ -242,7 +254,7 @@ class GovernanceUtil {
     delegates.forEach( (d,index) => {
       d.rank = index+1;
       d.votes = d.votes.toFixed(6);
-      d.vote_weight = (100 * (d.votes / 10000000)).toFixed(4) + '%';
+      d.vote_weight = (100 * (d.votes / parseFloat(totalSupply))).toFixed(4) + '%';
       d.proposals = all_votes.filter( v => (v.voter.toLowerCase() === d.delegate.toLowerCase()) ).length;
     });
 
