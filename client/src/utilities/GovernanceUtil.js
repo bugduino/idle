@@ -199,6 +199,28 @@ class GovernanceUtil {
 
     for (var blockNumber = fromBlock; blockNumber < lastBlockNumber; blockNumber+=blocksPerCall) {
       const toBlock = Math.min(blockNumber+blocksPerCall,lastBlockNumber);
+      delegationsCalls.push(this.functionsUtil.getContractPastEvents(delegatesContractName,'DelegateChanged', {fromBlock: blockNumber, toBlock}))
+    }
+
+    const all_delegations = await Promise.all(delegationsCalls);
+
+    return all_delegations.reduce( (delegations,d) => {
+      delegations = delegations.concat(d);
+      return delegations;
+    },[]);
+  }
+
+  getDelegatesVotesChanges = async () => {
+
+    const lastBlockNumber = await this.props.web3.eth.getBlockNumber();
+
+    const delegationsCalls = [];
+    const blocksPerCall = 100000;
+    const fromBlock = this.functionsUtil.getGlobalConfig(['governance','startBlock']);
+    const delegatesContractName = this.functionsUtil.getGlobalConfig(['governance','contracts','delegates']);
+
+    for (var blockNumber = fromBlock; blockNumber < lastBlockNumber; blockNumber+=blocksPerCall) {
+      const toBlock = Math.min(blockNumber+blocksPerCall,lastBlockNumber);
       delegationsCalls.push(this.functionsUtil.getContractPastEvents(delegatesContractName,'DelegateVotesChanged', {fromBlock: blockNumber, toBlock}))
     }
 
@@ -226,7 +248,7 @@ class GovernanceUtil {
     ] = await Promise.all([
       this.getVotes(),
       this.getTotalSupply(),
-      this.getDelegatesChanges()
+      this.getDelegatesVotesChanges()
     ]);
 
     const delegateAccounts = {};

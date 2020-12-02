@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import ConnectBox from '../../ConnectBox/ConnectBox';
+import FlexLoader from '../../FlexLoader/FlexLoader';
 import RoundButton from '../../RoundButton/RoundButton';
 import GovernanceUtil from '../../utilities/GovernanceUtil';
 import DashboardCard from '../../DashboardCard/DashboardCard';
@@ -137,9 +138,7 @@ class DelegateVote extends Component {
               {...this.props}
             />
           </Flex>
-        ) : 
-        // Has balance
-        this.props.balance && this.props.balance.gt(0) ? (
+        ) : this.props.currentDelegate ? (
           <DashboardCard
             cardProps={{
               mb:2,
@@ -173,15 +172,19 @@ class DelegateVote extends Component {
               flexDirection={'column'}
               justifyContent={'center'}
             >
-              <Text
-                mb={2}
-                fontWeight={3}
-                fontSize={[2,3]}
-                color={'dark-gray'}
-                textAlign={'center'}
-              >
-                You have {this.functionsUtil.fixTokenDecimals(this.props.balance,18).toFixed(4)} {this.functionsUtil.getGlobalConfig(['governance','props','tokenName'])} available.
-              </Text>
+              {
+                /*
+                <Text
+                  mb={2}
+                  fontWeight={3}
+                  fontSize={[2,3]}
+                  color={'dark-gray'}
+                  textAlign={'center'}
+                >
+                  You have {this.functionsUtil.fixTokenDecimals(this.props.balance,18).toFixed(4)} {this.functionsUtil.getGlobalConfig(['governance','props','tokenName'])} available.
+                </Text>
+                */
+              }
               <Text
                 mb={1}
                 fontWeight={3}
@@ -295,14 +298,19 @@ class DelegateVote extends Component {
             </Flex>
           </DashboardCard>
         ) : (
-          <Text
-            fontWeight={2}
-            fontSize={[2,3]}
-            color={'dark-gray'}
-            textAlign={'center'}
-          >
-            You don't have any {this.functionsUtil.getGlobalConfig(['governance','props','tokenName'])} token to delegate.
-          </Text>
+          <FlexLoader
+            flexProps={{
+              minHeight:'50vh',
+              flexDirection:'row'
+            }}
+            loaderProps={{
+              size:'30px'
+            }}
+            textProps={{
+              ml:2
+            }}
+            text={'Loading Delegate...'}
+          />
         )
        } 
       </Flex>
