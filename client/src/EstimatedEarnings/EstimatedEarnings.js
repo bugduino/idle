@@ -34,14 +34,7 @@ class EstimatedEarnings extends Component {
   }
 
   async componentDidMount(){
-    const tokenApy = await this.functionsUtil.getTokenApy(this.props.tokenConfig);
-    if (tokenApy && !tokenApy.isNaN()){
-      this.setState({
-        tokenApy
-      },() => {
-        this.loadChart();
-      });
-    }
+    this.loadChart();
   }
 
   async componentDidUpdate(prevProps,prevState){
@@ -49,14 +42,26 @@ class EstimatedEarnings extends Component {
 
     const tokenChanged = prevProps.selectedToken !== this.props.selectedToken;
     if (tokenChanged){
-      this.componentDidMount();
+      this.loadChart();
     }
   }
 
-  loadChart(){
+  async getTokenApy(){
+    const tokenApy = this.state.tokenApy || await this.functionsUtil.getTokenApy(this.props.tokenConfig);
+    if (this.state.tokenApy !== tokenApy){
+      this.setState({
+        tokenApy
+      });
+    }
+    return tokenApy;
+  }
+
+  async loadChart(){
+
+    const tokenApy = await this.getTokenApy();
 
     const amount = this.functionsUtil.BNify(this.state.inputValue);
-    const earningsYear = amount.times(this.state.tokenApy.div(100));
+    const earningsYear = amount.times(tokenApy.div(100));
 
     const amountMonth = parseFloat(earningsYear.div(12));
     const amount3Months = parseFloat(earningsYear.div(4));

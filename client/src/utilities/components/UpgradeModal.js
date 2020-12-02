@@ -3,9 +3,9 @@ import ModalCard from './ModalCard';
 import header_styles from './Header.module.scss';
 import AssetField from '../../AssetField/AssetField';
 import SmartNumber from '../../SmartNumber/SmartNumber';
+import { Text, Modal, Flex, Checkbox } from "rimble-ui";
 import FunctionsUtil from '../../utilities/FunctionsUtil';
 import RoundButton from '../../RoundButton/RoundButton.js';
-import { Text, Modal, Flex/*, Checkbox*/ } from "rimble-ui";
 
 class UpgradeModal extends React.Component {
 
@@ -458,7 +458,6 @@ class UpgradeModal extends React.Component {
                   MIGRATE LATER
                 </RoundButton>
                 {
-                  /*
                   <Checkbox
                     mt={2}
                     required={false}
@@ -467,7 +466,6 @@ class UpgradeModal extends React.Component {
                     label={`Don't show this popup again`}
                     onChange={ e => this.toggleDontShowAgain(e.target.checked) }
                   />
-                  */
                 }
               </Flex>
             </Flex>
