@@ -220,16 +220,16 @@ class GovernanceUtil {
     }
 
     const [
+      all_votes,
       totalSupply,
-      lastBlockNumber
-    ] = await Promise.all([  
+      delegations,
+    ] = await Promise.all([
+      this.getVotes(),
       this.getTotalSupply(),
-      this.props.web3.eth.getBlockNumber()
+      this.getDelegatesChanges()
     ]);
 
     const delegateAccounts = {};
-    const delegations = await this.getDelegatesChanges();
-
     delegations.forEach(e => {
       const { delegate, newBalance } = e.returnValues;
       delegateAccounts[delegate] = newBalance;
@@ -248,8 +248,6 @@ class GovernanceUtil {
     delegates.sort((a, b) => {
       return a.votes < b.votes ? 1 : -1;
     });
-
-    const all_votes = await this.getVotes();
 
     delegates.forEach( (d,index) => {
       d.rank = index+1;
