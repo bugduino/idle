@@ -30,7 +30,7 @@ class AssetsUnderManagement extends Component {
   async componentDidUpdate(prevProps,prevState){
     this.loadUtils();
     const contractsInitialized = prevProps.contractsInitialized !== this.props.contractsInitialized;
-    const availableStrategiesChanged = JSON.stringify(prevProps.availableStrategies) !== JSON.stringify(this.props.availableStrategies);
+    const availableStrategiesChanged = !prevProps.availableStrategies && JSON.stringify(prevProps.availableStrategies) !== JSON.stringify(this.props.availableStrategies);
     if (availableStrategiesChanged || contractsInitialized){
       this.loadTotalAUM();
     }
