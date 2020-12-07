@@ -1,7 +1,8 @@
 import Title from '../../Title/Title';
 import React, { Component } from 'react';
-import { Box, Flex, Blockie } from "rimble-ui";
+import ExtLink from '../../ExtLink/ExtLink';
 import StatsCard from '../../StatsCard/StatsCard';
+import { Box, Flex, Blockie, Icon } from "rimble-ui";
 import ProposalsList from '../ProposalsList/ProposalsList';
 import GovernanceUtil from '../../utilities/GovernanceUtil';
 import ShortHash from "../../utilities/components/ShortHash";
@@ -117,14 +118,30 @@ class DelegateDetails extends Component {
                     seed: delegate.delegate,
                   }}
                 />
-                <ShortHash
-                  ml={2}
-                  lineHeight={1}
-                  fontSize={[3,4]}
-                  fontWeight={[3,4]}
-                  color={'statValue'}
-                  hash={delegate.delegate}
-                />
+                <ExtLink
+                  href={this.functionsUtil.getEtherscanAddressUrl(delegate.delegate)}
+                >
+                  <Flex
+                    flexDirection={'row'}
+                    alignItems={'flex-end'}
+                    justifyContent={'flex-start'}
+                  >
+                    <ShortHash
+                      ml={2}
+                      lineHeight={1}
+                      fontSize={[3,4]}
+                      fontWeight={[3,4]}
+                      color={'statValue'}
+                      hash={delegate.delegate}
+                    />
+                    <Icon
+                      ml={1}
+                      size={'1.2em'}
+                      name={'OpenInNew'}
+                      color={'statValue'}
+                    />
+                  </Flex>
+                </ExtLink>
               </Flex>
             </StatsCard>
           </Flex>
