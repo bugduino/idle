@@ -932,7 +932,7 @@ class AssetField extends Component {
                   fieldInfo={{
                     name:'iconTooltip',
                     tooltipProps:{
-                      message:`${govTokenConfig.token}`+(this.state.getGovTokensDistributionSpeed && this.state.getGovTokensDistributionSpeed[govTokenConfig.token] ? `: ${this.state.getGovTokensDistributionSpeed[govTokenConfig.token].toFixed(decimals)}/${govTokenConfig.distributionFrequency}` : '')
+                      message:`${govTokenConfig.token}`+(this.state.getGovTokensDistributionSpeed && this.state.getGovTokensDistributionSpeed[govTokenConfig.token] ? `: ${this.state.getGovTokensDistributionSpeed[govTokenConfig.token].toFixed(decimals)}/${govTokenConfig.distributionFrequency} (for the whole pool)` : '')
                     },
                     props:{
                       borderRadius:'50%',
