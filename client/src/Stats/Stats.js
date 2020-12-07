@@ -499,7 +499,6 @@ class Stats extends Component {
   render() {
 
     const idleTokenEnabled = this.functionsUtil.getGlobalConfig(['govTokens','IDLE','enabled']);
-    const showAPYDisclaimer = idleTokenEnabled && this.functionsUtil.getGlobalConfig(['govTokens','IDLE','showAPR']);
     const apyLong = this.functionsUtil.getGlobalConfig(['messages','apyLong']);
 
     if (!this.props.availableStrategies){
@@ -632,7 +631,7 @@ class Stats extends Component {
                       },
                       {
                         title:'APY',
-                        desc:showAPYDisclaimer ? apyLong : null,
+                        desc:apyLong,
                         props:{
                           width: [0.29,0.14],
                         },
@@ -773,7 +772,7 @@ class Stats extends Component {
                   textAlign={'center'}
                   fontSize={[1,'15px']}
                 >
-                  By executing this method you can adjust the IDLE distribution speed among the pools.
+                  By executing this transaction you can adjust the IDLE distribution speed among the pools.
                 </Text>
                 <ExecuteTransaction
                   action={'Refresh'}
