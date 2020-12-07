@@ -2,7 +2,6 @@ import moment from 'moment';
 import Title from '../Title/Title';
 import StatsChart from './StatsChart';
 import React, { Component } from 'react';
-// import Toggler from '../Toggler/Toggler';
 import Rebalance from '../Rebalance/Rebalance';
 import StatsCard from '../StatsCard/StatsCard';
 import AssetsList from '../AssetsList/AssetsList';
@@ -12,12 +11,13 @@ import globalConfigs from '../configs/globalConfigs';
 import FunctionsUtil from '../utilities/FunctionsUtil';
 import DashboardCard from '../DashboardCard/DashboardCard';
 import AssetSelector from '../AssetSelector/AssetSelector';
-import { Flex, Text, Heading, Box, Icon } from 'rimble-ui';
 import GenericSelector from '../GenericSelector/GenericSelector';
 import RoundIconButton from '../RoundIconButton/RoundIconButton';
 import VariationNumber from '../VariationNumber/VariationNumber';
 import AllocationChart from '../AllocationChart/AllocationChart';
+import { Flex, Text, Heading, Box, Icon, Button } from 'rimble-ui';
 import DateRangeModal from '../utilities/components/DateRangeModal';
+import ExecuteTransaction from '../ExecuteTransaction/ExecuteTransaction';
 import AssetsUnderManagement from '../AssetsUnderManagement/AssetsUnderManagement';
 
 class Stats extends Component {
@@ -542,6 +542,65 @@ class Stats extends Component {
           <AssetsUnderManagement
             {...this.props}
           />
+          {
+            idleTokenEnabled &&
+              <Flex
+                p={2}
+                mt={3}
+                width={1}
+                borderRadius={1}
+                alignItems={'center'}
+                flexDirection={'column'}
+                justifyContent={'center'}
+                backgroundColor={'#f3f6ff'}
+                boxShadow={'0px 0px 0px 1px rgba(0,54,255,0.3)'}
+              >
+                <Text
+                  fontWeight={500}
+                  color={'#3f4e9a'}
+                  fontSize={'15px'}
+                  textAlign={'center'}
+                >
+                  By executing the refreshIdleSpeeds function you can adjust the IDLE distribution speed among the pools.
+                </Text>
+                <ExecuteTransaction
+                  action={'Refresh'}
+                  Component={Button}
+                  parentProps={{
+                    mt:1
+                  }}
+                  componentProps={{
+                    size:'small',
+                    value:'REFRESH IDLE SPEED'
+                  }}
+                  params={[]}
+                  contractName={'IdleController'}
+                  methodName={'refreshIdleSpeeds'}
+                  {...this.props}
+                >
+                  <Flex
+                    flexDirection={'row'}
+                    alignItems={'center'}
+                    justifyContent={'center'}
+                  >
+                    <Icon
+                      mr={1}
+                      name={'Done'}
+                      size={'1.4em'}
+                      color={this.props.theme.colors.transactions.status.completed}
+                    />
+                    <Text
+                      fontWeight={500}
+                      fontSize={'15px'}
+                      color={'copyColor'}
+                      textAlign={'center'}
+                    >
+                      Idle Speed Refreshed
+                    </Text>
+                  </Flex>
+                </ExecuteTransaction>
+              </Flex>
+          }
           {
             Object.keys(strategies).map(strategy => {
               const strategyInfo = strategies[strategy];

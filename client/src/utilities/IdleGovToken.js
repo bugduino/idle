@@ -47,6 +47,10 @@ class IdleGovToken{
     return null;
   }
 
+  refreshIdleSpeed = async () => {
+    return this.functionsUtil.genericContractCall('IdleController','refreshIdleSpeeds');
+  }
+
   getUnclaimedTokens = async () => {
     let rewards =  await this.functionsUtil.genericContractCall('EarlyRewards','rewards',[this.props.account]);
     if (rewards){
