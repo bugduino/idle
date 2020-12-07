@@ -543,65 +543,6 @@ class Stats extends Component {
             {...this.props}
           />
           {
-            idleTokenEnabled &&
-              <Flex
-                p={2}
-                mt={3}
-                width={1}
-                borderRadius={1}
-                alignItems={'center'}
-                flexDirection={'column'}
-                justifyContent={'center'}
-                backgroundColor={'#f3f6ff'}
-                boxShadow={'0px 0px 0px 1px rgba(0,54,255,0.3)'}
-              >
-                <Text
-                  fontWeight={500}
-                  color={'#3f4e9a'}
-                  fontSize={'15px'}
-                  textAlign={'center'}
-                >
-                  By executing the refreshIdleSpeeds function you can adjust the IDLE distribution speed among the pools.
-                </Text>
-                <ExecuteTransaction
-                  action={'Refresh'}
-                  Component={Button}
-                  parentProps={{
-                    mt:1
-                  }}
-                  componentProps={{
-                    size:'small',
-                    value:'REFRESH IDLE SPEED'
-                  }}
-                  params={[]}
-                  contractName={'IdleController'}
-                  methodName={'refreshIdleSpeeds'}
-                  {...this.props}
-                >
-                  <Flex
-                    flexDirection={'row'}
-                    alignItems={'center'}
-                    justifyContent={'center'}
-                  >
-                    <Icon
-                      mr={1}
-                      name={'Done'}
-                      size={'1.4em'}
-                      color={this.props.theme.colors.transactions.status.completed}
-                    />
-                    <Text
-                      fontWeight={500}
-                      fontSize={'15px'}
-                      color={'copyColor'}
-                      textAlign={'center'}
-                    >
-                      Idle Speed Refreshed
-                    </Text>
-                  </Flex>
-                </ExecuteTransaction>
-              </Flex>
-          }
-          {
             Object.keys(strategies).map(strategy => {
               const strategyInfo = strategies[strategy];
               const availableTokens = this.props.availableStrategies[strategy];
@@ -812,6 +753,65 @@ class Stats extends Component {
                 </Box>
               );
             })
+          }
+          {
+            idleTokenEnabled &&
+              <Flex
+                p={2}
+                width={1}
+                my={[2,3]}
+                borderRadius={1}
+                alignItems={'center'}
+                flexDirection={'column'}
+                justifyContent={'center'}
+                backgroundColor={'#f3f6ff'}
+                boxShadow={'0px 0px 0px 1px rgba(0,54,255,0.3)'}
+              >
+                <Text
+                  fontWeight={500}
+                  color={'#3f4e9a'}
+                  textAlign={'center'}
+                  fontSize={[1,'15px']}
+                >
+                  By executing this method you can adjust the IDLE distribution speed among the pools.
+                </Text>
+                <ExecuteTransaction
+                  action={'Refresh'}
+                  Component={Button}
+                  parentProps={{
+                    mt:1
+                  }}
+                  componentProps={{
+                    size:'small',
+                    value:'REFRESH IDLE SPEED'
+                  }}
+                  params={[]}
+                  contractName={'IdleController'}
+                  methodName={'refreshIdleSpeeds'}
+                  {...this.props}
+                >
+                  <Flex
+                    flexDirection={'row'}
+                    alignItems={'center'}
+                    justifyContent={'center'}
+                  >
+                    <Icon
+                      mr={1}
+                      name={'Done'}
+                      size={'1.4em'}
+                      color={this.props.theme.colors.transactions.status.completed}
+                    />
+                    <Text
+                      fontWeight={500}
+                      fontSize={'15px'}
+                      color={'copyColor'}
+                      textAlign={'center'}
+                    >
+                      Idle Speed Refreshed
+                    </Text>
+                  </Flex>
+                </ExecuteTransaction>
+              </Flex>
           }
         </Flex>
       );

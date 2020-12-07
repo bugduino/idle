@@ -3943,11 +3943,11 @@ class FunctionsUtil {
     });
     return output;
   }
-  fixDistributionSpeed = (speed,unit) => {
+  fixDistributionSpeed = (speed,frequency) => {
     const blocksPerYear = this.BNify(this.getGlobalConfig(['network','blocksPerYear']));
     speed = this.BNify(speed);
     if (speed && !speed.isNaN()){
-      switch (unit){
+      switch (frequency){
         case 'day':
           const blocksPerDay = blocksPerYear.div(365.242199);
           speed = speed.times(blocksPerDay);
@@ -4315,7 +4315,7 @@ class FunctionsUtil {
         if (tokenAllocation && tokenAllocation.totalAllocationWithUnlent && !tokenAllocation.totalAllocationWithUnlent.isNaN()){
           const totalAllocation = await this.convertTokenBalance(tokenAllocation.totalAllocationWithUnlent,token,tokenConfig,isRisk);
           totalAUM = totalAUM.plus(totalAllocation);
-          // this.customLog(strategy,token,totalAllocation.toString(),totalAUM.toString());
+          // console.log(tokenConfig.idle.token+'V4',totalAllocation.toFixed(5));
           if (tokenAprs && tokenAprs.avgApr && !tokenAprs.avgApr.isNaN()){
             avgAPR = avgAPR.plus(totalAllocation.times(tokenAprs.avgApr));
             avgAPY = avgAPY.plus(totalAllocation.times(tokenAprs.avgApy));
@@ -4338,6 +4338,7 @@ class FunctionsUtil {
             if (tokenBalance && tokenConversionRate){
               const tokenBalanceConverted = this.fixTokenDecimals(tokenBalance,govTokenConfig.decimals).times(this.BNify(tokenConversionRate));
               if (tokenBalanceConverted && !tokenBalanceConverted.isNaN()){
+                // console.log(tokenConfig.idle.token+'V4',govToken,tokenBalanceConverted.toFixed(5));
                 totalAUM = totalAUM.plus(tokenBalanceConverted);
               }
             }
@@ -4365,10 +4366,8 @@ class FunctionsUtil {
           if (oldTokenAllocation && oldTokenAllocation.totalAllocation && !oldTokenAllocation.totalAllocation.isNaN()){
             const oldTokenTotalAllocation = await this.convertTokenBalance(oldTokenAllocation.totalAllocation,token,oldTokenConfig,isRisk);
             totalAUM = totalAUM.plus(oldTokenTotalAllocation);
-            // this.customLog(strategy,token,'old',oldTokenTotalAllocation.toString(),totalAUM.toString());
+            // console.log(oldTokenConfig.idle.name,oldTokenTotalAllocation.toFixed(5));
           }
-
-          // debugger;
         }
       });
     });
