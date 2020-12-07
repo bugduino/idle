@@ -177,7 +177,7 @@ class StrategyPage extends Component {
                     duration={31536000}
                     end={parseFloat(earningsEnd)}
                     start={parseFloat(earningsStart)}
-                    formattingFn={ n => '$ '+this.functionsUtil.abbreviateNumber(n,8,9,8) }
+                    formattingFn={ n => '$ '+this.functionsUtil.abbreviateNumber(n,8,10,8) }
                   >
                     {({ countUpRef, start }) => (
                       <span
