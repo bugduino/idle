@@ -3149,6 +3149,9 @@ class FunctionsUtil {
       }
     }
 
+    tokenAllocation.totalAllocationConverted = await this.convertTokenBalance(tokenAllocation.totalAllocation,tokenConfig.token,tokenConfig);
+    tokenAllocation.totalAllocationWithUnlentConverted = await this.convertTokenBalance(tokenAllocation.totalAllocationWithUnlent,tokenConfig.token,tokenConfig);
+
     if (protocolsAprs){
       tokenAllocation.avgApr = this.getAvgApr(protocolsAprs,protocolsAllocations,totalAllocation);
     }
@@ -3598,7 +3601,6 @@ class FunctionsUtil {
     }
 
     let compAPR = this.BNify(0);
-
     const compDistribution = await this.getCompDistribution(tokenConfig,cTokenIdleSupply);
 
     if (compDistribution){
@@ -3620,30 +3622,11 @@ class FunctionsUtil {
 
       const compValue = this.BNify(compConversionRate).times(compDistribution);
 
-      let compoundAllocation = null;
+      const tokenAllocation = await this.getTokenAllocation(tokenConfig,false,false);
 
-      cTokenIdleSupply = await this.genericContractCall(cTokenInfo.token,'totalSupply');
-
-      // this.customLog('getCompAPR',cTokenInfo.token,cTokenIdleSupply ? cTokenIdleSupply.toString() : null);
-
-      if (cTokenIdleSupply){
-        let [tokenDecimals,exchangeRate] = await Promise.all([
-          this.getTokenDecimals(cTokenInfo.token),
-          this.genericContractCall(cTokenInfo.token,cTokenInfo.functions.exchangeRate.name,cTokenInfo.functions.exchangeRate.params)
-        ]);
-
-        if (exchangeRate){
-          exchangeRate = this.fixTokenDecimals(exchangeRate,cTokenInfo.decimals);
-          compoundAllocation = this.fixTokenDecimals(cTokenIdleSupply,tokenDecimals,exchangeRate);
-          // this.customLog('getCompAPR',token,compValue.toString(),cTokenIdleSupply.toString(),exchangeRate.toString(),tokenDecimals.toString(),compoundAllocation.toString());
-        }
-      }
-
-      if (compoundAllocation){
-        compoundAllocation = await this.convertTokenBalance(compoundAllocation,token,tokenConfig,false);
-        compAPR = compValue.div(compoundAllocation).times(100);
-
-        // this.customLog('getCompAPR',cTokenInfo.token,compConversionRate.toString(),compDistribution.toString(),compValue.toString(),cTokenIdleSupply.toString(),compoundAllocation.toString(),compAPR.toString()+'%');
+      if (tokenAllocation){
+        compAPR = compValue.div(tokenAllocation.totalAllocationConverted).times(100);
+        // console.log('getCompAPR 3',cTokenInfo.token,compConversionRate.toString(),compDistribution.toString(),compValue.toString(),tokenAllocation.totalAllocationConverted.toString(),compAPR.toString()+'%');
 
         this.setCachedData(cachedDataKey,compAPR);
       }
@@ -4617,6 +4600,7 @@ class FunctionsUtil {
 
     const protocolsAprs = {};
     const protocolsApys = {};
+    let compAPR = null;
 
     await this.asyncForEach(tokenConfig.protocols,async (protocolInfo,i) => {
       const protocolAddr = protocolInfo.address.toString().toLowerCase();
@@ -4626,12 +4610,7 @@ class FunctionsUtil {
         let protocolApy = this.apr2apy(protocolApr.div(100)).times(100);
 
         if (addGovTokens && protocolInfo.name === 'compound'){
-          const compAPR = await this.getCompAPR(tokenConfig.token,tokenConfig);
-
-          if (compAPR){
-            protocolApr = protocolApr.plus(compAPR);
-            protocolApy = protocolApy.plus(compAPR);
-          }
+          compAPR = await this.getCompAPR(tokenConfig.token,tokenConfig);
         }
 
         protocolsApys[protocolAddr] = protocolApy;
@@ -4650,6 +4629,11 @@ class FunctionsUtil {
       tokenAprs.avgApr = this.getAvgApr(protocolsAprs,tokenAllocation.protocolsAllocations,tokenAllocation.totalAllocation);
       tokenAprs.avgApy = this.getAvgApr(protocolsApys,tokenAllocation.protocolsAllocations,tokenAllocation.totalAllocation);
 
+      if (compAPR){
+        tokenAprs.avgApr = tokenAprs.avgApr.plus(compAPR);
+        tokenAprs.avgApy = tokenAprs.avgApy.plus(compAPR);
+      }
+
       // Add $IDLE token APR
       const idleGovTokenShowAPR = this.getGlobalConfig(['govTokens','IDLE','showAPR']);
       const idleGovTokenEnabled = this.getGlobalConfig(['govTokens','IDLE','enabled']);
@@ -4662,6 +4646,8 @@ class FunctionsUtil {
         }
       }
     }
+
+    // const avgAPR = await this.genericContractCall(tokenConfig.idle.token,'getAvgAPR');
 
     return this.setCachedData(cachedDataKey,tokenAprs);
   }
