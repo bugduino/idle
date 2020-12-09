@@ -15,8 +15,8 @@ import GenericSelector from '../GenericSelector/GenericSelector';
 import RoundIconButton from '../RoundIconButton/RoundIconButton';
 import VariationNumber from '../VariationNumber/VariationNumber';
 import AllocationChart from '../AllocationChart/AllocationChart';
-import { Flex, Text, Heading, Box, Icon, Button } from 'rimble-ui';
 import DateRangeModal from '../utilities/components/DateRangeModal';
+import { Flex, Text, Heading, Box, Icon, Button, Link } from 'rimble-ui';
 import ExecuteTransaction from '../ExecuteTransaction/ExecuteTransaction';
 import AssetsUnderManagement from '../AssetsUnderManagement/AssetsUnderManagement';
 
@@ -47,6 +47,7 @@ class Stats extends Component {
     shouldRebalance:null,
     carouselOffsetLeft:0,
     startTimestampObj:null,
+    showRefreshIdleSpeed:false,
     apiResults_unfiltered:null,
     dateRangeModalOpened:false
   };
@@ -83,6 +84,12 @@ class Stats extends Component {
       return this.setState(newState,callback);
     }
     return null;
+  }
+
+  showRefreshIdleSpeed(){
+    this.setState({
+      showRefreshIdleSpeed:true
+    });
   }
 
   getLatestAvailableVersion(){
@@ -754,7 +761,22 @@ class Stats extends Component {
             })
           }
           {
-            idleTokenEnabled &&
+            idleTokenEnabled && !this.state.showRefreshIdleSpeed ? (
+              <Flex
+                width={1}
+                my={[2,3]}
+                alignItems={'center'}
+                flexDirection={'row'}
+                justifyContent={'center'}
+              >
+                <Link
+                  hoverColor={'primary'}
+                  onClick={this.showRefreshIdleSpeed.bind(this)}
+                >
+                  Refresh Idle Speed
+                </Link>
+              </Flex>
+            ) : idleTokenEnabled && this.state.showRefreshIdleSpeed &&
               <Flex
                 p={2}
                 width={1}
