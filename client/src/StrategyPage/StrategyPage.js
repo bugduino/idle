@@ -138,8 +138,8 @@ class StrategyPage extends Component {
           }
         }).filter(v => (v !== null)) : null;
 
-        const earningsStart = totalEarnings.plus(govTokensTotalBalance);
-        const earningsEnd = totalAmountLent.times(avgAPY.div(100)).plus(govTokensTotalBalance);
+        const earningsStart = totalEarnings;
+        const earningsEnd = totalAmountLent.times(avgAPY.div(100));
 
         newState.aggregatedValues = [
           {
