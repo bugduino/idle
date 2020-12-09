@@ -387,8 +387,6 @@ class NewProposal extends Component {
       signature:this.state.selectedSignature
     };
 
-    console.log(inputs,action);
-
     const newAction = false;
     const actions = Object.values(this.state.actions);
 

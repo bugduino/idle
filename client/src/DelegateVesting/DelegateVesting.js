@@ -14,7 +14,6 @@ class DelegateVesting extends Component {
     delegatee:null,
     vestingAmount:null,
     currentDelegate:null,
-    idleTokenDelegated:false,
     delegateAddressValid:false,
     delegateDifferentWallet:false,
     vestingContractDelegated:false
@@ -52,15 +51,11 @@ class DelegateVesting extends Component {
       // Init flags
       let delegatee = null;
       let vestingAmount = null;
-      let idleTokenDelegated = false;
       let vestingContractDelegated = false;
 
       if (vestingContract){
         // Take vesting amount
         vestingAmount = await this.governanceUtil.getVestingAmount(this.props.account);
-
-        // Check Token Delegated
-        idleTokenDelegated = currentDelegate && currentDelegate.toLowerCase() === this.props.account.toLowerCase();
 
         // Check Vesting Contract Delegated
         const lastDelegateTx = delegatesChanges.filter( d => (d.returnValues.delegator.toLowerCase() === vestingContract.toLowerCase() ) ).pop();
@@ -72,13 +67,13 @@ class DelegateVesting extends Component {
         delegatee,
         vestingAmount,
         currentDelegate,
-        idleTokenDelegated,
         vestingContractDelegated
       });
     }
     return null;
   }
 
+  /*
   async delegateTokens(){
 
     const callback = (tx,error) => {
@@ -133,6 +128,7 @@ class DelegateVesting extends Component {
       }
     }));
   }
+  */
 
   async delegateVesting(revoke=false){
 
@@ -284,21 +280,23 @@ class DelegateVesting extends Component {
                 justifyContent={'center'}
               >
                 <Text
+                  mb={1}
                   fontWeight={500}
                   color={'#3f4e9a'}
                   fontSize={'15px'}
                   textAlign={'center'}
                 >
-                  Follow the next steps to delegate your tokens:
-                </Text>
-                <Flex
-                  mt={1}
-                  mb={2}
-                  alignItems={'center'}
-                  flexDirection={'column'}
-                > 
                   {
-                    this.state.delegateDifferentWallet ? (
+                    this.state.delegateDifferentWallet ? 'Follow the next steps to delegate your tokens:' : 'Press the button below to delegate the votes in the vesting contract to yourself:'
+                  }
+                </Text>
+                {
+                  this.state.delegateDifferentWallet && (
+                    <Flex
+                      mb={2}
+                      alignItems={'center'}
+                      flexDirection={'column'}
+                    > 
                       <Flex
                         width={1}
                         alignItems={'center'}
@@ -319,16 +317,16 @@ class DelegateVesting extends Component {
                           Insert delegate address
                         </Text>
                       </Flex>
-                    ) : (
                       <Flex
+                        mt={2}
                         width={1}
                         alignItems={'center'}
                         flexDirection={'row'}
                       >
                         <Icon
                           size={'1.5em'}
-                          name={ this.state.idleTokenDelegated ? 'CheckBox' : 'LooksOne'}
-                          color={ this.state.idleTokenDelegated ? this.props.theme.colors.transactions.status.completed : 'cellText'}
+                          name={ this.state.vestingContractDelegated ? 'CheckBox' : 'LooksTwo'}
+                          color={ this.state.vestingContractDelegated ? this.props.theme.colors.transactions.status.completed : 'cellText'}
                         />
                         <Text
                           ml={1}
@@ -337,33 +335,12 @@ class DelegateVesting extends Component {
                           color={'#3f4e9a'}
                           textAlign={'left'}
                         >
-                          Delegate Tokens
+                          Delegate Vesting
                         </Text>
                       </Flex>
-                    )
-                  }
-                  <Flex
-                    mt={2}
-                    width={1}
-                    alignItems={'center'}
-                    flexDirection={'row'}
-                  >
-                    <Icon
-                      size={'1.5em'}
-                      name={ this.state.vestingContractDelegated ? 'CheckBox' : 'LooksTwo'}
-                      color={ this.state.vestingContractDelegated ? this.props.theme.colors.transactions.status.completed : 'cellText'}
-                    />
-                    <Text
-                      ml={1}
-                      fontWeight={500}
-                      fontSize={'15px'}
-                      color={'#3f4e9a'}
-                      textAlign={'left'}
-                    >
-                      Delegate Vesting
-                    </Text>
-                  </Flex>
-                </Flex>
+                    </Flex>
+                  )
+                }
               </Flex>
             )
           }
@@ -409,14 +386,17 @@ class DelegateVesting extends Component {
             >
               REVOKE DELEGATE
             </Button>
-          ) : !this.state.idleTokenDelegated && !this.state.delegateDifferentWallet ? (
+          )
+          /*
+          : !this.state.idleTokenDelegated && !this.state.delegateDifferentWallet ? (
             <Button
               size={'small'}
               onClick={ e => this.delegateTokens() }
             >
               DELEGATE TOKENS
             </Button>
-          ) : !this.state.vestingContractDelegated && (
+          )*/
+          : !this.state.vestingContractDelegated && (
             <Button
               size={'small'}
               onClick={ e => this.delegateVesting(false) }
