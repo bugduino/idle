@@ -3604,7 +3604,6 @@ class FunctionsUtil {
     const compDistribution = await this.getCompDistribution(tokenConfig,cTokenIdleSupply);
 
     if (compDistribution){
-      const cTokenInfo = tokenConfig.protocols.find( p => (p.name === 'compound') );
 
       const DAITokenConfig = this.getGlobalConfig(['stats','tokens','DAI']);
         
@@ -3626,7 +3625,6 @@ class FunctionsUtil {
 
       if (tokenAllocation){
         compAPR = compValue.div(tokenAllocation.totalAllocationConverted).times(100);
-        // console.log('getCompAPR 3',cTokenInfo.token,compConversionRate.toString(),compDistribution.toString(),compValue.toString(),tokenAllocation.totalAllocationConverted.toString(),compAPR.toString()+'%');
 
         this.setCachedData(cachedDataKey,compAPR);
       }
