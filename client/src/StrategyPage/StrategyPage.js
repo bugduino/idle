@@ -606,7 +606,7 @@ class StrategyPage extends Component {
                             title:'FARMING',
                             desc:yieldFarming,
                             props:{
-                              width:[0.25,0.14],
+                              width:[0.25,0.15],
                               textAlign:'center'
                             },
                             fields:[
