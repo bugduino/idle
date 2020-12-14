@@ -118,9 +118,17 @@ class IdleGovToken{
 
   // Get IDLE distribution speed
   getSpeed = async (idleTokenAddress) => {
+
+    const cachedDataKey = `getIdleSpeed_${idleTokenAddress}`;
+    const cachedData = this.functionsUtil.getCachedDataWithLocalStorage(cachedDataKey);
+    if (cachedData !== null && !this.functionsUtil.BNify(cachedData).isNaN()){
+      return this.functionsUtil.BNify(cachedData);
+    }
+
     let idleSpeeds = await this.functionsUtil.genericContractCall('IdleController','idleSpeeds',[idleTokenAddress]);
-    if (idleSpeeds){
-      return this.functionsUtil.BNify(idleSpeeds);
+    if (idleSpeeds && !this.functionsUtil.BNify(idleSpeeds).isNaN()){
+      idleSpeeds = this.functionsUtil.BNify(idleSpeeds);
+      return this.functionsUtil.setCachedDataWithLocalStorage(cachedDataKey,idleSpeeds);
     }
     return null;
   }
@@ -128,9 +136,9 @@ class IdleGovToken{
   getDistribution = async (tokenConfig) => {
 
     const cachedDataKey = `getIdleDistribution_${tokenConfig.idle.token}`;
-    const cachedData = this.functionsUtil.getCachedData(cachedDataKey);
+    const cachedData = this.functionsUtil.getCachedDataWithLocalStorage(cachedDataKey);
     if (cachedData !== null && !this.functionsUtil.BNify(cachedData).isNaN()){
-      return cachedData;
+      return this.functionsUtil.BNify(cachedData);
     }
 
     // Get IDLE distribution speed and Total Supply
@@ -144,7 +152,9 @@ class IdleGovToken{
       // Take 50% of distrubution for lenders side
       const distribution = this.functionsUtil.BNify(idleSpeeds).times(this.functionsUtil.BNify(blocksPerYear)).div(1e18);
 
-      return this.functionsUtil.setCachedData(cachedDataKey,distribution);
+      if (!this.functionsUtil.BNify(distribution).isNaN()){
+        return this.functionsUtil.setCachedDataWithLocalStorage(cachedDataKey,distribution);
+      }
     }
 
     return null;

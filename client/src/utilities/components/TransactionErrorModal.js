@@ -60,7 +60,7 @@ class TransactionErrorModal extends React.Component {
                       <br />Make sure that your Ledger is <strong>connected</strong> and <strong>unlocked</strong>. Also check that both <strong>Contract data</strong> and <strong>Browser support</strong> are enabled in the Ledger settings.<br />
                       We also suggest you to connect your Ledger with Metamask, read the <Link fontSize={1} color={'blue'} hoverColor={'blue'} target={'_blank'} rel={"nofollow noopener noreferrer"} href={'https://metamask.zendesk.com/hc/en-us/articles/360020394612-How-to-connect-a-Trezor-or-Ledger-Hardware-Wallet'}>instructions here</Link>.
                     </Text.span>
-                  ) : isSlowTxError ? 'This could happen when the gas price is low, check the transaction status with your Wallet.' : 'Make sure that your have enaugh funds in your wallet.'
+                  ) : isSlowTxError ? 'This could happen when the gas price is low, check the transaction status with your Wallet.' : 'Make sure that your have enough funds in your wallet.'
                 }
               </Text.p>
             </Flex>

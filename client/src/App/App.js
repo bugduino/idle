@@ -97,16 +97,39 @@ class App extends Component {
   }
 
   clearCachedData = () => {
+    this.functionsUtil.setLocalStorage('cachedData',{},true);
     this.setState({
       cachedData:{}
     });
     return true;
   }
 
-  setCachedData = (key,data,TTL=null) => {
-    if (!this.state.cachedData[key.toLowerCase()] || JSON.stringify(this.state.cachedData[key.toLowerCase()]) !== JSON.stringify(data)){
-      const expirationDate = TTL ? parseInt(new Date().getTime()/1000)+(TTL) : null;
-      // console.log('setCachedData',key);
+  setCachedData = (key,data,TTL=null,useLocalStorage=false) => {
+
+    const cachedKeyFound = this.state.cachedData[key.toLowerCase()];
+    const currentTime = parseInt(new Date().getTime()/1000);
+
+    if (!cachedKeyFound || ( (!cachedKeyFound.expirationDate || cachedKeyFound.expirationDate>=currentTime) || JSON.stringify(cachedKeyFound.data) !== JSON.stringify(data)) ){
+      const expirationDate = TTL ? currentTime+(TTL) : null;
+
+      // Save cached data in local storage
+      if (useLocalStorage){
+        let storedCachedData = this.functionsUtil.getStoredItem('cachedData');
+        if (!storedCachedData){
+          storedCachedData = {};
+        }
+        storedCachedData = {
+          ...storedCachedData,
+          [key.toLowerCase()]:{
+            data,
+            expirationDate
+          }
+        };
+        // console.log('STORED CACHE - INSERT KEY',key,data);
+        this.functionsUtil.setLocalStorage('cachedData',storedCachedData,true);
+      }
+
+      // Set new cached data state
       this.setState((prevState) => ({
         cachedData: {
           ...prevState.cachedData,
@@ -116,6 +139,7 @@ class App extends Component {
           }
         }
       }));
+
       return true;
     }
     return false;
@@ -540,6 +564,7 @@ class App extends Component {
                                               setCachedData={this.setCachedData.bind(this)}
                                               selectedStrategy={this.state.selectedStrategy}
                                               userRejectedValidation={userRejectedValidation}
+                                              clearCachedData={this.clearCachedData.bind(this)}
                                               setStrategyToken={this.setStrategyToken.bind(this)}
                                               accountValidationPending={accountValidationPending}
                                               availableStrategies={this.state.availableStrategies}
@@ -605,6 +630,7 @@ class App extends Component {
                                                   setCachedData={this.setCachedData.bind(this)}
                                                   selectedStrategy={this.state.selectedStrategy}
                                                   userRejectedValidation={userRejectedValidation}
+                                                  clearCachedData={this.clearCachedData.bind(this)}
                                                   setStrategyToken={this.setStrategyToken.bind(this)}
                                                   accountValidationPending={accountValidationPending}
                                                   availableStrategies={this.state.availableStrategies}

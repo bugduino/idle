@@ -8,6 +8,7 @@ import * as Sentry from '@sentry/browser';
 import FunctionsUtil from './FunctionsUtil';
 import globalConfigs from '../configs/globalConfigs';
 import ConnectionModalUtil from "./ConnectionModalsUtil";
+import detectEthereumProvider from '@metamask/detect-provider';
 import ConnectionErrorModal from './components/ConnectionErrorModal';
 import TransactionErrorModal from './components/TransactionErrorModal';
 import { TerminalHttpProvider, SourceType } from '@terminal-packages/sdk';
@@ -16,71 +17,71 @@ require('dotenv').config();
 const INFURA_KEY = process.env["REACT_APP_INFURA_KEY"];
 
 const RimbleTransactionContext = React.createContext({
-  contracts: [],
-  account: {},
-  accountBalance: {},
-  accountBalanceToken: {},
-  accountBalanceLow: {},
-  tokenConfig: {},
   web3: {},
-  web3Infura: {},
-  initWeb3: () => {},
+  account: {},
   biconomy: {},
   simpleID: {},
-  initSimpleID: () => {},
+  contracts: [],
+  web3Infura: {},
+  tokenConfig: {},
   transactions: {},
-  checkPreflight: () => {},
-  initContract: () => {},
-  initAccount: () => {},
-  initializeContracts: () => {},
-  getAccountBalance: () => {},
-  getTokenDecimals: () => {},
-  rejectAccountConnect: () => {},
+  accountBalance: {},
+  initWeb3: () => {},
   accountValidated: {},
-  accountValidationPending: {},
-  rejectValidation: () => {},
+  initAccount: () => {},
+  accountBalanceLow: {},
+  initSimpleID: () => {},
+  initContract: () => {},
+  accountBalanceToken: {},
+  checkPreflight: () => {},
   validateAccount: () => {},
+  network: {
+    current: {},
+    required: {},
+    checkNetwork: () => {},
+    isCorrectNetwork: null,
+  },
   accountInizialized: false,
+  getTokenDecimals: () => {},
+  rejectValidation: () => {},
+  getAccountBalance: () => {},
   contractsInitialized: false,
+  accountValidationPending: {},
+  initializeContracts: () => {},
+  rejectAccountConnect: () => {},
   enableUnderlyingWithdraw: false,
   connectAndValidateAccount: () => {},
-  network: {
-    required: {},
-    current: {},
-    isCorrectNetwork: null,
-    checkNetwork: () => {}
-  },
   modals: {
     data: {
-      noWeb3BrowserModalIsOpen: {},
+      connectionError: {},
+      lowFundsModalIsOpen: {},
       noWalletModalIsOpen: {},
-      connectionModalIsOpen: {},
-      accountConnectionPending: {},
       userRejectedConnect: {},
-      accountValidationPending: {},
+      connectionModalIsOpen: {},
       userRejectedValidation: {},
       wrongNetworkModalIsOpen: {},
+      accountValidationPending: {},
+      accountConnectionPending: {},
+      noWeb3BrowserModalIsOpen: {},
       transactionConnectionModalIsOpen: {},
-      lowFundsModalIsOpen: {},
-      connectionError: {}
     },
     methods: {
+      openLowFundsModal: () => {},
+      closeLowFundsModal: () => {},
+      openWrongNetworkModal: () => {},
+      closeWrongNetworkModal: () => {},
       openNoWeb3BrowserModal: () => {},
       closeNoWeb3BrowserModal: () => {},
-      closeConnectionPendingModal: () => {},
-      openConnectionPendingModal: () => {},
-      closeUserRejectedConnectionModal: () => {},
-      openUserRejectedConnectionModal: () => {},
-      closeUserRejectedValidationModal: () => {},
-      openUserRejectedValidationModal: () => {},
-      closeConnectionErrorModal: () => {},
       openConnectionErrorModal: () => {},
+      closeConnectionErrorModal: () => {},
       openTransactionErrorModal: () => {},
       closeTransactionErrorModal: () => {},
-      closeWrongNetworkModal: () => {},
-      openWrongNetworkModal: () => {},
-      closeLowFundsModal: () => {},
-      openLowFundsModal: () => {}
+      openConnectionPendingModal: () => {},
+      closeConnectionPendingModal: () => {},
+      openUserRejectedConnectionModal: () => {},
+      openUserRejectedValidationModal: () => {},
+      closeUserRejectedConnectionModal: () => {},
+      closeUserRejectedValidationModal: () => {},
     }
   },
   transaction: {
@@ -103,7 +104,7 @@ class RimbleTransaction extends React.Component {
   // Utils
   functionsUtil = null;
 
-  loadUtils = () => {
+  loadUtils(){
     const props = Object.assign({},this.props);
     props.contracts = this.state.contracts;
     if (this.functionsUtil){
@@ -121,6 +122,7 @@ class RimbleTransaction extends React.Component {
 
   componentWillMount(){
     this.loadUtils();
+    window.initWeb3 = this.initWeb3;
   }
 
   componentDidMount = async () => {
@@ -148,8 +150,6 @@ class RimbleTransaction extends React.Component {
       this.updateTransaction(transaction);
       return transaction;
     }
-
-    // window.initWeb3 = this.initWeb3;
   }
 
   componentDidUpdate = async (prevProps, prevState) => {
@@ -218,6 +218,12 @@ class RimbleTransaction extends React.Component {
 
   // Initialize a web3 provider
   initWeb3 = async (connectorName=null) => {
+
+    // Detect ethereum provider
+    const metamaskProvider = await detectEthereumProvider();
+    if (metamaskProvider && (!window.ethereum || window.ethereum !== metamaskProvider)){
+      window.ethereum = metamaskProvider;
+    }
 
     // Suppress console warning
     if (window.ethereum && window.ethereum.autoRefreshOnNetworkChange) {
@@ -345,7 +351,7 @@ class RimbleTransaction extends React.Component {
 
     let forceCallback = false;
 
-    if (connectorName === 'Infura' && web3Provider && typeof web3Provider.enable === 'function'){
+    if ((!connectorName || connectorName === 'Infura') && web3Provider && typeof web3Provider.enable === 'function'){
       try {
         await web3Provider.enable();
       } catch (connectionError){
@@ -403,7 +409,6 @@ class RimbleTransaction extends React.Component {
           }
 
           if (context.account){
-
             // Login with biconomy
             if (this.state.biconomy){
               const biconomy = this.state.biconomy;
@@ -1273,10 +1278,6 @@ class RimbleTransaction extends React.Component {
 
         const call_callback = !globalConfigs.network.isForked && typeof callback === 'function' && transaction.confirmationCount===1;
 
-        // if (call_callback){
-        //   alert('confirmationCallback')
-        // }
-
         // How many confirmations should be received before informing the user
         const confidenceThreshold = this.props.config.requiredConfirmations || 1;
 
@@ -1482,7 +1483,8 @@ class RimbleTransaction extends React.Component {
     // this.functionsUtil.customLog('updateTransaction',transactions);
 
     // Save transactions in localStorage only if pending or succeeded
-    if (['pending','success','confirmed'].includes(transaction.status.toLowerCase())){
+    // console.log('updateTransaction',transaction.transactionHash,transaction.status.toLowerCase());
+    if (transaction.transactionHash){
       // Clear cached data
       this.functionsUtil.clearCachedData();
 

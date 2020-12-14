@@ -127,12 +127,12 @@ class AssetField extends Component {
             oldContractBalanceFormatted
           } = await this.functionsUtil.checkMigration(this.props.tokenConfig,this.props.account,addGovTokens);
 
-          if (setState){
+          if (setState && oldContractBalanceFormatted){
             this.setStateSafe({
               amountToMigrate:oldContractBalanceFormatted.toString()
             });
+            output = oldContractBalanceFormatted;
           }
-          output = oldContractBalanceFormatted;
         break;
         case 'amountLent':
           output = await this.functionsUtil.loadAssetField(fieldName,this.props.token,this.props.tokenConfig,this.props.account,addGovTokens);

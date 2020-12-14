@@ -6,6 +6,7 @@
   "dependencies": {
     "@babel/core": "^7.4.5",
     "@biconomy/mexa": "^1.5.11",
+    "@metamask/detect-provider": "^1.2.0",
     "@nivo/bar": "^0.59.2",
     "@nivo/line": "^0.59.2",
     "@nivo/pie": "^0.61.1",

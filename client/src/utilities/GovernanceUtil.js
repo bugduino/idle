@@ -29,8 +29,8 @@ class GovernanceUtil {
 
     // Check for cached data
     const cachedDataKey = `getTotalSupply`;
-    const cachedData = this.functionsUtil.getCachedData(cachedDataKey);
-    if (cachedData !== null){
+    const cachedData = this.functionsUtil.getCachedDataWithLocalStorage(cachedDataKey);
+    if (cachedData && !this.functionsUtil.BNify(cachedData).isNaN()){
       return cachedData;
     }
 
@@ -38,9 +38,10 @@ class GovernanceUtil {
     let totalSupply = await this.functionsUtil.genericContractCall(contractName,'totalSupply');
     if (totalSupply){
       totalSupply = this.functionsUtil.fixTokenDecimals(totalSupply,18);
+      return this.functionsUtil.setCachedDataWithLocalStorage(cachedDataKey,totalSupply,null);
     }
 
-    return this.functionsUtil.setCachedData(cachedDataKey,totalSupply,null);
+    return null;
   }
 
   getTokensBalance = async (account=null) => {
@@ -50,15 +51,15 @@ class GovernanceUtil {
 
       // Check for cached data
       const cachedDataKey = `getTokensBalance_${account}`;
-      const cachedData = this.functionsUtil.getCachedData(cachedDataKey);
-      if (cachedData !== null){
+      const cachedData = this.functionsUtil.getCachedDataWithLocalStorage(cachedDataKey);
+      if (cachedData && !this.functionsUtil.BNify(cachedData).isNaN()){
         return cachedData;
       }
 
       const contractName = this.functionsUtil.getGlobalConfig(['governance','contracts','delegates']);
       const balance = await this.functionsUtil.getContractBalance(contractName, account);
-      if (balance){
-        return this.functionsUtil.setCachedData(cachedDataKey,this.functionsUtil.BNify(balance));
+      if (balance && !this.functionsUtil.BNify(balance).isNaN()){
+        return this.functionsUtil.setCachedDataWithLocalStorage(cachedDataKey,this.functionsUtil.BNify(balance));
       }
     }
     return null;
@@ -105,15 +106,15 @@ class GovernanceUtil {
 
       // Check for cached data
       const cachedDataKey = `getCurrentDelegate_${account}`;
-      const cachedData = this.functionsUtil.getCachedData(cachedDataKey);
-      if (cachedData !== null){
+      const cachedData = this.functionsUtil.getCachedDataWithLocalStorage(cachedDataKey);
+      if (cachedData){
         return cachedData;
       }
 
       const contractName = this.functionsUtil.getGlobalConfig(['governance','contracts','delegates']);
       const delegate = await this.functionsUtil.genericContractCall(contractName, 'delegates', [account]);
 
-      return this.functionsUtil.setCachedData(cachedDataKey,delegate);
+      return this.functionsUtil.setCachedDataWithLocalStorage(cachedDataKey,delegate);
     }
 
     return null;
@@ -125,15 +126,15 @@ class GovernanceUtil {
     if (account){
       // Check for cached data
       const cachedDataKey = `getCurrentVotes_${account}`;
-      const cachedData = this.functionsUtil.getCachedData(cachedDataKey);
-      if (cachedData !== null){
+      const cachedData = this.functionsUtil.getCachedDataWithLocalStorage(cachedDataKey);
+      if (cachedData){
         return cachedData;
       }
 
       const contractName = this.functionsUtil.getGlobalConfig(['governance','contracts','delegates']);
       const votes = await this.functionsUtil.genericContractCall(contractName, 'getCurrentVotes', [account]);
-      if (votes){
-        return this.functionsUtil.setCachedData(cachedDataKey,this.functionsUtil.BNify(votes));
+      if (votes && !this.functionsUtil.BNify(votes).isNaN() ){
+        return this.functionsUtil.setCachedDataWithLocalStorage(cachedDataKey,this.functionsUtil.BNify(votes));
       }
     }
 
@@ -236,8 +237,8 @@ class GovernanceUtil {
 
     // Check for cached data
     const cachedDataKey = `getDelegates`;
-    const cachedData = this.functionsUtil.getCachedData(cachedDataKey);
-    if (cachedData !== null){
+    const cachedData = this.functionsUtil.getCachedDataWithLocalStorage(cachedDataKey);
+    if (cachedData){
       return cachedData;
     }
 
@@ -278,7 +279,7 @@ class GovernanceUtil {
       d.proposals = all_votes.filter( v => (v.voter.toLowerCase() === d.delegate.toLowerCase()) ).length;
     });
 
-    this.functionsUtil.setCachedData(cachedDataKey,delegates)
+    this.functionsUtil.setCachedDataWithLocalStorage(cachedDataKey,delegates);
 
     if (limit !== null){
       delegates = delegates.splice(0,limit);
@@ -292,7 +293,7 @@ class GovernanceUtil {
     // Check for cached data
     const cachedDataKey = `getProposalParams`;
     const cachedData = this.functionsUtil.getCachedData(cachedDataKey);
-    if (cachedData !== null){
+    if (cachedData){
       return cachedData;
     }
 
@@ -322,7 +323,7 @@ class GovernanceUtil {
     // Check for cached data
     const cachedDataKey = `getVotes`;
     const cachedData = this.functionsUtil.getCachedData(cachedDataKey);
-    if (cachedData !== null){
+    if (cachedData){
       return cachedData;
     }
 
@@ -354,8 +355,8 @@ class GovernanceUtil {
 
     // Check for cached data
     const cachedDataKey = 'getProposals';
-    let cachedData = this.functionsUtil.getCachedData(cachedDataKey);
-    if (cachedData !== null){
+    let cachedData = this.functionsUtil.getCachedDataWithLocalStorage(cachedDataKey);
+    if (cachedData){
       if (voted_by !== null){
         cachedData = cachedData.filter( p => (p.votes.find( v => (v.voter.toLowerCase() === voted_by.toLowerCase()) )) );
       }
@@ -559,7 +560,7 @@ class GovernanceUtil {
       };
     });
 
-    this.functionsUtil.setCachedData(cachedDataKey,proposals)
+    this.functionsUtil.setCachedDataWithLocalStorage(cachedDataKey,proposals)
     
     if (voted_by === null) {
       return proposals;

@@ -382,7 +382,7 @@ class FunctionsUtil {
     const output = {};
     const etherscanTxs = await this.getEtherscanTxs(account,0,'latest',enabledTokens);
 
-    await this.asyncForEach(enabledTokens, async (selectedToken) => {
+    enabledTokens.forEach( selectedToken => {
 
       output[selectedToken] = [];
       let avgBuyPrice = this.BNify(0);
@@ -511,6 +511,7 @@ class FunctionsUtil {
     return null;
   }
   getAmountLent = async (enabledTokens=[],account) => {
+
     account = account ? account : this.props.account;
 
     if (!account || !enabledTokens || !enabledTokens.length || !this.props.availableTokens){
@@ -605,7 +606,7 @@ class FunctionsUtil {
 
         if (latestTxs && latestTxs.data.result && latestTxs.data.result.length){
           
-          latestTxs = await this.filterEtherscanTxs(latestTxs.data.result,enabledTokens);
+          latestTxs = await this.filterEtherscanTxs(latestTxs.data.result,enabledTokens,true,false);
 
           if (latestTxs && Object.values(latestTxs).length){
 
@@ -622,8 +623,8 @@ class FunctionsUtil {
                 }
               });
 
-              // Save new etherscan txs
-              this.saveCachedRequest(etherscanBaseEndpoint,false,etherscanBaseTxs);
+              // Save etherscan txs
+              this.saveEtherscanTxs(etherscanBaseEndpoint,etherscanBaseTxs.data.result);
             }
           }
         }
@@ -656,6 +657,23 @@ class FunctionsUtil {
     // results = results ? Object.values(results) : [];
     return this.filterCurveTxs(results,enabledTokens);
   }
+  saveEtherscanTxs = (endpoint,txs) => {
+    const txsToStore = {};
+    Object.keys(txs).forEach(txHash => {
+      const tx = txs[txHash];
+      if (tx.blockNumber && (!tx.status || tx.status.toLowerCase() !== 'pending')){
+        txsToStore[txHash] = tx;
+      }
+    });
+
+    // Save new cached data
+    const cachedRequest = {
+      data:{
+        result:txsToStore
+      }
+    };
+    this.saveCachedRequest(endpoint,false,cachedRequest);
+  }
   getEtherscanTxs = async (account=false,firstBlockNumber=0,endBlockNumber='latest',enabledTokens=[]) => {
     const {
       results,
@@ -665,7 +683,6 @@ class FunctionsUtil {
 
     // Initialize prevTxs
     let etherscanTxs = {};
-
     if (etherscanBaseTxs){
       // Filter txs for token
       etherscanTxs = await this.processStoredTxs(results,enabledTokens);
@@ -676,31 +693,13 @@ class FunctionsUtil {
 
       // Store filtered txs
       if (etherscanTxs && Object.keys(etherscanTxs).length){
-
-        const etherscanTxsToStore = {};
-
-        Object.keys(etherscanTxs).forEach(txHash => {
-          const txInfo = etherscanTxs[txHash];
-          if (txInfo.blockNumber){
-            etherscanTxsToStore[txHash] = txInfo;
-          }
-        });
-
-        const cachedRequestData = {
-          data:{
-            result:etherscanTxsToStore
-          }
-        };
-
-        this.saveCachedRequest(etherscanBaseEndpoint,false,cachedRequestData);
+        this.saveEtherscanTxs(etherscanBaseEndpoint,etherscanTxs);
       }
     }
 
-    // this.customLog('etherscanTxs',etherscanTxs);
-
     return Object
             .values(etherscanTxs)
-            .filter(tx => (enabledTokens.includes(tx.token.toUpperCase())) )
+            .filter(tx => (tx.token && enabledTokens.includes(tx.token.toUpperCase())))
             .sort((a,b) => (a.timeStamp < b.timeStamp ? -1 : 1));
   }
   filterCurveTxs = async (results,enabledTokens=[]) => {
@@ -723,7 +722,7 @@ class FunctionsUtil {
 
     return curveTxs;
   }
-  filterEtherscanTxs = async (results,enabledTokens=[],processTxs=true) => {
+  filterEtherscanTxs = async (results,enabledTokens=[],processTxs=true,processStoredTxs=true) => {
     if (!results || !results.length || typeof results.forEach !== 'function'){
       return [];
     }
@@ -916,7 +915,7 @@ class FunctionsUtil {
     });
   
     if (processTxs){
-      etherscanTxs = await this.processEtherscanTransactions(etherscanTxs,enabledTokens);
+      etherscanTxs = await this.processEtherscanTransactions(etherscanTxs,enabledTokens,processStoredTxs);
     }
 
     return etherscanTxs;
@@ -978,7 +977,7 @@ class FunctionsUtil {
 
     return output;
   }
-  processEtherscanTransactions = async (etherscanTxs,enabledTokens=[]) => {
+  processEtherscanTransactions = async (etherscanTxs,enabledTokens=[],processStoredTxs=true) => {
 
     if (!enabledTokens || !enabledTokens.length){
       enabledTokens = Object.keys(this.props.availableTokens);
@@ -1198,7 +1197,9 @@ class FunctionsUtil {
       }
 
       // Process Stored txs
-      etherscanTxs = await this.processStoredTxs(etherscanTxs,[selectedToken],this.props.transactions);
+      if (processStoredTxs){
+        etherscanTxs = await this.processStoredTxs(etherscanTxs,[selectedToken],this.props.transactions);
+      }
     });
 
     // Update Stored txs
@@ -1220,6 +1221,8 @@ class FunctionsUtil {
     if (!storedTxs[this.props.account]){
       storedTxs[this.props.account] = {};
     }
+
+    etherscanTxs = Object.assign({},etherscanTxs);
 
     // this.customLog('Processing stored txs',enabledTokens);
 
@@ -1274,7 +1277,6 @@ class FunctionsUtil {
           migrateFromCompoundToIdle:'Migrate',
         };
         const pendingStatus = ['pending','started'];
-
         const txSucceeded = tx.status === 'success';
         const txPending = pendingStatus.includes(tx.status);
         const isMetaTx = tx.method === 'executeMetaTransaction';
@@ -1282,15 +1284,11 @@ class FunctionsUtil {
         const methodIsAllowed = Object.keys(allowedMethods).includes(tx.method);
 
         // Skip transaction if already present in etherscanTxs with same status
-        if (txHash && etherscanTxs[txHash] && etherscanTxs[txHash].tokenPrice/* && txHash.toLowerCase() !== '0x000000000000000000000000000'.toLowerCase()*/){
+        if (txHash && etherscanTxs[txHash] && etherscanTxs[txHash].tokenPrice){
           return false;
         }
-        // const txFound = etherscanTxs.find(etherscanTx => (etherscanTx.hash === tx.transactionHash && etherscanTx.status === tx.status) );
-        // if (txFound){
-        //   return false;
-        // }
 
-        if (txPending && methodIsAllowed && tx.params.length){
+        if (txPending && txHash && !etherscanTxs[txHash] && methodIsAllowed && tx.params.length){
           // this.customLog('processStoredTxs',tx.method,tx.status,tx.params);
           const isMigrationTx = allowedMethods[tx.method] === 'Migrate';
           const decimals = isMigrationTx ? 18 : tokenConfig.decimals;
@@ -1557,32 +1555,20 @@ class FunctionsUtil {
   }
   saveCachedRequest = (endpoint,alias=false,data) => {
     const key = alias ? alias : endpoint;
-    let cachedRequests = {};
-    // Check if already exists
-    if (localStorage && localStorage.getItem('cachedRequests')){
-      cachedRequests = JSON.parse(localStorage.getItem('cachedRequests'));
-    }
-
-    if (localStorage) {
-      const timestamp = parseInt(new Date().getTime()/1000);
-      cachedRequests[key] = {
-        data,
-        timestamp
-      };
-      return this.setLocalStorage('cachedRequests',JSON.stringify(cachedRequests));
-    }
-    return false;
+    let cachedRequests = this.getCachedDataWithLocalStorage('cachedRequests',{});
+    const timestamp = parseInt(new Date().getTime()/1000);
+    cachedRequests[key] = {
+      data,
+      timestamp
+    };
+    return this.setCachedDataWithLocalStorage('cachedRequests',cachedRequests);
   }
   getCachedRequest = (endpoint,alias=false) => {
     const key = alias ? alias : endpoint;
-    let cachedRequests = {};
-    // Check if already exists
-    if (localStorage && localStorage.getItem('cachedRequests')){
-      cachedRequests = JSON.parse(localStorage.getItem('cachedRequests'));
-      // Check if it's not expired
-      if (cachedRequests && cachedRequests[key]){
-        return cachedRequests[key].data;
-      }
+    let cachedRequests = this.getCachedDataWithLocalStorage('cachedRequests',{});
+    // Check if it's not expired
+    if (cachedRequests && cachedRequests[key]){
+      return cachedRequests[key].data;
     }
     return null;
   }
@@ -1599,28 +1585,21 @@ class FunctionsUtil {
   makeCachedRequest = async (endpoint,TTL=0,return_data=false,alias=false) => {
     const key = alias ? alias : endpoint;
     const timestamp = parseInt(new Date().getTime()/1000);
-    let cachedRequests = {};
+    
     // Check if already exists
-    if (localStorage && localStorage.getItem('cachedRequests')){
-      cachedRequests = JSON.parse(localStorage.getItem('cachedRequests'));
-      // Check if it's not expired
-      if (cachedRequests && cachedRequests[key] && cachedRequests[key].timestamp && timestamp-cachedRequests[key].timestamp<TTL){
-        return (cachedRequests[key].data && return_data ? cachedRequests[key].data.data : cachedRequests[key].data);
-      }
+    let cachedRequests = this.getCachedDataWithLocalStorage('cachedRequests',{});
+    // Check if it's not expired
+    if (cachedRequests && cachedRequests[key] && cachedRequests[key].timestamp && timestamp-cachedRequests[key].timestamp<TTL){
+      return (cachedRequests[key].data && return_data ? cachedRequests[key].data.data : cachedRequests[key].data);
     }
 
-    const data = await axios
-                        .get(endpoint)
-                        .catch(err => {
-                          console.error('Error getting request');
-                        });
-    if (localStorage) {
-      cachedRequests[key] = {
-        data,
-        timestamp
-      };
-      this.setLocalStorage('cachedRequests',JSON.stringify(cachedRequests));
-    }
+    const data = await this.makeRequest(endpoint);
+
+    cachedRequests[key] = {
+      data,
+      timestamp
+    };
+    this.setCachedDataWithLocalStorage('cachedRequests',cachedRequests);
     return (data && return_data ? data.data : data);
   }
   getTransactionError = error => {
@@ -1773,7 +1752,7 @@ class FunctionsUtil {
     const cachedDataKey = `tokenApiData_${address}_${isRisk}_${frequency}_${order}_${limit}`;
     let cachedData = this.getCachedData(cachedDataKey);
 
-    if (cachedData !== null){
+    if (cachedData){
       // Check for fittable start and end time
       const filteredCachedData = cachedData.filter( c => ( (c.startTimestamp===null || (startTimestamp && c.startTimestamp<=startTimestamp)) && (c.endTimestamp===null || (endTimestamp && c.endTimestamp>=endTimestamp)) ) )
 
@@ -2454,10 +2433,7 @@ class FunctionsUtil {
         if (Object.keys(govTokens).includes(token)){
           output = await this.getGovTokenPool(token, govTokenAvailableTokens);
         } else {
-          const tokenAllocation = await this.getTokenAllocation(tokenConfig,false,addGovTokens);
-          if (tokenAllocation && tokenAllocation.totalAllocationWithUnlent){
-            output = tokenAllocation.totalAllocationWithUnlent;
-          }
+          output = await this.getTokenPool(tokenConfig,addGovTokens);
         }
       break;
       case 'userDistributionSpeed':
@@ -2714,12 +2690,12 @@ class FunctionsUtil {
   getIdleTokenPrice = async (tokenConfig,blockNumber='latest',timestamp=false) => {
 
     const cachedDataKey = `idleTokenPrice_${tokenConfig.idle.token}_${blockNumber}`;
-    if (blockNumber !== 'latest'){
-      const cachedData = this.getCachedData(cachedDataKey);
-      if (cachedData !== null && !this.BNify(cachedData).isNaN()){
-        return cachedData;
+    // if (blockNumber !== 'latest'){
+      const cachedData = this.getCachedDataWithLocalStorage(cachedDataKey);
+      if (cachedData && !this.BNify(cachedData).isNaN()){
+        return this.BNify(cachedData);
       }
-    }
+    // }
 
     let decimals = tokenConfig.decimals;
 
@@ -2779,9 +2755,9 @@ class FunctionsUtil {
       tokenPrice = this.BNify(1);
     }
 
-    if (blockNumber !== 'latest'){
-      this.setCachedData(cachedDataKey,tokenPrice);
-    }
+    // if (blockNumber !== 'latest'){
+      this.setCachedDataWithLocalStorage(cachedDataKey,tokenPrice);
+    // }
 
     // this.customLog('getIdleTokenPrice',tokenPrice.toString());
 
@@ -2799,19 +2775,39 @@ class FunctionsUtil {
   /*
   Cache data locally for 5 minutes
   */
-  setCachedData = (key,data,TTL=120) => {
+  setCachedData = (key,data,TTL=180) => {
     if (this.props.setCachedData && typeof this.props.setCachedData === 'function'){
       // this.customLog('setCachedData',key);
       this.props.setCachedData(key,data,TTL);
     }
     return data;
   }
-  getCachedData = (key,defaultValue=null) => {
+  setCachedDataWithLocalStorage = (key,data,TTL=180) => {
+    if (this.props.setCachedData && typeof this.props.setCachedData === 'function'){
+      this.props.setCachedData(key,data,TTL,true);
+    }
+    return data;
+  }
+  getCachedDataWithLocalStorage = (key,defaultValue=null) => {
+    return this.getCachedData(key,defaultValue,true);
+  }
+  getCachedData = (key,defaultValue=null,useLocalStorage=false) => {
+    let cachedData = null;
+    // Get cache from current session
     if (this.props.cachedData && this.props.cachedData[key.toLowerCase()]){
-      const cachedData = this.props.cachedData[key.toLowerCase()];
-      if (!cachedData.expirationDate || cachedData.expirationDate>=parseInt(new Date().getTime()/1000)){
-        return cachedData.data;
+      cachedData = this.props.cachedData[key.toLowerCase()];
+    // Get cache from local storage
+    } else if (useLocalStorage) {
+      cachedData = this.getStoredItem('cachedData');
+      if (cachedData && cachedData[key.toLowerCase()]){
+        cachedData = cachedData[key.toLowerCase()];
+      } else {
+        cachedData = null;
       }
+    }
+
+    if (cachedData && cachedData.data && (!cachedData.expirationDate || cachedData.expirationDate>=parseInt(new Date().getTime()/1000))){
+      return cachedData.data;
     }
     return defaultValue;
   }
@@ -2838,10 +2834,12 @@ class FunctionsUtil {
 
     // Check for cached data
     const cachedDataKey = `tokenBalance_${contractName}_${walletAddr}_${fixDecimals}`;
-    const cachedData = this.getCachedData(cachedDataKey);
-    if (cachedData !== null){
-      return cachedData;
+    /*
+    const cachedData = this.getCachedDataWithLocalStorage(cachedDataKey);
+    if (cachedData && !this.BNify(cachedData).isNaN()){
+      return this.BNify(cachedData);
     }
+    */
 
     let [
       tokenDecimals,
@@ -2857,7 +2855,9 @@ class FunctionsUtil {
       }
 
       // Set cached data
-      return this.setCachedData(cachedDataKey,tokenBalance);
+      if (!this.BNify(tokenBalance).isNaN()){
+        return this.setCachedDataWithLocalStorage(cachedDataKey,tokenBalance);
+      }
     } else {
       this.customLogError('Error on getting balance for ',contractName);
     }
@@ -3042,6 +3042,24 @@ class FunctionsUtil {
     }
     return unlentBalance;
   }
+  getTokenPool = async (tokenConfig,addGovTokens=true) => {
+    // Check for cached data
+    const cachedDataKey = `tokenPool_${tokenConfig.idle.address}_${addGovTokens}`;
+    const cachedData = this.getCachedDataWithLocalStorage(cachedDataKey);
+    if (cachedData && !this.BNify(cachedData).isNaN() ) {
+      return this.BNify(cachedData);
+    }
+
+    const tokenAllocation = await this.getTokenAllocation(tokenConfig,false,addGovTokens);
+    if (tokenAllocation && tokenAllocation.totalAllocationWithUnlent){
+      const tokenPool = tokenAllocation.totalAllocationWithUnlent;
+      if (!this.BNify(tokenPool).isNaN()){
+        return this.setCachedDataWithLocalStorage(cachedDataKey,tokenPool);
+      }
+    }
+
+    return null;
+  }
   /*
   Get idleToken allocation between protocols
   */
@@ -3054,7 +3072,7 @@ class FunctionsUtil {
     // Check for cached data
     const cachedDataKey = `tokenAllocation_${tokenConfig.idle.address}_${addGovTokens}`;
     const cachedData = this.getCachedData(cachedDataKey);
-    if (cachedData !== null) {
+    if (cachedData) {
       return cachedData;
     }
 
@@ -3062,10 +3080,14 @@ class FunctionsUtil {
 
     const tokenAllocation = {
       avgApr: null,
+      unlentBalance:null,
       totalAllocation:null,
+      protocolsBalances:{},
       protocolsAllocations:null,
       protocolsAllocationsPerc:null,
-      totalAllocationWithUnlent:null
+      totalAllocationConverted:null,
+      totalAllocationWithUnlent:null,
+      totalAllocationWithUnlentConverted:null,
     };
 
     const exchangeRates = {};
@@ -3111,7 +3133,6 @@ class FunctionsUtil {
     });
 
     tokenAllocation.unlentBalance = this.BNify(0);
-    tokenAllocation.protocolsBalances = protocolsBalances;
     tokenAllocation.totalAllocationWithUnlent = this.BNify(totalAllocation);
 
     // Add unlent balance to the pool
@@ -3164,14 +3185,21 @@ class FunctionsUtil {
     return unires;
   }
   getUniswapConversionRate = async (tokenConfigFrom,tokenConfigDest) => {
+
+    // Check for cached data
+    const cachedDataKey = `uniswapConversionRate_${tokenConfigFrom.address}_${tokenConfigDest.address}`;
+    const cachedData = this.getCachedDataWithLocalStorage(cachedDataKey);
+    if (cachedData && !this.BNify(cachedData).isNaN()){
+      return this.BNify(cachedData);
+    }
+
     try {
       const WETHAddr = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
       const one = this.normalizeTokenDecimals(18);
       const unires = await this.genericContractCall('UniswapRouter','getAmountsIn',[one.toFixed(),[tokenConfigFrom.address, WETHAddr, tokenConfigDest.address]]);
       if (unires){
         const price = this.BNify(unires[0]).div(one);
-        // console.log('getUniswapConversionRate',tokenConfigDest.address,price);
-        return price;
+        return this.setCachedDataWithLocalStorage(cachedDataKey,price);
       }
       return null;
     } catch (error) {
@@ -3182,7 +3210,7 @@ class FunctionsUtil {
   getUniswapConversionRate_old = async (tokenConfigFrom,tokenConfigDest) => {
     const cachedDataKey = `compUniswapConverstionRate_${tokenConfigFrom.address}_${tokenConfigDest.address}`;
     const cachedData = this.getCachedData(cachedDataKey);
-    if (cachedData !== null && !this.BNify(cachedData).isNaN()){
+    if (cachedData && !this.BNify(cachedData).isNaN()){
       return cachedData;
     }
 
@@ -3279,9 +3307,9 @@ class FunctionsUtil {
 
     // Check for cached data
     const cachedDataKey = `getCurveAPY`;
-    const cachedData = this.getCachedData(cachedDataKey);
-    if (cachedData !== null){
-      return cachedData;
+    const cachedData = this.getCachedDataWithLocalStorage(cachedDataKey);
+    if (cachedData && !this.BNify(cachedData).isNaN()){
+      return this.BNify(cachedData);
     }
 
     const curveRatesInfo = this.getGlobalConfig(['curve','rates']);
@@ -3292,7 +3320,9 @@ class FunctionsUtil {
         let curveApy = this.getArrayPath(path,results.data);
         if (curveApy){
           curveApy = this.BNify(curveApy).times(100);
-          return this.setCachedData(cachedDataKey,curveApy);
+          if (!this.BNify(curveApy).isNaN()){
+            return this.setCachedDataWithLocalStorage(cachedDataKey,curveApy);
+          }
         }
       }
     }
@@ -3595,9 +3625,9 @@ class FunctionsUtil {
     }
 
     const cachedDataKey = `getCompAPR_${tokenConfig.idle.token}_${cTokenIdleSupply}_${compConversionRate}`;
-    const cachedData = this.getCachedData(cachedDataKey);
-    if (cachedData !== null && !this.BNify(cachedData).isNaN()){
-      return cachedData;
+    const cachedData = this.getCachedDataWithLocalStorage(cachedDataKey);
+    if (cachedData && !this.BNify(cachedData).isNaN()){
+      return this.BNify(cachedData);
     }
 
     let compAPR = this.BNify(0);
@@ -3625,8 +3655,9 @@ class FunctionsUtil {
 
       if (tokenAllocation){
         compAPR = compValue.div(tokenAllocation.totalAllocationConverted).times(100);
-
-        this.setCachedData(cachedDataKey,compAPR);
+        if (!this.BNify(compAPR).isNaN()){
+          this.setCachedDataWithLocalStorage(cachedDataKey,compAPR);
+        }
       }
     }
 
@@ -3642,9 +3673,9 @@ class FunctionsUtil {
   getCompDistribution = async (tokenConfig,cTokenIdleSupply=null,annualize=true) => {
 
     const cachedDataKey = `getCompDistribution_${tokenConfig.idle.token}_${cTokenIdleSupply}_${annualize}`;
-    const cachedData = this.getCachedData(cachedDataKey);
-    if (cachedData !== null && !this.BNify(cachedData).isNaN()){
-      return cachedData;
+    const cachedData = this.getCachedDataWithLocalStorage(cachedDataKey);
+    if (cachedData && !this.BNify(cachedData).isNaN()){
+      return this.BNify(cachedData);
     }
 
     const cTokenInfo = tokenConfig.protocols.find( p => (p.name === 'compound') );
@@ -3686,9 +3717,9 @@ class FunctionsUtil {
               compDistribution = compDistribution.div(1e18).times(this.BNify(blocksPerYear));
             }
 
-            this.setCachedData(cachedDataKey,compDistribution);
-
-            return compDistribution;
+            if (!this.BNify(compDistribution).isNaN()){
+              return this.setCachedDataWithLocalStorage(cachedDataKey,compDistribution);
+            }
           }
         }
       }
@@ -4165,6 +4196,14 @@ class FunctionsUtil {
     return Object.values(govTokens).find( tokenConfig => (tokenConfig.enabled && tokenConfig.address.toLowerCase() === address.toLowerCase()) );
   }
   getGovTokensUserTotalBalance = async (account=null,availableTokens=null,convertToken=null,checkShowBalance=true) => {
+
+    // Check for cached data
+    const cachedDataKey = `govTokensUserTotalBalance_${account}_${JSON.stringify(availableTokens)}_${convertToken}_${checkShowBalance}`;
+    const cachedData = this.getCachedDataWithLocalStorage(cachedDataKey);
+    if (cachedData && !this.BNify(cachedData).isNaN()){
+      return this.BNify(cachedData);
+    }
+
     const govTokensUserBalances = await this.getGovTokensUserBalances(account,availableTokens,convertToken,null,checkShowBalance);
     if (govTokensUserBalances){
       const govTokensEarnings = Object.values(govTokensUserBalances).reduce( (acc, govTokenAmount) => {
@@ -4172,7 +4211,7 @@ class FunctionsUtil {
         return acc;
       }, this.BNify(0));
 
-      return govTokensEarnings;
+      return this.setCachedDataWithLocalStorage(cachedDataKey,govTokensEarnings);
     }
     return this.BNify(0);
   }
@@ -4197,7 +4236,6 @@ class FunctionsUtil {
           govTokenAmount = this.BNify(govTokenAmount);
           // Get gov Token config by index
           const govTokenAddress = await this.genericContractCall(idleTokenConfig.token,'govTokens',[govTokenIndex]);
-
 
           if (govTokenAddress){
             const govTokenConfig = govTokenConfigForced ? govTokenConfigForced : this.getGovTokenConfigByAddress(govTokenAddress);
@@ -4282,6 +4320,18 @@ class FunctionsUtil {
     return govTokensUserBalances && govTokensUserBalances[govTokenConfig.token] ? govTokensUserBalances[govTokenConfig.token] : this.BNify(0);
   }
   getAggregatedStats = async (addGovTokens=true) => {
+
+    // Check for cached data
+    const cachedDataKey = `getAggregatedStats_${addGovTokens}`;
+    const cachedData = this.getCachedDataWithLocalStorage(cachedDataKey);
+    if (cachedData && (cachedData.avgAPR && !this.BNify(cachedData.avgAPR).isNaN()) && (cachedData.avgAPY && !this.BNify(cachedData.avgAPY).isNaN()) && (cachedData.totalAUM && !this.BNify(cachedData.totalAUM).isNaN())){
+      return {
+        avgAPR:this.BNify(cachedData.avgAPR),
+        avgAPY:this.BNify(cachedData.avgAPY),
+        totalAUM:this.BNify(cachedData.totalAUM)
+      };
+    }
+
     let avgAPR = this.BNify(0);
     let avgAPY = this.BNify(0);
     let totalAUM = this.BNify(0);
@@ -4356,11 +4406,13 @@ class FunctionsUtil {
     avgAPR = avgAPR.div(totalAUM);
     avgAPY = avgAPY.div(totalAUM);
 
-    return {
+    const output = {
       avgAPR,
       avgAPY,
       totalAUM
     };
+
+    return this.setCachedDataWithLocalStorage(cachedDataKey,output);
   }
   getTokenApy = async (tokenConfig) => {
     const tokenAprs = await this.getTokenAprs(tokenConfig);
@@ -4465,9 +4517,9 @@ class FunctionsUtil {
 
     // Check for cached data
     const cachedDataKey = `tokenConversionRate_${tokenConfig.address}_${isRisk}_${conversionRateField}`;
-    const cachedData = this.getCachedData(cachedDataKey);
-    if (cachedData !== null){
-      return cachedData;
+    const cachedData = this.getCachedDataWithLocalStorage(cachedDataKey);
+    if (cachedData && !this.BNify(cachedData).isNaN()){
+      return this.BNify(cachedData);
     }
 
     let tokenData = await this.getTokenApiData(tokenConfig.address,isRisk,null,null,false,null,'desc',1);
@@ -4476,7 +4528,9 @@ class FunctionsUtil {
       tokenData = tokenData.pop();
       if (tokenData && tokenData[conversionRateField]){
         const conversionRate = this.fixTokenDecimals(tokenData[conversionRateField],18);
-        return this.setCachedData(cachedDataKey,conversionRate);
+        if (!this.BNify(conversionRate).isNaN()){
+          return this.setCachedDataWithLocalStorage(cachedDataKey,conversionRate);
+        }
       }
     }
 
@@ -4486,9 +4540,9 @@ class FunctionsUtil {
   getTokenScore = async (tokenConfig,isRisk) => {
     // Check for cached data
     const cachedDataKey = `tokenScore_${tokenConfig.address}_${isRisk}`;
-    const cachedData = this.getCachedData(cachedDataKey);
-    if (cachedData !== null){
-      return cachedData;
+    const cachedData = this.getCachedDataWithLocalStorage(cachedDataKey);
+    if (cachedData && !this.BNify(cachedData).isNaN()){
+      return this.BNify(cachedData);
     }
 
     const apiInfo = globalConfigs.stats.rates;
@@ -4524,7 +4578,7 @@ class FunctionsUtil {
       tokenScore = this.getTokenScoreApi(tokenConfig,isRisk);
     }
 
-    return this.setCachedData(cachedDataKey,tokenScore);
+    return this.setCachedDataWithLocalStorage(cachedDataKey,tokenScore);
   }
 
   /*
@@ -4533,9 +4587,9 @@ class FunctionsUtil {
   getTokenScoreApi = async (tokenConfig,isRisk) => {
     // Check for cached data
     const cachedDataKey = `tokenScoreApi_${tokenConfig.address}_${isRisk}`;
-    const cachedData = this.getCachedData(cachedDataKey);
-    if (cachedData !== null){
-      return cachedData;
+    const cachedData = this.getCachedDataWithLocalStorage(cachedDataKey);
+    if (cachedData && !this.BNify(cachedData).isNaN()){
+      return this.BNify(cachedData);
     }
 
     const apiInfo = globalConfigs.stats.scores;
@@ -4556,7 +4610,9 @@ class FunctionsUtil {
         const filteredTokenData = tokenData.filter( d => (this.BNify(d.idleScore).gt(0)) );
         if (filteredTokenData.length){
           tokenScore = this.BNify(filteredTokenData[0].idleScore);
-          return this.setCachedData(cachedDataKey,tokenScore);
+          if (!this.BNify(tokenScore).isNaN()){
+            return this.setCachedDataWithLocalStorage(cachedDataKey,tokenScore);
+          }
         }
       }
     }
@@ -4574,9 +4630,12 @@ class FunctionsUtil {
 
     // Check for cached data
     const cachedDataKey = `tokenAprs_${tokenConfig.idle.address}_${addGovTokens}`;
-    const cachedData = this.getCachedData(cachedDataKey);
-    if (cachedData !== null){
-      return cachedData;
+    const cachedData = this.getCachedDataWithLocalStorage(cachedDataKey);
+    if (cachedData && (cachedData.avgApr && !this.BNify(cachedData.avgApr).isNaN()) && (cachedData.avgApy && !this.BNify(cachedData.avgApy).isNaN()) ){
+      return {
+        avgApr:this.BNify(cachedData.avgApr),
+        avgApy:this.BNify(cachedData.avgApy)
+      };
     }
 
     const Aprs = await this.getAprs(tokenConfig.idle.token);
@@ -4618,9 +4677,7 @@ class FunctionsUtil {
 
     const tokenAprs = {
       avgApr: null,
-      avgApy: null,
-      protocolsAprs,
-      protocolsApys
+      avgApy: null
     };
 
     if (tokenAllocation){
@@ -4643,11 +4700,10 @@ class FunctionsUtil {
           tokenAprs.avgApy = tokenAprs.avgApy.plus(idleAPR);
         }
       }
+      return this.setCachedDataWithLocalStorage(cachedDataKey,tokenAprs);
     }
 
-    // const avgAPR = await this.genericContractCall(tokenConfig.idle.token,'getAvgAPR');
-
-    return this.setCachedData(cachedDataKey,tokenAprs);
+    return null;
   }
   abbreviateNumber(value,decimals=3,maxPrecision=5,minPrecision=0){
 
