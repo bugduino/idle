@@ -67,7 +67,7 @@ class PortfolioDonut extends Component {
     });
 
     // Add Gov Tokens
-    const govTokensUserBalances = await this.functionsUtil.getGovTokensUserBalances(this.props.account,this.props.availableTokens,'DAI');
+    const govTokensUserBalances = await this.functionsUtil.getGovTokensUserBalances(this.props.account,this.props.availableTokens,'DAI',null,true);
     if (govTokensUserBalances){
       Object.keys(govTokensUserBalances).forEach( govToken => {
         const govTokenBalance = this.functionsUtil.BNify(govTokensUserBalances[govToken]);
