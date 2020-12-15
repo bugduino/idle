@@ -262,7 +262,7 @@ class DelegateVesting extends Component {
             You have {this.state.vestingAmount.div(1e18).toFixed(5)} {this.functionsUtil.getGlobalConfig(['governance','props','tokenName'])} in the Vesting Contract
           </Text>
           {
-            this.state.vestingContractDelegated && this.state.delegatee ? (
+            (this.state.vestingContractDelegated && this.state.delegatee && !this.state.delegateDifferentWallet) ? (
               <Text
                 mb={1}
                 fontWeight={500}
@@ -325,8 +325,8 @@ class DelegateVesting extends Component {
                       >
                         <Icon
                           size={'1.5em'}
-                          name={ this.state.vestingContractDelegated ? 'CheckBox' : 'LooksTwo'}
-                          color={ this.state.vestingContractDelegated ? this.props.theme.colors.transactions.status.completed : 'cellText'}
+                          name={'LooksTwo'}
+                          color={'cellText'}
                         />
                         <Text
                           ml={1}
@@ -346,7 +346,7 @@ class DelegateVesting extends Component {
           }
         </Flex>
         {
-          this.state.delegateDifferentWallet && !this.state.vestingContractDelegated && (
+          this.state.delegateDifferentWallet && (
             <Input
               mb={2}
               min={0}
@@ -378,7 +378,7 @@ class DelegateVesting extends Component {
                 cancelTransaction={this.cancelTransaction.bind(this)}
               />
             </Flex>
-          ) : this.state.vestingContractDelegated ? (
+          ) : (this.state.vestingContractDelegated && !this.state.delegateDifferentWallet) ? (
             <Button
               size={'small'}
               mainColor={'red'}
@@ -396,7 +396,7 @@ class DelegateVesting extends Component {
               DELEGATE TOKENS
             </Button>
           )*/
-          : !this.state.vestingContractDelegated && (
+          : (!this.state.vestingContractDelegated || this.state.delegateDifferentWallet) && (
             <Button
               size={'small'}
               onClick={ e => this.delegateVesting(false) }
@@ -406,17 +406,14 @@ class DelegateVesting extends Component {
             </Button>
           )
         }
-        {
-          !this.state.vestingContractDelegated && 
-            <Checkbox
-              mt={1}
-              required={false}
-              color={'#f3f6ff'}
-              label={`Delegate to different wallet`}
-              checked={this.state.delegateDifferentWallet}
-              onChange={ e => this.setDelegateDifferentWallet(e.target.checked) }
-            />
-        }
+        <Checkbox
+          mt={1}
+          required={false}
+          color={'#f3f6ff'}
+          label={`Delegate to different wallet`}
+          checked={this.state.delegateDifferentWallet}
+          onChange={ e => this.setDelegateDifferentWallet(e.target.checked) }
+        />
       </Flex>
     ) : null;
   }
