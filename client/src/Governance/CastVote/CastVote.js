@@ -237,7 +237,7 @@ class CastVote extends Component {
               />
             ) :
             // No votes delegated
-            (!this.props.votes || this.props.votes.lte(0) || this.state.showDelegateBox) ? (
+            (!this.props.votes || this.functionsUtil.BNify(this.props.votes).lte(0) || this.state.showDelegateBox) ? (
               <DelegateVote
                 {...this.props}
                 canClose={this.state.showDelegateBox}
