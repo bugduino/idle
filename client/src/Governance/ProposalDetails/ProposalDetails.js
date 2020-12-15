@@ -304,10 +304,13 @@ class ProposalDetails extends Component {
             />
           </Flex>
         </Flex>
-        <CastVote
-          {...this.props}
-          callback={this.props.loadData}
-        />
+        {
+          this.props.account && 
+            <CastVote
+              {...this.props}
+              callback={this.props.loadData}
+            />
+        }
         <Flex
           width={1}
           mb={[2,3]}
