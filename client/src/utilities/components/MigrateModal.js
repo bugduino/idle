@@ -103,7 +103,7 @@ class MigrateModal extends React.Component {
                 color={'mid-gray'}
                 textAlign={'center'}
               >
-                You can migrate your funds from Compound, Aave, Fulcrum, iEarn and Idle V2 with just one transaction and with no cost.
+                You can migrate your funds from Compound, Aave, Fulcrum, Yearn and Idle V2 with just one transaction and with no cost.
               </Text>
             </Flex>
             <Flex
@@ -111,7 +111,7 @@ class MigrateModal extends React.Component {
               flexDirection={'column'}
             >
               <Flex
-                my={3}
+                my={2}
                 alignItems={'center'}
                 flexDirection={'column'}
               >
@@ -152,6 +152,15 @@ class MigrateModal extends React.Component {
                     </Flex>
                   ) )
                 }
+                <Text
+                  mb={0}
+                  fontSize={1}
+                  color={'red'}
+                  fontWeight={500}
+                  textAlign={'center'}
+                >
+                  Please be aware that by migrating your tokens the position in the origin protocol may be liquidated.
+                </Text>
               </Flex>
               <Flex
                 mb={3}

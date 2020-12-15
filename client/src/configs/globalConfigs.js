@@ -676,7 +676,7 @@ const globalConfigs = {
         }
       },
       iearn:{
-        label:'iEarn'
+        label:'Yearn'
       },
       aave:{
         label:'Aave',
