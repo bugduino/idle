@@ -269,7 +269,7 @@ class CurveDeposit extends Component {
               )
             }
           {
-            this.state.tokenConfig ? (
+            this.state.tokenConfig && this.state.redeemableBalance ? (
               <Box width={1}>
                 <Migrate
                   {...this.props}

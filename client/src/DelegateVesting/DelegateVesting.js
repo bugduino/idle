@@ -60,7 +60,7 @@ class DelegateVesting extends Component {
         // Check Vesting Contract Delegated
         const lastDelegateTx = delegatesChanges.filter( d => (d.returnValues.delegator.toLowerCase() === vestingContract.toLowerCase() ) ).pop();
         delegatee = lastDelegateTx ? lastDelegateTx.returnValues.toDelegate : false;
-        vestingContractDelegated = delegatee !== '0x0000000000000000000000000000000000000000';
+        vestingContractDelegated = delegatee && delegatee !== '0x0000000000000000000000000000000000000000';
       }
 
       return this.setState({
