@@ -1384,7 +1384,7 @@ class RimbleTransaction extends React.Component {
         .on("confirmation", confirmationCallback)
         .on("error", error => {
 
-          // this.functionsUtil.customLog('Tx error',error);
+          console.log('Tx error',error);
           
           const isDeniedTx = error && error.message && typeof error.message.includes === 'function' ? error.message.includes('User denied transaction signature') : false;
           
@@ -1420,7 +1420,7 @@ class RimbleTransaction extends React.Component {
         });
     } catch (error) {
 
-      // this.functionsUtil.customLog('Tx catch error',error);
+      console.log('Tx catch error',error);
 
       transaction.status = "error";
       this.updateTransaction(transaction);

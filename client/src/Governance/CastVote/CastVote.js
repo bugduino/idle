@@ -366,7 +366,7 @@ class CastVote extends Component {
                         You have {this.functionsUtil.formatMoney(this.functionsUtil.fixTokenDecimals(this.props.votes,18).toFixed(0,1),0)} votes delegated
                       </Text>
                       {
-                        this.props.balance && this.props.balance.gt(0) &&
+                        this.props.balance && this.functionsUtil.BNify(this.props.balance).gt(0) &&
                           <Link
                             mt={0}
                             mainColor={'primary'}
