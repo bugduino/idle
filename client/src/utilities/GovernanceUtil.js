@@ -179,7 +179,7 @@ class GovernanceUtil {
   }
 
   castVote = async (proposalId,support,callback=null,callbackReceipt=null) => {
-    proposalId = this.functionsUtil.BNify(proposalId);
+    proposalId = this.functionsUtil.toBN(proposalId);
     const contractName = this.functionsUtil.getGlobalConfig(['governance','contracts','governance']);
     return await this.props.contractMethodSendWrapper(contractName, 'castVote', [proposalId, support], null, callback, callbackReceipt);
   }

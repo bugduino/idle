@@ -133,9 +133,7 @@ class CastVote extends Component {
     };
 
     const vote = this.state.vote === 'for';
-    const proposalId = this.props.proposal.id;
-
-    console.log(proposalId,vote);
+    const proposalId = parseInt(this.props.proposal.id);
 
     this.governanceUtil.castVote(proposalId,vote,callback,callbackReceipt);
 
