@@ -153,7 +153,6 @@ class CastVote extends Component {
 
   render() {
     return this.state.userVote ? (
-
         <Flex
           p={3}
           width={1}
@@ -249,13 +248,22 @@ class CastVote extends Component {
                 justifyContent={'center'}
               >
                 <Text
-                  mb={2}
+                  mb={1}
                   fontWeight={4}
                   fontSize={[2,3]}
                   color={'dark-gray'}
                   textAlign={'center'}
                 >
                   Cast your vote for the proposal #{this.props.proposal.id}:
+                </Text>
+                <Text
+                  mb={2}
+                  fontSize={1}
+                  color={'red'}
+                  fontWeight={500}
+                  textAlign={'center'}
+                >
+                  Make sure you have been delegated before this proposal has been submitted
                 </Text>
                 {
                   this.state.processing && this.state.processing.loading ? (

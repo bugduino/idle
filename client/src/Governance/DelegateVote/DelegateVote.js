@@ -116,9 +116,7 @@ class DelegateVote extends Component {
   }
 
   render() {
-
     const isUndelegated = parseInt(this.props.currentDelegate) === 0;
-
     return (
       <Flex
         width={1}
@@ -212,7 +210,7 @@ class DelegateVote extends Component {
                   ) : (
                     <EthAddress
                       width={1}
-                      address={this.props.account}
+                      address={this.props.currentDelegate}
                     />
                   )
                 }

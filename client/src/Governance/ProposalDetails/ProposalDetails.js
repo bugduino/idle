@@ -638,34 +638,19 @@ class ProposalDetails extends Component {
                   id={'votes-cursor-container'}
                 >
                   <Flex
-                    width={1/2}
                     height={'100%'}
-                    justifyContent={'flex-end'}
-                    borderRadius={'20px 0 0 20px'}
-                    style={{background:'rgba(0, 211, 149, 0.1)'}}
+                    width={`${forVotesPerc}%`}
+                    style={{background:'rgba(0, 211, 149, 1)'}}
+                    borderRadius={ parseFloat(forVotesPerc)===100 ? '20px' : '20px 0 0 20px' }
                   >
-                    <Flex
-                      height={'100%'}
-                      width={`${forVotesPerc}%`}
-                      borderRadius={'20px 0 0 20px'}
-                      style={{background:'rgba(0, 211, 149, 1)'}}
-                    >
-                    </Flex>
                   </Flex>
                   <Flex
-                    width={1/2}
                     height={'100%'}
-                    justifyContent={'flex-start'}
+                    width={`${againstVotesPerc}%`}
                     borderRadius={'0 20px 20px 0'}
-                    style={{background:'rgba(211, 0, 0, 0.1)'}}
+                    style={{background:'rgba(211, 0, 0, 1)'}}
+                    borderRadius={ parseFloat(againstVotesPerc)===100 ? '20px' : '0 20px 20px 0' }
                   >
-                    <Flex
-                      height={'100%'}
-                      width={`${againstVotesPerc}%`}
-                      borderRadius={'0 20px 20px 0'}
-                      style={{background:'rgba(211, 0, 0, 1)'}}
-                    >
-                    </Flex>
                   </Flex>
                 </Flex>
                 <Flex
@@ -681,8 +666,8 @@ class ProposalDetails extends Component {
                     justifyContent={'flex-end'}
                   >
                     <Flex
+                      width={1}
                       height={'100%'}
-                      width={`${forVotesPerc}%`}
                       justifyContent={'flex-start'}
                     >
                       <Text
@@ -702,10 +687,10 @@ class ProposalDetails extends Component {
                     justifyContent={'flex-start'}
                   >
                     <Flex
+                      width={1}
                       height={'100%'}
                       minWidth={'10%'}
-                      width={`${againstVotesPerc}%`}
-                      justifyContent={parseFloat(againstVotesPerc)<=10 ? 'flex-start' : 'flex-end'}
+                      justifyContent={'flex-end'}
                     >
                       <Text
                         fontWeight={3}
