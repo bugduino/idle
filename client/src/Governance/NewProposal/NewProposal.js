@@ -331,7 +331,7 @@ class NewProposal extends Component {
                           inputValue = inputValue.split(',').map( n => this.functionsUtil.BNify(n) );
                         break;
                         case 'uint256':
-                          inputValue = this.functionsUtil.BNify(inputValue);
+                          inputValue = this.functionsUtil.toBN(inputValue);
                         break;
                         default:
                           if (inputInfo.type.substr(-2) === '[]'){
