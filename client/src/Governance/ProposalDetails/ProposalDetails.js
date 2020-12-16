@@ -647,7 +647,6 @@ class ProposalDetails extends Component {
                   <Flex
                     height={'100%'}
                     width={`${againstVotesPerc}%`}
-                    borderRadius={'0 20px 20px 0'}
                     style={{background:'rgba(211, 0, 0, 1)'}}
                     borderRadius={ parseFloat(againstVotesPerc)===100 ? '20px' : '0 20px 20px 0' }
                   >
